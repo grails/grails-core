@@ -15,6 +15,8 @@
  */
 package org.grails.gradle.plugin.doc
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
@@ -26,6 +28,7 @@ import org.gradle.api.tasks.compile.AbstractCompile
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class PublishGuideTask extends AbstractCompile {
 
     @InputDirectory
@@ -59,6 +62,7 @@ class PublishGuideTask extends AbstractCompile {
         }
     }
 
+    @CompileDynamic
     @Override
     @TaskAction
     protected void compile() {

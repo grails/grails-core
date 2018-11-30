@@ -87,7 +87,6 @@ class FindMainClassTask extends DefaultTask {
 
     }
 
-    @CompileDynamic
     protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
         FileCollection classesDirs
         try {

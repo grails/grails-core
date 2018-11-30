@@ -77,6 +77,7 @@ import javax.inject.Inject
  * @since 3.0
  * @author Graeme Rocher
  */
+@CompileStatic
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
@@ -95,7 +96,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         this.registry = registry
     }
 
-    @CompileStatic
     void apply(Project project) {
         // reset the environment to ensure it is resolved again for each invocation
         Environment.reset()
@@ -145,7 +145,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configurePathingJar(project)
     }
 
-    @CompileStatic
     protected void configureProfile(Project project) {
         def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
 
@@ -156,7 +155,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-    @CompileStatic
     protected void applyDefaultPlugins(Project project) {
         def springBoot = project.extensions.findByType(SpringBootExtension)
         if (!springBoot) {
@@ -230,6 +228,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         } as Action<Configuration>)
     }
 
+    @CompileDynamic
     private void applyBomImport(DependencyManagementExtension dme, project) {
         dme.imports({
             mavenBom("org.grails:grails-bom:${project.properties['grailsVersion']}")
@@ -241,11 +240,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
         'web'
     }
 
-    @CompileStatic
     void addDefaultProfile(Project project, Configuration profileConfig) {
         project.dependencies.add('profile', "org.grails.profiles:${System.getProperty("grails.profile") ?: defaultProfile}:")
     }
 
+    @CompileDynamic
     protected Task createBuildPropertiesTask(Project project) {
 
         File resourcesDir = SourceSets.findMainSourceSet(project).output.resourcesDir
@@ -313,6 +312,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         System.setProperty(BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
     }
 
+    @CompileDynamic
     protected void configureApplicationCommands(Project project) {
         def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
         for (ctxCommand in applicationContextCommands) {
@@ -329,6 +329,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
     protected void configureGrailsSourceDirs(Project project) {
         project.sourceSets {
             main {
@@ -379,6 +380,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         grailsVersion
     }
 
+    @CompileDynamic
     protected void configureAssetCompilation(Project project) {
         if (project.extensions.findByName('assets')) {
             project.assets {
@@ -388,7 +390,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-    @CompileStatic
     protected void configureForkSettings(Project project, String grailsVersion) {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
@@ -439,7 +440,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         tasks.withType(JavaExec).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.DEVELOPMENT.name)
     }
 
-    @CompileStatic
     protected void configureConsoleTask(Project project) {
         TaskContainer tasks = project.tasks
         def consoleConfiguration = project.configurations.create("console")
@@ -466,6 +466,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         shellTask.dependsOn(tasks.findByName('classes'), findMainClass)
     }
 
+    @CompileDynamic
     protected JavaExec createConsoleTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("console", JavaExec) {
             classpath = project.sourceSets.main.runtimeClasspath + configuration
@@ -473,6 +474,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
     protected JavaExec createShellTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("shell", JavaExec) {
             classpath = project.sourceSets.main.runtimeClasspath + configuration
@@ -481,6 +483,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
     protected void enableFileWatch(Environment environment, Project project) {
         if (environment.isReloadEnabled()) {
 
@@ -495,7 +498,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-    @CompileStatic
     protected void registerFindMainClassTask(Project project) {
         def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
         findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
@@ -507,6 +509,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     /**
      * Enables native2ascii processing of resource bundles
      **/
+    @CompileDynamic
     protected void enableNative2Ascii(Project project, String grailsVersion) {
         project.afterEvaluate {
             SourceSet sourceSet = SourceSets.findMainSourceSet(project)
@@ -564,6 +567,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
     protected Task createNative2AsciiTask(TaskContainer taskContainer, src, dest) {
         Task native2asciiTask = taskContainer.create('native2ascii')
         native2asciiTask.doLast {
@@ -575,6 +579,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         native2asciiTask
     }
 
+    @CompileDynamic
     protected Jar createPathingJarTask(Project project, String name, Configuration...configurations) {
         project.tasks.create(name, Jar) { Jar task ->
             task.dependsOn(configurations)
@@ -595,6 +600,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
     protected void configureRunScript(Project project) {
         project.tasks.create("runScript", ApplicationContextScriptTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
@@ -605,6 +611,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
     protected void configureRunCommand(Project project) {
         project.tasks.create("runCommand", ApplicationContextCommandTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
@@ -615,18 +622,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-    @CompileDynamic
     protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
-        FileCollection classesDirs
-        try {
-            classesDirs = output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
-        }
-        catch(e) {
-            classesDirs = output?.classesDir ? project.files(output.classesDir) : project.files(new File(project.buildDir, "classes/main"))
-        }
-        return classesDirs
+        output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
     }
 
+    @CompileDynamic
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
             ConfigurationContainer configurations = project.configurations

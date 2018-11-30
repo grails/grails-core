@@ -16,6 +16,7 @@
 
 package org.grails.gradle.plugin.publishing
 
+import groovy.transform.CompileStatic
 import org.gradle.util.ConfigureUtil
 
 
@@ -23,6 +24,7 @@ import org.gradle.util.ConfigureUtil
  * @author Graeme Rocher
  * @since 3.1
  */
+@CompileStatic
 class GrailsPublishExtension {
 
     /**

@@ -45,6 +45,7 @@ import javax.inject.Inject
  * @since 3.0
  *
  */
+@CompileStatic
 class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     @Inject
@@ -53,7 +54,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     @Override
-    @CompileStatic
     void apply(Project project) {
         super.apply(project)
 
@@ -70,7 +70,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         configureSourcesJarTask(project)
 
         configureExplodedDirConfiguration(project)
-
     }
 
     protected String getDefaultProfile() {
@@ -82,7 +81,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
      *
      * @param project The project instance
      */
-    @CompileStatic
     protected void configureExplodedDirConfiguration(Project project) {
 
         ConfigurationContainer allConfigurations = project.configurations
@@ -122,6 +120,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
     }
 
+    @CompileDynamic
     protected void configureAstSources(Project project) {
         SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
         SourceSetContainer sourceSets = SourceSets.findSourceSets(project)
@@ -173,7 +172,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
     }
 
-    @CompileStatic
     protected void configurePluginJarTask(Project project) {
         Jar jarTask = (Jar)project.tasks.findByName('jar')
         // re-enable, since Boot disable this
@@ -183,6 +181,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         jarTask.exclude "logback.groovy"
     }
 
+    @CompileDynamic
     protected void configurePluginResources(Project project) {
         project.afterEvaluate() {
             ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
@@ -207,6 +206,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
     }
 
+    @CompileDynamic
     protected void configureProjectNameAndVersionASTMetadata(Project project) {
         def configScriptTask = project.tasks.create('configScript')
 
@@ -235,7 +235,6 @@ withConfig(configuration) {
         }
     }
 
-    @CompileStatic
     protected void checkForConfigurationClash(Project project) {
         File yamlConfig = new File(project.projectDir,"grails-app/conf/plugin.yml")
         File groovyConfig = new File(project.projectDir,"grails-app/conf/plugin.groovy")
@@ -244,7 +243,6 @@ withConfig(configuration) {
         }
     }
 
-    @CompileStatic
     static class ExplodedDir implements PublishArtifact {
         final String extension = ""
         final String type = "dir"

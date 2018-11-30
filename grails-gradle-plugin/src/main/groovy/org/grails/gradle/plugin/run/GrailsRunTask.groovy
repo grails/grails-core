@@ -15,6 +15,7 @@
  */
 package org.grails.gradle.plugin.run
 
+import groovy.transform.CompileStatic
 import org.gradle.api.tasks.JavaExec
 
 /**
@@ -23,5 +24,6 @@ import org.gradle.api.tasks.JavaExec
  * @author Graeme Rocher
  * @since 3.2
  */
+@CompileStatic
 class GrailsRunTask extends JavaExec {
 }

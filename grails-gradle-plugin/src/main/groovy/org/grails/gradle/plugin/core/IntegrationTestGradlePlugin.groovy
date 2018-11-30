@@ -37,12 +37,12 @@ import org.grails.gradle.plugin.util.SourceSets
  *
  *
  */
+@CompileStatic
 class IntegrationTestGradlePlugin implements Plugin<Project> {
     boolean ideaIntegration = true
     String sourceFolderName = "src/integration-test"
 
     @Override
-    @CompileStatic
     void apply(Project project) {
         File[] sourceDirs = findIntegrationTestSources(project)
         if (sourceDirs) {
@@ -92,7 +92,6 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
         }
     }
 
-    @CompileDynamic
     protected void setClassesDirs(Test integrationTestTask, SourceSet sourceSet) {
         try {
             // Gradle 4.x
@@ -105,10 +104,12 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
         }
     }
 
+    @CompileDynamic
     private void registerSourceDir(SourceSet integrationTest, File srcDir) {
         integrationTest."${srcDir.name}".srcDir srcDir
     }
 
+    @CompileDynamic
     private integrateIdea(Project project, List<File> acceptedSourceDirs) {
         project.afterEvaluate {
             if (project.convention.findByName('idea')) {
@@ -124,7 +125,6 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
         }
     }
 
-    @CompileStatic
     File[] findIntegrationTestSources(Project project) {
         project.file(sourceFolderName).listFiles({File file-> file.isDirectory() && !file.name.contains('.')} as FileFilter)
     }

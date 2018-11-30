@@ -15,6 +15,7 @@
  */
 package org.grails.gradle.plugin.profiles
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.grails.gradle.plugin.publishing.GrailsCentralPublishGradlePlugin
 
@@ -25,6 +26,7 @@ import org.grails.gradle.plugin.publishing.GrailsCentralPublishGradlePlugin
  * @author Graeme Rocher
  * @since 3.1
  */
+@CompileStatic
 class GrailsProfilePublishGradlePlugin extends GrailsCentralPublishGradlePlugin {
 
     @Override

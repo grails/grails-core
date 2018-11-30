@@ -1,5 +1,7 @@
 package org.grails.gradle.plugin.web.gsp
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.tasks.Input
@@ -16,6 +18,7 @@ import org.gradle.api.tasks.incremental.IncrementalTaskInputs
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class GroovyPageCompileTask extends AbstractCompile {
 
     @Input
@@ -47,6 +50,7 @@ class GroovyPageCompileTask extends AbstractCompile {
         compile()
     }
 
+    @CompileDynamic
     @Override
     protected void compile() {
 

@@ -16,6 +16,8 @@
 package org.grails.gradle.plugin.web
 
 import grails.util.Environment
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
@@ -29,12 +31,14 @@ import javax.inject.Inject
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class GrailsWebGradlePlugin extends GrailsGradlePlugin {
     @Inject
     GrailsWebGradlePlugin(ToolingModelBuilderRegistry registry) {
         super(registry)
     }
 
+    @CompileDynamic
     @Override
     void apply(Project project) {
         super.apply(project)

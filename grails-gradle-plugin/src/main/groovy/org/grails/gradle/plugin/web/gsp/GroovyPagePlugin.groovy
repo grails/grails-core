@@ -1,5 +1,7 @@
 package org.grails.gradle.plugin.web.gsp
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -19,7 +21,10 @@ import org.grails.gradle.plugin.util.SourceSets
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class GroovyPagePlugin implements Plugin<Project> {
+
+    @CompileDynamic
     @Override
     void apply(Project project) {
 
