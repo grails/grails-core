@@ -269,6 +269,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, namespace, pluginName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
+                    println "context path: " + cp
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
                         println "Calling handleAbsolute"
