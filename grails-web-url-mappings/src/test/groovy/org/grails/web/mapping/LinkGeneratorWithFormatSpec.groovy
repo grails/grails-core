@@ -8,6 +8,7 @@ import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -29,7 +30,9 @@ class LinkGeneratorWithFormatSpec extends Specification {
 
     }
 
-
+    void setupSpec() {
+        RequestContextHolder.resetRequestAttributes()
+    }
 
     @Issue('https://github.com/grails/grails-core/issues/589')
     void "Test that a link containing the format parameter generates correctly"() {
