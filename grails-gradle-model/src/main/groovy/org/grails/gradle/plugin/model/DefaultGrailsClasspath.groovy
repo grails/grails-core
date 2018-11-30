@@ -16,6 +16,9 @@
 
 package org.grails.gradle.plugin.model
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class DefaultGrailsClasspath implements GrailsClasspath {
     private static final long serialVersionUID = 1L
     List<URL> dependencies
