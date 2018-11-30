@@ -120,7 +120,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         configureFileWatch(project)
 
-        def grailsVersion = resolveGrailsVersion(project)
+        String grailsVersion = resolveGrailsVersion(project)
 
         enableNative2Ascii(project, grailsVersion)
 
@@ -390,7 +390,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     @CompileStatic
-    protected void configureForkSettings(Project project, grailsVersion) {
+    protected void configureForkSettings(Project project, String grailsVersion) {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { String defaultGrailsEnv, JavaForkOptions task ->
@@ -509,7 +509,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     /**
      * Enables native2ascii processing of resource bundles
      **/
-    protected void enableNative2Ascii(Project project, grailsVersion) {
+    protected void enableNative2Ascii(Project project, String grailsVersion) {
         project.afterEvaluate {
             SourceSet sourceSet = SourceSets.findMainSourceSet(project)
 
