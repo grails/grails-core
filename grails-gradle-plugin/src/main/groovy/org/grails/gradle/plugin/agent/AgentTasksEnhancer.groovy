@@ -13,6 +13,7 @@ import org.grails.gradle.plugin.core.GrailsExtension
  *
  * @author Graeme Rocher
  */
+@CompileStatic
 class AgentTasksEnhancer implements Action<Project> {
     @Override
     void execute(Project project) {
