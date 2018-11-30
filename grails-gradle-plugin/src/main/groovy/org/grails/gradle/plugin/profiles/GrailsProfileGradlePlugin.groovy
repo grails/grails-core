@@ -19,6 +19,7 @@ import grails.io.IOUtils
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.DirectoryScanner
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.ModuleVersionSelector
@@ -99,7 +100,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             spec.into("skeleton")
         }
 
-        def processResources = project.tasks.create("processResources", Copy) { Copy c ->
+        def processResources = project.tasks.create("processResources", Copy, (Action){ Copy c ->
             c.with(spec1, spec2, spec3, spec4)
             c.into(new File(resourcesDir, "/META-INF/grails-profile"))
 
@@ -109,10 +110,10 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             c.doLast {
                 DirectoryScanner.resetDefaultExcludes()
             }
-        }
+        })
 
         def classsesDir = new File(project.buildDir, "classes/profile")
-        def compileTask = project.tasks.create("compileProfile", ProfileCompilerTask) { ProfileCompilerTask task ->
+        def compileTask = project.tasks.create("compileProfile", ProfileCompilerTask, (Action){ ProfileCompilerTask task ->
             task.destinationDir = classsesDir
             task.source = commandsDir
             task.config = profileYml
@@ -120,9 +121,9 @@ class GrailsProfileGradlePlugin extends BasePlugin {
                 task.templatesDir = templatesDir
             }
             task.classpath = project.configurations.getByName(RUNTIME_CONFIGURATION) + project.files(IOUtils.findJarFile(GroovyScriptCommand))
-        }
+        })
 
-        def jarTask = project.tasks.create("jar", Jar) { Jar jar ->
+        def jarTask = project.tasks.create("jar", Jar, (Action) { Jar jar ->
             jar.dependsOn(processResources, compileTask)
             jar.from(resourcesDir)
             jar.from(classsesDir)
@@ -139,9 +140,9 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.doLast {
                 DirectoryScanner.resetDefaultExcludes()
             }
-        }
+        })
 
-        project.tasks.create("sourcesJar", Jar) { Jar jar ->
+        project.tasks.create("sourcesJar", Jar, (Action) { Jar jar ->
             jar.from(commandsDir)
             if(profileYml.exists()) {
                 jar.from(profileYml)
@@ -163,7 +164,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.doLast {
                 DirectoryScanner.resetDefaultExcludes()
             }
-        }
+        })
         project.tasks.findByName("assemble").dependsOn jarTask
 
     }
