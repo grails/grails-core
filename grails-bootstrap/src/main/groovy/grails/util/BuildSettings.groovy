@@ -204,7 +204,7 @@ class BuildSettings {
     /**
      * The classes directory of the project, null outside of the development environment
      */
-    public static final File CLASSES_DIR;
+    public static final File CLASSES_DIR
     public static final String RUN_EXECUTED = "grails.run.executed"
 
     /**
