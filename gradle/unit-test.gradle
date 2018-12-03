@@ -99,7 +99,7 @@ def createTestTaskWithoutSuffix(String name, includes, excludes) {
         coverageHtmlReport = false
 /*        classpath = classpath + project.rootProject.configurations.coverage*/
         classpath = sourceSets.test.runtimeClasspath + project.rootProject.configurations.coverage
-        testClassesDir = sourceSets.test.classesDir
+        testClassesDirs = sourceSets.test.classesDirs
     }
     test.dependsOn task
     task.dependsOn coreJar
