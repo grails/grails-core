@@ -138,8 +138,6 @@ ext {
         ],
     ]
 
-    isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
-
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 
@@ -230,10 +228,8 @@ allprojects {
 
     }
 
-    if (JavaVersion.current().isJava8Compatible()) {
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
-        }
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 }
 
@@ -445,9 +441,6 @@ subprojects { project ->
         options.docEncoding "UTF-8"
         options.charSet "UTF-8"
         options.jFlags "-Xms64M", "-Xmx512M"
-        if(!isJava8Compatible) {
-            options.jFlags "-XX:MaxPermSize=256m"
-        }
     }
 
     dependencies {
@@ -491,18 +484,12 @@ subprojects { project ->
         if (isTravisBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
-            if(!isJava8Compatible) {
-                jvmArgs '-XX:MaxPermSize=256m'
-            }
             afterSuite {
                 System.out.print('.')
                 System.out.flush()
             }
         } else {
             maxHeapSize = '1024m'
-            if(!isJava8Compatible) {
-                jvmArgs '-XX:MaxPermSize=512m'
-            }
         }
         if(System.getProperty("debug.tests")) {
             jvmArgs debugArguments

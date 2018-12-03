@@ -391,7 +391,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected void configureForkSettings(Project project, String grailsVersion) {
-        boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { String defaultGrailsEnv, JavaForkOptions task ->
             def map = System.properties.findAll { entry ->
@@ -416,11 +415,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 task.maxHeapSize = "768m"
             }
             List<String> jvmArgs = task.jvmArgs
-            if (!isJava8Compatible) {
-                if(!jvmArgs.any { !it.startsWith('-XX:MaxPermSize')}) {
-                    task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
-                }
-            }
+
             task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
 
             // Copy GRAILS_FORK_OPTS into the fork. Or use GRAILS_OPTS if no fork options provided
