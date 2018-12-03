@@ -401,8 +401,9 @@ BINTRAY_KEY=key
         def directory
         try {
             directory = project.sourceSets.main.groovy.outputDir
+
         } catch (Exception e) {
-            directory = project.sourceSets.main.output.classesDir
+            directory = project.sourceSets.main.output.classesDirs
         }
         [source: "${directory}/META-INF/grails-plugin.xml".toString(),
          classifier: getDefaultClassifier(),

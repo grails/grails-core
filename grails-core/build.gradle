@@ -63,9 +63,11 @@ dependencies {
 
 compileGroovy.doFirst {
     delete("${buildDir}/classes/main/META-INF")
-    ant.mkdir(dir:sourceSets.main.output.classesDir)
-    ant.propertyfile(file:"${sourceSets.main.output.classesDir}/grails.build.properties") {
-         entry key:"grails.version", value:version
+    sourceSets.main.output.classesDirs.files.each {
+        ant.mkdir(dir:it)
+        ant.propertyfile(file:"${it.path}/grails.build.properties") {
+            entry key:"grails.version", value:version
+        }
     }
 }
 

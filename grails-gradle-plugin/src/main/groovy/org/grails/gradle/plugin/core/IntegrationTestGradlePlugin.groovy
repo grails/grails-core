@@ -93,15 +93,8 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
     }
 
     protected void setClassesDirs(Test integrationTestTask, SourceSet sourceSet) {
-        try {
-            // Gradle 4.x
-            FileCollection classesDirs = sourceSet.output.classesDirs
-            integrationTestTask.setTestClassesDirs(classesDirs)
-        }
-        catch(e) {
-            // Gradle 3.x
-            integrationTestTask.setTestClassesDir(sourceSet.output.classesDir)
-        }
+        FileCollection classesDirs = sourceSet.output.classesDirs
+        integrationTestTask.setTestClassesDirs(classesDirs)
     }
 
     @CompileDynamic

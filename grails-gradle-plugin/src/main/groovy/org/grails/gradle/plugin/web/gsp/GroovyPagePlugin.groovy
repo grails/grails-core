@@ -80,14 +80,7 @@ class GroovyPagePlugin implements Plugin<Project> {
     }
 
     protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
-        FileCollection classesDirs
-        try {
-            classesDirs = output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
-        }
-        catch(e) {
-            classesDirs = output?.classesDir ? project.files(output.classesDir) : project.files(new File(project.buildDir, "classes/main"))
-        }
-        return classesDirs
+        output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
     }
 
 }
