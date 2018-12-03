@@ -101,6 +101,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
     }
 
+    @CompileDynamic
     private boolean isExploded(Project project) {
         Boolean.valueOf(project.properties.getOrDefault('exploded', 'false').toString())
     }
