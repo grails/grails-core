@@ -86,7 +86,7 @@ ext {
             version: groovyVersion,
             group  : 'org.codehaus.groovy',
             names  : ['groovy'],
-            modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio']
+            modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio', 'dateutil']
         ],
         spring: [
             version: springVersion,
