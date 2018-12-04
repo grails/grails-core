@@ -12,8 +12,8 @@ class DefaultASTDatabindingHelperDomainClassSpecialPropertiesSpec extends
     @Issue(['GRAILS-11173', "https://github.com/grails/grails-core/issues/11190"])
     void 'Test binding to special properties in a domain class'() {
         when:
-        def now = new Date()
-        def obj = new SomeDomainClass(dateCreated: now, lastUpdated: now)
+        Date now = new Date()
+        SomeDomainClass obj = new SomeDomainClass(dateCreated: now, lastUpdated: now)
         
         then:
         obj.dateCreated == null
