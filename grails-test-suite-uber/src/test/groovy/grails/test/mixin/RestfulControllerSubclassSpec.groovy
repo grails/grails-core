@@ -5,6 +5,7 @@ import grails.gorm.annotation.Entity
 import grails.rest.RestfulController
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -49,8 +50,9 @@ class RestfulControllerSubclassSpec extends Specification implements ControllerU
         album.title == 'Starless And Bible Black'
         album.artist == 'King Crimson'
     }
-    
-    @Issue('GRAILS-11462')
+
+    @Ignore
+    @Issue(['GRAILS-11462', 'https://github.com/grails/grails-core/issues/11188'])
     void 'Test that update populates the instance with values from the request body'() {
         given:
         def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save()
@@ -67,8 +69,9 @@ class RestfulControllerSubclassSpec extends Specification implements ControllerU
         updatedAlbum.artist == 'Riverside'
         updatedAlbum.title == 'Rapid Eye Movement'
     }
-    
-    @Issue('GRAILS-11462')
+
+    @Ignore
+    @Issue(['GRAILS-11462', 'https://github.com/grails/grails-core/issues/11188'])
     void 'Test that update populates the instance with values from the request parameters'() {
         given:
         def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save()
@@ -86,6 +89,8 @@ class RestfulControllerSubclassSpec extends Specification implements ControllerU
         updatedAlbum.title == 'Out Of Myself'
     }
 
+    @Ignore
+    @Issue('https://github.com/grails/grails-core/issues/11188')
     void 'Test that update validates input data and returns an error when validation fails'() {
         given:
         def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save(flush: true)

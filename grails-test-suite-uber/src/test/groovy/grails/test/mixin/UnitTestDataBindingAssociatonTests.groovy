@@ -4,6 +4,8 @@ import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.gorm.annotation.Entity
 import grails.artefact.Artefact
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -15,6 +17,8 @@ class UnitTestDataBindingAssociatonTests extends Specification implements Contro
     }
 
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void testBindingAssociationInUnitTest() {
         when:
         def pirate = new Pirate2(name: 'Joe')

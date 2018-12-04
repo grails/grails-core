@@ -4,6 +4,8 @@ import grails.gorm.annotation.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class HalJsonBindingSpec extends Specification implements ControllerUnitTest<BindingController>, DataTest {
@@ -12,6 +14,8 @@ class HalJsonBindingSpec extends Specification implements ControllerUnitTest<Bin
         [Person, Address]
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void 'Test binding JSON body'() {
         when:
         request.method = 'POST'

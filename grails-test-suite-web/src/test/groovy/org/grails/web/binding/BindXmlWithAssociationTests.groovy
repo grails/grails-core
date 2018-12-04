@@ -4,6 +4,8 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class BindXmlWithAssociationTests extends Specification implements ControllerUnitTest<PersonController>, DataTest {
@@ -12,6 +14,8 @@ class BindXmlWithAssociationTests extends Specification implements ControllerUni
         [TargetPerson, Book]
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void testBindXmlWithAssociatedId() {
         when:
         Book b = new Book(title: "The Stand", pages: 1000).save(flush:true)
@@ -26,6 +30,8 @@ class BindXmlWithAssociationTests extends Specification implements ControllerUni
         response.text == 'saved'
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void testBindXmlWithAssociatedIdAndProperties() {
         when:
         request.method = 'POST'

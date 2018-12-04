@@ -1,6 +1,8 @@
 package org.grails.domain.compiler
 
 import grails.gorm.annotation.Entity
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class DomainPropertiesAccessorSpec extends Specification {
@@ -13,6 +15,8 @@ class DomainPropertiesAccessorSpec extends Specification {
             test.age == 10
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void "Test setProperties method added via AST"() {
         when:
             def test = new TestDomain()
@@ -22,6 +26,8 @@ class DomainPropertiesAccessorSpec extends Specification {
             test.age == 10
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void "Test getProperties method added via AST"() {
         when:
             def test = new TestDomain()

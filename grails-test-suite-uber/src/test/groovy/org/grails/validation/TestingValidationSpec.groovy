@@ -2,10 +2,14 @@ package org.grails.validation
 
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class TestingValidationSpec extends Specification implements DomainUnitTest<Person> {
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void 'Test validating a domain object which has binding errors associated with it'() {
         given:
             def person = new Person(name: 'Jeff', age: 42, email: 'jeff.brown@springsource.com')
@@ -78,6 +82,8 @@ class TestingValidationSpec extends Specification implements DomainUnitTest<Pers
             'person.email.size.error' in codes
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void 'Test that binding errors are retained during validation'() {
         given:
         def person = new Person(name: 'Jeff', age: 42, email: 'jeff.brown@springsource.com')

@@ -5,6 +5,8 @@ import grails.converters.XML
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -41,6 +43,8 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
         response.xml.title.text() == "The Stand"
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void testBinding() {
         given:
         def book = new Book(title:"The Stand", pages: 200)
@@ -81,6 +85,8 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
         model.bookInstanceTotal == 1
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void testCreate() {
         when:
         params.title = "The Stand"
@@ -164,6 +170,8 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
         model.bookInstance == book
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void testUpdate() {
         when:
         request.method = 'POST'

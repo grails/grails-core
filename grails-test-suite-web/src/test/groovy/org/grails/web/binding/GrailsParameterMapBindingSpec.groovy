@@ -4,6 +4,7 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -79,7 +80,9 @@ class GrailsParameterMapBindingSpec extends Specification implements ControllerU
         then: 'the request parameters are used for binding'
         response.text == 'Request Parameter Name'
     }
-    
+
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void 'Test binding with the request when request parameters are present'() {
         when: 'request parameters are present'
         params.name = 'Request Parameter Name'
@@ -88,7 +91,9 @@ class GrailsParameterMapBindingSpec extends Specification implements ControllerU
         then: 'the request parameters are used for binding'
         response.text == 'Request Parameter Name'
     }
-    
+
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void 'Test binding with the request when the request has a body'() {
         when: 'request parameters are present'
         request.method = 'POST'
@@ -98,7 +103,9 @@ class GrailsParameterMapBindingSpec extends Specification implements ControllerU
         then: 'the body is used for binding'
         response.text == 'JSON Name'
     }
-    
+
+    @Issue("https://github.com/grails/grails-core/issues/11188")
+    @Ignore
     void 'Test binding with the request when the request has both a body and request parameters'() {
         when: 'request parameters are present and the request has a body'
         request.method = 'POST'

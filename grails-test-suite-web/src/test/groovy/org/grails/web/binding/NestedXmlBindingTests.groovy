@@ -4,6 +4,8 @@ import grails.gorm.annotation.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class NestedXmlBindingTests extends Specification implements ControllerUnitTest<NestedXmlController>, DataTest {
@@ -12,6 +14,8 @@ class NestedXmlBindingTests extends Specification implements ControllerUnitTest<
         [Person, Location, Foo, Bar]
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/11188')
+    @Ignore
     void testNestedXmlBinding() {
         when:
         request.method = 'POST'
@@ -36,6 +40,8 @@ class NestedXmlBindingTests extends Specification implements ControllerUnitTest<
         p.location.billingAddress == 'bar'
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/11188')
+    @Ignore
     void testNestedXmlBindingWithId() {
         when:
         request.method = 'POST'
@@ -61,6 +67,8 @@ class NestedXmlBindingTests extends Specification implements ControllerUnitTest<
         p.location.billingAddress == 'bar'
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/11188')
+    @Ignore
     void testBindToArrayOfDomains() {
         when:
         request.method = 'POST'
@@ -93,6 +101,8 @@ class NestedXmlBindingTests extends Specification implements ControllerUnitTest<
         p.locations[1].billingAddress == 'bar2'
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/11188')
+    @Ignore
     void testBindToOne() {
         when:
         request.method = 'POST'
@@ -110,6 +120,8 @@ class NestedXmlBindingTests extends Specification implements ControllerUnitTest<
         result.bar.id == 1
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/11188')
+    @Ignore
     void testBindToArrayOfDomainsWithJson() {
         when:
         request.method = 'POST'
