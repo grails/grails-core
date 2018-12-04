@@ -18,9 +18,6 @@ package org.grails.io.support;
 import groovy.util.XmlSlurper;
 import groovy.xml.FactorySupport;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
