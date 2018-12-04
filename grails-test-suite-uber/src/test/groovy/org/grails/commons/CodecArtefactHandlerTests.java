@@ -54,7 +54,7 @@ public class CodecArtefactHandlerTests extends TestCase {
 
     public void testDomainClassWithNameEndingInCodecIsNotACodec() {
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class<?> c = gcl.parseClass("@grails.persistence.Entity\nclass MySpecialCodec { Long id;Long version;}\n");
+        Class<?> c = gcl.parseClass("@grails.gorm.annotation.Entity\nclass MySpecialCodec { Long id;Long version;}\n");
 
         ArtefactHandler domainClassHandler = new DomainClassArtefactHandler();
         assertTrue(domainClassHandler.isArtefact(c));

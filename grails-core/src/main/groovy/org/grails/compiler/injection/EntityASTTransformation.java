@@ -17,7 +17,7 @@ package org.grails.compiler.injection;
 
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsDomainClassInjector;
-import grails.persistence.Entity;
+import grails.gorm.annotation.Entity;
 import groovy.transform.CompilationUnitAware;
 
 import java.util.List;

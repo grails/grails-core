@@ -1,6 +1,6 @@
 package grails.boot.config.tools
 
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import spock.lang.Specification
 
 /**

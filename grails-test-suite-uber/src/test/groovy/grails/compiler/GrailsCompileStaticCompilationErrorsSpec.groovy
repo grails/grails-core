@@ -359,7 +359,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsCompileStatic
-@grails.persistence.Entity
+@grails.gorm.annotation.Entity
 class SomeClass {
 
     String name
@@ -381,7 +381,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsCompileStatic
-@grails.persistence.Entity
+@grails.gorm.annotation.Entity
 class SomeClass {
 
     String name
@@ -434,7 +434,7 @@ class SomeController {
 package grails.compiler
 
 @GrailsCompileStatic
-@grails.persistence.Entity
+@grails.gorm.annotation.Entity
 class SomeClass {
 
     String name

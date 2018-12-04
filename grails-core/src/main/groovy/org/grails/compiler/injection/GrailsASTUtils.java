@@ -716,7 +716,7 @@ public class GrailsASTUtils {
     public static boolean isDomainClass(final ClassNode classNode, final SourceUnit sourceNode) {
         @SuppressWarnings("unchecked")
         boolean isDomainClass = GrailsASTUtils.hasAnyAnnotations(classNode,
-                grails.persistence.Entity.class,
+                grails.gorm.annotation.Entity.class,
                 javax.persistence.Entity.class);
 
         if (!isDomainClass && sourceNode != null) {

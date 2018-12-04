@@ -59,6 +59,7 @@ dependencies {
     provided "jline:jline:$jlineVersion"
     provided "org.fusesource.jansi:jansi:$jansiVersion"
 
+    compile "org.grails:grails-datastore-gorm-test:$datastoreVersion"
 }
 
 compileGroovy.doFirst {

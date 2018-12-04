@@ -37,7 +37,7 @@ class DomainClassTraitSpec extends Specification {
         new Person().constrainedProperties.name.inList == ['Joe']
     }
 
-    @Entity
+    @grails.gorm.annotation.Entity
     class Person {
         String name
         
