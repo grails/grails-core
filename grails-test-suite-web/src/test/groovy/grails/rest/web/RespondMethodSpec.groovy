@@ -111,7 +111,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
         then:"A modelAndView and view is produced"
             result == null
             response.contentType == 'text/xml;charset=UTF-8'
-            response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
+            response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be blank'
     }
 
     void "Test that the respond method produces JSON for a domain instance and a content type of JSON"() {

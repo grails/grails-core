@@ -70,7 +70,7 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
 
         !book.validate()
         book.errors.allErrors.size() == 1
-        book.errors['title'].code == 'nullable'
+        book.errors['title'].code == 'blank'
 
         when:
         response.reset()
