@@ -19,6 +19,12 @@ else
     echo "Done."
 fi
 
+if [ "${TRAVIS_JDK_VERSION}" == "openjdk11" ] ; then
+  exit $EXIT_STATUS
+fi
+
+echo "Publishing for branch $TRAVIS_BRANCH JDK: $TRAVIS_JDK_VERSION"
+
 if [[ $EXIT_STATUS -eq 0 ]]; then
     ./gradlew --stop
 
