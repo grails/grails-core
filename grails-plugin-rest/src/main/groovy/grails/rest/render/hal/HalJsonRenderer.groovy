@@ -49,8 +49,6 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     private static final MimeType[] DEFAULT_MIME_TYPES = [MIME_TYPE] as MimeType[]
 
-
-
     private static class UTCDateConverter implements Converter<Date, String> {
         private final static TimeZone UtcTZ = TimeZone.getTimeZone('UTC')
         @Override
