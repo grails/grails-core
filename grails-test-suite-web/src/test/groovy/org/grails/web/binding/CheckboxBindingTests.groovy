@@ -4,7 +4,8 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import org.junit.Test
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -13,7 +14,10 @@ import spock.lang.Specification
  */
 class CheckboxBindingTests extends Specification implements ControllerUnitTest<CheckboxBindingController>, DomainUnitTest<Pizza> {
 
-    void testBindingCheckedValuesToObject() {
+    @Issue("https://github.com/grails/grails-core/issues/11189")
+    @Ignore
+    void "test binding checked values to object"() {
+        given:
         params.name = "Capricciosa"
         params."_delivery" = ""
         params."delivery" = "on"
@@ -32,8 +36,10 @@ class CheckboxBindingTests extends Specification implements ControllerUnitTest<C
         model.pizza.options.stuffedCrust
     }
 
-    @Test
-    void testBindingUncheckedValuesToObject() {
+    @Issue("https://github.com/grails/grails-core/issues/11189")
+    @Ignore
+    void "test binding unchecked values to object"() {
+        given:
         params.name = "Capricciosa"
         params."_delivery" = ""
         params.options = [_extraAnchovies: '', _stuffedCrust: '']
