@@ -1,13 +1,15 @@
 package org.grails.web.binding
 
 import grails.gorm.annotation.Entity
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
 class DefaultASTDatabindingHelperDomainClassSpecialPropertiesSpec extends
         Specification {
-
-    @Issue('GRAILS-11173')
+    
+    @Ignore
+    @Issue(['GRAILS-11173', "https://github.com/grails/grails-core/issues/11190"])
     void 'Test binding to special properties in a domain class'() {
         when:
         def now = new Date()
