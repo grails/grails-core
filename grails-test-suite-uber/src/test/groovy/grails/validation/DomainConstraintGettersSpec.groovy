@@ -11,7 +11,9 @@ import grails.gorm.annotation.Entity
  * Check more detailed description in CommandObjectConstraintGettersSpec
  *
  */
-@Issue(['grails/grails-core#9749', 'grails/grails-core#9754'])
+
+@Ignore
+@Issue(['grails/grails-core#9749', 'grails/grails-core#9754', 'https://github.com/grails/grails-core/issues/11193'])
 class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     Class[] getDomainClassesToMock() {
