@@ -19,9 +19,6 @@ import groovy.util.slurpersupport.GPathResult;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.io.support.SpringIOUtils;
 import org.springframework.core.io.Resource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
