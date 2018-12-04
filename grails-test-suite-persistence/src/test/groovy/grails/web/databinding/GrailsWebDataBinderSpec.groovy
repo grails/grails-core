@@ -1127,8 +1127,8 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         def publisher = new Publisher()
         
         when:
-        publisher.addToPublications(name: 'Pub 1')
-        publisher.addToPublications(name: 'Pub 2')
+        publisher.addToPublications([title: 'Pub 1'])
+        publisher.addToPublications([title: 'Pub 2'])
         
         then:
         publisher.publications.size() == 2
