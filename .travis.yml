@@ -2,7 +2,6 @@ language: groovy
 dist: trusty
 jdk:
 - openjdk8
-- openjdk11
 env:
   global:
   - TERM=dumb
