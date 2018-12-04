@@ -1424,7 +1424,6 @@ class Widget  {
         isNotBindable bindable: false
         timeZone nullable: true
     }
-
 }
 @Entity
 class Fidget extends Widget {

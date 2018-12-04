@@ -47,9 +47,7 @@ class CheckboxBindingTests extends Specification implements ControllerUnitTest<C
         !model.pizza.options.extraAnchovies
         !model.pizza.options.stuffedCrust
     }
-
 }
-
 
 @Entity
 class Pizza {

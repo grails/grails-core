@@ -1,11 +1,8 @@
 package org.grails.domain.compiler
 
 import grails.gorm.annotation.Entity
-
 import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi
-
 import spock.lang.Specification
-
 
 class DomainPropertiesAccessorSpec extends Specification {
 

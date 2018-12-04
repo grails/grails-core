@@ -4,7 +4,6 @@ import grails.gorm.annotation.Entity
 import spock.lang.Issue
 import spock.lang.Specification
 
-
 class DefaultASTDatabindingHelperDomainClassSpecialPropertiesSpec extends
         Specification {
 
