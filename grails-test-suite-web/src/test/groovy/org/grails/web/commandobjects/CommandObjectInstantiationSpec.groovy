@@ -4,6 +4,8 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
+
 import javax.servlet.http.HttpServletResponse
 import spock.lang.Issue
 import spock.lang.Specification
@@ -27,8 +29,9 @@ class CommandObjectInstantiationSpec extends Specification implements Controller
         requestMethod << ['POST', 'PUT', 'GET', 'DELETE']
     }
 
+    @Ignore
     @Unroll
-    @Issue('GRAILS-11247')
+    @Issue(['GRAILS-11247', 'https://github.com/grails/grails-core/issues/11191'])
     void 'Test domain command object instantiation for #requestMethod request with no id'() {
         when:
         request.method = requestMethod
@@ -81,8 +84,9 @@ class CommandObjectInstantiationSpec extends Specification implements Controller
         model.commandObject.name == "Name for POST request with blank id"
     }
 
+    @Ignore
     @Unroll
-    @Issue('GRAILS-11247')
+    @Issue(['GRAILS-11247', 'https://github.com/grails/grails-core/issues/11191'])
     void 'Test domain command object instantiation for #requestMethod request with id'() {
         given:
         def domainObject = new DomainClassCommandObject(name: 'My Domain Name')
