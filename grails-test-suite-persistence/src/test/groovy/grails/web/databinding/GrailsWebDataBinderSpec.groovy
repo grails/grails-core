@@ -159,6 +159,8 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         decimalSeparator << [',', '.']
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11186")
+    @Ignore
     void 'Test binding null to id of element nested in a List'() {
         given:
         def obj = new CollectionContainer()
@@ -404,6 +406,8 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         book.pages.find { it.number == 2112 && it.id == p2.id }
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11186")
+    @Ignore
     void 'Test bindable'() {
         given:
         def widget = new Widget()
@@ -754,6 +758,8 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         author.widget.isBindable == 'Some Bindable String'
     }
 
+    @Issue("https://github.com/grails/grails-core/issues/11186")
+    @Ignore
     void 'Test binding to different collection types'() {
         given:
         def obj = new CollectionContainer()
@@ -1028,7 +1034,8 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         then:
         f.airports == ['STL', 'LHR', 'MIA']
     }
-    
+
+    @Ignore("https://github.com/grails/grails-core/issues/11186")
     @Issue('GRAILS-10899')
     void 'Test binding to a collection of values which need to be converted to a collection property that has a getter and setter with declared type java.util.Collection'() {
         when:
