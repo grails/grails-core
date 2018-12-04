@@ -46,6 +46,7 @@ import javax.inject.Inject
 @CompileStatic
 class GrailsProfileGradlePlugin extends BasePlugin {
 
+    static final String CONFIGURATION_NAME = 'grails'
 
     public static final String RUNTIME_CONFIGURATION = "runtime"
 
@@ -132,7 +133,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.setGroup(BUILD_GROUP)
 
             ArchivePublishArtifact jarArtifact = new ArchivePublishArtifact(jar)
-//TODO      project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()))
+            project.artifacts.add(CONFIGURATION_NAME, jarArtifact)
 
             jar.doFirst {
                 DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
