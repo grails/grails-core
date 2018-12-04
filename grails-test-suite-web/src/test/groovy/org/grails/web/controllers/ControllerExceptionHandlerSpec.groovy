@@ -2,9 +2,10 @@ package org.grails.web.controllers
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
+import grails.web.mapping.mvc.exceptions.CannotRedirectException
+
 import java.sql.BatchUpdateException
 import java.sql.SQLException
-import javax.xml.soap.SOAPException
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -108,11 +109,11 @@ class ControllerExceptionHandlerSpec extends Specification implements Controller
 
     void 'Test throwing an exception that does not have a handler'() {
         when:
-        params.exceptionToThrow = 'javax.xml.soap.SOAPException'
+        params.exceptionToThrow = 'grails.web.mapping.mvc.exceptions.CannotRedirectException'
         def model = controller.testActionWithNonCommandObjectParameter()
 
         then:
-        thrown SOAPException
+        thrown(CannotRedirectException)
     }
 
     void 'Test throwing an exception that does not have a handler and does match a private method in the parent controller'() {
