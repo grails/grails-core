@@ -16,7 +16,6 @@ class UnitTestDataBindingAssociatonTests extends Specification implements Contro
         mockDomains Ship2, Pirate2
     }
 
-
     @Issue("https://github.com/grails/grails-core/issues/11188")
     @Ignore
     void testBindingAssociationInUnitTest() {

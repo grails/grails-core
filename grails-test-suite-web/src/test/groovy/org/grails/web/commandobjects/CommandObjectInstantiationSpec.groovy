@@ -25,7 +25,6 @@ class CommandObjectInstantiationSpec extends Specification implements Controller
         
         where:
         requestMethod << ['POST', 'PUT', 'GET', 'DELETE']
-        
     }
 
     @Unroll

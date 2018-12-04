@@ -53,7 +53,6 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
             model.video != null
             response.status == HttpStatus.CREATED.value()
             response.getHeader('Location') != null
-
     }
 
     @Issue('https://github.com/grails/grails-core/issues/11188')
