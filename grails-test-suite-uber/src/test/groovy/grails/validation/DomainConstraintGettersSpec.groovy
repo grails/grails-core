@@ -4,7 +4,7 @@ import grails.testing.gorm.DataTest
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 
 /**
  * Test is similar to CommandObjectConstraintGettersSpec but for domain classes.

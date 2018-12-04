@@ -1,6 +1,6 @@
 package org.grails.web.json
 
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.rest.render.json.JsonRenderer
 import grails.testing.gorm.DataTest
 import grails.testing.web.GrailsWebUnitTest

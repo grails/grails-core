@@ -3,7 +3,7 @@ package org.grails.web.binding
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.JSONBuilder

@@ -1,6 +1,6 @@
 package org.grails.domain.compiler
 
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 
 import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi
 

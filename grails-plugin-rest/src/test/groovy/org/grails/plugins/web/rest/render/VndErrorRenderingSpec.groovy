@@ -2,7 +2,7 @@ package org.grails.plugins.web.rest.render
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.rest.render.errors.VndErrorJsonRenderer
 import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.util.GrailsWebMockUtil

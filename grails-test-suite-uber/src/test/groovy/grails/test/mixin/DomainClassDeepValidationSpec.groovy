@@ -18,7 +18,7 @@ package grails.test.mixin
 
 import grails.testing.gorm.DataTest
 import spock.lang.Specification
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import spock.lang.Issue
 
 /**

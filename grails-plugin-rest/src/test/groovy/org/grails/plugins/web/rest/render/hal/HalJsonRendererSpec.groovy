@@ -19,7 +19,7 @@ package org.grails.plugins.web.rest.render.hal
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.rest.render.Renderer
 import grails.rest.render.hal.HalJsonCollectionRenderer
 import grails.rest.render.hal.HalJsonRenderer

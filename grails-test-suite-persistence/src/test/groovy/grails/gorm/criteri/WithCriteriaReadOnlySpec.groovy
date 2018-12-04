@@ -1,6 +1,6 @@
 package grails.gorm.criteri
 
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 

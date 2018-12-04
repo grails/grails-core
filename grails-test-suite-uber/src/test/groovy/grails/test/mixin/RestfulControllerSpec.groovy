@@ -6,7 +6,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 
 import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import spock.lang.Specification
 
 /**

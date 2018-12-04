@@ -1,6 +1,6 @@
 package grails.compiler
 
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import spock.lang.Ignore
 import spock.lang.Issue

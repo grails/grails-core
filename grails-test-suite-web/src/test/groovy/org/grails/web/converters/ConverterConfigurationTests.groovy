@@ -2,7 +2,7 @@ package org.grails.web.converters
 
 import grails.converters.JSON
 import grails.converters.XML
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.GrailsWebUnitTest
 import org.grails.web.converters.marshaller.json.DomainClassMarshaller as JsonClassMarshaller

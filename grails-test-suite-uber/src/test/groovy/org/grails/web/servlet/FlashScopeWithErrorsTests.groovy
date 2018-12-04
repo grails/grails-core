@@ -15,7 +15,7 @@
 
 package org.grails.web.servlet
 
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.util.GrailsWebMockUtil
 import spock.lang.Specification

@@ -1,7 +1,7 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.web.servlet.support.RequestContextUtils

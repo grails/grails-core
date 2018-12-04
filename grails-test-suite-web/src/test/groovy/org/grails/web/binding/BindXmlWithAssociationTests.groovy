@@ -1,7 +1,7 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification

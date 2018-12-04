@@ -1,7 +1,7 @@
 package org.grails.web.commandobjects
 
 import grails.artefact.Artefact
-import grails.persistence.Entity
+import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import javax.servlet.http.HttpServletResponse
