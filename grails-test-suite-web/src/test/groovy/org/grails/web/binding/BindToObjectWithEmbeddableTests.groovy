@@ -14,7 +14,7 @@ class BindToObjectWithEmbeddableTests extends Specification implements Controlle
 
     void testBindToObjectWithEmbedded() {
         params.name = "Joe"
-        params.age= "45"
+        params.age= 45
         params.address = [city: 'Brighton']
 
         when:

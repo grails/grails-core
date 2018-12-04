@@ -43,13 +43,13 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
 
     void testBinding() {
         given:
-        def book = new Book(title:"The Stand", pages:"200")
+        def book = new Book(title:"The Stand", pages: 200)
 
         expect:
         book.pages == 200
 
         when:
-        book.properties = [pages:"300"]
+        book.properties = [pages: 300]
 
         then:
         book.pages == 300
@@ -84,7 +84,7 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
     void testCreate() {
         when:
         params.title = "The Stand"
-        params.pages = "500"
+        params.pages = 500
 
         def model = controller.create()
 
@@ -104,7 +104,7 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
 
         when:
         params.title = "The Stand"
-        params.pages = "500"
+        params.pages = 500
         controller.save()
 
         then:
@@ -198,7 +198,7 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
         response.reset()
         book.clearErrors()
         params.title = "The Shining"
-        params.pages = "500"
+        params.pages = 500
 
         controller.update()
 
@@ -241,7 +241,7 @@ class DomainClassControllerUnitTestMixinTests extends Specification implements C
 
     void testCriteriaQuery() {
         given:
-        mockDomain(Book, [[title:"The Stand", pages:"1000"], [title:"The Shining", pages:400], [title:"Along Came a Spider", pages:300]])
+        mockDomain(Book, [[title:"The Stand", pages: 1000], [title:"The Shining", pages:400], [title:"Along Came a Spider", pages:300]])
 
         expect:
         Book.count() == 3
