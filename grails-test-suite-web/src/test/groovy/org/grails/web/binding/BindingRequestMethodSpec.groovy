@@ -4,14 +4,10 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
 class BindingRequestMethodSpec extends Specification implements ControllerUnitTest<BindingController>, DomainUnitTest<Employee> {
 
-    @Issue("https://github.com/grails/grails-core/issues/11191")
-    @Ignore
     void 'Test binding to a domain class command object'() {
         when:
         request.method = 'POST'
