@@ -4,8 +4,6 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
 
@@ -15,8 +13,6 @@ import spock.lang.Specification
  */
 class BindToEnumTests extends Specification implements ControllerUnitTest<EnumBindingController>, DomainUnitTest<RoleHolder> {
 
-    @Issue("https://github.com/grails/grails-core/issues/11192")
-    @Ignore
     void testBindBlankValueToEnum() {
         params.role = ""
 
