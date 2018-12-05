@@ -21,8 +21,6 @@ import grails.rest.RestfulController
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.http.HttpStatus
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -55,8 +53,6 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
             response.getHeader('Location') != null
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void "Test the update action returns the correct model, status and location"() {
         given: "An existing domain object and Restful controller"
             def video = new Video(title:'Existing').save()
@@ -70,10 +66,9 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
             model.video != null
             response.status == HttpStatus.OK.value()
             response.getHeader('Location') != null
+
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void "Test the patch action returns the correct model, status and location"() {
         given: "An existing domain object and Restful controller"
             def video = new Video(title:'Existing').save()

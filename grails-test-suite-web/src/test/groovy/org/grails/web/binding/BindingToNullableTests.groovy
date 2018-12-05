@@ -2,8 +2,6 @@ package org.grails.web.binding
 
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
@@ -14,8 +12,6 @@ import grails.gorm.annotation.Entity
  */
 class BindingToNullableTests extends Specification implements ControllerUnitTest<NullBindingPersonController>, DomainUnitTest<NullBindingPerson> {
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testDataBindingBlankStringToNull() {
         controller.params.name = "fred"
         controller.params.dateOfBirth = ''
@@ -27,8 +23,6 @@ class BindingToNullableTests extends Specification implements ControllerUnitTest
         controller.response.redirectedUrl != null
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testDataBindingToNull() {
         controller.params.name = "fred"
         controller.params.dateOfBirth = 'invalid'

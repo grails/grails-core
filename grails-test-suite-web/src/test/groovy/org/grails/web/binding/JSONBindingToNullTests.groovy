@@ -7,8 +7,6 @@ import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.JSONBuilder
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
 class JSONBindingToNullTests extends Specification implements ControllerUnitTest<UserController>, DomainUnitTest<User> {
@@ -30,8 +28,6 @@ class JSONBindingToNullTests extends Specification implements ControllerUnitTest
 
     }}
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testJsonBindingToNull() {
         when:
         def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
@@ -48,8 +44,7 @@ class JSONBindingToNullTests extends Specification implements ControllerUnitTest
         response.json.id == pebbles.id
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
+
     void testXmlBindingToNull() {
         when:
         def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)

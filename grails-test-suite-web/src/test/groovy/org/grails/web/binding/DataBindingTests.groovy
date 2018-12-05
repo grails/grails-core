@@ -6,8 +6,6 @@ import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockMultipartFile
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
  /**
@@ -18,8 +16,6 @@ import spock.lang.Specification
  */
 class DataBindingTests extends Specification implements ControllerUnitTest<TestController>, DomainUnitTest<MyBean> {
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindingPogoToDomainClass() {
         when:
         def author = new Author()
@@ -33,8 +29,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         author.hairColour == 'Orange'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testDateFormatError() {
         when:
         def bean = new MyBean()
@@ -54,8 +48,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         dateError.defaultMessage == 'Unparseable date: "BAD"'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindingWithIndexedBlankId() {
         when:
         def city = new City()
@@ -70,8 +62,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         city.people.size() == 1
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testUpdatingSetElementByIdThatDoesNotExist() {
         when:
         def city = new City()
@@ -88,8 +78,7 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         error.defaultMessage == 'Illegal attempt to update element in [people] Set with id [42]. No such record was found.'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
+
     void testBindingObjectsWithHashcodeAndEqualsToASet() {
         when:
         // GRAILS-9825 = this test fails with the spring binder
@@ -112,8 +101,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         city.people.find { it.name == 'Zack' && it.birthDate == null} != null
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindingASinglePropertyWithSubscriptOperator() {
         when:
         def person = new DataBindingTestsPerson()
@@ -128,8 +115,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         2013 == cal.get(Calendar.YEAR)
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindintToNestedArray() {
         when:
         def author = new AuthorCommand()
@@ -143,8 +128,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         author.beans[0].integers[0] == 42
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testFieldErrorObjectName() {
         when:
         def myBean = new MyBean()
@@ -160,8 +143,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         fieldError.objectName == 'org.grails.web.binding.MyBean'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindingMalformedNumber() {
         when:
         // GRAILS-6766
@@ -179,8 +160,7 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         fieldError.rejectedValue == '21.12Rush'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
+
     void testBinderDoesNotCreateExtraneousInstances() {
         when:
         // GRAILS-9914
@@ -207,8 +187,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         originalCount + 1 == DataBindingTestsBook.instanceCount
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindEmbeddedWithMultipartFileAndDate() {
         when:
         def e = new WithEncoding()
@@ -223,10 +201,9 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         then:
         e.eDate.aFile != null
         e.eDate.aDate != null
+
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindingMapValue() {
         when:
         def pet = new Pet()
@@ -239,8 +216,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         !pet.hasErrors()
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindingNullToANullableDateThatAlreadyHasAValue() {
         given:
         def person = new DataBindingTestsPerson()
@@ -272,8 +247,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         person.birthDate == null
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testNamedBinding() {
         when:
         def author = new Author()
@@ -288,8 +261,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         author.hairColour == null
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testNamedBindingWithMultipleProperties() {
         when:
         def author = new Author()
@@ -304,8 +275,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         'Grey' == author.hairColour
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testThreeLevelDataBinding() {
         when:
         def b = new DataBindingTestsBook()
@@ -321,8 +290,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         "Stephen King" == b.author.name
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testConvertingBlankAndEmptyStringsToNull() {
         when:
         def a = new Author()
@@ -337,8 +304,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         a.hairColour == null
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testTypeConversionErrorsWithNestedAssociations() {
         when:
         request.addParameter("author.name", "Stephen King")
@@ -355,8 +320,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         !b.hasErrors()
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testTypeConversionErrors() {
         when:
         request.addParameter("site", "not_a_valid_URL")
@@ -371,8 +334,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         //def error = b.errors.getFieldError('site')
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testValidationAfterBindingFails() {
         when:
         // binding should fail for this one
@@ -396,8 +357,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         3 == myBean.errors.errorCount //'wrong number of errors after validation'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testAssociationAutoCreation() {
         when:
         request.addParameter("title", "The Stand")
@@ -412,8 +371,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         "Stephen King" == b.author?.name
     }
 
-    @Issue('https://github.com/grails/grails-core/issues/11188')
-    @Ignore
     void testNullAssociations() {
         when:
         request.addParameter("title", "The Stand")
@@ -428,8 +385,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         b.author == null
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testAssociationsBinding() {
         when:
         def authorClass = new Author()
@@ -455,8 +410,6 @@ class DataBindingTests extends Specification implements ControllerUnitTest<TestC
         "Mocked 5" == b.author.name
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testMultiDBinding() {
         when:
         request.addParameter("author.name", "Stephen King")

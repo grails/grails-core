@@ -2,8 +2,6 @@ package org.grails.web.binding
 
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DomainUnitTest
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -12,8 +10,6 @@ import spock.lang.Specification
  */
 class BindToPropertyThatIsNotReadableTests extends Specification implements DomainUnitTest<PropertyNotReadableBook> {
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void testBindToPropertyThatIsNotReadable() {
         when:
         def b = new PropertyNotReadableBook()

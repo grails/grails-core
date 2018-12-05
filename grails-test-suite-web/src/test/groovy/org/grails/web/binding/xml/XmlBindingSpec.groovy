@@ -4,7 +4,6 @@ import grails.artefact.Artefact
 import grails.gorm.annotation.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -14,8 +13,6 @@ class XmlBindingSpec extends Specification implements ControllerUnitTest<Binding
         [Person, Address]
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void 'Test binding XML body'() {
         when:
         request.method = 'POST'
@@ -45,8 +42,6 @@ class XmlBindingSpec extends Specification implements ControllerUnitTest<Binding
         model.person.workAddress.state == 'California'
     }
 
-    @Issue("https://github.com/grails/grails-core/issues/11188")
-    @Ignore
     void 'Test parsing invalid XML'() {
         given:
         request.method = 'POST'
