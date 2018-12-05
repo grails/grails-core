@@ -13,7 +13,7 @@ class EntityTransformIncludesGormApiSpec extends Specification{
 
         when:"A entity annotated with @Entity is compiled"
             def cls = new GroovyClassLoader().parseClass('''
-import grails.gorm.annotation.Entity
+import grails.persistence.*
 
 @Entity
 class Book { String title }

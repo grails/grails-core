@@ -1,6 +1,6 @@
 package org.grails.compiler.injection
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import groovy.transform.ToString
 
 /**

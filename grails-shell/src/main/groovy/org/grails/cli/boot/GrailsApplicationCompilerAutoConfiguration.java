@@ -63,7 +63,7 @@ public class GrailsApplicationCompilerAutoConfiguration extends CompilerAutoConf
 
     @Override
     public boolean matches(ClassNode classNode) {
-        boolean matches = AstUtils.hasAtLeastOneAnnotation(classNode, "grails.gorm.annotation.Entity", "grails.rest.Resource", "Resource", "grails.artefact.Artefact", "grails.web.Controller");
+        boolean matches = AstUtils.hasAtLeastOneAnnotation(classNode, "grails.persistence.Entity", "grails.rest.Resource", "Resource", "grails.artefact.Artefact", "grails.web.Controller");
         if(matches) lastMatch = classNode;
         return matches;
     }

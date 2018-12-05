@@ -759,7 +759,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             @SuppressWarnings("unchecked")
             boolean argumentIsValidateable = GrailsASTUtils.hasAnyAnnotations(
                     commandObjectNode,
-                    grails.gorm.annotation.Entity.class,
+                    grails.persistence.Entity.class,
                     javax.persistence.Entity.class) ||
                     commandObjectNode.implementsInterface(ClassHelper.make(Validateable.class));
 

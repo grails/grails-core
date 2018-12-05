@@ -264,7 +264,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsTypeChecked
-@grails.gorm.annotation.Entity
+@grails.persistence.Entity
 class SomeClass {
 
     String name
@@ -286,7 +286,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsTypeChecked
-@grails.gorm.annotation.Entity
+@grails.persistence.Entity
 class SomeClass {
 
     String name
@@ -311,7 +311,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsTypeChecked
-@grails.gorm.annotation.Entity
+@grails.persistence.Entity
 class SomeClass {
 
     String name

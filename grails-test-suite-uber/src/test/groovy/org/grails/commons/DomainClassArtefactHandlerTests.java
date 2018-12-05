@@ -27,7 +27,7 @@ public class DomainClassArtefactHandlerTests extends TestCase {
     public void testIsDomainClass() {
 
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class<?> c = gcl.parseClass("@grails.gorm.annotation.Entity\nclass Test { Long id;Long version;}\n");
+        Class<?> c = gcl.parseClass("@grails.persistence.Entity\nclass Test { Long id;Long version;}\n");
 
         ArtefactHandler handler = new DomainClassArtefactHandler();
         assertTrue(handler.isArtefact(c));
