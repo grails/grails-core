@@ -4,7 +4,7 @@ import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 import grails.artefact.Artefact
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 
 /**
  * @author Graeme Rocher

@@ -5,7 +5,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 import grails.artefact.Artefact
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 
 import org.grails.web.servlet.GrailsFlashScope
 

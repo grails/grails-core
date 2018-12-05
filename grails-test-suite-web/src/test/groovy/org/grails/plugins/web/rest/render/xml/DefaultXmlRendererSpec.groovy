@@ -2,7 +2,7 @@ package org.grails.plugins.web.rest.render.xml
 
 import grails.converters.XML
 import grails.core.DefaultGrailsApplication
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors

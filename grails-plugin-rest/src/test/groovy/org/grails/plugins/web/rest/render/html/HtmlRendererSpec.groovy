@@ -1,6 +1,6 @@
 package org.grails.plugins.web.rest.render.html
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.validation.ValidationErrors
 import grails.web.mime.MimeType
 import org.grails.web.util.GrailsApplicationAttributes

@@ -2,7 +2,7 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.gorm.transactions.Transactional
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.Validateable

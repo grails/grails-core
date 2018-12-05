@@ -1,7 +1,7 @@
 package org.grails.plugins.web.rest.render.json
 
 import grails.core.DefaultGrailsApplication
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebMockUtil
 import org.grails.config.NavigableMapConfig

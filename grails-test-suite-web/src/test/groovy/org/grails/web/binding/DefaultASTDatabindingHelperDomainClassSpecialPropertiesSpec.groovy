@@ -1,6 +1,6 @@
 package org.grails.web.binding
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import spock.lang.Issue
 import spock.lang.Specification
 

@@ -2,7 +2,7 @@ package grails.test.mixin
 
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.artefact.Artefact
 import spock.lang.Specification
 

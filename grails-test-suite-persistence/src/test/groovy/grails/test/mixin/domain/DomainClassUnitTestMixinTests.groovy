@@ -1,6 +1,6 @@
 package grails.test.mixin.domain
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import spock.lang.Specification
 

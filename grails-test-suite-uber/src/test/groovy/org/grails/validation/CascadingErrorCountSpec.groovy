@@ -1,6 +1,6 @@
 package org.grails.validation
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import org.springframework.validation.Errors
 import spock.lang.Specification

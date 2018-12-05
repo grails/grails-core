@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 import grails.artefact.Artefact
 import grails.converters.JSON
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 
 import org.grails.web.servlet.mvc.HibernateProxy
 import org.grails.web.servlet.mvc.LazyInitializer

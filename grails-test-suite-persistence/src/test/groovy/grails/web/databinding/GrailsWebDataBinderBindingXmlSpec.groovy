@@ -1,6 +1,6 @@
 package grails.web.databinding
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.validation.Validateable
 import spock.lang.Issue

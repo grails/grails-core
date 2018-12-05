@@ -3,7 +3,7 @@ package org.grails.plugins.web.rest.render.hal
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.rest.Linkable
 import grails.rest.Resource
 import grails.rest.render.hal.HalJsonRenderer

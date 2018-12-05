@@ -1,6 +1,6 @@
 package grails.test.mixin
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 
 @Entity
 class User {

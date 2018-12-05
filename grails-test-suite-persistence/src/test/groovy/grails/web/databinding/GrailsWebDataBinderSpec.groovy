@@ -20,7 +20,7 @@ import grails.databinding.DataBindingSource
 import grails.databinding.SimpleMapDataBindingSource
 import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.validation.DeferredBindingActions
 import grails.validation.Validateable

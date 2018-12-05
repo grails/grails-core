@@ -2,7 +2,7 @@ package org.grails.web.converters
 
 import grails.artefact.Artefact
 import grails.converters.JSON
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import javax.annotation.PostConstruct

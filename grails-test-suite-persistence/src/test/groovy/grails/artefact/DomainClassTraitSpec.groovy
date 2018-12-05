@@ -1,6 +1,6 @@
 package grails.artefact
 
-import grails.gorm.annotation.Entity
+import grails.persistence.Entity
 import spock.lang.Specification
 
 class DomainClassTraitSpec extends Specification {
