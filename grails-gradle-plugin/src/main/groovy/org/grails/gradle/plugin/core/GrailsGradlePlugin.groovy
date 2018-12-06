@@ -161,13 +161,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.plugins.apply(SpringBootPlugin)
         }
 
-        Plugin plugin = project.plugins.findPlugin(DependencyManagementPlugin)
-        if (plugin instanceof DependencyManagementPlugin) {
-            DependencyManagementPlugin dependencyManagementPlugin = (DependencyManagementPlugin) plugin
-            if (dependencyManagementPlugin == null) {
-                project.plugins.apply(DependencyManagementPlugin)
-            }
+        Plugin dependencyManagementPlugin = project.plugins.findPlugin(DependencyManagementPlugin)
+        if (dependencyManagementPlugin == null) {
+            project.plugins.apply(DependencyManagementPlugin)
         }
+
 
         DependencyManagementExtension dme = project.extensions.findByType(DependencyManagementExtension)
 
