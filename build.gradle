@@ -43,7 +43,7 @@ ext {
     gdocEngineVersion = "1.0.1"
 
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.4"
-    jansiVersion = "1.14"
+    jansiVersion = "1.17.1"
     jlineVersion = "2.14.2"
     jnaVersion = "4.2.2"
     slf4jVersion = "1.7.25"
