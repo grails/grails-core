@@ -57,6 +57,11 @@ class MainClassFinder {
                 if(rootClassesDir.exists()) {
                     searchDirs << rootClassesDir
                 }
+
+                rootClassesDir = new File(rootDir, "build/classes/groovy/main")
+                if (rootClassesDir.exists()) {
+                    searchDirs << rootClassesDir
+                }
             }
 
             String mainClass = null
