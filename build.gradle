@@ -29,7 +29,7 @@ ext {
     // grailsVersion = '4.0.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    asyncVersion = '3.3.2'
+    asyncVersion = '4.0.0.BUILD-SNAPSHOT'
     gspVersion = '4.0.0.BUILD-SNAPSHOT'
     legacyConvertersVersion = "4.0.0.BUILD-SNAPSHOT"
     testingSupportVersion = "2.0.0.BUILD-SNAPSHOT"
