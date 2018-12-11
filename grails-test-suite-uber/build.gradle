@@ -19,7 +19,6 @@ dependencies {
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    testCompile "commons-io:commons-io:${commonsIOVersion}"
     testCompile project(':grails-plugin-codecs'),
                 project(':grails-plugin-domain-class') ,
                 project(':grails-plugin-url-mappings') ,
