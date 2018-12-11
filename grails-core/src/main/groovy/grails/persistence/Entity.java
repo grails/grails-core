@@ -27,12 +27,10 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *
  * @author Graeme Rocher
  * @since 1.1
- * @deprecated Use {@code grails.gorm.annotation.Entity} instead
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @GroovyASTTransformationClass("org.grails.compiler.injection.EntityASTTransformation")
-@Deprecated
 public @interface Entity {
     // no attributes
 }
