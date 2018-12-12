@@ -19,6 +19,7 @@ import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.util.WebUtils
+import org.springframework.context.ApplicationContext
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestAttributes
@@ -87,5 +88,16 @@ class GrailsDispatcherServlet extends DispatcherServlet implements ServletContex
     void setServletContext(ServletContext servletContext) {
         Holders.setServletContext(servletContext);
         Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+    }
+
+    @Override
+    void setApplicationContext(ApplicationContext applicationContext) {
+        if (applicationContext instanceof WebApplicationContext) {
+            WebApplicationContext wac = (WebApplicationContext)applicationContext
+            Holders.setServletContext(wac.servletContext);
+            Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(wac.servletContext, applicationContext));
+
+        }
+        super.setApplicationContext(applicationContext)
     }
 }
