@@ -45,6 +45,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
+import javax.servlet.DispatcherType
 import javax.servlet.MultipartConfigElement
 
 /**
@@ -111,6 +112,11 @@ class ControllersGrailsPlugin extends Plugin {
             filter = bean(GrailsWebRequestFilter)
             urlPatterns = catchAllMapping
             order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
+            dispatcherTypes = EnumSet.of(
+                    DispatcherType.FORWARD,
+                    DispatcherType.INCLUDE,
+                    DispatcherType.REQUEST
+            )
         }
 
 
