@@ -36,6 +36,7 @@ class MimeTypesGrailsPlugin extends Plugin {
     def observe = ['controllers']
 
     Closure doWithSpring() {{->
+        mimeConfig(MimeConfig)
         "${MimeType.BEAN_NAME}"(MimeTypesFactoryBean)
         final mimeTypesBeanRef = ref(MimeType.BEAN_NAME)
 
