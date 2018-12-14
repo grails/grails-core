@@ -118,9 +118,15 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         mergeMaps(this, "", this, sourceMap, parseFlatKeys)
     }
 
-    private void mergeMaps(NavigableMap rootMap, String path, NavigableMap targetMap, Map sourceMap, boolean parseFlatKeys) {
-        if (!shouldSkipBlock(sourceMap, path)) {
-            for (Entry entry in sourceMap) {
+    private void mergeMaps(NavigableMap rootMap,
+                           String path,
+                           NavigableMap targetMap,
+                           Map sourceMap,
+                           boolean parseFlatKeys) {
+
+        Map collapseSourcedMap = collapseKeysWithSubscript(sourceMap)
+        if (!shouldSkipBlock(collapseSourcedMap, path)) {
+            for (Entry entry in collapseSourcedMap) {
                 Object sourceKeyObject = entry.key
                 Object sourceValue = entry.value
                 String sourceKey = String.valueOf(sourceKeyObject)
@@ -494,5 +500,52 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 //        public int hashCode() {
 //            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
 //        }
+    }
+
+    static Map collapseKeysWithSubscript(Map input) {
+
+        Map result = new HashMap()
+
+        Set<Object> keysWithoutSubscript = input.keySet().collect { keyWithoutSubscript(it) } as Set<Object>
+
+        for (Object k : input.keySet()) {
+            if (k instanceof String) {
+                String cleanKey = keysWithoutSubscript.find { it == keyWithoutSubscript(k) }
+                if (result.containsKey(cleanKey)) {
+                    List l = []
+                    Object object = result.get(cleanKey)
+                    if (object instanceof List) {
+                        l.addAll((List) object)
+                    } else {
+                        l << object
+                    }
+                    l << input.get(k)
+                    result.put(cleanKey, l)
+                } else {
+                    result.put(cleanKey, input.get(k))
+                }
+            } else {
+                result.put(k, input.get(k))
+            }
+        }
+
+        result
+    }
+
+    @CompileDynamic
+    static Object keyWithoutSubscript(Object obj) {
+        if(obj instanceof String) {
+            String str = (String) obj
+
+            String regex = /(.*)\[\d+\]/
+
+            def match = str =~ regex
+
+            if (match.count > 0 && match[0].size() >= 2) {
+                return match[0][1]
+            }
+            return str
+        }
+        obj
     }
 }
