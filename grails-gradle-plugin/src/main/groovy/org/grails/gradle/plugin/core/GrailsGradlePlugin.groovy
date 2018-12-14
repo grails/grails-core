@@ -27,27 +27,17 @@ import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.Action
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ConfigurationContainer
-import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.DependencyResolveDetails
-import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.artifacts.*
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.file.DefaultCompositeFileTree
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.plugins.GroovyPlugin
-import org.gradle.api.plugins.WarPlugin
-import org.gradle.api.tasks.AbstractCopyTask
-import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.SourceSetOutput
-import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
@@ -62,12 +52,9 @@ import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
-import org.apache.tools.ant.taskdefs.condition.Os
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 import org.springframework.boot.gradle.tasks.bundling.BootArchive
-import org.springframework.boot.gradle.tasks.bundling.BootJar
-import org.springframework.boot.gradle.tasks.bundling.BootWar
 
 import javax.inject.Inject
 
@@ -156,10 +143,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected void applyDefaultPlugins(Project project) {
-        def springBoot = project.extensions.findByType(SpringBootExtension)
-        if (!springBoot) {
-            project.plugins.apply(SpringBootPlugin)
-        }
+        applySpringBootPlugin(project)
 
         Plugin dependencyManagementPlugin = project.plugins.findPlugin(DependencyManagementPlugin)
         if (dependencyManagementPlugin == null) {
@@ -227,6 +211,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 } as Action<DependencyResolveDetails>)
             }
         } as Action<Configuration>)
+    }
+
+    protected void applySpringBootPlugin(Project project) {
+        def springBoot = project.extensions.findByType(SpringBootExtension)
+        if (!springBoot) {
+            project.plugins.apply(SpringBootPlugin)
+        }
     }
 
     @CompileDynamic

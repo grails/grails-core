@@ -35,6 +35,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.util.SourceSets
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 import javax.inject.Inject
 
@@ -118,6 +119,14 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             def jarTask = taskContainer.create("sourcesJar", Jar)
             jarTask.classifier = 'sources'
             jarTask.from SourceSets.findMainSourceSet(project).allSource
+        }
+    }
+
+    @Override
+    protected void applySpringBootPlugin(Project project) {
+        super.applySpringBootPlugin(project)
+        project.tasks.withType(BootJar) { BootJar bootJar ->
+            bootJar.enabled = false
         }
     }
 
