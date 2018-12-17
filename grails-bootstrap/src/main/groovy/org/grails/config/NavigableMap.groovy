@@ -83,7 +83,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         if (result != null) {
             return result
         }
-        if (key ==~ SUBSCRIPT_REGEX) {
+        if (key instanceof String && key.contains('[') && key.contains(']') && key ==~ SUBSCRIPT_REGEX) {
             Matcher matcher = key =~ SUBSCRIPT_REGEX
             String name  = matcher[0][2]
             int subscriptIndex = matcher[0][3] as int
@@ -521,15 +521,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     @CompileDynamic
     static Map collapseKeysWithSubscript(Map m) {
         Set<Map> keys = m.collect { k, v ->
-            if (k ==~ SUBSCRIPT_REGEX) {
+            if (k instanceof String && k.contains('[') && k.contains(']') && k ==~ SUBSCRIPT_REGEX) {
                 def matcher = k =~ SUBSCRIPT_REGEX
                 return [
                         subscript: matcher[0][1],
                         name: matcher[0][2]
                 ]
             }
-            [subscript: null,
-             name: k]
+            [subscript: null, name: k]
         }
         Map result = [:]
         Set keyNames = keys.collect { it.name } as Set
