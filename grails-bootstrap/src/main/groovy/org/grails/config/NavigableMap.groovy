@@ -6,6 +6,7 @@ import groovy.transform.EqualsAndHashCode
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 import java.util.Map.Entry
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 @EqualsAndHashCode
@@ -75,9 +76,23 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         delegateMap.containsValue value
     }
 
+    @CompileDynamic
     @Override
     Object get(Object key) {
-        delegateMap.get(key)
+        Object result = delegateMap.get(key)
+        if (result) {
+            return result
+        }
+        if (key ==~ SUBSCRIPT_REGEX) {
+            Matcher matcher = key =~ SUBSCRIPT_REGEX
+            String name  = matcher[0][2]
+            int subscriptIndex = matcher[0][3] as int
+            result = delegateMap.get(name)
+            if (result instanceof List && ((List)result).size() > subscriptIndex) {
+                return ((List) result).get(subscriptIndex)
+            }
+        }
+        null
     }
 
     @Override
