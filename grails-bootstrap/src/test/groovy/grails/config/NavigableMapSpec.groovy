@@ -13,7 +13,7 @@ class NavigableMapSpec extends Specification {
         Map output = NavigableMap.collapseKeysWithSubscript(input)
 
         then:
-        output.keySet() as List<String> == ['xml', 'grails.cors.mappings[/api/**]', 'js', 'json']
+        output.keySet().sort() as List<String> == ['xml', 'grails.cors.mappings[/api/**]', 'js', 'json'].sort()
         output['js'] == 'text/javascript'
         output['json'] == ['application/json', 'text/json']
         output['xml'] == ['application/hal+xml', 'text/xml', 'application/xml']
@@ -26,21 +26,28 @@ class NavigableMapSpec extends Specification {
                 ]
     }
 
-    @Unroll
-    def "for #key keyWithoutSubscript => #expected "(Object key, Object expected) {
-        expect:
-        expected == NavigableMap.keyWithoutSubscript(key)
+    def "multiple subscript entries are collapse to a list of maps"() {
+        given:
+        Map input = [
+                'rabbitmq.connections[0].name': 'main',
+                'rabbitmq.connections[0].host': '1109201498',
+                'rabbitmq.connections[0].host2': '635494740',
+                'rabbitmq.connections[0].username': 'guest',
+                'rabbitmq.connections[0].password': 'guest',
+        ]
 
-        where:
-        key                             | expected
-        'json'                          | 'json'
-        'json[0]'                       | 'json'
-        'json[10]'                      | 'json'
-        'grails.cors.mappings[/api/**]' | 'grails.cors.mappings[/api/**]'
-        2                               | 2
+        when:
+        Map output = NavigableMap.collapseKeysWithSubscript(input)
+
+        then:
+        output.keySet() as List<String> == ['rabbitmq.connections']
+        output['rabbitmq.connections'] instanceof List
+        output['rabbitmq.connections'].size() == 1
+        output['rabbitmq.connections'][0].name == 'main'
+        output['rabbitmq.connections'][0].host == '1109201498'
+        output['rabbitmq.connections'][0].host2 == '635494740'
+        output['rabbitmq.connections'][0].username == 'guest'
+        output['rabbitmq.connections'][0].password == 'guest'
     }
-
-
-
 
 }

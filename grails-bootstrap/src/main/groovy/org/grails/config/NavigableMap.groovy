@@ -16,6 +16,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     private static final String SPRING_PROFILES = 'spring.profiles.active'
     private static final String SPRING = 'spring'
     private static final String PROFILES = 'profiles'
+    private static final String SUBSCRIPT_REGEX = /((.*)\[(\d+)\]).*/
 
     final NavigableMap rootConfig
     final List<String> path
@@ -502,50 +503,44 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 //        }
     }
 
-    static Map collapseKeysWithSubscript(Map input) {
-
-        Map result = new HashMap()
-
-        Set<Object> keysWithoutSubscript = input.keySet().collect { keyWithoutSubscript(it) } as Set<Object>
-
-        for (Object k : input.keySet()) {
-            if (k instanceof String) {
-                String cleanKey = keysWithoutSubscript.find { it == keyWithoutSubscript(k) }
-                if (result.containsKey(cleanKey)) {
-                    List l = []
-                    Object object = result.get(cleanKey)
-                    if (object instanceof List) {
-                        l.addAll((List) object)
-                    } else {
-                        l << object
-                    }
-                    l << input.get(k)
-                    result.put(cleanKey, l)
-                } else {
-                    result.put(cleanKey, input.get(k))
-                }
-            } else {
-                result.put(k, input.get(k))
-            }
-        }
-
-        result
-    }
-
     @CompileDynamic
-    static Object keyWithoutSubscript(Object obj) {
-        if(obj instanceof String) {
-            String str = (String) obj
-
-            String regex = /(.*)\[\d+\]/
-
-            def match = str =~ regex
-
-            if (match.count > 0 && match[0].size() >= 2) {
-                return match[0][1]
+    static Map collapseKeysWithSubscript(Map m) {
+        Set<Map> keys = m.collect { k, v ->
+            if (k ==~ SUBSCRIPT_REGEX) {
+                def matcher = k =~ SUBSCRIPT_REGEX
+                return [
+                        subscript: matcher[0][1],
+                        name: matcher[0][2]
+                ]
             }
-            return str
+            [subscript: null,
+             name: k]
         }
-        obj
+        Map result = [:]
+        Set keyNames = keys.collect { it.name } as Set
+        for (key in keyNames) {
+            Map submap = keys.find { it.name == key }
+            if (submap.subscript == null) {
+                result[key] = m[key]
+            } else {
+                Set<Map> submaps = keys.findAll { it.name == key }
+                List l = []
+                for (submapkey in submaps.collect { it.subscript }) {
+                    Map mapofsubkeys = m.findAll { k, v -> k == submapkey }
+                    l.addAll(mapofsubkeys.collect { k, v -> v })
+                    mapofsubkeys = m.findAll { k, v -> k != submapkey && k.startsWith(submapkey) }
+                    if (mapofsubkeys) {
+                        Map subscriptMap = [:]
+                        mapofsubkeys.each { k, v ->
+                            String subkey = k.substring(submapkey.length() + ".".length())
+                            subscriptMap[subkey] = v
+                        }
+                        l << subscriptMap
+                    }
+                }
+                result[key] = l
+            }
+        }
+        result
     }
 }
