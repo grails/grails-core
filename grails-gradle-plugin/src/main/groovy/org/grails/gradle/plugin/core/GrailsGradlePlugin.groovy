@@ -296,7 +296,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     protected void configureFileWatch(Project project) {
         def environment = Environment.current
-//        enableFileWatch(environment, project)
+        enableFileWatch(environment, project)
     }
 
     @CompileStatic
@@ -473,23 +473,21 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected void enableFileWatch(Environment environment, Project project) {
         if (environment.isReloadEnabled()) {
-
             project.configurations {
                 agent
-            }
-            project.dependencies {
-                agent "org.springframework:springloaded"
-                runtimeOnly "io.methvin:directory-watcher"
             }
             project.afterEvaluate(new AgentTasksEnhancer())
         }
     }
 
     protected void registerFindMainClassTask(Project project) {
-        def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
-        findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
-        project.tasks.withType(BootArchive) { BootArchive task ->
-            task.dependsOn findMainClassTask
+        TaskContainer taskContainer = project.tasks
+        if (taskContainer.findByName("findMainClass") == null) {
+            def findMainClassTask = taskContainer.create("findMainClass", FindMainClassTask)
+            findMainClassTask.mustRunAfter taskContainer.withType(GroovyCompile)
+            taskContainer.withType(BootArchive) { BootArchive task ->
+                task.dependsOn findMainClassTask
+            }
         }
     }
 
