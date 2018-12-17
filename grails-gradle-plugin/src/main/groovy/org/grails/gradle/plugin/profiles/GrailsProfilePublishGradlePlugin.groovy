@@ -17,6 +17,7 @@ package org.grails.gradle.plugin.profiles
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.gradle.api.publish.maven.MavenPublication
 import org.grails.gradle.plugin.publishing.GrailsCentralPublishGradlePlugin
 
 
@@ -54,5 +55,10 @@ class GrailsProfilePublishGradlePlugin extends GrailsCentralPublishGradlePlugin 
     @Override
     protected String getDefaultRepo() {
         'profiles'
+    }
+
+    @Override
+    protected void doAddArtefact(Project project, MavenPublication publication) {
+        publication.artifact(project.tasks.findByName("jar"))
     }
 }

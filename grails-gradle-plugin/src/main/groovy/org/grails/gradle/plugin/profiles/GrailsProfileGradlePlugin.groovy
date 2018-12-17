@@ -58,7 +58,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
     @Override
     void apply(Project project) {
         super.apply(project)
-
+        project.configurations.create(CONFIGURATION_NAME)
         def profileConfiguration = project.configurations.create(RUNTIME_CONFIGURATION)
 
         profileConfiguration.resolutionStrategy.eachDependency {

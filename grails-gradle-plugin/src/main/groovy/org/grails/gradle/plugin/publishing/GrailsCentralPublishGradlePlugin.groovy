@@ -300,7 +300,7 @@ BINTRAY_KEY=key
                         }
                     }
                     artifactId project.name
-                    from project.components.java
+                    doAddArtefact(project, delegate)
                     def sourcesJar = taskContainer.findByName("sourcesJar")
                     if(sourcesJar != null) {
                         artifact sourcesJar
@@ -383,6 +383,10 @@ BINTRAY_KEY=key
                 taskContainer.create(name:"install", dependsOn: publishToMavenLocal)
             }
         }
+    }
+
+    protected void doAddArtefact(Project project, MavenPublication publication) {
+        publication.from project.components.java
     }
 
     protected String getDefaultArtifactType() {
