@@ -44,17 +44,17 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
     @Autowired(required = false)
     Collection<MimeTypeProvider> mimeTypeProviders = []
 
-    @Autowired
-    MimeConfig mimeConfig
-
     MimeType[] getObject() {
         final grailsApplication = this.grailsApplication ?: applicationContext.getBean(GrailsApplication)
-        if (mimeConfig.types.isEmpty()) {
-            return MimeType.createDefaults()
+        def config = grailsApplication?.config
+        def mimeConfig = getMimeConfig(config)
+        if (!mimeConfig) {
+            mimeTypes = MimeType.createDefaults()
+            return mimeTypes
         }
 
         def mimes = []
-        for (entry in mimeConfig.types.entrySet()) {
+        for (entry in mimeConfig.entrySet()) {
             if (entry.value instanceof List) {
                 for (i in entry.value) {
                     mimes << new MimeType(i.toString(),entry.key.toString())
@@ -79,4 +79,10 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
     Class<?> getObjectType() { MimeType[] }
 
     boolean isSingleton() { true }
+
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected Map<CharSequence, CharSequence> getMimeConfig(Config config) {
+        return config.getProperty(Settings.MIME_TYPES, Map)
+    }
 }
