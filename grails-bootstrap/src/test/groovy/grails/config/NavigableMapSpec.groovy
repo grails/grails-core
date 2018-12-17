@@ -7,14 +7,13 @@ import spock.lang.Unroll
 class NavigableMapSpec extends Specification {
 
     @Unroll
-    def "#input "(Map input) {
+    def "merge navigable map for #input "(Map input) {
 
         when:
         Map output = new NavigableMap()
         output.merge(input)
 
         then:
-        output.keySet().sort() as List<String> == ['xml', 'grails.cors.mappings[/api/**]', 'js', 'json'].sort()
         output['js'] == 'text/javascript'
         output['json'] == ['application/json', 'text/json']
         output['xml'] == ['application/hal+xml', 'text/xml', 'application/xml']

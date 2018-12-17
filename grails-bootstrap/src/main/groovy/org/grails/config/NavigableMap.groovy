@@ -83,15 +83,6 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         if (result) {
             return result
         }
-        if (key ==~ SUBSCRIPT_REGEX) {
-            Matcher matcher = key =~ SUBSCRIPT_REGEX
-            String name  = matcher[0][2]
-            int subscriptIndex = matcher[0][3] as int
-            result = delegateMap.get(name)
-            if (result instanceof List && ((List)result).size() > subscriptIndex) {
-                return ((List) result).get(subscriptIndex)
-            }
-        }
         null
     }
 
@@ -173,10 +164,10 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         int subscriptStart = sourceKey.indexOf('[')
         int subscriptEnd = sourceKey.indexOf(']')
         if (subscriptEnd > subscriptStart) {
-           if(subscriptStart > -1 && subscriptEnd != sourceKey.length() - 1) {
+           if(subscriptStart > -1) {
                String k = sourceKey[0..<subscriptStart]
                String index = sourceKey[subscriptStart+1..<subscriptEnd]
-               String remainder = sourceKey[subscriptEnd+2..-1]
+               String remainder = subscriptEnd != sourceKey.length() -1 ? sourceKey[subscriptEnd+2..-1] : null
                if (remainder) {
 
                    boolean isNumber = index.isNumber()
@@ -214,6 +205,23 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                            nestedMap.put(index, newMap)
                        }
                    }
+               } else {
+                   def currentValue = targetMap.get(k)
+                   if (index.isNumber()) {
+                       List list = currentValue instanceof List ? currentValue : []
+                       int i = index.toInteger()
+                       if (list.size() > i) {
+                           list.set(i, sourceValue)
+                       } else {
+                           list.add(i, sourceValue)
+                       }
+                       targetMap.put(k, list)
+                   } else {
+                       Map nestedMap = currentValue instanceof Map ? currentValue : [:]
+                       targetMap.put(k, nestedMap)
+                       nestedMap.put(index, sourceValue)
+                   }
+                   targetMap.put(sourceKey, sourceValue)
                }
 
            }
