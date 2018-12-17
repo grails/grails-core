@@ -139,27 +139,23 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                            NavigableMap targetMap,
                            Map sourceMap,
                            boolean parseFlatKeys) {
-
-        Map collapseSourcedMap = collapseKeysWithSubscript(sourceMap)
-        if (!shouldSkipBlock(collapseSourcedMap, path)) {
-            for (Entry entry in collapseSourcedMap) {
-                Object sourceKeyObject = entry.key
-                Object sourceValue = entry.value
-                String sourceKey = String.valueOf(sourceKeyObject)
-                if (parseFlatKeys) {
-                    String[] keyParts = sourceKey.split(/\./)
-                    if (keyParts.length > 1) {
-                        mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
-                        def pathParts = keyParts[0..-2]
-                        Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
-                        sourceKey = keyParts[-1]
-                        mergeMapEntry(rootMap, pathParts.join('.'), actualTarget, sourceKey, sourceValue, parseFlatKeys)
-                    } else {
-                        mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
-                    }
+        for (Entry entry in sourceMap) {
+            Object sourceKeyObject = entry.key
+            Object sourceValue = entry.value
+            String sourceKey = String.valueOf(sourceKeyObject)
+            if (parseFlatKeys) {
+                String[] keyParts = sourceKey.split(/\./)
+                if (keyParts.length > 1) {
+                    mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    def pathParts = keyParts[0..-2]
+                    Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
+                    sourceKey = keyParts[-1]
+                    mergeMapEntry(rootMap, pathParts.join('.'), actualTarget, sourceKey, sourceValue, parseFlatKeys)
                 } else {
                     mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
                 }
+            } else {
+                mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
             }
         }
     }
@@ -174,48 +170,97 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
-        Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
-        Object newValue
-        if(sourceValue instanceof Map) {
-            List<String> newPathList = []
-            newPathList.addAll( targetMap.getPath() )
-            newPathList.add(sourceKey)
-            NavigableMap subMap
-            if(currentValue instanceof NavigableMap) {
-                subMap = (NavigableMap)currentValue
-            }
-            else {
-                subMap = new NavigableMap( (NavigableMap)targetMap.rootConfig, newPathList.asImmutable())
-                if(currentValue instanceof Map) {
-                    subMap.putAll((Map)currentValue)
-                }
-            }
-            String newPath = path ? "${path}.${sourceKey}" : sourceKey
-            mergeMaps(rootMap, newPath , subMap, (Map)sourceValue, parseFlatKeys)
-            newValue = subMap
-        } else {
-            newValue = sourceValue
-        }
-        if (isNestedSet && newValue == null) {
-            if(path) {
+        int subscriptStart = sourceKey.indexOf('[')
+        int subscriptEnd = sourceKey.indexOf(']')
+        if (subscriptEnd > subscriptStart) {
+           if(subscriptStart > -1 && subscriptEnd != sourceKey.length() - 1) {
+               String k = sourceKey[0..<subscriptStart]
+               String index = sourceKey[subscriptStart+1..<subscriptEnd]
+               String remainder = sourceKey[subscriptEnd+2..-1]
+               if (remainder) {
 
-                def subMap = rootMap.get(path)
-                if(subMap instanceof Map) {
-                    subMap.remove(sourceKey)
-                }
-                def keysToRemove = rootMap.keySet().findAll() { String key ->
-                    key.startsWith("${path}.")
-                }
-                for(key in keysToRemove) {
-                    rootMap.remove(key)
-                }
-            }
-            targetMap.remove(sourceKey)
+                   boolean isNumber = index.isNumber()
+                   if (isNumber) {
+                       int i = index.toInteger()
+                       def currentValue = targetMap.get(k)
+                       List list = currentValue instanceof List ? currentValue : []
+                       if (list.size() > i) {
+                           def v = list.get(i)
+                           if (v instanceof Map) {
+                               ((Map)v).put(remainder, sourceValue)
+                           } else {
+                               Map newMap = [:]
+                               newMap.put(remainder, sourceValue)
+                               list.set(i, newMap)
+                           }
+                       } else {
+                           Map newMap = [:]
+                           newMap.put(remainder, sourceValue)
+
+                           list.add(i, newMap)
+                       }
+                       targetMap.put(k, list)
+                   } else {
+                       def currentValue = targetMap.get(k)
+                       Map nestedMap = currentValue instanceof Map ? currentValue : [:]
+                       targetMap.put(k, nestedMap)
+
+                       def v = nestedMap.get(index)
+                       if (v instanceof Map) {
+                           ((Map)v).put(remainder, sourceValue)
+                       } else {
+                           Map newMap = [:]
+                           newMap.put(remainder, sourceValue)
+                           nestedMap.put(index, newMap)
+                       }
+                   }
+               }
+
+           }
         } else {
-            if(path) {
-                rootMap.put( "${path}.${sourceKey}".toString(), newValue )
+            Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
+            Object newValue
+            if(sourceValue instanceof Map) {
+                List<String> newPathList = []
+                newPathList.addAll( targetMap.getPath() )
+                newPathList.add(sourceKey)
+                NavigableMap subMap
+                if(currentValue instanceof NavigableMap) {
+                    subMap = (NavigableMap)currentValue
+                }
+                else {
+                    subMap = new NavigableMap( (NavigableMap)targetMap.rootConfig, newPathList.asImmutable())
+                    if(currentValue instanceof Map) {
+                        subMap.putAll((Map)currentValue)
+                    }
+                }
+                String newPath = path ? "${path}.${sourceKey}" : sourceKey
+                mergeMaps(rootMap, newPath , subMap, (Map)sourceValue, parseFlatKeys)
+                newValue = subMap
+            } else {
+                newValue = sourceValue
             }
-            mergeMapEntry(targetMap, sourceKey, newValue)
+            if (isNestedSet && newValue == null) {
+                if(path) {
+
+                    def subMap = rootMap.get(path)
+                    if(subMap instanceof Map) {
+                        subMap.remove(sourceKey)
+                    }
+                    def keysToRemove = rootMap.keySet().findAll() { String key ->
+                        key.startsWith("${path}.")
+                    }
+                    for(key in keysToRemove) {
+                        rootMap.remove(key)
+                    }
+                }
+                targetMap.remove(sourceKey)
+            } else {
+                if(path) {
+                    rootMap.put( "${path}.${sourceKey}".toString(), newValue )
+                }
+                mergeMapEntry(targetMap, sourceKey, newValue)
+            }
         }
     }
 
@@ -518,44 +563,4 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 //        }
     }
 
-    @CompileDynamic
-    static Map collapseKeysWithSubscript(Map m) {
-        Set<Map> keys = m.collect { k, v ->
-            if (k ==~ SUBSCRIPT_REGEX) {
-                def matcher = k =~ SUBSCRIPT_REGEX
-                return [
-                        subscript: matcher[0][1],
-                        name: matcher[0][2]
-                ]
-            }
-            [subscript: null,
-             name: k]
-        }
-        Map result = [:]
-        Set keyNames = keys.collect { it.name } as Set
-        for (key in keyNames) {
-            Map submap = keys.find { it.name == key }
-            if (submap.subscript == null) {
-                result[key] = m[key]
-            } else {
-                Set<Map> submaps = keys.findAll { it.name == key }
-                List l = []
-                for (submapkey in submaps.collect { it.subscript }) {
-                    Map mapofsubkeys = m.findAll { k, v -> k == submapkey }
-                    l.addAll(mapofsubkeys.collect { k, v -> v })
-                    mapofsubkeys = m.findAll { k, v -> k != submapkey && k.startsWith(submapkey) }
-                    if (mapofsubkeys) {
-                        Map subscriptMap = [:]
-                        mapofsubkeys.each { k, v ->
-                            String subkey = k.substring(submapkey.length() + ".".length())
-                            subscriptMap[subkey] = v
-                        }
-                        l << subscriptMap
-                    }
-                }
-                result[key] = l
-            }
-        }
-        result
-    }
 }

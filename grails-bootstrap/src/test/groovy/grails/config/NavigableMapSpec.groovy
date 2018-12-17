@@ -10,7 +10,8 @@ class NavigableMapSpec extends Specification {
     def "#input "(Map input) {
 
         when:
-        Map output = NavigableMap.collapseKeysWithSubscript(input)
+        Map output = new NavigableMap()
+        output.merge(input)
 
         then:
         output.keySet().sort() as List<String> == ['xml', 'grails.cors.mappings[/api/**]', 'js', 'json'].sort()
@@ -37,7 +38,8 @@ class NavigableMapSpec extends Specification {
         ]
 
         when:
-        Map output = NavigableMap.collapseKeysWithSubscript(input)
+        Map output = new NavigableMap()
+        output.merge(input)
 
         then:
         output.keySet() as List<String> == ['rabbitmq.connections']
@@ -50,4 +52,28 @@ class NavigableMapSpec extends Specification {
         output['rabbitmq.connections'][0].password == 'guest'
     }
 
+    def "multiple subscript entries are collapse to a map of maps"() {
+        given:
+        Map input = [
+                'rabbitmq.connections[foo].name': 'main',
+                'rabbitmq.connections[foo].host': '1109201498',
+                'rabbitmq.connections[foo].host2': '635494740',
+                'rabbitmq.connections[foo].username': 'guest',
+                'rabbitmq.connections[foo].password': 'guest',
+        ]
+
+        when:
+        Map output = new NavigableMap()
+        output.merge(input)
+
+        then:
+        output.keySet() as List<String> == ['rabbitmq.connections']
+        output['rabbitmq.connections'] instanceof Map
+        output['rabbitmq.connections'].size() == 1
+        output['rabbitmq.connections']['foo'].name == 'main'
+        output['rabbitmq.connections']['foo'].host == '1109201498'
+        output['rabbitmq.connections']['foo'].host2 == '635494740'
+        output['rabbitmq.connections']['foo'].username == 'guest'
+        output['rabbitmq.connections']['foo'].password == 'guest'
+    }
 }
