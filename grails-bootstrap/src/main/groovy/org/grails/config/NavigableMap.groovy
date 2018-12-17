@@ -80,7 +80,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     @Override
     Object get(Object key) {
         Object result = delegateMap.get(key)
-        if (result) {
+        if (result != null) {
             return result
         }
         if (key ==~ SUBSCRIPT_REGEX) {
