@@ -106,7 +106,9 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             c.into(new File(resourcesDir, "/META-INF/grails-profile"))
 
             c.doFirst {
-                DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
+                for(String file in DirectoryScanner.defaultExcludes) {
+                    DirectoryScanner.removeDefaultExclude(file)
+                }
             }
             c.doLast {
                 DirectoryScanner.resetDefaultExcludes()
@@ -136,7 +138,9 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             project.artifacts.add(CONFIGURATION_NAME, jarArtifact)
 
             jar.doFirst {
-                DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
+                for(String file in DirectoryScanner.defaultExcludes) {
+                    DirectoryScanner.removeDefaultExclude(file)
+                }
             }
             jar.doLast {
                 DirectoryScanner.resetDefaultExcludes()
@@ -160,7 +164,9 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.setGroup(BUILD_GROUP)
 
             jar.doFirst {
-                DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
+                for(String file in DirectoryScanner.defaultExcludes) {
+                    DirectoryScanner.removeDefaultExclude(file)
+                }
             }
             jar.doLast {
                 DirectoryScanner.resetDefaultExcludes()
