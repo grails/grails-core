@@ -36,11 +36,13 @@ class FooController {
 
         then: "Only valid stack elements are retained"
             exception != null
-            exception.stackTrace.size() == 3
-            exception.stackTrace[0].className == 'test.FooController'
-            exception.stackTrace[0].lineNumber == 10
-            exception.stackTrace[1].lineNumber == 6
 
+        when:
+        StackTraceElement[] stackTraces = exception.stackTrace
+
+        then:
+        stackTraces.find { it.className == 'test.FooController' && it.lineNumber == 10 }
+        stackTraces.find { it.className.startsWith('test.FooController') && it.lineNumber == 6 }
     }
 
     void "Test deep filter"() {
@@ -84,10 +86,13 @@ class FooService {
 
         then: "Only valid stack elements are retained"
             exception != null
-            exception.stackTrace.size() == 3
-            exception.stackTrace[0].className == 'test.FooController'
-            exception.stackTrace[0].lineNumber == 15
-            exception.stackTrace[1].lineNumber == 7
+
+        when:
+        StackTraceElement[] stackTraces = exception.stackTrace
+
+        then:
+        stackTraces.find { it.className == 'test.FooController' && it.lineNumber == 15 }
+        stackTraces.find { it.className.startsWith('test.FooController') && it.lineNumber == 7 }
     }
 
     private String getExceptionContents(Throwable e) {

@@ -14,7 +14,7 @@ import spock.lang.Specification
  */
 class GlobalGrailsClassInjectorTransformationSpec extends Specification {
 
-    void "Test that a correct plugin.xml file is generated when the plugin.xml doesn't exist"() {
+    void "Test that a correct plugin dot xml file is generated when the plugin dot xml doesn't exist"() {
         given:"A file that doesn't yet exist"
             File pluginXml = new File(System.getProperty("java.io.tmpdir"), "plugin-xml-gen-test.test.xml")
             pluginXml.delete()
@@ -55,7 +55,7 @@ class FooGrailsPlugin {
             xml.resources.resource.text() == "Foo"
     }
 
-    void "Test that a correct plugin.xml file is updated when the plugin.xml does exist"() {
+    void "Test that a correct plugin dot xml file is updated when the plugin dot xml does exist"() {
         given:"A file that doesn't yet exist"
             File pluginXml = File.createTempFile("plugin-xml-gen", "test.xml")
             ClassNode classNode = null
