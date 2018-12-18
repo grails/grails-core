@@ -46,8 +46,6 @@ class StackTracePrinterSpec extends Specification {
                 result = printer.prettyPrint(e)
             }
 
-            println result
-
         then:"The formatting is correctly applied"
             result != null
             result.contains '->> 14 | nesting            in test.FooController'
@@ -112,7 +110,6 @@ Around line 5 of FooController.groovy
                 result = printer.prettyPrintCodeSnippet(e)
             }
 
-            println result
         then:
             result != null
             result == '''Around line 14 of FooController.groovy
