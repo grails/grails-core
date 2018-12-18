@@ -72,7 +72,7 @@ publishing {
                         delegate.dependency {
                             delegate.groupId "com.h2database"
                             delegate.artifactId "h2"
-                            delegate.version( "1.3.176" )
+                            delegate.version( h2Version )
                             delegate.scope "runtime"
                         }
 
