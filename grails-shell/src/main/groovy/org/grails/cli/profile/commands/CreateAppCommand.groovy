@@ -52,7 +52,7 @@ import java.nio.file.Paths
  */
 @CompileStatic
 class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepositoryAware {
-    private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='3.0.0.BUILD-SNAPSHOT'
+    private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='4.0.0.BUILD-SNAPSHOT'
     public static final String NAME = "create-app"
     public static final String PROFILE_FLAG = "profile"
     public static final String FEATURES_FLAG = "features"
