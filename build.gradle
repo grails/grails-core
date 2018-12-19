@@ -15,12 +15,10 @@ buildscript {
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
-
     }
 }
 
 apply plugin: 'idea'
-
 
 ext {
     bintrayPublish = false
@@ -469,7 +467,6 @@ subprojects { project ->
         }
     }
 
-
     configurations {
         meta
         published.extendsFrom archives, meta
@@ -478,16 +475,12 @@ subprojects { project ->
 
     if(!isTestSuite) {
 
-
-
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
             repositories {
                 flatDir name: 'libs', dirs: distInstallDir
             }
         }
-
-
 
         project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
             t.dependsOn installToHomeDist
@@ -497,12 +490,8 @@ subprojects { project ->
                 }
             }
         }
-
     }
-
 }
-
-
 
 task clean(type: Delete) {
     delete buildDir,
