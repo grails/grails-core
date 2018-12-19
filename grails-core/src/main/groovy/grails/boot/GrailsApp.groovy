@@ -25,6 +25,7 @@ import org.springframework.boot.Banner
 import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.origin.OriginTrackedValue
+import org.springframework.boot.web.context.WebServerApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.ResolvableType
 import org.springframework.core.convert.ConversionService
@@ -358,7 +359,6 @@ class GrailsApp extends SpringApplication {
         directoryWatcher.addWatchDirectory(new File(location, "src/main/java"), ['groovy', 'java'])
     }
 
-    @CompileDynamic
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
             def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
@@ -372,7 +372,11 @@ class GrailsApp extends SpringApplication {
             // in spring-boot context-path is chosen before contextPath ...
             String contextPath = context_path?context_path:app.config.getProperty('server.contextPath', '')
             String hostName = app.config.getProperty('server.address', 'localhost')
-            println("Grails application running at ${protocol}://${hostName}:${applicationContext.embeddedServletContainer.port}${contextPath} in environment: ${Environment.current.name}")
+            int port
+            if (applicationContext instanceof WebServerApplicationContext) {
+                port = applicationContext.webServer.port
+            }
+            println("Grails application running at ${protocol}://${hostName}:${port}${contextPath} in environment: ${Environment.current.name}")
         } catch (e) {
             // ignore
         }
