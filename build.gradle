@@ -503,7 +503,12 @@ task clean(type: Delete) {
 }
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
-subprojects.each { evaluationDependsOn it.path }
+subprojects.each {
+    if (it.tasks.findByName('install') && it.tasks.findByName('publishToMavenLocal')) {
+        it.tasks.findByName('install').finalizedBy(it.tasks.findByName('publishToMavenLocal'))
+    }
+    evaluationDependsOn it.path
+}
 
 apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
