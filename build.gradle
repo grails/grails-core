@@ -184,6 +184,12 @@ allprojects {
                 def cacheHours = isCiBuild ? 0 : 24
                 cacheDynamicVersionsFor cacheHours, 'hours'
                 cacheChangingModulesFor cacheHours, 'hours'
+                eachDependency { DependencyResolveDetails details ->
+                    //specifying a fixed version for all libraries with 'org.gradle' group
+                    if (details.requested.group == 'org.codehaus.groovy') {
+                        details.useVersion groovyVersion
+                    }
+                }
             }
         }
     }
