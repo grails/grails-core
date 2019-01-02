@@ -169,6 +169,7 @@ allprojects {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
                 name 'JFrog OSS snapshot repo'
