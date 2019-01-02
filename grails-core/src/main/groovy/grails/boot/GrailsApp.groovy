@@ -10,6 +10,9 @@ import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import io.micronaut.context.ApplicationContext
+import io.micronaut.context.ApplicationContextBuilder
+import io.micronaut.spring.context.MicronautApplicationContext
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -24,20 +27,14 @@ import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.Banner
 import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.origin.OriginTrackedValue
 import org.springframework.boot.web.context.WebServerApplicationContext
+import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.core.ResolvableType
-import org.springframework.core.convert.ConversionService
-import org.springframework.core.convert.TypeDescriptor
-import org.springframework.core.convert.converter.GenericConverter
-import org.springframework.core.convert.support.ConfigurableConversionService
+import org.springframework.context.event.ContextStoppedEvent
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.lang.Nullable
 
-import java.lang.annotation.Annotation
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
@@ -58,6 +55,7 @@ class GrailsApp extends SpringApplication {
     private static DirectoryWatcher directoryWatcher
 
     boolean enableBeanCreationProfiler = false
+    ConfigurableEnvironment configuredEnvironment
 
     /**
      * Create a new {@link GrailsApp} instance. The application context will load
@@ -111,6 +109,23 @@ class GrailsApp extends SpringApplication {
     protected ConfigurableApplicationContext createApplicationContext() {
         setAllowBeanDefinitionOverriding(true)
         ConfigurableApplicationContext applicationContext = super.createApplicationContext()
+        def now = System.currentTimeMillis()
+        ApplicationContextBuilder applicationContextBuilder = ApplicationContext.build()
+        if (configuredEnvironment != null) {
+            applicationContextBuilder.environments(
+                    configuredEnvironment.getActiveProfiles()
+            )
+        }
+        applicationContextBuilder.classLoader(this.classLoader)
+        MicronautApplicationContext parentContext = new MicronautApplicationContext(
+                applicationContextBuilder
+        )
+        parentContext.start()
+        applicationContext.setParent(
+                parentContext
+        )
+        applicationContext.addApplicationListener(new MicronautShutdownListener(parentContext))
+        log.info("Started Micronaut Parent Application Context in ${System.currentTimeMillis()-now}ms")
 
         if(enableBeanCreationProfiler) {
             def processor = new BeanCreationProfilingPostProcessor()
@@ -131,6 +146,7 @@ class GrailsApp extends SpringApplication {
 
         def env = Environment.current
         environment.addActiveProfile(env.name)
+        configuredEnvironment = environment
     }
 
     @CompileDynamic // TODO: Report Groovy VerifierError
@@ -406,4 +422,17 @@ class GrailsApp extends SpringApplication {
         return grailsApp.run(args)
     }
 
+    @CompileStatic
+    static class MicronautShutdownListener implements ApplicationListener<ContextStoppedEvent> {
+        final MicronautApplicationContext micronautApplicationContext
+
+        MicronautShutdownListener(MicronautApplicationContext micronautApplicationContext) {
+            this.micronautApplicationContext = micronautApplicationContext
+        }
+
+        @Override
+        void onApplicationEvent(ContextStoppedEvent event) {
+            this.micronautApplicationContext.stop()
+        }
+    }
 }

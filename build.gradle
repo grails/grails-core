@@ -37,6 +37,18 @@ ext {
                 name:'javax.annotation',
                 modules:['api']
         ],
+        'micronaut': [
+                version: micronautVersion,
+                group:'io.micronaut',
+                names:['micronaut'],
+                modules:['spring','inject','runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
+        ],
+        'micronaut.spring': [
+                version: micronautSpringVersion,
+                group:'io.micronaut.spring',
+                names:['micronaut-spring'],
+                modules:['context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+        ],
         datastore: [
             version: datastoreVersion,
             group  : 'org.grails',
