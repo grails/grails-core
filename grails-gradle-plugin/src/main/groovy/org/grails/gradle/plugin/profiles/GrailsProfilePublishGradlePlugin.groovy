@@ -15,8 +15,15 @@
  */
 package org.grails.gradle.plugin.profiles
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.XmlProvider
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.artifacts.SelfResolvingDependency
+import org.gradle.api.artifacts.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.grails.gradle.plugin.publishing.GrailsCentralPublishGradlePlugin
 
@@ -60,5 +67,28 @@ class GrailsProfilePublishGradlePlugin extends GrailsCentralPublishGradlePlugin 
     @Override
     protected void doAddArtefact(Project project, MavenPublication publication) {
         publication.artifact(project.tasks.findByName("jar"))
+        publication.pom(new Action<org.gradle.api.publish.maven.MavenPom>() {
+            @Override
+            void execute(org.gradle.api.publish.maven.MavenPom mavenPom) {
+                mavenPom.withXml(new Action<XmlProvider>() {
+                    @Override
+                    void execute(XmlProvider xml) {
+                        Node dependenciesNode = xml.asNode().appendNode('dependencies')
+
+                        DependencySet dependencySet = project.configurations[GrailsProfileGradlePlugin.RUNTIME_CONFIGURATION].allDependencies
+
+                        for (Dependency dependency : dependencySet) {
+                            if (! (dependency instanceof SelfResolvingDependency)) {
+                                Node dependencyNode = dependenciesNode.appendNode('dependency')
+                                dependencyNode.appendNode('groupId', dependency.group)
+                                dependencyNode.appendNode('artifactId', dependency.name)
+                                dependencyNode.appendNode('version', dependency.version)
+                                dependencyNode.appendNode('scope', GrailsProfileGradlePlugin.RUNTIME_CONFIGURATION)
+                            }
+                        }
+                    }
+                })
+            }
+        })
     }
 }
