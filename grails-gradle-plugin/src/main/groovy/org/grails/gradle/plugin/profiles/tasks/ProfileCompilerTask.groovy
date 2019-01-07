@@ -47,7 +47,7 @@ import org.yaml.snakeyaml.Yaml
 @CompileStatic
 class ProfileCompilerTask extends AbstractCompile {
 
-    public static final String DEFAULT_COMPATIBILITY = "1.7"
+    public static final String DEFAULT_COMPATIBILITY = "1.8"
     public static final String PROFILE_NAME = "name"
     public static final String PROFILE_COMMANDS = "commands"
 
