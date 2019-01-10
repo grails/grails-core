@@ -12,6 +12,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.ApplicationContextBuilder
+import io.micronaut.core.util.StringUtils
 import io.micronaut.spring.context.MicronautApplicationContext
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
@@ -23,10 +24,12 @@ import org.grails.core.util.BeanCreationProfilingPostProcessor
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.BinaryGrailsPlugin
+import org.grails.plugins.core.CoreConfiguration
 import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.Banner
 import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.context.event.ApplicationPreparedEvent
 import org.springframework.boot.web.context.WebServerApplicationContext
 import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
@@ -126,6 +129,7 @@ class GrailsApp extends SpringApplication {
         )
         applicationContext.addApplicationListener(new MicronautShutdownListener(parentContext))
         log.info("Started Micronaut Parent Application Context in ${System.currentTimeMillis()-now}ms")
+
 
         if(enableBeanCreationProfiler) {
             def processor = new BeanCreationProfilingPostProcessor()
@@ -379,6 +383,11 @@ class GrailsApp extends SpringApplication {
         try {
             def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
+            applicationContext.publishEvent(
+                    new ApplicationPreparedEvent(
+                            this,
+                            StringUtils.EMPTY_STRING_ARRAY, (ConfigurableApplicationContext)applicationContext.getParent())
+            )
             String context_path = app.config.getProperty('server.context-path', '')
             if(context_path){
                 println("WARNING: 'server.context-path: ${context_path}' is deprecated. Please use 'server.contextPath: ${context_path}'")
