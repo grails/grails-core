@@ -24,6 +24,8 @@ import org.grails.datastore.mapping.model.MappingContext
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.springframework.beans.BeansException
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
@@ -208,8 +210,15 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @Override
     void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
-        beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
+        BeanFactory parentBeanFactory = beanFactory.getParentBeanFactory()
+        if (parentBeanFactory instanceof ConfigurableBeanFactory) {
+            ConfigurableBeanFactory configurableBeanFactory = parentBeanFactory
+            configurableBeanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
+            configurableBeanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
+        } else {
+            beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
+            beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
+        }
     }
 
     @Override

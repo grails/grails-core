@@ -1,6 +1,9 @@
 dependencies {
+    compileOnly "io.micronaut:micronaut-inject-java:$micronautVersion"
+    compileOnly "io.micronaut:micronaut-inject-groovy:$micronautVersion"
+    compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
     compile "io.micronaut:micronaut-inject:$micronautVersion"
-    compile "io.micronaut.spring:micronaut-spring-context:1.0.0.M1"
+    compile "io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion"
     compile 'javax.persistence:javax.persistence-api:2.2'
     compile "javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion"
 

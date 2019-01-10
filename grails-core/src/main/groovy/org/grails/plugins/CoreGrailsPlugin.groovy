@@ -15,7 +15,6 @@
  */
 package org.grails.plugins
 
-import grails.config.ConfigProperties
 import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.BuildSettings
@@ -37,10 +36,8 @@ import org.grails.dev.support.DevelopmentShutdownHook
 import org.grails.beans.support.PropertiesEditor
 import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
-import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.annotation.ConfigurationClassPostProcessor
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.io.Resource
@@ -78,7 +75,6 @@ class CoreGrailsPlugin extends Plugin {
         propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer) {
             placeholderPrefix = placeHolderPrefix
         }
-        grailsConfigProperties(ConfigProperties, config)
 
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
@@ -96,12 +92,6 @@ class CoreGrailsPlugin extends Plugin {
         }
 
 
-        // Allow the use of Spring annotated components
-        if(!applicationContext?.containsBean(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
-            xmlns context:"http://www.springframework.org/schema/context"
-            context.'annotation-config'()
-        }
-
         if (packagesToScan) {
             xmlns grailsContext:"http://grails.org/schema/context"
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
@@ -109,11 +99,6 @@ class CoreGrailsPlugin extends Plugin {
 
         grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
         pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
-
-        classLoader(MethodInvokingFactoryBean) {
-            targetObject = ref("grailsApplication")
-            targetMethod = "getClassLoader"
-        }
 
         // add shutdown hook if not running in war deployed mode
         final warDeployed = Environment.isWarDeployed()
@@ -135,38 +120,6 @@ class CoreGrailsPlugin extends Plugin {
 
         proxyHandler(DefaultProxyHandler)
     }}
-
-    @Override
-    void doWithDynamicMethods() {
-        MetaClassRegistry registry = GroovySystem.metaClassRegistry
-
-        def metaClass = registry.getMetaClass(Class)
-        if (!(metaClass instanceof ExpandoMetaClass)) {
-            registry.removeMetaClass(Class)
-            def emc = new ExpandoMetaClass(Class, false, true)
-            emc.initialize()
-            registry.setMetaClass(Class, emc)
-
-            metaClass = emc
-        }
-
-        metaClass.getMetaClass = { ->
-            def mc = registry.getMetaClass(delegate)
-            if (mc instanceof ExpandoMetaClass) {
-                return mc
-            }
-
-            registry.removeMetaClass(delegate)
-            if (registry.metaClassCreationHandler instanceof ExpandoMetaClassCreationHandle) {
-                return registry.getMetaClass(delegate)
-            }
-
-            def emc = new ExpandoMetaClass(delegate, false, true)
-            emc.initialize()
-            registry.setMetaClass(delegate, emc)
-            return emc
-        }
-    }
 
     @Override
     @CompileStatic

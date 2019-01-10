@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins
+package org.grails.plugins.codecs
 
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
@@ -50,12 +50,8 @@ class CodecsGrailsPlugin extends Plugin {
         def application = grailsApplication
         if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
             application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-            applicationContext.getBean('codecLookup', DefaultCodecLookup).reInitialize()
+            applicationContext.getBean(DefaultCodecLookup).reInitialize()
         }
     }
 
-    @Override
-    Closure doWithSpring() {{ ->
-        codecLookup(DefaultCodecLookup)
-    }}
 }
