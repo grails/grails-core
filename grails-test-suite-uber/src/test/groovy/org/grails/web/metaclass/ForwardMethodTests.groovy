@@ -1,28 +1,27 @@
 package org.grails.web.metaclass
 
 import grails.artefact.Artefact
-
+import grails.testing.web.GrailsWebUnitTest
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class ForwardMethodTests extends AbstractGrailsControllerTests {
-
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [ForwardingController]
-    }
+class ForwardMethodTests extends Specification implements GrailsWebUnitTest{
 
     void testForwardMethod() {
+        given:
         def testController = new ForwardingController()
 
         webRequest.controllerName = "fowarding"
-        assertEquals "/fowarding/two",testController.one()
-        assertEquals "/next/go",testController.three()
-        assertEquals "/next/go/10",testController.four()
-        assertEquals "bar", request.foo
+
+        expect:
+        "/fowarding/two" == testController.one()
+        "/next/go" == testController.three()
+        "/next/go/10" == testController.four()
+        "bar" == request.foo
     }
 }
 

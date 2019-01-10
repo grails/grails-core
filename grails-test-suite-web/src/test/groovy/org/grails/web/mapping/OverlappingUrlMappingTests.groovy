@@ -1,41 +1,47 @@
 package org.grails.web.mapping
 
+import grails.testing.web.UrlMappingsUnitTest
 import grails.util.GrailsWebMockUtil
 
 import org.springframework.core.io.ByteArrayResource
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
-class OverlappingUrlMappingTests extends AbstractGrailsMappingTests {
+class OverlappingUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
-    def mappingScript = '''
-mappings {
-    "/$id?" {
-        controller = "content"
-        action = "view"
-    }
-    "/$id/$dir" {
-        controller = "content"
-        action = "view"
-    }
-}
-'''
 
     void testEvaluateMappings() {
-        GrailsWebMockUtil.bindMockWebRequest()
 
-        def res = new ByteArrayResource(mappingScript.bytes)
-        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(res))
-
+        when:
         Map params = [id: "contact"]
-        def reverse = holder.getReverseMapping("content", "view", params)
+        def reverse = urlMappingsHolder.getReverseMapping("content", "view", params)
 
-        assertEquals "/contact", reverse.createURL(params, "utf-8")
+        then:
+        "/contact" == reverse.createURL(params, "utf-8")
 
+
+        when:
         params.dir = "fred"
-        reverse = holder.getReverseMapping("content", "view", params)
-        assertEquals "/contact/fred", reverse.createURL(params, "utf-8")
+        reverse = urlMappingsHolder.getReverseMapping("content", "view", params)
+
+
+        then:
+        "/contact/fred" == reverse.createURL(params, "utf-8")
+    }
+
+    static class UrlMappings {
+        static mappings = {
+            "/$id?" {
+                controller = "content"
+                action = "view"
+            }
+            "/$id/$dir" {
+                controller = "content"
+                action = "view"
+            }
+        }
     }
 }

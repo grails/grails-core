@@ -1,81 +1,63 @@
 package org.grails.web.mapping
 
+import grails.testing.web.UrlMappingsUnitTest
 import org.springframework.core.io.*
+import spock.lang.Specification
 
-class DynamicActionNameEvaluatingTests extends AbstractGrailsMappingTests {
-
-    def mappingScript = '''
-mappings {
-  "/book/$author/$title/$test" {
-      controller = "book"
-      action = { "${params.test}" }
-  }
-  "/$controller/$action?/$id?" {
-      ctrl = { params.controller }
-      act = { params.action }
-      identity = { params.id }
-  }
-}
-'''
-
-    def mappingScript2 = '''
-mappings {
-  "/$controller/$action?/$id?" {
-  }
-}
-'''
+class DynamicActionNameEvaluatingTests extends Specification implements UrlMappingsUnitTest<UrlMappings>{
 
     void testImplicitNamedAction() {
-        runTest {
-            def res = new ByteArrayResource(mappingScript2.bytes)
-            def mappings = evaluator.evaluateMappings(res)
 
-            def m = mappings[0]
-            assert m
+        when:
+        webRequest.params.put("controller", "book")
+        def info = urlMappingsHolder.match("/book/show/1")
+        assert info
+        info.configure(webRequest)
 
-            def info = m.match("/book/show/1")
-            assert info
-            info.configure(webRequest)
-
-            assertEquals "book", info.controllerName
-            assertEquals "show", info.actionName
-            assertEquals "1", info.id
-        }
+        then:
+        "book" == info.controllerName
+        "show" == info.actionName
+        "1" == info.id
     }
 
     void testNamedParameterAction() {
-        runTest {
-            def res = new ByteArrayResource(mappingScript.bytes)
-            def mappings = evaluator.evaluateMappings(res)
+        when:
+        def info = urlMappingsHolder.match("/book/graeme/grails/read")
+        assert info
+        info.configure(webRequest)
 
-            def m = mappings[0]
-            assert m
-
-            def info = m.match("/book/graeme/grails/read")
-            assert info
-            info.configure(webRequest)
-            assert info.controllerName
-            assertEquals "read", info.actionName
-        }
+        then:
+        info.controllerName
+        "read" == info.actionName
     }
 
     void testNamedParameterAction2() {
-        runTest {
-            def res = new ByteArrayResource(mappingScript.bytes)
-            def mappings = evaluator.evaluateMappings(res)
+        when:
+        webRequest.params.put("controller", "book")
+        def info = urlMappingsHolder.match("/book/show/1")
+        assert info
+        info.configure(webRequest)
 
-            def m = mappings[1]
-            assert m
+        then:
+        "book" == info.controllerName
+        "book" == webRequest.params.ctrl
+        "show" == info.actionName
+        "show" == webRequest.params.act
+        "1" == info.id
+        "1" == webRequest.params.identity
+    }
 
-            def info = m.match("/book/show/1")
-            assert info
-            info.configure(webRequest)
-            assertEquals "book", info.controllerName
-            assertEquals "book", webRequest.params.ctrl
-            assertEquals "show", info.actionName
-            assertEquals "show", webRequest.params.act
-            assertEquals "1", info.id
-            assertEquals "1", webRequest.params.identity
+    static class UrlMappings {
+        static mappings = {
+            "/book/$author/$title/$test" {
+                controller = "book"
+                action = { "${params.test}" }
+            }
+            "/$controller/$action?/$id?" {
+                ctrl = { params.controller }
+                act = { params.action }
+                identity = { params.id }
+            }
         }
     }
 }
