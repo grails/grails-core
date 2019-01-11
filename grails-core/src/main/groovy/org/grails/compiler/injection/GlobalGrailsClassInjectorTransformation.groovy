@@ -142,11 +142,9 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         // now create or update grails-plugin.xml
         // first check if plugin.xml exists
-        if (pluginClassNode != null && !pluginClassNode.isAbstract()) {
-            pluginXmlFile.parentFile.mkdirs()
+        pluginXmlFile.parentFile.mkdirs()
 
-            generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
-        }
+        generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
     }
 
     static File resolveCompilationTargetDirectory(SourceUnit source) {
@@ -204,7 +202,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         pluginClasses.addAll(pendingPluginClasses)
 
         // if the class being transformed is a *GrailsPlugin class then if it doesn't exist create it
-        if (pluginClassNode) {
+        if (pluginClassNode && !pluginClassNode.isAbstract()) {
             if (!pluginXmlExists) {
                 writePluginXml(pluginClassNode, pluginVersion, pluginXmlFile, pluginClasses)
             } else {
