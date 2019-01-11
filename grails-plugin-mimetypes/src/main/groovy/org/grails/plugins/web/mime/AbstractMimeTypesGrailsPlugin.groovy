@@ -28,8 +28,10 @@ import grails.web.mime.MimeType
  *
  * @author Graeme Rocher
  * @since 1.0
+ * @deprecated Use {@link MimeTypesConfiguration} instead
  */
-class MimeTypesGrailsPlugin extends Plugin {
+@Deprecated
+abstract class AbstractMimeTypesGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version, controllers:version]

@@ -20,6 +20,7 @@ import grails.core.GrailsApplication;
 import io.micronaut.context.annotation.Factory;
 import org.grails.encoder.CodecLookup;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Beans for Codecs
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 public class CodecsConfiguration {
 
     @Bean("codecLookup")
+    @Primary
     public CodecLookup codecLookup(GrailsApplication grailsApplication) {
         return new DefaultCodecLookup(grailsApplication);
     }

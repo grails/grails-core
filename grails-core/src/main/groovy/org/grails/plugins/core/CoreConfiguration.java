@@ -24,6 +24,7 @@ import io.micronaut.context.event.ShutdownEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Named;
@@ -46,11 +47,13 @@ public class CoreConfiguration implements ApplicationEventListener<ShutdownEvent
     }
 
     @Bean("classLoader")
+    @Primary
     ClassLoader classLoader() {
         return grailsApplication.getClassLoader();
     }
 
     @Bean("grailsConfigProperties")
+    @Primary
     ConfigProperties configProperties() {
         return new ConfigProperties(grailsApplication.getConfig());
     }
@@ -61,6 +64,10 @@ public class CoreConfiguration implements ApplicationEventListener<ShutdownEvent
      */
     public void setChildContext(ConfigurableApplicationContext childContext) {
         this.childContext = childContext;
+    }
+
+    public ConfigurableApplicationContext getChildContext() {
+        return childContext;
     }
 
     @Override
