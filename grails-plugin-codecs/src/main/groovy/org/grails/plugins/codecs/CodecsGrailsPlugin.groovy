@@ -34,7 +34,7 @@ import org.grails.plugins.codecs.URLCodec
  */
 class CodecsGrailsPlugin extends Plugin {
     def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [core:version]
+    def dependsOn = [core: version]
     def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
     def providedArtefacts = [
             HTMLCodec,
@@ -44,14 +44,5 @@ class CodecsGrailsPlugin extends Plugin {
             URLCodec,
             RawCodec
     ]
-
-    @Override
-    void onChange(Map<String, Object> event) {
-        def application = grailsApplication
-        if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
-            application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-            applicationContext.getBean(DefaultCodecLookup).reInitialize()
-        }
-    }
 
 }
