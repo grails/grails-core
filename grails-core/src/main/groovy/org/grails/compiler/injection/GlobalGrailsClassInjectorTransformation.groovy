@@ -68,9 +68,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
 
         for (ClassNode classNode : classes) {
-            if (classNode.isAbstract()) {
-                continue
-            }
             def projectName = classNode.getNodeMetaData("projectName")
             def projectVersion = classNode.getNodeMetaData("projectVersion")
             if(projectVersion == null) {
@@ -145,9 +142,11 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         // now create or update grails-plugin.xml
         // first check if plugin.xml exists
-        pluginXmlFile.parentFile.mkdirs()
+        if (pluginClassNode != null && !pluginClassNode.isAbstract()) {
+            pluginXmlFile.parentFile.mkdirs()
 
-        generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
+            generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
+        }
     }
 
     static File resolveCompilationTargetDirectory(SourceUnit source) {
