@@ -42,7 +42,7 @@ import org.grails.databinding.converters.web.LocaleAwareNumberConverter
  *
  * @since 2.3
  */
-class DataBindingGrailsPlugin extends Plugin {
+abstract class AbstractDataBindingGrailsPlugin extends Plugin {
 
     public static final String DEFAULT_JSR310_OFFSET_ZONED_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
     public static final String DEFAULT_JSR310_OFFSET_TIME_FORMAT = "HH:mm:ssZ"
@@ -73,6 +73,7 @@ class DataBindingGrailsPlugin extends Plugin {
             autoGrowCollectionLimit = autoGrowCollectionLimitSetting
         }
 
+        dataBindingConfigurationProperties(DataBindingConfigurationProperties)
         timeZoneConverter(TimeZoneConverter)
 
         defaultDateConverter(DateConversionHelper) {

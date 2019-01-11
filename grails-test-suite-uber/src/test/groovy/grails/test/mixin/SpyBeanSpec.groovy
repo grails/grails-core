@@ -1,10 +1,10 @@
 package grails.test.mixin
 
 import grails.databinding.SimpleMapDataBindingSource;
-import grails.databinding.converters.ValueConverter;
-
+import grails.databinding.converters.ValueConverter
+import org.grails.plugins.databinding.DataBindingGrailsPlugin;
 import org.grails.spring.beans.factory.InstanceFactoryBean
-import org.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.plugins.databinding.AbstractDataBindingGrailsPlugin
 import org.grails.testing.GrailsUnitTest
 import spock.lang.Specification
 

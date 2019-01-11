@@ -1,6 +1,6 @@
 package org.grails.databinding.converters
 
-import org.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.plugins.databinding.AbstractDataBindingGrailsPlugin
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -9,7 +9,7 @@ import java.time.*
 class Jsr310ConvertersConfigurationSpec extends Specification {
 
     @Shared
-    Jsr310ConvertersConfiguration config = new Jsr310ConvertersConfiguration(formatStrings: DataBindingGrailsPlugin.DEFAULT_DATE_FORMATS)
+    Jsr310ConvertersConfiguration config = new Jsr310ConvertersConfiguration(formatStrings: AbstractDataBindingGrailsPlugin.DEFAULT_DATE_FORMATS)
 
     @Shared
     LocalDate localDate = LocalDate.of(1941, 1, 5)
@@ -31,7 +31,7 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == LocalDateTime
-        converter.convert("1941-01-05T08:00:00", DataBindingGrailsPlugin.DEFAULT_JSR310_LOCAL_DATE_TIME_FORMAT) instanceof LocalDateTime
+        converter.convert("1941-01-05T08:00:00", AbstractDataBindingGrailsPlugin.DEFAULT_JSR310_LOCAL_DATE_TIME_FORMAT) instanceof LocalDateTime
     }
 
     void "localDateTimeValueConverter"() {
@@ -64,7 +64,7 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == LocalDate
-        converter.convert("1941-01-05", DataBindingGrailsPlugin.DEFAULT_JSR310_LOCAL_DATE_FORMAT) instanceof LocalDate
+        converter.convert("1941-01-05", AbstractDataBindingGrailsPlugin.DEFAULT_JSR310_LOCAL_DATE_FORMAT) instanceof LocalDate
     }
 
     void "localDateValueConverter"() {
@@ -94,7 +94,7 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == LocalTime
-        converter.convert("08:00:00", DataBindingGrailsPlugin.DEFAULT_JSR310_LOCAL_TIME_FORMAT) instanceof LocalTime
+        converter.convert("08:00:00", AbstractDataBindingGrailsPlugin.DEFAULT_JSR310_LOCAL_TIME_FORMAT) instanceof LocalTime
     }
 
     void "localTimeValueConverter"() {
@@ -124,7 +124,7 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == OffsetTime
-        converter.convert("08:00:00+0000", DataBindingGrailsPlugin.DEFAULT_JSR310_OFFSET_TIME_FORMAT) instanceof OffsetTime
+        converter.convert("08:00:00+0000", AbstractDataBindingGrailsPlugin.DEFAULT_JSR310_OFFSET_TIME_FORMAT) instanceof OffsetTime
     }
 
     void "offsetTimeValueConverter"() {
@@ -154,7 +154,7 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == OffsetDateTime
-        converter.convert("1941-01-05T08:00:00+0000", DataBindingGrailsPlugin.DEFAULT_JSR310_OFFSET_ZONED_DATE_TIME_FORMAT) instanceof OffsetDateTime
+        converter.convert("1941-01-05T08:00:00+0000", AbstractDataBindingGrailsPlugin.DEFAULT_JSR310_OFFSET_ZONED_DATE_TIME_FORMAT) instanceof OffsetDateTime
     }
 
     void "offsetDateTimeValueConverter"() {
@@ -187,7 +187,7 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == ZonedDateTime
-        converter.convert("1941-01-05T08:00:00+0000", DataBindingGrailsPlugin.DEFAULT_JSR310_OFFSET_ZONED_DATE_TIME_FORMAT) instanceof ZonedDateTime
+        converter.convert("1941-01-05T08:00:00+0000", AbstractDataBindingGrailsPlugin.DEFAULT_JSR310_OFFSET_ZONED_DATE_TIME_FORMAT) instanceof ZonedDateTime
     }
 
     void "zonedDateTimeValueConverter"() {

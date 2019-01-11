@@ -3,9 +3,11 @@ package org.grails.databinding.converters;
 import grails.databinding.TypedStructuredBindingEditor
 import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
+import org.grails.plugins.databinding.DataBindingConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+import javax.inject.Inject
 import java.time.*
 import java.time.format.DateTimeFormatter
 
@@ -13,6 +15,14 @@ import java.time.format.DateTimeFormatter
 class Jsr310ConvertersConfiguration {
 
     Set<String> formatStrings = []
+
+    Jsr310ConvertersConfiguration() {
+    }
+
+    @Inject
+    Jsr310ConvertersConfiguration(DataBindingConfigurationProperties configurationProperties) {
+        this.formatStrings = configurationProperties.dateFormats as Set<String>
+    }
 
     @Bean
     FormattedValueConverter offsetDateTimeConverter() {

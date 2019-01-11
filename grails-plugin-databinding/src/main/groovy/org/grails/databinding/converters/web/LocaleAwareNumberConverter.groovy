@@ -18,6 +18,7 @@ package org.grails.databinding.converters.web
 import grails.databinding.converters.ValueConverter;
 import groovy.transform.CompileStatic
 
+import javax.inject.Singleton
 import java.text.NumberFormat
 import java.text.ParsePosition
 
