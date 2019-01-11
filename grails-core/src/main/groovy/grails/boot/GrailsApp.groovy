@@ -1,6 +1,5 @@
 package grails.boot
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import grails.compiler.ast.ClassInjector
 import grails.core.GrailsApplication
 import grails.io.IOUtils
@@ -14,8 +13,6 @@ import groovy.util.logging.Slf4j
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.ApplicationContextBuilder
 import io.micronaut.core.util.StringUtils
-import io.micronaut.spring.context.MicronautApplicationContext
-import io.micronaut.spring.context.factory.MicronautBeanFactory
 import io.micronaut.spring.context.factory.MicronautBeanFactoryConfiguration
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
@@ -27,7 +24,6 @@ import org.grails.core.util.BeanCreationProfilingPostProcessor
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.BinaryGrailsPlugin
-import org.grails.plugins.core.CoreConfiguration
 import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.Banner
 import org.springframework.boot.ResourceBanner
@@ -41,6 +37,7 @@ import org.springframework.core.convert.ConversionService
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.util.ClassUtils
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -123,13 +120,17 @@ class GrailsApp extends SpringApplication {
                     configuredEnvironment.getActiveProfiles()
             )
         }
+
+        List beanExcludes = []
+        beanExcludes.add(ConversionService.class)
+        def objectMapper = io.micronaut.core.reflect.ClassUtils.forName("com.fasterxml.jackson.databind.ObjectMapper", classLoader).orElse(null)
+        if (objectMapper != null) {
+            beanExcludes.add(objectMapper)
+        }
         applicationContextBuilder.properties(
                 Collections.singletonMap(
                         MicronautBeanFactoryConfiguration.PREFIX + ".bean-excludes",
-                        (Object)Arrays.asList(
-                                ObjectMapper.class,
-                                ConversionService.class
-                        )
+                        (Object)beanExcludes
                 )
         )
         applicationContextBuilder.classLoader(this.classLoader)
