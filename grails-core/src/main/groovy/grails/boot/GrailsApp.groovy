@@ -284,7 +284,7 @@ class GrailsApp extends SpringApplication {
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
                             // Groovy files within the 'conf' directory are not compiled
-                            String confPath = "${File.pathSeparator}grails-app${File.pathSeparator}conf${File.pathSeparator}"
+                            String confPath = "${File.separator}grails-app${File.separator}conf${File.separator}"
                             if(changedFile.path.contains(confPath)) {
                                 pluginManager.informOfFileChange(changedFile)
                             }
