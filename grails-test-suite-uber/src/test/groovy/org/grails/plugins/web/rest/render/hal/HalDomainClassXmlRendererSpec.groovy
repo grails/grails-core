@@ -21,6 +21,7 @@ import org.grails.web.converters.configuration.ConvertersConfigurationInitialize
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.env.MapPropertySource
@@ -163,7 +164,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
         def application = new DefaultGrailsApplication()
         application.config = testConfig
-        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, buildMimeTypes(application))
+        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, new DefaultMimeUtility(buildMimeTypes(application)))
 
         ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
         ctx.refresh()

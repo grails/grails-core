@@ -17,6 +17,7 @@ package org.grails.web.mime
 
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
+import grails.web.mime.MimeUtility
 import groovy.transform.CompileStatic
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.WebApplicationContext
@@ -71,7 +72,7 @@ class HttpServletRequestExtension {
         MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
         if (!result) {
             WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(request.servletContext)
-            MimeType[] mimeTypes = context != null ? (MimeType[])context.getBean(MimeType.BEAN_NAME) : MimeType.getConfiguredMimeTypes()
+            MimeType[] mimeTypes = context != null ? context.getBean(MimeUtility).getKnownMimeTypes() as MimeType[] : MimeType.getConfiguredMimeTypes()
             def parser = new DefaultAcceptHeaderParser(mimeTypes)
             String header = request.contentType
             if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
