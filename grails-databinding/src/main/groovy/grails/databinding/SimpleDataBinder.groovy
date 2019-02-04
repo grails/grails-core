@@ -321,6 +321,8 @@ class SimpleDataBinder implements DataBinder {
                     } else if(genericType.isEnum() && val instanceof CharSequence) {
                         def enumValue = convertStringToEnum(genericType, val.toString())
                         addElementToCollectionAt obj, propName, collectionInstance, index, enumValue
+                    } else {
+                        addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
                     }
                 } else {
                     addElementToCollectionAt obj, propName, collectionInstance, index, val
