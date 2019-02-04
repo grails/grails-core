@@ -14,7 +14,7 @@
  */
 package grails.databinding
 
-
+import grails.databinding.converters.ValueConverter
 import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
 import org.grails.databinding.converters.DateConversionHelper
@@ -574,6 +574,42 @@ class SimpleDataBinderSpec extends Specification {
         widget.listOfLongs == [4L]
         widget.listOfLongs.first().getClass() == Long
     }
+
+    @Issue('https://github.com/grails/grails-core/issues/11235')
+    void 'Test binding to a list using custom value converters'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def comment = new Comment()
+
+        and:
+        binder.registerConverter(new ValueConverter() {
+            @Override
+            boolean canConvert(Object value) {
+                value instanceof String
+            }
+
+            @Override
+            Object convert(Object value) {
+                new Attachment(filename: "$value")
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                return Attachment
+            }
+        })
+
+        when:
+        binder.bind comment, [
+                'attachments[0]': 'foo.txt',
+                'attachments[1]': 'bar.txt'
+        ] as SimpleMapDataBindingSource
+
+        then:
+        comment.attachments.size() == 2
+        comment.attachments.find { it.filename == 'foo.txt' }
+        comment.attachments.find { it.filename == 'bar.txt' }
+    }
 }
 
 class Factory {
@@ -640,5 +676,13 @@ class ClassWithInheritedTypedCollection extends AbstractClassWithTypedCollection
 
 class DateCollection {
     List<Date> dates
+}
+
+class Comment {
+    Set<Attachment> attachments
+}
+
+class Attachment {
+    String filename
 }
 
