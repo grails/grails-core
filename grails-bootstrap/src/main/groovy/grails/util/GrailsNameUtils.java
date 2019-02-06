@@ -299,10 +299,10 @@ public class GrailsNameUtils {
     }
 
     /**
-     * Returns the class name without the package prefix.
+     * Returns the package prefix without the class name eg ('a.b.ClassName' becomes 'a.b').
      *
-     * @param className The class name to get a short name for
-     * @return The short name of the class
+     * @param className The class name to get the package prefix for
+     * @return The package prefix of the class
      */
     public static String getPackageName(String className) {
         int i = className.lastIndexOf(".");
