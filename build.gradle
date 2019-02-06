@@ -29,7 +29,6 @@ ext {
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    
     dependencyVersions = [
         'javax.annotation-api': [
                 version: javaxAnnotationApiVersion,

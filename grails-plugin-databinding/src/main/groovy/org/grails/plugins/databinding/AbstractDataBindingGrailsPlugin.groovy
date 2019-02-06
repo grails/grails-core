@@ -21,6 +21,7 @@ import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import org.grails.databinding.converters.Jsr310ConvertersConfiguration
+import org.grails.databinding.converters.UUIDConverter
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
@@ -75,6 +76,7 @@ abstract class AbstractDataBindingGrailsPlugin extends Plugin {
 
         dataBindingConfigurationProperties(DataBindingConfigurationProperties)
         timeZoneConverter(TimeZoneConverter)
+        uuidConverter(UUIDConverter)
 
         defaultDateConverter(DateConversionHelper) {
             formatStrings = dateFormats

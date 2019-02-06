@@ -271,11 +271,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 def location = f.location
 
                 File skeletonDir
+                File tmpDir
                 if(location instanceof FileSystemResource) {
                     skeletonDir = location.createRelative("skeleton").file
                 }
                 else {
-                    File tmpDir = unzipProfile(ant, location)
+                    tmpDir = unzipProfile(ant, location)
                     skeletonDir = new File(tmpDir, "META-INF/grails-profile/features/$f.name/skeleton")
                 }
 
@@ -286,6 +287,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 if(skeletonDir.exists()) {
                     copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML], profileInstance.binaryExtensions)
                 }
+
+                // Cleanup temporal directories
+                deleteDirectory(tmpDir)
+                deleteDirectory(skeletonDir)
             }
 
             replaceBuildTokens(profileName, profileInstance, features, projectTargetDirectory)
@@ -584,12 +589,13 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
         def skeletonResource = participatingProfile.profileDir.createRelative("skeleton")
         File skeletonDir
+        File tmpDir
         if(skeletonResource instanceof FileSystemResource) {
             skeletonDir = skeletonResource.file
         }
         else {
             // establish the JAR file name and extract
-            def tmpDir = unzipProfile(ant, skeletonResource)
+            tmpDir = unzipProfile(ant, skeletonResource)
             skeletonDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
         }
         copySrcToTarget(ant, skeletonDir, excludes, profile.binaryExtensions)
@@ -619,6 +625,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
 
         ant.chmod(dir: targetDirectory, includes: profile.executablePatterns.join(' '), perm: 'u+x')
+
+        // Cleanup temporal directories
+        deleteDirectory(tmpDir)
+        deleteDirectory(skeletonDir)
     }
 
     @CompileDynamic
@@ -672,6 +682,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def v = artifact.version.replace('BOM', '')
 
         return v ? "${artifact.groupId}:${artifact.artifactId}:${v}" : "${artifact.groupId}:${artifact.artifactId}"
+    }
+
+    private void deleteDirectory(File directory) {
+        try {
+            directory?.deleteDir()
+        } catch (Throwable t) {
+            // Ignore error deleting temporal directory
+        }
     }
 
     static class CreateAppCommandObject {
