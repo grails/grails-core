@@ -410,7 +410,7 @@ abstract class AbstractProfile implements Profile {
     @Override
     Iterable<Command> getCommands(ProjectContext context) {
         if(commandsByName == null) {
-            commandsByName = [:]
+            commandsByName = new LinkedHashMap<String, Command>()
             List excludes = []
             def registerCommand = { Command command ->
                 def name = command.name
@@ -418,12 +418,12 @@ abstract class AbstractProfile implements Profile {
                     if(command instanceof ProfileRepositoryAware) {
                         ((ProfileRepositoryAware)command).setProfileRepository(profileRepository)
                     }
-                    commandsByName[name] = command
+                    commandsByName.put(name, command)
                     def desc = command.description
                     def synonyms = desc.synonyms
                     if(synonyms) {
-                        for(syn in synonyms) {
-                            commandsByName[syn] = command
+                        for(String syn in synonyms) {
+                            commandsByName.put(syn, command)
                         }
                     }
                     if(command instanceof ProjectContextAware) {
