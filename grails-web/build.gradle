@@ -6,6 +6,14 @@ dependencies {
     compile project(":grails-web-mvc")
 
 
-    compile "org.grails:grails-web-gsp:$gspVersion"
-    compile "org.grails:grails-web-sitemesh:$gspVersion"
+    compile "org.grails:grails-web-gsp:$gspVersion", {
+        exclude group:'org.grails', module:'grails-core'
+        exclude group:'org.grails', module:'grails-encoder'
+        exclude group:'org.grails', module:'grails-web-common'
+    }
+    compile "org.grails:grails-web-sitemesh:$gspVersion", {
+        exclude group:'org.grails', module:'grails-core'
+        exclude group:'org.grails', module:'grails-encoder'
+        exclude group:'org.grails', module:'grails-web-common'
+    }
 }
