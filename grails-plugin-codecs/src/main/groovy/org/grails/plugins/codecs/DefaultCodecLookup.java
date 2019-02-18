@@ -43,6 +43,9 @@ public class DefaultCodecLookup extends BasicCodecLookup implements GrailsApplic
         this.applicationContext = grailsApplication.getMainContext();
     }
 
+    public DefaultCodecLookup() {
+    }
+
     protected void registerCodecs() {
         List<GrailsClass> codecs = Arrays.asList(grailsApplication.getArtefacts(CodecArtefactHandler.TYPE));
         Collections.sort(codecs, OrderComparator.INSTANCE);
