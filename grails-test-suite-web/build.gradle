@@ -60,8 +60,14 @@ dependencies {
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
 
-    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
+    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'async'
+    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'async'
+    }
 
     testRuntime "org.springframework:spring-aspects:${springVersion}"
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",

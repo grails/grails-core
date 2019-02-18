@@ -55,8 +55,14 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
+    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'async'
+    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'async'
+    }
 }
 
 test {
