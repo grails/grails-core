@@ -23,7 +23,7 @@ apply plugin: 'idea'
 ext {
     bintrayPublish = false
     // Sets release version
-    grailsVersion = '4.0.0.M1'
+    grailsVersion = '4.0.0.BUILD-SNAPSHOT'
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.6"
     // grailsVersion = '4.0.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
