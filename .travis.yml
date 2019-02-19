@@ -37,8 +37,8 @@ deploy:
     repo: grails/grails-core
     tags: true
     all_branches: true
-#after_deploy:
-#- "./gradlew sdkMajorRelease"
+after_deploy:
+- "./gradlew sdkMinorRelease"
 cache:
   directories:
   - "$HOME/.gradle"
