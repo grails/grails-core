@@ -65,6 +65,8 @@ dependencies {
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-web-common'
+        exclude module:'grails-encoder'
     }
     testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
         exclude module:'grails-plugin-codecs'

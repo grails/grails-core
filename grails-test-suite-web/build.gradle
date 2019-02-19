@@ -13,7 +13,6 @@ dependencies {
     testCompile 'javax.servlet.jsp:jsp-api:2.1'
     testCompile 'jstl:jstl:1.1.2'
     testCompile 'javax.el:el-api:1.0'
-    testCompile "org.grails.plugins:gsp:$gspVersion"
     testCompile project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
                 project(':grails-plugin-codecs'),
@@ -68,6 +67,14 @@ dependencies {
         exclude module:'grails-core'
         exclude module:'async'
         exclude module:'gsp'
+    }
+    testCompile "org.grails.plugins:gsp:$gspVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-web-common'
+        exclude module:'grails-encoder'
     }
     testCompile "org.grails.plugins:async:$asyncVersion", {
         exclude module:'grails-plugin-codecs'
