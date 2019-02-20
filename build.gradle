@@ -2,7 +2,7 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
-        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+        maven { url 'https://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
