@@ -657,7 +657,7 @@ public enum Environment {
             return reloadingAgentEnabled;
         }
         try {
-            Class.forName("org.springsource.loaded.TypeRegistry");
+            Class.forName("org.springframework.boot.devtools.restart.Restarter");
             reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
         }
         catch (ClassNotFoundException e) {
