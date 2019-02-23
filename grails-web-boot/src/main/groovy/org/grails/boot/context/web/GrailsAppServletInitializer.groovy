@@ -45,11 +45,11 @@ abstract class GrailsAppServletInitializer extends SpringBootServletInitializer 
         builder.contextClass(AnnotationConfigServletWebServerApplicationContext.class)
         builder = configure(builder)
         SpringApplication application = builder.build()
-        if (application.getSources().isEmpty()
+        if (application.getAllSources().isEmpty()
                 && AnnotationUtils.findAnnotation(getClass(), Configuration.class) != null) {
             application.getSources().add(getClass().name)
         }
-        Assert.state(application.getSources().size() > 0,
+        Assert.state(application.getAllSources().size() > 0,
                 "No SpringApplication sources have been defined. Either override the "
                         + "configure method or add an @Configuration annotation")
         // Ensure error pages are registered
