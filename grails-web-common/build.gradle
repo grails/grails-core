@@ -4,7 +4,10 @@ dependencies {
     }
     compile project(":grails-databinding")
     compile project(":grails-encoder")
-    compile "org.grails:grails-gsp:$gspVersion"
+    compile "org.grails:grails-gsp:$gspVersion", {
+        exclude group:'org.grails', module:'grails-core'
+        exclude group:'org.grails', module:'grails-encoder'
+    }
 
     compile "org.codehaus.groovy:groovy-templates:$groovyVersion"
 

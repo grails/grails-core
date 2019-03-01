@@ -57,10 +57,6 @@ import javax.servlet.MultipartConfigElement
 @Slf4j
 class ControllersGrailsPlugin extends Plugin {
 
-    def watchedResources = [
-        "file:./grails-app/controllers/**/*Controller.groovy",
-        "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
-
     def version = GrailsUtil.getGrailsVersion()
     def observe = ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
@@ -77,8 +73,6 @@ class ControllersGrailsPlugin extends Plugin {
         int fileSizeThreashold = config.getProperty(Settings.CONTROLLERS_UPLOAD_FILE_SIZE_THRESHOLD, Integer, 0)
         String filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
         boolean filtersForceEncoding = config.getProperty(Settings.FILTER_FORCE_ENCODING, Boolean, false)
-        boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
-
         boolean isTomcat = ClassUtils.isPresent("org.apache.catalina.startup.Tomcat", application.classLoader)
         String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, isTomcat ? Settings.DEFAULT_TOMCAT_SERVLET_PATH : Settings.DEFAULT_WEB_SERVLET_PATH)
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
@@ -117,17 +111,6 @@ class ControllersGrailsPlugin extends Plugin {
                     DispatcherType.INCLUDE,
                     DispatcherType.REQUEST
             )
-        }
-
-
-        if(dbConsoleEnabled && ClassUtils.isPresent('org.h2.server.web.WebServlet', application.classLoader)) {
-            String urlPattern = config.getProperty('grails.dbconsole.urlRoot', "/dbconsole") + '/*'
-            dbConsoleServlet(ServletRegistrationBean) {
-                servlet = bean(application.classLoader.loadClass('org.h2.server.web.WebServlet'))
-                loadOnStartup = 2
-                urlMappings = [urlPattern]
-                initParameters = ['-webAllowOthers':'true']
-            }
         }
 
         exceptionHandler(GrailsExceptionResolver) {
@@ -186,36 +169,6 @@ class ControllersGrailsPlugin extends Plugin {
             log.warn("'grails.json.legacy.builder' is set to TRUE but is NOT supported in this version of Grails.")
         }
     } }
-
-    @Override
-    void onChange( Map<String, Object> event) {
-        if (!(event.source instanceof Class)) {
-            return
-        }
-        def application = grailsApplication
-        if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, (Class)event.source)) {
-            ApplicationContext context = applicationContext
-            if (!context) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Application context not found. Can't reload")
-                }
-                return
-            }
-
-
-            GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, (Class)event.source)
-            beans {
-                "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
-                    def beanScope = controllerClass.getScope()
-                    bean.scope = beanScope
-                    bean.autowire = "byName"
-                    if (beanScope == 'prototype') {
-                        bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
-                    }
-                }
-            }
-        }
-    }
 
 
     @CompileStatic

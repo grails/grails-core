@@ -47,6 +47,16 @@ public class GrailsFlashScope implements FlashScope {
     public static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
     private static final String ERRORS_PROPERTY = "errors";
 
+    private final boolean registerWithSession;
+
+    public GrailsFlashScope() {
+        this(true);
+    }
+
+    public GrailsFlashScope(boolean registerWithSession) {
+        this.registerWithSession = registerWithSession;
+    }
+
     public void next() {
         current.clear();
         current = new ConcurrentHashMap(next);
@@ -156,6 +166,7 @@ public class GrailsFlashScope implements FlashScope {
     public Object put(String key, Object value) {
         // create the session if it doesn't exist
         registerWithSessionIfNecessary();
+       
         if (current.containsKey(key)) {
             current.remove(key);
         }
@@ -199,10 +210,12 @@ public class GrailsFlashScope implements FlashScope {
     }
 
     private void registerWithSessionIfNecessary() {
-        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        HttpSession session = webRequest.getCurrentRequest().getSession(true);
-        if (session.getAttribute(GrailsApplicationAttributes.FLASH_SCOPE) == null) {
-            session.setAttribute(GrailsApplicationAttributes.FLASH_SCOPE, this);
+        if (registerWithSession) {
+            GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+            HttpSession session = webRequest.getCurrentRequest().getSession(true);
+            if (session.getAttribute(GrailsApplicationAttributes.FLASH_SCOPE) == null) {
+                session.setAttribute(GrailsApplicationAttributes.FLASH_SCOPE, this);
+            }
         }
     }
 }

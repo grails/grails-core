@@ -51,7 +51,18 @@ dependencies {
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
+    testCompile "org.grails.plugins:async:$asyncVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-test'
+        exclude module:'async'
+    }
 }
 
 test {

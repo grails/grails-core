@@ -2,42 +2,51 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
-        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+        maven { url 'https://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.8.0"
-        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
+        classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:$gradleNexusStagingPluginVersion"
+        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
-
     }
 }
 
 apply plugin: 'idea'
 
-
 ext {
     bintrayPublish = false
     // Sets release version
     grailsVersion = '4.0.0.BUILD-SNAPSHOT'
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.4"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.6"
     // grailsVersion = '4.0.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    
     dependencyVersions = [
         'javax.annotation-api': [
                 version: javaxAnnotationApiVersion,
                 group:'javax.annotation',
                 name:'javax.annotation',
                 modules:['api']
+        ],
+        'micronaut': [
+                version: micronautVersion,
+                group:'io.micronaut',
+                names:['micronaut'],
+                modules:['spring','inject','runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
+        ],
+        'micronaut.spring': [
+                version: micronautSpringVersion,
+                group:'io.micronaut.spring',
+                names:['micronaut-spring'],
+                modules:['context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
         ],
         datastore: [
             version: datastoreVersion,
@@ -159,6 +168,7 @@ allprojects {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
                 name 'JFrog OSS snapshot repo'
@@ -173,6 +183,12 @@ allprojects {
                 def cacheHours = isCiBuild ? 0 : 24
                 cacheDynamicVersionsFor cacheHours, 'hours'
                 cacheChangingModulesFor cacheHours, 'hours'
+                eachDependency { DependencyResolveDetails details ->
+                    //specifying a fixed version for all libraries with 'org.gradle' group
+                    if (details.requested.group == 'org.codehaus.groovy') {
+                        details.useVersion groovyVersion
+                    }
+                }
             }
         }
     }
@@ -287,7 +303,12 @@ subprojects { project ->
                         username = u
                         password = p
                     }
-                    url  "https://repo.grails.org/grails/libs-snapshots-local"
+                    if (isBuildSnapshot) {
+                        url  "https://repo.grails.org/grails/libs-snapshots-local"
+                    } else {
+                        url  "https://repo.grails.org/grails/libs-releases-local"
+                    }
+
                 }
             }
 
@@ -469,7 +490,6 @@ subprojects { project ->
         }
     }
 
-
     configurations {
         meta
         published.extendsFrom archives, meta
@@ -478,16 +498,12 @@ subprojects { project ->
 
     if(!isTestSuite) {
 
-
-
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
             repositories {
                 flatDir name: 'libs', dirs: distInstallDir
             }
         }
-
-
 
         project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
             t.dependsOn installToHomeDist
@@ -497,12 +513,8 @@ subprojects { project ->
                 }
             }
         }
-
     }
-
 }
-
-
 
 task clean(type: Delete) {
     delete buildDir,
@@ -514,7 +526,12 @@ task clean(type: Delete) {
 }
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
-subprojects.each { evaluationDependsOn it.path }
+subprojects.each {
+    if (it.tasks.findByName('install') && it.tasks.findByName('publishToMavenLocal')) {
+        it.tasks.findByName('install').finalizedBy(it.tasks.findByName('publishToMavenLocal'))
+    }
+    evaluationDependsOn it.path
+}
 
 apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)

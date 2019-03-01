@@ -1,10 +1,7 @@
 package org.grails.core.util;
 
 import java.text.NumberFormat;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Based on the Spring StopWatch class, but supporting nested tasks
@@ -199,7 +196,14 @@ public class StopWatch {
         NumberFormat pf = NumberFormat.getPercentInstance();
         pf.setMinimumIntegerDigits(3);
         pf.setGroupingUsed(false);
-        for (TaskInfo task : getTaskInfo()) {
+        final TaskInfo[] taskInfos = getTaskInfo();
+        Arrays.sort(taskInfos, new Comparator<TaskInfo>() {
+            @Override
+            public int compare(TaskInfo o1, TaskInfo o2) {
+                return Long.compare(o1.getTimeMillis(), o2.getTimeMillis());
+            }
+        });
+        for (TaskInfo task : taskInfos) {
             sb.append(nf.format(task.getTimeMillis())).append("  ");
             sb.append(pf.format(task.getTimeSeconds() / getTotalTimeSeconds())).append("  ");
             sb.append(task.getTaskName()).append("\n");

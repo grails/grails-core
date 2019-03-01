@@ -138,42 +138,6 @@ hibernate {
         manager.loadPlugins()
     }
 
-    void testDoRuntimeConfiguration() {
-        def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin] as Class[], ga)
-
-        manager.loadPlugins()
-
-        def parent = createMockApplicationContext()
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
-
-        def springConfig = new WebRuntimeSpringConfiguration(parent)
-        springConfig.servletContext = createMockServletContext()
-        manager.doRuntimeConfiguration(springConfig)
-
-        def ctx = springConfig.getApplicationContext()
-
-        assert ctx.containsBean("classEditor")
-    }
-
-    void testDoPostProcessing() {
-        def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin] as Class[], ga)
-
-        manager.loadPlugins()
-
-        def parent = createMockApplicationContext()
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
-        def springConfig = new WebRuntimeSpringConfiguration(parent)
-        springConfig.servletContext = createMockServletContext()
-
-        manager.doRuntimeConfiguration(springConfig)
-
-        def ctx = springConfig.getApplicationContext()
-        assert ctx.containsBean("classEditor")
-
-        manager.doPostProcessing(ctx)
-        assert ctx.containsBean("localeResolver")
-    }
-
     void testEviction() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,SomeOtherGrailsPlugin,ShouldEvictSomeOtherGrailsPlugin] as Class[], ga)
 

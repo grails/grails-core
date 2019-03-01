@@ -344,6 +344,8 @@ class SimpleDataBinder implements DataBinder {
                     } else if(genericType.isEnum() && val instanceof CharSequence) {
                         def enumValue = convertStringToEnum(genericType, val.toString())
                         addElementToCollectionAt obj, propName, collectionInstance, index, enumValue
+                    } else {
+                        addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
                     }
                 } else {
                     addElementToCollectionAt obj, propName, collectionInstance, index, val
@@ -666,6 +668,8 @@ class SimpleDataBinder implements DataBinder {
                     bind obj[propName], propertyValue, listener
                 }
             } else if(Collection.isAssignableFrom(propertyType) && propertyValue instanceof String) {
+                addElementToCollection obj, propName, propertyType, propertyValue, true
+            } else if(Collection.isAssignableFrom(propertyType) && propertyValue instanceof Number) {
                 addElementToCollection obj, propName, propertyType, propertyValue, true
             } else if(Collection.isAssignableFrom(propertyType) && propertyValue.getClass().isArray()) {
                 addElementsToCollection obj, propName, propertyValue as Collection, true

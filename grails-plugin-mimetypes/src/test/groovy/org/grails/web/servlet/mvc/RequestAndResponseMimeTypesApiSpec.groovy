@@ -7,6 +7,7 @@ import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
@@ -56,7 +57,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         def servletContext = new MockServletContext()
         def ctx = new GenericWebApplicationContext(servletContext)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
-        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, buildMimeTypes())
+        ctx.beanFactory.registerSingleton("mimeUtility", new DefaultMimeUtility(buildMimeTypes()))
         ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
         ctx.refresh()
         GrailsWebMockUtil.bindMockWebRequest(ctx)

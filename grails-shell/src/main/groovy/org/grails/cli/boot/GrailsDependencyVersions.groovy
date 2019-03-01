@@ -97,7 +97,7 @@ class GrailsDependencyVersions implements DependencyManagement {
 
     @Override
     String getSpringBootVersion() {
-        return find("spring-boot").getVersion();
+        return find("spring-boot").getVersion()
     }
 
     @Override

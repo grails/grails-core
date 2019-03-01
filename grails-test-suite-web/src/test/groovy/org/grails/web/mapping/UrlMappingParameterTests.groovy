@@ -1,100 +1,63 @@
 package org.grails.web.mapping
 
+import grails.testing.web.UrlMappingsUnitTest
 import org.grails.web.util.WebUtils
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class UrlMappingParameterTests extends AbstractGrailsMappingTests {
+class UrlMappingParameterTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
-    def test1 = '''
-class UrlMappings {
-    static mappings = {
-
-      "/$controller/$action?/$id?"{
-          lang = "de"
-          constraints {
-             // apply constraints here
-          }
-      }
-    }
-}
-'''
-
-    def test2 = '''
-class UrlMappings {
-    static mappings = {
-        "/news/$action?/$category" {
-            controller = "blog"
-            constraints {
-                action(inList:['archive', 'latest'])
-            }
-        }
-   }
-}
-'''
-
-    def test3 = '''
-class UrlMappings {
-    static mappings = {
-        "/showSomething/$key" {
-            controller = "blog"
-            constraints {
-                key notEqual: 'bad'
-            }
-        }
-   }
-}
-'''
     void testDontUseDispatchActionIfExceptionPresent() {
-        Closure closure = new GroovyClassLoader().parseClass(test1).mappings
-        def mappings = evaluator.evaluateMappings(closure)
-
+        when:
+        webRequest.params.controller = 'foo'
         webRequest.currentRequest.addParameter("${WebUtils.DISPATCH_ACTION_PARAMETER}foo", "true")
         webRequest.currentRequest.setAttribute(WebUtils.EXCEPTION_ATTRIBUTE, new RuntimeException("bad"))
-        def holder = new DefaultUrlMappingsHolder(mappings)
-        def info = holder.match('/foo/list')
+        def info = urlMappingsHolder.match('/foo/list')
 
         assert info != null
 
         info.configure webRequest
 
-        assert info.actionName == 'list'
+        then:
+        info.actionName == 'list'
 
     }
     void testUseDispatchAction() {
-        Closure closure = new GroovyClassLoader().parseClass(test1).mappings
-        def mappings = evaluator.evaluateMappings(closure)
-
+        when:
+        webRequest.params.controller = 'foo'
         webRequest.currentRequest.addParameter("${WebUtils.DISPATCH_ACTION_PARAMETER}foo", "true")
-        def holder = new DefaultUrlMappingsHolder(mappings)
-        def info = holder.match('/foo/list')
-
+        def info = urlMappingsHolder.match('/foo/list')
         assert info != null
-
         info.configure webRequest
 
-        assert info.actionName == 'foo'
-
-        assertEquals "de", webRequest.params.lang
+        then:
+        info.actionName == 'foo'
+        "de" == webRequest.params.lang
     }
 
     void testNotEqual() {
-        Closure closure = new GroovyClassLoader().parseClass(test3).mappings
-        def mappings = evaluator.evaluateMappings(closure)
+        when:
+        webRequest.params.controller = 'foo'
+        def info = urlMappingsHolder.match('/showSomething/bad')
 
-        def holder = new DefaultUrlMappingsHolder(mappings)
-        def info = holder.match('/showSomething/bad')
+        then:'url should not have matched'
+        info.controllerName == 'foo'
 
-        assertNull 'url should not have matched', info
+        when:
+        info = urlMappingsHolder.match('/showSomething/good')
 
-        info = holder.match('/showSomething/good')
+        then:'url should have matched'
+         info.controllerName == 'blog'
 
-        assertNotNull 'url should have matched', info
+        when:
         info.configure webRequest
-        assertEquals "good", webRequest.params.key
+
+        then:
+        "good" == webRequest.params.key
     }
 
     void testDynamicMappingWithAdditionalParameter() {
@@ -123,5 +86,28 @@ class UrlMappings {
 
         def urlCreator = holder.getReverseMapping("blog", "latest", [category:"sport"])
         assertEquals "/news/latest/sport",urlCreator.createURL("blog", "latest", [category:"sport"], "utf-8")
+    }
+
+    static class UrlMappings {
+        static mappings = {
+            "/$controller/$action?/$id?"{
+                lang = "de"
+                constraints {
+                    // apply constraints here
+                }
+            }
+            "/news/$action?/$category" {
+                controller = "blog"
+                constraints {
+                    action(inList:['archive', 'latest'])
+                }
+            }
+            "/showSomething/$key" {
+                controller = "blog"
+                constraints {
+                    key notEqual: 'bad'
+                }
+            }
+        }
     }
 }

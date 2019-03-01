@@ -34,6 +34,7 @@ import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import org.grails.cli.profile.commands.script.GroovyScriptCommandTransform
+import org.grails.gradle.plugin.profiles.GrailsProfileGradlePlugin
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 
@@ -47,7 +48,7 @@ import org.yaml.snakeyaml.Yaml
 @CompileStatic
 class ProfileCompilerTask extends AbstractCompile {
 
-    public static final String DEFAULT_COMPATIBILITY = "1.7"
+    public static final String DEFAULT_COMPATIBILITY = "1.8"
     public static final String PROFILE_NAME = "name"
     public static final String PROFILE_COMMANDS = "commands"
 
@@ -110,7 +111,7 @@ class ProfileCompilerTask extends AbstractCompile {
 
         if(!profileData.containsKey("extends")) {
             List<String> dependencies = []
-            project.configurations.getByName("runtime").allDependencies.all() { Dependency d ->
+            project.configurations.getByName(GrailsProfileGradlePlugin.RUNTIME_CONFIGURATION).allDependencies.all() { Dependency d ->
                 dependencies.add("${d.group}:${d.name}:${d.version}".toString())
             }
             profileData.put("extends", dependencies.join(','))

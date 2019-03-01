@@ -32,12 +32,29 @@ class GroovyEclipseCompilationHelper {
      * @return The File that represents the root directory or null
      */
     static File resolveEclipseCompilationTargetDirectory(SourceUnit sourceUnit) {
+
         if (sourceUnit.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
             StandardEvaluationContext context = new StandardEvaluationContext()
             context.setTypeLocator(new StandardTypeLocator(sourceUnit.getClass().getClassLoader()))
             context.setRootObject(sourceUnit)
             try {
-                return (File) new SpelExpressionParser().parseExpression("eclipseFile.workspace.root.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation.makeAbsolute()).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context)
+				// Honour the targetDirectory within the source configuration directory.
+				File targetDirectory = sourceUnit.configuration.targetDirectory
+				
+				if (targetDirectory == null) {
+					
+					// Resolve as before.
+					targetDirectory = ((File) new SpelExpressionParser().parseExpression("eclipseFile.project.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context))
+					
+				} else if (!targetDirectory.isAbsolute()) {
+					// Target directory is set and is not absolute.
+					// We should assume that this is a path relative to the current eclipse project,
+					// and needs resolving appropriately.
+					targetDirectory = ((File) new SpelExpressionParser().parseExpression("eclipseFile.project.getFolder('${targetDirectory.path}').rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context))
+					
+				}
+				// Else absolute file location. We should return as-is.
+				return targetDirectory
             } catch (Throwable e) {
                 // Not running Eclipse IDE, probably using the Eclipse compiler with Maven
                 return null

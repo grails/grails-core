@@ -8,7 +8,6 @@ dependencies {
             project(':grails-plugin-interceptors'),        
             project(':grails-plugin-controllers')
 
-    compile "org.grails.plugins:gsp:$gspVersion"
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'
@@ -55,8 +54,36 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
+    testCompile "org.grails.plugins:async:$asyncVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+    }
+    testCompile "org.grails.plugins:gsp:$gspVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-web-common'
+        exclude module:'grails-encoder'
+    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-test'
+        exclude module:'grails-core'
+        exclude module:'async'
+    }
+    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-rest'
+        exclude module:'grails-plugin-interceptors'
+        exclude module:'grails-test'
+        exclude module:'grails-core'
+        exclude module:'async'
+        exclude module:'gsp'
+    }
 }
 
 test {

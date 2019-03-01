@@ -15,47 +15,15 @@
  */
 package org.grails.plugins
 
-import grails.plugins.Plugin
-import grails.util.GrailsUtil
 import org.grails.plugins.codecs.DefaultCodecLookup
-import org.grails.commons.CodecArtefactHandler
-import org.grails.encoder.impl.HTML4Codec
-import org.grails.plugins.codecs.HTMLCodec
-import org.grails.encoder.impl.HTMLJSCodec
-import org.grails.encoder.impl.JavaScriptCodec
-import org.grails.encoder.impl.RawCodec
-import org.grails.plugins.codecs.URLCodec
 
 /**
- * Configures pluggable codecs.
- *
- * @author Jeff Brown
- * @since 0.4
+ * @deprecated Use {@link org.grails.plugins.codecs.CodecsGrailsPlugin} instead
  */
-class CodecsGrailsPlugin extends Plugin {
-    def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [core:version]
-    def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
-    def providedArtefacts = [
-            HTMLCodec,
-            HTML4Codec,
-            JavaScriptCodec,
-            HTMLJSCodec,
-            URLCodec,
-            RawCodec
-    ]
+@Deprecated
+class CodecsGrailsPlugin extends org.grails.plugins.codecs.CodecsGrailsPlugin {
 
-    @Override
-    void onChange(Map<String, Object> event) {
-        def application = grailsApplication
-        if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
-            application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-            applicationContext.getBean('codecLookup', DefaultCodecLookup).reInitialize()
-        }
-    }
-
-    @Override
-    Closure doWithSpring() {{ ->
+    Closure doWithSpring() {{->
         codecLookup(DefaultCodecLookup)
     }}
 }

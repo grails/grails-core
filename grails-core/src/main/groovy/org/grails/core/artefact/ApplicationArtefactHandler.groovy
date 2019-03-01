@@ -41,11 +41,11 @@ class ApplicationArtefactHandler extends ArtefactHandlerAdapter {
 
     @Override
     boolean isArtefact(ClassNode classNode) {
-        classNode.nameWithoutPackage == 'Application' && GrailsASTUtils.isAssignableFrom(AUTO_CONFIGURATION_CLASS_NODE, classNode)
+        classNode.nameWithoutPackage.endsWith('Application') && GrailsASTUtils.isAssignableFrom(AUTO_CONFIGURATION_CLASS_NODE, classNode)
     }
 
     @Override
     boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
-        GrailsAutoConfiguration.isAssignableFrom(clazz) && clazz.simpleName == 'Application' 
+        GrailsAutoConfiguration.isAssignableFrom(clazz) && clazz.simpleName.endsWith('Application')
     }
 }

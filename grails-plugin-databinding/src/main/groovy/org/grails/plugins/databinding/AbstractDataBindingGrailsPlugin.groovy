@@ -21,6 +21,7 @@ import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import org.grails.databinding.converters.Jsr310ConvertersConfiguration
+import org.grails.databinding.converters.UUIDConverter
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
@@ -42,7 +43,7 @@ import org.grails.databinding.converters.web.LocaleAwareNumberConverter
  *
  * @since 2.3
  */
-class DataBindingGrailsPlugin extends Plugin {
+abstract class AbstractDataBindingGrailsPlugin extends Plugin {
 
     public static final String DEFAULT_JSR310_OFFSET_ZONED_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
     public static final String DEFAULT_JSR310_OFFSET_TIME_FORMAT = "HH:mm:ssZ"
@@ -73,7 +74,9 @@ class DataBindingGrailsPlugin extends Plugin {
             autoGrowCollectionLimit = autoGrowCollectionLimitSetting
         }
 
+        dataBindingConfigurationProperties(DataBindingConfigurationProperties)
         timeZoneConverter(TimeZoneConverter)
+        uuidConverter(UUIDConverter)
 
         defaultDateConverter(DateConversionHelper) {
             formatStrings = dateFormats

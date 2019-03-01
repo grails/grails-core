@@ -1,79 +1,81 @@
 package org.grails.web.mapping
 
-import grails.web.mapping.UrlMappingsHolder
-import org.grails.web.mapping.DefaultUrlCreator
-import org.grails.web.mapping.DefaultUrlMappingsHolder
-import org.springframework.core.io.ByteArrayResource
+import grails.testing.web.UrlMappingsUnitTest
+import spock.lang.Specification
 
 /**
  * @author mike
  */
-class ResponseCodeUrlMappingTests extends AbstractGrailsMappingTests {
-    def topLevelMapping = '''
-mappings {
-    "404"{
-        controller = "errors"
-        action = "error404"
-    }
-
-    "500"(controller:"errors", action:"custom", exception:IllegalArgumentException)
-    "500"(controller:"errors", action:"error500")
-}
-'''
-    UrlMappingsHolder holder
-
-    void setUp() {
-        super.setUp()
-        def res = new ByteArrayResource(topLevelMapping.bytes)
-
-        def mappings = evaluator.evaluateMappings(res)
-
-        // use un-cached holder for testing
-        holder = new DefaultUrlMappingsHolder(mappings,null,true)
-        holder.setUrlCreatorMaxWeightedCacheCapacity(0)
-        holder.initialize()
-    }
+class ResponseCodeUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testParse() {
-        assertNotNull holder
+        expect:
+        urlMappingsHolder
     }
 
     void testMatch() {
-        assertNull holder.match("/")
+        expect:
+        !urlMappingsHolder.match("/")
     }
 
     void testMatchStatusCodeAndException() {
-        def info = holder.matchStatusCode(500)
+        when:
+        def info = urlMappingsHolder.matchStatusCode(500)
 
-        assertEquals "error500", info.actionName
+        then:
+        "error500" == info.actionName
 
-        info = holder.matchStatusCode(500, new IllegalArgumentException())
+        when:
+        info = urlMappingsHolder.matchStatusCode(500, new IllegalArgumentException())
 
-        assertEquals "custom", info.actionName
+        then:
+        "custom" == info.actionName
     }
 
     void testForwardMapping() {
-        def info = holder.matchStatusCode(404)
-        assertNotNull info
-        assertEquals("errors", info.getControllerName())
-        assertEquals("error404", info.getActionName())
+        when:
+        def info = urlMappingsHolder.matchStatusCode(404)
+
+        then:
+        info
+        "errors" == info.getControllerName()
+        "error404" == info.getActionName()
     }
 
     void testForwardMappingWithNamedArgs() {
-        def info = holder.matchStatusCode(500)
-        assertNotNull info
-        assertEquals("errors", info.getControllerName())
-        assertEquals("error500", info.getActionName())
+        when:
+        def info = urlMappingsHolder.matchStatusCode(500)
+
+        then:
+        info
+        "errors" == info.getControllerName()
+        "error500" ==  info.getActionName()
     }
 
     void testMissingForwardMapping() {
-        def info = holder.matchStatusCode(501)
-        assertNull info
+        when:
+        def info = urlMappingsHolder.matchStatusCode(501)
+        then:
+        !info
     }
 
     void testNoReverseMappingOccures() {
-        def creator = holder.getReverseMapping("errors", "error404", null)
+        when:
+        def creator = urlMappingsHolder.getReverseMapping("errors", "error404", null)
 
-        assertTrue ("Creator is of wrong type: " + creator.class, creator instanceof DefaultUrlCreator)
+        then:
+        creator.delegate instanceof DefaultUrlCreator
+    }
+
+    static class UrlMappings {
+        static mappings = {
+            "404"{
+                controller = "errors"
+                action = "error404"
+            }
+
+            "500"(controller:"errors", action:"custom", exception:IllegalArgumentException)
+            "500"(controller:"errors", action:"error500")
+        }
     }
 }

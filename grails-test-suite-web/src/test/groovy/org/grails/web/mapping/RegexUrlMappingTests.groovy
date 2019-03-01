@@ -1,7 +1,9 @@
 package org.grails.web.mapping
 
+import grails.core.DefaultGrailsApplication
 import grails.gorm.validation.ConstrainedProperty
 import grails.gorm.validation.DefaultConstrainedProperty
+import grails.testing.web.UrlMappingsUnitTest
 import grails.util.GrailsWebMockUtil
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.exceptions.UrlMappingException
@@ -9,307 +11,367 @@ import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstrai
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.*
+import spock.lang.Specification
 
-class RegexUrlMappingTests extends AbstractGrailsMappingTests {
+class RegexUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
-    def mappingScript = '''
-mappings {
-  "/book/$author/$title/$test" {
-      controller = "book"
-      action = "show"
-  }
-  "/blog/$entry/$year?/$month?/$day?" {
-     controller = "blog"
-     action = "show"
-  }
-  "/surveys/$action?" {
-      controller = "survey"
-  }
-  "/files/$path**?" {
-      controller = "files"
-  }
-  "/filenameext/$fname$fext?" {
-      controller = "download"
-  }
-  "/another/arbitrary/something-$prefix.$ext" {
-      controller = "myFiles"
-      action = "index"
-  }
-  "/foo"(controller:"foo", parseRequest:true)
-
-  "/foo2"(controller: "foo") {
-       parseRequest = true
-   }
-
-  "/foo3" {
-       controller = "foo"
-       parseRequest = true
-   }
-
-  name foo4: "/foo4" {
-       controller = "foo"
-       parseRequest = true
-  }
-
-  "/bar"(uri:"/x/y")
-
-  "/surveys/view/$id" {
-      controller = "survey"
-      action = "viewById"
-      constraints {
-         id(matches:/\\d+/)
-      }
-  }
-  "/surveys/view/$name" {
-      controller = "survey"
-      action = "viewByName"
-  }
-  "/reports/$foo" {
-      controller = 'reporting'
-      action = 'view'
-  }
-  "/$first-alpha-$second/$third-beta-$fourth-foo(.$format)?" {
-      controller = 'hyphenTests'
-      action = 'view'
-  }
-  "/plugins/grails-$plugin/tags/RELEASE_$version/$fullName(.$type)" {
-      controller = 'website'
-      action = 'displayPlugin'
-  }
-}
-'''
 
     void testExtensionPrecededByTokenWhichMayContainDots() {
-        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
-
+        when:
+        def holder = urlMappingsHolder
         def info = holder.match("/plugins/grails-csv/tags/RELEASE_0.3.1/csv-0.3.1.pom")
-        assertNotNull info
-        assertEquals 'website', info.controllerName
-        assertEquals 'displayPlugin', info.actionName
-        assertEquals '0.3.1', info.params.version
-        assertEquals 'csv', info.params.plugin
-        assertEquals 'csv-0.3.1', info.params.fullName
-        assertEquals 'pom', info.params.type
+
+        then:
+        info
+        'website'== info.controllerName
+        'displayPlugin'== info.actionName
+        '0.3.1'== info.params.version
+        'csv'== info.params.plugin
+        'csv-0.3.1'== info.params.fullName
+        'pom'== info.params.type
     }
 
     void testHyphenDelimiters() {
-        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
-    
-        def info = holder.match("/one-alpha-two/three-beta-four-foo.json")
-        assertNotNull info
-        assertEquals 'hyphenTests', info.controllerName
-        assertEquals 'view', info.actionName
-        assertEquals 'one', info.params.first
-        assertEquals 'two', info.params.second
-        assertEquals 'three', info.params.third
-        assertEquals 'four', info.params.fourth
-        assertEquals 'json', info.params.format
+        given:
+        def holder = urlMappingsHolder
 
- 
+
+        when:
+        def info = holder.match("/one-alpha-two/three-beta-four-foo.json")
+
+        then:
+        info
+        'hyphenTests'== info.controllerName
+        'view'== info.actionName
+        'one'== info.params.first
+        'two'== info.params.second
+        'three'== info.params.third
+        'four'== info.params.fourth
+        'json'== info.params.format
+
+
+        when:
         info = holder.match("/one-alpha-two/three-beta-four-foo")
-        assertNotNull info
-        assertEquals 'hyphenTests', info.controllerName
-        assertEquals 'view', info.actionName
-        assertEquals 'one', info.params.first
-        assertEquals 'two', info.params.second
-        assertEquals 'three', info.params.third
-        assertEquals 'four', info.params.fourth
-        assertNull info.params.format
+
+        then:
+        info
+        'hyphenTests'== info.controllerName
+        'view'== info.actionName
+        'one'== info.params.first
+        'two'== info.params.second
+        'three'== info.params.third
+        'four'== info.params.fourth
+        !info.params.format
     }
 
     void testMaptoURI() {
-        def res = new ByteArrayResource(mappingScript.bytes)
-        def mappings = evaluator.evaluateMappings(res)
+        given:
+        def holder = urlMappingsHolder
 
-        def holder = new DefaultUrlMappingsHolder(mappings)
-
+        when:
         def info = holder.match("/bar")
-        assertEquals "/x/y", info.getURI()
+
+        then:
+        "/x/y"== info.getURI()
     }
 
     void testParseRequestArgument() {
+        given:
+        def holder = urlMappingsHolder
 
-        def res = new ByteArrayResource(mappingScript.bytes)
-        def mappings = evaluator.evaluateMappings(res)
-
-        def holder = new DefaultUrlMappingsHolder(mappings)
-
+        when:
         def info = holder.match("/foo")
-        assertTrue "should have been a request parsing mapping", info.parsingRequest
 
+        then:"should have been a request parsing mapping"
+        info.parsingRequest
+
+        when:
         info = holder.match("/foo2")
-        assertTrue "should have been a request parsing mapping", info.parsingRequest
 
-        info = holder.match("/foo3")
-        assertTrue "should have been a request parsing mapping", info.parsingRequest
+        then:"should have been a request parsing mapping"
+        info.parsingRequest
 
-        info = holder.match("/foo4")
-        assertTrue "should have been a request parsing mapping", info.parsingRequest
+
     }
 
     void testNullableConstraintsInMapping() {
-        def res = new ByteArrayResource(mappingScript.bytes)
-        def mappings = evaluator.evaluateMappings(res)
+        given:
+        def holder = urlMappingsHolder
 
-        def m = mappings[2]
+        def mappings = holder.urlMappings
+        def m = holder.urlMappings.find() { it.controllerName == 'survey' && !it.actionName }
 
-        assert m.urlData.isOptional(0)
-
-        assertEquals 1, m.constraints.length
-        assertTrue m.constraints[0].nullable
+        expect:
+        m.urlData.isOptional(0)
+        1 == m.constraints.length
+        m.constraints[0].nullable
     }
 
     void testCreateUrlFromMapping() {
-        GrailsWebMockUtil.bindMockWebRequest()
-        def res = new ByteArrayResource(mappingScript.bytes)
+        given:
+        def holder = urlMappingsHolder
+        def mappings = holder.urlMappings
 
-        def mappings = evaluator.evaluateMappings(res)
+        when:
+        def m = holder.urlMappings.find() { it.controllerName == 'book'}
 
-        def m = mappings[0]
-        assert m
+        then:
+        m
+        "/book/dierk/gina/foo"== m.createURL(author: "dierk", title: "gina", test: "foo", "utf-8")
 
-        assertEquals "/book/dierk/gina/foo", m.createURL(author: "dierk", title: "gina", test: "foo", "utf-8")
+        when:
+        m = holder.urlMappings.find() { it.controllerName == 'blog'}
 
-        m = mappings[1]
-        assert m
+        then:
+        m
+        "/blog/foo/2007/10/24" == m.createURL(entry: "foo", year: 2007, month: 10, day: 24, "utf-8")
+        "/blog/foo/2007/10" == m.createURL(entry: "foo", year: 2007, month: 10, "utf-8")
+        "/blog/foo/2007" == m.createURL(entry: "foo", year: 2007, "utf-8")
+        "/blog/foo/2007" == m.createURL(entry: "foo", year: 2007, null)
+        "/blog/foo" == m.createURL(entry: "foo", "utf-8")
+        "/blog/foo" == m.createURL(entry: "foo", null)
+        '/blog/My%20%2410' == m.createURL(entry: 'My $10', "utf-8")
+        '/blog/My%20%24temp' == m.createURL(entry: 'My $temp', "utf-8")
+        "/blog/foo?day=24" ==  m.createURL(entry: "foo", day: 24, "utf-8")
 
-        assertEquals "/blog/foo/2007/10/24", m.createURL(entry: "foo", year: 2007, month: 10, day: 24, "utf-8")
-        assertEquals "/blog/foo/2007/10", m.createURL(entry: "foo", year: 2007, month: 10, "utf-8")
-        assertEquals "/blog/foo/2007", m.createURL(entry: "foo", year: 2007, "utf-8")
-        assertEquals "/blog/foo/2007", m.createURL(entry: "foo", year: 2007, null)
-        assertEquals "/blog/foo", m.createURL(entry: "foo", "utf-8")
-        assertEquals "/blog/foo", m.createURL(entry: "foo", null)
-        assertEquals '/blog/My%20%2410', m.createURL(entry: 'My $10', "utf-8")
-        assertEquals '/blog/My%20%24temp', m.createURL(entry: 'My $temp', "utf-8")
-        assertEquals "/blog/foo?day=24", m.createURL(entry: "foo", day: 24, "utf-8")
-        shouldFail { m.createURL([:], "utf-8") }
+        when:
+        m.createURL([:], "utf-8")
 
-        m = mappings[3]
-        assert m
-        assertEquals "/files/path/to/my/file", m.createURL([path:"/path/to/my/file"], "utf-8")
+        then:
+        thrown(Throwable)
 
-        m = mappings[4] //filename+fileextension case
-        assert m
-        assertEquals "/filenameext/grails", m.createURL([fname:'grails'], "utf-8")
-        assertEquals "/filenameext/grails.", m.createURL([fname:'grails.'], "utf-8")
-        assertEquals "/filenameext/grails.jpg", m.createURL(fname:"grails",fext:".jpg", "utf-8")
+        when:
+        m = holder.urlMappings.find() { it.controllerName == 'files'}
 
-        m = mappings[5]
-        assert m
-        assertEquals "/another/arbitrary/something-source.jar",
+        then:
+        m
+        "/files/path/to/my/file" == m.createURL([path:"/path/to/my/file"], "utf-8")
+
+        when:
+        m = holder.urlMappings.find() { it.controllerName == 'download'}
+
+        then:
+        m
+        "/filenameext/grails" == m.createURL([fname:'grails'], "utf-8")
+        "/filenameext/grails." == m.createURL([fname:'grails.'], "utf-8")
+        "/filenameext/grails.jpg" == m.createURL(fname:"grails",fext:".jpg", "utf-8")
+
+        when:
+        m = holder.urlMappings.find() { it.controllerName == 'myFiles'}
+
+        then:
+        m
+        "/another/arbitrary/something-source.jar" ==
                 m.createURL(controller:"myFiles",action:"index", prefix:"source", ext:"jar", "utf-8")
 
         // "ext" is a required property, so if it isn't specified an
         // exception should be thrown.
-        shouldFail(UrlMappingException) {
-            m.createURL(controller:"myFiles",action:"index", prefix:"source", "utf-8")
-        }
+        when:
+        m.createURL(controller:"myFiles",action:"index", prefix:"source", "utf-8")
+
+        then:
+        thrown(UrlMappingException)
     }
 
     void testCreateUrlWithFragment() {
-        GrailsWebMockUtil.bindMockWebRequest()
+        given:
+        def holder = urlMappingsHolder
+        def mappings = holder.urlMappings.find() { it.controllerName == 'book'}
 
-        def res = new ByteArrayResource(mappingScript.bytes)
+        when:
+        def m = holder.urlMappings.find() { it.controllerName == 'book'}
 
-        def mappings = evaluator.evaluateMappings(res)
+        then:
+        m
+        "/book/dierk/gina/foo#testfrag" == m.createURL(author: "dierk", title: "gina", test: "foo", "utf-8", "testfrag")
 
-        def m = mappings[0]
-        assert m
+        when:
+        m = holder.urlMappings.find() { it.controllerName == 'blog'}
 
-        assertEquals "/book/dierk/gina/foo#testfrag", m.createURL(author: "dierk", title: "gina", test: "foo", "utf-8", "testfrag")
-
-        m = mappings[1]
-        assert m
-
-        assertEquals "/blog/foo/2007/10/24#testfrag2", m.createURL(entry: "foo", year: 2007, month: 10, day: 24, "utf-8", "testfrag2")
+        then:
+        m
+        "/blog/foo/2007/10/24#testfrag2" == m.createURL(entry: "foo", year: 2007, month: 10, day: 24, "utf-8", "testfrag2")
 
         // Test the behaviour of a null encoding.
-        assertEquals "/blog/foo/2007/10/24#testfrag2", m.createURL(entry: "foo", year: 2007, month: 10, day: 24, null, "testfrag2")
+        "/blog/foo/2007/10/24#testfrag2" == m.createURL(entry: "foo", year: 2007, month: 10, day: 24, null, "testfrag2")
     }
 
 
 
     void testMatchUriWithConstraints() {
 
+        given:
         def cp = new DefaultConstrainedProperty(RegexUrlMappingTests.class, "hello", String.class, new DefaultConstraintRegistry(new StaticMessageSource()))
         cp.nullable = false
 
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
 
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null,UrlMapping.ANY_VERSION, [cp] as ConstrainedProperty[], ga)
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null,UrlMapping.ANY_VERSION, [cp] as ConstrainedProperty[], grailsApplication)
 
         def info = m.match("/foo/world/bar")
+
+        expect:
         assert info
-        assertEquals "test", info.controllerName
-        assertEquals "action", info.actionName
-        assertEquals "world", info.parameters.hello
+        "test" == info.controllerName
+        "action" == info.actionName
+        "world" == info.parameters.hello
     }
 
     void testMatchUriWithMatchesConstraints() {
 
+        given:
         def cp = new DefaultConstrainedProperty(RegexUrlMappingTests.class, "year", String.class, new DefaultConstraintRegistry(new StaticMessageSource()))
         cp.matches = /\d{4}/
 
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null, UrlMapping.ANY_VERSION,[cp] as ConstrainedProperty[], ga)
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null, UrlMapping.ANY_VERSION,[cp] as ConstrainedProperty[], grailsApplication)
+
 
         def info = m.match("/foo/2007/bar")
-        assert info
-        assertEquals "test", info.controllerName
-        assertEquals "action", info.actionName
-        assertEquals "2007", info.parameters.year
+        def info2 = m.match("/foo/blah/bar")
 
-        info = m.match("/foo/blah/bar")
-        assertNull info
+        expect:
+        assert info
+        "test" == info.controllerName
+        "action" == info.actionName
+        "2007" == info.parameters.year
+        !info2
+
     }
 
     void testConstraintAsTiebreaker() {
         // test that two similar rules that only differ by # of constraints are evaluated correctly
-        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
+        given:
+        def holder = urlMappingsHolder
 
+
+        when:
         def info = holder.match("/surveys/view/123")
-        assertNotNull info
-        assertEquals 'survey', info.controllerName
-        assertEquals 'viewById', info.actionName
 
+        then:
+        info
+        'survey' == info.controllerName
+        'viewById' == info.actionName
+
+        when:
         info = holder.match("/surveys/view/foo")
-        assertNotNull info
-        assertEquals 'survey', info.controllerName
-        assertEquals 'viewByName', info.actionName
+
+        then:
+        info
+        'survey' == info.controllerName
+        'viewByName' == info.actionName
     }
     
     void testParameterContainingADot() {
-        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
-        
+        given:
+        def holder = urlMappingsHolder
+
+
+        when:
         def info = holder.match("/reports/my")
-        assertNotNull info
-        assertEquals 'reporting', info.controllerName
-        assertEquals 'view', info.actionName
-        assertEquals 'my', info.params.foo
-        
+
+        then:
+        info
+        'reporting' == info.controllerName
+        'view' == info.actionName
+        'my' == info.params.foo
+
+        when:
         info = holder.match("/reports/my.id")
-        assertNotNull info
-        assertEquals 'reporting', info.controllerName
-        assertEquals 'view', info.actionName
-        assertEquals 'my.id', info.params.foo
+
+        then:
+        info
+        'reporting' == info.controllerName
+        'view' == info.actionName
+        'my.id' == info.params.foo
     }
     
     void testInit() {
+        given:
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,[] as ConstrainedProperty[], ga)
+        expect:
+        new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,[] as ConstrainedProperty[], grailsApplication)
     }
 
     void testMatchUriNoConstraints() {
+        given:
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, null,UrlMapping.ANY_VERSION, [] as ConstrainedProperty[], ga)
-
+        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, null,UrlMapping.ANY_VERSION, [] as ConstrainedProperty[], new DefaultGrailsApplication())
         def info = m.match("/foo/test/bar")
-        assert info
-        assertEquals "test", info.controllerName
+        def info2 = m.match("/foo/bar/test")
 
-        info = m.match("/foo/bar/test")
-        assertNull info
+        expect:
+        info
+        "test" == info.controllerName
+        !info2
+    }
+
+    static class UrlMappings {
+        static mappings = {
+            "/book/$author/$title/$test" {
+                controller = "book"
+                action = "show"
+            }
+            "/blog/$entry/$year?/$month?/$day?" {
+                controller = "blog"
+                action = "show"
+            }
+            "/surveys/$action?" {
+                controller = "survey"
+            }
+            "/files/$path**?" {
+                controller = "files"
+            }
+            "/filenameext/$fname$fext?" {
+                controller = "download"
+            }
+            "/another/arbitrary/something-$prefix.$ext" {
+                controller = "myFiles"
+                action = "index"
+            }
+            "/foo"(controller:"foo", parseRequest:true)
+
+            "/foo2"(controller: "foo") {
+                parseRequest = true
+            }
+
+            "/foo3" {
+                controller = "foo"
+                parseRequest = true
+            }
+
+            name foo4: "/foo4" {
+                controller = "foo"
+                parseRequest = true
+            }
+
+            "/bar"(uri:"/x/y")
+
+            "/surveys/view/$id" {
+                controller = "survey"
+                action = "viewById"
+                constraints {
+                    id(matches:/\d+/)
+                }
+            }
+            "/surveys/view/$name" {
+                controller = "survey"
+                action = "viewByName"
+            }
+            "/reports/$foo" {
+                controller = 'reporting'
+                action = 'view'
+            }
+            "/$first-alpha-$second/$third-beta-$fourth-foo(.$format)?" {
+                controller = 'hyphenTests'
+                action = 'view'
+            }
+            "/plugins/grails-$plugin/tags/RELEASE_$version/$fullName(.$type)" {
+                controller = 'website'
+                action = 'displayPlugin'
+            }
+        }
     }
 }

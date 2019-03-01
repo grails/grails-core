@@ -3,8 +3,6 @@ dependencies {
     compile project(":grails-core"), project(":grails-spring")
     compile project(":grails-plugin-validation")
 
-    provided "org.grails:grails-async:$asyncVersion"
-
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
         exclude group: 'org.grails', module:'grails-datastore-core'
