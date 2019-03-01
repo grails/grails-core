@@ -18,6 +18,7 @@ package org.grails.web.mapping;
 import grails.boot.GrailsApp;
 import grails.util.GrailsNameUtils;
 import grails.web.CamelCaseUrlConverter;
+import grails.web.HyphenatedUrlConverter;
 import grails.web.UrlConverter;
 
 import java.util.Collections;
@@ -178,9 +179,16 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         return pluginName == null ? null : pluginName.toString();
     }
 
+    private String checkAndReturnCorrectUrlFormat(String name){
+        if(name != null && this.urlConverter instanceof HyphenatedUrlConverter){
+            return convertHyphenatedNameToCamelCase(name);
+        }
+        return urlConverter.toUrlElement(name);
+    }
+
     public String getNamespace() {
         String name = evaluateNameForValue(namespace);
-        return urlConverter.toUrlElement(name);
+        return checkAndReturnCorrectUrlFormat(name);
     }
     public String getControllerName() {
         String name = evaluateNameForValue(controllerName);
@@ -188,7 +196,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
             throw new UrlMappingException("Unable to establish controller name to dispatch for [" +
                     controllerName + "]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
         }
-        return urlConverter.toUrlElement(name);
+        return checkAndReturnCorrectUrlFormat(name);
     }
 
     public String getActionName() {
@@ -198,7 +206,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         if (name == null) {
             name = evaluateNameForValue(actionName, webRequest);
         }
-        return urlConverter.toUrlElement(name);
+        return checkAndReturnCorrectUrlFormat(name);
     }
 
     public String getViewName() {
@@ -319,5 +327,22 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         result = 31 * result + (httpMethod != null ? (METHOD_PREFIX +httpMethod).hashCode() : 0);
         result = 31 * result + (version != null ? (VERSION_PREFIX +version).hashCode() : 0);
         return result;
+    }
+
+    private String convertHyphenatedNameToCamelCase(String name) {
+        char[] chars = name.toCharArray();
+        StringBuilder stringBuffer = new StringBuilder();
+
+        for(int i = 0; i < chars.length; i++){
+            char c;
+            if(chars[i] == '-'){
+                i++;
+                c = Character.toUpperCase(chars[i]);
+            } else {
+                c = chars[i];
+            }
+            stringBuffer.append(c);
+        }
+        return stringBuffer.toString();
     }
 }
