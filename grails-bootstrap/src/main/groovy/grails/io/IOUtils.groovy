@@ -189,7 +189,11 @@ class IOUtils extends SpringIOUtils {
         if(classRes) {
             String rootPath = classRes.toString() - pathToClassFile
             if(rootPath.endsWith(BuildSettings.BUILD_CLASSES_PATH)) {
-                rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+                if (BuildSettings.BUILD_CLASSES_PATH == "build/classes/groovy/main" ) {
+                    rootPath = rootPath.replace('/build/classes/groovy/', '/build/resources/')
+                } else {
+                    rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+                }
             }
             else {
                 rootPath = "$rootPath/"
@@ -231,7 +235,11 @@ class IOUtils extends SpringIOUtils {
         if(classRes) {
             def rootPath = classRes.toString() - pathToClassFile
             if(rootPath.endsWith(BuildSettings.BUILD_CLASSES_PATH)) {
-                rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+                if (BuildSettings.BUILD_CLASSES_PATH == "build/classes/groovy/main" ) {
+                    rootPath = rootPath.replace('/build/classes/groovy/', '/build/resources/')
+                } else {
+                    rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+                }
             }
             return new URL("$rootPath$path")
         }
