@@ -182,13 +182,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                            } else {
                                Map newMap = [:]
                                newMap.put(remainder, sourceValue)
+                               fill(list, i, null)
                                list.set(i, newMap)
                            }
                        } else {
                            Map newMap = [:]
                            newMap.put(remainder, sourceValue)
-
-                           list.add(i, newMap)
+                           fill(list, i, null)
+                           list.set(i, newMap)
                        }
                        targetMap.put(k, list)
                    } else {
@@ -210,11 +211,8 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                    if (index.isNumber()) {
                        List list = currentValue instanceof List ? currentValue : []
                        int i = index.toInteger()
-                       if (list.size() > i) {
-                           list.set(i, sourceValue)
-                       } else {
-                           list.add(i, sourceValue)
-                       }
+                       fill(list, i, null)
+                       list.set(i, sourceValue)
                        targetMap.put(k, list)
                    } else {
                        Map nestedMap = currentValue instanceof Map ? currentValue : [:]
@@ -311,6 +309,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 return navigateMap((Map<String, Object>) submap, path.tail())
             }
             return submap
+        }
+    }
+
+    private void fill(List list, Integer toIndex, Object value) {
+        if (toIndex >= list.size()) {
+            for (int i = list.size(); i <= toIndex; i++) {
+                list.add(i, value)
+            }
         }
     }
     
