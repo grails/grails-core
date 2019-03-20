@@ -72,10 +72,15 @@ class GroovyPagePlugin implements Plugin<Project> {
             war.classpath = war.classpath + project.files(destDir)
         }
         allTasks.withType(Jar) { Jar jar ->
-            if(!(jar instanceof War) && (jar.name == 'bootJar')) {
-                jar.dependsOn compileGroovyPages
-                jar.from(destDir) {
-                    into("BOOT-INF/classes")
+            if(!(jar instanceof War)) {
+                if (jar.name == 'bootJar') {
+                    jar.dependsOn compileGroovyPages
+                    jar.from(destDir) {
+                        into("BOOT-INF/classes")
+                    }
+                } else if(jar.name == 'jar') {
+                    jar.dependsOn compileGroovyPages
+                    jar.from destDir
                 }
             }
         }
