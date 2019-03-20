@@ -155,44 +155,15 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         applyBomImport(dme, project)
 
-        boolean isGorm61 = false
         boolean hasGormVersion = project.hasProperty('gormVersion')
         String gormVersion
 
         if(hasGormVersion) {
             gormVersion = project.properties['gormVersion'] as String
-            isGorm61 = GrailsVersionUtils.supportsAtLeastVersion(gormVersion, "6.1.0")
-        }
-
-        if (isGorm61) {
-            project.afterEvaluate {
-                DependencySet dependencies = project.configurations.getByName('testCompile').allDependencies
-                boolean hasPluginTesting = false
-                boolean hasGormTest = false
-                dependencies.each {
-                    if (it.name == "grails-plugin-testing") {
-                        hasPluginTesting = true
-                    }
-                    if (it.name == "grails-datastore-gorm-test") {
-                        hasGormTest = true
-                    }
-                }
-                if (hasPluginTesting && !hasGormTest) {
-                    project.dependencies.add "testCompile", "org.grails:grails-datastore-gorm-test:$gormVersion"
-                }
-            }
         }
 
         project.configurations.all( { Configuration configuration ->
-            for(oldPluginExcludes in ['async', 'events', 'converters', 'gsp', 'testing']) {
-                configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
-            }
-
             if(hasGormVersion) {
-                if(isGorm61) {
-                    configuration.exclude(module:'grails-datastore-simple')
-                }
-
                 configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
                     String dependencyName = details.requested.name
                     String group = details.requested.group
