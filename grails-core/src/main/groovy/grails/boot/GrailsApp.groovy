@@ -404,14 +404,7 @@ class GrailsApp extends SpringApplication {
                             this,
                             StringUtils.EMPTY_STRING_ARRAY, (ConfigurableApplicationContext)applicationContext.getParent())
             )
-            String context_path = app.config.getProperty('server.context-path', '')
-            if(context_path){
-                println("WARNING: 'server.context-path: ${context_path}' is deprecated. Please use 'server.contextPath: ${context_path}'")
-            } else {
-                context_path=''
-            }
-            // in spring-boot context-path is chosen before contextPath ...
-            String contextPath = context_path?context_path:app.config.getProperty('server.contextPath', '')
+            String contextPath = app.config.getProperty('server.servlet.context-path', '')
             String hostName = app.config.getProperty('server.address', 'localhost')
             int port
             if (applicationContext instanceof WebServerApplicationContext) {
