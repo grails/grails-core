@@ -10,7 +10,6 @@ env:
   - GRADLE_OPTS="-Xmx768m -Xms256m -XX:MaxPermSize=372m -XX:+CMSClassUnloadingEnabled"
   - GIT_NAME="Graeme Rocher"
   - GIT_EMAIL="graeme.rocher@gmail.com"
-  - secure: XdMql6e7ToSMuhZuG1baCm6IDvj+X7pAbK210awH8Yww8lGGu2NryHBQliv0CLqd7tkjKSUHP3y/22O8H46Xc0+7ucWF8JwlMvtBeSuK/U/p/R7tOkLNeBuAXj9Xxd1oe9aRQrZS5AT2zkCkMGxTd7uGcm5p9MO0MmypFHzjPlE=
   - secure: HMX1CzkCcj9Qal1Syk3kJR1VBQcmT5Uo986dL4r28q00YoyrfRjtAIqvCJSKO1t7aCeJkG74sdeNs43EYpkXCAS9c/ffWAWK1G+YAO5XgJi9cWj/B5F6MGD3YAbO86PIUceq3VcoGztflBB7i9N9YakYt41vnMPULHFBEpLtfOQ=
   - secure: cxwLqMrf9LXt8KvDmDAduoh8lvsJpn9lI5lzUr/1BZG1c0NLA/n6cK3niqm2bdRVYuQm6lWH5ogJQwYTwrbSri78ATotV4ocNz6Faz/U8C75hSoYiJwenUqv7y06o/xks4vwuka1Rp3A4By6nLr/Uv9RN+GAVlvH6aCHB5nF/zY=
   - secure: nWjedZFU24YArzL9SvV/wi6kH/VoNLEE4EtrmA0xKwu7TXLPRhs/T/mmwlwLKinl4uv/RcD0ISztQKdrG5Dw7JpA/40fH32f2wVg6DotgGHj6YUK57Gf3QjYhc88Y5s19nqg5Pmq8CS7vz4lEkD141ooY4zBjSQfPhqoUdoAzzM=
@@ -25,8 +24,9 @@ env:
   - secure: U2aQypvBmL3oHvF44/IVQoG+VdTpBhGakIi6PdmGNhYFVB++SJCq1whow2X+xXPimFRSvSiHWa5XDGtdVwN4o4Dy0CPk+72nwa4Yx4L7IZNr7p+ZyceioRmdGXMKyvzhEmUHqDUwrbhwLlP6K+hVFIKTrxQR/6TWbLEbdDPQdjc=
   - secure: tpo5MPUDObdMpZeovj80+SFPjBgsUoyvdUvPhBF1paN4qKdrhcz+xyk3qB1dsXuUmGbzya7gjz9TdniLpSS86CbXd8TGiSL/14YlrSrLxIbhLWNIodaKbV21FIQYyz+E7EP611QcAGr1lHTYKDz2JnKbpSXsJt/qgROnEB62R4U=
   - secure: ikQeb2+ul0PTQqu6Jl2K0tnQIflWM0ifYKUxbZuIApoVyeL53zmzhLoI3waNZRoGyRF8eQ6V8C8SISUpD8fDDWaTMrkp9r3Zd0y9DG2FK5GYK1c+gxeUzLkxQvTMqRCsODlS6ZYR9ofyO2J6jG5H8hxcGnI7LoU6ufYFj8FwN70=
+  - secure: G/lGAj8bUzWA14PMtJiuOdKtYXZHA+T65ytZ8sTm3x+27DZKbZw86HkaUhmB5zFqkrP9Vu/Py/rOpiHoWlO9YH15kb/gOyvN6s3RuSmVMOMK06ogvFFAAf5N6BVEc0DYlwF7EY7tB9CqdivUinacIaThpcuClZAhk9GpptlmQB4=
 install: "/bin/true"
-script: ./travis-build.sh
+script: "./travis-build.sh"
 deploy:
   provider: releases
   api_key:
