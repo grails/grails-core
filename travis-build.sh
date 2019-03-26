@@ -65,13 +65,17 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 			    cd ..
 
 			    # Update the website
+                            echo "set released version in static website"      
 			    git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
 			    cd grails-static-website
-			    echo -e "${TRAVIS_TAG:1}" >> generator/src/main/resources/versions
-			    git add generator/src/main/resources/versions
-			    git commit -m "Release Grails $TRAVIS_TAG"
-			    git push
+			    version="$TRAVIS_TAG"
+                            version=${version:1}
+			    ./release.sh $version
+	                    git commit -a -m "Updating grails version at static website for Travis build: https://travis-ci.org/$TRAVIS_REPO_SLUG/builds/$TRAVIS_BUILD_ID" && {
+                                git push origin HEAD || true
+                            }			    
 			    cd ..
+			    rm -rf grails-static-website
 
 			    # Rebuild Artifactory index
 			    curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
