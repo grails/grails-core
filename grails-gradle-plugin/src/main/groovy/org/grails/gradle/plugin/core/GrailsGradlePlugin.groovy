@@ -69,7 +69,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
 
-    protected static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
+    protected static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
     // NOTE: mongodb, neo4j etc. should NOT be included here so they can be independently versioned
     protected static final List<String> CORE_GORM_PLUGINS = ['hibernate4','hibernate5']
 
