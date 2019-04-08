@@ -28,7 +28,6 @@ ext {
     // grailsVersion = '4.0.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [
         'javax.annotation-api': [
                 version: javaxAnnotationApiVersion,
@@ -76,12 +75,6 @@ ext {
             version: directoryWatcherVersion,
             group  : 'io.methvin',
             names  : ['directory-watcher'],
-            modules: ['']
-        ],
-        springLoaded: [
-            version: springLoadedVersion,
-            group  : 'org.springframework',
-            names  : ['springloaded'],
             modules: ['']
         ],
         async: [
