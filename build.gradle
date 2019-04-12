@@ -51,7 +51,12 @@ ext {
             version: datastoreVersion,
             group  : 'org.grails',
             names  : ['grails-datastore'],
-            modules: ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'gorm-async', 'test-support', 'hibernate-core', 'gorm-test']
+            modules: ['async','core', 'web', 'gorm','gorm-async','gorm-support', 'gorm-rx', 'gorm-test', 'gorm-validation']
+        ],
+        'datastore.hibernate': [
+            version: hibernateDatastoreVersion,
+            group  : 'org.grails',
+            names  : ['grails-datastore-gorm-hibernate5']
         ],
         'scaffolding-core': [
                 version: scaffoldingCoreVersion,
