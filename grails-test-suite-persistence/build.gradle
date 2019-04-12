@@ -16,7 +16,7 @@ dependencies {
                 project(':grails-spring')
 
     testCompile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
-    testCompile "org.grails:grails-datastore-gorm-hibernate5:$datastoreVersion", {
+    testCompile "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
