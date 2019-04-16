@@ -148,7 +148,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         if (dependencyManagementPlugin == null) {
             project.plugins.apply(DependencyManagementPlugin)
         }
-        
+
         DependencyManagementExtension dme = project.extensions.findByType(DependencyManagementExtension)
 
         applyBomImport(dme, project)

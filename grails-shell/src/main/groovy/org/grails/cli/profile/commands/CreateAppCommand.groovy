@@ -229,7 +229,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
             if(profileRepository instanceof MavenProfileRepository) {
                 MavenProfileRepository mpr = (MavenProfileRepository)profileRepository
-                String gormDep = mpr.profileDependencyVersions.versionProperties.get('datastore.version')
+                String gormDep = mpr.profileDependencyVersions.versionProperties.get('gorm.version')
                 if(gormDep != null) {
                     variables['gorm.version'] = gormDep
                 }
