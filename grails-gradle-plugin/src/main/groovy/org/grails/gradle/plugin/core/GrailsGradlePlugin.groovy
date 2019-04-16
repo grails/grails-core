@@ -148,36 +148,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
         if (dependencyManagementPlugin == null) {
             project.plugins.apply(DependencyManagementPlugin)
         }
-
-
+        
         DependencyManagementExtension dme = project.extensions.findByType(DependencyManagementExtension)
 
         applyBomImport(dme, project)
-
-        boolean hasGormVersion = project.hasProperty('gormVersion')
-        String gormVersion
-
-        if(hasGormVersion) {
-            gormVersion = project.properties['gormVersion'] as String
-        }
-
-        project.configurations.all( { Configuration configuration ->
-            if(hasGormVersion) {
-                configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
-                    String dependencyName = details.requested.name
-                    String group = details.requested.group
-                    if(group == 'org.grails' &&
-                            dependencyName.startsWith('grails-datastore')) {
-                        for(suffix in GrailsGradlePlugin.CORE_GORM_LIBRARIES) {
-                            if(dependencyName == "grails-datastore-$suffix") {
-                                details.useVersion(gormVersion)
-                                return
-                            }
-                        }
-                    }
-                } as Action<DependencyResolveDetails>)
-            }
-        } as Action<Configuration>)
     }
 
     protected void applySpringBootPlugin(Project project) {

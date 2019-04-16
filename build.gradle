@@ -47,13 +47,13 @@ ext {
                 names:['micronaut-spring'],
                 modules:['context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
         ],
-        datastore: [
+        gorm: [
             version: datastoreVersion,
             group  : 'org.grails',
             names  : ['grails-datastore'],
             modules: ['async','core', 'web', 'gorm','gorm-async','gorm-support', 'gorm-rx', 'gorm-test', 'gorm-validation']
         ],
-        'datastore.hibernate': [
+        'gorm.hibernate': [
             version: hibernateDatastoreVersion,
             group  : 'org.grails',
             names  : ['grails-datastore-gorm-hibernate5']
