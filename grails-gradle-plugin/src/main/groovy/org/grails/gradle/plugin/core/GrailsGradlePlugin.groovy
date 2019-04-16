@@ -15,7 +15,6 @@
  */
 package org.grails.gradle.plugin.core
 
-import grails.plugins.GrailsVersionUtils
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
@@ -175,9 +174,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                                 return
                             }
                         }
-                    }
-                    else if(group == 'org.grails.plugins' && GrailsGradlePlugin.CORE_GORM_PLUGINS.contains(dependencyName)) {
-                        details.useVersion(gormVersion - '.RELEASE')
                     }
                 } as Action<DependencyResolveDetails>)
             }
