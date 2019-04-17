@@ -348,7 +348,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * {@inheritDoc }
      */
     Map<String, MultipartFile> getFileMap() {
-        return multipartFiles
+        return multipartFiles.toSingleValueMap()
     }
 
     /**
@@ -409,7 +409,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     }
 
     Collection<Part> getParts() {
-        getFileMap().values().collect {new MockPart(it)}
+        getMultiFileMap().values().flatten().collect {new MockPart(it)}
     }
 
     Part getPart(String name) {
