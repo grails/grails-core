@@ -65,7 +65,7 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 			    cd ..
 
 			    # Update the website
-                            echo "set released version in static website"      
+                echo "set released version in static website"      
 			    git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
 			    cd grails-static-website
 			    version="$TRAVIS_TAG"
