@@ -478,6 +478,19 @@ public class JSONTokener {
      */
     @Override
     public String toString() {
-        return " at character " + this.myIndex + " of " + this.mySource;
+        int endIndex = mySource.length();
+        boolean appendDots = false;
+        if (endIndex > 20) {
+            // only show first 20 characters of source to prevent reDOS attacks, especially in Java 8 regexp engine
+            // see https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS for more info
+            endIndex = 19;
+            appendDots = true;
+        }
+        StringBuffer output = new StringBuffer(" at character " + this.myIndex + " of " + this.mySource.substring(0, endIndex));
+        if (appendDots) {
+            output.append("...");
+        }
+        return Matcher.quoteReplacement(output.toString());
+
     }
 }
