@@ -467,7 +467,8 @@ public class JSONTokener {
      * @return A JSONException object, suitable for throwing
      */
     public JSONException syntaxError(String message) {
-        return new JSONException(message + toString());
+
+        return new JSONException(message + toRegexSafeString());
     }
 
 
@@ -478,6 +479,15 @@ public class JSONTokener {
      */
     @Override
     public String toString() {
+        return " at character " + this.myIndex + " of " + this.mySource;
+    }
+
+    /**
+     * Make a regex safe printable string of this JSONTokener.
+     *
+     * @return " at character [this.myIndex] of [this.mySource]"
+     */
+    public String toRegexSafeString() {
         int endIndex = mySource.length();
         boolean appendDots = false;
         if (endIndex > 20) {
@@ -491,6 +501,6 @@ public class JSONTokener {
             output.append("...");
         }
         return Matcher.quoteReplacement(output.toString());
-
     }
+
 }
