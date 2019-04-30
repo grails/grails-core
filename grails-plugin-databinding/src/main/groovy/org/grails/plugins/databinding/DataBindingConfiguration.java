@@ -4,17 +4,13 @@ import grails.core.GrailsApplication;
 import grails.databinding.TypedStructuredBindingEditor;
 import grails.databinding.converters.FormattedValueConverter;
 import grails.databinding.converters.ValueConverter;
-import grails.web.databinding.DataBindingUtils;
 import grails.web.databinding.GrailsWebDataBinder;
 import io.micronaut.core.util.ArrayUtils;
 import org.grails.databinding.bindingsource.DataBindingSourceCreator;
-import org.grails.databinding.converters.DateConversionHelper;
 import org.grails.web.databinding.bindingsource.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class DataBindingConfiguration {
@@ -41,6 +37,9 @@ public class DataBindingConfiguration {
                 .getBeansOfType(ValueConverter.class).values().toArray(new ValueConverter[0]);
         dataBinder.setValueConverters(ArrayUtils.concat(valueConverters, mainContextConverters));
         dataBinder.setFormattedValueConverters(formattedValueConverters);
+        final TypedStructuredBindingEditor[] mainContextStructuredBindingEditors = mainContext
+                .getBeansOfType(TypedStructuredBindingEditor.class).values().toArray(new TypedStructuredBindingEditor[0]);
+        dataBinder.setStructuredBindingEditors(ArrayUtils.concat(structuredBindingEditors, mainContextStructuredBindingEditors));
         return dataBinder;
     }
 
