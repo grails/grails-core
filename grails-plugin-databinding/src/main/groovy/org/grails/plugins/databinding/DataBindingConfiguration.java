@@ -36,7 +36,9 @@ public class DataBindingConfiguration {
         final ValueConverter[] mainContextConverters = mainContext
                 .getBeansOfType(ValueConverter.class).values().toArray(new ValueConverter[0]);
         dataBinder.setValueConverters(ArrayUtils.concat(valueConverters, mainContextConverters));
-        dataBinder.setFormattedValueConverters(formattedValueConverters);
+        final FormattedValueConverter[] mainContextFormattedValueConverters = mainContext
+                .getBeansOfType(FormattedValueConverter.class).values().toArray(new FormattedValueConverter[0]);
+        dataBinder.setFormattedValueConverters(ArrayUtils.concat(formattedValueConverters, mainContextFormattedValueConverters));
         final TypedStructuredBindingEditor[] mainContextStructuredBindingEditors = mainContext
                 .getBeansOfType(TypedStructuredBindingEditor.class).values().toArray(new TypedStructuredBindingEditor[0]);
         dataBinder.setStructuredBindingEditors(ArrayUtils.concat(structuredBindingEditors, mainContextStructuredBindingEditors));
