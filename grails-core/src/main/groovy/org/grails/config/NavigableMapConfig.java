@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * A {@link Config} implementation that operates against a {@link org.grails.config.NavigableMap}
@@ -210,7 +211,7 @@ public abstract class NavigableMapConfig implements Config {
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         Object value = findInSystemEnvironment(key);
         if (value == null) {
-            value = configMap.get(key);
+            value = DotNotatedKeyParser.getValueWithDotNotatedKeySupport(configMap, key);
         }
 
         return convertValueIfNecessary(value, targetType, defaultValue);
