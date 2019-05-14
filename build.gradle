@@ -31,7 +31,7 @@ ext {
     gspVersion = '3.3.2'
     legacyConvertersVersion = "3.3.1"
     testingSupportVersion = "1.1.5"
-    datastoreVersion = "6.1.11.RELEASE"
+    datastoreVersion = "6.1.12.RELEASE"
     hibernate4Version = "6.1.8.RELEASE"
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
