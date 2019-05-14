@@ -6,6 +6,13 @@ import java.util.StringTokenizer;
 
 public class DotNotatedKeyParser {
 
+    /**
+     * Resolves dot notated getProperty calls on a config object so that injected environmental variables
+     * are properly resolved the same as Groovy's dot notation.
+     * @param configMap NavigableMap
+     * @param key identifies NavigableMap value to retrieve
+     * @return the property value associated with the key
+     */
     public static Object getValueWithDotNotatedKeySupport(NavigableMap configMap, String key) {
         if (key == null || configMap == null) {
             return null;
