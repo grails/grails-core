@@ -2,6 +2,7 @@ package org.grails.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class DotNotatedKeyParser {
@@ -9,8 +10,9 @@ public class DotNotatedKeyParser {
     /**
      * Resolves dot notated getProperty calls on a config object so that injected environmental variables
      * are properly resolved the same as Groovy's dot notation.
+     *
      * @param configMap NavigableMap
-     * @param key identifies NavigableMap value to retrieve
+     * @param key       identifies NavigableMap value to retrieve
      * @return the property value associated with the key
      */
     public static Object getValueWithDotNotatedKeySupport(NavigableMap configMap, String key) {
@@ -27,8 +29,8 @@ public class DotNotatedKeyParser {
         for (int i = 0; i < keys.size(); i++) {
             if (i == 0) {
                 value = configMap.get(keys.get(i));
-            } else if (value instanceof NavigableMap) {
-                value = ((NavigableMap) value).get(keys.get(i));
+            } else if (value instanceof Map) {
+                value = ((Map) value).get(keys.get(i));
             }
         }
         return value;

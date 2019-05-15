@@ -212,6 +212,9 @@ public abstract class NavigableMapConfig implements Config {
         if (value == null) {
             value = DotNotatedKeyParser.getValueWithDotNotatedKeySupport(configMap, key);
         }
+        if (value == null) {
+            value = configMap.get(key);
+        }
 
         return convertValueIfNecessary(value, targetType, defaultValue);
     }
