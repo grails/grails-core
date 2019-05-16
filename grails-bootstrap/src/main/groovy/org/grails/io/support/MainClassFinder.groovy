@@ -35,6 +35,10 @@ class MainClassFinder {
      */
     static String searchMainClass(URI path) {
 
+        if (!path) {
+            return null
+        }
+
         def pathStr = path.toString()
         if(mainClasses.containsKey(pathStr)) {
             return mainClasses.get(pathStr)
