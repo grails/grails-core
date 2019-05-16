@@ -557,12 +557,20 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.afterEvaluate {
             ConfigurationContainer configurations = project.configurations
             Configuration runtime = configurations.getByName('runtime')
+            Configuration developmentOnly = configurations.findByName('developmentOnly')
             Configuration console = configurations.getByName('console')
             SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
             SourceSetOutput output = mainSourceSet?.output
             FileCollection mainFiles = resolveClassesDirs(output, project)
 
-            Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
+            Jar pathingJar
+
+            if (developmentOnly != null) {
+                pathingJar = createPathingJarTask(project, "pathingJar", runtime, developmentOnly)
+            } else {
+                pathingJar = createPathingJarTask(project, "pathingJar", runtime)
+            }
+            
             FileCollection pathingClasspath = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath) + mainFiles
 
             Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
