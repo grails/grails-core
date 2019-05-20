@@ -567,6 +567,16 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     }
 }
 
+project.afterEvaluate {
+    allprojects.repositories.each { handler ->
+        handler.each {
+            if (it.url.toString().startsWith("http://")) {
+                throw new RuntimeException("Build should not define insecure HTTP-based Maven repostories")
+            }
+        }
+    }
+}
+
 apply plugin: "io.sdkman.vendors"
 sdkman {
     api = "https://vendors.sdkman.io"
