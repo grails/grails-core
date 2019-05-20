@@ -41,7 +41,7 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
 	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 	    ./gradlew --stop
-	    ./gradlew --no-daemon bintrayUpload
+	    ./gradlew --no-daemon publish bintrayUpload
 
 	    if [[ $EXIT_STATUS == 0 ]]; then
 	        ./gradlew --stop

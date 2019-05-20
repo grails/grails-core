@@ -467,7 +467,8 @@ public class JSONTokener {
      * @return A JSONException object, suitable for throwing
      */
     public JSONException syntaxError(String message) {
-        return new JSONException(message + toString());
+
+        return new JSONException(message + toRegexSafeString());
     }
 
 
@@ -480,4 +481,26 @@ public class JSONTokener {
     public String toString() {
         return " at character " + this.myIndex + " of " + this.mySource;
     }
+
+    /**
+     * Make a regex safe printable string of this JSONTokener.
+     *
+     * @return " at character [this.myIndex] of [this.mySource]"
+     */
+    public String toRegexSafeString() {
+        int endIndex = mySource.length();
+        boolean appendDots = false;
+        if (endIndex > 20) {
+            // only show first 20 characters of source to prevent reDOS attacks, especially in Java 8 regexp engine
+            // see https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS for more info
+            endIndex = 19;
+            appendDots = true;
+        }
+        StringBuffer output = new StringBuffer(" at character " + this.myIndex + " of " + this.mySource.substring(0, endIndex));
+        if (appendDots) {
+            output.append("...");
+        }
+        return Matcher.quoteReplacement(output.toString());
+    }
+
 }

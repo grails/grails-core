@@ -73,9 +73,9 @@ publishing {
                             for (dep in dependencyVersions) {
                                 def info = dep.value
                                 def depList = GroovyCollections
-                                    .combinations(info.names, info.modules)
-                                    .collect { it.join('-') }
-                                    .collect { it.endsWith('-') ? it[0..-2] : it }
+                                        .combinations(info.names, info.modules)
+                                        .collect { it.join('-') }
+                                        .collect { it.endsWith('-') ? it[0..-2] : it }
 
                                 for (dependency in depList) {
                                     mkp.dependency {

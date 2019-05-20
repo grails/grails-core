@@ -15,12 +15,16 @@ buildscript {
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
+        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
     }
 }
 
-apply plugin: 'idea'
+import groovyx.net.http.RESTClient
+import static groovyx.net.http.ContentType.*
 
+apply plugin: 'idea'
 ext {
+    isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
     bintrayPublish = false
     // Sets release version
     grailsVersion = '4.0.0.BUILD-SNAPSHOT'
@@ -523,6 +527,36 @@ task clean(type: Delete) {
            homeSrcDir
 }
 
+task synchronizeWithMavenCentral() {
+    description = "Syncs with Maven Central/Sonatype"
+    doLast {
+        println """
+Synchronizing with Maven central. This may take a few minutes ...
+If this fails, log on to http://oss.sonatype.org/ using the centralUser credentials
+and progress through process manually -> Close -> Publish ... under staging repositories
+"""
+        try {
+            // doesn't exist.. try sync
+            def client = new RESTClient('https://api.bintray.com/maven_central_sync/grails/grails-core/')
+            client.headers['Authorization'] = 'Basic ' + "$bintrayUser:$bintrayKey".getBytes('iso-8859-1').encodeBase64()
+            def body = /{}/
+            def resp = client.post(
+                    path: "grails-core/versions/$grailsVersion",
+                    body: body,
+                    requestContentType: JSON
+            )
+            assert resp.status == 200
+            println resp.data.status
+            println resp.data.messages.join('\n')
+        } catch (groovyx.net.http.HttpResponseException e) {
+            println "Error: $e"
+            println "Message: $e.message"
+            println "Body: $e.response.data"
+            throw e
+        }
+    }
+}
+
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
 subprojects.each {
     if (it.tasks.findByName('install') && it.tasks.findByName('publishToMavenLocal')) {
@@ -553,6 +587,16 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
         // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
         if (classpath) {
             classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
+        }
+    }
+}
+
+project.afterEvaluate {
+    allprojects.repositories.each { handler ->
+        handler.each {
+            if (it.url.toString().startsWith("http://")) {
+                throw new RuntimeException("Build should not define insecure HTTP-based Maven repostories")
+            }
         }
     }
 }
