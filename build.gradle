@@ -291,10 +291,8 @@ subprojects { project ->
                 maven(MavenPublication) {
                     from components.java
 
-                    afterEvaluate {
-                        artifact source: sourcesJar, classifier: "sources"
-                        artifact source: javadocJar, classifier: "javadoc"
-                    }
+                    artifact source: sourcesJar, classifier: "sources"
+                    artifact source: javadocJar, classifier: "javadoc"
                     pom.withXml {
                         def xml = asNode()
 
@@ -495,6 +493,11 @@ task clean(type: Delete) {
            homeLibDir,
            homeSrcDir
 }
+
+def bintrayUser = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+def bintrayKey = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
+def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 
 task synchronizeWithMavenCentral() {
     description = "Syncs with Maven Central/Sonatype"
