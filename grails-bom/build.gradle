@@ -12,9 +12,7 @@ publishing {
                 def profiles = new Properties()
                 profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
 
-                xml.name[0].value = "Grails BOM"
-                xml.description[0].value = "Grails default supported dependency definitions"
-
+                xml.children().last() + pomInfo
                 xml.children().last() + {
                     def mkp = delegate
 
@@ -75,9 +73,9 @@ publishing {
                             for (dep in dependencyVersions) {
                                 def info = dep.value
                                 def depList = GroovyCollections
-                                    .combinations(info.names, info.modules)
-                                    .collect { it.join('-') }
-                                    .collect { it.endsWith('-') ? it[0..-2] : it }
+                                        .combinations(info.names, info.modules)
+                                        .collect { it.join('-') }
+                                        .collect { it.endsWith('-') ? it[0..-2] : it }
 
                                 for (dependency in depList) {
                                     mkp.dependency {

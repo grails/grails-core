@@ -3,6 +3,10 @@ echo "Gradle command to be run: '$GRADLE_CMD'"
 
 EXIT_STATUS=0
 
+./gradlew --stop
+./gradlew clean classes --no-daemon
+./gradlew testClasses --no-daemon
+
 if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
 else
@@ -14,6 +18,12 @@ else
     } || EXIT_STATUS=$?
     echo "Done."
 fi
+
+if [ "${TRAVIS_JDK_VERSION}" == "openjdk11" ] ; then
+  exit $EXIT_STATUS
+fi
+
+echo "Publishing for branch $TRAVIS_BRANCH JDK: $TRAVIS_JDK_VERSION"
 
 if [[ $EXIT_STATUS -eq 0 ]]; then
     ./gradlew --stop
@@ -31,7 +41,7 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
 	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 	    ./gradlew --stop
-	    ./gradlew --no-daemon bintrayUpload
+	    ./gradlew --no-daemon publish bintrayUpload
 
 	    if [[ $EXIT_STATUS == 0 ]]; then
 	        ./gradlew --stop

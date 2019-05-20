@@ -2,65 +2,36 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
-        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+        maven { url 'https://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.8.0"
-        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
+        classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:$gradleNexusStagingPluginVersion"
+        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
+        classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
+        classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
+        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
     }
 }
 
+import groovyx.net.http.RESTClient
+import static groovyx.net.http.ContentType.*
+
 apply plugin: 'idea'
 
-
 ext {
+    isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
     bintrayPublish = false
     // Sets release version
     grailsVersion = '3.3.10.BUILD-SNAPSHOT'
 //    grailsVersion = '3.3.9'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-
-    asyncVersion = '3.3.2'
-    gspVersion = '3.3.2'
-    legacyConvertersVersion = "3.3.1"
-    testingSupportVersion = "1.1.5"
-    datastoreVersion = "6.1.12.RELEASE"
-    hibernate4Version = "6.1.8.RELEASE"
-    antTraxVersion = "1.7.1"
-    antVersion = "1.9.7"
-    aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
-    commonsCliVersion = "1.2"
-    commonsIOVersion = "2.2"
-    commonsLangVersion = "2.6"
-    gdocEngineVersion = "1.0.1"
-
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.17"
-    jansiVersion = "1.14"
-    jlineVersion = "2.12"
-    jnaVersion = "4.2.2"
-    slf4jVersion = "1.7.25"
-
-    spockVersion = '1.1-groovy-2.4'
-    springBootVersion = "1.5.21.RELEASE"
-    springLoadedVersion = "1.2.8.RELEASE"
-    directoryWatcherVersion = "0.5.1"
-    springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.3.22.RELEASE"
-    junitVersion = "4.12"
-    concurrentlinkedhashmapVersion = "1.4.2"
-    cglibVersion = "2.2.2"
-    objenesisVersion = "1.4"
-    tomcatVersion = "8.5.40"
-    tomcatLog4jVersion = "8.5.2"
-    servletApiVersion = "3.0.1"
-
     dependencyVersions = [
         datastore: [
             version: datastoreVersion,
@@ -124,8 +95,6 @@ ext {
         ],
     ]
 
-    isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
-
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 
@@ -178,6 +147,7 @@ allprojects {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
                 name 'JFrog OSS snapshot repo'
@@ -192,6 +162,12 @@ allprojects {
                 def cacheHours = isCiBuild ? 0 : 24
                 cacheDynamicVersionsFor cacheHours, 'hours'
                 cacheChangingModulesFor cacheHours, 'hours'
+                eachDependency { DependencyResolveDetails details ->
+                    //specifying a fixed version for all libraries with 'org.gradle' group
+                    if (details.requested.group == 'org.codehaus.groovy') {
+                        details.useVersion groovyVersion
+                    }
+                }
             }
         }
     }
@@ -216,10 +192,8 @@ allprojects {
 
     }
 
-    if (JavaVersion.current().isJava8Compatible()) {
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
-        }
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
     }
 }
 
@@ -308,21 +282,26 @@ subprojects { project ->
                         username = u
                         password = p
                     }
-                    url  "https://repo.grails.org/grails/libs-snapshots-local"
+                    if (isBuildSnapshot) {
+                        url  "https://repo.grails.org/grails/libs-snapshots-local"
+                    } else {
+                        url  "https://repo.grails.org/grails/libs-releases-local"
+                    }
+
                 }
             }
+
+            if(project.name == 'grails-dependencies') return
+            if(project.name == 'grails-bom') return
 
             publications {
                 maven(MavenPublication) {
                     from components.java
 
-                    artifact sourcesJar {
-                        classifier "sources"
+                    afterEvaluate {
+                        artifact source: sourcesJar, classifier: "sources"
+                        artifact source: javadocJar, classifier: "javadoc"
                     }
-                    artifact javadocJar {
-                        classifier "javadoc"
-                    }
-
                     pom.withXml {
                         def xml = asNode()
 
@@ -387,7 +366,7 @@ subprojects { project ->
     if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
             provided 'hsqldb:hsqldb:1.8.0.10'
-            provided 'com.h2database:h2:1.3.176'
+            provided "com.h2database:h2:$h2Version"
         }
     }
 
@@ -428,18 +407,6 @@ subprojects { project ->
         options.docEncoding "UTF-8"
         options.charSet "UTF-8"
         options.jFlags "-Xms64M", "-Xmx512M"
-        if(!isJava8Compatible) {
-            options.jFlags "-XX:MaxPermSize=256m"
-        }
-    }
-
-    idea {
-        module.iml.whenMerged { module ->
-            // adding slf4j-simple with scope TEST to .iml
-            module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
-                [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
-            )
-        }
     }
 
     dependencies {
@@ -462,7 +429,7 @@ subprojects { project ->
 
             // Testing
             testCompile "junit:junit:${junitVersion}"
-
+            testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
             testCompile("org.spockframework:spock-core:${spockVersion}") {
                 transitive = false
                 exclude group:'junit', module: 'junit-dep'
@@ -482,18 +449,12 @@ subprojects { project ->
         if (isTravisBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
-            if(!isJava8Compatible) {
-                jvmArgs '-XX:MaxPermSize=256m'
-            }
             afterSuite {
                 System.out.print('.')
                 System.out.flush()
             }
         } else {
             maxHeapSize = '1024m'
-            if(!isJava8Compatible) {
-                jvmArgs '-XX:MaxPermSize=512m'
-            }
         }
         if(System.getProperty("debug.tests")) {
             jvmArgs debugArguments
@@ -507,7 +468,6 @@ subprojects { project ->
         }
     }
 
-
     configurations {
         meta
         published.extendsFrom archives, meta
@@ -516,16 +476,12 @@ subprojects { project ->
 
     if(!isTestSuite) {
 
-
-
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
             repositories {
                 flatDir name: 'libs', dirs: distInstallDir
             }
         }
-
-
 
         project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
             t.dependsOn installToHomeDist
@@ -535,12 +491,8 @@ subprojects { project ->
                 }
             }
         }
-
     }
-
 }
-
-
 
 task clean(type: Delete) {
     delete buildDir,
@@ -551,8 +503,43 @@ task clean(type: Delete) {
            homeSrcDir
 }
 
+task synchronizeWithMavenCentral() {
+    description = "Syncs with Maven Central/Sonatype"
+    doLast {
+        println """
+Synchronizing with Maven central. This may take a few minutes ...
+If this fails, log on to http://oss.sonatype.org/ using the centralUser credentials
+and progress through process manually -> Close -> Publish ... under staging repositories
+"""
+        try {
+            // doesn't exist.. try sync
+            def client = new RESTClient('https://api.bintray.com/maven_central_sync/grails/grails-core/')
+            client.headers['Authorization'] = 'Basic ' + "$bintrayUser:$bintrayKey".getBytes('iso-8859-1').encodeBase64()
+            def body = /{}/
+            def resp = client.post(
+                    path: "grails-core/versions/$grailsVersion",
+                    body: body,
+                    requestContentType: JSON
+            )
+            assert resp.status == 200
+            println resp.data.status
+            println resp.data.messages.join('\n')
+        } catch (groovyx.net.http.HttpResponseException e) {
+            println "Error: $e"
+            println "Message: $e.message"
+            println "Body: $e.response.data"
+            throw e
+        }
+    }
+}
+
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
-subprojects.each { evaluationDependsOn it.path }
+subprojects.each {
+    if (it.tasks.findByName('install') && it.tasks.findByName('publishToMavenLocal')) {
+        it.tasks.findByName('install').finalizedBy(it.tasks.findByName('publishToMavenLocal'))
+    }
+    evaluationDependsOn it.path
+}
 
 apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
