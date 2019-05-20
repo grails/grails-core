@@ -10,7 +10,6 @@ buildscript {
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:$gradleNexusStagingPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
@@ -103,12 +102,6 @@ ext {
 
 version = grailsVersion
 group = "org.grails"
-apply plugin: 'io.codearte.nexus-staging'
-
-nexusStaging {
-    delayBetweenRetriesInMillis = 5000
-    stagingProfileId = "grails-core-${version.replace("\\.","\\-")}"
-}
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
