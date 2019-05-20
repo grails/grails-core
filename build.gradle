@@ -10,7 +10,6 @@ buildscript {
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:$gradleNexusStagingPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
@@ -126,12 +125,6 @@ ext {
 
 version = grailsVersion
 group = "org.grails"
-apply plugin: 'io.codearte.nexus-staging'
-
-nexusStaging {
-    delayBetweenRetriesInMillis = 5000
-    stagingProfileId = "grails-core-${version.replace("\\.","\\-")}"
-}
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
@@ -321,10 +314,8 @@ subprojects { project ->
                 maven(MavenPublication) {
                     from components.java
 
-                    afterEvaluate {
-                        artifact source: sourcesJar, classifier: "sources"
-                        artifact source: javadocJar, classifier: "javadoc"
-                    }
+                    artifact source: sourcesJar, classifier: "sources"
+                    artifact source: javadocJar, classifier: "javadoc"
                     pom.withXml {
                         def xml = asNode()
 
@@ -526,6 +517,11 @@ task clean(type: Delete) {
            homeLibDir,
            homeSrcDir
 }
+
+def bintrayUser = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+def bintrayKey = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
+def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 
 task synchronizeWithMavenCentral() {
     description = "Syncs with Maven Central/Sonatype"
