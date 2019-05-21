@@ -248,11 +248,17 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected void configureApplicationCommands(Project project) {
         def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
+        Configuration developmentOnly = project.configurations.findByName('developmentOnly')
         for (ctxCommand in applicationContextCommands) {
             String taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
             String commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
             project.tasks.create(taskName, ApplicationContextCommandTask) {
-                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                if (developmentOnly != null) {
+                    classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console + developmentOnly
+                } else {
+                    classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                }
+
                 command = commandName
                 systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
                 if (project.hasProperty('args')) {
