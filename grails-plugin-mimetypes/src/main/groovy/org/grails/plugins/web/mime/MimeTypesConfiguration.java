@@ -79,7 +79,7 @@ public class MimeTypesConfiguration {
         final Config config = grailsApplication.getConfig();
         final Map<CharSequence, Object> mimeConfig = getMimeConfig(config);
         MimeType[] mimeTypes;
-        if (mimeConfig.isEmpty()) {
+        if (mimeConfig == null || mimeConfig.isEmpty()) {
             mimeTypes = MimeType.createDefaults();
             return mimeTypes;
         } else {
