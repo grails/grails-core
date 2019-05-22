@@ -248,21 +248,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected void configureApplicationCommands(Project project) {
         def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
-        Configuration developmentOnly = project.configurations.findByName('developmentOnly')
-        for (ctxCommand in applicationContextCommands) {
-            String taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
-            String commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
-            project.tasks.create(taskName, ApplicationContextCommandTask) {
-                if (developmentOnly != null) {
-                    classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console + developmentOnly
-                } else {
-                    classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
-                }
-
-                command = commandName
-                systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-                if (project.hasProperty('args')) {
-                    args(CommandLineParser.translateCommandline(project.args))
+        project.afterEvaluate {
+            FileCollection fileCollection = buildClasspath(project, project.configurations.runtime, project.configurations.console)
+            for (ctxCommand in applicationContextCommands) {
+                String taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
+                String commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
+                project.tasks.create(taskName, ApplicationContextCommandTask) {
+                    classpath = fileCollection
+                    command = commandName
+                    systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+                    if (project.hasProperty('args')) {
+                        args(CommandLineParser.translateCommandline(project.args))
+                    }
                 }
             }
         }
@@ -403,7 +400,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected JavaExec createConsoleTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("console", JavaExec) {
-            classpath = project.sourceSets.main.runtimeClasspath + configuration
+            classpath = buildClasspath(project, configuration)
             main = "grails.ui.console.GrailsSwingConsole"
         }
     }
@@ -411,7 +408,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected JavaExec createShellTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("shell", JavaExec) {
-            classpath = project.sourceSets.main.runtimeClasspath + configuration
+            classpath = buildClasspath(project, configuration)
             main = "grails.ui.shell.GrailsShell"
             standardInput = System.in
         }
@@ -601,5 +598,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
             }
         }
+    }
+
+    protected FileCollection buildClasspath(Project project, Configuration...configurations) {
+        SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
+        SourceSetOutput output = mainSourceSet?.output
+        FileCollection mainFiles = resolveClassesDirs(output, project)
+        FileCollection fileCollection = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes") + mainFiles
+        configurations.each {
+            fileCollection = fileCollection + it
+        }
+        fileCollection
     }
 }
