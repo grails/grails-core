@@ -116,6 +116,9 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                 if(ClassUtils.isPresent('javax.servlet.ServletContext', classLoader)) {
                     GrailsASTUtils.addAnnotationOrGetExisting(classNode, ClassHelper.make(classLoader.loadClass('org.springframework.web.servlet.config.annotation.EnableWebMvc')))
                 }
+                if(ClassUtils.isPresent('org.springframework.scheduling.annotation.EnableScheduling', classLoader)) {
+                    GrailsASTUtils.addAnnotationOrGetExisting(classNode, ClassHelper.make(classLoader.loadClass('org.springframework.scheduling.annotation.EnableScheduling')))
+                }
                 if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
                     def enableAutoConfigurationAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration')))
 

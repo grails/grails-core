@@ -58,7 +58,9 @@ public class GrailsApplicationCompilerAutoConfiguration extends CompilerAutoConf
                                                         "grails.web",
                                                         "grails.boot.config" };
     public static final String ENABLE_AUTO_CONFIGURATION = "org.springframework.boot.autoconfigure.EnableAutoConfiguration";
+    public static final String ENABLE_SCHEDULING = "org.springframework.scheduling.annotation.EnableScheduling";
     public static final ClassNode ENABLE_AUTO_CONFIGURATION_CLASS_NODE = ClassHelper.make(ENABLE_AUTO_CONFIGURATION);
+    public static final ClassNode ENABLE_SCHEDULING_CLASS_NODE = ClassHelper.make(ENABLE_SCHEDULING);
     ClassNode lastMatch = null;
 
     @Override
@@ -122,12 +124,14 @@ public class GrailsApplicationCompilerAutoConfiguration extends CompilerAutoConf
         // if we arrive here then there is no 'Application' class and we need to add one automatically
         ClassNode applicationClassNode = new ClassNode("Application", Modifier.PUBLIC, ClassHelper.make("grails.boot.config.GrailsAutoConfiguration"));
         AnnotationNode enableAutoAnnotation = new AnnotationNode(ENABLE_AUTO_CONFIGURATION_CLASS_NODE);
+        AnnotationNode enableSchedulingAnnotation = new AnnotationNode(ENABLE_SCHEDULING_CLASS_NODE);
         try {
             enableAutoAnnotation.addMember("exclude", new ClassExpression( ClassHelper.make("org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration")) );
         } catch (Throwable e) {
             // ignore
         }
         applicationClassNode.addAnnotation(enableAutoAnnotation);
+        applicationClassNode.addAnnotation(enableSchedulingAnnotation);
         applicationClassNode.setModule(source.getAST());
         applicationClassNode.addMethod("shouldScanDefaultPackage", Modifier.PUBLIC, ClassHelper.Boolean_TYPE, new Parameter[0], null, new ReturnStatement(new ConstantExpression(Boolean.TRUE)));
         source.getAST().getClasses().add(0, applicationClassNode);
