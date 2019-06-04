@@ -291,10 +291,8 @@ subprojects { project ->
                 maven(MavenPublication) {
                     from components.java
 
-                    afterEvaluate {
-                        artifact source: sourcesJar, classifier: "sources"
-                        artifact source: javadocJar, classifier: "javadoc"
-                    }
+                    artifact source: sourcesJar, classifier: "sources"
+                    artifact source: javadocJar, classifier: "javadoc"
                     pom.withXml {
                         def xml = asNode()
 
