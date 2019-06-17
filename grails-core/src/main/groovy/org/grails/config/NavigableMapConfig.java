@@ -26,12 +26,14 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.ClassUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * A {@link Config} implementation that operates against a {@link org.grails.config.NavigableMap}
@@ -210,6 +212,9 @@ public abstract class NavigableMapConfig implements Config {
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         Object value = findInSystemEnvironment(key);
         if (value == null) {
+            value = getValueWithDotNotatedKeySupport(configMap, key);
+        }
+        if (value == null) {
             value = configMap.get(key);
         }
 
@@ -341,5 +346,42 @@ public abstract class NavigableMapConfig implements Config {
         public ClassConversionException(String actual, Class<?> expected, Exception ex) {
             super(String.format("Could not find/load class %s during attempt to convert to %s", actual, expected.getName()), ex);
         }
+    }
+
+    /**
+     * Resolves dot notated getProperty calls on a config object so that injected environmental variables
+     * are properly resolved the same as Groovy's dot notation.
+     *
+     * @param configMap NavigableMap
+     * @param key       identifies NavigableMap value to retrieve
+     * @return the property value associated with the key
+     */
+    private Object getValueWithDotNotatedKeySupport(NavigableMap configMap, String key) {
+        if (key == null || configMap == null) {
+            return null;
+        }
+
+        List<String> keys = convertTokensIntoArrayList(new StringTokenizer(key, "."));
+        if (keys.size() == 0) {
+            return null;
+        }
+
+        Object value = null;
+        for (int i = 0; i < keys.size(); i++) {
+            if (i == 0) {
+                value = configMap.get(keys.get(i));
+            } else if (value instanceof Map) {
+                value = ((Map) value).get(keys.get(i));
+            }
+        }
+        return value;
+    }
+
+    private List<String> convertTokensIntoArrayList(StringTokenizer st) {
+        List<String> elements = new ArrayList<String>();
+        while (st.hasMoreTokens()) {
+            elements.add(st.nextToken());
+        }
+        return elements;
     }
 }

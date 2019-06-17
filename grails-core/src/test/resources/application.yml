@@ -1,4 +1,8 @@
 ---
+name: Hello, my name is
+hello:
+    evaluatedName: ${name}
+---
 hello:
     message: Default hello!
 ---
