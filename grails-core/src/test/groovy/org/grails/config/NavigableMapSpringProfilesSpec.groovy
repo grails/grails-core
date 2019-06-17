@@ -43,4 +43,15 @@ class NavigableMapSpringProfilesSpec extends Specification {
         expect:
         config.getProperty('hello.message') == 'Hello from DEMO profile!'
     }
+
+    void 'test spring profiles property resolution for default config'() {
+        given:
+        def propertySource = new YamlPropertySourceLoader()
+        Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())
+        def yamlPropertiesSource = propertySource.load('application.yml', resource, null)
+        def config = new PropertySourcesConfig(yamlPropertiesSource)
+
+        expect:
+        config.getProperty('hello.evaluatedName') == 'Hello, my name is'
+    }
 }
