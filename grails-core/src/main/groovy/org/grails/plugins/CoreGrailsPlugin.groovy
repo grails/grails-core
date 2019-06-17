@@ -63,6 +63,8 @@ class CoreGrailsPlugin extends Plugin {
                                 "file:./grails-app/conf/application.groovy",
                                 "file:./grails-app/conf/application.yml"]
 
+    private static final SPRING_PROXY_TARGET_CLASS_CONFIG = "spring.aop.proxy-target-class"
+
     @Override
     Closure doWithSpring() { {->
 
@@ -83,12 +85,19 @@ class CoreGrailsPlugin extends Plugin {
         }
         grailsConfigProperties(ConfigProperties, config)
 
+        Class proxyCreatorClazz = null
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
+            proxyCreatorClazz = GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+        } else {
+            proxyCreatorClazz = GroovyAwareInfrastructureAdvisorAutoProxyCreator
         }
-        else {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+
+        Boolean isProxyTargetClass = config.getProperty(SPRING_PROXY_TARGET_CLASS_CONFIG, Boolean)
+        "org.springframework.aop.config.internalAutoProxyCreator"(proxyCreatorClazz) {
+            if (isProxyTargetClass != null) {
+                proxyTargetClass = isProxyTargetClass
+            }
         }
 
         def packagesToScan = []

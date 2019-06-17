@@ -1,5 +1,6 @@
 package org.grails.web.json;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -403,18 +404,27 @@ public class JSONTokener {
                     }
                 }
             }
+
+            BigDecimal number;
             try {
-                return Integer.valueOf(s);
+                number = new BigDecimal(s);
             } catch (Exception e) {
+                return s;
+            }
+
+            if (number.scale() == 0) {
                 try {
-                    return Long.valueOf(s);
-                } catch (Exception f) {
+                    return number.intValueExact();
+                } catch (Exception e) {
                     try {
-                        return Double.valueOf(s);
-                    } catch (Exception g) {
-                        return s;
+                        return number.longValueExact();
+                    } catch (Exception f) {
+                        return number.toBigInteger();
                     }
                 }
+            } else {
+                double doubleValue = number.doubleValue();
+                return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
             }
         }
         return s;

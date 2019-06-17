@@ -26,9 +26,13 @@ env:
   - secure: tpo5MPUDObdMpZeovj80+SFPjBgsUoyvdUvPhBF1paN4qKdrhcz+xyk3qB1dsXuUmGbzya7gjz9TdniLpSS86CbXd8TGiSL/14YlrSrLxIbhLWNIodaKbV21FIQYyz+E7EP611QcAGr1lHTYKDz2JnKbpSXsJt/qgROnEB62R4U=
   - secure: ikQeb2+ul0PTQqu6Jl2K0tnQIflWM0ifYKUxbZuIApoVyeL53zmzhLoI3waNZRoGyRF8eQ6V8C8SISUpD8fDDWaTMrkp9r3Zd0y9DG2FK5GYK1c+gxeUzLkxQvTMqRCsODlS6ZYR9ofyO2J6jG5H8hxcGnI7LoU6ufYFj8FwN70=
 before_install:
-  # Workaround for https://github.com/gradle/gradle/issues/2421:
-  # download all Gradle distributions with openjdk8
-  - JAVA_HOME=$(jdk_switcher home openjdk8) ./gradlew
+  # Work around missing crypto in openjdk7, see https://github.com/gradle/gradle/issues/2421
+  - |
+    if [ "$TRAVIS_JDK_VERSION" == "openjdk7" ]; then
+      sudo wget "https://bouncycastle.org/download/bcprov-ext-jdk15on-158.jar" -O "${JAVA_HOME}/jre/lib/ext/bcprov-ext-jdk15on-158.jar"
+      sudo perl -pi.bak -e 's/^(security\.provider\.)([0-9]+)/$1.($2+1)/ge' /etc/java-7-openjdk/security/java.security
+      echo "security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" | sudo tee -a /etc/java-7-openjdk/security/java.security
+    fi
 install: "/bin/true"
 script:
 - JAVA_HOME=$(jdk_switcher home openjdk7) "./travis-build.sh"
