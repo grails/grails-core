@@ -43,4 +43,28 @@ class JSONObjectTests extends GroovyTestCase {
         assertEquals j1, j2
         assertTrue j1 == j2
     }
+
+    void testJSONObjectShouldSupportBigIntegerAndBigDecimal() {
+        String input = '''
+            {"v1":0, "v2":9999999999999999, "v3":88888888888888888888888888888888,
+            "v4":-11111, "v5":1.1111111E15, "v6":-8.88888888888888888E25,
+            "v7":0.00, "v8":999.999, "v9":333.333333333333, "v10":1.1111E-7,
+            "v11":-9.33333333333E-20}
+        '''
+
+        JSONObject json = grails.converters.JSON.parse(input)
+
+        assertEquals(json.v1, Integer.valueOf(0))
+        assertEquals(json.v2, Long.valueOf(9999999999999999L))
+        assertEquals(json.v3, new BigInteger('88888888888888888888888888888888'))
+        assertEquals(json.v4, Integer.valueOf(-11111))
+        assertEquals(json.v5, Long.valueOf(1111111100000000L))
+        assertEquals(json.v6, new BigInteger('-88888888888888888800000000'))
+        assertEquals(json.v7, Double.valueOf(0.0))
+        assertEquals(json.v8, Double.valueOf(999.999))
+        assertEquals(json.v9, new BigDecimal('333.333333333333'))
+        assertEquals(json.v10, Double.valueOf(1.1111E-7))
+        assertEquals(json.v11, new BigDecimal('-9.33333333333E-20'))
+    }
+
 }
