@@ -400,7 +400,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected JavaExec createConsoleTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("console", JavaExec) {
-            classpath = buildClasspath(project, configuration)
+            classpath = project.sourceSets.main.runtimeClasspath + configuration
             main = "grails.ui.console.GrailsSwingConsole"
         }
     }
@@ -408,7 +408,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileDynamic
     protected JavaExec createShellTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("shell", JavaExec) {
-            classpath = buildClasspath(project, configuration)
+            classpath = project.sourceSets.main.runtimeClasspath + configuration
             main = "grails.ui.shell.GrailsShell"
             standardInput = System.in
         }
