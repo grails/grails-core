@@ -3,6 +3,7 @@ package org.grails.web.commandobjects
 import grails.artefact.Artefact
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import grails.validation.Validateable
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -362,7 +363,7 @@ class SomeCommand {
     }
 }
 
-class Artist {
+class Artist implements Validateable {
     String name
     static constraints = { name shared: 'isProg' }
 }

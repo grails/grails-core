@@ -22,6 +22,7 @@ import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.validation.ConstraintEvalUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.context.support.StaticMessageSource
@@ -209,10 +210,12 @@ trait Validateable {
             return evaluator
         } catch (Throwable e) {
             MessageSource messageSource = Holders.findApplicationContext() ?: new StaticMessageSource()
+            Map<String, Object> defaultConstraints = Holders.findApplication() ?
+                    ConstraintEvalUtils.getDefaultConstraints(Holders.grailsApplication.config) : Collections.<String, Object>emptyMap()
             return new DefaultConstraintEvaluator(
                     new DefaultConstraintRegistry(messageSource),
                     new KeyValueMappingContext(""),
-                    Collections.emptyMap()
+                    defaultConstraints
             )
         }
     }
