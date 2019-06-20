@@ -49,7 +49,7 @@ class NavigableMapSpringProfilesSpec extends Specification {
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())
         def yamlPropertiesSource = propertySource.load('application.yml', resource, null)
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         expect:
         config.getProperty('hello.evaluatedName') == 'Hello, my name is'
