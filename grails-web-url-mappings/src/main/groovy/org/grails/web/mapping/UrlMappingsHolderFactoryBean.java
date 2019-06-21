@@ -57,7 +57,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
     private UrlMappings urlMappingsHolder;
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
-    Comparator<GrailsClass> comparator = new IsGrailsPluginComparator();
     public UrlMappings getObject() throws Exception {
         return urlMappingsHolder;
     }
@@ -78,7 +77,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         List excludePatterns = new ArrayList();
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
-        Arrays.sort(mappings, comparator);
         final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator(applicationContext);
         mappingEvaluator.setPluginManager(pluginManager);
 
