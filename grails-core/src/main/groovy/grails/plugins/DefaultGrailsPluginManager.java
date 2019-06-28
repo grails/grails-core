@@ -383,7 +383,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             pluginGrailsVersion = fieldValue.toString();
         }
 
-        if (pluginGrailsVersion != null) {
+        if (pluginGrailsVersion != null && !pluginGrailsVersion.contains("@")) {
             final String appGrailsVersion = this.application.getMetadata().getGrailsVersion();
             final Integer applicationGrailsVersion = this.convertVersionNumber(appGrailsVersion);
             final Integer pluginMinGrailsVersion = this.convertVersionNumber(GrailsVersionUtils.getLowerVersion(pluginGrailsVersion));
