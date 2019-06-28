@@ -36,6 +36,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextStoppedEvent
 import org.springframework.core.convert.ConversionService
 import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.env.PropertyResolver
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.util.ClassUtils
@@ -140,6 +141,9 @@ class GrailsApp extends SpringApplication {
 
         List beanExcludes = []
         beanExcludes.add(ConversionService.class)
+        beanExcludes.add(org.springframework.core.env.Environment.class)
+        beanExcludes.add(PropertyResolver.class)
+        beanExcludes.add(ConfigurableEnvironment.class)
         def objectMapper = io.micronaut.core.reflect.ClassUtils.forName("com.fasterxml.jackson.databind.ObjectMapper", classLoader).orElse(null)
         if (objectMapper != null) {
             beanExcludes.add(objectMapper)
