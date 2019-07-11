@@ -38,15 +38,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -768,10 +760,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         boolean isThatRoot = otherStaticTokenCount == 0 && otherDoubleWildcardCount == 0 && otherSingleWildcardCount == 0;
 
         if(isThisRoot && isThatRoot) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
-            }
-            return 0;
+            return evaluatePluginOrder(other);
         }
         else if(isThisRoot) {
             if(LOG.isDebugEnabled()) {
@@ -913,10 +902,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         String thisVersion = getVersion();
         String thatVersion = other.getVersion();
         if((thisVersion.equals(thatVersion))) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
-            }
-            return 0;
+            return evaluatePluginOrder(other);
         }
         else if(thisVersion.equals(ANY_VERSION) && !thatVersion.equals(ANY_VERSION)) {
             if(LOG.isDebugEnabled()) {
@@ -932,18 +918,60 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         }
         else {
             int i = new VersionComparator().compare(thisVersion, thatVersion);
-            if(LOG.isDebugEnabled()) {
-                if(i > 0) {
+
+            if(i > 0) {
+                if(LOG.isDebugEnabled()) {
                     LOG.debug("Mapping [{}] has a higher precedence than [{}] due to version precedence [{} vs. {}]", this.toString(), other.toString(), thisVersion, thatVersion);
                 }
-                else if(i < 0) {
+                return 1;
+            }
+            else if(i < 0) {
+                if(LOG.isDebugEnabled()) {
                     LOG.debug("Mapping [{}] has a lower precedence than [{}] due to version precedence [{} vs. {}]", this.toString(), other.toString(), thisVersion, thatVersion);
                 }
-                else {
+                return -1;
+            }
+            else {
+                return evaluatePluginOrder(other);
+            }
+        }
+    }
+
+    private int evaluatePluginOrder(UrlMapping other) {
+        if (isDefinedInPlugin() && !other.isDefinedInPlugin()) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has lower precedence than [{}] because the latter has priority over plugins", this.toString(), other.toString());
+            }
+            return -1;
+        } else if (!isDefinedInPlugin() && other.isDefinedInPlugin()) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has higher precedence than [{}] because it has priority over plugins", this.toString(), other.toString());
+            }
+            return 1;
+        } else {
+            if (isDefinedInPlugin()) {
+                if (pluginIndex > other.getPluginIndex()) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Mapping [{}] has higher precedence than [{}] because it was loaded after", this.toString(), other.toString());
+                    }
+                    return 1;
+                } else if (pluginIndex < other.getPluginIndex()) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Mapping [{}] has lower precedence than [{}] because it was loaded before", this.toString(), other.toString());
+                    }
+                    return -1;
+                } else {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
+                    }
+                    return 0;
+                }
+            } else {
+                if(LOG.isDebugEnabled()) {
                     LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
                 }
+                return 0;
             }
-            return i;
         }
     }
 

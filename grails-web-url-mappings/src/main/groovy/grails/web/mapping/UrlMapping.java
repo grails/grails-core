@@ -237,4 +237,21 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return redirect information for this url mapping
      */
     Object getRedirectInfo();
+
+    /**
+     * Sets whether or not the mapping is defined in a plugin.
+     *
+     * @param pluginIndex The index of the plugin that defines this mapping
+     */
+    void setPluginIndex(int pluginIndex);
+
+    /**
+     * @return The plugin index or null
+     */
+    Integer getPluginIndex();
+
+    /**
+     * @return True if the URL mapping comes from a plugin
+     */
+    boolean isDefinedInPlugin();
 }
