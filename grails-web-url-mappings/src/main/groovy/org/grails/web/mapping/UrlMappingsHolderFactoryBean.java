@@ -25,6 +25,7 @@ import grails.core.support.GrailsApplicationAware;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.web.UrlConverter;
+import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappings;
 import groovy.lang.Script;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
@@ -37,10 +38,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -57,7 +57,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
     private UrlMappings urlMappingsHolder;
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
-    IsGrailsPluginComparator comparator = new IsGrailsPluginComparator();
+
     public UrlMappings getObject() throws Exception {
         return urlMappingsHolder;
     }
@@ -78,7 +78,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         List excludePatterns = new ArrayList();
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
-        mappings = Arrays.stream(mappings).sorted(comparator).toArray(GrailsClass[]::new);
+
         final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator(applicationContext);
         mappingEvaluator.setPluginManager(pluginManager);
 
@@ -86,14 +86,21 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
             urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
         }
         else {
-            for (GrailsClass mapping : mappings) {
+            for (int i = 0; i < mappings.length; i++) {
+                GrailsClass mapping = mappings[i];
                 GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
-                List grailsClassMappings;
+                List<UrlMapping> grailsClassMappings;
                 if (Script.class.isAssignableFrom(mappingClass.getClazz())) {
                     grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getClazz());
                 }
                 else {
                     grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getMappingsClosure());
+                }
+
+                if (!StringUtils.isEmpty(mapping.getPluginName())) {
+                    for (int j = 0; j < grailsClassMappings.size(); j++) {
+                        grailsClassMappings.get(j).setPluginIndex(i);
+                    }
                 }
 
                 urlMappings.addAll(grailsClassMappings);

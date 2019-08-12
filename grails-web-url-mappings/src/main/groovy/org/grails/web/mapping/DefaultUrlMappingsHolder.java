@@ -43,8 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,6 +98,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     private final Set<String> DEFAULT_CONTROLLER_ONLY_PARAMS = CollectionUtils.newSet(UrlMapping.CONTROLLER);
     private final Set<String> DEFAULT_ACTION_PARAMS = CollectionUtils.newSet(UrlMapping.ACTION);
     private final PathMatcher pathMatcher = new AntPathMatcher();
+    private final AtomicInteger initCounter = new AtomicInteger();
 
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings) {
         this(mappings, null, false);
@@ -214,10 +214,13 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 iter.remove();
             }
         }
+        if (initCounter.getAndIncrement() == 0) {
+            Collections.reverse(responseCodeUrlMappings);
+        }
 
         Collections.sort(urlMappings);
-        urlMappings.addAll(responseCodeUrlMappings);
         Collections.reverse(urlMappings);
+        urlMappings.addAll(0, responseCodeUrlMappings);
     }
 
     public UrlMapping[] getUrlMappings() {

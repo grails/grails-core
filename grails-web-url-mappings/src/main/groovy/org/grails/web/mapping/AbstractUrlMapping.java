@@ -53,6 +53,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected String mappingName;
     protected String httpMethod = ANY_HTTP_METHOD;
     protected String version = ANY_VERSION;
+    protected Integer pluginIndex;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -173,5 +174,18 @@ public abstract class AbstractUrlMapping implements UrlMapping {
 
     public Object getRedirectInfo() {
         return redirectInfo;
+    }
+
+
+    public void setPluginIndex(int pluginIndex) {
+        this.pluginIndex = pluginIndex;
+    }
+
+    public Integer getPluginIndex() {
+        return this.pluginIndex;
+    }
+
+    public boolean isDefinedInPlugin() {
+        return pluginIndex != null;
     }
 }
