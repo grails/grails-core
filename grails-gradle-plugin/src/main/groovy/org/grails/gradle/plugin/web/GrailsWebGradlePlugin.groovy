@@ -19,6 +19,7 @@ import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
@@ -46,8 +47,9 @@ class GrailsWebGradlePlugin extends GrailsGradlePlugin {
 
         TaskContainer taskContainer = project.tasks
         if (taskContainer.findByName("urlMappingsReport") == null) {
-            taskContainer.create(name: "urlMappingsReport", type: ApplicationContextCommandTask) {
-                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            FileCollection fileCollection = buildClasspath(project, project.configurations.runtime, project.configurations.console)
+            taskContainer.create("urlMappingsReport", ApplicationContextCommandTask) {
+                classpath = fileCollection
                 systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
                 command = 'url-mappings-report'
             }
