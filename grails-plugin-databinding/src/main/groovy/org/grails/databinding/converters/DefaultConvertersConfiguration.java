@@ -17,12 +17,13 @@
 package org.grails.databinding.converters;
 
 import grails.core.GrailsApplication;
+import grails.databinding.TypedStructuredBindingEditor;
+import grails.databinding.converters.FormattedValueConverter;
 import grails.databinding.converters.ValueConverter;
 import io.micronaut.context.exceptions.NoSuchBeanException;
 import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter;
 import org.grails.databinding.converters.web.LocaleAwareNumberConverter;
 import org.grails.plugins.databinding.DataBindingConfigurationProperties;
-import org.springframework.beans.BeansException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
@@ -38,14 +39,16 @@ public class DefaultConvertersConfiguration {
 
     private final DataBindingConfigurationProperties configurationProperties;
     private final LocaleResolver localResolver;
+    private final Jsr310ConvertersConfiguration jsr310ConvertersConfiguration;
 
     public DefaultConvertersConfiguration(GrailsApplication grailsApplication, DataBindingConfigurationProperties configurationProperties) {
         this.configurationProperties = configurationProperties;
+        jsr310ConvertersConfiguration = new Jsr310ConvertersConfiguration(configurationProperties);
         LocaleResolver localResolver;
         try {
             localResolver = grailsApplication.getMainContext().getBean(LocaleResolver.class);
         } catch (NoSuchBeanException e) {
-             localResolver = null;
+            localResolver = null;
         }
         this.localResolver = localResolver;
     }
@@ -64,6 +67,111 @@ public class DefaultConvertersConfiguration {
         converter.setTargetType(BigDecimal.class);
         converter.setLocaleResolver(localResolver);
         return converter;
+    }
+
+    @Bean("offsetDateTimeConverter")
+    FormattedValueConverter offsetDateTimeConverter() {
+        return jsr310ConvertersConfiguration.offsetDateTimeConverter();
+    }
+
+    @Bean("offsetDateTimeValueConverter")
+    ValueConverter offsetDateTimeValueConverter() {
+        return jsr310ConvertersConfiguration.offsetDateTimeValueConverter();
+    }
+
+    @Bean("offsetDateTimeStructuredBindingEditor")
+    TypedStructuredBindingEditor offsetDateTimeStructuredBindingEditor() {
+        return jsr310ConvertersConfiguration.offsetDateTimeStructuredBindingEditor();
+    }
+
+    @Bean("offsetTimeConverter")
+    FormattedValueConverter offsetTimeConverter() {
+        return jsr310ConvertersConfiguration.offsetTimeConverter();
+    }
+
+    @Bean("offsetTimeValueConverter")
+    ValueConverter offsetTimeValueConverter() {
+        return jsr310ConvertersConfiguration.offsetTimeValueConverter();
+    }
+
+    @Bean("offsetTimeStructuredBindingEditor")
+    TypedStructuredBindingEditor offsetTimeStructuredBindingEditor() {
+        return jsr310ConvertersConfiguration.offsetTimeStructuredBindingEditor();
+    }
+
+    @Bean("localDateTimeConverter")
+    FormattedValueConverter localDateTimeConverter() {
+        return jsr310ConvertersConfiguration.localDateTimeConverter();
+    }
+
+    @Bean("localDateTimeValueConverter")
+    ValueConverter localDateTimeValueConverter() {
+        return jsr310ConvertersConfiguration.localDateTimeValueConverter();
+    }
+
+    @Bean("localDateTimeStructuredBindingEditor")
+    TypedStructuredBindingEditor localDateTimeStructuredBindingEditor() {
+        return jsr310ConvertersConfiguration.localDateTimeStructuredBindingEditor();
+    }
+
+    @Bean("localDateConverter")
+    FormattedValueConverter localDateConverter() {
+        return jsr310ConvertersConfiguration.localDateConverter();
+    }
+
+    @Bean("localDateValueConverter")
+    ValueConverter localDateValueConverter() {
+        return jsr310ConvertersConfiguration.localDateValueConverter();
+    }
+
+    @Bean("localDateStructuredBindingEditor")
+    TypedStructuredBindingEditor localDateStructuredBindingEditor() {
+        return jsr310ConvertersConfiguration.localDateStructuredBindingEditor();
+    }
+
+    @Bean("localTimeConverter")
+    FormattedValueConverter localTimeConverter() {
+        return jsr310ConvertersConfiguration.localTimeConverter();
+    }
+
+    @Bean("localTimeValueConverter")
+    ValueConverter localTimeValueConverter() {
+        return jsr310ConvertersConfiguration.localTimeValueConverter();
+    }
+
+    @Bean("localTimeStructuredBindingEditor")
+    TypedStructuredBindingEditor localTimeStructuredBindingEditor() {
+        return jsr310ConvertersConfiguration.localTimeStructuredBindingEditor();
+    }
+
+    @Bean("zonedDateTimeConverter")
+    FormattedValueConverter zonedDateTimeConverter() {
+        return jsr310ConvertersConfiguration.zonedDateTimeConverter();
+    }
+
+    @Bean("zonedDateTimeValueConverter")
+    ValueConverter zonedDateTimeValueConverter() {
+        return jsr310ConvertersConfiguration.zonedDateTimeValueConverter();
+    }
+
+    @Bean("zonedDateTimeStructuredBindingEditor")
+    TypedStructuredBindingEditor zonedDateTimeStructuredBindingEditor() {
+        return jsr310ConvertersConfiguration.zonedDateTimeStructuredBindingEditor();
+    }
+
+    @Bean("periodValueConverter")
+    ValueConverter periodValueConverter() {
+        return jsr310ConvertersConfiguration.periodValueConverter();
+    }
+
+    @Bean("instantValueConverter")
+    ValueConverter instantValueConverter() {
+        return jsr310ConvertersConfiguration.instantValueConverter();
+    }
+
+    @Bean("defaultUUIDConverter")
+    protected UUIDConverter defaultuuidConverter() {
+        return new UUIDConverter();
     }
 
     @Bean("defaultGrailsBigIntegerConverter")
