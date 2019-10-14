@@ -96,11 +96,13 @@ class DataSourceGrailsPlugin extends Plugin {
     @Override
     @CompileStatic
     void onShutdown(Map<String, Object> event) {
-        try {
-            DataSourceUtils.clearJdbcDriverRegistrations()
-        }
-        catch (e) {
-            log.debug "Error deregistering JDBC drivers: $e.message", e
+        if(!Environment.developmentEnvironmentAvailable || !Environment.isReloadingAgentEnabled()) {
+            try {
+                DataSourceUtils.clearJdbcDriverRegistrations()
+            }
+            catch (e) {
+                log.debug "Error deregistering JDBC drivers: $e.message", e
+            }
         }
     }
 
