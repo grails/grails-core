@@ -2,4 +2,6 @@ dependencies {
     compile project(":grails-core"),
             project(':grails-web-common'),
             project(':grails-plugin-domain-class')
+
+    testCompile project(':grails-web-databinding')
 }
