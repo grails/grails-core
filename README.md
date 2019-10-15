@@ -2,14 +2,14 @@
 - [![Build Status](https://travis-ci.org/grails/grails-core.svg?branch=master)](https://travis-ci.org/grails/grails-core)
 
 #### Slack Signup
-- [Slack Signup](http://slack-signup.grails.org)
+- [Slack Signup](https://grails-slack.cfapps.io/)
 
 Grails
 ===
 
-[Grails](http://grails.org/) is a framework used to build web applications with the [Groovy](http://groovy-lang.org/) programming language. The core framework is very extensible and there are numerous [plugins](http://grails.org/plugins/) available that provide easy integration of add-on features.
+[Grails](https://grails.org/) is a framework used to build web applications with the [Groovy](https://groovy-lang.org/) programming language. The core framework is very extensible and there are numerous [plugins](https://plugins.grails.org/) available that provide easy integration of add-on features.
 
-Grails is sponsored by [Object Computing Inc.](http://www.ociweb.com) in St. Louis Missouri.  Please contact <info@ociweb.com> for support inquiries.
+Grails is sponsored by [Object Computing Inc.](https://www.ociweb.com) in St. Louis Missouri.  Please contact <info@ociweb.com> for support inquiries.
 
 Getting Started
 ---
@@ -35,39 +35,20 @@ If you encounter out of memory errors when trying to run the install target, try
 Performing a Release
 ---
 
-Releases of Grails are automated by [Travis CI](https://travis-ci.org/grails/grails-core).
-
-To create a release perform the following steps.
-
-First check that the [tests are passing](https://github.com/grails/grails-core/wiki/Travis-CI-status) and all is well on Travis.
-
-
-Next, update the Grails version in `build.gradle` and `grails-core/src/test/groovy/grails/util/GrailsUtilTests.java` and then push the changes to git:
-
-    $ git add build.gradle grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
-    $ git commit -m "Release Grails 3.0.1"
-    $ git tag v3.0.1
-    $ git push --tags
-    $ git push
-
-By tagging the release Travis will perform all the necessary steps to release a new version of Grails, just wait for [the build](https://travis-ci.org/grails/grails-core) to complete.
-
-The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatically upload the tagged release to Github and be available on the [Releases page](https://github.com/grails/grails-core/releases).
+See [RELEASE.md](RELEASE.md).
 
 License
 ---
 
-Grails and Groovy are licensed under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
-
+Grails and Groovy are licensed under the terms of the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.html).
 
 ***
 
 YourKit is kindly supporting Grails open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of innovative and intelligent tools for profiling
 Java and .NET applications. Take a look at YourKit's leading software products:
-[YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and
-[YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
-
+[YourKit Java Profiler](https://www.yourkit.com/java/profiler/index.jsp) and
+[YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/index.jsp).
 
 Dependencies
 ---
