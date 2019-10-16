@@ -17,6 +17,7 @@ package org.grails.gradle.plugin.web
 
 import grails.util.Environment
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.core.GrailsGradlePlugin
@@ -39,10 +40,14 @@ class GrailsWebGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
-        project.tasks.create(name: "urlMappingsReport", type: ApplicationContextCommandTask, overwrite: true) {
-            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
-            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            command = 'url-mappings-report'
+        TaskContainer taskContainer = project.tasks
+        if (taskContainer.findByName("urlMappingsReport") == null) {
+            taskContainer.create(name: "urlMappingsReport", type: ApplicationContextCommandTask, overwrite: true) {
+                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+                command = 'url-mappings-report'
+            }
         }
+
     }
 }
