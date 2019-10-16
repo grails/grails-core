@@ -42,7 +42,7 @@ class GrailsWebGradlePlugin extends GrailsGradlePlugin {
 
         TaskContainer taskContainer = project.tasks
         if (taskContainer.findByName("urlMappingsReport") == null) {
-            taskContainer.create(name: "urlMappingsReport", type: ApplicationContextCommandTask, overwrite: true) {
+            taskContainer.create(name: "urlMappingsReport", type: ApplicationContextCommandTask) {
                 classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
                 systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
                 command = 'url-mappings-report'
