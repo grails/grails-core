@@ -101,7 +101,8 @@ def isolatedTests = ["**/ContentFormatControllerTests.class",
 		"**/RespondMethodSpec.class",
         "**/ContentNegotiationSpec.class",
         "**/pages/ext/jsp/*.class",
-        "**/WithFormatContentTypeSpec.class"]
+        "**/WithFormatContentTypeSpec.class",
+        "**/CommandObjectNoDataSpec.class"]
 
 task execIsolatedTests(type: Test) {
     configure defaultTestConfig
