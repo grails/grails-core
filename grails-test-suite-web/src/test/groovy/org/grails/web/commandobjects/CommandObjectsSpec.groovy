@@ -58,17 +58,17 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         widget.errors.errorCount == 2
         widget.errors.getFieldError('width').rejectedValue == 'some bad value'
     }
-    
+
     @Issue('GRAILS-11218')
     void 'Test nested parameter names that match the command object parameter name'() {
         when: 'the top level of nested request parameters match the name of the command object class name minus the word "Command"'
         params.'widget.height' = 8
         def model = controller.methodActionWithWidgetCommand()
-        
+
         then: 'everything below the top level of the request parameter name is used for binding to that command object'
         model.widget.height == 8
     }
-    
+
     void 'Test non validateable command object'() {
         when:
         controller.params.name = 'Beardfish'
@@ -291,6 +291,19 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         commandObject.version == null
 
     }
+
+    @Issue('https://github.com/grails/grails-core/issues/11432')
+    void 'Test binding to a generic-based field'() {
+        when:
+        params.firstName = 'Douglas'
+        params.lastName = 'Mendes'
+        def model = controller.methodActionWithGenericBasedCommand()
+        def commandObject = model.commandObject
+
+        then:
+        commandObject.firstName == 'Douglas'
+        commandObject.lastName == 'Mendes'
+    }
 }
 
 @Artefact('Controller')
@@ -336,6 +349,10 @@ class TestController {
     }
 
     def nonDomainCommandObject(NonDomainCommandObjectWithIdAndVersion co) {
+        [commandObject: co]
+    }
+
+    def methodActionWithGenericBasedCommand(ConcreteGenericBased co) {
         [commandObject: co]
     }
 }
@@ -405,4 +422,12 @@ class NonDomainCommandObjectWithIdAndVersion {
     Long id
     Long version
     String name
+}
+
+abstract class WithGeneric<G> implements Validateable {
+    String firstName
+    G lastName
+}
+
+class ConcreteGenericBased extends WithGeneric<String> {
 }
