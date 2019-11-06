@@ -1,11 +1,16 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import spock.lang.Specification
 
-@TestFor(Book2)
-@Mock([Author2, Book2])
-class UnitTestEmbeddedPropertyQuery {
-    void setUp() {
+class UnitTestEmbeddedPropertyQuery extends Specification implements DataTest {
+    
+    void setupSpec() {
+        mockDomains Author2, Book2
+    }
+    
+    void setup() {
         def author = new Author2(name: 'George')
 
         def book = new Book2(
@@ -22,73 +27,76 @@ class UnitTestEmbeddedPropertyQuery {
 
     void testQueryEmbedded() {
 
-        assert Book2.withCriteria {
+        expect:
+        Book2.withCriteria {
             gt 'publishPeriod.startDate', new Date(2011, 1, 1)
         }.size() == 1
 
-        assert Book2.withCriteria {
+        Book2.withCriteria {
             ge 'publishPeriod.startDate', new Date(2012, 1, 1)
         }.size() == 1
 
-        assert Book2.withCriteria {
+        Book2.withCriteria {
             lt 'publishPeriod.startDate', new Date(2014, 1, 1)
         }.size() == 1
 
-        assert Book2.withCriteria {
+        Book2.withCriteria {
             le 'publishPeriod.startDate', new Date(2012, 1, 1)
         }.size() == 1
 
-        assert Book2.withCriteria {
+        Book2.withCriteria {
             eq 'publishPeriod.startDate', new Date(2012, 1, 1)
         }.size() == 1
 
-        assert Book2.withCriteria {
+        Book2.withCriteria {
             ne 'publishPeriod.startDate', new Date(2017, 1, 1)
         }.size() == 1
 
-        assert Book2.withCriteria {
+        Book2.withCriteria {
             isNotNull 'publishPeriod.startDate'
         }.size() == 1
     }
 
     void testAssociated() {
-        assert Author2.withCriteria {
+        
+        expect:
+        Author2.withCriteria {
             books {
                 gt 'publishPeriod.startDate', new Date(2011, 1, 1)
             }
         }.size() == 1
 
-        assert Author2.withCriteria {
+        Author2.withCriteria {
             books {
                 ge 'publishPeriod.startDate', new Date(2012, 1, 1)
             }
         }.size() == 1
 
-        assert Author2.withCriteria {
+        Author2.withCriteria {
             books {
                 lt 'publishPeriod.startDate', new Date(2014, 1, 1)
             }
         }.size() == 1
 
-        assert Author2.withCriteria {
+        Author2.withCriteria {
             books {
                 le 'publishPeriod.startDate', new Date(2012, 1, 1)
             }
         }.size() == 1
 
-        assert Author2.withCriteria {
+        Author2.withCriteria {
             books {
                 eq 'publishPeriod.startDate', new Date(2012, 1, 1)
             }
         }.size() == 1
 
-        assert Author2.withCriteria {
+        Author2.withCriteria {
             books {
                 ne 'publishPeriod.startDate', new Date(2017, 1, 1)
             }
         }.size() == 1
 
-        assert Author2.withCriteria {
+        Author2.withCriteria {
             books {
                 isNotNull 'publishPeriod.startDate'
             }
@@ -96,7 +104,9 @@ class UnitTestEmbeddedPropertyQuery {
     }
 
     void testQueryToOne() {
-        assert Book2.withCriteria {
+        
+        expect:
+        Book2.withCriteria {
             gt 'publishPeriod.startDate', new Date(2011, 1, 1)
             author {
                 eq 'name', 'George'

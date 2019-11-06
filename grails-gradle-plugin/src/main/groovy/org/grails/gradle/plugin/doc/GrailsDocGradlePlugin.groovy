@@ -19,6 +19,7 @@ import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.javadoc.Groovydoc
 import org.gradle.api.tasks.javadoc.Javadoc
@@ -44,11 +45,11 @@ class GrailsDocGradlePlugin implements Plugin<Project> {
 
         if(groovydocTask && javadocTask) {
 
-            def docsTask = project.tasks.create('docs', PublishGuideTask)
+            Task docsTask = project.tasks.create('docs', PublishGuideTask)
 
             docsTask.classpath = docConfiguration
 
-            def applicationYml = project.file("${project.projectDir}/grails-app/conf/application.yml")
+            File applicationYml = project.file("${project.projectDir}/grails-app/conf/application.yml")
             if(applicationYml.exists()) {
                 docsTask.propertiesFile = applicationYml
             }
@@ -60,6 +61,5 @@ class GrailsDocGradlePlugin implements Plugin<Project> {
             docsTask.dependsOn(groovydocTask)
             docsTask.dependsOn(javadocTask)
         }
-
     }
 }

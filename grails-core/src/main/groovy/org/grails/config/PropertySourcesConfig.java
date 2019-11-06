@@ -18,10 +18,15 @@ package org.grails.config;
 import grails.util.GrailsStringUtils;
 import groovy.util.ConfigObject;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.core.env.*;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
+import org.springframework.core.env.PropertySourcesPropertyResolver;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,17 +79,8 @@ public class PropertySourcesConfig extends NavigableMapConfig {
     }
 
     protected void initializeFromPropertySources(PropertySources propertySources) {
-        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources);
-        Collections.reverse(propertySourceList);
-        for(PropertySource propertySource : propertySourceList) {
-            if(propertySource instanceof EnumerablePropertySource) {
-                EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
-                mergeEnumerablePropertySource(enumerablePropertySource);
-            }
-        }
 
         EnvironmentAwarePropertySource environmentAwarePropertySource = new EnvironmentAwarePropertySource(propertySources);
-        mergeEnumerablePropertySource(environmentAwarePropertySource);
         if(propertySources instanceof MutablePropertySources) {
             final String applicationConfig = "applicationConfigurationProperties";
             if (propertySources.contains(applicationConfig)) {
@@ -93,29 +89,56 @@ public class PropertySourcesConfig extends NavigableMapConfig {
                 ((MutablePropertySources)propertySources).addLast(environmentAwarePropertySource);
             }
         }
+
+        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources);
+        Collections.reverse(propertySourceList);
+        for(PropertySource propertySource : propertySourceList) {
+            if(propertySource instanceof EnumerablePropertySource) {
+                EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
+                mergeEnumerablePropertySource(enumerablePropertySource);
+            }
+        }
     }
 
     private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
-        if(enumerablePropertySource instanceof NavigableMapPropertySource) {
-            configMap.merge(((NavigableMapPropertySource)enumerablePropertySource).getSource(), false);
-        }
-        else {
+        if (enumerablePropertySource instanceof NavigableMapPropertySource) {
+            configMap.merge(((NavigableMapPropertySource) enumerablePropertySource).getSource(), false);
+        } else {
             Map<String, Object> map = new LinkedHashMap<String, Object>();
 
             final String[] propertyNames = enumerablePropertySource.getPropertyNames();
-            for(String propertyName : propertyNames) {
+            for (String propertyName : propertyNames) {
                 Object value = enumerablePropertySource.getProperty(propertyName);
-                if(value instanceof ConfigObject) {
-                    if(((ConfigObject)value).isEmpty()) continue;
-                }
-                if(value instanceof CharSequence) {
-                    value = resolvePlaceholders(value.toString());
+                if (value instanceof ConfigObject) {
+                    if (((ConfigObject) value).isEmpty()) continue;
+                } else {
+                    value = processAndEvaluate(value);
                 }
                 map.put(propertyName, value);
             }
 
             configMap.merge(map, true);
         }
+    }
+
+    private Object processAndEvaluate(Object value) {
+        if (value instanceof CharSequence) {
+            value = resolvePlaceholders(value.toString());
+        } else if (value instanceof List) {
+            List<Object> result = new ArrayList<>();
+            for (Object element : (List)value) {
+                result.add(processAndEvaluate(element));
+            }
+            return result;
+        } else if (value instanceof Map) {
+            Map<Object, Object> result = new LinkedHashMap<>();
+            for (Object key : ((Map)value).keySet()) {
+                result.put(key, processAndEvaluate(((Map) value).get(key)));
+            }
+            return result;
+        }
+
+        return value;
     }
 
     public void setClassLoader(ClassLoader classLoader) {

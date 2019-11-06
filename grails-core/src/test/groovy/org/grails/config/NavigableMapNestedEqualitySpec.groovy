@@ -143,11 +143,11 @@ grails:
 '''.bytes, "test.yml")
 
         def propertySourceLoader = new YamlPropertySourceLoader()
-        def yamlPropertiesSource1 = propertySourceLoader.load('foo-plugin-environments.yml', resource1, null, true, Arrays.asList("dataSource", "hibernate"))
-        def yamlPropertiesSource2 = propertySourceLoader.load('bar-plugin-environments.yml', resource2, null, true, Arrays.asList("dataSource", "hibernate"))
+        def yamlPropertiesSource1 = propertySourceLoader.load('foo-plugin-environments.yml', resource1, Arrays.asList("dataSource", "hibernate"))
+        def yamlPropertiesSource2 = propertySourceLoader.load('bar-plugin-environments.yml', resource2, Arrays.asList("dataSource", "hibernate"))
         def propertySources = new MutablePropertySources()
-        propertySources.addFirst(yamlPropertiesSource1)
-        propertySources.addFirst(yamlPropertiesSource2)
+        propertySources.addFirst(yamlPropertiesSource1.first())
+        propertySources.addFirst(yamlPropertiesSource2.first())
         def config = new PropertySourcesConfig(propertySources)
 
         expect:

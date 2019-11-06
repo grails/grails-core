@@ -33,6 +33,7 @@ import org.grails.cli.profile.Feature
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
+import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import java.nio.file.FileVisitResult
@@ -51,7 +52,7 @@ import java.nio.file.Paths
  */
 @CompileStatic
 class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepositoryAware {
-    private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='3.0.0.BUILD-SNAPSHOT'
+    private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='4.0.0.BUILD-SNAPSHOT'
     public static final String NAME = "create-app"
     public static final String PROFILE_FLAG = "profile"
     public static final String FEATURES_FLAG = "features"
@@ -67,7 +68,6 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     String groupname
     String defaultpackagename
     File targetDirectory
-    List<String> binaryFileExtensions = ['png','gif','jpg','jpeg','ico','icns','pdf','zip','jar','class']
 
     CommandDescription description = new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
 
@@ -225,7 +225,15 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 return false
             }
 
-            initializeVariables(cmd.appName, defaultpackagename, profileName, cmd.grailsVersion)
+            initializeVariables(profileName, cmd.grailsVersion)
+
+            if(profileRepository instanceof MavenProfileRepository) {
+                MavenProfileRepository mpr = (MavenProfileRepository)profileRepository
+                String gormDep = mpr.profileDependencyVersions.versionProperties.get('gorm.version')
+                if(gormDep != null) {
+                    variables['gorm.version'] = gormDep
+                }
+            }
 
             Path appFullDirectory = Paths.get(cmd.baseDir.path, appname)
 
@@ -263,11 +271,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 def location = f.location
 
                 File skeletonDir
+                File tmpDir
                 if(location instanceof FileSystemResource) {
                     skeletonDir = location.createRelative("skeleton").file
                 }
                 else {
-                    File tmpDir = unzipProfile(ant, location)
+                    tmpDir = unzipProfile(ant, location)
                     skeletonDir = new File(tmpDir, "META-INF/grails-profile/features/$f.name/skeleton")
                 }
 
@@ -276,8 +285,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 appendFeatureFiles(skeletonDir)
 
                 if(skeletonDir.exists()) {
-                    copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML])
+                    copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML], profileInstance.binaryExtensions)
                 }
+
+                // Cleanup temporal directories
+                deleteDirectory(tmpDir)
+                deleteDirectory(skeletonDir)
             }
 
             replaceBuildTokens(profileName, profileInstance, features, projectTargetDirectory)
@@ -524,13 +537,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
     }
 
-    private void initializeVariables(String appname, String defaultPackage, String profileName, String grailsVersion) {
+    private void initializeVariables(String profileName, String grailsVersion) {
         variables.APPNAME = appname
 
-        variables['grails.codegen.defaultPackage'] = defaultPackage
-        variables['grails.codegen.defaultPackage.path'] = defaultPackage.replace('.', '/')
+        variables['grails.codegen.defaultPackage'] = defaultpackagename
+        variables['grails.codegen.defaultPackage.path'] = defaultpackagename.replace('.', '/')
 
         def projectClassName = GrailsNameUtils.getNameFromScript(appname)
+
         variables['grails.codegen.projectClassName'] = projectClassName
         variables['grails.codegen.projectNaturalName'] = GrailsNameUtils.getNaturalName(projectClassName)
         variables['grails.codegen.projectName'] = GrailsNameUtils.getScriptName(projectClassName)
@@ -575,16 +589,16 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
         def skeletonResource = participatingProfile.profileDir.createRelative("skeleton")
         File skeletonDir
+        File tmpDir
         if(skeletonResource instanceof FileSystemResource) {
             skeletonDir = skeletonResource.file
         }
         else {
             // establish the JAR file name and extract
-            def tmpDir = unzipProfile(ant, skeletonResource)
+            tmpDir = unzipProfile(ant, skeletonResource)
             skeletonDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
         }
-        copySrcToTarget(ant, skeletonDir, excludes)
-
+        copySrcToTarget(ant, skeletonDir, excludes, profile.binaryExtensions)
 
         Set<File> sourceBuildGradles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
 
@@ -600,22 +614,25 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             } else if (buildMergeProfileNames.contains(participatingProfile.name)) {
                 def concatFile = "${destDir}/concat.gradle"
                 ant.move(file:destFile, tofile: concatFile)
-                ant.concat destfile: destFile, {
+                ant.concat([destfile: destFile, fixlastline: true], {
                     path {
                         pathelement location: concatFile
                         pathelement location: srcFile
                     }
-                }
+                })
                 ant.delete(file: concatFile, failonerror: false)
             }
         }
 
-        ant.chmod(dir: targetDirectory, includes: "**/gradlew*", perm: 'u+x')
-        ant.chmod(dir: targetDirectory, includes: "**/grailsw*", perm: 'u+x')
+        ant.chmod(dir: targetDirectory, includes: profile.executablePatterns.join(' '), perm: 'u+x')
+
+        // Cleanup temporal directories
+        deleteDirectory(tmpDir)
+        deleteDirectory(skeletonDir)
     }
 
     @CompileDynamic
-    protected void copySrcToTarget(GrailsConsoleAntBuilder ant, File srcDir, List excludes) {
+    protected void copySrcToTarget(GrailsConsoleAntBuilder ant, File srcDir, List excludes, Set<String> binaryFileExtensions) {
         ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
             fileSet(dir: srcDir, casesensitive: false) {
                 exclude(name: '**/.gitkeep')
@@ -665,6 +682,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def v = artifact.version.replace('BOM', '')
 
         return v ? "${artifact.groupId}:${artifact.artifactId}:${v}" : "${artifact.groupId}:${artifact.artifactId}"
+    }
+
+    private void deleteDirectory(File directory) {
+        try {
+            directory?.deleteDir()
+        } catch (Throwable t) {
+            // Ignore error deleting temporal directory
+        }
     }
 
     static class CreateAppCommandObject {

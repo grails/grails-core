@@ -1,67 +1,64 @@
 package org.grails.web.mapping
 
+import grails.testing.web.UrlMappingsUnitTest
 import org.springframework.core.io.ByteArrayResource
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class DynamicParameterValuesTests extends AbstractGrailsMappingTests {
-    def mappingScript = '''
-mappings {
-  "/book/the_stand" {
-      controller = "book"
-      action = "show"
-      id = "The Stand"
-      price = 10.5
-  }
-}
-'''
-
-    def mappingScript2 = '''
-mappings {
-"/help" { controller = "page"
-          action = "index"
-          id = "1" }
-"/thing" { controller = "page"
-           action = "show"
-           id = "2" }
-}
-'''
+class DynamicParameterValuesTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testImplicitNamedAction() {
-        def res = new ByteArrayResource(mappingScript.bytes)
-        def mappings = evaluator.evaluateMappings(res)
 
-        def m = mappings[0]
-        assert m
-
-        def info = m.match("/book/the_stand")
+        when:
+        def info = urlMappingsHolder.match("/book/the_stand")
         assert info
         info.configure(webRequest)
 
-        assertEquals "book", info.controllerName
-        assertEquals "show", info.actionName
-        assertEquals "The Stand", info.id
-        assertEquals "The Stand", webRequest.params.id
-        assertEquals 10.5, webRequest.params.price
+        then:
+        "book" == info.controllerName
+        "show" == info.actionName
+        "The Stand" == info.id
+        "The Stand" == webRequest.params.id
+        10.5 == webRequest.params.price
     }
 
     void testTwoNamedVariableMapping() {
-        def res = new ByteArrayResource(mappingScript2.bytes)
 
-        def mappings = evaluator.evaluateMappings(res)
+        when:
+        def info = urlMappingsHolder.match("/help")
 
-        def info = mappings[0].match("/help")
+        then:
+        "page" == info.controllerName
+        "index" == info.actionName
+        "1" == info.id
 
-        assertEquals "page", info.controllerName
-        assertEquals "index", info.actionName
-        assertEquals "1", info.id
+        when:
+        info = urlMappingsHolder.match("/thing")
 
-        info = mappings[1].match("/thing")
+        then:
+        "page" == info.controllerName
+        "show" == info.actionName
+        "2" == info.id
+    }
 
-        assertEquals "page", info.controllerName
-        assertEquals "show", info.actionName
-        assertEquals "2", info.id
+    static class UrlMappings {
+        static mappings = {
+            "/book/the_stand" {
+                controller = "book"
+                action = "show"
+                id = "The Stand"
+                price = 10.5
+            }
+
+            "/help" { controller = "page"
+                action = "index"
+                id = "1" }
+            "/thing" { controller = "page"
+                action = "show"
+                id = "2" }
+        }
     }
 }

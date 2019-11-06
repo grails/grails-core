@@ -16,10 +16,9 @@
 
 package org.grails.gradle.plugin.model
 
-import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.artifacts.DependencyResolveDetails
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.tooling.provider.model.ToolingModelBuilder
@@ -43,10 +42,10 @@ class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
                 artifact.getFile().toURI().toURL()
             }
 
-            def grailsClasspath = new DefaultGrailsClasspath(dependencies: runtimeDependencies)
+            DefaultGrailsClasspath grailsClasspath = new DefaultGrailsClasspath(dependencies: runtimeDependencies)
 
-            def profileConfiguration = project.getConfigurations().getByName("profile")
-            if(profileConfiguration != null) {
+            Configuration profileConfiguration = project.getConfigurations().getByName("profile")
+            if (profileConfiguration != null) {
                 grailsClasspath.profileDependencies = profileConfiguration.getResolvedConfiguration().getResolvedArtifacts().collect() { ResolvedArtifact artifact ->
                     artifact.getFile().toURI().toURL()
                 }

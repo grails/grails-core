@@ -19,7 +19,6 @@ import grails.artefact.controller.support.RequestForwarder
 import grails.artefact.controller.support.ResponseRedirector
 import grails.artefact.controller.support.ResponseRenderer
 import grails.core.GrailsControllerClass
-import grails.core.GrailsDomainClassProperty
 import grails.databinding.DataBindingSource
 import grails.databinding.SimpleMapDataBindingSource
 import grails.util.GrailsClassUtils
@@ -32,6 +31,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData
 import org.grails.plugins.web.servlet.mvc.InvalidResponseHandler
@@ -220,7 +220,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
 
             // if there are errors add it to the list of errors
             Errors controllerErrors = getErrorsInternal(webRequest)
-            Errors errors = (Errors)argMap.get(GrailsDomainClassProperty.ERRORS)
+            Errors errors = (Errors)argMap.get(GormProperties.ERRORS)
             if (controllerErrors != null && errors != null) {
                 controllerErrors.addAllErrors errors
             }
@@ -397,7 +397,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
 
             if (commandObjectInstance != null
                     && commandObjectBindingSource != null) {
-                final boolean shouldDoDataBinding
+                boolean shouldDoDataBinding
 
                 if (entityIdentifierValue != null) {
                     switch (requestMethod) {

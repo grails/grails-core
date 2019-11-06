@@ -15,19 +15,16 @@
  */
 package org.grails.compiler.logging;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
 import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.AstTransformer;
-import org.grails.io.support.GrailsResourceUtils;
+import groovy.lang.GroovyClassLoader;
+import groovy.util.logging.Slf4j;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.transform.LogASTTransformation;
+import org.grails.datastore.mapping.reflect.AstUtils;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -40,45 +37,45 @@ import java.net.URL;
  */
 @AstTransformer
 public class LoggingTransformer implements AllArtefactClassInjector{
-    public static final String LOG_PROPERTY = "log";
-    private static final String FILTERS_ARTEFACT_TYPE_SUFFIX = "Filters";
-    public static final String CONF_DIR = "conf";
-    public static final String FILTERS_ARTEFACT_TYPE = "filters";
 
+    @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        final FieldNode existingField = classNode.getDeclaredField(LOG_PROPERTY);
-        if (existingField == null && !classNode.isInterface()) {
-            final String path = source.getName();
-
-            String artefactType = path != null ? GrailsResourceUtils.getArtefactDirectory(path) : null;
-
-            // little bit of a hack, since filters aren't kept in a grails-app/filters directory as they probably should be
-            if (artefactType != null && CONF_DIR.equals(artefactType) && classNode.getName().endsWith(FILTERS_ARTEFACT_TYPE_SUFFIX)) {
-                artefactType = FILTERS_ARTEFACT_TYPE;
-            }
-
-            String logName = artefactType == null ? classNode.getName() : "grails.app." + artefactType + "." + classNode.getName();
-            addLogField(classNode, logName);
-        }
+        performInjectionOnAnnotatedClass(source, classNode);
     }
 
-    public static void addLogField(ClassNode classNode, String logName) {
-        FieldNode logVariable = new FieldNode(LOG_PROPERTY,
-                                              Modifier.STATIC | Modifier.PRIVATE,
-                                              new ClassNode(Logger.class),
-                                              classNode,
-                                              new MethodCallExpression(new ClassExpression(new ClassNode(LoggerFactory.class)), "getLogger", new ArgumentListExpression(new ConstantExpression(logName))));
-
-        classNode.addField(logVariable);
-    }
-
+    @Override
     public void performInjection(SourceUnit source, ClassNode classNode) {
-        performInjection(source, null, classNode);
+        performInjectionOnAnnotatedClass(source, classNode);
     }
 
     @Override
     public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
-        performInjection(source, null, classNode);
+        if( classNode.getNodeMetaData(Slf4j.class) != null) return;
+        String packageName = Slf4j.class.getPackage().getName();
+
+        // if already annotated skip
+        for (AnnotationNode annotationNode : classNode.getAnnotations()) {
+            if(annotationNode.getClassNode().getPackageName().equals(packageName)) {
+                return;
+            }
+        }
+
+        FieldNode logField = classNode.getField("log");
+        if(logField != null) {
+            if(!Modifier.isPrivate(logField.getModifiers())) {
+                return;
+            }
+        }
+
+        if (classNode.getSuperClass().getName().equals("grails.boot.config.GrailsAutoConfiguration")) {
+            return;
+        }
+
+        AnnotationNode annotationNode = new AnnotationNode(ClassHelper.make(Slf4j.class));
+        LogASTTransformation logASTTransformation = new LogASTTransformation();
+        logASTTransformation.setCompilationUnit( new CompilationUnit(new GroovyClassLoader(getClass().getClassLoader())) );
+        logASTTransformation.visit(new ASTNode[]{ annotationNode, classNode}, source);
+        classNode.putNodeMetaData(Slf4j.class, annotationNode);
     }
 
     public boolean shouldInject(URL url) {

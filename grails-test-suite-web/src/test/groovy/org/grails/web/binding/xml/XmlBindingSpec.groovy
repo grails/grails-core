@@ -2,14 +2,16 @@ package org.grails.web.binding.xml
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(BindingController)
-@Mock(Person)
-class XmlBindingSpec extends Specification {
+class XmlBindingSpec extends Specification implements ControllerUnitTest<BindingController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [Person, Address]
+    }
 
     void 'Test binding XML body'() {
         when:

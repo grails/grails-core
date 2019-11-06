@@ -2,35 +2,41 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import org.junit.Test
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.web.servlet.support.RequestContextUtils
+import spock.lang.Specification
 
-@TestFor(SimpleController)
-@Mock(Simple)
-class ControllerTestForTests {
+class ControllerTestForTests extends Specification implements ControllerUnitTest<SimpleController>, DomainUnitTest<Simple> {
 
-    @Test
     void testIndex() {
+        when:
         controller.index()
-        assert response.text == 'Hello'
+
+        then:
+        response.text == 'Hello'
     }
 
-    @Test
     void testTotal() {
+        when:
         controller.total()
-        assert response.text == "Total = 0"
+
+        then:
+        response.text == "Total = 0"
     }
 
-    @Test
     void testLocaleResolver() {
+        when:
         def localeResolver = applicationContext.localeResolver
         request.addPreferredLocale(Locale.FRANCE)
-        assert localeResolver.resolveLocale(request) == Locale.FRANCE
+
+        then:
+        localeResolver.resolveLocale(request) == Locale.FRANCE
     }
     
-    @Test
     void testLocaleResolverAttribute() {
-        assert RequestContextUtils.getLocaleResolver(request) == applicationContext.localeResolver
+        expect:
+        RequestContextUtils.getLocaleResolver(request) == applicationContext.localeResolver
     }
 
 }

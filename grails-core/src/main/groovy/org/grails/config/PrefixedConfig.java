@@ -187,11 +187,6 @@ public class PrefixedConfig implements Config {
     }
 
     @Override
-    public <T> Class<T> getPropertyAsClass(String key, Class<T> targetType) {
-        return delegate.getPropertyAsClass(formulateKey(key), targetType);
-    }
-
-    @Override
     public String getRequiredProperty(String key) throws IllegalStateException {
         return delegate.getRequiredProperty(formulateKey(key));
     }

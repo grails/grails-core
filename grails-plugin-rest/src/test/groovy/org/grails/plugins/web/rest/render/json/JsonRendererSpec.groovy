@@ -4,11 +4,15 @@ import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebMockUtil
+import org.grails.config.NavigableMapConfig
+import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
-
+import org.springframework.context.ApplicationContext
 import spock.lang.Specification
 
 /**
@@ -18,7 +22,8 @@ class JsonRendererSpec extends Specification {
 
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()
-        initializer.grailsApplication = new DefaultGrailsApplication()
+        def grailsApplication = new DefaultGrailsApplication()
+        initializer.grailsApplication = grailsApplication
         initializer.initialize()
     }
 
@@ -75,6 +80,16 @@ class JsonRendererSpec extends Specification {
         given:"A new JsonRenderer instance is created with the defaults"
         def renderer = new JsonRenderer(Song)
         def app = new DefaultGrailsApplication(Song)
+        app.setConfig(new PropertySourcesConfig())
+        def context = new KeyValueMappingContext("jsonrenderer")
+        context.addPersistentEntities(Song)
+
+        app.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> {
+                context
+            }
+        })
+        app.setMappingContext(context)
         app.initialise()
         renderer.grailsApplication = app
         renderer.registerCustomConverter()
@@ -93,6 +108,16 @@ class JsonRendererSpec extends Specification {
         def renderer = new JsonRenderer(Song)
         renderer.includes = ['version', 'class', 'title']
         def app = new DefaultGrailsApplication(Song)
+        app.setConfig(new PropertySourcesConfig())
+        def context = new KeyValueMappingContext("jsonrenderer")
+        context.addPersistentEntities(Song)
+
+        app.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> {
+                context
+            }
+        })
+        app.setMappingContext(context)
         app.initialise()
         renderer.grailsApplication = app
         renderer.registerCustomConverter()
@@ -114,7 +139,5 @@ class Album {
 
 @Entity
 class Song {
-    Long id
-    Long version
     String title
 }

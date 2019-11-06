@@ -5,6 +5,7 @@ import org.grails.core.io.StaticResourceLocator
 import org.grails.exceptions.reporting.DefaultStackTraceFilterer
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import spock.lang.Requires
 import spock.lang.Specification
 
 class StackTracePrinterSpec extends Specification {
@@ -31,6 +32,7 @@ class StackTracePrinterSpec extends Specification {
             result.contains '->>  7 | callMe             in test.FooController'
     }
 
+    @Requires({jvm.isJava8()})
     void "Test pretty print nested stack trace"() {
       given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
@@ -46,12 +48,32 @@ class StackTracePrinterSpec extends Specification {
                 result = printer.prettyPrint(e)
             }
 
-            println result
-
         then:"The formatting is correctly applied"
             result != null
             result.contains '->> 14 | nesting            in test.FooController'
             result.contains '->>  3 | callMe             in test.FooService'
+    }
+
+    @Requires({jvm.isJava11()})
+    void "Test pretty print nested stack trace for JDK 11"() {
+        given: "a controller that throws an exception"
+        final gcl = new GroovyClassLoader()
+        gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+        def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
+        when:"An exception is pretty printed"
+        def printer = new DefaultErrorsPrinter()
+        def result = null
+        try {
+            controller.nesting()
+        } catch (e) {
+            filterer.filter(e, true)
+            result = printer.prettyPrint(e)
+        }
+
+        then:"The formatting is correctly applied"
+        result != null
+        result.contains ' 14 | nesting . . . . .  in test.FooController'
+        result.contains '->>  3 | callMe             in test.FooService'
     }
 
     void "Test pretty print code snippet"() {
@@ -112,7 +134,6 @@ Around line 5 of FooController.groovy
                 result = printer.prettyPrintCodeSnippet(e)
             }
 
-            println result
         then:
             result != null
             result == '''Around line 14 of FooController.groovy

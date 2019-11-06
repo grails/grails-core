@@ -2,7 +2,6 @@ package grails.validation
 
 import grails.util.Holders
 
-import org.grails.validation.DefaultConstraintEvaluator;
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.web.context.support.GenericWebApplicationContext
 import org.codehaus.groovy.ast.ClassNode
@@ -58,7 +57,6 @@ class DefaultASTValidateableHelperSpec extends Specification {
 
         def servletContext = new MockServletContext()
         def applicationContext = new GenericWebApplicationContext(servletContext)
-        applicationContext.defaultListableBeanFactory.registerSingleton(ConstraintsEvaluator.BEAN_NAME, new DefaultConstraintEvaluator())
         applicationContext.refresh()
         servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
 

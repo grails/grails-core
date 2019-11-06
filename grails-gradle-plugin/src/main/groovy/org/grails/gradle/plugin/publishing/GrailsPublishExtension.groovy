@@ -16,6 +16,7 @@
 
 package org.grails.gradle.plugin.publishing
 
+import groovy.transform.CompileStatic
 import org.gradle.util.ConfigureUtil
 
 
@@ -23,6 +24,7 @@ import org.gradle.util.ConfigureUtil
  * @author Graeme Rocher
  * @since 3.1
  */
+@CompileStatic
 class GrailsPublishExtension {
 
     /**
@@ -40,23 +42,34 @@ class GrailsPublishExtension {
 
     /**
      * The username for the plugin portal
+     *
+     * @deprecated Portal notification no longer necessary
      */
+    @Deprecated
     String portalUser
 
     /**
      * The password for the plugin portal
+     *
+     * @deprecated Portal notification no longer necessary
      */
+    @Deprecated
     String portalPassword
 
     /**
      * The plugin endpoint for updating plugins
+     *
+     * @deprecated Portal notification no longer necessary
      */
+    @Deprecated
     String portalUrl = "https://grails.org/plugin"
 
     /**
      * The location of the Grails central repository
+     * @deprecated Portal notification no longer necessary
      */
-    String centralRepoUrl = "http://repo.grails.org/grails/core"
+    @Deprecated
+    String centralRepoUrl = "https://repo.grails.org/grails/core"
     /**
      * The website URL of the plugin
      */
@@ -135,10 +148,12 @@ class GrailsPublishExtension {
         ConfigureUtil.configure(configurer, license)
     }
 
+    @Deprecated
     String getPortalUser() {
         return portalUser ?: user
     }
 
+    @Deprecated
     void setPortalUsername(String portalUser) {
         setPortalUser(portalUser)
     }

@@ -27,8 +27,8 @@ class GPathResultCollectionDataBindingSource implements CollectionDataBindingSou
     protected List<? extends DataBindingSource> dataBindingSources
 
     GPathResultCollectionDataBindingSource(GPathResult gpath) {
-        dataBindingSources = gpath?.children()?.collect { GPathResult child ->
-            def map = new GPathResultMap(child)
+        dataBindingSources = gpath?.children()?.collect { child ->
+            def map = new GPathResultMap((GPathResult)child)
             DataBindingSource bindingSource = new SimpleMapDataBindingSource(map)
             bindingSource
         }

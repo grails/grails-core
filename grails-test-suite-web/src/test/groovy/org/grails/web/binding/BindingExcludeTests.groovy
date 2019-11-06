@@ -1,17 +1,18 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
-import org.junit.Test
+class BindingExcludeTests extends Specification implements ControllerUnitTest<ExcludingController>, DataTest {
 
-@TestFor(ExcludingController)
-@Mock([Person, Location])
-class BindingExcludeTests {
+    Class[] getDomainClassesToMock() {
+        [Person, Location]
+    }
 
-    @Test
     void testThatAssociationsAreExcluded() {
+        when:
         request.method = "POST"
         request.xml = '''
 <person>
@@ -29,19 +30,21 @@ class BindingExcludeTests {
 </person>
 '''
         def model = controller.bind()
-
         def p = model.person
-        assert p.name == 'John Doe'
-        assert p.locations.size() == 0
+
+        then:
+        p.name == 'John Doe'
+        p.locations.size() == 0
     }
 
-    @Test
     void testBindingExcludeExpressedAsGstringExclude() {
+        when:
         def model = controller.bindWithGstringExclude()
-
         def l = model.location
-        assert l.shippingAddress == 'Shipping Address'
-        assert l.billingAddress == null
+
+        then:
+        l.shippingAddress == 'Shipping Address'
+        l.billingAddress == null
     }
 }
 

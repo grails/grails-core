@@ -47,7 +47,7 @@ class Support {
         }
 
         def environment = Environment.current
-        if(environment.isReloadEnabled() && !ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", System.classLoader)) {
+        if(environment.isReloadEnabled() && !ClassUtils.isPresent("org.springframework.boot.devtools.RemoteSpringApplication", System.classLoader)) {
             def grailsHome = System.getenv(Environment.ENV_GRAILS_HOME)
 
             if(grailsHome) {

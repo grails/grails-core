@@ -25,6 +25,7 @@ import grails.core.support.GrailsApplicationAware;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.web.UrlConverter;
+import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappings;
 import groovy.lang.Script;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
@@ -32,16 +33,14 @@ import org.grails.web.mapping.mvc.GrailsControllerUrlMappings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -79,6 +78,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         List excludePatterns = new ArrayList();
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
+
         final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator(applicationContext);
         mappingEvaluator.setPluginManager(pluginManager);
 
@@ -86,14 +86,21 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
             urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
         }
         else {
-            for (GrailsClass mapping : mappings) {
+            for (int i = 0; i < mappings.length; i++) {
+                GrailsClass mapping = mappings[i];
                 GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
-                List grailsClassMappings;
+                List<UrlMapping> grailsClassMappings;
                 if (Script.class.isAssignableFrom(mappingClass.getClazz())) {
                     grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getClazz());
                 }
                 else {
                     grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getMappingsClosure());
+                }
+
+                if (!StringUtils.isEmpty(mapping.getPluginName())) {
+                    for (int j = 0; j < grailsClassMappings.size(); j++) {
+                        grailsClassMappings.get(j).setPluginIndex(i);
+                    }
                 }
 
                 urlMappings.addAll(grailsClassMappings);
@@ -161,7 +168,4 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         setGrailsApplication(applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
         setPluginManager( applicationContext.containsBean(GrailsPluginManager.BEAN_NAME) ? applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null);
     }
-
-
-
 }

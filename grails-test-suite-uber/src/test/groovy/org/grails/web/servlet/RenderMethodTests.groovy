@@ -15,188 +15,199 @@
  */
 package org.grails.web.servlet
 
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.http.HttpHeaders
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
-import org.junit.Test
-import static org.junit.Assert.*
+import spock.lang.Specification
 
 /**
  * Tests for the render method.
  *
  * @author Graeme Rocher
  */
-@TestFor(RenderController)
-class RenderMethodTests {
+class RenderMethodTests extends Specification implements ControllerUnitTest<RenderController> {
 
-    @Test
     void testRenderFile() {
+        when:
         controller.render file:"hello".bytes, contentType:"text/plain"
 
-        assert "hello" == response.contentAsString
+        then:
+        "hello" == response.contentAsString
 
+        when:
         response.reset()
+        controller.render file:"hello".bytes
+       
+        then:
+        thrown(ControllerExecutionException)
 
-        shouldFail(ControllerExecutionException) {
-            controller.render file:"hello".bytes
-        }
-
+        when:
         response.reset()
-
         controller.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain"
 
-        assert "hello" == response.contentAsString
-        assert null == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
+        then:
+        "hello" == response.contentAsString
+        null == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
 
+        when:
         response.reset()
-
         controller.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain", fileName:"hello.txt"
-        assert "hello" == response.contentAsString
-        assert "attachment;filename=hello.txt" == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
+        
+        then:
+        "hello" == response.contentAsString
+        "attachment;filename=\"hello.txt\"" == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
     }
 
-    @Test
     void testRenderMethodWithStatus() {
+        when:
         controller.renderMessageWithStatus()
+        GrailsMockHttpServletResponse response = controller.response
 
-        def response = controller.response
-        assertEquals "test", response.contentAsString
-        assertEquals 500, response.status
+        then:
+        "test" == response.contentAsString
+        500 == response.status
     }
 
     // bug GRAILS-3393
-    @Test
     void testMissingNamedArgumentKey() {
-
-        shouldFail(MissingMethodException) { controller.renderBug() }
+        when:
+        controller.renderBug()
+        
+        then:
+        thrown(MissingMethodException)
     }
 
-    @Test
     void testRenderObject() {
+        when:
         controller.renderObject()
+        GrailsMockHttpServletResponse response = controller.response
 
-        def response = controller.response
-        assertEquals "bar", response.contentAsString
+        then:
+        "bar" == response.contentAsString
     }
-
-    @Test
+    
     void testRenderClosureWithStatus() {
+        when:
         controller.renderClosureWithStatus()
+        GrailsMockHttpServletResponse response = controller.response
 
-        def response = controller.response
-        assertEquals 500, response.status
+        then:
+        500 == response.status
     }
-
-    @Test
+    
     void testRenderList() {
+        when:
         controller.renderList()
+        GrailsMockHttpServletResponse response = controller.response
 
-        def response = controller.response
-        assertEquals "[1, 2, 3]", response.contentAsString
+        then:
+        "[1, 2, 3]" == response.contentAsString
     }
 
-    @Test
     void testRenderMap() {
+        when:
         controller.renderMap()
-
-        def response = controller.response
-        assertEquals "['a':1, 'b':2]", response.contentAsString
+        GrailsMockHttpServletResponse response = controller.response
+        
+        then:
+        response.contentAsString == "['a':1, 'b':2]"
     }
-
-    @Test
+    
     void testRenderGString() {
+        when:
         controller.renderGString()
+        GrailsMockHttpServletRequest request = controller.request
+        GrailsMockHttpServletResponse response = controller.response
 
-        def request = controller.request
-        assert request != null
-        def response = controller.response
-
-        assert response != null
-
-        assertEquals "test render", response.contentAsString
+        then:
+        request != null
+        response != null
+        response.contentAsString == "test render"
     }
 
-    @Test
     void testRenderText() {
+        when:
         controller.renderText()
+        GrailsMockHttpServletRequest request = controller.request
+        GrailsMockHttpServletResponse response = controller.response
 
-        def request = controller.request
-        assert request != null
-        def response = controller.response
-
-        assert response != null
-
-        assertEquals "test render", response.contentAsString
+        then:
+        request != null
+        response != null
+        response.contentAsString == "test render"
     }
 
-    @Test
     void testRenderXml() {
+        when:
         controller.renderXML()
+        GrailsMockHttpServletRequest request = controller.request
+        GrailsMockHttpServletResponse response = controller.response
 
-        def request = controller.request
-        assert request != null
-        def response = controller.response
-
-        assert response != null
-
-        assertEquals "<hello>world</hello>", response.contentAsString
-        assertEquals "text/xml;charset=utf-8", response.contentType
+        then:
+        response != null
+        request != null
+        response.contentAsString == "<hello>world</hello>"
+        response.contentType == "text/xml;charset=utf-8"
     }
 
-    @Test
     void testRenderView() {
+        when:
         controller.renderView()
 
-        assert controller.modelAndView
-
-        assertEquals '/render/testView', controller.modelAndView.viewName
+        then:
+        controller.modelAndView
+        controller.modelAndView.viewName == '/render/testView'
     }
 
-    @Test
     void testRenderViewWithContentType() {
+        when:
         controller.renderXmlView()
 
-        assert controller.modelAndView
-
-        assertEquals '/render/xmlView', controller.modelAndView.viewName
-        assertEquals 'text/xml;charset=utf-8', response.contentType
+        then:
+        controller.modelAndView
+        controller.modelAndView.viewName == '/render/xmlView'
+        response.contentType == 'text/xml;charset=utf-8'
     }
 
-    @Test
     void testRenderTemplate() {
+        when:
         views["/render/_testTemplate.gsp"] = 'hello ${hello}!'
-
         controller.renderTemplate()
 
-        assertEquals "text/html;charset=UTF-8", response.contentType
-        assertEquals "hello world!", response.contentAsString
+        then:
+        response.contentType == "text/html;charset=UTF-8"
+        response.contentAsString == "hello world!"
     }
 
-    @Test
     void testRenderTemplateWithCollectionUsingImplicitITVariable() {
+        when:
         views['/render/_peopleTemplate.gsp'] = '${it.firstName} ${it.middleName}<br/>'
         controller.renderTemplateWithCollection()
 
-        assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
+        then:
+        response.contentAsString == 'Jacob Ray<br/>Zachary Scott<br/>'
     }
 
-    @Test
     void testRenderTemplateWithCollectionUsingExplicitVariableName() {
+        when:
         views['/render/_peopleTemplate.gsp'] = '${person.firstName} ${person.middleName}<br/>'
         controller.renderTemplateWithCollectionAndExplicitVarName()
 
-        assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
+        then:
+        response.contentAsString == 'Jacob Ray<br/>Zachary Scott<br/>'
     }
 
-    @Test
     void testRenderTemplateWithContentType() {
+        when:
         views["/render/_xmlTemplate.gsp"] = '<hello>world</hello>'
         controller.renderXmlTemplate()
 
-        assertEquals "<hello>world</hello>", response.contentAsString
-        assertEquals "text/xml;charset=utf-8", response.contentType
+        then:
+        response.contentAsString == "<hello>world</hello>"
+        response.contentType == "text/xml;charset=utf-8"
     }
 }
 

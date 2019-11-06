@@ -15,7 +15,9 @@
  */
 package org.grails.plugins.i18n
 
+import grails.config.Config
 import grails.config.Settings
+import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
@@ -38,27 +40,22 @@ import java.nio.file.Files
 @Slf4j
 class I18nGrailsPlugin extends Plugin {
 
-    public static final String I18N_CACHE_SECONDS = 'grails.i18n.cache.seconds'
-    public static final String I18N_FILE_CACHE_SECONDS = 'grails.i18n.filecache.seconds'
-
     String baseDir = "grails-app/i18n"
     String version = GrailsUtil.getGrailsVersion()
     String watchedResources = "file:./${baseDir}/**/*.properties".toString()
 
     @Override
     Closure doWithSpring() {{->
-        def application = grailsApplication
-        def config = application.config
+        GrailsApplication application = grailsApplication
+        Config config = application.config
         boolean gspEnableReload = config.getProperty(Settings.GSP_ENABLE_RELOAD, Boolean, false)
         String encoding = config.getProperty(Settings.GSP_VIEW_ENCODING, 'UTF-8')
 
-        messageSource(PluginAwareResourceBundleMessageSource) {
+        messageSource(PluginAwareResourceBundleMessageSource, application, pluginManager) {
             fallbackToSystemLocale = false
-            pluginManager = manager
-
             if (Environment.current.isReloadEnabled() || gspEnableReload) {
-                cacheSeconds = config.getProperty(I18N_CACHE_SECONDS, Integer, 5)
-                fileCacheSeconds = config.getProperty(I18N_FILE_CACHE_SECONDS, Integer, 5)
+                cacheSeconds = config.getProperty(Settings.I18N_CACHE_SECONDS, Integer, 5)
+                fileCacheSeconds = config.getProperty(Settings.I18N_FILE_CACHE_SECONDS, Integer, 5)
             }
             defaultEncoding = encoding
         }
@@ -69,30 +66,6 @@ class I18nGrailsPlugin extends Plugin {
 
         localeResolver(SessionLocaleResolver)
     }}
-
-
-
-    def isChildOfFile(File child, File parent) {
-        def currentFile = child.canonicalFile
-        while(currentFile != null) {
-            if (currentFile == parent) {
-                return true
-            }
-            currentFile = currentFile.parentFile
-        }
-        return false
-    }
-
-    def relativePath(File relbase, File file) {
-        def pathParts = []
-        def currentFile = file
-        while (currentFile != null && currentFile != relbase) {
-            pathParts += currentFile.name
-            currentFile = currentFile.parentFile
-        }
-        pathParts.reverse().join('/')
-    }
-
 
     @Override
     void onChange(Map<String, Object> event) {
@@ -145,6 +118,17 @@ class I18nGrailsPlugin extends Plugin {
         if (messageSource instanceof ReloadableResourceBundleMessageSource) {
             messageSource.clearCache()
         }
+    }
+
+    protected boolean isChildOfFile(File child, File parent) {
+        def currentFile = child.canonicalFile
+        while(currentFile != null) {
+            if (currentFile == parent) {
+                return true
+            }
+            currentFile = currentFile.parentFile
+        }
+        return false
     }
 
 }

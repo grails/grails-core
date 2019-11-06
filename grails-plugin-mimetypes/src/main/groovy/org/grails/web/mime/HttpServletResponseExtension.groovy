@@ -20,11 +20,14 @@ import grails.config.Settings
 import grails.core.GrailsApplication
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
+import grails.web.mime.MimeUtility
+import groovy.transform.CompileDynamic
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -43,6 +46,7 @@ import java.util.regex.Pattern
 class HttpServletResponseExtension {
     // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
     static Pattern disableForUserAgents
+    static boolean useAcceptHeaderXhr
     static boolean useAcceptHeader
     static {
         useDefaultConfig()
@@ -61,6 +65,7 @@ class HttpServletResponseExtension {
 
     private static void useDefaultConfig() {
         disableForUserAgents = ~/(Gecko(?i)|WebKit(?i)|Presto(?i)|Trident(?i))/
+        useAcceptHeaderXhr = true
         useAcceptHeader = true
     }
 
@@ -71,9 +76,13 @@ class HttpServletResponseExtension {
             final webRequest = GrailsWebRequest.lookup()
 
             def context = webRequest.applicationContext
-            if(context && context.containsBean(MimeType.BEAN_NAME)) {
-                mimeTypes = (MimeType[]) context.getBean(MimeType.BEAN_NAME)
-                loadMimeTypeConfig(context.getBean(GrailsApplication).config)
+            if(context ) {
+                try {
+                    mimeTypes = context.getBean(MimeUtility).getKnownMimeTypes() as MimeType[]
+                    loadMimeTypeConfig(context.getBean(GrailsApplication).config)
+                } catch (NoSuchBeanDefinitionException e) {
+                    mimeTypes = MimeType.createDefaults()
+                }
             }
             else {
                 mimeTypes = MimeType.createDefaults()
@@ -215,6 +224,11 @@ class HttpServletResponseExtension {
     public static void loadMimeTypeConfig(Config config) {
         useAcceptHeader = config.getProperty(Settings.MIME_USE_ACCEPT_HEADER, Boolean, true)
 
+        if (config.containsKey(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR)) {
+            final disableForUserAgentsXhrConfig = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR,  Boolean, false)
+            // if MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR is set to true, we want xhr's to check the user agent list.
+            useAcceptHeaderXhr = !disableForUserAgentsXhrConfig
+        }
         if (config.containsKey(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS)) {
             final disableForUserAgentsConfig = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS, Object)
             if(disableForUserAgentsConfig instanceof Pattern) {
@@ -228,6 +242,7 @@ class HttpServletResponseExtension {
         }
     }
 
+    @CompileDynamic
     private static MimeType[] getMimeTypesInternal(HttpServletRequest request) {
         MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
         if (!result) {
@@ -238,7 +253,7 @@ class HttpServletResponseExtension {
             def parser = new DefaultAcceptHeaderParser(getMimeTypes())
             String header = null
 
-            boolean disabledForUserAgent = disableForUserAgents != null && userAgent ? disableForUserAgents.matcher(userAgent).find() : false
+            boolean disabledForUserAgent = !(useAcceptHeaderXhr && request.xhr) && disableForUserAgents != null && userAgent ? disableForUserAgents.matcher(userAgent).find() : false
             if (msie) header = "*/*"
             if (!header && useAcceptHeader && !disabledForUserAgent) header = request.getHeader(HttpHeaders.ACCEPT)
             result = parser.parse(header)

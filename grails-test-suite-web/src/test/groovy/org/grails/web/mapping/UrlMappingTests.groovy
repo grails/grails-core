@@ -1,78 +1,96 @@
 package org.grails.web.mapping
 
-import org.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.grails.web.mapping.DefaultUrlMappingsHolder
+import grails.testing.web.UrlMappingsUnitTest
 import org.springframework.core.io.*
-import org.springframework.mock.web.MockServletContext
+import spock.lang.Specification
 
-class UrlMappingTests extends AbstractGrailsMappingTests {
-
-    def topLevelMapping = '''
-mappings {
-    "/competition/$action?"{
-        controller = "competition"
-    }
-
-    "/survey/$action?"{
-        controller = "survey"
-    }
-
-    "/$id?"{
-        controller = "content"
-        action = "view"
-    }
-}
-'''
+class UrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testReverseTopLevelMapping() {
-        def res = new ByteArrayResource(topLevelMapping.bytes)
 
-        def mappings = evaluator.evaluateMappings(res)
+        when:
+        def reverse = urlMappingsHolder.getReverseMapping("competition", null, null)
 
-        def holder = new DefaultUrlMappingsHolder(mappings)
+        then:
+        "/competition/foo" == reverse.createURL("competition", "foo", null, "utf-8")
+        "/competition/foo?name=bob" == reverse.createURL("competition", "foo", [name: "bob"], "utf-8")
 
-        def reverse = holder.getReverseMapping("competition", null, null)
+        when:
+        reverse = urlMappingsHolder.getReverseMapping("competition", "enter", [name: "bob"])
 
-        assertEquals "/competition/foo", reverse.createURL("competition", "foo", null, "utf-8")
-        assertEquals "/competition/foo?name=bob", reverse.createURL("competition", "foo", [name: "bob"], "utf-8")
+        then:
+        reverse
+        "/competition/enter" == reverse.createURL("competition", "enter", null, "utf-8")
+        "/competition/enter?name=bob" == reverse.createURL("competition", "enter", [name: "bob"], "utf-8")
 
-        reverse = holder.getReverseMapping("competition", "enter", [name: "bob"])
+        when:
+        reverse = urlMappingsHolder.getReverseMapping("content", null, null)
 
-        assert reverse
-        assertEquals "/competition/enter", reverse.createURL("competition", "enter", null, "utf-8")
-        assertEquals "/competition/enter?name=bob", reverse.createURL("competition", "enter", [name: "bob"], "utf-8")
+        then:
+        reverse
+        "/tsandcs" == reverse.createURL(id: "tsandcs", "utf-8")
+        "/tsandcs?foo=bar" == reverse.createURL(id: "tsandcs", foo: "bar", "utf-8")
 
-        reverse = holder.getReverseMapping("content", null, null)
+        when:
+        reverse = urlMappingsHolder.getReverseMapping("content", null, [foo: "bar"])
 
-        assert reverse
-        assertEquals "/tsandcs", reverse.createURL(id: "tsandcs", "utf-8")
-        assertEquals "/tsandcs?foo=bar", reverse.createURL(id: "tsandcs", foo: "bar", "utf-8")
-
-        reverse = holder.getReverseMapping("content", null, [foo: "bar"])
-        assert reverse
-        assertEquals "/tsandcs", reverse.createURL(id: "tsandcs", "utf-8")
-        assertEquals "/tsandcs?foo=bar", reverse.createURL(id: "tsandcs", foo: "bar", "utf-8")
+        then:
+        reverse
+        "/tsandcs" == reverse.createURL(id: "tsandcs", "utf-8")
+        "/tsandcs?foo=bar" == reverse.createURL(id: "tsandcs", foo: "bar", "utf-8")
     }
 
     void testTopLevelMapping() {
-        def res = new ByteArrayResource(topLevelMapping.bytes)
-        def mappings = evaluator.evaluateMappings(res)
 
-        def holder = new DefaultUrlMappingsHolder(mappings)
+        when:
+        def info = urlMappingsHolder.match("/competition/foo")
 
-        def info = holder.match("/competition/foo")
+        then:
         assert info
-        assertEquals "competition", info.controllerName
+        "competition" == info.controllerName
 
-        info = holder.match("/survey/bar")
-        assert info
-        assertEquals "survey", info.controllerName
+        when:
+        info = urlMappingsHolder.match("/survey/bar")
 
-        info = holder.match("/tsandcs")
+        then:
+        info
+        "survey" == info.controllerName
 
-        assert info
+        when:
+        info = urlMappingsHolder.match("/tsandcs")
 
-        assertEquals "content", info.controllerName
-        assertEquals "view", info.actionName
+        then:
+        info
+        "content" == info.controllerName
+        "view" == info.actionName
+
+        when:
+        info = urlMappingsHolder.match("/api/foobar/10")
+
+        then:
+        info
+        "10" == info.id
+    }
+
+    static class UrlMappings {
+        static mappings = {
+            "/competition/$action?"{
+                controller = "competition"
+            }
+
+            "/survey/$action?"{
+                controller = "survey"
+            }
+
+            "/$id?"{
+                controller = "content"
+                action = "view"
+            }
+
+            group "/api", {
+                "/test"(resources: "test")
+                "/foobar/$id"(controller:"foobar")
+            }
+        }
     }
 }

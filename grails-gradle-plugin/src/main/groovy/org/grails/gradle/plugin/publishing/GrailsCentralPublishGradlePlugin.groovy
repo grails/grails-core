@@ -19,10 +19,11 @@ import com.jfrog.bintray.gradle.BintrayPlugin
 import grails.util.GrailsNameUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
+import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
+import org.gradle.api.tasks.TaskContainer
+
 /**
  * A plugin to setup publishing to Grails central repo
  *
@@ -70,15 +71,11 @@ Your publishing user and key can also be placed in PROJECT_HOME/gradle.propertie
 
 bintrayUser=user
 bintrayKey=key
-grailsPortalUsername=myusername
-grailsPortalPassword=mypassword
 
 Or using environment variables:
 
 BINTRAY_USER=user
 BINTRAY_KEY=key
-GRAILS_PORTAL_USERNAME=myusername
-GRAILS_PORTAL_PASSWORD=mypassword
 """
     }
 
@@ -86,9 +83,9 @@ GRAILS_PORTAL_PASSWORD=mypassword
     void apply(Project project) {
         project.plugins.apply(MavenPublishPlugin)
 
-        def extensionContainer = project.extensions
-        def taskContainer = project.tasks
-        def publishExtension = extensionContainer.create("grailsPublish", GrailsPublishExtension)
+        ExtensionContainer extensionContainer = project.extensions
+        TaskContainer taskContainer = project.tasks
+        GrailsPublishExtension publishExtension = extensionContainer.create("grailsPublish", GrailsPublishExtension)
 
 
         def bintraySiteUrl = project.hasProperty('websiteUrl') ? project.websiteUrl : ""
@@ -181,8 +178,6 @@ GRAILS_PORTAL_PASSWORD=mypassword
 
         def grailsCentralUsername = System.getenv('GRAILS_CENTRAL_USERNAME') ?: project.hasProperty('grailsCentralUsername') ? project.grailsCentralUsername : ''
         def grailsCentralPassword = System.getenv("GRAILS_CENTRAL_PASSWORD") ?: project.hasProperty('grailsCentralPassword') ? project.grailsCentralPassword : ''
-        def grailsPortalUsername = System.getenv('GRAILS_PORTAL_USERNAME') ?: project.hasProperty('grailsPortalUsername') ? project.grailsPortalUsername : ''
-        def grailsPortalPassword = System.getenv("GRAILS_PORTAL_PASSWORD") ?: project.hasProperty('grailsPortalPassword') ? project.grailsPortalPassword : ''
 
         project.plugins.apply(BintrayPlugin)
 
@@ -193,26 +188,28 @@ GRAILS_PORTAL_PASSWORD=mypassword
                 maven(MavenPublication) {
                     pom.withXml {
                         Node pomNode = asNode()
-                        def extension = project.extensions.findByType(GrailsPublishExtension)
+                        GrailsPublishExtension gpe = project.extensions.findByType(GrailsPublishExtension)
+                        boolean centralPublishEnabled = bintrayKey ?: gpe.key
+
                         if(pomNode.dependencyManagement) {
                             pomNode.dependencyManagement[0].replaceNode {}
                         }
 
-                        if(extension != null) {
+                        if(gpe != null) {
                             pomNode.children().last() + {
-                                def title = extension.title ?: project.name
+                                def title = gpe.title ?: project.name
                                 delegate.name title
-                                delegate.description extension.desc ?: title
+                                delegate.description gpe.desc ?: title
 
-                                def websiteUrl = extension.websiteUrl ?: extension.githubSlug ? "https://github.com/$extension.githubSlug" : ''
-                                if(!websiteUrl) {
+                                def websiteUrl = gpe.websiteUrl ?: gpe.githubSlug ? "https://github.com/$gpe.githubSlug" : ''
+                                if(!websiteUrl && centralPublishEnabled) {
                                     throw new RuntimeException(getErrorMessage('websiteUrl'))
                                 }
 
                                 delegate.url websiteUrl
 
 
-                                def license = extension.license
+                                def license = gpe.license
                                 if(license != null) {
 
                                     def concreteLicense = GrailsPublishExtension.License.LICENSES.get(license.name)
@@ -236,49 +233,49 @@ GRAILS_PORTAL_PASSWORD=mypassword
                                         }
                                     }
                                 }
-                                else {
+                                else if(centralPublishEnabled) {
                                     throw new RuntimeException(getErrorMessage('license'))
                                 }
 
-                                if(extension.githubSlug) {
+                                if(gpe.githubSlug) {
                                     delegate.scm {
-                                        delegate.url "https://github.com/$extension.githubSlug"
-                                        delegate.connection "scm:git@github.com:${extension.githubSlug}.git"
-                                        delegate.developerConnection "scm:git@github.com:${extension.githubSlug}.git"
+                                        delegate.url "https://github.com/$gpe.githubSlug"
+                                        delegate.connection "scm:git@github.com:${gpe.githubSlug}.git"
+                                        delegate.developerConnection "scm:git@github.com:${gpe.githubSlug}.git"
                                     }
                                     delegate.issueManagement {
                                         delegate.system "Github Issues"
-                                        delegate.url "https://github.com/$extension.githubSlug/issues"
+                                        delegate.url "https://github.com/$gpe.githubSlug/issues"
                                     }
                                 }
                                 else {
-                                    if(extension.vcsUrl) {
+                                    if(gpe.vcsUrl) {
                                         delegate.scm {
-                                            delegate.url extension.vcsUrl
-                                            delegate.connection "scm:$extension.vcsUrl"
-                                            delegate.developerConnection "scm:$extension.vcsUrl"
+                                            delegate.url gpe.vcsUrl
+                                            delegate.connection "scm:$gpe.vcsUrl"
+                                            delegate.developerConnection "scm:$gpe.vcsUrl"
                                         }
                                     }
-                                    else {
+                                    else if(centralPublishEnabled) {
                                         throw new RuntimeException(getErrorMessage('vcsUrl'))
                                     }
 
-                                    if(extension.issueTrackerUrl) {
+                                    if(gpe.issueTrackerUrl) {
                                         delegate.issueManagement {
                                             delegate.system "Issue Tracker"
-                                            delegate.url extension.issueTrackerUrl
+                                            delegate.url gpe.issueTrackerUrl
                                         }
                                     }
-                                    else {
+                                    else if(centralPublishEnabled) {
                                         throw new RuntimeException(getErrorMessage('issueTrackerUrl'))
                                     }
 
                                 }
 
-                                if(extension.developers) {
+                                if(gpe.developers) {
 
                                     delegate.developers {
-                                        for(entry in extension.developers.entrySet()) {
+                                        for(entry in gpe.developers.entrySet()) {
                                             delegate.developer {
                                                 delegate.id entry.key
                                                 delegate.name entry.value
@@ -286,7 +283,7 @@ GRAILS_PORTAL_PASSWORD=mypassword
                                         }
                                     }
                                 }
-                                else {
+                                else if(centralPublishEnabled) {
                                     throw new RuntimeException(getErrorMessage('developers'))
                                 }
                             }
@@ -303,7 +300,7 @@ GRAILS_PORTAL_PASSWORD=mypassword
                         }
                     }
                     artifactId project.name
-                    from project.components.java
+                    doAddArtefact(project, delegate)
                     def sourcesJar = taskContainer.findByName("sourcesJar")
                     if(sourcesJar != null) {
                         artifact sourcesJar
@@ -341,72 +338,6 @@ GRAILS_PORTAL_PASSWORD=mypassword
 
         }
 
-
-            // pluginInfo = [name:'..', group:'..', version:'..', isSnapshot: true/false, url: portalUrl]
-
-
-        boolean isSnapshot = project.version.toString().endsWith('-SNAPSHOT')
-
-
-        def portalNotify = project.tasks.create('notifyPluginPortal')
-        portalNotify.dependsOn('generatePomFileForMavenPublication')
-        portalNotify << {
-
-            GrailsPublishExtension extension = project.extensions.findByType(GrailsPublishExtension)
-
-            def portalUsername = grailsPortalUsername ?: extension?.portalUser
-            def portalPassword = grailsPortalPassword ?: extension?.portalPassword
-
-            if(portalUsername && portalPassword) {
-                def targetUrl = "${extension.portalUrl}/${project.name}"
-                URL endpoint = new URL(targetUrl)
-                HttpURLConnection conn = endpoint.openConnection()
-                conn.doOutput = true
-                conn.instanceFollowRedirects = false
-                conn.useCaches = false
-                conn.requestMethod = 'PUT'
-
-                String usernameAndPassword = "$extension.portalUser:$extension.portalPassword"
-
-                def sw = new StringWriter()
-                usernameAndPassword.bytes.encodeBase64().writeTo(sw)
-                conn.setRequestProperty "Authorization", "Basic ${sw.toString()}"
-                conn.setRequestProperty "Content-type", "application/json"
-                conn.setRequestProperty "Accept", "application/json"
-
-                String url = extension.centralRepoUrl
-                OutputStream out
-
-                try {
-                    def data = """{"name":"${project.name}","group":"${project.group}","version":"${project.version}","isSnapshot":${isSnapshot},"url":"${url}"}""".toString()
-
-                    conn.setRequestProperty( "Content-Length", Integer.toString( data.length() ));
-
-                    out = conn.outputStream
-                    // write the data
-                    out << data
-                    out.flush()
-
-                    def result = conn.responseCode
-                    if(result.toString().startsWith('2')) {
-                        println "Notification successful."
-                    }
-                    else {
-                        throw new RuntimeException( "(HTTP ${result}) An error occurred. " )
-                    }
-
-                } finally {
-                    try {
-                        out?.close()
-                    } catch (Throwable e) {
-                        // ignore
-                    }
-                }
-            }
-            else {
-                throw new RuntimeException("No Grails 'portalUser' and 'portalPassword' specified")
-            }
-        }
 
         project.bintray {
             user = bintrayUser
@@ -454,6 +385,10 @@ GRAILS_PORTAL_PASSWORD=mypassword
         }
     }
 
+    protected void doAddArtefact(Project project, MavenPublication publication) {
+        publication.from project.components.java
+    }
+
     protected String getDefaultArtifactType() {
         "grails-$defaultClassifier"
     }
@@ -467,7 +402,14 @@ GRAILS_PORTAL_PASSWORD=mypassword
     }
 
     protected Map<String, String> getDefaultExtraArtifact(Project project) {
-        [source: "${project.sourceSets.main.output.classesDir}/META-INF/grails-plugin.xml".toString(),
+        def directory
+        try {
+            directory = project.sourceSets.main.groovy.outputDir
+
+        } catch (Exception e) {
+            directory = project.sourceSets.main.output.classesDirs
+        }
+        [source: "${directory}/META-INF/grails-plugin.xml".toString(),
          classifier: getDefaultClassifier(),
          extension: 'xml']
     }

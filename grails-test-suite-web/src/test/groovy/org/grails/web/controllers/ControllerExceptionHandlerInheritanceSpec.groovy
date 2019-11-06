@@ -1,17 +1,13 @@
 package org.grails.web.controllers
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import java.sql.BatchUpdateException
 import java.sql.SQLException
-
 import org.grails.compiler.web.ControllerActionTransformer
-
 import spock.lang.Specification
 
-@TestFor(SomeControllerSubClassController)
-class ControllerExceptionHandlerInheritanceSpec extends Specification {
+class ControllerExceptionHandlerInheritanceSpec extends Specification implements ControllerUnitTest<SomeControllerSubClassController> {
 
     void 'Test action in subclass throws exception handled by super class'() {
         when:

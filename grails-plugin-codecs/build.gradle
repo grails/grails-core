@@ -1,5 +1,11 @@
 dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile project(":grails-web"), project(":grails-plugin-converters"), project(":grails-encoder")
+    annotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
+    annotationProcessor "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
+
+    compileOnly "io.micronaut:micronaut-inject-java:$micronautVersion"
+    compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
+    compileOnly "io.micronaut:micronaut-inject-groovy:$micronautVersion"
+
+    compile project(":grails-web"), project(":grails-encoder")
     runtime project(":grails-codecs")
 }

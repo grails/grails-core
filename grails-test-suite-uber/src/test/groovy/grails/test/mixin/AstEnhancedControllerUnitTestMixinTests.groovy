@@ -1,206 +1,195 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact
-import grails.artefact.Controller
-import grails.converters.JSON
-import grails.converters.XML
-import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockMultipartFile
-import grails.web.mapping.LinkGenerator
-import grails.web.mime.MimeUtility
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.MessageSource
-import org.springframework.web.multipart.MultipartFile
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
-@TestMixin(ControllerUnitTestMixin)
-class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
+class AstEnhancedControllerUnitTestMixinTests extends Specification implements ControllerUnitTest<AnotherController> {
 
-    void testRenderText() {
-        def controller = getMockController()
-
-        controller.renderText()
-        assert response.contentAsString == "good"
+    void setup() {
+        messageSource.addMessage("foo.bar", request.locale, "World")
     }
 
-    protected getMockController() {
-        mockController(AnotherController)
+    void testRenderText() {
+        when:
+        controller.renderText()
+        
+        then:
+        response.contentAsString == "good"
     }
 
     void testSimpleControllerRedirect() {
-
-        def controller = getMockController()
-
+        when:
         controller.redirectToController()
 
-        assert response.redirectedUrl == '/bar'
+        then:
+        response.redirectedUrl == '/bar'
     }
 
-    void testRenderView() {
-        def controller = getMockController()
-
+    void testRenderView() {        
+        when:
         controller.renderView()
 
-        assert "/another/foo" == controller.modelAndView.viewName
+        then:
+        "/another/foo" == controller.modelAndView.viewName
     }
 
-    void testRenderXml() {
-        def controller = getMockController()
-
+    void testRenderXml() {        
+        when:
         controller.renderXml()
 
-        assert "<book title='Great'/>" == controller.response.contentAsString
-        assert "Great" == controller.response.xml.@title.text()
+        then:
+        "<book title='Great'/>" == controller.response.contentAsString
+        "Great" == controller.response.xml.@title.text()
     }
 
     void testRenderJson() {
-
-        def controller = getMockController()
-
+        
+        when:
         controller.renderJson()
 
-        assert '{"book":"Great"}' == controller.response.contentAsString
-        assert "Great" == controller.response.json.book
+        then:
+        '{"book":"Great"}' == controller.response.contentAsString
+        "Great" == controller.response.json.book
     }
 
     void testRenderAsJson() {
-
-        def controller = getMockController()
-
+        
+        when:
         controller.renderAsJson()
 
-        assert '{"foo":"bar"}' == controller.response.contentAsString
-        assert "bar" == controller.response.json.foo
+        then:
+        '{"foo":"bar"}' == controller.response.contentAsString
+        "bar" == controller.response.json.foo
     }
 
     void testRenderState() {
+        when:
         params.foo = "bar"
         request.bar = "foo"
-        def controller = getMockController()
-
         controller.renderState()
-
         def xml = response.xml
 
-        assert xml.parameter.find { it.@name == 'foo' }.@value.text() == 'bar'
-        assert xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
+        then:
+        xml.parameter.find { it.@name == 'foo' }.@value.text() == 'bar'
+        xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
     }
 
     void testInjectedProperties() {
-        assert request != null
-        assert response != null
-        assert servletContext != null
-        assert params != null
-        assert grailsApplication != null
-        assert applicationContext != null
-        assert webRequest != null
+        expect:
+        request != null
+        response != null
+        servletContext != null
+        params != null
+        grailsApplication != null
+        applicationContext != null
+        webRequest != null
     }
 
     void testControllerAutowiring() {
-        messageSource.addMessage("foo.bar", request.locale, "Hello World")
-
-        def controller = getMockController()
-
+        when:
         controller.renderMessage()
 
-        assert 'Hello World' == controller.response.contentAsString
+        then:
+        'World' == controller.response.contentAsString
     }
 
-    void testRenderWithFormatXml() {
-        def controller = getMockController()
-
+    void testRenderWithFormatXml() {        
+        when:
         response.format = 'xml'
         controller.renderWithFormat()
 
-        assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
+        then:
+        '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
     }
 
-    void testRenderWithFormatHtml() {
-        def controller = getMockController()
-
+    void testRenderWithFormatHtml() {        
+        when:
         response.format = 'html'
         def model = controller.renderWithFormat()
 
-        assert model?.foo == 'bar'
+        then:
+        model?.foo == 'bar'
     }
 
     void testWithFormTokenSynchronization() {
-
-        def controller = getMockController()
+        when:
         controller.renderWithForm()
 
-        assert "Bad" == response.contentAsString
+        then:
+        "Bad" == response.contentAsString
 
+        when:
         def holder = SynchronizerTokensHolder.store(session)
         def token = holder.generateToken('/test')
         params[SynchronizerTokensHolder.TOKEN_URI] = '/test'
         params[SynchronizerTokensHolder.TOKEN_KEY] = token
-
         response.reset()
-
         controller.renderWithForm()
 
-        assert "Good" == response.contentAsString
+        then:
+        "Good" == response.contentAsString
     }
 
-    void testFileUpload() {
-        def controller = getMockController()
-
+    void testFileUpload() {        
+        when:
         final file = new GrailsMockMultipartFile("myFile", "foo".bytes)
         request.addFile(file)
         controller.uploadFile()
 
-        assert file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
+        then:
+        file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
     }
 
-    void testRenderBasicTemplateNoTags() {
-        def controller = getMockController()
-
+    void testRenderBasicTemplateNoTags() {        
+        when:
         groovyPages['/another/_bar.gsp'] = 'Hello <%= 10 %>'
         controller.renderTemplate()
 
-        assert response.contentAsString == "Hello 10"
+        then:
+        response.contentAsString == "Hello 10"
     }
 
     void testRenderBasicTemplateWithTags() {
-        def controller = getMockController()
-        messageSource.addMessage("foo.bar", request.locale, "World")
-
+        given:
         groovyPages['/another/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+
+        when:
         controller.renderTemplate()
 
-        assert response.contentAsString == "Hello World"
+        then:
+        response.contentAsString == "Hello World"
     }
 
-    void testRenderBasicTemplateWithLinkTag() {
-        def controller = getMockController()
-
+    void testRenderBasicTemplateWithLinkTag() {        
+        when:
         groovyPages['/another/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
         controller.renderTemplate()
 
-        assert response.contentAsString == "Hello /bar"
+        then:
+        response.contentAsString == "Hello /bar"
     }
 
     void testInvokeTagLibraryMethod() {
-
-        def controller = getMockController()
+        when:
         controller.renderTemplateContents()
 
-        assert response.contentAsString == "/foo"
+        then:
+        response.contentAsString == "/foo"
     }
 
     void testInvokeTagLibraryMethodViaNamespace() {
-
-        def controller = getMockController()
-
+        when:
         groovyPages['/another/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
 
         controller.renderTemplateContentsViaNamespace()
 
-        assert response.contentAsString == "Hello foo.bar"
+        then:
+        response.contentAsString == "Hello World"
     }
 }
 

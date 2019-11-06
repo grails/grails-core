@@ -30,7 +30,7 @@ import org.springframework.web.multipart.MultipartFile
 @grails.web.Controller
 class AnotherController  {
 
-    def handleCommand = { TestCommand test ->
+    def handleCommand( TestCommand test ) {
 
         if (test.hasErrors()) {
             render "Bad"

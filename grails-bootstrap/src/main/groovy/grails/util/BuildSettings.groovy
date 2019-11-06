@@ -186,31 +186,31 @@ class BuildSettings {
     /**
      * The base directory of the project
      */
-    public static final File BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) :  ( IOUtils.findApplicationDirectoryFile() ?: new File("."))
+    public static final File BASE_DIR
 
     /**
      * Whether the application is running inside the development environment or deployed
      */
-    public static final boolean GRAILS_APP_DIR_PRESENT = new File(BASE_DIR, "grails-app").exists() || new File(BASE_DIR, "Application.groovy").exists()
+    public static final boolean GRAILS_APP_DIR_PRESENT
 
     /**
      * The target directory of the project, null outside of the development environment
      */
-    public static final File TARGET_DIR = new File(BASE_DIR, "build")
+    public static final File TARGET_DIR
     /**
      * The resources directory of the project, null outside of the development environment
      */
-    public static final File RESOURCES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_RESOURCES_DIR) ? new File(System.getProperty(PROJECT_RESOURCES_DIR)) : new File(TARGET_DIR, "resources/main"))
+    public static final File RESOURCES_DIR
     /**
      * The classes directory of the project, null outside of the development environment
      */
-    public static final File CLASSES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
+    public static final File CLASSES_DIR
     public static final String RUN_EXECUTED = "grails.run.executed"
 
     /**
      * The path to the build classes directory
      */
-    public static final String BUILD_CLASSES_PATH = "build/classes/main"
+    public static final String BUILD_CLASSES_PATH
 
     /**
      * The path to the build resources directory
@@ -233,6 +233,33 @@ class BuildSettings {
         BuildSettings.package.implementationVersion.endsWith('-SNAPSHOT')
     }
 
-
-
+    static {
+        boolean grailsAppDirPresent = new File( "grails-app").exists() || new File( "Application.groovy").exists()
+        if(!grailsAppDirPresent) {
+            CLASSES_DIR = null
+            BUILD_CLASSES_PATH = "build/classes/main"
+        }
+        else {
+            String fromSystem = System.getProperty(PROJECT_CLASSES_DIR)
+            if(fromSystem) {
+                CLASSES_DIR = new File(fromSystem)
+                BUILD_CLASSES_PATH = fromSystem
+            }
+            else  {
+                File groovyDir = new File("build/classes/groovy/main")
+                if(groovyDir.exists()) {
+                    BUILD_CLASSES_PATH = "build/classes/groovy/main"
+                    CLASSES_DIR = groovyDir
+                }
+                else {
+                    BUILD_CLASSES_PATH = "build/classes/main"
+                    CLASSES_DIR = new File("build/classes/main")
+                }
+            }
+        }
+        BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) :  ( IOUtils.findApplicationDirectoryFile() ?: new File("."))
+        GRAILS_APP_DIR_PRESENT = new File(BASE_DIR, "grails-app").exists() || new File(BASE_DIR, "Application.groovy").exists()
+        TARGET_DIR = new File(BASE_DIR, "build")
+        RESOURCES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_RESOURCES_DIR) ? new File(System.getProperty(PROJECT_RESOURCES_DIR)) : new File(TARGET_DIR, "resources/main"))
+    }
 }

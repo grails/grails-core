@@ -45,7 +45,7 @@ class CodecMetaClassSupport {
         Closure<String> decodeMethodNameClosure = { String codecName -> "${DECODE_PREFIX}${codecName}".toString() }
 
         String codecName = resolveCodecName(codecFactory)
-        Assert.hasText(codecName)
+        Assert.hasText(codecName, "No resolvable codec name")
         
         String encodeMethodName = encodeMethodNameClosure(codecName)
         String decodeMethodName = decodeMethodNameClosure(codecName)

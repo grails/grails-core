@@ -34,10 +34,13 @@ import javax.servlet.ServletContext
 @CompileStatic
 class ServletEnvironmentGrailsApplicationDiscoveryStrategy implements GrailsApplicationDiscoveryStrategy{
     ServletContext servletContext
+    ApplicationContext applicationContext
 
-    ServletEnvironmentGrailsApplicationDiscoveryStrategy(ServletContext servletContext) {
+    ServletEnvironmentGrailsApplicationDiscoveryStrategy(ServletContext servletContext, ApplicationContext applicationContext = null) {
         this.servletContext = servletContext
+        this.applicationContext = applicationContext
     }
+
     @Override
     public GrailsApplication findGrailsApplication() {
         def context = findApplicationContext()
@@ -54,6 +57,9 @@ class ServletEnvironmentGrailsApplicationDiscoveryStrategy implements GrailsAppl
 
     @Override
     public ApplicationContext findApplicationContext() {
+        if (applicationContext != null) {
+            return applicationContext
+        }
         if(servletContext == null) {
             return ContextLoader.currentWebApplicationContext
         }

@@ -15,6 +15,8 @@
  */
 package org.grails.web.util
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import grails.util.Environment
 import groovy.transform.CompileStatic
 import grails.util.GrailsClassUtils
@@ -24,7 +26,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeProvider
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 
 /**
  * Abstract class for class that maintains a registry of mappings MimeType,Class and a particular object type. Used by RendererRegistry and DataBindingSourceRegistry
@@ -41,9 +42,9 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
 
     private Map<Class, Collection<R >> registeredObjectsByType = new ConcurrentHashMap<>()
     private Map<MimeType, R> defaultObjectsByMimeType = new ConcurrentHashMap<>()
-    private Map<K, R > resolvedObjectCache = new ConcurrentLinkedHashMap.Builder<K, R>()
+    private Cache<K, R > resolvedObjectCache = Caffeine.newBuilder()
         .initialCapacity(500)
-        .maximumWeightedCapacity(1000)
+        .maximumSize(1000)
         .build()
 
     void registerDefault(MimeType mt, R object) {
@@ -59,7 +60,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         if(targetType == null) {
             return null
         }
-        final registeredObjects = registeredObjectsByType.get(targetType)
+        def registeredObjects = registeredObjectsByType.get(targetType)
         if (registeredObjects == null) {
             registeredObjects = new ConcurrentLinkedQueue<R>()
             registeredObjectsByType.put(targetType, registeredObjects)
@@ -73,7 +74,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         final clazz = object instanceof Class ? (Class)object : object.getClass()
 
         final K cacheKey = createCacheKey(clazz, mimeType)
-        R registeredObject = (R)resolvedObjectCache.get(cacheKey)
+        R registeredObject = (R)resolvedObjectCache.getIfPresent(cacheKey)
         if (registeredObject == null) {
 
             Class currentClass = clazz
@@ -135,7 +136,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
 
     void removeFromCache(Class type, MimeType mimeType) {
         final key = createCacheKey(type, mimeType)
-        resolvedObjectCache.remove(key)
+        resolvedObjectCache.invalidate(key)
     }
 
     abstract K createCacheKey(Class type, MimeType mimeType)

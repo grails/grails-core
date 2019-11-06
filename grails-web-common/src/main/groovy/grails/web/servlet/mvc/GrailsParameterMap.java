@@ -27,17 +27,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import grails.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsDomainClassProperty;
+import grails.web.mime.MimeType;
+import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.binding.StructuredDateEditor;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import grails.util.TypeConvertingMap;
 import org.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -53,7 +55,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
 
-    private static final Log LOG = LogFactory.getLog(GrailsParameterMap.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsParameterMap.class);
     private static final Map<String, String> CACHED_DATE_FORMATS  = new ConcurrentHashMap<String, String>();
 
     private final Map nestedDateMap = new LinkedHashMap();
@@ -83,7 +85,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         if (requestMap.isEmpty() && ("PUT".equals(request.getMethod()) || "PATCH".equals(request.getMethod())) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
             // attempt manual parse of request body. This is here because some containers don't parse the request body automatically for PUT request
             String contentType = request.getContentType();
-            if ("application/x-www-form-urlencoded".equals(contentType)) {
+            if (MimeType.FORM.equals(new MimeType(contentType))) {
                 try {
                     Reader reader = request.getReader();
                     if(reader != null) {
@@ -98,9 +100,15 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         }
 
         if (request instanceof MultipartHttpServletRequest) {
-            Map<String,MultipartFile> fileMap = ((MultipartHttpServletRequest)request).getFileMap();
-            for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
-                requestMap.put(entry.getKey(), entry.getValue());
+            MultiValueMap<String, MultipartFile> fileMap = ((MultipartHttpServletRequest)request).getMultiFileMap();
+            for (Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
+                List<MultipartFile> value = entry.getValue();
+                if(value.size() == 1) {
+                    requestMap.put(entry.getKey(), value.get(0));
+                }
+                else {
+                    requestMap.put(entry.getKey(), value);
+                }
             }
         }
 
@@ -157,10 +165,6 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                 return DefaultGroovyMethods.subMap(wrappedMap, (Collection)key);
             }
         }
-        if ("date.struct".equals(returnValue)) {
-            returnValue = lazyEvaluateDateParam(key);
-            nestedDateMap.put(key, returnValue);
-        }
         return returnValue;
     }
 
@@ -201,6 +205,12 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
      */
     @Override
     public Date getDate(String name) {
+        Object returnValue = wrappedMap.get(name);
+        if ("date.struct".equals(returnValue)) {
+            returnValue = lazyEvaluateDateParam(name);
+            nestedDateMap.put(name, returnValue);
+            return (Date)returnValue;
+        }
         Date date = super.getDate(name);
         if (date == null) {
             // try lookup format from messages.properties
@@ -233,7 +243,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
      * @return The identifier in the request
      */
     public Object getIdentifier() {
-        return get(GrailsDomainClassProperty.IDENTITY);
+        return get(GormProperties.IDENTITY);
     }
 
     private String lookupFormat(String name) {

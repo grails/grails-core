@@ -1,17 +1,23 @@
+configurations.testCompile {
+    exclude module: "grails-plugin-testing"
+}
+
 dependencies {
 
     compile project(':grails-test-suite-base'),
-            project(':grails-plugin-interceptors'),
-            project(':grails-plugin-gsp'),
-            project(':grails-plugin-controllers'),
-            project(':grails-plugin-testing')
+            project(':grails-plugin-interceptors'),        
+            project(':grails-plugin-controllers')
+
+    compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'
     testRuntime 'jstl:jstl:1.1.2'
     testRuntime 'javax.el:el-api:1.0'
-    testRuntime 'com.h2database:h2:1.3.176'
+    testRuntime "com.h2database:h2:$h2Version"
+    testRuntime "org.springframework:spring-aspects:${springVersion}"
+    testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
+            "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    testCompile "commons-io:commons-io:${commonsIOVersion}"
     testCompile project(':grails-plugin-codecs'),
                 project(':grails-plugin-domain-class') ,
                 project(':grails-plugin-url-mappings') ,
@@ -22,7 +28,7 @@ dependencies {
                 project(":grails-plugin-databinding"),
                 project(':grails-spring')
 
-    testCompile "org.grails:grails-datastore-gorm-hibernate4:$datastoreVersion", {
+    testCompile "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -46,6 +52,37 @@ dependencies {
         exclude group: 'javassit', module:'javassist'
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
+    }
+
+    testCompile "org.grails.plugins:async:$asyncVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+    }
+    testCompile "org.grails.plugins:gsp:$gspVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-web-common'
+        exclude module:'grails-encoder'
+    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-test'
+        exclude module:'grails-core'
+        exclude module:'async'
+    }
+    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-rest'
+        exclude module:'grails-plugin-interceptors'
+        exclude module:'grails-test'
+        exclude module:'grails-core'
+        exclude module:'async'
+        exclude module:'gsp'
     }
 }
 

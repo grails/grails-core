@@ -2,8 +2,9 @@ package grails.boot
 
 import grails.boot.config.GrailsAutoConfiguration
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -15,7 +16,7 @@ import spock.lang.Specification
  */
 class GrailsSpringApplicationSpec extends Specification{
 
-    ConfigurableApplicationContext context
+    AnnotationConfigServletWebServerApplicationContext context
 
     void cleanup() {
         context.close()
@@ -23,11 +24,11 @@ class GrailsSpringApplicationSpec extends Specification{
 
     void "Test run Grails via SpringApplication"() {
         when:"SpringApplication is used to run a Grails app"
-            context = SpringApplication.run(Application)
+            context = (AnnotationConfigServletWebServerApplicationContext)SpringApplication.run(Application)
 
         then:"The application runs"
             context != null
-            new URL("http://localhost:${context.embeddedServletContainer.port}/foo/bar").text == 'hello world'
+            new URL("http://localhost:${context.webServer.port}/foo/bar").text == 'hello world'
     }
 
 
@@ -35,8 +36,8 @@ class GrailsSpringApplicationSpec extends Specification{
     @EnableWebMvc
     static class Application extends GrailsAutoConfiguration {
         @Bean
-        public EmbeddedServletContainerFactory containerFactory() {
-            return new TomcatEmbeddedServletContainerFactory(0);
+        ConfigurableServletWebServerFactory webServerFactory() {
+            TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory(0)
         }
     }
 }

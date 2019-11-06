@@ -1,15 +1,19 @@
 dependencies {
     compile project(":grails-web-common")
-    compile project(":grails-web-gsp")
     compile project(":grails-web-databinding")
     compile project(":grails-web-fileupload"), optional
     compile project(":grails-web-url-mappings")
-    compile project(":grails-web-jsp")
     compile project(":grails-web-mvc")
-    compile project(":grails-web-sitemesh")
 
-    // Required for AspectJ support
-    runtime "org.springframework:spring-aspects:${springVersion}"
-    runtime "org.aspectj:aspectjrt:$aspectjVersion",
-            "org.aspectj:aspectjweaver:$aspectjVersion"
+
+    compile "org.grails:grails-web-gsp:$gspVersion", {
+        exclude group:'org.grails', module:'grails-core'
+        exclude group:'org.grails', module:'grails-encoder'
+        exclude group:'org.grails', module:'grails-web-common'
+    }
+    compile "org.grails:grails-web-sitemesh:$gspVersion", {
+        exclude group:'org.grails', module:'grails-core'
+        exclude group:'org.grails', module:'grails-encoder'
+        exclude group:'org.grails', module:'grails-web-common'
+    }
 }

@@ -2,24 +2,19 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
-import org.junit.Assert;
-import org.junit.Test
+class TestForControllerWithoutMockDomainTests extends Specification implements ControllerUnitTest<ImpedimentsController> {
 
-@TestFor(ImpedimentsController)
-class TestForControllerWithoutMockDomainTests {
-
-    @Test
     void testEditImpediment() {
         def impedimentInstance = new Impediment(text:"blah")
 
-        try {
-            impedimentInstance.save()
-            Assert.fail("Exception should have been thrown")
-        }
-        catch(Exception e) {
-            
-        }
+        when:
+        impedimentInstance.save()
+
+        then:
+        thrown(Exception)
     }
 }
 

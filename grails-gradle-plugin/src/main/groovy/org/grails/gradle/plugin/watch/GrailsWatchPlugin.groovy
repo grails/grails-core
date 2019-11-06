@@ -30,13 +30,12 @@ class GrailsWatchPlugin implements Plugin<Project> {
                                                .forProjectDirectory( project.projectDir )
                                                .connect()
 
-
             Thread.start {
                 sleep 6000
                 // initialise the build in a background thread so as to make it quicker to run the first time
-                def previousOut = System.out
+                PrintStream previousOut = System.out
                 try {
-                    def sysOut = new DevNullPrintStream()
+                    PrintStream sysOut = new DevNullPrintStream()
                     System.out = sysOut
                     connection.newBuild()
                               .setStandardOutput(sysOut)
@@ -46,8 +45,6 @@ class GrailsWatchPlugin implements Plugin<Project> {
                     System.out = previousOut
                 }
             }
-
-
 
             List<String> tasks = []
             for(WatchConfig wc in watchConfigs) {
@@ -76,7 +73,7 @@ class GrailsWatchPlugin implements Plugin<Project> {
             directoryWatcher.start()
         }
 
-        def runTasks = project.tasks.findByName('run')
+        Task runTasks = project.tasks.findByName('run')
         if(runTasks) {
             runTasks.dependsOn( watchTask )
         }

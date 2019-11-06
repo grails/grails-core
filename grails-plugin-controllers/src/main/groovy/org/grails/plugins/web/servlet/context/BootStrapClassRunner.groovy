@@ -19,6 +19,8 @@ import grails.core.GrailsApplication
 import grails.core.GrailsApplicationLifeCycleAdapter
 import grails.core.GrailsClass
 import grails.core.support.GrailsApplicationAware
+import grails.plugins.GrailsPluginManager
+import grails.plugins.PluginManagerAware
 import grails.web.servlet.bootstrap.GrailsBootstrapClass
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
@@ -41,16 +43,17 @@ import javax.servlet.ServletContext
  */
 @CompileStatic
 @Commons
-class BootStrapClassRunner extends GrailsApplicationLifeCycleAdapter implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware {
+class BootStrapClassRunner extends GrailsApplicationLifeCycleAdapter implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware, PluginManagerAware {
 
     GrailsApplication grailsApplication
+    GrailsPluginManager pluginManager
     ApplicationContext applicationContext
     ServletContext servletContext
 
     @Override
     void onStartup(Map<String, Object> event) {
         if(grailsApplication && applicationContext && servletContext) {
-            GrailsConfigUtils.executeGrailsBootstraps(grailsApplication, (WebApplicationContext)applicationContext, servletContext )
+            GrailsConfigUtils.executeGrailsBootstraps(grailsApplication, (WebApplicationContext)applicationContext, servletContext, pluginManager )
         }
     }
 

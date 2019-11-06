@@ -16,15 +16,18 @@
 
 package grails.test.mixin
 
+import grails.testing.gorm.DataTest
 import spock.lang.Specification
 import grails.persistence.Entity
 import spock.lang.Issue
 
 /**
  */
+class DomainClassDeepValidationSpec extends Specification implements DataTest {
 
-@Mock([ExampleParent, ExampleManyChild, ExampleSingleChild])
-class DomainClassDeepValidationSpec extends Specification{
+    void setupSpec() {
+        mockDomains ExampleParent, ExampleManyChild, ExampleSingleChild
+    }
 
     @Issue('GRAILS-8738')
     void "Test that validation cascades to the child from the owner"() {
@@ -41,7 +44,6 @@ class DomainClassDeepValidationSpec extends Specification{
 
         when: "When the children are assigned to the parent"
             testObj.manyChildren = manyChildren
-
         then: "The parent has validation errors"
             !testObj.validate(deepValidate: true)
             testObj.validate(deepValidate: false)

@@ -1,47 +1,41 @@
 package org.grails.web.metaclass
 
-import static org.junit.Assert.assertEquals
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
+
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
 
 import org.grails.web.servlet.GrailsFlashScope
-import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(TestChainController)
-@Mock(TestChainBook)
-class ChainMethodTests {
+class ChainMethodTests extends Specification implements ControllerUnitTest<TestChainController>, DomainUnitTest<TestChainBook> {
 
-    @Test
     void testChainMethodWithModel() {
         TestChainBook.metaClass.save = { false }
 
+        when:
         controller.save()
-
         def flash = controller.flash
-
-        assert flash.chainModel.book
-
         def id = System.identityHashCode(flash.chainModel.book)
 
-        assert flash.chainModel[GrailsFlashScope.ERRORS_PREFIX+id]
-
-        org.springframework.mock.web.MockHttpServletResponse response = controller.response
-
-        assertEquals '/testChain/create', response.redirectedUrl
+        then:
+        flash.chainModel.book
+        flash.chainModel[GrailsFlashScope.ERRORS_PREFIX+id]
+        response.redirectedUrl == '/testChain/create'
     }
 
-    @Test
     void testChainMethodWithId() {
+        when:
         controller.testId()
 
-        assertEquals "Test param", controller.flash.chainModel.str
-        assertEquals "/testChain/show/5", response.redirectedUrl
+        then:
+        controller.flash.chainModel.str == "Test param"
+        response.redirectedUrl == "/testChain/show/5"
     }
 }
 

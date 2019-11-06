@@ -14,51 +14,48 @@
  * limitations under the License.
  */
 package org.grails.plugins.web.controllers
+
 import grails.config.Settings
-import grails.core.GrailsApplication
 import grails.core.GrailsControllerClass
-import grails.core.support.GrailsApplicationAware
 import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.plugins.web.servlet.context.BootStrapClassRunner
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
-import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.grails.web.servlet.mvc.TokenResponseActionResultTransformer
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.beans.factory.support.AbstractBeanDefinition
-import org.springframework.boot.context.embedded.FilterRegistrationBean
-import org.springframework.boot.context.embedded.ServletRegistrationBean
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean
+import org.springframework.boot.web.servlet.FilterRegistrationBean
+import org.springframework.boot.web.servlet.ServletRegistrationBean
+import org.springframework.boot.web.servlet.filter.OrderedFilter
 import org.springframework.context.ApplicationContext
-import org.springframework.core.Ordered
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
+import javax.servlet.DispatcherType
 import javax.servlet.MultipartConfigElement
+
 /**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
-@Commons
+@Slf4j
 class ControllersGrailsPlugin extends Plugin {
-
-    def watchedResources = [
-        "file:./grails-app/controllers/**/*Controller.groovy",
-        "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def observe = ['domainClass']
@@ -76,8 +73,6 @@ class ControllersGrailsPlugin extends Plugin {
         int fileSizeThreashold = config.getProperty(Settings.CONTROLLERS_UPLOAD_FILE_SIZE_THRESHOLD, Integer, 0)
         String filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
         boolean filtersForceEncoding = config.getProperty(Settings.FILTER_FORCE_ENCODING, Boolean, false)
-        boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
-
         boolean isTomcat = ClassUtils.isPresent("org.apache.catalina.startup.Tomcat", application.classLoader)
         String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, isTomcat ? Settings.DEFAULT_TOMCAT_SERVLET_PATH : Settings.DEFAULT_WEB_SERVLET_PATH)
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
@@ -98,30 +93,24 @@ class ControllersGrailsPlugin extends Plugin {
                 forceEncoding = filtersForceEncoding
             }
             urlPatterns = catchAllMapping
-            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 10
+            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 10
         }
 
         hiddenHttpMethodFilter(FilterRegistrationBean) {
             filter = bean(HiddenHttpMethodFilter)
             urlPatterns = catchAllMapping
-            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 20
+            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 20
         }
 
         grailsWebRequestFilter(FilterRegistrationBean) {
             filter = bean(GrailsWebRequestFilter)
             urlPatterns = catchAllMapping
-            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
-        }
-
-
-        if(dbConsoleEnabled && ClassUtils.isPresent('org.h2.server.web.WebServlet', application.classLoader)) {
-            String urlPattern = config.getProperty('grails.dbconsole.urlRoot', "/dbconsole") + '/*'
-            dbConsoleServlet(ServletRegistrationBean) {
-                servlet = bean(application.classLoader.loadClass('org.h2.server.web.WebServlet'))
-                loadOnStartup = 2
-                urlMappings = [urlPattern]
-                initParameters = ['-webAllowOthers':'true']
-            }
+            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
+            dispatcherTypes = EnumSet.of(
+                    DispatcherType.FORWARD,
+                    DispatcherType.INCLUDE,
+                    DispatcherType.REQUEST
+            )
         }
 
         exceptionHandler(GrailsExceptionResolver) {
@@ -147,7 +136,7 @@ class ControllersGrailsPlugin extends Plugin {
 
         // add the dispatcher servlet
         dispatcherServlet(GrailsDispatcherServlet)
-        dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), grailsServletPath) {
+        dispatcherServletRegistration(DispatcherServletRegistrationBean, ref("dispatcherServlet"), grailsServletPath) {
             loadOnStartup = 2
             asyncSupported = true
             multipartConfig = multipartConfigElement
@@ -175,41 +164,15 @@ class ControllersGrailsPlugin extends Plugin {
                 }
             }
         }
+
+        if (config.getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false)) {
+            log.warn("'grails.json.legacy.builder' is set to TRUE but is NOT supported in this version of Grails.")
+        }
     } }
-
-    @Override
-    void onChange( Map<String, Object> event) {
-        if (!(event.source instanceof Class)) {
-            return
-        }
-        def application = grailsApplication
-        if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, (Class)event.source)) {
-            ApplicationContext context = applicationContext
-            if (!context) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Application context not found. Can't reload")
-                }
-                return
-            }
-
-
-            GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, (Class)event.source)
-            beans {
-                "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
-                    def beanScope = controllerClass.getScope()
-                    bean.scope = beanScope
-                    bean.autowire = "byName"
-                    if (beanScope == 'prototype') {
-                        bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
-                    }
-                }
-            }
-        }
-    }
 
 
     @CompileStatic
-    static class GrailsWebMvcConfigurer extends WebMvcConfigurerAdapter {
+    static class GrailsWebMvcConfigurer implements WebMvcConfigurer {
 
         private static final String[] SERVLET_RESOURCE_LOCATIONS = [ "/" ]
 

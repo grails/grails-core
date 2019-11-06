@@ -2,34 +2,35 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
-import org.junit.Test
-import static org.junit.Assert.*
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(EnumBindingController)
-class BindToEnumTests {
+class BindToEnumTests extends Specification implements ControllerUnitTest<EnumBindingController>, DomainUnitTest<RoleHolder> {
 
-    @Test
     void testBindBlankValueToEnum() {
         params.role = ""
 
+        when:
         def model = controller.save()
 
-        assertNull "should have been null", model.holder.role
+        then:
+        model.holder.role == null
     }
 
-    @Test
     void testBindValueToEnum() {
         params.role = "USER"
 
+        when:
         def model = controller.save()
 
-        assertEquals "USER", model.holder.role.toString()
+        then:
+        model.holder.role.toString() == "USER"
     }
 }
 

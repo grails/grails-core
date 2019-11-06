@@ -16,17 +16,13 @@
 package org.grails.web.mapping;
 
 import grails.core.GrailsApplication;
-import grails.validation.ConstrainedProperty;
+import grails.gorm.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingInfo;
+import org.springframework.util.Assert;
 
 import java.util.Collections;
 import java.util.Map;
-
-import javax.servlet.ServletContext;
-
-import org.grails.web.util.WebUtils;
-import org.springframework.util.Assert;
 
 /**
  * A Url mapping for http response codes.

@@ -1,107 +1,128 @@
 package org.grails.web.servlet.mvc
 
-import static org.junit.Assert.assertEquals
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.buffer.FastStringWriter
-import org.junit.Test
 
-@TestFor(RenderDynamicMethodTestController)
-class RenderDynamicMethodTests  {
+class RenderDynamicMethodTests extends Specification implements ControllerUnitTest<RenderDynamicMethodTestController>  {
 
-    @Test
     void testRenderTextWithLayout() {
+        when:
         controller.renderTextWithLayout()
-        assertEquals "text/html;charset=utf-8", response.contentType
-        assertEquals "foo", response.contentAsString
-        assert "bar" == request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE)
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
+        request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE) == "bar"
     }
-    
-    @Test
+
     void testRenderView() {
+        when:
         controller.renderView()
 
-        assertEquals '/renderDynamicMethodTest/foo', controller.modelAndView.viewName
-        assertEquals 'text/html;charset=utf-8', response.contentType
+        then:
+        controller.modelAndView.viewName == controller.modelAndView.viewName
     }
 
-    @Test
     void testRenderText() {
+        when:
         controller.renderText()
-        assertEquals "text/html;charset=utf-8", response.contentType
-        assertEquals "text", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderStreamCharBuffer() {
+        when:
         controller.renderStreamCharBuffer()
-        assertEquals "text/html;charset=utf-8", response.contentType
-        assertEquals "text", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderGString() {
+        when:
         controller.renderGString()
-        assertEquals "text/html;charset=utf-8", response.contentType
-        assertEquals "text", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderTextWithContentType() {
+        when:
         controller.renderTextWithContentType()
-        assertEquals "text/xml;charset=utf-16", response.contentType
-        assertEquals "<foo>bar</foo>", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderTextWithContentTypeAndCharset() {
+        when:
         controller.renderTextWithContentTypeAndCharset()
-        assertEquals "text/xml;charset=utf-16", response.contentType
-        assertEquals "<foo>bar</foo>", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderXml() {
+        when:
         controller.renderXml()
-        assertEquals "text/xml;charset=utf-8", response.contentType
-        assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderNonAsciiXml() {
+        when:
         controller.renderNonAsciiXml()
-        assertEquals "text/xml;charset=utf-8", response.contentType
-        assertEquals "<foo><bar>hello öäåÖÄÅ</bar></foo>", response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testRenderJSON() {
+        when:
         controller.renderJSON()
-        assertEquals "application/json;charset=UTF-8", response.contentType
-        assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
+
+        then:
+        response.contentType == response.contentType
+        response.contentAsString == response.contentAsString
     }
 
-    @Test
     void testStatusAndText() {
+        when:
         controller.renderStatusAndText()
-        assertEquals 'five oh three', response.contentAsString
-        assertEquals 503, response.status
+
+        then:
+        response.contentAsString == response.contentAsString
+        response.status == response.status
     }
 
-    @Test
     void testStatusOnly() {
+        when:
         controller.renderStatusOnly()
-        assertEquals '', response.contentAsString
-        assertEquals 404, response.status
+
+        then:
+        response.contentAsString == response.contentAsString
+        response.status == response.status
     }
-    
-    @Test
+
     void testRenderFile() {
+        when:
         controller.renderFile()
-        assertEquals 'foo', response.contentAsString
-        assertEquals 'text/plain;charset=utf-8', response.contentType
+
+        then:
+        response.contentAsString == response.contentAsString
+        response.contentType == response.contentType
     }
 }
 

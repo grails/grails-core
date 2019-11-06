@@ -373,7 +373,7 @@ public class GrailsConsole implements ConsoleLogger {
             try {
                 ((Flushable)history).flush();
             }
-            catch (IOException e) {
+            catch (Throwable e) {
                 // ignore exception
             }
         }
@@ -595,7 +595,9 @@ public class GrailsConsole implements ConsoleLogger {
         if (msg == null || msg.trim().length() == 0) return;
         try {
             if (isAnsiEnabled()) {
-                out.print(erasePreviousLine(CATEGORY_SEPARATOR));
+                if (replaceCount > 0) {
+                    out.print(erasePreviousLine(CATEGORY_SEPARATOR));
+                }
                 lastStatus = outputCategory(ansi(), CATEGORY_SEPARATOR)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);

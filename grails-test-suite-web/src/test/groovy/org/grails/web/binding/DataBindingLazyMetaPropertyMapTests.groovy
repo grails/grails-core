@@ -16,18 +16,20 @@
 
 package org.grails.web.binding
 
-import org.grails.web.databinding.DataBindingLazyMetaPropertyMap;
+import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
+import spock.lang.Specification
 
-class DataBindingLazyMetaPropertyMapTests extends GroovyTestCase {
+class DataBindingLazyMetaPropertyMapTests extends Specification {
 
     void testDataBindingWithSubmap() {
+        when:
        def map = new DataBindingLazyMetaPropertyMap(new PropertyMapTest(name:"Bart", age:11, other:"stuff"))
-
         map['name', 'age'] = [name:"Homer", age:"45", other:"changed"]
 
-        assertEquals 45,map.age
-        assertEquals "Homer", map.name
-        assertEquals "stuff", map.other
+        then:
+        map.age == 45
+        map.name == "Homer"
+        map.other == "stuff"
     }
 }
 

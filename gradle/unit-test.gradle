@@ -61,9 +61,6 @@ test {
     maxHeapSize = '1G'
     minHeapSize = '256m'
     jvmArgs = ["-server"]
-    if(!isJava8Compatible) {
-        jvmArgs '-XX:MaxPermSize=256m'
-    }    
 }
 
 createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
@@ -88,9 +85,6 @@ def createTestTaskWithoutSuffix(String name, includes, excludes) {
         maxHeapSize = '1500m'
         minHeapSize = '256m'
         jvmArgs = ["-server"]
-        if(!isJava8Compatible) {
-            jvmArgs '-XX:MaxPermSize=256m'
-        }
         systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
         include includes as String[]
         exclude excludes as String[]
@@ -99,7 +93,7 @@ def createTestTaskWithoutSuffix(String name, includes, excludes) {
         coverageHtmlReport = false
 /*        classpath = classpath + project.rootProject.configurations.coverage*/
         classpath = sourceSets.test.runtimeClasspath + project.rootProject.configurations.coverage
-        testClassesDir = sourceSets.test.classesDir
+        testClassesDirs = sourceSets.test.classesDirs
     }
     test.dependsOn task
     task.dependsOn coreJar

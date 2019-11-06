@@ -15,8 +15,6 @@
  */
 package grails.plugins;
 
-import grails.config.Config;
-import grails.util.BuildScope;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
 
@@ -196,24 +194,10 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
 
 
     /**
-     * Makes the plugin excluded for a particular BuildScope
-     * @param buildScope The BuildScope
-     */
-    void addExclude(BuildScope buildScope);
-
-    /**
      * Makes the plugin excluded for a particular Environment
      * @param env The Environment
      */
     void addExclude(Environment env);
-
-    /**
-     * Return whether this plugin supports the given PluginScope
-     *
-     * @param buildScope The PluginScope
-     * @return true if it does
-     */
-    boolean supportsScope(BuildScope buildScope);
 
     /**
      * Returns whether this plugin supports the given environment name

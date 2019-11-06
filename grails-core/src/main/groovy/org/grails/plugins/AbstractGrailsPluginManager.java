@@ -22,7 +22,6 @@ import org.grails.config.NavigableMap;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.GrailsVersionUtils;
-import grails.util.BuildScope;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
@@ -306,7 +305,15 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                 if(isPluginDisabledForProfile(plugin)) continue;
                 for (Class<?> artefact : plugin.getProvidedArtefacts()) {
                     String shortName = GrailsNameUtils.getShortName(artefact);
-                    if (!isAlreadyRegistered(app, artefact, shortName)) {
+                    if (artefact.getName().equals(shortName)) {
+                        LOG.warn("Plugin " + plugin.getName() + " has an artefact " + shortName + " without a package name " +
+                                "This could lead to artefacts being excluded from the application");
+                        if (app.getClassForName(shortName) != null) {
+                            LOG.error("Plugin " + plugin.getName() + " has an artefact " + shortName + " that is being excluded from " +
+                                    "the application because another artefact exists with the same name without a package defined.");
+                        }
+                    }
+                    if (!isAlreadyRegistered(app, artefact)) {
                         app.addOverridableArtefact(artefact);
                     }
                 }
@@ -314,8 +321,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         }
     }
 
-    private boolean isAlreadyRegistered(GrailsApplication app, Class<?> artefact, String shortName) {
-        return app.getClassForName(shortName) != null || app.getClassForName(artefact.getName()) != null;
+    private boolean isAlreadyRegistered(GrailsApplication app, Class<?> artefact) {
+        return app.getClassForName(artefact.getName()) != null;
     }
 
     public void doArtefactConfiguration() {
@@ -362,12 +369,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     @Override
     public void setPluginFilter(PluginFilter pluginFilter) {
         // no-op
-    }
-
-    @Deprecated
-    public boolean supportsCurrentBuildScope(String pluginName) {
-        GrailsPlugin plugin = getGrailsPlugin(pluginName);
-        return plugin == null || plugin.supportsScope(BuildScope.getCurrent());
     }
 
     public void setLoadCorePlugins(boolean shouldLoadCorePlugins) {

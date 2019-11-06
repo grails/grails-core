@@ -8,6 +8,7 @@ import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMappingsHolder
 
 import org.grails.plugins.CoreGrailsPlugin
+import org.grails.web.util.WebUtils
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -28,6 +29,10 @@ class LinkGeneratorSpec extends Specification {
     def pluginManager
 
     def mainCssResource = [dir:'css', file:'main.css']
+
+    def setup() {
+        WebUtils.clearGrailsWebRequest()
+    }
 
 
     def "relative links contain the context with resource path"() {

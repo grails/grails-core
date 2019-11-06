@@ -2,7 +2,6 @@ package grails.boot.test
 
 import grails.boot.GrailsApp
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.test.SpringApplicationContextLoader
 import org.springframework.boot.test.context.SpringBootContextLoader
 
 /*

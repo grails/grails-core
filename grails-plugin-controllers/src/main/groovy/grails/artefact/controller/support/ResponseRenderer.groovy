@@ -15,16 +15,11 @@
  */
 package grails.artefact.controller.support
 
-import grails.async.Promise
-import grails.config.Settings
-import grails.converters.JSON
 import grails.io.IOUtils
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.GrailsStringUtils
 import grails.util.GrailsWebUtil
-import grails.util.Holders
-import grails.web.JSONBuilder
 import grails.web.api.WebAttributes
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
@@ -35,7 +30,6 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.SpringIOUtils
-import org.grails.web.converters.Converter
 import org.grails.web.json.JSONElement
 import org.grails.web.servlet.mvc.ActionResultTransformer
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -48,6 +42,7 @@ import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
@@ -149,16 +144,9 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void renderJsonInternal(HttpServletResponse response, Closure callable) {
-        if( Holders.getConfig()?.getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false) ) {
-            def builder = new JSONBuilder()
-            JSON json = builder.build(callable)
-            json.render response
-        }
-        else {
-            response.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), response.getCharacterEncoding() ?: "UTF-8"))
-            def jsonBuilder = new StreamingJsonBuilder(response.writer)
-            jsonBuilder.call callable
-        }
+        response.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), response.getCharacterEncoding() ?: "UTF-8"))
+        def jsonBuilder = new StreamingJsonBuilder(response.writer)
+        jsonBuilder.call callable
     }
 
     /**
@@ -176,18 +164,6 @@ trait ResponseRenderer extends WebAttributes {
         handleStatusArgument argMap, webRequest, response
         render body
         applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
-    }
-
-    /**
-     * Render the given converter to the response
-     *
-     * @param converter The converter to render
-     */
-    void render(Converter<?> converter) {
-        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
-        HttpServletResponse response = webRequest.currentResponse
-        webRequest.renderView = false
-        converter.render response
     }
 
     /**
@@ -267,15 +243,13 @@ trait ResponseRenderer extends WebAttributes {
             }
             Object modelObject = argMap[ARGUMENT_MODEL]
             if (modelObject) {
-                boolean isPromise = modelObject instanceof Promise
                 Collection<ActionResultTransformer> resultTransformers = actionResultTransformers
                 for (ActionResultTransformer resultTransformer : resultTransformers) {
                     modelObject = resultTransformer.transformActionResult webRequest,viewUri, modelObject
                 }
-                if (isPromise) return
             }
 
-            applyContentType webRequest.currentResponse, argMap, null
+            applyContentType webRequest.currentResponse, argMap, null, false
 
             Map model
             if (modelObject instanceof Map) {
@@ -391,7 +365,7 @@ trait ResponseRenderer extends WebAttributes {
                         hasContentType = detectContentTypeFromFileName(webRequest, response, argMap, fileName)
                     }
                     if (fnO) {
-                        response.setHeader HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName
+                        response.setHeader HttpHeaders.CONTENT_DISPOSITION, "$DISPOSITION_HEADER_PREFIX\"$fileName\""
                     }
                 }
                 if (!hasContentType) {
@@ -447,12 +421,22 @@ trait ResponseRenderer extends WebAttributes {
         }
         else {
             // reached here so only the status was set, just send it back
-            def message = argMap?.message?.toString()
+            String message = argMap?.message?.toString()
+            int statusCode = response.status
             if( message ) {
-                response.sendError( response.status, message  )
+                response.sendError(statusCode, message  )
             }
             else {
-                response.sendError( response.status )
+                // if the status code is an error trigger the container
+                // forwarding logic
+                if(statusCode >= 300) {
+                    response.sendError(statusCode)
+                }
+                else {
+                    // otherwise just ensure the status is propagated to the client
+                    response.setStatus(statusCode)
+                    response.flushBuffer()
+                }
             }
         }
     }
@@ -464,14 +448,20 @@ trait ResponseRenderer extends WebAttributes {
         if (argMap.containsKey(ARGUMENT_STATUS)) {
             def statusObj = argMap.get(ARGUMENT_STATUS)
             if (statusObj != null) {
-                try {
-                    final int statusCode = statusObj instanceof Number ? ((Number) statusObj).intValue() : Integer.parseInt(statusObj.toString())
-                    response.status = statusCode
+                if (statusObj instanceof HttpStatus) {
+                    response.status = ((HttpStatus)statusObj).value()
                     statusSet = true
-                }
-                catch (NumberFormatException e) {
-                    throw new ControllerExecutionException(
-                            "Argument [status] of method [render] must be a valid integer.")
+                } else {
+
+                    try {
+                        final int statusCode = statusObj instanceof Number ? ((Number) statusObj).intValue() : Integer.parseInt(statusObj.toString())
+                        response.status = statusCode
+                        statusSet = true
+                    }
+                    catch (NumberFormatException e) {
+                        throw new ControllerExecutionException(
+                                "Argument [status] of method [render] must be a valid integer.")
+                    }
                 }
             }
         }

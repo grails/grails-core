@@ -3,12 +3,12 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.rest.RestfulController
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(ArtistController)
-@Mock(Album)
-class RestfulControllerSubclassSpec extends Specification {
+class RestfulControllerSubclassSpec extends Specification implements ControllerUnitTest<ArtistController>, DomainUnitTest<Album> {
 
     void 'Test that save populates the newly created instance with values from the request body'() {
         when:
@@ -84,6 +84,25 @@ class RestfulControllerSubclassSpec extends Specification {
         updatedAlbum instanceof Album
         updatedAlbum.artist == 'Riverside'
         updatedAlbum.title == 'Out Of Myself'
+    }
+
+    void 'Test that update validates input data and returns an error when validation fails'() {
+        given:
+        def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save(flush: true)
+
+        when:
+        request.method = 'PUT'
+        params.title = ''
+        params.id = album.id
+        controller.update()
+        def updatedAlbum = model.album
+        def persistedAlbum = Album.get(album.id)
+
+        then:
+        persistedAlbum.title == 'Second Life Syndrome'
+        updatedAlbum instanceof Album
+        updatedAlbum.title == null
+        updatedAlbum.errors.hasFieldErrors('title')
     }
     
     void 'Test that create populates the newly created instance with request parameters'() {

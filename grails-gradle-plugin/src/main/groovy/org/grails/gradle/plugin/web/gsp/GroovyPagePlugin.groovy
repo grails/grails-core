@@ -1,9 +1,12 @@
 package org.grails.gradle.plugin.web.gsp
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
@@ -18,7 +21,10 @@ import org.grails.gradle.plugin.util.SourceSets
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class GroovyPagePlugin implements Plugin<Project> {
+
+    @CompileDynamic
     @Override
     void apply(Project project) {
 
@@ -30,14 +36,14 @@ class GroovyPagePlugin implements Plugin<Project> {
             gspCompile 'javax.servlet:javax.servlet-api:3.1.0'
         }
 
-        def mainSourceSet = SourceSets.findMainSourceSet(project)
+        SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
 
-        def output = mainSourceSet?.output
-        def classesDir = output?.classesDir ?: new File(project.buildDir, "classes/main")
-        def destDir = output?.dir("gsp-classes") ?: new File(project.buildDir, "gsp-classes/main")
+        SourceSetOutput output = mainSourceSet?.output
+        FileCollection classesDirs = resolveClassesDirs(output, project)
+        File destDir = output?.dir("gsp-classes") ?: new File(project.buildDir, "gsp-classes/main")
 
-        def providedConfig = project.configurations.findByName('provided')
-        def allClasspath = project.configurations.compile + project.configurations.gspCompile + project.files(classesDir)
+        Configuration providedConfig = project.configurations.findByName('provided')
+        def allClasspath = project.configurations.compile + project.configurations.gspCompile + classesDirs
         if(providedConfig) {
             allClasspath += providedConfig
         }
@@ -66,11 +72,22 @@ class GroovyPagePlugin implements Plugin<Project> {
             war.classpath = war.classpath + project.files(destDir)
         }
         allTasks.withType(Jar) { Jar jar ->
-            if(!(jar instanceof War) && (jar.name == 'jar')) {
-                jar.dependsOn compileGroovyPages
-                jar.from destDir
+            if(!(jar instanceof War)) {
+                if (jar.name == 'bootJar') {
+                    jar.dependsOn compileGroovyPages
+                    jar.from(destDir) {
+                        into("BOOT-INF/classes")
+                    }
+                } else if(jar.name == 'jar') {
+                    jar.dependsOn compileGroovyPages
+                    jar.from destDir
+                }
             }
         }
+    }
+
+    protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
+        output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
     }
 
 }

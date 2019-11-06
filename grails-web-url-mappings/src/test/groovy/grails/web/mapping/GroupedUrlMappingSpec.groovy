@@ -1,6 +1,8 @@
 package grails.web.mapping
 
+import grails.util.GrailsWebMockUtil
 import grails.web.http.HttpHeaders
+import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 
 import javax.servlet.http.HttpServletRequest
@@ -27,6 +29,29 @@ import javax.servlet.http.HttpServletResponse
  */
 class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
 
+    @Issue('#10308')
+    void "Test mapping with group and nested collection"() {
+        given:
+        def linkGenerator = getLinkGenerator {
+            "/foos"(resources: 'foo') {
+                collection {
+                    '/baz'(controller: 'foo', action: 'baz')
+                }
+            }
+
+            group "/g", {
+                "/bars"(resources: 'bar') {
+                    collection {
+                        '/baz'(controller: 'bar', action: 'baz')
+                    }
+                }
+            }
+        }
+
+        expect:
+        linkGenerator.link(controller:'bar', action:'baz', params:[barId:1]) == 'http://localhost/g/bars/1/baz'
+    }
+
     @Issue('#9417')
     void "Test that redirects to grouped resource mappings work when the method is specified"() {
         given:
@@ -36,7 +61,7 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
             }
         }
         def responseRedirector = new ResponseRedirector(linkGenerator)
-        HttpServletRequest request = Mock(HttpServletRequest)
+        HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> GrailsWebMockUtil.bindMockWebRequest() }
         HttpServletResponse response = Mock(HttpServletResponse)
 
         when: "The response is redirected"
@@ -46,6 +71,8 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         1 * response.setStatus(302)
         1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/admin/domains")
 
+        cleanup:
+        RequestContextHolder.setRequestAttributes(null)
     }
 
     @Issue('#9417')
@@ -57,7 +84,7 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
             }
         }
         def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
-        HttpServletRequest request = Mock(HttpServletRequest)
+        HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> GrailsWebMockUtil.bindMockWebRequest() }
         HttpServletResponse response = Mock(HttpServletResponse)
 
         when: "The response is redirected"
@@ -67,6 +94,8 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         1 * response.setStatus(302)
         1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/admin/domains")
 
+        cleanup:
+        RequestContextHolder.setRequestAttributes(null)
     }
 
     @Issue('#9138')
@@ -182,5 +211,33 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         "id" == optional_param_2.actionName
 
         "test3" == not_a_group.controllerName
+    }
+
+    @Issue('#10842')
+    void 'Test constraints in multiple urls in same group are applied'() {
+        given: 'a group with two mappings with constraints'
+        def urlMappingsHolder = getUrlMappingsHolder {
+            group "/v2", {
+                "/session/$sessionId(.$format)?"(controller: 'dummy', action: 'bySession') {
+                    constraints {
+                        sessionId(matches: /\p{XDigit}{16}/)
+                    }
+                }
+
+                "/$sessionId(.$format)?"(controller: 'dummy', action: 'bySessionOld') {
+                    constraints {
+                        sessionId(matches: /\p{XDigit}{16}/)
+                    }
+                }
+            }
+        }
+
+        expect: 'both url match and the constraint is applied'
+        urlMappingsHolder.matchAll('/v2/session/123456789ABCDEF0')
+        urlMappingsHolder.matchAll('/v2/123456789ABCDEF0')
+
+        and: 'with a wrong value that does not match the constraint the urls do not match'
+        !urlMappingsHolder.matchAll('/v2/session/A')
+        !urlMappingsHolder.matchAll('/v2/A')
     }
 }

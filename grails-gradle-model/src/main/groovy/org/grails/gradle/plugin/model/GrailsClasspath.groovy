@@ -16,11 +16,14 @@
 
 package org.grails.gradle.plugin.model
 
+import groovy.transform.CompileStatic
+
 /**
  * Gradle ToolingModel class that is used to return Classpath to Grails cli
  *
  * this file is also in grails-shell project
  */
+@CompileStatic
 interface GrailsClasspath extends Serializable {
     /**
      * @return All Grails dependencies, pull from 'testRuntime' scope

@@ -1,16 +1,16 @@
 package grails.web.databinding
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.testing.gorm.DataTest
 import grails.validation.Validateable
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestMixin(DomainClassUnitTestMixin)
-@Mock([Writer, Book])
-class GrailsWebDataBinderBindingXmlSpec extends Specification {
+class GrailsWebDataBinderBindingXmlSpec extends Specification implements DataTest {
+
+    void setupSpec() {
+        mockDomains(Writer, Book)
+    }
 
     @Issue('GRAILS-10868')
     void 'Test binding a single XML child element to a List'() {

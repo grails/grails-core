@@ -18,7 +18,8 @@ subprojects { subproject ->
 }
 
 task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency',
-                                dependsOn: libsConfigurations) << {
+                                dependsOn: libsConfigurations) {
+    doLast {
 /*
     def moduleToVersionsMap = [:]
     libsConfigurations.each { configuration ->
@@ -48,62 +49,70 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
         throw new GradleException(msg)
     }
 */
+    }
 }
 
-task configurePopulateDependencies << {
-    def projectNames = rootProject.subprojects*.name
-
+task configurePopulateDependencies {
     ext {
         baseCachesDir = "$gradle.gradleUserHomeDir/caches"
         cacheDir = "$baseCachesDir/modules-2"
         metadata = "$cacheDir/metadata-2.1/descriptors"
     }
+    doLast {
+        def projectNames = rootProject.subprojects*.name
 
-    def seen = []
-    libsConfigurations.each { configuration ->
-        def sourceArtifacts = sourcesFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy { it.moduleVersion.id }
-        def javadocArtifacts = javadocFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy { it.moduleVersion.id }
-        def pomArtifacts = pomFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy { it.moduleVersion.id }
+        def seen = []
+        libsConfigurations.each { configuration ->
+            def sourceArtifacts = sourcesFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy {
+                it.moduleVersion.id
+            }
+            def javadocArtifacts = javadocFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy {
+                it.moduleVersion.id
+            }
+            def pomArtifacts = pomFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy {
+                it.moduleVersion.id
+            }
 
-        for (artifact in configuration.resolvedConfiguration.resolvedArtifacts) {
-            if (artifact in seen) continue
-            seen << artifact
-            def dependency = artifact.moduleVersion.id
-            if (!projectNames.contains(dependency.name)) {
-                populateDependencies.into("$dependency.group/$dependency.name/jars") {
-                    from artifact.file // this will trigger the actual download if necessary
-                    def sourceJar = sourceArtifacts[dependency]
-                    if (sourceJar) {
-                        from sourceJar.file
+            for (artifact in configuration.resolvedConfiguration.resolvedArtifacts) {
+                if (artifact in seen) continue
+                seen << artifact
+                def dependency = artifact.moduleVersion.id
+                if (!projectNames.contains(dependency.name)) {
+                    populateDependencies.into("$dependency.group/$dependency.name/jars") {
+                        from artifact.file // this will trigger the actual download if necessary
+                        def sourceJar = sourceArtifacts[dependency]
+                        if (sourceJar) {
+                            from sourceJar.file
+                        }
+                        def javadocJar = javadocArtifacts[dependency]
+                        if (javadocJar) {
+                            from javadocJar.file
+                        }
                     }
-                    def javadocJar = javadocArtifacts[dependency]
-                    if (javadocJar) {
-                        from javadocJar.file
-                    }
-                }
 
-                populateDependencies.into("$dependency.group/$dependency.name/jars") {
-                    from artifact.file // this will trigger the actual download if necessary
-                    def sourceJar = sourceArtifacts[dependency]
-                    if (sourceJar) {
-                        from sourceJar.file
+                    populateDependencies.into("$dependency.group/$dependency.name/jars") {
+                        from artifact.file // this will trigger the actual download if necessary
+                        def sourceJar = sourceArtifacts[dependency]
+                        if (sourceJar) {
+                            from sourceJar.file
+                        }
+                        def javadocJar = javadocArtifacts[dependency]
+                        if (javadocJar) {
+                            from javadocJar.file
+                        }
                     }
-                    def javadocJar = javadocArtifacts[dependency]
-                    if (javadocJar) {
-                        from javadocJar.file
-                    }
-                }
 
-                populateDependencies.into("$dependency.group/$dependency.name") {
-                    def pomFile = pomArtifacts[dependency]
-                    if(pomFile) {
-                        from pomFile.file
+                    populateDependencies.into("$dependency.group/$dependency.name") {
+                        def pomFile = pomArtifacts[dependency]
+                        if (pomFile) {
+                            from pomFile.file
+                        }
                     }
-                }
 
-                populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
-                    include "**/*ivy.xml"
-                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
+                    populateDependencies.from("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
+                        include "**/*ivy.xml"
+                        eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
+                    }
                 }
             }
         }
@@ -144,6 +153,7 @@ class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateSt
     @org.gradle.api.tasks.TaskAction
     void generate() {
         def generator = new org.gradle.api.internal.plugins.StartScriptGenerator()
+        generator.unixStartScriptGenerator.template = project.rootProject.childProjects['grails-shell'].resources.text.fromFile('src/main/resources/unixStartScript.txt')
         generator.applicationName = getApplicationName()
         generator.mainClassName = getMainClassName()
         generator.defaultJvmOpts = getDefaultJvmOpts()

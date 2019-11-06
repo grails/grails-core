@@ -1,8 +1,8 @@
 package org.grails.plugins.web.rest.transform
 
 import grails.artefact.Artefact
+import grails.gorm.transactions.Transactional
 import grails.rest.RestfulController
-import grails.transaction.Transactional
 import grails.web.Action
 
 import java.lang.reflect.Method

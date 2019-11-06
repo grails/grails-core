@@ -22,8 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.Weigher;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Weigher;
 import grails.web.mapping.UrlCreator;
 import grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -42,22 +43,24 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class UrlCreatorCache {
-    private final ConcurrentMap<ReverseMappingKey, CachingUrlCreator> cacheMap;
+    private final Cache<ReverseMappingKey, CachingUrlCreator> cacheMap;
 
-    private enum CachingUrlCreatorWeigher implements Weigher<CachingUrlCreator> {
+    private enum CachingUrlCreatorWeigher implements Weigher<ReverseMappingKey, CachingUrlCreator> {
         INSTANCE;
-        public int weightOf(CachingUrlCreator cachingUrlCreator) {
-            return cachingUrlCreator.weight() + 1;
+
+        @Override
+        public int weigh(ReverseMappingKey key, CachingUrlCreator value) {
+            return value.weight() + 1;
         }
     }
 
     public UrlCreatorCache(int maxSize) {
-        cacheMap = new ConcurrentLinkedHashMap.Builder<ReverseMappingKey, CachingUrlCreator>()
-                .maximumWeightedCapacity(maxSize).weigher(CachingUrlCreatorWeigher.INSTANCE).build();
+        cacheMap = Caffeine.newBuilder()
+                .maximumWeight(maxSize).weigher(CachingUrlCreatorWeigher.INSTANCE).build();
     }
 
     public void clear() {
-        cacheMap.clear();
+        cacheMap.invalidateAll();
     }
 
     public ReverseMappingKey createKey(String controller, String action, String namespace, String pluginName, String httpMethod, Map params) {
@@ -65,12 +68,13 @@ public class UrlCreatorCache {
     }
 
     public UrlCreator lookup(ReverseMappingKey key) {
-        return cacheMap.get(key);
+        return cacheMap.getIfPresent(key);
     }
 
     public UrlCreator putAndDecorate(ReverseMappingKey key, UrlCreator delegate) {
         CachingUrlCreator cachingUrlCreator = new CachingUrlCreator(delegate, key.weight() * 2);
-        CachingUrlCreator prevCachingUrlCreator = cacheMap.putIfAbsent(key, cachingUrlCreator);
+        CachingUrlCreator prevCachingUrlCreator = cacheMap.asMap()
+                .putIfAbsent(key, cachingUrlCreator);
         if (prevCachingUrlCreator != null) {
             return prevCachingUrlCreator;
         }
@@ -201,7 +205,7 @@ public class UrlCreatorCache {
                         value = String.valueOf(entry.getValue());
                     }
                     else if (entry.getValue() instanceof Collection) {
-                        value = DefaultGroovyMethods.join((Collection) entry.getValue(), ",");
+                        value = DefaultGroovyMethods.join((Iterable) entry.getValue(), ",");
                     }
                     else if (entry.getValue() instanceof Object[]) {
                         value = DefaultGroovyMethods.join((Object[])entry.getValue(), ",");

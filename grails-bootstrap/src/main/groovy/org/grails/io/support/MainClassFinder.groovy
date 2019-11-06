@@ -35,6 +35,10 @@ class MainClassFinder {
      */
     static String searchMainClass(URI path) {
 
+        if (!path) {
+            return null
+        }
+
         def pathStr = path.toString()
         if(mainClasses.containsKey(pathStr)) {
             return mainClasses.get(pathStr)
@@ -55,6 +59,11 @@ class MainClassFinder {
             if(rootDir) {
                 def rootClassesDir = new File(rootDir, BuildSettings.BUILD_CLASSES_PATH)
                 if(rootClassesDir.exists()) {
+                    searchDirs << rootClassesDir
+                }
+
+                rootClassesDir = new File(rootDir, "build/classes/groovy/main")
+                if (rootClassesDir.exists()) {
                     searchDirs << rootClassesDir
                 }
             }

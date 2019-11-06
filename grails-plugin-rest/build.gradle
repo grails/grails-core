@@ -1,8 +1,12 @@
 dependencies {
 
+    compile 'javax.xml.bind:jaxb-api:2.3.0'
+
     compile project(":grails-web"),
             project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
+
+    compile "org.grails.plugins:converters:$legacyConvertersVersion"
 
     testCompile project(":grails-plugin-url-mappings"),
                 project(":grails-test-suite-base")

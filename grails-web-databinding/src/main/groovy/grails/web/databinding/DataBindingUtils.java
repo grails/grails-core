@@ -21,7 +21,6 @@ import grails.databinding.DataBindingSource;
 import grails.util.Environment;
 import grails.util.Holders;
 import grails.validation.ValidationErrors;
-import grails.web.databinding.GrailsWebDataBinder;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
@@ -32,16 +31,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletRequest;
 
-import org.grails.core.artefact.DomainClassArtefactHandler;
-
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
-import grails.core.GrailsDomainClassProperty;
 import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;
 import grails.web.mime.MimeTypeUtils;
 
-import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.types.OneToOne;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry;
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry;
@@ -70,9 +69,9 @@ public class DataBindingUtils {
      *
      * @param object The object
      * @param source The source map
-     * @param domainClass The DomainClass for the object
+     * @param persistentEntity The PersistentEntity for the object
      */
-    public static void assignBidirectionalAssociations(Object object, Map source, GrailsDomainClass domainClass) {
+    public static void assignBidirectionalAssociations(Object object, Map source, PersistentEntity persistentEntity) {
         if (source == null) {
             return;
         }
@@ -82,22 +81,22 @@ public class DataBindingUtils {
             if (propertyName.indexOf('.') > -1) {
                 propertyName = propertyName.substring(0, propertyName.indexOf('.'));
             }
-            if (domainClass.hasPersistentProperty(propertyName)) {
-                GrailsDomainClassProperty prop = domainClass.getPropertyByName(propertyName);
-                if (prop != null && prop.isOneToOne() && prop.isBidirectional()) {
-                    Object val = source.get(key);
-                    GrailsDomainClassProperty otherSide = prop.getOtherSide();
-                    if (val != null && otherSide != null) {
-                        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(val.getClass());
-                        try {
-                            mc.setProperty(val, otherSide.getName(), object);
-                        }
-                        catch (Exception e) {
-                            // ignore
-                        }
+            PersistentProperty prop = persistentEntity.getPropertyByName(propertyName);
+
+            if (prop != null && prop instanceof OneToOne && ((OneToOne) prop).isBidirectional()) {
+                Object val = source.get(key);
+                PersistentProperty otherSide = ((OneToOne) prop).getInverseSide();
+                if (val != null && otherSide != null) {
+                    MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(val.getClass());
+                    try {
+                        mc.setProperty(val, otherSide.getName(), object);
+                    }
+                    catch (Exception e) {
+                        // ignore
                     }
                 }
             }
+
         }
     }
 
@@ -106,13 +105,13 @@ public class DataBindingUtils {
      *
      * @param object The object to bind to
      * @param source The source object
-     * @return A BindingResult or null if it wasn't successful
+     * @return A BindingResult if there were errors or null if it was successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source) {
         return bindObjectToInstance(object, source, getBindingIncludeList(object), Collections.emptyList(), null);
     }
 
-    private static List getBindingIncludeList(final Object object) {
+    protected static List getBindingIncludeList(final Object object) {
         List includeList = Collections.emptyList();
         try {
             final Class<? extends Object> objectClass = object.getClass();
@@ -140,16 +139,16 @@ public class DataBindingUtils {
     /**
      * Binds the given source object to the given target object performing type conversion if necessary
      *
-     * @param domain The GrailsDomainClass instance
+     * @param entity The PersistentEntity instance
      * @param object The object to bind to
      * @param source The source object
      *
-     * @see grails.core.GrailsDomainClass
+     * @see org.grails.datastore.mapping.model.PersistentEntity
      *
-     * @return A BindingResult or null if it wasn't successful
+     * @return A BindingResult if there were errors or null if it was successful
      */
-    public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object, Object source) {
-        return bindObjectToDomainInstance(domain,object, source, getBindingIncludeList(object), Collections.emptyList(), null);
+    public static BindingResult bindObjectToDomainInstance(PersistentEntity entity, Object object, Object source) {
+        return bindObjectToDomainInstance(entity, object, source, getBindingIncludeList(object), Collections.emptyList(), null);
     }
 
     /**
@@ -164,14 +163,18 @@ public class DataBindingUtils {
      */
     public static <T> void bindToCollection(final Class<T> targetType, final Collection<T> collectionToPopulate, final CollectionDataBindingSource collectionBindingSource) throws InstantiationException, IllegalAccessException {
         final GrailsApplication application = Holders.findApplication();
-        GrailsDomainClass domain = null;
+        PersistentEntity entity = null;
         if (application != null) {
-            domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,targetType.getName());
+            try {
+                entity = application.getMappingContext().getPersistentEntity(targetType.getClass().getName());
+            } catch (GrailsConfigurationException e) {
+                //no-op
+            }
         }
         final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
         for(final DataBindingSource dataBindingSource : dataBindingSources) {
             final T newObject = targetType.newInstance();
-            bindObjectToDomainInstance(domain, newObject, dataBindingSource, getBindingIncludeList(newObject), Collections.emptyList(), null);
+            bindObjectToDomainInstance(entity, newObject, dataBindingSource, getBindingIncludeList(newObject), Collections.emptyList(), null);
             collectionToPopulate.add(newObject);
         }
     }
@@ -191,45 +194,44 @@ public class DataBindingUtils {
      * @param exclude The list of properties to exclude
      * @param filter The prefix to filter by
      *
-     * @return A BindingResult or null if it wasn't successful
+     * @return A BindingResult if there were errors or null if it was successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source, List include, List exclude, String filter) {
         if (include == null && exclude == null) {
             include = getBindingIncludeList(object);
         }
         GrailsApplication application = Holders.findApplication();
-        GrailsDomainClass domain = null;
+        PersistentEntity entity = null;
         if (application != null) {
-            domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,object.getClass().getName());
+            try {
+                entity = application.getMappingContext().getPersistentEntity(object.getClass().getName());
+            } catch (GrailsConfigurationException e) {
+                //no-op
+            }
         }
-        return bindObjectToDomainInstance(domain, object, source, include, exclude, filter);
+        return bindObjectToDomainInstance(entity, object, source, include, exclude, filter);
     }
 
     /**
      * Binds the given source object to the given target object performing type conversion if necessary
      *
-     * @param domain The GrailsDomainClass instance
+     * @param entity The PersistentEntity instance
      * @param object The object to bind to
      * @param source The source object
      * @param include The list of properties to include
      * @param exclude The list of properties to exclude
      * @param filter The prefix to filter by
      *
-     * @see grails.core.GrailsDomainClass
+     * @see org.grails.datastore.mapping.model.PersistentEntity
      *
-     * @return A BindingResult or null if it wasn't successful
+     * @return A BindingResult if there were errors or null if it was successful
      */
     @SuppressWarnings("unchecked")
-    public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object,
-            Object source, List include, List exclude, String filter) {
+    public static BindingResult bindObjectToDomainInstance(PersistentEntity entity, Object object,
+                                                           Object source, List include, List exclude, String filter) {
         BindingResult bindingResult = null;
-        GrailsApplication grailsApplication = null;
-        if (domain != null) {
-            grailsApplication = domain.getApplication();
-        }
-        if (grailsApplication == null) {
-            grailsApplication = Holders.findApplication();
-        }
+        GrailsApplication grailsApplication = Holders.findApplication();
+
         try {
             final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object.getClass(), source);
             final DataBinder grailsWebDataBinder = getGrailsWebDataBinder(grailsApplication);
@@ -246,7 +248,7 @@ public class DataBindingUtils {
             bindingResult.addError(new ObjectError(bindingResult.getObjectName(), e.getMessage()));
         }
 
-        if (domain != null && bindingResult != null) {
+        if (entity != null && bindingResult != null) {
             BindingResult newResult = new ValidationErrors(object);
             for (Object error : bindingResult.getAllErrors()) {
                 if (error instanceof FieldError) {
@@ -255,14 +257,17 @@ public class DataBindingUtils {
                     if (!isBlank) {
                         newResult.addError(fieldError);
                     }
-                    else if (domain.hasPersistentProperty(fieldError.getField())) {
-                        final boolean isOptional = domain.getPropertyByName(fieldError.getField()).isOptional();
-                        if (!isOptional) {
+                    else {
+                        PersistentProperty property = entity.getPropertyByName(fieldError.getField());
+                        if (property != null) {
+                            final boolean isOptional = property.isNullable();
+                            if (!isOptional) {
+                                newResult.addError(fieldError);
+                            }
+                        }
+                        else {
                             newResult.addError(fieldError);
                         }
-                    }
-                    else {
-                        newResult.addError(fieldError);
                     }
                 }
                 else {

@@ -16,28 +16,25 @@
 package org.grails.core.artefact;
 
 import grails.artefact.Artefact;
-import grails.core.*;
+import grails.core.ArtefactHandlerAdapter;
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import grails.core.GrailsDomainClass;
 import grails.core.support.GrailsApplicationAware;
-import grails.persistence.Entity;
 import grails.util.Environment;
 import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsDomainClass;
-import org.grails.core.support.GrailsDomainConfigurationUtil;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
-import org.grails.validation.ConstraintEvalUtils;
 import org.springframework.core.Ordered;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.
@@ -49,17 +46,17 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
 
     public static final String TYPE = "Domain";
     public static final String PLUGIN_NAME = "domainClass";
+    private  static final String ENTITY_ANN_NAME = "Entity";
+    private static final String GRAILS_PACKAGE_PREFIX = "grails.";
+    private static final String JAVAX_PERSISTENCE = "javax.persistence";
 
-    private Map<String, Object> defaultConstraints;
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
     private static boolean developmentMode = Environment.isDevelopmentMode();
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        if (grailsApplication != null) {
-            defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
-        }
+        // no-op
     }
 
     @Override
@@ -70,7 +67,12 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     @Override
     @SuppressWarnings("rawtypes")
     public GrailsClass newArtefactClass(Class artefactClass) {
-        return new DefaultGrailsDomainClass(artefactClass, defaultConstraints);
+        return new DefaultGrailsDomainClass(artefactClass);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public GrailsClass newArtefactClass(Class artefactClass, MappingContext mappingContext) {
+        return new DefaultGrailsDomainClass(artefactClass, mappingContext);
     }
 
     @Override
@@ -98,24 +100,11 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         }
     }
 
-    /**
-     * Sets up the relationships between the domain classes, this has to be done after
-     * the intial creation to avoid looping
-     */
-    @Override
-    public void initialize(ArtefactInfo artefacts) {
-        GrailsDomainConfigurationUtil.configureDomainClassRelationships(
-                artefacts.getGrailsClasses(),
-                artefacts.getGrailsClassesByName());
-    }
-
     @Override
     @SuppressWarnings("rawtypes")
     public boolean isArtefactClass(Class clazz) {
         return isDomainClass(clazz);
     }
-
-    static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE = new ConcurrentHashMap<Integer, Boolean>();
 
     public static boolean isDomainClass(Class<?> clazz, boolean allowProxyClass) {
         boolean retval = isDomainClass(clazz);
@@ -126,21 +115,8 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     }
     
     public static boolean isDomainClass(Class<?> clazz) {
-        if (clazz == null) return false;
+        return clazz != null && doIsDomainClassCheck(clazz);
 
-        Integer cacheKey = System.identityHashCode(clazz);
-
-        Boolean retval = DOMAIN_CLASS_CHECK_CACHE.get(cacheKey);
-        if (retval != null) {
-            return retval;
-        }
-
-        retval = doIsDomainClassCheck(clazz);
-        
-        if (!developmentMode) {
-            DOMAIN_CLASS_CHECK_CACHE.put(cacheKey, retval);
-        }
-        return retval;
     }
 
     private static boolean doIsDomainClassCheck(Class<?> clazz) {
@@ -150,35 +126,35 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         }
 
         if (clazz.isEnum()) return false;
+        Artefact artefactAnn = null;
+        try {
+            artefactAnn = clazz.getAnnotation(Artefact.class);
+        } catch (ArrayStoreException e) {
+            // happens if a reference to a class that no longer exists is there
+        }
 
-        if (clazz.getAnnotation(Entity.class) != null) {
+        if( artefactAnn != null && artefactAnn.value().equals(DomainClassArtefactHandler.TYPE) ) {
             return true;
         }
 
-        Artefact artefactAnn = clazz.getAnnotation(Artefact.class);
-        if(artefactAnn != null && artefactAnn.value().equals(DomainClassArtefactHandler.TYPE)) {
-            return true;
+        Annotation[] annotations = null;
+        try {
+            annotations = clazz.getAnnotations();
+        } catch (ArrayStoreException e) {
+            // happens if a reference to a class that no longer exists is there
         }
 
-        Class<?> testClass = clazz;
-        while (testClass != null && !testClass.equals(GroovyObject.class) && !testClass.equals(Object.class)) {
-            try {
-                // make sure the identify and version field exist
-                testClass.getDeclaredField(GrailsDomainClassProperty.IDENTITY);
-                testClass.getDeclaredField(GrailsDomainClassProperty.VERSION);
+        if (annotations != null) {
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annType = annotation.annotationType();
+                String annName = annType.getSimpleName();
 
-                // passes all conditions return true
-                return true;
+                String pkgName = annType.getPackage().getName();
+                if(ENTITY_ANN_NAME.equals(annName) && pkgName.startsWith(GRAILS_PACKAGE_PREFIX) || pkgName.startsWith(JAVAX_PERSISTENCE)) {
+                    return true;
+                }
             }
-            catch (SecurityException e) {
-                // ignore
-            }
-            catch (NoSuchFieldException e) {
-                // ignore
-            }
-            testClass = testClass.getSuperclass();
         }
-
         return false;
     }
 

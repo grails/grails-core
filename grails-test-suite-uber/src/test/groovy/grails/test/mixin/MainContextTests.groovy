@@ -1,14 +1,14 @@
 package grails.test.mixin
 
-import grails.test.mixin.support.GrailsUnitTestMixin
-import org.junit.Test
+import org.grails.testing.GrailsUnitTest
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
-@TestMixin(GrailsUnitTestMixin)
-class MainContextTests {
-    void setUp() {
+class MainContextTests extends Specification implements GrailsUnitTest {
+
+    void setup() {
         defineBeans {
             myService(MyService)
         }
@@ -16,8 +16,8 @@ class MainContextTests {
         //grailsApplication.mainContext = applicationContext
     }
 
-    @Test
     void testGetBean() {
-        assert grailsApplication.mainContext.getBean('myService')
+        expect:
+        grailsApplication.mainContext.getBean('myService')
     }
 }

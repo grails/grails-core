@@ -15,10 +15,10 @@
  */
 package org.grails.web.databinding.bindingsource
 
+import grails.beans.util.LazyMetaPropertyMap
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
-import grails.beans.util.LazyBeanMap
 import grails.databinding.DataBindingSource
 import grails.web.databinding.DataBindingUtils
 
@@ -51,8 +51,10 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
             dataBindingSource = createDataBindingSource(bindingTargetType, (HttpServletRequest)bindingSource)
         } else if(bindingSource instanceof Map) {
             dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
+        } else if (bindingSource){
+            dataBindingSource = new SimpleMapDataBindingSource(new LazyMetaPropertyMap(bindingSource))
         } else {
-            dataBindingSource = new SimpleMapDataBindingSource(new LazyBeanMap(bindingSource))
+            dataBindingSource = new SimpleMapDataBindingSource(Collections.emptyMap()) // LazyMetaPropertyMap dislike null source
         }
         dataBindingSource
     }

@@ -39,7 +39,7 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.artefact.DomainClassArtefactHandler;
-import grails.core.GrailsDomainClassProperty;
+import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.io.support.GrailsResourceUtils;
 
 /**
@@ -98,18 +98,17 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
         List<PropertyNode> propertiesToAdd = new ArrayList<PropertyNode>();
         for (PropertyNode propertyNode : classNode.getProperties()) {
             final String name = propertyNode.getName();
-            final boolean isHasManyProperty = name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) ||
-                    name.equals(GrailsDomainClassProperty.HAS_MANY);
+            final boolean isHasManyProperty = name.equals(GormProperties.HAS_MANY);
             if (isHasManyProperty) {
                 Expression e = propertyNode.getInitialExpression();
                 propertiesToAdd.addAll(createPropertiesForHasManyExpression(e, classNode));
             }
-            final boolean isBelongsToOrHasOne = name.equals(GrailsDomainClassProperty.BELONGS_TO) || name.equals(GrailsDomainClassProperty.HAS_ONE);
+            final boolean isBelongsToOrHasOne = name.equals(GormProperties.BELONGS_TO) || name.equals(GormProperties.HAS_ONE);
             if (isBelongsToOrHasOne) {
                 Expression initialExpression = propertyNode.getInitialExpression();
                 if ((!(initialExpression instanceof MapExpression)) &&
                         (!(initialExpression instanceof ClassExpression))) {
-                    if (name.equals(GrailsDomainClassProperty.HAS_ONE)) {
+                    if (name.equals(GormProperties.HAS_ONE)) {
                         final String message = "WARNING: The hasOne property in class [" + classNode.getName() + "] should have an initial expression of type Map or Class.";
                         System.err.println(message);
                     } else if (!(initialExpression instanceof ListExpression)) {
@@ -124,7 +123,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     }
 
     private Collection<PropertyNode> createPropertiesForBelongsToOrHasOneExpression(Expression e, ClassNode classNode) {
-        List<PropertyNode> properties = new ArrayList<PropertyNode>();
+        List<PropertyNode> properties = new ArrayList<>();
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
             for (MapEntryExpression mme : me.getMapEntryExpressions()) {
@@ -154,7 +153,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     }
 
     private List<PropertyNode> createPropertiesForHasManyExpression(Expression e, ClassNode classNode) {
-        List<PropertyNode> properties = new ArrayList<PropertyNode>();
+        List<PropertyNode> properties = new ArrayList<>();
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
             for (MapEntryExpression mee : me.getMapEntryExpressions()) {
@@ -212,22 +211,22 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     }
 
     private void injectVersionProperty(ClassNode classNode) {
-        final boolean hasVersion = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.VERSION);
+        final boolean hasVersion = GrailsASTUtils.hasOrInheritsProperty(classNode, GormProperties.VERSION);
 
         if (!hasVersion) {
             ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
-            parent.addProperty(GrailsDomainClassProperty.VERSION, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
+            parent.addProperty(GormProperties.VERSION, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
 
     private void injectIdProperty(ClassNode classNode) {
-        final boolean hasId = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.IDENTITY);
+        final boolean hasId = GrailsASTUtils.hasOrInheritsProperty(classNode, GormProperties.IDENTITY);
 
         if (!hasId) {
             // inject into furthest relative
             ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
 
-            parent.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
+            parent.addProperty(GormProperties.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
 

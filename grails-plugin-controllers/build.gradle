@@ -1,12 +1,11 @@
 dependencies {
     compile project(":grails-core"),
             project(":grails-web"),
-            project(":grails-async"),
-            project(':grails-plugin-converters'),
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-validation'),
             project(':grails-plugin-domain-class')
 
+    compile("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
     runtime project(':grails-plugin-i18n')
 
     testRuntime "jline:jline:$jlineVersion"

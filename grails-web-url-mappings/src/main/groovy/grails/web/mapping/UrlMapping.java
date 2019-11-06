@@ -15,9 +15,10 @@
  */
 package grails.web.mapping;
 
-import grails.validation.ConstrainedProperty;
 
-import java.util.Map;
+import grails.gorm.validation.Constrained;
+
+import java.util.*;
 
 /**
  * <p>Defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
@@ -89,6 +90,35 @@ public interface UrlMapping extends Comparable, UrlCreator {
      */
     String NAMESPACE = "namespace";
 
+
+    String VIEW = "view";
+
+    String RESOURCES = "resources";
+
+    String EXCLUDES = "excludes";
+
+    String INCLUDES = "includes";
+
+    String PERMANENT = "permanent";
+
+    String EXCEPTION = "exception";
+
+    Set<String> KEYWORDS = new HashSet<String>() {{
+        add(CONTROLLER);
+        add(ACTION);
+        add(HTTP_METHOD);
+        add(REDIRECT_INFO);
+        add(VERSION);
+        add(URI);
+        add(PLUGIN);
+        add(NAMESPACE);
+        add(VIEW);
+        add(RESOURCES);
+        add(INCLUDES);
+        add(PERMANENT);
+        add(EXCEPTION);
+    }};
+
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
      * if a match couldn't be established
@@ -118,7 +148,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      *
      * @return An array containing the ConstrainedProperty objects of this URLMapping
      */
-    ConstrainedProperty[] getConstraints();
+    Constrained[] getConstraints();
 
     /**
      * Retrieves the controller name which is either a groovy.lang.Closure that evaluates the controller
@@ -207,4 +237,21 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return redirect information for this url mapping
      */
     Object getRedirectInfo();
+
+    /**
+     * Sets whether or not the mapping is defined in a plugin.
+     *
+     * @param pluginIndex The index of the plugin that defines this mapping
+     */
+    void setPluginIndex(int pluginIndex);
+
+    /**
+     * @return The plugin index or null
+     */
+    Integer getPluginIndex();
+
+    /**
+     * @return True if the URL mapping comes from a plugin
+     */
+    boolean isDefinedInPlugin();
 }

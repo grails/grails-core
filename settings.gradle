@@ -1,7 +1,6 @@
 rootProject.name = "grails.core.ROOT"
 
 include (
-        'grails-async',
         'grails-bootstrap',
         'grails-codecs',
         'grails-console',
@@ -13,20 +12,12 @@ include (
         'grails-shell',
         'grails-spring',
         'grails-test',
-        'grails-validation',
         'grails-web',
         'grails-web-common',
         'grails-web-boot',
         'grails-web-databinding',
         'grails-web-fileupload',
         'grails-web-mvc',
-        'grails-web-gsp',
-        'grails-web-taglib',
-        'grails-web-gsp-taglib',
-        'grails-web-sitemesh',
-        'grails-web-jsp',
-        'grails-gsp',
-        'grails-taglib',
         'grails-web-url-mappings',
 
         // POM / BOMs
@@ -34,21 +25,16 @@ include (
         'grails-bom',
 
         // Plugins
-        'grails-plugin-async',
         'grails-plugin-codecs',
         'grails-plugin-controllers',
-        'grails-plugin-converters',
         'grails-plugin-databinding',
         'grails-plugin-datasource',
         'grails-plugin-domain-class',
         'grails-plugin-interceptors',
-        'grails-plugin-events',
-        'grails-plugin-gsp',
         'grails-plugin-i18n',
         'grails-plugin-mimetypes',
         'grails-plugin-rest',
         'grails-plugin-services',
-        'grails-plugin-testing',
         'grails-plugin-url-mappings',
         'grails-plugin-validation',
 

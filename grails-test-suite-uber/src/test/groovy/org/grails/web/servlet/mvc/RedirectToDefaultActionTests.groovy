@@ -1,30 +1,36 @@
 package org.grails.web.servlet.mvc
 
-import static org.junit.Assert.assertEquals
+import grails.testing.web.GrailsWebUnitTest
+import spock.lang.Specification
 import grails.artefact.Artefact
-import grails.test.mixin.Mock
-
-import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@Mock([PortalController, RepositoryController])
-class RedirectToDefaultActionTests {
+class RedirectToDefaultActionTests extends Specification implements GrailsWebUnitTest {
 
-    @Test
-    void testRedirect() {
-        def c = new PortalController()
-        c.content()
-        assertEquals "/repository/index", response.redirectedUrl
+    void setup() {
+        mockController(RepositoryController)
+        mockController(PortalController)
     }
 
-    @Test
+    void testRedirect() {
+        when:
+        def c = new PortalController()
+        c.content()
+
+        then:
+        "/repository/index" == response.redirectedUrl
+    }
+
     void testRedirectToExplicitDefaultAction() {
+        when:
         def c = new RepositoryController()
         c.toPortal()
-        assertEquals "/portal/content", response.redirectedUrl
+
+        then:
+        "/portal/content" == response.redirectedUrl
     }
 }
 

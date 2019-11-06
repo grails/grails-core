@@ -7,6 +7,7 @@ import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
@@ -56,7 +57,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         def servletContext = new MockServletContext()
         def ctx = new GenericWebApplicationContext(servletContext)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
-        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, buildMimeTypes())
+        ctx.beanFactory.registerSingleton("mimeUtility", new DefaultMimeUtility(buildMimeTypes()))
         ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
         ctx.refresh()
         GrailsWebMockUtil.bindMockWebRequest(ctx)
@@ -75,6 +76,39 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             request.getFormat() == "xml" // call twice to test cached value
             request.format == 'xml'
             response.format == 'json'
+    }
+
+    void "Test format property is valid for XHR and Accept header with User-Agent"() {
+        when: "The request CONTENT_TYPE header is 'text/xml'"
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+            request.contentType = "application/json"
+            request.addHeader('Accept', 'text/json')
+            request.addHeader('X-Requested-With', 'XMLHttpRequest')
+            request.addHeader('User-Agent', 'Webkit')
+
+        then: "The request format should be 'json'"
+            request.getFormat() == "json"
+            request.getFormat() == "json" // call twice to test cached value
+            request.format == 'json'
+            response.format == 'json'
+    }
+
+    void "Test format property is ignored for non-XHR and Accept header with User-Agent"() {
+        when: "The request CONTENT_TYPE header is 'text/xml'"
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+            request.contentType = "application/json"
+            request.addHeader('Accept', 'text/json')
+            request.addHeader('User-Agent', 'Webkit')
+
+        then: "The request format should be 'json'"
+            request.getFormat() == "json"
+            request.getFormat() == "json" // call twice to test cached value
+            request.format == 'json'
+            response.format == 'all'
     }
 
    void "Test format property is valid for Accept header only"() {
@@ -116,7 +150,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void "Test withFormat method with Accept header only"() {
         when: "The request Accept header is 'text/xml' and withFormat is used"
-            final webRequest = boundMimeTypeRequest()
+            def webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
 
@@ -216,7 +250,6 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
                 config.merge(new ConfigSlurper().parse(String.valueOf(additionalConfig)))
             }
             application.setConfig(config)
-            println "$userAgent - $additionalConfig - ${application.flatConfig.get('grails.mime.disable.accept.header.userAgents')}"
             final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse

@@ -18,14 +18,14 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.rest.RestfulController
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.http.HttpStatus
 import spock.lang.Specification
 
 /**
  */
-@TestFor(SecondVideoController)
-@Mock(Video)
-class RestfulControllerSuperClassSpec extends Specification {
+class RestfulControllerSuperClassSpec extends Specification implements ControllerUnitTest<SecondVideoController>, DomainUnitTest<Video> {
 
     def populateValidParams(params) {
         assert params != null
@@ -51,7 +51,6 @@ class RestfulControllerSuperClassSpec extends Specification {
             model.video != null
             response.status == HttpStatus.CREATED.value()
             response.getHeader('Location') != null
-
     }
 
     void "Test the update action returns the correct model, status and location"() {

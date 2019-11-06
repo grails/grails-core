@@ -39,9 +39,10 @@ import org.springframework.beans.factory.InitializingBean;
 
 public class BasicCodecLookup implements CodecLookup, InitializingBean {
     private static final String NONE_CODEC_NAME = "none";
-    protected ConcurrentMap<String, Encoder> encoders;
-    protected ConcurrentMap<String, Decoder> decoders;
     public static final StreamingEncoder NONE_ENCODER = new NoneEncoder();
+
+    protected final ConcurrentMap<String, Encoder> encoders = new ConcurrentHashMap<String, Encoder>();
+    protected final ConcurrentMap<String, Decoder> decoders = new ConcurrentHashMap<String, Decoder>();
 
     public BasicCodecLookup() {
         super();
@@ -164,8 +165,8 @@ public class BasicCodecLookup implements CodecLookup, InitializingBean {
     }
 
     public void reInitialize() {
-        encoders = new ConcurrentHashMap<String, Encoder>();
-        decoders = new ConcurrentHashMap<String, Decoder>();
+        encoders.clear(); ;
+        decoders.clear();
         registerCodecs();
     }
     

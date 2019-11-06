@@ -1,13 +1,14 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 
 /**
  * Tests the population of auto timestamp properties.
  */
-@Mock(DomainWithAutoTimestamp)
-class DomainClassWithAutoTimestampSpec extends Specification {
+class DomainClassWithAutoTimestampSpec extends Specification implements DomainUnitTest<DomainWithAutoTimestamp> {
+
     void "test that auto timestamp properties are populated on insert"() {
         when: "we persist a new instance"
             DomainWithAutoTimestamp d = new DomainWithAutoTimestamp(name: "foo")

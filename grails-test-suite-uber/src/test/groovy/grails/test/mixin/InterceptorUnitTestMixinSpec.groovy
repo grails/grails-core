@@ -1,13 +1,13 @@
 package grails.test.mixin
 
 import grails.artefact.Interceptor
+import grails.testing.web.interceptor.InterceptorUnitTest
 import spock.lang.Specification
 
 /**
  * Created by graemerocher on 02/09/15.
  */
-@TestFor(TestInterceptor)
-class InterceptorUnitTestMixinSpec extends Specification{
+class InterceptorUnitTestMixinSpec extends Specification implements InterceptorUnitTest<TestInterceptor> {
 
     void "Test interceptor matching"() {
         when:"A request matches the interceptor"

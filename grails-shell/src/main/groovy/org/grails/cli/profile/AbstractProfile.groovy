@@ -57,20 +57,22 @@ abstract class AbstractProfile implements Profile {
     protected List<String> buildPlugins = []
     protected List<String> buildExcludes = []
     protected List<String> skeletonExcludes = []
+    protected List<String> binaryExtensions = []
+    protected List<String> executablePatterns = []
     protected final List<Command> internalCommands = []
     protected List<String> buildMerge = null
     protected List<Feature> features = []
     protected Set<String> defaultFeaturesNames = []
     protected Set<String> requiredFeatureNames = []
     protected String parentTargetFolder
-    final ClassLoader classLoader
+    protected final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
     protected String description = "";
     protected String instructions = "";
     protected String version = BuildSettings.package.implementationVersion
 
     AbstractProfile(Resource profileDir) {
-        this(profileDir, getClass().getClassLoader())
+        this(profileDir, AbstractProfile.getClassLoader())
     }
 
     AbstractProfile(Resource profileDir, ClassLoader classLoader) {
@@ -203,14 +205,36 @@ abstract class AbstractProfile implements Profile {
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
         this.parentTargetFolder = (String)navigableConfig.get("skeleton.parent.target", null)
         this.skeletonExcludes = (List<String>)navigableConfig.get("skeleton.excludes", [])
+        this.binaryExtensions = (List<String>)navigableConfig.get("skeleton.binaryExtensions", [])
+        this.executablePatterns = (List<String>)navigableConfig.get("skeleton.executable", [])
     }
 
     String getDescription() {
-        return description
+        description
     }
 
     String getInstructions() {
-        return instructions
+        instructions
+    }
+
+    Set<String> getBinaryExtensions() {
+        Set<String> calculatedBinaryExtensions = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedBinaryExtensions.addAll(profile.binaryExtensions)
+        }
+        calculatedBinaryExtensions.addAll(binaryExtensions)
+        return calculatedBinaryExtensions
+    }
+
+    Set<String> getExecutablePatterns() {
+        Set<String> calculatedExecutablePatterns = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedExecutablePatterns.addAll(profile.executablePatterns)
+        }
+        calculatedExecutablePatterns.addAll(executablePatterns)
+        return calculatedExecutablePatterns
     }
 
     @Override
@@ -230,11 +254,11 @@ abstract class AbstractProfile implements Profile {
     @Override
     Iterable<Feature> getFeatures() {
         Set<Feature> calculatedFeatures = []
+        calculatedFeatures.addAll(features)
         def parents = getExtends()
         for(profile in parents) {
             calculatedFeatures.addAll profile.features
         }
-        calculatedFeatures.addAll(features)
         return calculatedFeatures
     }
 
@@ -386,7 +410,7 @@ abstract class AbstractProfile implements Profile {
     @Override
     Iterable<Command> getCommands(ProjectContext context) {
         if(commandsByName == null) {
-            commandsByName = [:]
+            commandsByName = new LinkedHashMap<String, Command>()
             List excludes = []
             def registerCommand = { Command command ->
                 def name = command.name
@@ -394,12 +418,12 @@ abstract class AbstractProfile implements Profile {
                     if(command instanceof ProfileRepositoryAware) {
                         ((ProfileRepositoryAware)command).setProfileRepository(profileRepository)
                     }
-                    commandsByName[name] = command
+                    commandsByName.put(name, command)
                     def desc = command.description
                     def synonyms = desc.synonyms
                     if(synonyms) {
-                        for(syn in synonyms) {
-                            commandsByName[syn] = command
+                        for(String syn in synonyms) {
+                            commandsByName.put(syn, command)
                         }
                     }
                     if(command instanceof ProjectContextAware) {

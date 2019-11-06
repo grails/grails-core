@@ -22,39 +22,38 @@ interface Settings {
     /**
      * The prefix to use for property placeholders
      */
-    String SPRING_PLACEHOLDER_PREFIX = "grails.spring.placeholder.prefix";
+    String SPRING_PLACEHOLDER_PREFIX = "grails.spring.placeholder.prefix"
 
     /**
-     * Whether to enable Spring proxy based transaction management. Since {@link grails.transaction.Transactional} uses an AST transform, this makes Spring proxy based transaction management redundant.
+     * Whether to enable Spring proxy based transaction management. Since {@code @Transactional} uses an AST transform, this makes Spring proxy based transaction management redundant.
      * However, if Spring proxies are prefer
      */
-    String SPRING_TRANSACTION_MANAGEMENT = "grails.spring.transactionManagement.proxies";
+    String SPRING_TRANSACTION_MANAGEMENT = "grails.spring.transactionManagement.proxies"
 
     /**
      * Which plugins to include in the plugin manager
      */
-    String PLUGIN_INCLUDES = "grails.plugin.includes";
+    String PLUGIN_INCLUDES = "grails.plugin.includes"
     /**
      * Which plugins to exclude from the plugin manager
      */
-    String PLUGIN_EXCLUDES = "grails.plugin.excludes";
-
+    String PLUGIN_EXCLUDES = "grails.plugin.excludes"
 
     /**
      * Whether to include the jsessionid in the rendered links
      **/
-    String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
+    String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid"
 
     String VIEWS_FILTERING_CODEC_FOR_CONTENT_TYPE = "grails.views.filteringCodecForContentType"
 
     /**
      * Whether to disable caching of resources in GSP
      */
-    String GSP_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
+    String GSP_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources"
     /**
      * Whether to enable GSP reload in production
      */
-    String GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
+    String GSP_ENABLE_RELOAD = "grails.gsp.enable.reload"
 
     /**
      * Thew views directory for GSP
@@ -79,7 +78,12 @@ interface Settings {
     /**
      * Whether to autowire instances
      */
-    String GORM_AUTOWIRE_INSTANCES = "grails.gorm.autowire";
+    String GORM_AUTOWIRE_INSTANCES = "grails.gorm.autowire"
+
+    /**
+     * Whether to translate GORM events into reactor events
+     */
+    String GORM_REACTOR_EVENTS = "grails.gorm.reactor.events"
     /**
      * The configured mime types
      */
@@ -93,6 +97,11 @@ interface Settings {
      * Which user agents should have accept header processing disabled
      */
     String MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS = 'grails.mime.disable.accept.header.userAgents'
+
+    /**
+     * XHR requests will ignore MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS by default, enable to override default
+     */
+    String MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR = 'grails.mime.disable.accept.header.userAgentsXhr'
 
     /**
      * The default scope for controllers
@@ -197,26 +206,39 @@ interface Settings {
     /**
      * Whether to log request parameters in the console
      */
-    String SETTING_LOG_REQUEST_PARAMETERS = "grails.exceptionresolver.logRequestParameters";
+    String SETTING_LOG_REQUEST_PARAMETERS = "grails.exceptionresolver.logRequestParameters"
     /**
      * The parameters to exclude from logging
      */
-    String SETTING_EXCEPTION_RESOLVER_PARAM_EXCLUDES = "grails.exceptionresolver.params.exclude";
+    String SETTING_EXCEPTION_RESOLVER_PARAM_EXCLUDES = "grails.exceptionresolver.params.exclude"
     /**
      * The class to use for stacktrace filtering. Should be an instanceof {@link org.grails.exceptions.reporting.StackTraceFilterer}
      */
-    String SETTING_LOGGING_STACKTRACE_FILTER_CLASS = "grails.logging.stackTraceFiltererClass";
+    String SETTING_LOGGING_STACKTRACE_FILTER_CLASS = "grails.logging.stackTraceFiltererClass"
     /**
      * Whether to use the legacy JSON builder
      */
-    String SETTING_LEGACY_JSON_BUILDER = "grails.json.legacy.builder";
+    String SETTING_LEGACY_JSON_BUILDER = "grails.json.legacy.builder"
     /**
      * Whether to execute Bootstrap classes
      */
-    String SETTING_SKIP_BOOTSTRAP = "grails.bootstrap.skip";
+    String SETTING_SKIP_BOOTSTRAP = "grails.bootstrap.skip"
     /**
      * Whether to load cors configuration via a filter (true) or interceptor(false)
      */
-    String SETTING_CORS_FILTER = "grails.cors.filter";
+    String SETTING_CORS_FILTER = "grails.cors.filter"
 
+    String TRIM_STRINGS = 'grails.databinding.trimStrings'
+
+    String CONVERT_EMPTY_STRINGS_TO_NULL = 'grails.databinding.convertEmptyStringsToNull'
+
+    String AUTO_GROW_COLLECTION_LIMIT = 'grails.databinding.autoGrowCollectionLimit'
+
+    String DATE_FORMATS = 'grails.databinding.dateFormats'
+
+    String DATE_LENIENT_PARSING = 'grails.databinding.dateParsingLenient'
+
+    String I18N_CACHE_SECONDS = 'grails.i18n.cache.seconds'
+
+    String I18N_FILE_CACHE_SECONDS = 'grails.i18n.filecache.seconds'
 }

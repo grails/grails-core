@@ -22,7 +22,9 @@ import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingsHolder
+import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.util.StringUtils
 
 import javax.annotation.PostConstruct
 import java.util.regex.Pattern
@@ -54,6 +56,7 @@ import org.springframework.http.HttpMethod
  * @since 2.0
  */
 @CompileStatic
+@Slf4j
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     private static final Pattern absoluteUrlPattern = Pattern.compile('^[A-Za-z][A-Za-z0-9+\\-.]*:.*$')
@@ -176,6 +179,8 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                         } else if (DomainClassArtefactHandler.isDomainClass(resourceAttribute.getClass(), true)) {
                             resource = GrailsNameUtils.getPropertyName(resourceAttribute.getClass())
                             hasId = true
+                        } else if (resourceAttribute instanceof Class) {
+                            resource = GrailsNameUtils.getPropertyName(resourceAttribute)
                         } else {
                             resource = resourceAttribute.toString()
                         }
@@ -410,6 +415,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
             }
         }
+        log.trace("Resolved base server URL: $u")
         return u
     }
 

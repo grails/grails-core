@@ -63,6 +63,11 @@ public enum Environment {
      * Constant used to resolve the environment via System.getProperty(Environment.KEY)
      */
     public static String KEY = "grails.env";
+    
+    /**
+     * Constant used to resolve the environment via System.getenv(Environment.ENV_KEY).
+     */
+    public static final String ENV_KEY = "GRAILS_ENV";
 
     /**
      * The name of the GRAILS_HOME environment variable
@@ -118,7 +123,7 @@ public enum Environment {
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
-    private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
+    private static Holder<Environment> cachedCurrentEnvironment = new Holder<>("Environment");
     private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT;
     private static boolean initializingState = false;
 
@@ -260,16 +265,26 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
+        String envName = getEnvironment();
+
+        Environment env;
+        if(!isBlank(envName)) {
+            env = getEnvironment(envName);
+            if(env != null) {
+                return env;
+            }
+        }
+
+
         Environment current = cachedCurrentEnvironment.get();
         if (current != null) {
             return current;
         }
-
-        return resolveCurrentEnvironment();
+        return cacheCurrentEnvironment();
     }
 
     private static Environment resolveCurrentEnvironment() {
-        String envName = System.getProperty(Environment.KEY);
+        String envName = getEnvironment();
 
         if (isBlank(envName)) {
             Metadata metadata = Metadata.getCurrent();
@@ -297,8 +312,10 @@ public enum Environment {
         return env;
     }
 
-    public static void cacheCurrentEnvironment() {
-        cachedCurrentEnvironment.set(resolveCurrentEnvironment());
+    private static Environment cacheCurrentEnvironment() {
+        Environment env = resolveCurrentEnvironment();
+        cachedCurrentEnvironment.set(env);
+        return env;
     }
 
     /**
@@ -307,6 +324,14 @@ public enum Environment {
      */
     public static Environment getCurrentEnvironment() {
         return getCurrent();
+    }
+
+    /**
+     * Reset the current environment
+     */
+    public static void reset() {
+        cachedCurrentEnvironment.set(null);
+        Metadata.reset();
     }
 
     /**
@@ -325,7 +350,7 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentEnvironmentAvailable() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed();
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed() && !isWarDeployed();
     }
 
     /**
@@ -398,7 +423,7 @@ public enum Environment {
      * @return Return true if the environment has been set as a System property
      */
     public static boolean isSystemSet() {
-        return System.getProperty(KEY) != null;
+        return getEnvironment() != null;
     }
 
     /**
@@ -632,7 +657,7 @@ public enum Environment {
             return reloadingAgentEnabled;
         }
         try {
-            Class.forName("org.springsource.loaded.TypeRegistry");
+            Class.forName("org.springframework.boot.devtools.RemoteSpringApplication");
             reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
         }
         catch (ClassNotFoundException e) {
@@ -689,5 +714,9 @@ public enum Environment {
         return location;
     }
 
+    private static String getEnvironment() {
+        String envName = System.getProperty(Environment.KEY);
+        return isBlank(envName) ? System.getenv(Environment.ENV_KEY) : envName;
+    }
 
 }

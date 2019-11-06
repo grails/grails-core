@@ -1,30 +1,30 @@
 package grails.test.mixin.domain
 
 import grails.persistence.Entity
-import grails.test.mixin.TestMixin
-import org.junit.Test
+import grails.testing.gorm.DataTest
+import spock.lang.Specification
 
-@TestMixin(DomainClassUnitTestMixin)
-class DomainClassUnitTestMixinTests {
+class DomainClassUnitTestMixinTests extends Specification implements DataTest {
 
-    @Test
     void testBackReferenceAssignment() {
         mockDomains Writer, Publication
 
+        when:
         def publication = new Publication(title: 'Some Paper')
         def writer = new Writer(name: 'Some Writer')
 
         writer.addToPublications(publication)
 
-        assert publication.ghostWriter == null
-        assert writer.is(publication.writer)
+        then:
+        publication.ghostWriter == null
+        writer.is(publication.writer)
     }
 
-    @Test
     void testWithTransaction() {
         mockDomain Writer
         def bodyInvoked = false
 
+        when:
         def w = new Writer(name: "Stephen King")
         w.save(flush:true)
 
@@ -32,7 +32,8 @@ class DomainClassUnitTestMixinTests {
             bodyInvoked = true
         }
 
-        assert bodyInvoked
+        then:
+        bodyInvoked
     }
 }
 

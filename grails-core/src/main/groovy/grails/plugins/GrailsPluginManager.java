@@ -226,16 +226,6 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     void shutdown();
 
     /**
-     * Returns true if the given plugin supports the current BuildScope
-     * @param pluginName The name of the plugin
-     *
-     * @return true if the plugin supports the current build scope
-     * @see grails.util.BuildScope#getCurrent()
-     */
-    @Deprecated
-    boolean supportsCurrentBuildScope(String pluginName);
-
-    /**
      * Set whether the core plugins should be loaded
      * @param shouldLoadCorePlugins True if they should
      */

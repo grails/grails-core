@@ -1,18 +1,15 @@
 package org.grails.web.controllers
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
+import grails.web.mapping.mvc.exceptions.CannotRedirectException
 
 import java.sql.BatchUpdateException
 import java.sql.SQLException
-
-import javax.xml.soap.SOAPException
-
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(ErrorHandlersController)
-class ControllerExceptionHandlerSpec extends Specification {
+class ControllerExceptionHandlerSpec extends Specification implements ControllerUnitTest<ErrorHandlersController> {
 
     @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String'() {
@@ -38,16 +35,6 @@ class ControllerExceptionHandlerSpec extends Specification {
     void 'Test passing command object as argument to action'() {
         when:
         controller.testActionWithCommandObject(new MyCommand(exceptionToThrow: 'java.sql.SQLException'))
-
-        then:
-        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
-    }
-
-    @Issue('GRAILS-11453')
-    void 'Test exception handler which renders a String from command object closure action'() {
-        when:
-        params.exceptionToThrow = 'java.sql.SQLException'
-        controller.testClosureActionWithCommandObject()
 
         then:
         response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
@@ -122,11 +109,11 @@ class ControllerExceptionHandlerSpec extends Specification {
 
     void 'Test throwing an exception that does not have a handler'() {
         when:
-        params.exceptionToThrow = 'javax.xml.soap.SOAPException'
+        params.exceptionToThrow = 'grails.web.mapping.mvc.exceptions.CannotRedirectException'
         def model = controller.testActionWithNonCommandObjectParameter()
 
         then:
-        thrown SOAPException
+        thrown(CannotRedirectException)
     }
 
     void 'Test throwing an exception that does not have a handler and does match a private method in the parent controller'() {
@@ -207,10 +194,6 @@ class ErrorHandlersController extends SomeAbstractController implements Database
         throw exceptionClass.newInstance()
     }
 
-    def testClosureActionWithCommandObject = { MyCommand co ->
-        def exceptionClass = Class.forName(co.exceptionToThrow)
-        throw exceptionClass.newInstance()
-    }
 
     def testActionWithNonCommandObjectParameter(String exceptionToThrow) {
         def exceptionClass = Class.forName(exceptionToThrow)

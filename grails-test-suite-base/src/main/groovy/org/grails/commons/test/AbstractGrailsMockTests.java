@@ -18,18 +18,22 @@ package org.grails.commons.test;
 import grails.util.Metadata;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
 import groovy.util.GroovyTestCase;
 
 import java.io.IOException;
 
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
+import org.grails.config.PropertySourcesConfig;
 import org.grails.support.MockApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.util.ClassUtils;
 
 /**
  * Abstract simple test harness for testing Grails Applications that just loads
@@ -59,11 +63,15 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
         ctx.registerMockBean(GrailsApplication.CLASS_LOADER_BEAN, gcl);
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+        if(ClassUtils.isPresent("Config", gcl)) {
+            ConfigObject config = new ConfigSlurper().parse(gcl.loadClass("Config"));
+            ga.setConfig(new PropertySourcesConfig(config));
+        }
         ga.getMetadata().put(Metadata.APPLICATION_NAME, getClass().getName());
-
         ga.setApplicationContext(ctx);
         ga.initialise();
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+        postSetUp();
     }
 
     @Override
@@ -74,6 +82,10 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
     }
 
     protected void onSetUp() {
+        // implemented in subclasses
+    }
+
+    protected void postSetUp() {
         // implemented in subclasses
     }
 

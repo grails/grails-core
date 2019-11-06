@@ -209,7 +209,6 @@ class GrailsCli {
         if(mainCommandLine.hasOption(CommandLine.VERSION_ARGUMENT) || mainCommandLine.hasOption('v')) {
             def console = GrailsConsole.instance
             console.addStatus("Grails Version: ${GrailsCli.getPackage().implementationVersion}")
-            console.addStatus("Groovy Version: ${GroovySystem.version}")
             console.addStatus("JVM Version: ${System.getProperty('java.version')}")
             exit(0)
         }
@@ -225,6 +224,7 @@ class GrailsCli {
 
         if(mainCommandLine.environmentSet) {
             System.setProperty(Environment.KEY, mainCommandLine.environment)
+            Environment.reset()
         }
 
         File grailsAppDir=new File("grails-app")
@@ -671,8 +671,7 @@ class GrailsCli {
     }
 
 
-    @Canonical
-    public static class ExecutionContextImpl implements ExecutionContext {
+    static class ExecutionContextImpl implements ExecutionContext {
         CommandLine commandLine
         @Delegate(excludes = ['getConsole', 'getBaseDir']) ProjectContext projectContext
         GrailsConsole console = GrailsConsole.getInstance()
@@ -691,13 +690,13 @@ class GrailsCli {
 
         private List<CommandCancellationListener> cancelListeners=[]
         
-        @Override
-        public void addCancelledListener(CommandCancellationListener listener) {
+        @Override //Fully qualified name to work around Groovy bug
+        void addCancelledListener(org.grails.cli.profile.CommandCancellationListener listener) {
             cancelListeners << listener
         }    
         
         @Override
-        public void cancel() {
+        void cancel() {
             for(CommandCancellationListener listener : cancelListeners) {
                 try {
                     listener.commandCancelled()

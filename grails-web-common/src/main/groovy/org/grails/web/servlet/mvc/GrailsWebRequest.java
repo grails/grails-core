@@ -49,6 +49,7 @@ import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.request.RequestAttributes;
@@ -247,13 +248,20 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
     }
 
     /**
-     * Reset params by re-reading & initializing parameters from request
+     * @return The Grails params object
      */
-    public void resetParams() {
+    public GrailsParameterMap getOriginalParams() {
         if (originalParams == null) {
             originalParams = new GrailsParameterMap(getCurrentRequest());
         }
-        params = (GrailsParameterMap)originalParams.clone();
+        return originalParams;
+    }
+
+    /**
+     * Reset params by re-reading & initializing parameters from request
+     */
+    public void resetParams() {
+        params = (GrailsParameterMap)getOriginalParams().clone();
     }
 
     @SuppressWarnings("rawtypes")
@@ -424,7 +432,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
      * @param request The current request
      * @return The GrailsWebRequest
      */
-    public static GrailsWebRequest lookup(HttpServletRequest request) {
+    public static @Nullable GrailsWebRequest lookup(HttpServletRequest request) {
         GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         return webRequest == null ? lookup() : webRequest;
     }
@@ -433,7 +441,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
      * Looks up the current Grails WebRequest instance
      * @return The GrailsWebRequest instance
      */
-    public static GrailsWebRequest lookup() {
+    public static @Nullable GrailsWebRequest lookup() {
         GrailsWebRequest webRequest = null;
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (requestAttributes instanceof GrailsWebRequest) {

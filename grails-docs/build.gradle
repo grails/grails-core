@@ -20,6 +20,7 @@ dependencies {
     runtime "org.slf4j:slf4j-api:$slf4jVersion"
 
     runtime('com.lowagie:itext:2.0.8')
+
     compile 'org.jsoup:jsoup:1.7.3'
     testCompile "junit:junit:$junitVersion"
     testCompile("org.spockframework:spock-core:${spockVersion}") {
@@ -42,7 +43,7 @@ task docFilesJar(type: Jar, description: 'Package up files used for generating d
     doLast {
         copy {
             from docFilesJar.archivePath
-            into "${buildDir}/classes/main"
+            into "${buildDir}/classes/groovy/main"
         }
     }
 }

@@ -15,16 +15,14 @@
  */
 package grails.rest
 
-import grails.web.mapping.LinkGenerator
-import org.springframework.beans.factory.annotation.Autowired
-
-import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
-import grails.transaction.Transactional
+import grails.gorm.transactions.ReadOnly
+import grails.gorm.transactions.Transactional
 import grails.util.GrailsNameUtils
-
 import grails.web.http.HttpHeaders
 import org.springframework.http.HttpStatus
+
+import static org.springframework.http.HttpStatus.*
 
 /**
  * Base class that can be extended to get the basic CRUD operations needed for a RESTful API.
@@ -33,7 +31,7 @@ import org.springframework.http.HttpStatus
  * @since 2.3
  */
 @Artefact("Controller")
-@Transactional(readOnly = true)
+@ReadOnly
 class RestfulController<T> {
     static allowedMethods = [save: "POST", update: ["PUT", "POST"], patch: "PATCH", delete: "DELETE"]
 
@@ -151,6 +149,7 @@ class RestfulController<T> {
 
         instance.properties = getObjectToBind()
 
+        instance.validate()
         if (instance.hasErrors()) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view:'edit' // STATUS CODE 422

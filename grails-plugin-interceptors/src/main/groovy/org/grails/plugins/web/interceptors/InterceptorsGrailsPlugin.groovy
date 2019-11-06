@@ -34,9 +34,10 @@ import org.springframework.web.servlet.handler.MappedInterceptor
  */
 @CompileStatic
 class InterceptorsGrailsPlugin extends Plugin {
-    def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [controllers:version, urlMappings:version]
-    def watchedResources = "file:./grails-app/controllers/**/*Interceptor.groovy"
+    def final version = GrailsUtil.getGrailsVersion()
+    def final dependsOn = [controllers:version, urlMappings:version]
+    def final watchedResources = "file:./grails-app/controllers/**/*Interceptor.groovy"
+    def final loadAfter = ['domainClass', 'hibernate']
 
     GrailsInterceptorHandlerInterceptorAdapter interceptorAdapter
 

@@ -26,7 +26,14 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.ClassUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * A {@link Config} implementation that operates against a {@link org.grails.config.NavigableMap}
@@ -203,19 +210,84 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        Object originalValue = configMap.get(key);
-        if(originalValue != null) {
-            if(targetType.isInstance(originalValue)) {
-                return (T)originalValue;
-            }
-            else {
-                if(!(originalValue instanceof NavigableMap)) {
+        Object value = findInSystemEnvironment(key);
+        if (value == null) {
+            value = getValueWithDotNotatedKeySupport(configMap, key);
+        }
+        if (value == null) {
+            value = configMap.get(key);
+        }
 
+        return convertValueIfNecessary(value, targetType, defaultValue);
+    }
+
+    private Object findInSystemEnvironment(String key) {
+        String propertyName = resolvePropertyName(key);
+        return propertyName != null ? System.getenv(propertyName) : null;
+    }
+
+    private String resolvePropertyName(String name) {
+        String resolvedName = checkPropertyName(name);
+        if (resolvedName != null) {
+            return resolvedName;
+        }
+        String uppercasedName = name.toUpperCase();
+        if (!name.equals(uppercasedName)) {
+            resolvedName = checkPropertyName(uppercasedName);
+            if (resolvedName != null) {
+                return resolvedName;
+            }
+        }
+        return name;
+    }
+
+    private String checkPropertyName(String name) {
+        // Check name as-is
+        if (containsKey(name)) {
+            return name;
+        }
+        // Check name with just dots replaced
+        String noDotName = name.replace('.', '_');
+        if (!name.equals(noDotName) && containsKey(noDotName)) {
+            return noDotName;
+        }
+        // Check name with just hyphens replaced
+        String noHyphenName = name.replace('-', '_');
+        if (!name.equals(noHyphenName) && containsKey(noHyphenName)) {
+            return noHyphenName;
+        }
+        // Check name with dots and hyphens replaced
+        String noDotNoHyphenName = noDotName.replace('-', '_');
+        if (!noDotName.equals(noDotNoHyphenName) && containsKey(noDotNoHyphenName)) {
+            return noDotNoHyphenName;
+        }
+        // Give up
+        return null;
+    }
+
+    private boolean containsKey(String name) {
+        return System.getenv(name) != null;
+    }
+
+    private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
+        if (originalValue != null) {
+            if (targetType.isInstance(originalValue)) {
+                return (T) originalValue;
+            } else {
+                if (!(originalValue instanceof NavigableMap)) {
                     try {
                         T value = conversionService.convert(originalValue, targetType);
                         return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
                     } catch (ConversionException e) {
-                        // ignore, return default value
+                        if (targetType.isEnum()) {
+                            String stringValue = originalValue.toString();
+                            try {
+                                T value = (T) toEnumValue(targetType, stringValue);
+                                return value;
+                            } catch (Throwable e2) {
+                                // ignore e2 and throw original
+                            }
+                        }
                     }
                 }
             }
@@ -223,24 +295,8 @@ public abstract class NavigableMapConfig implements Config {
         return defaultValue;
     }
 
-    @Override
-    public <T> Class<T> getPropertyAsClass(String key, Class<T> targetType) {
-        String className = getProperty(key, String.class);
-
-        if(!GrailsStringUtils.isBlank(className)) {
-            try {
-                Class<T> clazz = (Class<T>) ClassUtils.forName((String) className, classLoader);
-                if(clazz != targetType) {
-                    throw new ClassConversionException(clazz, targetType);
-                }
-                return clazz;
-            } catch (Exception e) {
-                throw new ClassConversionException(className, targetType, e);
-            }
-        }
-        else {
-            throw new IllegalStateException("Value for $key cannot be resolved");
-        }
+    private Object toEnumValue(Class targetType, String stringValue) {
+        return Enum.valueOf(targetType, stringValue.toUpperCase());
     }
 
     @Override
@@ -270,5 +326,42 @@ public abstract class NavigableMapConfig implements Config {
         public ClassConversionException(String actual, Class<?> expected, Exception ex) {
             super(String.format("Could not find/load class %s during attempt to convert to %s", actual, expected.getName()), ex);
         }
+    }
+
+    /**
+     * Resolves dot notated getProperty calls on a config object so that injected environmental variables
+     * are properly resolved the same as Groovy's dot notation.
+     *
+     * @param configMap NavigableMap
+     * @param key       identifies NavigableMap value to retrieve
+     * @return the property value associated with the key
+     */
+    private Object getValueWithDotNotatedKeySupport(NavigableMap configMap, String key) {
+        if (key == null || configMap == null) {
+            return null;
+        }
+
+        List<String> keys = convertTokensIntoArrayList(new StringTokenizer(key, "."));
+        if (keys.size() == 0) {
+            return null;
+        }
+
+        Object value = null;
+        for (int i = 0; i < keys.size(); i++) {
+            if (i == 0) {
+                value = configMap.get(keys.get(i));
+            } else if (value instanceof Map) {
+                value = ((Map) value).get(keys.get(i));
+            }
+        }
+        return value;
+    }
+
+    private List<String> convertTokensIntoArrayList(StringTokenizer st) {
+        List<String> elements = new ArrayList<String>();
+        while (st.hasMoreTokens()) {
+            elements.add(st.nextToken());
+        }
+        return elements;
     }
 }

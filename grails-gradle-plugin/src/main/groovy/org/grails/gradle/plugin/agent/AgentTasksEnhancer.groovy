@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.tasks.JavaExec
 import org.grails.gradle.plugin.core.GrailsExtension
 
@@ -12,17 +13,18 @@ import org.grails.gradle.plugin.core.GrailsExtension
  *
  * @author Graeme Rocher
  */
+@CompileStatic
 class AgentTasksEnhancer implements Action<Project> {
     @Override
     void execute(Project project) {
         try {
-            def agentJars = project.getConfigurations().getByName("agent").resolvedConfiguration.resolvedArtifacts
+            Set<ResolvedArtifact> agentJars = project.getConfigurations().getByName("agent").resolvedConfiguration.resolvedArtifacts
 
             if(agentJars) {
-                def agentJar = agentJars.iterator().next().file
+                File agentJar = agentJars.iterator().next().file
                 for (Task task : project.getTasks()) {
                     if (task instanceof JavaExec) {
-                        addAgent(project, (JavaExec) task, agentJar);
+                        addAgent(project, (JavaExec) task, agentJar)
                     }
                 }
             }
@@ -37,10 +39,10 @@ class AgentTasksEnhancer implements Action<Project> {
         if(agentConfig.enabled) {
             exec.jvmArgs "-javaagent:${agentConfig.path?.absolutePath ?: agent.absolutePath}"
 
-            for(arg in agentConfig.jvmArgs) {
+            for (String arg in agentConfig.jvmArgs) {
                 exec.jvmArgs arg
             }
-            for(entry in agentConfig.systemProperties) {
+            for(Map.Entry<String, String> entry in agentConfig.systemProperties) {
                 exec.systemProperty(entry.key, entry.value)
             }
 
@@ -49,7 +51,7 @@ class AgentTasksEnhancer implements Action<Project> {
                     synchronize: String.valueOf( agentConfig.synchronize ),
                     allowSplitPackages: String.valueOf( agentConfig.allowSplitPackages ),
                     cacheDir: agentConfig.cacheDir ? project.mkdir(agentConfig.cacheDir) : project.mkdir("build/springloaded")
-            ]
+            ] as Map<String, String>
             if(agentConfig.logging != null) {
                 agentArgs.put("logging", String.valueOf(agentConfig.logging))
             }

@@ -16,7 +16,8 @@
 package org.grails.web.mapping;
 
 import grails.core.GrailsApplication;
-import grails.validation.ConstrainedProperty;
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import org.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
@@ -52,6 +53,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected String mappingName;
     protected String httpMethod = ANY_HTTP_METHOD;
     protected String version = ANY_VERSION;
+    protected Integer pluginIndex;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -110,7 +112,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     /**
      * @see UrlMapping#getConstraints()
      */
-    public ConstrainedProperty[] getConstraints() {
+    public Constrained[] getConstraints() {
         return constraints;
     }
 
@@ -172,5 +174,18 @@ public abstract class AbstractUrlMapping implements UrlMapping {
 
     public Object getRedirectInfo() {
         return redirectInfo;
+    }
+
+
+    public void setPluginIndex(int pluginIndex) {
+        this.pluginIndex = pluginIndex;
+    }
+
+    public Integer getPluginIndex() {
+        return this.pluginIndex;
+    }
+
+    public boolean isDefinedInPlugin() {
+        return pluginIndex != null;
     }
 }

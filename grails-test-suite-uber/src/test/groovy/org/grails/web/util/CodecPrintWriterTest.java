@@ -18,6 +18,7 @@ import org.grails.commons.DefaultGrailsCodecClass;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import org.grails.commons.GrailsCodecClass;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.plugins.codecs.HTMLCodec;
 import org.grails.plugins.testing.GrailsMockHttpServletRequest;
 import org.grails.plugins.testing.GrailsMockHttpServletResponse;
@@ -191,8 +192,18 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public MappingContext getMappingContext() {
+        return null;
+    }
+
     public void setMainContext(ApplicationContext context) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setMappingContext(MappingContext mappingContext) {
+
     }
 
     public ApplicationContext getParentContext() {

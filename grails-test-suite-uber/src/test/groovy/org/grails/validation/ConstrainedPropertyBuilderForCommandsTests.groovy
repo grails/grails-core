@@ -1,71 +1,85 @@
 package org.grails.validation
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import grails.validation.Validateable
-
-import static org.junit.Assert.*
+import spock.lang.Specification
 
 /**
  * Tests constraints building specific for command objects
  */
-@TestFor(ConstraintsPerson)
-class ConstrainedPropertyBuilderForCommandsTests {
+class ConstrainedPropertyBuilderForCommandsTests extends Specification implements DomainUnitTest<ConstraintsPerson> {
 
     void testImportFrom_AllConstraints_ConstraintsExist() {
+        when:
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsCommand.constraintsMap
-        assertNotNull personCommandConstraints
-        assertEquals 5, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("email")
+        
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 5
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("email") != null
     }
 
     void testImportFrom_AllConstraints_Validation() {
+        given:
         def personCommand = new PersonAllConstraintsNoNormalConstraintsCommand()
 
+        when:
         personCommand.firstName = "firstName"
         personCommand.lastName = "lastName"
         personCommand.validate()
 
-        assertFalse personCommand.hasErrors()
+        then:
+        !personCommand.hasErrors()
 
+        when:
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.validate()
 
-        assertTrue personCommand.hasErrors()
-        assertEquals 1, personCommand.getErrors().getErrorCount()
-        assertEquals 1, personCommand.getErrors().getFieldErrors("firstName").size()
-        assertNull personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
+        then:
+        personCommand.hasErrors()
+        personCommand.getErrors().getErrorCount() == 1
+        personCommand.getErrors().getFieldErrors("firstName").size() == 1
+        personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue() == null
     }
 
     void testImportFrom_SomeConstraints_ConstraintsExist() {
+        when:
         def personCommandConstraints = PersonSomeConstraintsNoNormalConstraintsCommand.constraintsMap
 
-        assertNotNull personCommandConstraints
-        assertEquals 2, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("firstName")
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 2
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("firstName") != null
     }
 
     void testImportFrom_SomeConstraints_Validation() {
+        given:
         def personCommand = new PersonSomeConstraintsNoNormalConstraintsCommand()
 
+        when:
         personCommand.firstName = "firstName"
         personCommand.lastName = "lastName"
         personCommand.validate()
 
-        assertFalse personCommand.hasErrors()
+        then:
+        !personCommand.hasErrors()
 
+        when:
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.validate()
 
-        assertTrue personCommand.hasErrors()
-        assertEquals(1, personCommand.getErrors().getErrorCount())
-        assertEquals(1, personCommand.getErrors().getFieldErrors("firstName").size())
-        assertNull personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
+        then:
+        personCommand.hasErrors()
+        personCommand.getErrors().getErrorCount() == 1
+        personCommand.getErrors().getFieldErrors("firstName").size() == 1
+        personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue() == null
 
+        when:
         // Now check that everything is ok with domain class
         def person = new ConstraintsPerson()
 
@@ -74,50 +88,59 @@ class ConstrainedPropertyBuilderForCommandsTests {
         person.email = "someemail@some.net"
         person.validate()
 
-        assertFalse(person.hasErrors())
+        then:
+        !person.hasErrors()
 
+        when:
         person.clearErrors()
         person.email = "wrongEmail"
         person.validate()
 
-        assertTrue(person.hasErrors())
-        assertEquals(1, person.getErrors().getErrorCount())
-        assertEquals(1, person.getErrors().getFieldErrors("email").size())
-        assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
+        then:
+        person.hasErrors()
+        person.getErrors().getErrorCount() == 1
+        person.getErrors().getFieldErrors("email").size() == 1
+        person.getErrors().getFieldErrors("email")[0].getRejectedValue() == "wrongEmail"
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsFirst() {
+        when:
         def personCommandConstraints = PersonAllConstraintsWithNormalConstraintsFirstCommand.constraintsMap
 
-        assertNotNull personCommandConstraints
-        assertEquals 5, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("telephone")
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 5
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("telephone") != null
 
-        assertEquals(30, personCommandConstraints.get("firstName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(50, personCommandConstraints.get("lastName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(
-                "123123",
-                personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter())
+        personCommandConstraints.get("firstName").getAppliedConstraint("maxSize").getParameter() == 30
+        personCommandConstraints.get("lastName").getAppliedConstraint("maxSize").getParameter() == 50
+        personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter() == "123123"
     }
 
     void testImportFrom_AllConstraints_Validation_NormalConstraintsFirst() {
+        given:
         def personCommand = new PersonAllConstraintsWithNormalConstraintsFirstCommand()
 
+        when:
         personCommand.firstName = "firstName"
         personCommand.lastName = "lastName"
         personCommand.validate()
 
-        assertFalse personCommand.hasErrors()
+        then:
+        !personCommand.hasErrors()
 
+        when:
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.lastName = null
         personCommand.validate()
 
-        assertTrue personCommand.hasErrors()
-        assertEquals 2, personCommand.getErrors().getErrorCount()
+        then:
+        personCommand.hasErrors()
+        personCommand.getErrors().getErrorCount() == 2
 
+        when:
         // Now check that everything is ok with domain class
         def person = new ConstraintsPerson()
 
@@ -126,54 +149,64 @@ class ConstrainedPropertyBuilderForCommandsTests {
         person.email = "someemail@some.net"
         person.validate()
 
-        assertFalse(person.hasErrors())
+        then:
+        !person.hasErrors()
 
+        when:
         person.clearErrors()
         person.firstName  = null
         person.email = "wrongEmail"
         person.validate()
 
-        assertTrue(person.hasErrors())
-        assertEquals 2, person.getErrors().getErrorCount()
-        assertEquals 1, person.getErrors().getFieldErrors("firstName").size()
-        assertNull person.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
-        assertEquals 1, person.getErrors().getFieldErrors("email").size()
-        assertEquals "wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue()
+        then:
+        person.hasErrors()
+        person.getErrors().getErrorCount() == 2
+        person.getErrors().getFieldErrors("firstName").size() == 1
+        person.getErrors().getFieldErrors("firstName")[0].getRejectedValue() == null
+        person.getErrors().getFieldErrors("email").size() == 1
+        person.getErrors().getFieldErrors("email")[0].getRejectedValue() == "wrongEmail"
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsLast() {
+        when:
         def personCommandConstraints = PersonAllConstraintsWithNormalConstraintsLastCommand.constraintsMap
 
-        assertNotNull personCommandConstraints
-        assertEquals 5, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("telephone")
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 5
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("telephone") != null
 
-        assertEquals 10, personCommandConstraints.get("firstName").getAppliedConstraint("maxSize").getParameter()
-        assertEquals 20, personCommandConstraints.get("lastName").getAppliedConstraint("maxSize").getParameter()
-        assertEquals "123123",
-                     personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter()
+        personCommandConstraints.get("firstName").getAppliedConstraint("maxSize").getParameter() == 10
+        personCommandConstraints.get("lastName").getAppliedConstraint("maxSize").getParameter() == 20
+        personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter() == "123123"
     }
 
     void testImportFrom_AllConstraints_Validation_NormalConstraintsLast() {
+        given:
         def personCommand = new PersonAllConstraintsWithNormalConstraintsLastCommand()
 
+        when:
         personCommand.firstName = null
         personCommand.lastName = null
         personCommand.email = "someemail@some.net"
         personCommand.validate()
 
-        assertFalse personCommand.hasErrors()
+        then:
+        !personCommand.hasErrors()
 
+        when:
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.lastName = null
         personCommand.email = "wrongEmail"
         personCommand.validate()
 
-        assertTrue personCommand.hasErrors()
-        assertEquals 1, personCommand.getErrors().getErrorCount()
+        then:
+        personCommand.hasErrors()
+        personCommand.getErrors().getErrorCount() == 1
 
+        when:
         // Now check that everything is ok with domain class
         def person = new ConstraintsPerson()
 
@@ -182,89 +215,115 @@ class ConstrainedPropertyBuilderForCommandsTests {
         person.email = "someemail@some.net"
         person.validate()
 
-        assertFalse(person.hasErrors())
+        then:
+        !person.hasErrors()
 
+        when:
         person.clearErrors()
         person.firstName  = null
         person.email = "wrongEmail"
         person.validate()
 
-        assertTrue(person.hasErrors())
-        assertEquals 2, person.getErrors().getErrorCount()
-        assertEquals 1, person.getErrors().getFieldErrors("firstName").size()
-        assertNull person.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
-        assertEquals 1, person.getErrors().getFieldErrors("email").size()
-        assertEquals "wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue()
+        then:
+        person.hasErrors()
+        person.getErrors().getErrorCount() == 2
+        person.getErrors().getFieldErrors("firstName").size() == 1
+        person.getErrors().getFieldErrors("firstName")[0].getRejectedValue() == null
+        person.getErrors().getFieldErrors("email").size() == 1
+        person.getErrors().getFieldErrors("email")[0].getRejectedValue() == "wrongEmail"
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_Including() {
+        when:
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingCommand.constraintsMap
-
-        assertNotNull personCommandConstraints
-        assertEquals 5, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("firstName")
-
         def emailConstraint = personCommandConstraints.get('email')
-        assertNotNull emailConstraint
-        assertFalse emailConstraint.hasAppliedConstraint('email')
-        assertFalse emailConstraint.hasAppliedConstraint('blank')
-        assertTrue emailConstraint.hasAppliedConstraint('nullable')
+
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 5
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("firstName") != null
+
+        emailConstraint != null
+        !emailConstraint.hasAppliedConstraint('email')
+        !emailConstraint.hasAppliedConstraint('blank')
+        emailConstraint.hasAppliedConstraint('nullable')
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_Excluding() {
+        when:
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsExcludingCommand.constraintsMap
 
-        assertNotNull personCommandConstraints
-        assertNull personCommandConstraints.get("importFrom")
-        assertEquals 5, personCommandConstraints.size()
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.size() == 5
 
+        when:
         def firstNameConstraint = personCommandConstraints.get("firstName")
-        assertNotNull firstNameConstraint
-        assertTrue firstNameConstraint.hasAppliedConstraint('nullable')
-        assertFalse firstNameConstraint.hasAppliedConstraint('maxSize')
 
+        then:
+        firstNameConstraint != null
+        firstNameConstraint.hasAppliedConstraint('nullable')
+        !firstNameConstraint.hasAppliedConstraint('maxSize')
+
+        when:
         def lastNameConstraint = personCommandConstraints.get("lastName")
-        assertNotNull lastNameConstraint
-        assertTrue lastNameConstraint.hasAppliedConstraint('nullable')
-        assertFalse lastNameConstraint.hasAppliedConstraint('maxSize')
 
+        then:
+        lastNameConstraint != null
+        lastNameConstraint.hasAppliedConstraint('nullable')
+        !lastNameConstraint.hasAppliedConstraint('maxSize')
+
+        when:
         def emailConstraint = personCommandConstraints.get("email")
-        assertNotNull emailConstraint
-        assertTrue emailConstraint.hasAppliedConstraint('email')
+
+        then:
+        emailConstraint != null
+        emailConstraint.hasAppliedConstraint('email')
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_IncludingByRegexp() {
+        when:
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand.constraintsMap
 
-        assertNotNull personCommandConstraints
-        assertEquals 5, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("firstName")
-        assertNotNull personCommandConstraints.get("lastName")
-        assertNotNull personCommandConstraints.get("middleName")
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 5
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("firstName") != null
+        personCommandConstraints.get("lastName") != null
+        personCommandConstraints.get("middleName") != null
 
+        when:
         def emailConstraint = personCommandConstraints.get('email')
-        assertNotNull emailConstraint
-        assertFalse emailConstraint.hasAppliedConstraint('email')
-        assertFalse emailConstraint.hasAppliedConstraint('blank')
-        assertTrue emailConstraint.hasAppliedConstraint('nullable')
+
+        then:
+        emailConstraint != null
+        !emailConstraint.hasAppliedConstraint('email')
+        !emailConstraint.hasAppliedConstraint('blank')
+        emailConstraint.hasAppliedConstraint('nullable')
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_IncludingExcludingByRegexp() {
+        when:
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand.constraintsMap
 
-        assertNotNull personCommandConstraints
-        assertEquals 5, personCommandConstraints.size()
-        assertNull personCommandConstraints.get("importFrom")
-        assertNotNull personCommandConstraints.get("firstName")
-        assertNotNull personCommandConstraints.get("lastName")
+        then:
+        personCommandConstraints != null
+        personCommandConstraints.size() == 5
+        personCommandConstraints.get("importFrom") == null
+        personCommandConstraints.get("firstName") != null
+        personCommandConstraints.get("lastName") != null
 
+        when:
         def emailConstraint = personCommandConstraints.get('email')
-        assertNotNull emailConstraint
-        assertFalse emailConstraint.hasAppliedConstraint('email')
-        assertFalse emailConstraint.hasAppliedConstraint('blank')
-        assertTrue emailConstraint.hasAppliedConstraint('nullable')
+
+        then:
+        emailConstraint != null
+        !emailConstraint.hasAppliedConstraint('email')
+        !emailConstraint.hasAppliedConstraint('blank')
+        emailConstraint.hasAppliedConstraint('nullable')
     }
 }
 

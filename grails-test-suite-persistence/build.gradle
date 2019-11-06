@@ -1,8 +1,11 @@
+configurations.testCompile {
+    exclude module: "grails-plugin-testing"
+}
+
 dependencies {
 
     testCompile project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
-                project(':grails-plugin-testing'),
                 project(':grails-plugin-datasource'),
                 project(':grails-plugin-i18n'),
                 project(':grails-plugin-url-mappings'),
@@ -12,7 +15,8 @@ dependencies {
                 project(':grails-bootstrap'),
                 project(':grails-spring')
 
-    testCompile "org.grails:grails-datastore-gorm-hibernate4:$datastoreVersion", {
+    testCompile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
+    testCompile "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -38,7 +42,27 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    testRuntime 'com.h2database:h2:1.3.176'
+    compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
+
+    testRuntime "com.h2database:h2:$h2Version"
+
+    //    // Required for AspectJ support
+    testRuntime "org.springframework:spring-aspects:${springVersion}"
+    testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
+                  "org.aspectj:aspectjweaver:$aspectjVersion"
+
+    testCompile "org.grails.plugins:async:$asyncVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-controllers'
+        exclude module:'grails-core'
+        exclude module:'grails-plugin-domain-class'
+    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-domain-class'
+        exclude module:'grails-test'
+        exclude module:'async'
+    }
 }
 
 test {
@@ -46,9 +70,6 @@ test {
     forkEvery = isTravisBuild ? 25 : 100
     if(!isTravisBuild) {
         maxHeapSize = '2048m'
-        if(!isJava8Compatible) {
-            jvmArgs '-XX:MaxPermSize=256m'
-        }
     }
     excludes = ['**/GrailsDomainBinderTests.class',
                 '**/ComponentValidationTests.class',

@@ -2,15 +2,14 @@ package grails.test.mixin.support
 
 import grails.core.GrailsApplication
 import grails.core.support.GrailsApplicationAware
-import grails.test.mixin.TestMixin
+import org.grails.testing.GrailsUnitTest
 import spock.lang.Specification
 
-@TestMixin(GrailsUnitTestMixin)
-class GrailsUnitTestMixinGrailsApplicationAwareSpec extends Specification {
+class GrailsUnitTestMixinGrailsApplicationAwareSpec extends Specification implements GrailsUnitTest {
 
-    static doWithSpring = {
+    Closure doWithSpring(){{ ->
         someBean SomeBean
-    }
+    }}
     
     void 'test that the GrailsApplicationAware post processor is effective for beans registered by a unit test'() {
         when: 'when a test registers a bean which implements GrailsApplicationAware'

@@ -2,19 +2,17 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
-import static org.junit.Assert.*
+import spock.lang.Specification
 
 /**
  * @author Rob Fletcher
  * @since 1.3.0
  */
-@TestFor(CheckboxBindingController)
-class CheckboxBindingTests {
+class CheckboxBindingTests extends Specification implements ControllerUnitTest<CheckboxBindingController>, DomainUnitTest<Pizza> {
 
-    @Test
     void testBindingCheckedValuesToObject() {
         params.name = "Capricciosa"
         params."_delivery" = ""
@@ -24,13 +22,14 @@ class CheckboxBindingTests {
         params."options._stuffedCrust" = ""
         params."options.stuffedCrust" = "on"
 
+        when:
         def model = controller.save()
 
-        assertEquals "Capricciosa", model.pizza.name
-        assertTrue "checked value 'delivery' failed to bind", model.pizza.delivery
-        assertTrue "nested checked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
-        assertTrue "nested checked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
+        then:
+        model.pizza.name == "Capricciosa"
+        model.pizza.delivery
+        model.pizza.options.extraAnchovies
+        model.pizza.options.stuffedCrust
     }
 
     @Test
@@ -39,17 +38,16 @@ class CheckboxBindingTests {
         params."_delivery" = ""
         params.options = [_extraAnchovies: '', _stuffedCrust: '']
 
+        when:
         def model = controller.save()
 
-        assertEquals "Capricciosa", model.pizza.name
-        assertFalse "unchecked value 'delivery' failed to bind", model.pizza.delivery
-        assertFalse "nested unchecked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
-        assertFalse "nested unchecked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
+        then:
+        model.pizza.name == "Capricciosa"
+        !model.pizza.delivery
+        !model.pizza.options.extraAnchovies
+        !model.pizza.options.stuffedCrust
     }
-
 }
-
 
 @Entity
 class Pizza {

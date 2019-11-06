@@ -19,6 +19,7 @@ import grails.web.UrlConverter
 import grails.web.api.WebAttributes
 import grails.web.mapping.LinkGenerator
 import groovy.transform.CompileStatic
+import org.grails.web.mapping.UrlMappingUtils
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
@@ -28,6 +29,9 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.filter.OncePerRequestFilter
 
 import javax.servlet.RequestDispatcher
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 /**
  * A Trait for classes that forward the request
  *
@@ -86,30 +90,48 @@ trait RequestForwarder implements WebAttributes {
             if(params.plugin) {
                 params.plugin = params.plugin
             }
+
+            if ( !params.params ) {
+                params.params =  UrlMappingUtils.findAllParamsNotInKeys(
+                        UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(webRequest.params),
+                        webRequest.originalParams.keySet()
+                )
+            }
         }
 
-        def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
+        Map model = params.model instanceof Map ? (Map)params.model : Collections.EMPTY_MAP
 
-        def request = webRequest.currentRequest
-        def response = webRequest.currentResponse
+        HttpServletRequest request = webRequest.currentRequest
+        HttpServletResponse response = webRequest.currentResponse
 
-        WebUtils.exposeRequestAttributes(request, (Map)model);
+        for (Map.Entry<String, Object> entry : model.entrySet()) {
+            request.setAttribute(entry.getKey(), entry.getValue())
+        }
 
         request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
         params.includeContext = false
-        def fowardURI = lookupLinkGenerator().link(params)
+        String fowardURI = lookupLinkGenerator().link(params)
 
 
         RequestDispatcher dispatcher = request.getRequestDispatcher(fowardURI)
 
-        def requestScope = WebRequest.SCOPE_REQUEST
+        int requestScope = WebRequest.SCOPE_REQUEST
         webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, requestScope)
         webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, requestScope)
         webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, requestScope)
         webRequest.removeAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, requestScope)
         webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, requestScope)
-        dispatcher.forward(request, response);
-        request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
+        try {
+            dispatcher.forward(request, response)
+            request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
+        } finally {
+            // cleanup after forward
+            webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, requestScope)
+            webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, requestScope)
+            webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, requestScope)
+            webRequest.removeAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, requestScope)
+            webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, requestScope)
+        }
         return fowardURI
     }
 

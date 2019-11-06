@@ -32,8 +32,10 @@ import org.springframework.context.ApplicationContext
  *
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use {@link MimeTypesConfiguration} instead
  */
 @CompileStatic
+@Deprecated
 class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContextAware{
 
     ApplicationContext applicationContext
@@ -71,7 +73,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
                 }
             }
         }
-        mimeTypes = mimes
+        mimeTypes = mimes as MimeType[]
         mimeTypes
 
     }

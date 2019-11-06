@@ -16,6 +16,7 @@
 package org.grails.config
 
 import groovy.transform.CompileStatic
+import org.springframework.boot.origin.OriginTrackedValue
 import org.springframework.core.env.MapPropertySource
 import org.springframework.util.StringUtils
 
@@ -48,7 +49,9 @@ class NavigableMapPropertySource extends MapPropertySource {
     @Override
     Object getProperty(String name) {
         def value = super.getProperty(name)
-        if(value instanceof NavigableMap || value instanceof NavigableMap.NullSafeNavigator) {
+        if (value instanceof OriginTrackedValue) {
+            return ((OriginTrackedValue)value).value
+        } else if(value instanceof NavigableMap || value instanceof NavigableMap.NullSafeNavigator) {
             return null
         }
         return value

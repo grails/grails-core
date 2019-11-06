@@ -1,12 +1,11 @@
 package grails.web.servlet.mvc
 
-import grails.web.servlet.mvc.GrailsParameterMap
-
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
+import spock.lang.Issue
 
 class GrailsParameterMapTests extends GroovyTestCase {
 
@@ -79,6 +78,35 @@ class GrailsParameterMapTests extends GroovyTestCase {
         params = new GrailsParameterMap(request)
         assert params.foo == null // should be null, request can't be parsed twice
 
+        request = new MockHttpServletRequest()
+        request.method = 'PUT'
+        request.content = 'foo='.bytes
+        request.contentType = "application/x-www-form-urlencoded"
+        request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
+
+        params = new GrailsParameterMap(request)
+
+        assert '' == params.foo
+    }
+
+
+    void testParseRequestBodyForPutRequestWithCharset() {
+        def request = new MockHttpServletRequest()
+        request.content = 'foo=bar&one=two'.bytes
+        request.method = 'PUT'
+        request.contentType = "application/x-www-form-urlencoded; charset=UTF-8"
+
+        def params = new GrailsParameterMap(request)
+
+        assert 'bar' == params.foo
+        assert 'two' == params.one
+
+        params = new GrailsParameterMap(request)
+        assert params.foo == null // should be null, request can't be parsed twice
+
+        request = new MockHttpServletRequest()
+        request.method = 'PUT'
+        request.contentType = "application/x-www-form-urlencoded; charset=UTF-8"
         request.content = 'foo='.bytes
         request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
 
@@ -101,6 +129,10 @@ class GrailsParameterMapTests extends GroovyTestCase {
         params = new GrailsParameterMap(request)
         assert params.foo == null // should be null, request can't be parsed twice
 
+        request = new MockHttpServletRequest()
+        request.content = 'foo=bar&one=two'.bytes
+        request.method = 'PATCH'
+        request.contentType = "application/x-www-form-urlencoded"
         request.content = 'foo='.bytes
         request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
 
@@ -261,27 +293,36 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals true, map.boolean('my_checkbox')
     }
 
-    void testAutoEvaluateBlankDates() {
+    @Issue("https://github.com/grails/grails-core/issues/11126")
+    void testDontAutoEvaluateBlankDates() {
         mockRequest.addParameter("foo", "date.struct")
         mockRequest.addParameter("foo_year", "")
         mockRequest.addParameter("foo_month", "")
 
         theMap = new GrailsParameterMap(mockRequest)
-        assert theMap['foo'] == null : "should be null"
+        assert theMap['foo'] == "date.struct" : "should not be modified"
     }
 
-    void testAutoEvaluateDates() {
+    @Issue("https://github.com/grails/grails-core/issues/11126")
+    void testDontAutoEvaluateDates() {
         mockRequest.addParameter("foo", "date.struct")
         mockRequest.addParameter("foo_year", "2007")
         mockRequest.addParameter("foo_month", "07")
 
         theMap = new GrailsParameterMap(mockRequest)
+        assert theMap['foo'] == "date.struct" : "should not be modified"
+    }
 
-        assert theMap['foo'] instanceof Date : "Should have returned a date but was a ${theMap['foo']}!"
-        def cal = new GregorianCalendar()
-        cal.setTime(theMap['foo'])
+    @Issue("https://github.com/grails/grails-core/issues/11126")
+    void testGetDateDoesConversion() {
+        mockRequest.addParameter("foo", "date.struct")
+        mockRequest.addParameter("foo_year", "2007")
+        mockRequest.addParameter("foo_month", "07")
 
-        assert 2007 == cal.get(Calendar.YEAR) : "Year should be 2007"
+        theMap = new GrailsParameterMap(mockRequest)
+        assert theMap.getDate("foo").getClass() == java.util.Date
+        assert theMap.getDate("foo").year == 107
+        assert theMap.getDate("foo").month == Calendar.JULY
     }
 
     void testIterateOverMapContainingDate() {

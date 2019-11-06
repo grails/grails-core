@@ -84,4 +84,9 @@ interface Matcher {
      * @return This matcher
      */
     Matcher excludes(@DelegatesTo(Interceptor) Closure<Boolean> condition)
+
+    /**
+     * Checks whether the current matcher is a exclude matcher or not
+     */
+    boolean isExclude()
 }

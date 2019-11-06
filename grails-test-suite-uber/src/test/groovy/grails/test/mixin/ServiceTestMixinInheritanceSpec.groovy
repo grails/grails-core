@@ -1,7 +1,6 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-import grails.test.mixin.services.ServiceUnitTestMixin
 import org.grails.core.artefact.ServiceArtefactHandler
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
@@ -10,7 +9,6 @@ import spock.lang.Specification
 /**
  * Created by graemerocher on 04/10/2016.
  */
-@TestMixin(ServiceUnitTestMixin)
 class ServiceTestMixinInheritanceSpec extends TestSuperClass {
 
     void "Test inherit transaction manager"() {

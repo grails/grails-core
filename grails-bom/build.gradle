@@ -1,56 +1,7 @@
-import org.gradle.api.internal.project.IsolatedAntBuilder
-
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-configurations {
-    mavenAntTasks
-}
-dependencies {
-    mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
-}
-
-task uploadArchives(dependsOn:project.tasks.withType(PublishToMavenLocal)) << {
-    def antBuilder = services.get(IsolatedAntBuilder)
-    def rootDir = project.parent.projectDir
-    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
-        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
-        def isSnapshot = version.endsWith("-SNAPSHOT")
-        def url = isSnapshot ? "https://oss.sonatype.org/content/repositories/snapshots/" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-        def repoId = isSnapshot ? "sonatype-nexus-snapshots" : "sonatype-nexus-staging"
-        mvn {
-            arg value:"org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file"
-            arg value:"-Dgpg.homedir=${rootDir.absolutePath}"
-            arg value:"-Dgpg.keyname=${System.getenv("SIGNING_KEY")}"
-            arg value:"-Dgpg.passphrase=${System.getenv("SIGNING_PASSWORD")}"
-            arg value:"-Durl=${url}"
-            arg value:"-DrepositoryId=${repoId}"
-            arg value:"-DpomFile=${buildDir}/publications/maven/pom-default.xml"
-            arg value:"-Dfile=${buildDir}/publications/maven/pom-default.xml"
-            arg value:"-Pgpg"
-        }
-    }
-}
-
 publishing {
-
-    repositories {
-        maven {
-            credentials {
-                def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                username = u
-                password = p
-            }
-            if(isBuildSnapshot) {
-                url  "https://repo.grails.org/grails/libs-snapshots-local"
-            }
-            else {
-                url "https://repo.grails.org/grails/libs-releases-local"
-            }
-        }
-    }
-
     publications {
         maven(MavenPublication) {
             pom.withXml {
@@ -61,52 +12,42 @@ publishing {
                 def profiles = new Properties()
                 profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
 
+                xml.children().last() + pomInfo
                 xml.children().last() + {
                     def mkp = delegate
-                    mkp.name "Grails BOM"
-                    mkp.description "Grails default supported dependency definitions"
-                    mkp.url 'http://grails.org'
-                    mkp.licenses {
-                        mkp.license {
-                            mkp.name "Apache License, Version 2.0"
-                            mkp.url 'http://www.apache.org/licenses/LICENSE-2.0'
-                        }
-                    }
-                    mkp.scm {
-                        mkp.url 'scm:git@github.com:grails/grails-core.git'
-                        mkp.connection 'scm:git@github.com:grails/grails-core.git'
-                        mkp.developerConnection 'scm:git@github.com:grails/grails-core.git'
-                    }
 
-                    mkp.developers {
-                        mkp.developer {
-                            mkp.id 'graemerocher'
-                            mkp.name 'Graeme Rocher'
+                    mkp.properties {
+                        for (dep in plugins) {
+                            String version = dep.value
+                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                                throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$dep.key] for a release!")
+                            }
+                            mkp."${dep.key}.version"(version)
                         }
-                        mkp.developer {
-                            mkp.id 'jeffscottbrown'
-                            mkp.name 'Jeff Brown'
-                        }
-                        mkp.developer {
-                            mkp.id 'lhotari'
-                            mkp.name 'Lari Hotari'
+
+                        for (dep in dependencyVersions) {
+                            String version = dep.value.version
+                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                                throw new RuntimeException("Cannot have a snapshot dependency on [$dep.key] for a release!")
+                            }
+                            mkp."${dep.key}.version"(version)
                         }
                     }
 
                     mkp.dependencyManagement {
                         mkp.dependencies {
-                            for(sub in project.parent.subprojects) {
-                                if(sub.name == 'grails-bom') continue
+                            for (sub in project.parent.subprojects) {
+                                if (sub.name == 'grails-bom') continue
 
                                 mkp.dependency {
                                     mkp.groupId sub.group
                                     mkp.artifactId sub.name
-                                    mkp.version( sub.version )
-                                    if(sub.name == 'grails-dependencies') {
+                                    mkp.version sub.version
+                                    if (sub.name == 'grails-dependencies') {
                                         mkp.type 'pom'
                                     }
 
-                                    if(sub.name == 'grails-bootstrap') {
+                                    if (sub.name == 'grails-bootstrap') {
                                         mkp.exclusions {
                                             mkp.exclusion {
                                                 mkp.groupId 'jline'
@@ -126,59 +67,43 @@ publishing {
                                             }
                                         }
                                     }
-
                                 }
                             }
 
-                            ['core', 'simple','web','rest-client','gorm', 'gorm-support', 'test-support', 'gorm-cassandra', 'gorm-mongodb', 'gorm-neo4j', 'gorm-hibernate4', 'gorm-hibernate5', 'gorm-hibernate', 'gorm-test'].each { name ->
-                                mkp.dependency {
-                                    mkp.groupId 'org.grails'
-                                    mkp.artifactId "grails-datastore-$name"
-                                    mkp.version( datastoreVersion )
-                                }
+                            for (dep in dependencyVersions) {
+                                def info = dep.value
+                                def depList = GroovyCollections
+                                        .combinations(info.names, info.modules)
+                                        .collect { it.join('-') }
+                                        .collect { it.endsWith('-') ? it[0..-2] : it }
 
-                            }
-
-                            ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'xml','nio'].each { name ->
-                                mkp.dependency {
-                                    mkp.groupId 'org.codehaus.groovy'
-                                    mkp.artifactId name ? "groovy-$name" : "groovy"
-                                    mkp.version( groovyVersion )
-                                }
-                            }
-
-                            ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc','jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket'].each { name ->
-                                mkp.dependency {
-                                    mkp.groupId 'org.springframework'
-                                    mkp.artifactId "spring-$name"
-                                    mkp.version( springVersion )
+                                for (dependency in depList) {
+                                    mkp.dependency {
+                                        mkp.groupId info.group
+                                        mkp.artifactId dependency
+                                        mkp.version "\${${dep.key}.version}"
+                                    }
                                 }
                             }
 
-                            mkp.dependency {
-                                mkp.groupId 'org.springframework'
-                                mkp.artifactId "springloaded"
-                                mkp.version( springLoadedVersion )
-                            }
-
-                            for(plugin in plugins) {
+                            for (plugin in plugins) {
                                 mkp.dependency {
                                     mkp.groupId 'org.grails.plugins'
                                     mkp.artifactId plugin.key
-                                    def version = plugin.value
-                                    if(!isBuildSnapshot && version.toString().endsWith("-SNAPSHOT")) {
+                                    String version = plugin.value
+                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
                                         throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$plugin.key] for a release!")
                                     }
-                                    mkp.version(version)
+                                    mkp.version "\${${plugin.key}.version}"
                                 }
                             }
 
-                            for(profile in profiles) {
+                            for (profile in profiles) {
                                 mkp.dependency {
                                     mkp.groupId 'org.grails.profiles'
                                     mkp.artifactId profile.key
-                                    def version = profile.value
-                                    if(!isBuildSnapshot && version.toString().endsWith("-SNAPSHOT")) {
+                                    String version = profile.value
+                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
                                         throw new RuntimeException("Cannot have a snapshot dependency on a profile [$profile.key] for a release!")
                                     }
                                     mkp.version(version)
@@ -188,44 +113,6 @@ publishing {
                     }
                 }
             }
-
-        }
-    }
-}
-
-
-bintray {
-    def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-    def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-
-    user = u
-    key = p
-    publications = ['maven']
-    publish = bintrayPublish
-    pkg {
-        repo = 'grails-core'
-        userOrg = 'grails'
-        name = 'org.grails'
-        desc = 'Grails Framework'
-        websiteUrl = 'http://grails.org'
-        issueTrackerUrl = 'http://jira.grails.org/browse/GRAILS'
-        vcsUrl = 'http://jira.grails.org/browse/GRAILS'
-        licenses = ['Apache-2.0']
-        publicDownloadNumbers = true
-        version {
-            name = project.version
-            gpg {
-                sign = true
-                passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
-            }
-            mavenCentralSync {
-                sync = false
-                def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-                def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-                user = ossUser
-                password = ossPass
-            }
-
         }
     }
 }

@@ -18,7 +18,6 @@ package org.grails.core.lifecycle;
 import grails.util.Holders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.core.util.ClassPropertyFetcher;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
@@ -31,16 +30,10 @@ import java.util.LinkedHashSet;
 public class ShutdownOperations {
     private static final Log LOG = LogFactory.getLog(ShutdownOperations.class);
 
-    private static final Collection<Runnable> shutdownOperations = new LinkedHashSet<Runnable>();
-    private static final Collection<Runnable> preservedShutdownOperations = new LinkedHashSet<Runnable>();
+    private static final Collection<Runnable> shutdownOperations = new LinkedHashSet<>();
+    private static final Collection<Runnable> preservedShutdownOperations = new LinkedHashSet<>();
 
-    public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
-        public void run() {
-            Holders.reset();
-            //ExpandoMetaClass.disableGlobally();
-            ClassPropertyFetcher.clearClassPropertyFetcherCache();
-        }
-    };
+    public static final Runnable DEFAULT_SHUTDOWN_OPERATION = Holders::reset;
 
     static {
         resetOperations();

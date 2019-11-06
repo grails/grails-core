@@ -19,11 +19,13 @@ import grails.io.IOUtils
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.DirectoryScanner
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.ModuleVersionSelector
 import org.gradle.api.artifacts.component.ProjectComponentSelector
 import org.gradle.api.file.CopySpec
+import org.gradle.api.internal.artifacts.ImmutableModuleIdentifierFactory
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
 import org.gradle.api.internal.java.JavaLibrary
@@ -44,18 +46,19 @@ import javax.inject.Inject
 @CompileStatic
 class GrailsProfileGradlePlugin extends BasePlugin {
 
+    static final String CONFIGURATION_NAME = 'grails'
 
     public static final String RUNTIME_CONFIGURATION = "runtime"
 
     @Inject
-    GrailsProfileGradlePlugin( ProjectPublicationRegistry publicationRegistry, ProjectConfigurationActionContainer configurationActionContainer) {
-        super(publicationRegistry, configurationActionContainer)
+    GrailsProfileGradlePlugin( ProjectPublicationRegistry publicationRegistry, ProjectConfigurationActionContainer configurationActionContainer, ImmutableModuleIdentifierFactory immutableModuleIdentifierFactory) {
+        super(publicationRegistry, configurationActionContainer, immutableModuleIdentifierFactory)
     }
 
     @Override
     void apply(Project project) {
         super.apply(project)
-
+        project.configurations.create(CONFIGURATION_NAME)
         def profileConfiguration = project.configurations.create(RUNTIME_CONFIGURATION)
 
         profileConfiguration.resolutionStrategy.eachDependency {
@@ -98,20 +101,22 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             spec.into("skeleton")
         }
 
-        def processResources = project.tasks.create("processResources", Copy) { Copy c ->
+        def processResources = project.tasks.create("processResources", Copy, (Action){ Copy c ->
             c.with(spec1, spec2, spec3, spec4)
             c.into(new File(resourcesDir, "/META-INF/grails-profile"))
 
             c.doFirst {
-                DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
+                for(String file in DirectoryScanner.defaultExcludes) {
+                    DirectoryScanner.removeDefaultExclude(file)
+                }
             }
             c.doLast {
                 DirectoryScanner.resetDefaultExcludes()
             }
-        }
+        })
 
         def classsesDir = new File(project.buildDir, "classes/profile")
-        def compileTask = project.tasks.create("compileProfile", ProfileCompilerTask) { ProfileCompilerTask task ->
+        def compileTask = project.tasks.create("compileProfile", ProfileCompilerTask, (Action){ ProfileCompilerTask task ->
             task.destinationDir = classsesDir
             task.source = commandsDir
             task.config = profileYml
@@ -119,9 +124,9 @@ class GrailsProfileGradlePlugin extends BasePlugin {
                 task.templatesDir = templatesDir
             }
             task.classpath = project.configurations.getByName(RUNTIME_CONFIGURATION) + project.files(IOUtils.findJarFile(GroovyScriptCommand))
-        }
+        })
 
-        def jarTask = project.tasks.create("jar", Jar) { Jar jar ->
+        def jarTask = project.tasks.create("jar", Jar, (Action) { Jar jar ->
             jar.dependsOn(processResources, compileTask)
             jar.from(resourcesDir)
             jar.from(classsesDir)
@@ -130,17 +135,19 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.setGroup(BUILD_GROUP)
 
             ArchivePublishArtifact jarArtifact = new ArchivePublishArtifact(jar)
-            project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()));
+            project.artifacts.add(CONFIGURATION_NAME, jarArtifact)
 
             jar.doFirst {
-                DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
+                for(String file in DirectoryScanner.defaultExcludes) {
+                    DirectoryScanner.removeDefaultExclude(file)
+                }
             }
             jar.doLast {
                 DirectoryScanner.resetDefaultExcludes()
             }
-        }
+        })
 
-        project.tasks.create("sourcesJar", Jar) { Jar jar ->
+        project.tasks.create("sourcesJar", Jar, (Action) { Jar jar ->
             jar.from(commandsDir)
             if(profileYml.exists()) {
                 jar.from(profileYml)
@@ -157,12 +164,14 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.setGroup(BUILD_GROUP)
 
             jar.doFirst {
-                DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
+                for(String file in DirectoryScanner.defaultExcludes) {
+                    DirectoryScanner.removeDefaultExclude(file)
+                }
             }
             jar.doLast {
                 DirectoryScanner.resetDefaultExcludes()
             }
-        }
+        })
         project.tasks.findByName("assemble").dependsOn jarTask
 
     }

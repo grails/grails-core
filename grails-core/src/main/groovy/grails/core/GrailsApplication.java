@@ -20,6 +20,7 @@ import grails.util.Metadata;
 
 import java.util.Map;
 
+import org.grails.datastore.mapping.model.MappingContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
@@ -54,14 +55,17 @@ public interface GrailsApplication extends ApplicationContextAware {
     /**
      * The name of the class that provides configuration
      */
+    @Deprecated
     String CONFIG_CLASS = "Config";
     /**
      * The name of the DataSource class
      */
+    @Deprecated
     String DATA_SOURCE_CLASS = "DataSource";
     /**
      * The name of the project metadata file
      */
+    @Deprecated
     String PROJECT_META_FILE = "application.properties";
     /**
      * The name of the transaction manager bean
@@ -113,9 +117,21 @@ public interface GrailsApplication extends ApplicationContextAware {
     ApplicationContext getMainContext();
 
     /**
+     * @return The GORM {@link MappingContext}. Returns null if none present
+     */
+    MappingContext getMappingContext();
+
+    /**
      * Sets the main Spring context for this application.
      */
     void setMainContext(ApplicationContext context);
+
+    /**
+     * Configures the {@link MappingContext} for this application
+     *
+     * @param mappingContext The mapping context
+     */
+    void setMappingContext(MappingContext mappingContext);
 
     /**
      * Returns the Spring application context that contains this
@@ -132,12 +148,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      */
     @SuppressWarnings("rawtypes")
     Class getClassForName(String className);
-
-    /**
-     * Rebuilds the constraint definitions.
-     * TODO move this out? Why ORM dependencies in here?
-     */
-    void refreshConstraints();
 
     /**
      * This method will refresh the entire application

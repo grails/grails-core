@@ -16,6 +16,7 @@
 package grails.plugins;
 
 import grails.util.Environment;
+import grails.util.GrailsClassUtils;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
@@ -365,10 +366,66 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                     plugin = createGrailsPlugin(pluginClass);
                 }
                 plugin.setApplicationContext(applicationContext);
+
+                checkPluginCompatibility(plugin);
+
                 grailsCorePlugins.add(plugin);
             }
         }
         return grailsCorePlugins;
+    }
+
+    private void checkPluginCompatibility(GrailsPlugin plugin) {
+        final Object fieldValue = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin.getInstance(), "grailsVersion");
+        String pluginGrailsVersion = null;
+
+        if (fieldValue != null) {
+            pluginGrailsVersion = fieldValue.toString();
+        }
+
+        if (pluginGrailsVersion != null && !pluginGrailsVersion.contains("@")) {
+            final String appGrailsVersion = this.application.getMetadata().getGrailsVersion();
+            final Integer applicationGrailsVersion = this.convertVersionNumber(appGrailsVersion);
+            final Integer pluginMinGrailsVersion = this.convertVersionNumber(GrailsVersionUtils.getLowerVersion(pluginGrailsVersion));
+            final String pluginMaxGrailsVersionStr = GrailsVersionUtils.getUpperVersion(pluginGrailsVersion);
+
+            if (pluginMaxGrailsVersionStr.equals("*")) {    // Case 1: No Max version - expect forward compatibility
+                if (pluginMinGrailsVersion > applicationGrailsVersion) {
+                    LOG.warn("Plugin [" + plugin.getName() + ":" + plugin.getVersion() +
+                            "] may not be compatible with this application as the application Grails version is less" +
+                            " than the plugin requires. Plugin is compatible with Grails version " +
+                            pluginGrailsVersion + " but app is " + appGrailsVersion);
+                }
+            } else if (!pluginMaxGrailsVersionStr.equals("*")) {      // Case 2: Min and Max version - expect limited compatibility
+                final Integer pluginMaxGrailsVersion = this.convertVersionNumber(pluginMaxGrailsVersionStr);
+
+                if (pluginMinGrailsVersion > applicationGrailsVersion) {
+                    LOG.warn("Plugin [" + plugin.getName() + ":" + plugin.getVersion() +
+                            "] may not be compatible with this application as the application Grails version is less" +
+                            " than the plugin requires. Plugin is compatible with Grails version " +
+                            pluginGrailsVersion + " but app is " + appGrailsVersion);
+                }
+
+                if (pluginMaxGrailsVersion < applicationGrailsVersion) {
+                    LOG.warn("Plugin [" + plugin.getName() + ":" + plugin.getVersion() +
+                        "] may not be compatible with this application as the application Grails version is greater" +
+                        " than the plugins max specified. Plugin is compatible with Grails versions " +
+                        pluginGrailsVersion + " but app is " + appGrailsVersion);
+                }
+            } else {
+                LOG.error("grailsVersion not formatted as expected, unable to determine compatibility.");
+            }
+        }
+    }
+
+    private Integer convertVersionNumber(String version) {
+        Integer versionNumber = 0;
+        try {
+            versionNumber = Integer.valueOf(version.replaceAll("\\.|-|[A-Z]+", ""));
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+        return versionNumber;
     }
 
     private GrailsPlugin createBinaryGrailsPlugin(Class<?> pluginClass, BinaryGrailsPluginDescriptor binaryDescriptor) {
@@ -393,6 +450,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             if (isGrailsPlugin(pluginClass)) {
                 GrailsPlugin plugin = createGrailsPlugin(pluginClass, r);
                 //attemptPluginLoad(plugin);
+                checkPluginCompatibility(plugin);
                 grailsUserPlugins.add(plugin);
             } else {
                 LOG.warn("Class [" + pluginClass + "] not loaded as plug-in. Grails plug-ins must end with the convention 'GrailsPlugin'!");
@@ -403,6 +461,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             if (isGrailsPlugin(pluginClass)) {
                 GrailsPlugin plugin = createGrailsPlugin(pluginClass);
                 //attemptPluginLoad(plugin);
+                checkPluginCompatibility(plugin);
                 grailsUserPlugins.add(plugin);
             } else {
                 LOG.warn("Class [" + pluginClass + "] not loaded as plug-in. Grails plug-ins must end with the convention 'GrailsPlugin'!");
@@ -462,7 +521,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                 }
                 else {
                     failedPlugins.put(plugin.getName(), plugin);
-                    LOG.warn("WARNING: Plugin [" + plugin.getName() + "] cannot be loaded because its dependencies [" +
+                    LOG.error("ERROR: Plugin [" + plugin.getName() + "] cannot be loaded because its dependencies [" +
                             DefaultGroovyMethods.inspect(plugin.getDependencyNames()) + "] cannot be resolved");
                 }
             }

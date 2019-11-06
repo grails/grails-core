@@ -21,6 +21,7 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.env.MapPropertySource
@@ -63,7 +64,7 @@ class AtomDomainClassRendererSpec extends Specification {
             renderer.render(book, renderContext)
 
         then:"The resulting Atom is correct"
-            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>tag:localhost:1</id><link rel="self" href="http://localhost/books/1" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/books/1" hreflang="en" /><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><entry><title>org.grails.plugins.web.rest.render.hal.Author : 2</title><id>tag:localhost:2</id><link rel="self" href="http://localhost/authors/2" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/authors/2" hreflang="en" /><name>Stephen King</name></entry><authors><entry><title>org.grails.plugins.web.rest.render.hal.Author : 2</title><id>tag:localhost:2</id><link rel="self" href="http://localhost/authors/2" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/authors/2" hreflang="en" /><name>Stephen King</name></entry><entry><title>org.grails.plugins.web.rest.render.hal.Author : 3</title><id>tag:localhost:3</id><link rel="self" href="http://localhost/authors/3" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/authors/3" hreflang="en" /><name>King Stephen</name></entry></authors></feed>'
+            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>tag:localhost:1</id><link rel="self" href="http://localhost/books/1" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/books/1" hreflang="en" /><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><authors><entry><title>org.grails.plugins.web.rest.render.hal.Author : 2</title><id>tag:localhost:2</id><link rel="self" href="http://localhost/authors/2" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/authors/2" hreflang="en" /><name>Stephen King</name></entry><entry><title>org.grails.plugins.web.rest.render.hal.Author : 3</title><id>tag:localhost:3</id><link rel="self" href="http://localhost/authors/3" hreflang="en" type="application/atom+xml" /><link rel="alternate" href="http://localhost/authors/3" hreflang="en" /><name>King Stephen</name></entry></authors></feed>'
             response.contentType == GrailsWebUtil.getContentType(AtomRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
 
 
@@ -136,7 +137,7 @@ class AtomDomainClassRendererSpec extends Specification {
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
         def application = new DefaultGrailsApplication()
         application.config = testConfig
-        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, buildMimeTypes(application))
+        ctx.beanFactory.registerSingleton("mimeUtility", new DefaultMimeUtility(buildMimeTypes(application)))
 
         ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
         ctx.refresh()

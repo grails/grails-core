@@ -18,12 +18,12 @@ package grails.artefact.controller
 import groovy.transform.CompileDynamic
 import grails.artefact.Controller
 import grails.artefact.controller.support.ResponseRenderer
-import grails.core.GrailsDomainClassProperty
 import grails.core.support.proxy.ProxyHandler
 import grails.rest.Resource
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
+import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
@@ -105,7 +105,11 @@ trait RestResponder {
             if (statusValue instanceof Number) {
                 statusCode = statusValue.intValue()
             } else {
-                statusCode = statusValue.toString().toInteger()
+                if (statusValue instanceof HttpStatus) {
+                    statusCode = ((HttpStatus)statusValue).value()
+                } else {
+                    statusCode = statusValue.toString().toInteger()
+                }
             }
         }
         if (value == null) {
@@ -139,7 +143,7 @@ trait RestResponder {
             }
 
             if (mimeType && formats.contains(mimeType.extension)) {
-                Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
+                Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
 
 
                 if (errors && errors.hasErrors()) {

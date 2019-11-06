@@ -48,10 +48,11 @@ import java.util.*;
 public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
     public static final String VIEWS_PROPERTIES = "views.properties";
-    public static final String RELATIVE_VIEWS_PROPERTIES = "../gsp/views.properties";
+    public static final String RELATIVE_VIEWS_PROPERTIES = "gsp/views.properties";
     public static final char UNDERSCORE = '_';
     public static final String PROPERTIES_EXTENSION = ".properties";
     public static final String DEFAULT_PROPERTIES_ENCODING = "UTF-8";
+    public static final String PLUGIN_DESCRIPTOR_PATH = "META-INF/grails-plugin.xml";
 
     private final BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts = {};
@@ -121,7 +122,12 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
         if (viewsPropertiesResource == null || !viewsPropertiesResource.exists()) {
             try {
-                viewsPropertiesResource = descriptorResource.createRelative(RELATIVE_VIEWS_PROPERTIES);
+                String urlString = descriptorResource.getURL().toString();
+                if(urlString.endsWith(PLUGIN_DESCRIPTOR_PATH)) {
+                    urlString = urlString.substring(0, urlString.length() - PLUGIN_DESCRIPTOR_PATH.length());
+                    URL newUrl = new URL(urlString + RELATIVE_VIEWS_PROPERTIES);
+                    viewsPropertiesResource = new UrlResource(newUrl);
+                }
             } catch (IOException e) {
                 // ignore
             }
@@ -231,21 +237,18 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
                     // message bundles are locale specific. The more underscores the locale has the more specific the locale
                     // so we order by the number of underscores present so that the most specific appears
-                    Arrays.sort(resources, new Comparator<Resource>() {
-                        @Override
-                        public int compare(Resource o1, Resource o2) {
-                            String f1 = o1.getFilename();
-                            String f2 = o2.getFilename();
+                    Arrays.sort(resources, (o1, o2) -> {
+                        String f1 = o1.getFilename();
+                        String f2 = o2.getFilename();
 
-                            int firstUnderscoreCount = StringUtils.countOccurrencesOf(f1, "_");
-                            int secondUnderscoreCount = StringUtils.countOccurrencesOf(f2, "_");
+                        int firstUnderscoreCount = StringUtils.countOccurrencesOf(f1, "_");
+                        int secondUnderscoreCount = StringUtils.countOccurrencesOf(f2, "_");
 
-                            if(firstUnderscoreCount == secondUnderscoreCount) {
-                                return 0;
-                            }
-                            else {
-                                return firstUnderscoreCount > secondUnderscoreCount ?  1 : -1;
-                            }
+                        if(firstUnderscoreCount == secondUnderscoreCount) {
+                            return 0;
+                        }
+                        else {
+                            return firstUnderscoreCount > secondUnderscoreCount ?  1 : -1;
                         }
                     });
 

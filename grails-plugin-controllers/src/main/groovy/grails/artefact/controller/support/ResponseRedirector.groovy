@@ -15,7 +15,6 @@
  */
 package grails.artefact.controller.support
 
-import grails.core.GrailsDomainClassProperty
 import grails.util.CollectionUtils
 import grails.util.GrailsNameUtils
 import grails.web.api.WebAttributes
@@ -29,6 +28,7 @@ import grails.web.mvc.FlashScope
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.datastore.mapping.model.config.GormProperties
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestDataValueProcessor
@@ -86,7 +86,7 @@ trait ResponseRedirector implements WebAttributes {
             Class<?> objectClass = object.getClass()
             boolean isDomain = DomainClassArtefactHandler.isDomainClass(objectClass) && object instanceof GroovyObject
             if(isDomain) {
-                def id = ((GroovyObject)object).getProperty(GrailsDomainClassProperty.IDENTITY)
+                def id = ((GroovyObject)object).getProperty(GormProperties.IDENTITY)
                 if(id != null) {
                     def args = [:]
                     args.put LinkGenerator.ATTRIBUTE_RESOURCE, object

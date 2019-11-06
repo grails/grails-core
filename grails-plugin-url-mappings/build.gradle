@@ -1,9 +1,4 @@
 dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-
-    compile project(":grails-web"), project(":grails-plugin-controllers"), project(":grails-validation")
+    compile project(":grails-web"), project(":grails-plugin-controllers")
     provided "junit:junit:${junitVersion}"
 }

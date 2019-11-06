@@ -1,5 +1,6 @@
 package org.grails.config
 
+import grails.util.Environment
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
@@ -7,14 +8,19 @@ import spock.lang.Specification
 
 class YamlPropertySourceLoaderSpec extends Specification {
 
+    void setup() {
+        // reset environment
+        System.setProperty(Environment.KEY, "")
+    }
+
     def "ensure the config for environment is merged with single environment block"() {
         given: "A PropertySourcesConfig instance"
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource("foo-plugin-environments.yml").getFile())
 
         when:
-        def yamlPropertiesSource = propertySource.load('foo-plugin-environments.yml', resource, null, true, Arrays.asList("dataSource", "hibernate"))
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def yamlPropertiesSource = propertySource.load('foo-plugin-environments.yml', resource, Arrays.asList("dataSource", "hibernate"))
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         then: "The config to be accessible with the merged env values"
         config.one == 2
@@ -39,14 +45,10 @@ class YamlPropertySourceLoaderSpec extends Specification {
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource("foo-plugin-environments.yml").getFile())
 
         when:
-        def yamlPropertiesSource = propertySource.load('foo-plugin-environments.yml', resource, null, false, Arrays.asList("dataSource", "hibernate"))
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def yamlPropertiesSource = propertySource.load('foo-plugin-environments.yml', resource, Arrays.asList("dataSource", "hibernate"))
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         then: "These will not be navigable due to false parseFlatKeys"
-        !config.three.four
-        !config.empty.value
-
-        and: "The config to be accessible with the merged env values"
         config.one == 2
         config.two == 3
         !config.four.five
@@ -67,8 +69,8 @@ class YamlPropertySourceLoaderSpec extends Specification {
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource("foo-plugin-multiple-environments.yml").getFile())
 
         when:
-        def yamlPropertiesSource = propertySource.load('foo-plugin-multiple-environments.yml', resource, null, true, Arrays.asList("dataSource", "hibernate"))
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def yamlPropertiesSource = propertySource.load('foo-plugin-multiple-environments.yml', resource, Arrays.asList("dataSource", "hibernate"))
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         then: "The config to be accessible with the merged env values"
         config.one == -2

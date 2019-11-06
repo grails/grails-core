@@ -21,7 +21,6 @@ import org.grails.cli.profile.commands.factory.GroovyScriptCommandFactory
 import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import spock.lang.Specification
 
-
 /**
  * @author graemerocher
  */

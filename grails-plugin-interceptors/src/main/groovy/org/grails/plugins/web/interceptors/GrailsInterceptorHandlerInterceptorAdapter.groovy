@@ -22,6 +22,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.grails.datastore.mapping.services.ServiceRegistry
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,11 +43,15 @@ import javax.servlet.http.HttpServletResponse
 class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     private static final Log LOG = LogFactory.getLog(Interceptor)
+    private static final String ATTRIBUTE_MATCHED_INTERCEPTORS = "org.grails.web.MATCHED_INTERCEPTORS"
 
     static final String INTERCEPTOR_RENDERED_VIEW = 'interceptor_rendered_view'
 
     protected List<Interceptor> interceptors = []
     protected List<Interceptor> reverseInterceptors = []
+
+    @Autowired(required = false)
+    ServiceRegistry[] serviceRegistry // inject the service registry to ensure data services are wired up
 
     @Autowired(required = false)
     @CompileDynamic
@@ -63,9 +68,12 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     @Override
     boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if(interceptors) {
+        if(!interceptors.isEmpty()) {
+            List<Interceptor> matchInterceptors = []
+            request.setAttribute(ATTRIBUTE_MATCHED_INTERCEPTORS, matchInterceptors)
             for(i in interceptors) {
-                if(i.doesMatch()) {
+                if(i.doesMatch(request)) {
+                    matchInterceptors.add(i)
                     if( !i.before() ) {
                         return false
                     }
@@ -77,23 +85,25 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     @Override
     void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        if(reverseInterceptors) {
+        Object matchedInterceptorsObject = request.getAttribute(ATTRIBUTE_MATCHED_INTERCEPTORS)
+        if(matchedInterceptorsObject) {
             if (modelAndView != null) {
                 request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
             }
-            for(i in reverseInterceptors) {
-                if(i.doesMatch()) {
-                    if( !i.after() ) {
-                        if(request.getAttribute(INTERCEPTOR_RENDERED_VIEW)) {
-                            ModelAndView interceptorsModelAndView = i.modelAndView
-                            modelAndView.viewName = interceptorsModelAndView.viewName
-                            modelAndView.model.clear()
-                            modelAndView.model.putAll(interceptorsModelAndView.model)
-                        } else {
-                            modelAndView?.clear()
-                        }
-                        break
+
+            List<Interceptor> reversedInterceptors = ((List<Interceptor>) matchedInterceptorsObject).reverse()
+            request.setAttribute(ATTRIBUTE_MATCHED_INTERCEPTORS, reversedInterceptors)
+            for(i in reversedInterceptors) {
+                if( !i.after() ) {
+                    if(request.getAttribute(INTERCEPTOR_RENDERED_VIEW)) {
+                        ModelAndView interceptorsModelAndView = i.modelAndView
+                        modelAndView.viewName = interceptorsModelAndView.viewName
+                        modelAndView.model.clear()
+                        modelAndView.model.putAll(interceptorsModelAndView.model)
+                    } else {
+                        modelAndView?.clear()
                     }
+                    break
                 }
             }
         }
@@ -106,11 +116,10 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
             ex = (Exception)request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE)
         }
         request.setAttribute(Matcher.THROWABLE, ex)
-        if(reverseInterceptors) {
-            for(i in reverseInterceptors) {
-                if(i.doesMatch(request)) {
-                    i.afterView()
-                }
+        Object matchedInterceptorsObject = request.getAttribute(ATTRIBUTE_MATCHED_INTERCEPTORS)
+        if(matchedInterceptorsObject) {
+            for(i in ((List<Interceptor>) matchedInterceptorsObject)) {
+                i.afterView()
             }
         }
     }

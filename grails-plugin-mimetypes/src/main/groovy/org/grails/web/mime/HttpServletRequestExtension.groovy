@@ -17,7 +17,10 @@ package org.grails.web.mime
 
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
+import grails.web.mime.MimeUtility
+import groovy.transform.CompileStatic
 import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 import javax.servlet.http.HttpServletRequest
@@ -33,6 +36,7 @@ import org.grails.plugins.web.api.MimeTypesApiSupport
  * @since 3.0
  * 
  */
+@CompileStatic
 class HttpServletRequestExtension {
     
     protected static MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
@@ -52,7 +56,7 @@ class HttpServletRequestExtension {
     static String getFormat(HttpServletRequest request) {
         def result = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT)
         if (!result) {
-            result = request.getMimeTypes()[0].extension
+            result = getMimeTypes(request)[0].extension
             request.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, result)
         }
         result
@@ -67,9 +71,10 @@ class HttpServletRequestExtension {
     static MimeType[] getMimeTypes(HttpServletRequest request) {
         MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
         if (!result) {
-            def context = WebApplicationContextUtils.getRequiredWebApplicationContext(request.servletContext)
-            def parser = new DefaultAcceptHeaderParser((MimeType[])context.getBean(MimeType.BEAN_NAME))
-            def header = request.contentType
+            WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(request.servletContext)
+            MimeType[] mimeTypes = context != null ? context.getBean(MimeUtility).getKnownMimeTypes() as MimeType[] : MimeType.getConfiguredMimeTypes()
+            def parser = new DefaultAcceptHeaderParser(mimeTypes)
+            String header = request.contentType
             if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
             result = parser.parse(header, header ? new MimeType(header) : MimeType.HTML)
 

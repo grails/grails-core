@@ -33,15 +33,17 @@ public class HyphenatedUrlConverter implements UrlConverter {
 
         StringBuilder builder = new StringBuilder();
         char[] charArray = propertyOrClassName.toCharArray();
+        char lastChar = ' ';
         for (char c : charArray) {
             if (Character.isUpperCase(c)) {
-                if (builder.length() > 0) {
+                if (builder.length() > 0 && lastChar != '.') {
                     builder.append('-');
                 }
                 builder.append(Character.toLowerCase(c));
             } else {
                 builder.append(c);
             }
+            lastChar = c;
         }
         return builder.toString();
     }

@@ -42,8 +42,26 @@ public class GrailsConfigUtils {
      * @param webContext The WebApplicationContext instance
      * @param servletContext The ServletContext instance
      */
+    @Deprecated
     public static void executeGrailsBootstraps(GrailsApplication application, WebApplicationContext webContext,
-            ServletContext servletContext) {
+                                               ServletContext servletContext) {
+        executeGrailsBootstraps(application, webContext, servletContext, null);
+    }
+    /**
+     * Executes Grails bootstrap classes
+     *
+     * @param application The Grails ApplicationContext instance
+     * @param webContext The WebApplicationContext instance
+     * @param servletContext The ServletContext instance
+     */
+    public static void executeGrailsBootstraps(GrailsApplication application, WebApplicationContext webContext,
+            ServletContext servletContext, GrailsPluginManager grailsPluginManager) {
+        configureServletContextAttributes(
+                servletContext,
+                application,
+                grailsPluginManager,
+                webContext
+        );
 
         PersistenceContextInterceptor interceptor = null;
         String[] beanNames = webContext.getBeanNamesForType(PersistenceContextInterceptor.class);

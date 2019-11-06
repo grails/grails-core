@@ -49,7 +49,7 @@ public class Holder<T> {
         }
 
 //        t = instances.get(System.identityHashCode(getClass().getClassLoader()));
-        if (t == null && !mappedOnly) {
+        if (!mappedOnly) {
             t = singleton;
         }
         return t;
@@ -75,6 +75,6 @@ public class Holder<T> {
     }
 
     private int getClassLoaderId() {
-        return System.identityHashCode(Thread.currentThread().getContextClassLoader());
+        return Environment.isWarDeployed() ? System.identityHashCode(Thread.currentThread().getContextClassLoader()) : System.identityHashCode(getClass().getClassLoader());
     }
 }

@@ -1,2 +1,0 @@
-## grails-web-sitemesh
-

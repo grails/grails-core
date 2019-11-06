@@ -18,6 +18,7 @@ package org.grails.plugins.codecs;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.grails.commons.CodecArtefactHandler;
 import grails.core.GrailsApplication;
@@ -36,6 +37,15 @@ public class DefaultCodecLookup extends BasicCodecLookup implements GrailsApplic
     protected ApplicationContext applicationContext;
     protected GrailsApplication grailsApplication;
 
+    public DefaultCodecLookup(GrailsApplication grailsApplication) {
+        Objects.requireNonNull(grailsApplication);
+        this.grailsApplication = grailsApplication;
+        this.applicationContext = grailsApplication.getMainContext();
+    }
+
+    public DefaultCodecLookup() {
+    }
+
     protected void registerCodecs() {
         List<GrailsClass> codecs = Arrays.asList(grailsApplication.getArtefacts(CodecArtefactHandler.TYPE));
         Collections.sort(codecs, OrderComparator.INSTANCE);
@@ -51,6 +61,8 @@ public class DefaultCodecLookup extends BasicCodecLookup implements GrailsApplic
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
+        Objects.requireNonNull(grailsApplication);
         this.grailsApplication = grailsApplication;
+        this.applicationContext = grailsApplication.getMainContext();
     }
 }

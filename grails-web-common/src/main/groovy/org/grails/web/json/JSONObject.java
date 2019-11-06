@@ -479,6 +479,21 @@ public class JSONObject implements JSONElement, Map {
         return "new Date(" + d.getTime() + ")";
     }
 
+    static public String collectionToString(Collection c) {
+        StringBuilder sb = new StringBuilder("[");
+        boolean first = true;
+        Iterator iterator = c.iterator();
+        while(iterator.hasNext()) {
+            if (!first) {
+                sb.append(',');
+            }
+            sb.append(valueToString(iterator.next()));
+            first = false;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
 
     /**
      * Get an optional value associated with a key.
@@ -1031,9 +1046,11 @@ public class JSONObject implements JSONElement, Map {
         if (value instanceof Date) {
             return dateToString((Date) value);
         }
-        if (value instanceof Boolean || value instanceof JSONObject ||
-                value instanceof JSONArray) {
+        if (value instanceof Boolean || value instanceof JSONObject) {
             return value.toString();
+        }
+        if (value instanceof Collection) {
+            return collectionToString((Collection) value);
         }
         return quote(value.toString());
     }

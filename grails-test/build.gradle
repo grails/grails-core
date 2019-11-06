@@ -21,8 +21,9 @@ dependencies {
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
 
-    provided project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
+    provided project(":grails-plugin-mimetypes")
     provided project(":grails-web")
+    provided "org.grails.plugins:converters:$legacyConvertersVersion"
 
     // command line requirements
     provided  "jline:jline:$jlineVersion"

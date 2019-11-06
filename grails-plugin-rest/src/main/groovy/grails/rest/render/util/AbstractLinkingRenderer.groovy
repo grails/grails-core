@@ -22,11 +22,8 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.util.Environment
 import grails.util.GrailsWebUtil
-import groovy.json.StreamingJsonBuilder
-import groovy.json.StreamingJsonBuilder.StreamingJsonDelegate
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.grails.core.util.ClassPropertyFetcher
 import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.EntityProxyHandler

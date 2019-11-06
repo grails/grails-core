@@ -42,6 +42,7 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.MockHibernateProxyHandler
 import org.springframework.context.support.StaticMessageSource
@@ -96,8 +97,8 @@ class HalJsonRendererSpec extends Specification{
             "type": "application/hal+json"
         }
     },
-    "name": "MacBook",
     "numberInStock": 10,
+    "name": "MacBook",
     "_embedded": {
         "category": {
             "_links": {
@@ -152,8 +153,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "MacBook",
                 "numberInStock": 10,
+                "name": "MacBook",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -174,8 +175,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "iMac",
                 "numberInStock": 42,
+                "name": "iMac",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -234,8 +235,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "MacBook",
                 "numberInStock": 10,
+                "name": "MacBook",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -256,8 +257,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "iMac",
                 "numberInStock": 42,
+                "name": "iMac",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -726,7 +727,7 @@ class HalJsonRendererSpec extends Specification{
 
         then:"The resulting HAL is correct"
         response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-        response.contentAsString =='''{"_links":{"self":{"href":"http://localhost/products","hreflang":"en","type":"application/hal+json"}},"name":"MacBook","numberInStock":10,"_embedded":{}}'''
+        response.contentAsString =='''{"_links":{"self":{"href":"http://localhost/products","hreflang":"en","type":"application/hal+json"}},"numberInStock":10,"name":"MacBook","_embedded":{}}'''
     }
 
     @Issue('https://github.com/grails/grails-core/issues/10293')
@@ -914,7 +915,7 @@ class HalJsonRendererSpec extends Specification{
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
         def application = new DefaultGrailsApplication()
         application.config = testConfig
-        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, buildMimeTypes(application))
+        ctx.beanFactory.registerSingleton("mimeUtility", new DefaultMimeUtility(buildMimeTypes(application)))
 
         ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
         ctx.refresh()

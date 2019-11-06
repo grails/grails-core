@@ -15,8 +15,6 @@
  */
 package org.grails.plugins
 
-import grails.config.Config
-import grails.config.ConfigProperties
 import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.BuildSettings
@@ -38,12 +36,8 @@ import org.grails.dev.support.DevelopmentShutdownHook
 import org.grails.beans.support.PropertiesEditor
 import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.beans.factory.config.YamlProcessor
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
-import org.springframework.boot.yaml.SpringProfileDocumentMatcher
-import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.annotation.ConfigurationClassPostProcessor
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.io.Resource
@@ -63,6 +57,8 @@ class CoreGrailsPlugin extends Plugin {
                                 "file:./grails-app/conf/application.groovy",
                                 "file:./grails-app/conf/application.yml"]
 
+    private static final SPRING_PROXY_TARGET_CLASS_CONFIG = "spring.aop.proxy-target-class"
+
     @Override
     Closure doWithSpring() { {->
 
@@ -81,14 +77,20 @@ class CoreGrailsPlugin extends Plugin {
         propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer) {
             placeholderPrefix = placeHolderPrefix
         }
-        grailsConfigProperties(ConfigProperties, config)
 
+        Class proxyCreatorClazz = null
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
+            proxyCreatorClazz = GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+        } else {
+            proxyCreatorClazz = GroovyAwareInfrastructureAdvisorAutoProxyCreator
         }
-        else {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+
+        Boolean isProxyTargetClass = config.getProperty(SPRING_PROXY_TARGET_CLASS_CONFIG, Boolean)
+        "org.springframework.aop.config.internalAutoProxyCreator"(proxyCreatorClazz) {
+            if (isProxyTargetClass != null) {
+                proxyTargetClass = isProxyTargetClass
+            }
         }
 
         def packagesToScan = []
@@ -99,24 +101,13 @@ class CoreGrailsPlugin extends Plugin {
         }
 
 
-        // Allow the use of Spring annotated components
-        if(!applicationContext?.containsBean(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
-            xmlns context:"http://www.springframework.org/schema/context"
-            context.'annotation-config'()
-        }
-
         if (packagesToScan) {
             xmlns grailsContext:"http://grails.org/schema/context"
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
 
-        grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
+        grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
         pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
-
-        classLoader(MethodInvokingFactoryBean) {
-            targetObject = ref("grailsApplication")
-            targetMethod = "getClassLoader"
-        }
 
         // add shutdown hook if not running in war deployed mode
         final warDeployed = Environment.isWarDeployed()
@@ -140,38 +131,6 @@ class CoreGrailsPlugin extends Plugin {
     }}
 
     @Override
-    void doWithDynamicMethods() {
-        MetaClassRegistry registry = GroovySystem.metaClassRegistry
-
-        def metaClass = registry.getMetaClass(Class)
-        if (!(metaClass instanceof ExpandoMetaClass)) {
-            registry.removeMetaClass(Class)
-            def emc = new ExpandoMetaClass(Class, false, true)
-            emc.initialize()
-            registry.setMetaClass(Class, emc)
-
-            metaClass = emc
-        }
-
-        metaClass.getMetaClass = { ->
-            def mc = registry.getMetaClass(delegate)
-            if (mc instanceof ExpandoMetaClass) {
-                return mc
-            }
-
-            registry.removeMetaClass(delegate)
-            if (registry.metaClassCreationHandler instanceof ExpandoMetaClassCreationHandle) {
-                return registry.getMetaClass(delegate)
-            }
-
-            def emc = new ExpandoMetaClass(delegate, false, true)
-            emc.initialize()
-            registry.setMetaClass(delegate, emc)
-            return emc
-        }
-    }
-
-    @Override
     @CompileStatic
     void onChange(Map<String, Object> event) {
         GenericApplicationContext applicationContext = (GenericApplicationContext)this.applicationContext
@@ -184,16 +143,6 @@ class CoreGrailsPlugin extends Plugin {
                     applicationContext.registerBeanDefinition(beanName, xmlBeans.getBeanDefinition(beanName))
                 }
             }
-            else if(res.filename.endsWith('.yml')) {
-                def processor = new YmlConfigModifier(grailsApplication.config)
-                processor.matchDefault = true
-                processor.setResources(res)
-                processor.modifyConfig()
-                processor.matchDefault = false
-                processor.setDocumentMatchers(new SpringProfileDocumentMatcher(Environment.current.name))
-                grailsApplication.configChanged()
-                pluginManager.informPluginsOfConfigChange()
-            }
         }
         else if (event.source instanceof Class) {
             def clazz = (Class) event.source
@@ -205,19 +154,4 @@ class CoreGrailsPlugin extends Plugin {
         }
     }
 
-    @CompileStatic
-    static class YmlConfigModifier extends YamlProcessor {
-        Config config
-
-        YmlConfigModifier(Config config) {
-            this.config = config
-        }
-
-        void modifyConfig() {
-            process { Properties properties, Map<String, Object> map ->
-                config.merge(map)
-                config.merge((Map<String,Object>)properties)
-            }
-        }
-    }
 }

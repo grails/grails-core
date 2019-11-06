@@ -1,12 +1,11 @@
 package org.grails.web.controllers
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(SubController)
-class ControllerMetaProgrammingSpec extends Specification {
+class ControllerMetaProgrammingSpec extends Specification implements ControllerUnitTest<SubController> {
 
     def setupSpec() {
         BaseController.metaClass.someHelperMethod = {->

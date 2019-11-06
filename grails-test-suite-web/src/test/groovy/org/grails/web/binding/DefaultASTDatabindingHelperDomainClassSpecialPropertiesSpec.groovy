@@ -4,15 +4,14 @@ import grails.persistence.Entity
 import spock.lang.Issue
 import spock.lang.Specification
 
-
 class DefaultASTDatabindingHelperDomainClassSpecialPropertiesSpec extends
         Specification {
 
     @Issue('GRAILS-11173')
     void 'Test binding to special properties in a domain class'() {
         when:
-        def now = new Date()
-        def obj = new SomeDomainClass(dateCreated: now, lastUpdated: now)
+        Date now = new Date()
+        SomeDomainClass obj = new SomeDomainClass(dateCreated: now, lastUpdated: now)
         
         then:
         obj.dateCreated == null

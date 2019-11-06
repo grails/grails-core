@@ -1,5 +1,6 @@
 package org.grails.web.json;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -403,18 +404,27 @@ public class JSONTokener {
                     }
                 }
             }
+
+            BigDecimal number;
             try {
-                return Integer.valueOf(s);
+                number = new BigDecimal(s);
             } catch (Exception e) {
+                return s;
+            }
+
+            if (number.scale() == 0) {
                 try {
-                    return Long.valueOf(s);
-                } catch (Exception f) {
+                    return number.intValueExact();
+                } catch (Exception e) {
                     try {
-                        return Double.valueOf(s);
-                    } catch (Exception g) {
-                        return s;
+                        return number.longValueExact();
+                    } catch (Exception f) {
+                        return number.toBigInteger();
                     }
                 }
+            } else {
+                double doubleValue = number.doubleValue();
+                return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
             }
         }
         return s;
@@ -467,7 +477,8 @@ public class JSONTokener {
      * @return A JSONException object, suitable for throwing
      */
     public JSONException syntaxError(String message) {
-        return new JSONException(message + toString());
+
+        return new JSONException(message + toRegexSafeString());
     }
 
 
@@ -480,4 +491,26 @@ public class JSONTokener {
     public String toString() {
         return " at character " + this.myIndex + " of " + this.mySource;
     }
+
+    /**
+     * Make a regex safe printable string of this JSONTokener.
+     *
+     * @return " at character [this.myIndex] of [this.mySource]"
+     */
+    public String toRegexSafeString() {
+        int endIndex = mySource.length();
+        boolean appendDots = false;
+        if (endIndex > 20) {
+            // only show first 20 characters of source to prevent reDOS attacks, especially in Java 8 regexp engine
+            // see https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS for more info
+            endIndex = 19;
+            appendDots = true;
+        }
+        StringBuffer output = new StringBuffer(" at character " + this.myIndex + " of " + this.mySource.substring(0, endIndex));
+        if (appendDots) {
+            output.append("...");
+        }
+        return Matcher.quoteReplacement(output.toString());
+    }
+
 }

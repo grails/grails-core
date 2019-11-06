@@ -36,6 +36,7 @@ class GrailsDependencyVersions implements DependencyManagement {
     protected Map<String, Dependency> groupAndArtifactToDependency = [:]
     protected Map<String, String> artifactToGroupAndArtifact = [:]
     protected List<Dependency> dependencies = []
+    protected Map<String, String> versionProperties = [:]
 
     GrailsDependencyVersions() {
         this(getDefaultEngine())
@@ -58,7 +59,7 @@ class GrailsDependencyVersions implements DependencyManagement {
         }
     }
 
-    GrapeEngine getDefaultEngine() {
+    static GrapeEngine getDefaultEngine() {
         def grape = Grape.getInstance()
         grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"https://repo.grails.org/grails/core"])
         grape
@@ -69,6 +70,7 @@ class GrailsDependencyVersions implements DependencyManagement {
         pom.dependencyManagement.dependencies.dependency.each { dep ->
             addDependency(dep.groupId.text(), dep.artifactId.text(), dep.version.text())
         }
+        versionProperties = pom.properties.'*'.collectEntries { [(it.name()): it.text()] }
     }
 
     protected void addDependency(String group, String artifactId, String version) {
@@ -89,9 +91,13 @@ class GrailsDependencyVersions implements DependencyManagement {
         return dependencies
     }
 
+    Map<String, String> getVersionProperties() {
+        return versionProperties
+    }
+
     @Override
     String getSpringBootVersion() {
-        return find("spring-boot").getVersion();
+        return find("spring-boot").getVersion()
     }
 
     @Override

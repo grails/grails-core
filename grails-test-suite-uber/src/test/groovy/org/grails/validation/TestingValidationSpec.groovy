@@ -1,11 +1,10 @@
 package org.grails.validation
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 
-@Mock(Person)
-class TestingValidationSpec extends Specification {
+class TestingValidationSpec extends Specification implements DomainUnitTest<Person> {
 
     void 'Test validating a domain object which has binding errors associated with it'() {
         given:

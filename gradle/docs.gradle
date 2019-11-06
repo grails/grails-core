@@ -77,8 +77,13 @@ task javadoc(type:Javadoc) {
 task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
     def subs = subprojects.findAll {
         it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' && !it.name.startsWith("grails-test-suite") }
-    classpath = files(subs.configurations.compile)
-    groovyClasspath = files(subs.configurations.compile)
+    def groovydocClasspath = files(subs.configurations.compile)
+    // exclude problematic jar file from javadoc classpath
+    // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+    groovydocClasspath -= groovydocClasspath.filter { it.name == 'javaee-web-api-6.0.jar' }
+
+    classpath = groovydocClasspath
+    groovyClasspath = groovydocClasspath
     destinationDir = file("$docs.destinationDir/api")
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
@@ -93,12 +98,14 @@ task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
     }
 }
 
-task fetchGrailsDocsSource << {
-    ant {
-        mkdir dir: buildDir
-        get src:"http://nodeload.github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
-        unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
-            mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
+task fetchGrailsDocsSource {
+    doLast {
+        ant {
+            mkdir dir: buildDir
+            get src:"http://nodeload.github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
+            unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
+                mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
+            }
         }
     }
 }

@@ -15,9 +15,6 @@
  */
 package org.grails.core.artefact;
 
-import grails.core.GrailsClass;
-import grails.core.GrailsDomainClass;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,14 +47,5 @@ public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHan
 
     public static boolean isJPADomainClass(Class<?> clazz) {
         return clazz != null && clazz.getAnnotation(Entity.class) != null;
-    }
-
-    @Override
-    public GrailsClass newArtefactClass(@SuppressWarnings("rawtypes") Class artefactClass) {
-        GrailsDomainClass grailsClass = (GrailsDomainClass) super.newArtefactClass(artefactClass);
-        if (isJPADomainClass(artefactClass)) {
-            grailsClass.setMappingStrategy(JPA_MAPPING_STRATEGY);
-        }
-        return grailsClass;
     }
 }

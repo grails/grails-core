@@ -4,12 +4,18 @@ import grails.util.TypeConvertingMap
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.cors.CorsConfiguration
 import spock.lang.Specification
-import static org.springframework.web.bind.annotation.CrossOrigin.*
 
 /**
  * Created by Jim on 9/17/2016.
  */
 class GrailsCorsConfigurationSpec extends Specification {
+
+    static List<String> DEFAULT_ORIGINS = ["*"]
+    static List<String> DEFAULT_ALLOWED_HEADERS = ["*"]
+    static List<String> DEFAULT_METHODS = ["*"]
+    static List<String> DEFAULT_EXPOSED_HEADERS = null
+    static boolean DEFAULT_ALLOW_CREDENTIALS = true
+    static long DEFAULT_MAX_AGE = 1800L
 
     void "test cors is disabled by default"() {
         expect:
@@ -18,24 +24,31 @@ class GrailsCorsConfigurationSpec extends Specification {
 
     void "test default configuration is as expected"() {
         given:
-        def config = new GrailsCorsConfiguration()
+        def config = new GrailsCorsConfiguration().applyPermitDefaultValues()
 
         expect:
-        config.allowedOrigins == DEFAULT_ORIGINS.toList()
-        config.allowedHeaders == DEFAULT_ALLOWED_HEADERS.toList()
-        config.allowedMethods == ["*"]
-        config.exposedHeaders == null
-        config.allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config.allowedOrigins == DEFAULT_ORIGINS
+        config.allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config.allowedMethods == DEFAULT_METHODS
+        config.exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config.allowCredentials == null
         config.maxAge == DEFAULT_MAX_AGE
     }
 
     void "test default path is /**"() {
         given:
         Map<String, CorsConfiguration> config = new GrailsCorsConfiguration(enabled: true).corsConfigurations
+        CorsConfiguration defaultConfig = config.get('/**')
 
         expect:
         config.size() == 1
         config.containsKey("/**")
+        defaultConfig.allowedOrigins == DEFAULT_ORIGINS
+        defaultConfig.allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        defaultConfig.allowedMethods == DEFAULT_METHODS
+        defaultConfig.exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        defaultConfig.allowCredentials == null
+        defaultConfig.maxAge == DEFAULT_MAX_AGE
     }
 
     void "test config is empty when not enabled"() {
@@ -49,7 +62,7 @@ class GrailsCorsConfigurationSpec extends Specification {
     Map<String, CorsConfiguration> buildConfig(Map mappings) {
         def grailsCorsConf = new GrailsCorsConfiguration(enabled: true)
         mappings.each {
-            it.value = new TypeConvertingMap(it.value)
+            it.value = it.value
         }
         grailsCorsConf.mappings = mappings
         grailsCorsConf.corsConfigurations
@@ -68,7 +81,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         grailsCorsConf.exposedHeaders = ["Content-Length"]
         grailsCorsConf.allowCredentials = false
         grailsCorsConf.maxAge = 1L
-        grailsCorsConf.mappings = ["/foo": new TypeConvertingMap([allowedOrigins: ["bar"]])]
+        grailsCorsConf.mappings = ["/foo": [allowedOrigins: ["bar"]]]
         config = grailsCorsConf.corsConfigurations
 
         then: //Config is inherited from global
@@ -85,16 +98,17 @@ class GrailsCorsConfigurationSpec extends Specification {
         given:
         Map<String, CorsConfiguration> config
 
+
         when:
         config = buildConfig(["/foo": [allowedOrigins: ["bar"]]])
 
         then: //The global mapping is not created. Provided values override defaults
         config.size() == 1
         config["/foo"].allowedOrigins == ["bar"]
-        config["/foo"].allowedMethods == ["*"]
-        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS.toList()
-        config["/foo"].exposedHeaders == null
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowedMethods == DEFAULT_METHODS
+        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -102,11 +116,11 @@ class GrailsCorsConfigurationSpec extends Specification {
 
         then: //The global mapping is not created. Provided values override defaults
         config.size() == 1
-        config["/foo"].allowedOrigins == DEFAULT_ORIGINS.toList()
+        config["/foo"].allowedOrigins == DEFAULT_ORIGINS
         config["/foo"].allowedMethods == ["GET", "PUT"]
-        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS.toList()
-        config["/foo"].exposedHeaders == null
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -114,11 +128,11 @@ class GrailsCorsConfigurationSpec extends Specification {
 
         then: //The global mapping is not created. Provided values override defaults
         config.size() == 1
-        config["/foo"].allowedOrigins == DEFAULT_ORIGINS.toList()
-        config["/foo"].allowedMethods == ["*"]
+        config["/foo"].allowedOrigins == DEFAULT_ORIGINS
+        config["/foo"].allowedMethods == DEFAULT_METHODS
         config["/foo"].allowedHeaders == ["Content-Type"]
-        config["/foo"].exposedHeaders == null
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -126,11 +140,11 @@ class GrailsCorsConfigurationSpec extends Specification {
 
         then: //The global mapping is not created. Provided values override defaults
         config.size() == 1
-        config["/foo"].allowedOrigins == DEFAULT_ORIGINS.toList()
-        config["/foo"].allowedMethods == ["*"]
-        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS.toList()
+        config["/foo"].allowedOrigins == DEFAULT_ORIGINS
+        config["/foo"].allowedMethods == DEFAULT_METHODS
+        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
         config["/foo"].exposedHeaders == ["Content-Type"]
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -138,10 +152,10 @@ class GrailsCorsConfigurationSpec extends Specification {
 
         then: //The global mapping is not created. Provided values override defaults
         config.size() == 1
-        config["/foo"].allowedOrigins == DEFAULT_ORIGINS.toList()
-        config["/foo"].allowedMethods == ["*"]
-        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS.toList()
-        config["/foo"].exposedHeaders == null
+        config["/foo"].allowedOrigins == DEFAULT_ORIGINS
+        config["/foo"].allowedMethods == DEFAULT_METHODS
+        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
         config["/foo"].allowCredentials == false
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
@@ -150,11 +164,11 @@ class GrailsCorsConfigurationSpec extends Specification {
 
         then: //The global mapping is not created. Provided values override defaults
         config.size() == 1
-        config["/foo"].allowedOrigins == DEFAULT_ORIGINS.toList()
-        config["/foo"].allowedMethods == ["*"]
-        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS.toList()
-        config["/foo"].exposedHeaders == null
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowedOrigins == DEFAULT_ORIGINS
+        config["/foo"].allowedMethods == DEFAULT_METHODS
+        config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == 3600L
     }
 

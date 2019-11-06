@@ -283,7 +283,8 @@ class DocPublisher {
         def fullToc = new StringBuilder()
 
         def pathToRoot = ".."
-        def vars = [
+        Map vars = new LinkedHashMap(engineProperties)
+        vars.putAll(
             encoding: encoding,
             title: title,
             docTitle: title,
@@ -304,7 +305,7 @@ class DocPublisher {
             next: null,
             legacyLinks: legacyLinks,
             sourceRepo: sourceRepo,
-        ]
+        )
 
         if(engine instanceof AsciiDocEngine) {
             // pass attributes to asciidoc
@@ -445,6 +446,7 @@ class DocPublisher {
         context.set(DocEngine.CONTEXT_PATH, path)
 
         def varsCopy = [*:vars]
+        varsCopy.putAll(engineProperties)
         varsCopy.name = section.name
         varsCopy.title = section.title
         varsCopy.path = path
@@ -516,7 +518,15 @@ class DocPublisher {
             ant = new AntBuilder()
         }
         def metaProps = DocPublisher.metaClass.properties
-        def props = engineProperties ?: new Properties()
+        Properties props
+        if(engineProperties != null) {
+            props = engineProperties
+        }
+        else {
+            props = new Properties()
+            engineProperties = props
+        }
+
 
         if(propertiesFile?.exists()) {
             if(propertiesFile.name.endsWith('.properties')) {

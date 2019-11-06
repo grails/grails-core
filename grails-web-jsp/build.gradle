@@ -1,8 +1,0 @@
-dependencies {
-    compile project(":grails-web-common")
-    compile project(":grails-web-gsp")
-
-    // Required for JSP support
-    provided 'javax.servlet.jsp:jsp-api:2.1'
-
-}

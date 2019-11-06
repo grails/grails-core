@@ -15,7 +15,9 @@
  */
 package org.grails.web.mapping
 
-import grails.validation.ConstrainedProperty
+import grails.gorm.validation.Constrained
+import grails.gorm.validation.ConstrainedProperty
+import groovy.transform.PackageScope
 
 
 /**
@@ -24,6 +26,7 @@ import grails.validation.ConstrainedProperty
  * @since 2.3.5
  *
  */
+@PackageScope
 class MetaMappingInfo {
     def namespace
     def controller

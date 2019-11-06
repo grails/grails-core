@@ -24,6 +24,8 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaProperty;
 import groovy.util.ConfigObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -60,6 +62,7 @@ import java.util.TreeSet;
  */
 public class GrailsClassUtils {
 
+    private static final Log LOG = LogFactory.getLog(GrailsClassUtils.class);
     public static final Map<Class<?>, Class<?>> PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap<Class<?>, Class<?>>();
 
     /**
@@ -322,8 +325,11 @@ public class GrailsClassUtils {
         }
 
         Set<PropertyDescriptor> properties = new HashSet<PropertyDescriptor>();
+        PropertyDescriptor descriptor = null;
         try {
-            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(clazz)) {
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
+            for (int i = 0; i < descriptors.length; i++) {
+                descriptor = descriptors[i];
                 Class<?> currentPropertyType = descriptor.getPropertyType();
                 if (isTypeInstanceOfPropertyType(propertyType, currentPropertyType)) {
                     properties.add(descriptor);
@@ -331,6 +337,11 @@ public class GrailsClassUtils {
             }
         }
         catch (Exception e) {
+            if(descriptor == null) {
+                LOG.error(String.format("Got exception while checking property descriptors for class %s", clazz.getName()), e);
+            } else {
+                LOG.error(String.format("Got exception while checking PropertyDescriptor.propertyType for field %s.%s", clazz.getName(), descriptor.getName()), e);
+            }
             // if there are any errors in instantiating just return null for the moment
             return new PropertyDescriptor[0];
         }
@@ -352,14 +363,23 @@ public class GrailsClassUtils {
         if (clazz == null || propertySuperType == null) return new PropertyDescriptor[0];
 
         Set<PropertyDescriptor> properties = new HashSet<PropertyDescriptor>();
+        PropertyDescriptor descriptor = null;
         try {
-            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(clazz)) {
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
+            for (int i = 0; i < descriptors.length; i++) {
+                descriptor = descriptors[i];
+                Class<?> currentPropertyType = descriptor.getPropertyType();
                 if (propertySuperType.isAssignableFrom(descriptor.getPropertyType())) {
                     properties.add(descriptor);
                 }
             }
         }
         catch (Exception e) {
+            if(descriptor == null) {
+                LOG.error(String.format("Got exception while checking property descriptors for class %s", clazz.getName()), e);
+            } else {
+                LOG.error(String.format("Got exception while checking PropertyDescriptor.propertyType for field %s.%s", clazz.getName(), descriptor.getName()), e);
+            }
             return new PropertyDescriptor[0];
         }
         return properties.toArray(new PropertyDescriptor[properties.size()]);
@@ -689,7 +709,7 @@ public class GrailsClassUtils {
      * @return true if the method is a property getter
      */
     public static boolean isPropertyGetter(Method method) {
-        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && isGetter(method.getName(), method.getParameterTypes());
+        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && GrailsNameUtils.isGetter(method.getName(), method.getReturnType(), method.getParameterTypes());
     }
 
     /**
@@ -713,93 +733,20 @@ public class GrailsClassUtils {
     }
 
     /**
-     * Retrieves the name of a setter for the specified property name
-     * @param propertyName The property name
-     * @return The setter equivalent
-     */
-    public static String getSetterName(String propertyName) {
-        return GrailsNameUtils.getSetterName(propertyName);
-    }
-
-    /**
-     * Returns true if the name of the method specified and the number of arguments make it a javabean property
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property setter.
+     * The name is assumed to be a valid Java method name, that is not verified.
      *
-     * @param name True if its a Javabean property
+     * @param name The name of the method
      * @param args The arguments
-     * @return true if it is a javabean property method
+     * @return true if it is a javabean property setter
      */
-    public static boolean isGetter(String name, Class<?>[] args) {
-        if (!StringUtils.hasText(name) || args == null)return false;
-        if (args.length != 0)return false;
-
-        if (name.startsWith("get")) {
-            name = name.substring(3);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
-        }
-        else if (name.startsWith("is")) {
-            name = name.substring(2);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Returns a property name equivalent for the given getter name or null if it is not a getter
-     *
-     * @param getterName The getter name
-     * @return The property name equivalent
-     */
-    public static String getPropertyForGetter(String getterName) {
-        if (!StringUtils.hasText(getterName))return null;
-
-        if (getterName.startsWith("get")) {
-            String prop = getterName.substring(3);
-            return convertPropertyName(prop);
-        }
-        if (getterName.startsWith("is")) {
-            String prop = getterName.substring(2);
-            return convertPropertyName(prop);
-        }
-        return null;
-    }
-
-    private static String convertPropertyName(String prop) {
-        if (prop.length() == 1) {
-            return prop.toLowerCase();
-        }
-        if (Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
-            return prop;
-        }
-        if (Character.isDigit(prop.charAt(0))) {
-            return prop;
-        }
-        return Character.toLowerCase(prop.charAt(0)) + prop.substring(1);
-    }
-
-    /**
-     * Returns a property name equivalent for the given setter name or null if it is not a getter
-     *
-     * @param setterName The setter name
-     * @return The property name equivalent
-     */
-    public static String getPropertyForSetter(String setterName) {
-        if (!StringUtils.hasText(setterName))return null;
-
-        if (setterName.startsWith("set")) {
-            String prop = setterName.substring(3);
-            return convertPropertyName(prop);
-        }
-        return null;
-    }
-
     @SuppressWarnings("rawtypes")
     public static boolean isSetter(String name, Class[] args) {
         if (!StringUtils.hasText(name) || args == null)return false;
 
         if (name.startsWith("set")) {
             if (args.length != 1) return false;
-            name = name.substring(3);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+            return GrailsNameUtils.isPropertyMethodSuffix(name.substring(3));
         }
 
         return false;
@@ -910,6 +857,88 @@ public class GrailsClassUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Retrieves the name of a setter for the specified property name
+     * @param propertyName The property name
+     * @return The setter equivalent
+     */
+    public static String getSetterName(String propertyName) {
+        return GrailsNameUtils.getSetterName(propertyName);
+    }
+
+    /**
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property getter.
+     * The name is assumed to be a valid Java method name, that is not verified.
+     *
+     * @param name The name of the method
+     * @param args The arguments
+     * @return true if it is a javabean property getter
+     * @deprecated use {@link #isGetter(String, Class, Class[])} instead because this method has a defect for "is.." method with Boolean return types.
+     */
+    public static boolean isGetter(String name, Class<?>[] args) {
+        return GrailsNameUtils.isGetter(name, boolean.class, args);
+    }
+
+    /**
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property getter.
+     * The name is assumed to be a valid Java method name, that is not verified.
+     *
+     * @param name The name of the method
+     * @param returnType The return type of the method
+     * @param args The arguments
+     * @return true if it is a javabean property getter
+     */
+    public static boolean isGetter(String name, Class returnType, Class<?>[] args) {
+        return GrailsNameUtils.isGetter(name, returnType, args);
+    }
+
+    /**
+     * Returns a property name equivalent for the given getter name or null if it is not a valid getter. If not null
+     * or empty the getter name is assumed to be a valid identifier.
+     *
+     * @param getterName The getter name
+     * @return The property name equivalent
+     * @deprecated Use {@link #getPropertyForGetter(String, Class)} instead because this method has a defect for "is.." method with Boolean return types.
+     */
+    public static String getPropertyForGetter(String getterName) {
+        return GrailsNameUtils.getPropertyForGetter(getterName);
+    }
+
+    /**
+     * Returns a property name equivalent for the given getter name and return type or null if it is not a valid getter. If not null
+     * or empty the getter name is assumed to be a valid identifier.
+     *
+     * @param getterName The getter name
+     * @param returnType The type the method returns
+     * @return The property name equivalent
+     */
+    public static String getPropertyForGetter(String getterName, Class returnType) {
+        return GrailsNameUtils.getPropertyForGetter(getterName, returnType);
+    }
+
+    /**
+     * Returns a property name equivalent for the given getter name and return type or null if it is not a valid getter. If not null
+     * or empty the getter name is assumed to be a valid identifier.
+     *
+     * @param getterName The getter name
+     * @param returnType The class name the method returns
+     * @return The property name equivalent
+     */
+    public static String getPropertyForGetter(String getterName, String returnType) {
+        return GrailsNameUtils.getPropertyForGetter(getterName, returnType);
+    }
+
+    /**
+     * Returns a property name equivalent for the given setter name or null if it is not a valid setter. If not null
+     * or empty the setter name is assumed to be a valid identifier.
+     *
+     * @param setterName The setter name, must be null or empty or a valid identifier name
+     * @return The property name equivalent
+     */
+    public static String getPropertyForSetter(String setterName) {
+        return GrailsNameUtils.getPropertyForSetter(setterName);
     }
 
     /**

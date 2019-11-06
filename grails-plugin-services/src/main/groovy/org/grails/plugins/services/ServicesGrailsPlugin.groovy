@@ -15,22 +15,15 @@
  */
 package org.grails.plugins.services
 
-import grails.config.Config
 import grails.config.Settings
+import grails.core.GrailsApplication
+import grails.core.GrailsServiceClass
+import grails.plugins.GrailsPlugin
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
-import groovy.transform.CompileStatic
-
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
-
-import grails.core.GrailsServiceClass
 import org.grails.core.artefact.ServiceArtefactHandler
-import org.grails.transaction.GroovyAwareNamedTransactionAttributeSource
-import org.grails.spring.TypeSpecifyableTransactionProxyFactoryBean
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.core.annotation.AnnotationUtils
-import org.springframework.transaction.annotation.Transactional
+import org.grails.core.exceptions.GrailsConfigurationException
+
 
 /**
  * Configures services in the Spring context.
@@ -41,25 +34,21 @@ import org.springframework.transaction.annotation.Transactional
 class ServicesGrailsPlugin extends Plugin  {
 
     def version = GrailsUtil.getGrailsVersion()
-    def loadAfter = ['hibernate', 'hibernate4']
+    def loadAfter = ['hibernate']
 
 
     def watchedResources = ["file:./grails-app/services/**/*Service.groovy",
                             "file:./plugins/*/grails-app/services/**/*Service.groovy"]
 
     Closure doWithSpring() {{->
-        def application = grailsApplication
-        Config config = application.config
-
-        final boolean springTransactionManagement = config.getProperty(Settings.SPRING_TRANSACTION_MANAGEMENT, Boolean.class, true)
-
+        GrailsApplication application = grailsApplication
+        final boolean springTransactionManagement = config.getProperty(Settings.SPRING_TRANSACTION_MANAGEMENT, Boolean.class, false)
         if(springTransactionManagement) {
-            xmlns tx:"http://www.springframework.org/schema/tx"
-            tx.'annotation-driven'('transaction-manager':'transactionManager')
+            throw new GrailsConfigurationException("Spring proxy-based transaction management no longer supported. Yes the @grails.gorm.transactions.Transactional annotation instead")
         }
 
-        for (GrailsServiceClass serviceClass in application.serviceClasses) {
-            def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
+        for (GrailsServiceClass serviceClass in application.getArtefacts(ServiceArtefactHandler.TYPE)) {
+            GrailsPlugin providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
 
             String beanName
             if (providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
@@ -70,48 +59,13 @@ class ServicesGrailsPlugin extends Plugin  {
             def scope = serviceClass.getPropertyValue("scope")
             def lazyInit = serviceClass.hasProperty("lazyInit") ? serviceClass.getPropertyValue("lazyInit") : true
 
-            "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) { bean ->
-                bean.lazyInit = lazyInit
-                targetObject = application
-                targetMethod = "getArtefact"
-                arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
-            }
-
-
-            def hasDataSource = (config?.dataSources || application.domainClasses)
-            if (springTransactionManagement && hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
-                def props = new Properties()
-
-                String attributes = 'PROPAGATION_REQUIRED'
-                String datasourceName = serviceClass.datasource
-                String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
-                if ( config.getProperty("dataSources.${datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? 'dataSource' : datasourceName}.readOnly", Boolean, false) ) {
-                    attributes += ',readOnly'
-                }
-                props."*" = attributes
-
-                "${beanName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
-                    if (scope) bean.scope = scope
+            "${beanName}"(serviceClass.getClazz()) { bean ->
+                bean.autowire =  true
+                if(lazyInit instanceof Boolean) {
                     bean.lazyInit = lazyInit
-                    target = { innerBean ->
-                        innerBean.lazyInit = lazyInit
-                        innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
-                        innerBean.factoryMethod = "newInstance"
-                        innerBean.autowire = "byName"
-                        if (scope) innerBean.scope = scope
-                    }
-                    proxyTargetClass = true
-                    transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-                    transactionManager = ref("transactionManager$suffix")
                 }
-            }
-            else {
-                "${beanName}"(serviceClass.getClazz()) { bean ->
-                    bean.autowire =  true
-                    bean.lazyInit = lazyInit
-                    if (scope) {
-                        bean.scope = scope
-                    }
+                if (scope) {
+                    bean.scope = scope
                 }
             }
         }
@@ -119,111 +73,4 @@ class ServicesGrailsPlugin extends Plugin  {
         serviceBeanAliasPostProcessor(ServiceBeanAliasPostProcessor)
     }}
 
-    /**
-     * Will use proxy in the case of service being transactional and the absence of the grails.transaction.Transactional.
-     * Using org.springframework.transaction.annotation.Transactional will lead to creation of proxy instead of AST transform.
-     * @param serviceClass
-     * @return
-     */
-    @CompileStatic
-    private static boolean shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
-        try {
-            return isTransactionalOrHasSpringTransactionalAnnotation(serviceClass) &&
-                    !hasGrailsTransactionalAnnotation(serviceClass)
-        }
-        catch (e) {
-            return false
-        }
-    }
-
-    /**
-     * Determines if grails service class has grails.transactional.Transactional annotation present on class or methods
-     * @param serviceClass grails service class
-     * @return boolean
-     */
-    @CompileStatic
-    public static hasGrailsTransactionalAnnotation(GrailsServiceClass serviceClass){
-        Class javaClass = serviceClass.clazz
-        return AnnotationUtils.findAnnotation(javaClass, grails.transaction.Transactional) != null ||
-                javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, grails.transaction.Transactional) != null}
-    }
-
-    /**
-     * Determines if grails service class has org.springframework.transaction.annotation.Transactional annotation
-     * present on class or methods OR if service class has transactional = true static property
-     * @param serviceClass grails service class
-     * @return boolean
-     */
-    @CompileStatic
-    public static isTransactionalOrHasSpringTransactionalAnnotation(GrailsServiceClass serviceClass){
-        Class javaClass = serviceClass.clazz
-        return serviceClass.isTransactional() ||
-                AnnotationUtils.findAnnotation(javaClass, Transactional) != null ||
-                javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional) != null}
-    }
-
-    void onChange(Map<String,Object> event) {
-        if (!event.source || !applicationContext) {
-            return
-        }
-
-        if (event.source instanceof Class) {
-            def application = grailsApplication
-            def ctx = applicationContext
-
-            Class javaClass = event.source
-            // do nothing for abstract classes
-            if (Modifier.isAbstract(javaClass.modifiers)) return
-            def serviceClass = (GrailsServiceClass) application.addArtefact(ServiceArtefactHandler.TYPE, (Class) event.source)
-            def serviceName = "${serviceClass.propertyName}"
-            def scope = serviceClass.getPropertyValue("scope")
-
-            final boolean springTransactionManagement = config.getProperty(Settings.SPRING_TRANSACTION_MANAGEMENT, Boolean.class, true)
-
-            String datasourceName = serviceClass.datasource
-            String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
-
-            if (springTransactionManagement && shouldCreateTransactionalProxy(serviceClass) && ctx.containsBean("transactionManager$suffix")) {
-
-                def props = new Properties()
-                String attributes = 'PROPAGATION_REQUIRED'
-                if (application.config["dataSource$suffix"].readOnly) {
-                    attributes += ',readOnly'
-                }
-                props."*" = attributes
-
-                beans {
-                    "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
-                        targetObject = application
-                        targetMethod = "getArtefact"
-                        arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
-                    }
-                    "${serviceName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
-                        if (scope) bean.scope = scope
-                        target = { innerBean ->
-                            innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
-                            innerBean.factoryMethod = "newInstance"
-                            innerBean.autowire = "byName"
-                            if (scope) innerBean.scope = scope
-                        }
-                        proxyTargetClass = true
-                        transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-                        transactionManager = ref("transactionManager$suffix")
-                    }
-                }
-
-            }
-            else {
-                beans {
-                    "$serviceName"(serviceClass.getClazz()) { bean ->
-                        bean.autowire =  true
-                        if (scope) {
-                            bean.scope = scope
-                        }
-                    }
-                }
-
-            }
-        }
-    }
 }

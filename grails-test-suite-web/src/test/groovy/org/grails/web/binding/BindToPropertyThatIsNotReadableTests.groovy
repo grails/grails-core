@@ -1,26 +1,23 @@
 package org.grails.web.binding
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import groovy.transform.NotYetImplemented
-import org.junit.Test
-import static org.junit.Assert.assertEquals
+import grails.testing.gorm.DomainUnitTest
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@Mock(PropertyNotReadableBook)
-class BindToPropertyThatIsNotReadableTests {
+class BindToPropertyThatIsNotReadableTests extends Specification implements DomainUnitTest<PropertyNotReadableBook> {
 
-    @Test
-    @NotYetImplemented
     void testBindToPropertyThatIsNotReadable() {
+        when:
         def b = new PropertyNotReadableBook()
 
         b.properties = [calculatedField:[1,2,3], title:"blah"]
 
-        assertEquals 6, b.sum()
+        then:
+        6 == b.sum()
     }
 }
 

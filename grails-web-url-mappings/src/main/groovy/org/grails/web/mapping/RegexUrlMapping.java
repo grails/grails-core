@@ -17,45 +17,31 @@ package org.grails.web.mapping;
 
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
+import grails.plugins.VersionComparator;
 import grails.util.GrailsStringUtils;
-import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.exceptions.UrlMappingException;
 import groovy.lang.Closure;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.servlet.ServletContext;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import grails.plugins.VersionComparator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.grails.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -100,9 +86,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
         this(null, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, grailsApplication);
     }
-    public RegexUrlMapping(RegexUrlMapping regexUrlMapping, HttpMethod httpMethod) {
-        this(regexUrlMapping.urlData, regexUrlMapping.controllerName, regexUrlMapping.actionName, regexUrlMapping.namespace, regexUrlMapping.pluginName, regexUrlMapping.viewName, httpMethod.toString(), regexUrlMapping.version, regexUrlMapping.constraints, regexUrlMapping.grailsApplication);
-    }
+
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
      *
@@ -116,7 +100,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param version     The version
      * @param constraints    A list of ConstrainedProperty instances that relate to tokens in the URL
      * @param grailsApplication The Grails application
-     * @see grails.validation.ConstrainedProperty
+     * @see ConstrainedProperty
      */
     public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
         super(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], grailsApplication);
@@ -141,7 +125,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             Integer slashCount = org.springframework.util.StringUtils.countOccurrencesOf(url, "/");
             List<Pattern> tokenCountPatterns = patternByTokenCount.get(slashCount);
             if (tokenCountPatterns == null) {
-                tokenCountPatterns = new ArrayList<Pattern>();
+                tokenCountPatterns = new ArrayList<>();
                 patternByTokenCount.put(slashCount, tokenCountPatterns);
             }
 
@@ -162,7 +146,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             int constraintUpperBound = constraints.length;
             if (data.hasOptionalExtension()) {
                 constraintUpperBound--;
-                constraints[constraintUpperBound].setNullable(true);
+                setNullable(constraints[constraintUpperBound]);
             }
 
             for (int i = 0; i < constraintUpperBound; i++) {
@@ -179,10 +163,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                         // special handling for last token to deal with optional extension
                         if (isLastToken) {
                             if (token.startsWith(CAPTURED_WILDCARD + '?') ) {
-                                constraint.setNullable(true);
+                                setNullable(constraint);
                             }
                             if (token.endsWith(OPTIONAL_EXTENSION_WILDCARD + '?')) {
-                                constraints[constraints.length-1].setNullable(true);
+                                setNullable(constraints[constraints.length-1]);
                             }
                         }
                         else {
@@ -195,7 +179,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 }
 
                 if (pos != -1 && pos + shiftLength < token.length() && token.charAt(pos + shiftLength) == '?') {
-                    constraint.setNullable(true);
+                    setNullable(constraint);
                 }
 
                 // Move on to the next place-holder.
@@ -205,6 +189,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                     pos = 0;
                 }
             }
+        }
+    }
+
+    private void setNullable(ConstrainedProperty constraint) {
+        ConstrainedProperty constrainedProperty = constraint;
+        if(!constrainedProperty.isNullable()) {
+               constrainedProperty.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, true);
         }
     }
 
@@ -769,10 +760,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         boolean isThatRoot = otherStaticTokenCount == 0 && otherDoubleWildcardCount == 0 && otherSingleWildcardCount == 0;
 
         if(isThisRoot && isThatRoot) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
-            }
-            return 0;
+            return evaluatePluginOrder(other);
         }
         else if(isThisRoot) {
             if(LOG.isDebugEnabled()) {
@@ -914,10 +902,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         String thisVersion = getVersion();
         String thatVersion = other.getVersion();
         if((thisVersion.equals(thatVersion))) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
-            }
-            return 0;
+            return evaluatePluginOrder(other);
         }
         else if(thisVersion.equals(ANY_VERSION) && !thatVersion.equals(ANY_VERSION)) {
             if(LOG.isDebugEnabled()) {
@@ -933,25 +918,69 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         }
         else {
             int i = new VersionComparator().compare(thisVersion, thatVersion);
-            if(LOG.isDebugEnabled()) {
-                if(i > 0) {
+
+            if(i > 0) {
+                if(LOG.isDebugEnabled()) {
                     LOG.debug("Mapping [{}] has a higher precedence than [{}] due to version precedence [{} vs. {}]", this.toString(), other.toString(), thisVersion, thatVersion);
                 }
-                else if(i < 0) {
+                return 1;
+            }
+            else if(i < 0) {
+                if(LOG.isDebugEnabled()) {
                     LOG.debug("Mapping [{}] has a lower precedence than [{}] due to version precedence [{} vs. {}]", this.toString(), other.toString(), thisVersion, thatVersion);
                 }
-                else {
+                return -1;
+            }
+            else {
+                return evaluatePluginOrder(other);
+            }
+        }
+    }
+
+    private int evaluatePluginOrder(UrlMapping other) {
+        if (isDefinedInPlugin() && !other.isDefinedInPlugin()) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has lower precedence than [{}] because the latter has priority over plugins", this.toString(), other.toString());
+            }
+            return -1;
+        } else if (!isDefinedInPlugin() && other.isDefinedInPlugin()) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has higher precedence than [{}] because it has priority over plugins", this.toString(), other.toString());
+            }
+            return 1;
+        } else {
+            if (isDefinedInPlugin()) {
+                if (pluginIndex > other.getPluginIndex()) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Mapping [{}] has higher precedence than [{}] because it was loaded after", this.toString(), other.toString());
+                    }
+                    return 1;
+                } else if (pluginIndex < other.getPluginIndex()) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Mapping [{}] has lower precedence than [{}] because it was loaded before", this.toString(), other.toString());
+                    }
+                    return -1;
+                } else {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
+                    }
+                    return 0;
+                }
+            } else {
+                if(LOG.isDebugEnabled()) {
                     LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
                 }
+                return 0;
             }
-            return i;
         }
     }
 
     private int getAppliedConstraintsCount(UrlMapping mapping) {
         int count = 0;
-        for (ConstrainedProperty prop : mapping.getConstraints()) {
-            count += prop.getAppliedConstraints().size();
+        for (Constrained prop : mapping.getConstraints()) {
+            if(prop instanceof ConstrainedProperty) {
+                count += ((ConstrainedProperty)prop).getAppliedConstraints().size();
+            }
         }
         return count;
     }

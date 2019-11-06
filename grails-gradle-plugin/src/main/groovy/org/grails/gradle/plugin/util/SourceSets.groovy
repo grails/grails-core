@@ -19,13 +19,24 @@ class SourceSets {
      * @return The main source set or null if it can't be found
      */
     static SourceSet findMainSourceSet(Project project) {
+       return findSourceSet(project, SourceSet.MAIN_SOURCE_SET_NAME)
+    }
+
+    /**
+     * Finds the main SourceSet for the project
+     * @param project The project
+     * @return The main source set or null if it can't be found
+     */
+    static SourceSet findSourceSet(Project project, String name) {
         SourceSetContainer sourceSets = findSourceSets(project)
-        return sourceSets?.find { SourceSet sourceSet -> sourceSet.name == SourceSet.MAIN_SOURCE_SET_NAME }
+        return sourceSets?.find { SourceSet sourceSet ->
+            sourceSet.name == name
+        } as SourceSet
     }
 
     static SourceSetContainer findSourceSets(Project project) {
         JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention)
-        def sourceSets = plugin?.sourceSets
-        sourceSets
+        SourceSetContainer sourceSets = plugin?.sourceSets
+        return sourceSets
     }
 }

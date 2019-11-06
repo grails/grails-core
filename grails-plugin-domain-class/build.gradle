@@ -1,8 +1,7 @@
 dependencies {
 
-    compile project(":grails-core"), project(":grails-spring"), project(":grails-validation")
-
-    provided project(":grails-async")
+    compile project(":grails-core"), project(":grails-spring")
+    compile project(":grails-plugin-validation")
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
@@ -55,7 +54,6 @@ dependencies {
         exclude group: "javax.persistence", module:"persistence-api"
         exclude group: 'java-persistence', module:'persistence-api'
     }
-    compile("org.grails:grails-datastore-simple:$datastoreVersion") {
-        exclude group: 'org.grails', module:'grails-datastore-core'
-    }
+
+
 }

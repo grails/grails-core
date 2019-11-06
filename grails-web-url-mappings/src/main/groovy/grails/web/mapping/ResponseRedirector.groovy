@@ -15,20 +15,18 @@
  */
 package grails.web.mapping
 
-import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
 import grails.web.http.HttpHeaders
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import groovy.transform.CompileStatic
+import groovy.util.logging.Commons
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.util.Assert
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
 /**
  * Encapsulates the logic for issuing a redirect based on a Map of arguments
  *
@@ -40,8 +38,10 @@ import javax.servlet.http.HttpServletResponse
 class ResponseRedirector {
 
     public static final String ARGUMENT_PERMANENT = "permanent"
+    public static final String ARGUMENT_ABSOLUTE = "absolute"
     public static final String GRAILS_REDIRECT_ISSUED = GrailsApplicationAttributes.REDIRECT_ISSUED
     private static final String BLANK = "";
+    private static final String KEEP_PARAMS_WHEN_REDIRECT = 'keepParamsWhenRedirect'
 
     LinkGenerator linkGenerator
     Collection<RedirectEventListener> redirectListeners = []
@@ -70,27 +70,62 @@ class ResponseRedirector {
             throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
         }
 
-        boolean permanent = DefaultGroovyMethods.asBoolean(arguments.get(ARGUMENT_PERMANENT))
+        boolean permanent
+
+        def permanentArgument = arguments.get(ARGUMENT_PERMANENT)
+        if(permanentArgument instanceof String) {
+            permanent = Boolean.valueOf(permanentArgument)
+        } else {
+            permanent = Boolean.TRUE == permanentArgument
+        }
 
         // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
         // which includes the contextPath
         arguments.put LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK
 
-        redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent)
+        boolean absolute
+        def absoluteArgument = arguments.get(ARGUMENT_ABSOLUTE)
+        if (absoluteArgument instanceof String) {
+            absolute = Boolean.valueOf(absoluteArgument)
+        } else {
+            absolute = (absoluteArgument == null) ? true : (Boolean.TRUE == absoluteArgument)
+        }
+
+        // If the request parameters contain "keepParamsWhenRedirect = true", then we add the original params. The
+        // new attribute can be used from UrlMappings to redirect from old URLs to new ones while keeping the params
+        // See https://github.com/grails/grails-core/issues/10622 & https://github.com/grails/grails-core/issues/10965
+        if (Boolean.valueOf(arguments.get(KEEP_PARAMS_WHEN_REDIRECT).toString())) {
+            // When redirecting from UrlMappings the original request params are on webRequest.originalParams
+            // instead of arguments.params so we merge them.
+            def webRequest = GrailsWebRequest.lookup(request)
+            if (webRequest.originalParams) {
+                Map existingParams = (Map) arguments.get(LinkGenerator.ATTRIBUTE_PARAMS) ?: [:]
+                arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, existingParams + webRequest.originalParams)
+            }
+        }
+
+        redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent, absolute)
     }
 
     /*
      * Redirects the response the the given URI
      */
-    private void redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
+    private void redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent, boolean absolute) {
         if(log.isDebugEnabled()) {
             log.debug "Method [redirect] forwarding request to [$actualUri]"
             log.debug "Executing redirect with response [$response]"
         }
 
         String processedActualUri = processedUrl(actualUri, request);
-        String absoluteURL = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri
-        String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL
+
+        String redirectURI
+        if (absolute) {
+            redirectURI = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri
+        } else {
+            redirectURI = processedActualUri
+        }
+
+        String redirectUrl = useJessionId ? response.encodeRedirectURL(redirectURI) : redirectURI
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY
 
         response.status = status

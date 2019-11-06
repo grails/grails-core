@@ -38,10 +38,7 @@ import java.util.regex.Pattern
  * @author Tom Bujok
  * @since 2.3
  */
-@IgnoreIf({
-    System.getenv("TRAVIS") != null ||
-            !GrailsConsole.instance.isAnsiEnabled()
-})
+@IgnoreIf({ env['TRAVIS'] || !GrailsConsole.instance.isAnsiEnabled() })
 class GrailsConsoleSpec extends Specification {
 
     static final String RESET = Pattern.quote(Ansi.ansi().reset().toString())

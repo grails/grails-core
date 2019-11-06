@@ -17,21 +17,18 @@ class GrailsPluginMetadataTests extends GroovyTestCase {
         pluginManager.loadPlugins()
 
         assertEquals "/plugins/controllers-${GrailsUtil.grailsVersion}", pluginManager.getPluginPathForClass(Test1)
-        assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}", pluginManager.getPluginPathForClass(Test2)
         assertNull pluginManager.getPluginPathForClass(Test3)
 
         assertEquals "/plugins/controllers-${GrailsUtil.grailsVersion}", pluginManager.getPluginPathForInstance(new Test1())
-        assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}", pluginManager.getPluginPathForInstance(new Test2())
         assertNull pluginManager.getPluginPathForInstance(new Test3())
 
         assertEquals "/plugins/controllers-${GrailsUtil.grailsVersion}/grails-app/views", pluginManager.getPluginViewsPathForClass(Test1)
-        assertEquals "/plugins/groovy-pages-${GrailsUtil.grailsVersion}/grails-app/views", pluginManager.getPluginViewsPathForClass(Test2)
         assertNull pluginManager.getPluginViewsPathForClass(Test3)
     }
 }
 
 @GrailsPlugin(name='controllers', version='1.0')
 class Test1 {}
-@GrailsPlugin(name='groovyPages', version='1.2')
+@GrailsPlugin(name='dataBinding', version='1.2')
 class Test2 {}
 class Test3 {}

@@ -2,28 +2,24 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
-import org.junit.Test
-import static org.junit.Assert.assertEquals
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(MenuController)
-@Mock(Menu)
-class BindStringArrayToGenericListTests  {
+class BindStringArrayToGenericListTests extends Specification implements ControllerUnitTest<MenuController>, DomainUnitTest<Menu> {
 
-    @Test
     void testBindStringArrayToGenericList() {
+        when:
         params.name = "day"
         params.items = ['rice', 'soup']as String[]
-
         def model = controller.save()
 
-        assertEquals(['rice', 'soup'], model.menu.items)
+        then:
+        ['rice', 'soup'] == model.menu.items
     }
 }
 

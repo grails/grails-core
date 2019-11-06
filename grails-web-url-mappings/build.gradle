@@ -1,8 +1,7 @@
 dependencies {
-    compile project(":grails-web-common"),
-            project(":grails-validation")
+    compile project(":grails-web-common")
 
-    compile("org.grails:grails-datastore-core:$datastoreVersion") {
+    compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
         exclude group: 'org.springframework', module:'spring-core'
         exclude group: 'org.springframework', module:'spring-context'
         exclude group: 'org.springframework', module:'spring-web'
@@ -22,12 +21,19 @@ dependencies {
         exclude group: "javax.persistence", module:"persistence-api"
         exclude group: 'java-persistence', module:'persistence-api'
     }
-    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
 
     provided "org.fusesource.jansi:jansi:$jansiVersion"
     provided "jline:jline:$jlineVersion"
 
     testCompile project(":grails-test-suite-base")
+}
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat = 'full'
+//        showStandardStreams = true
+    }
+    afterSuite {
+        System.out.print(".")
+        System.out.flush()
+    }
 }

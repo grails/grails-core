@@ -1,5 +1,0 @@
-dependencies {
-    compile project(":grails-web-common")
-
-    compile 'opensymphony:sitemesh:2.4'
-}
