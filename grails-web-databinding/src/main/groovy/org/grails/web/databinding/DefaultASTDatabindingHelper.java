@@ -236,7 +236,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         if ((modifiers & Modifier.STATIC) != 0 ||
                 (modifiers & Modifier.TRANSIENT) != 0 ||
                 fieldsInTransientsList.contains(fieldName) ||
-                fieldNode.getType().equals(new ClassNode(Object.class))) {
+                (fieldNode.getType().equals(new ClassNode(Object.class)) && !fieldNode.getType().isUsingGenerics())) {
             shouldInclude = false;
         } else if (isDomainClass) {
             if (DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(fieldName)) {
