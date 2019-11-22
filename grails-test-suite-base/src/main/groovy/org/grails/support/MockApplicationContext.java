@@ -147,6 +147,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return new String[0];
     }
 
+    @Override
+    public String[] getBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
+        return new String[0];
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public String[] getBeanNamesForType(Class type) {
         List<String> beanNames = new ArrayList<String>();
@@ -286,6 +291,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
 
         return beans.get(name).getClass();
+    }
+
+    @Override
+    public Class<?> getType(String name, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException {
+        return getType(name);
     }
 
     public String[] getAliases(String name) {
