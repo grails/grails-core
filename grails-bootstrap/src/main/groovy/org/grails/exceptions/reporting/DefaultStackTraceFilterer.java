@@ -46,6 +46,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         "net.sf.cglib.proxy.",
         "sun.",
         "java.lang.reflect.",
+        "org.springframework.boot.devtools.",
         "org.springsource.loaded.",
         "com.opensymphony.",
         "javax.servlet."
