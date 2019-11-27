@@ -667,21 +667,20 @@ public enum Environment {
         }
         catch (ClassNotFoundException e) {
             reloadingAgentEnabled = false;
-        }
-        try {
-            String jvmVersion = System.getProperty("java.specification.version");
-            if(jvmVersion.equals("1.8")) {
-                Class.forName("org.springsource.loaded.TypeRegistry");
-                reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
-                LOG.debug("Found spring-loaded on the class path");
-            } else {
-                LOG.warn("Found spring-loaded on classpath but JVM is not 1.8 - skipping");
+            try {
+                String jvmVersion = System.getProperty("java.specification.version");
+                if(jvmVersion.equals("1.8")) {
+                    Class.forName("org.springsource.loaded.TypeRegistry");
+                    LOG.debug("Found spring-loaded on the class path");
+                    reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
+                } else {
+                    LOG.warn("Found spring-loaded on classpath but JVM is not 1.8 - skipping");
+                }
+            }
+            catch (ClassNotFoundException e1) {
+                reloadingAgentEnabled = false;
             }
         }
-        catch (ClassNotFoundException e) {
-            reloadingAgentEnabled = false;
-        }
-        LOG.debug("reloadingAgentEnabled {}", reloadingAgentEnabled);
         return reloadingAgentEnabled;
     }
 
