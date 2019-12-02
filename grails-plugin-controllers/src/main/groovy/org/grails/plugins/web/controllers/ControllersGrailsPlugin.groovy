@@ -18,7 +18,6 @@ package org.grails.plugins.web.controllers
 import grails.config.Settings
 import grails.core.GrailsControllerClass
 import grails.plugins.Plugin
-import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -33,7 +32,6 @@ import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean
 import org.springframework.boot.web.servlet.FilterRegistrationBean
-import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.boot.web.servlet.filter.OrderedFilter
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
@@ -56,6 +54,10 @@ import javax.servlet.MultipartConfigElement
  */
 @Slf4j
 class ControllersGrailsPlugin extends Plugin {
+
+    def watchedResources = [
+            "file:./grails-app/controllers/**/*Controller.groovy",
+            "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def observe = ['domainClass']
@@ -201,7 +203,6 @@ class ControllersGrailsPlugin extends Plugin {
         }
 
         @Override
-        @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
             if (!addMappings) {
                 return
@@ -216,6 +217,35 @@ class ControllersGrailsPlugin extends Plugin {
                 registry.addResourceHandler(resourcesPattern)
                         .addResourceLocations(RESOURCE_LOCATIONS)
                         .setCachePeriod(cachePeriod)
+            }
+        }
+    }
+
+    @Override
+    void onChange( Map<String, Object> event) {
+        if (!(event.source instanceof Class)) {
+            return
+        }
+        def application = grailsApplication
+        if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, (Class)event.source)) {
+            ApplicationContext context = applicationContext
+            if (!context) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Application context not found. Can't reload")
+                }
+                return
+            }
+
+            GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, (Class)event.source)
+            beans {
+                "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
+                    def beanScope = controllerClass.getScope()
+                    bean.scope = beanScope
+                    bean.autowire = "byName"
+                    if (beanScope == 'prototype') {
+                        bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
+                    }
+                }
             }
         }
     }

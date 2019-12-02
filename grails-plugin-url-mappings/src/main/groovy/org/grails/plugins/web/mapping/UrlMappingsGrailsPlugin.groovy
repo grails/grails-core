@@ -86,10 +86,45 @@ class UrlMappingsGrailsPlugin extends Plugin {
         urlMappingsErrorPageCustomizer(UrlMappingsErrorPageCustomizer)
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
-        grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) { bean ->
-            bean.lazyInit = true
+        if (isReloadEnabled) {
+            urlMappingsTargetSource(HotSwappableTargetSourceFactoryBean) {
+                it.lazyInit = true
+                target = bean(UrlMappingsHolderFactoryBean) {
+                    it.lazyInit = true
+                }
+            }
+            grailsUrlMappingsHolder(ProxyFactoryBean) {
+                it.lazyInit = true
+                targetSource = urlMappingsTargetSource
+                proxyInterfaces = [UrlMappings]
+             }
+         } else {
+            grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) { bean ->
+                bean.lazyInit = true
+            }
         }
     }}
+
+    @Override
+    void onChange(Map<String, Object> event) {
+        def application = grailsApplication
+        if (!application.isArtefactOfType(UrlMappingsArtefactHandler.TYPE, event.source)) {
+            return
+        }
+
+        application.addArtefact(UrlMappingsArtefactHandler.TYPE, event.source)
+
+        ApplicationContext ctx = applicationContext
+        UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(applicationContext)
+
+        HotSwappableTargetSource ts = ctx.getBean("urlMappingsTargetSource", HotSwappableTargetSource)
+        ts.swap urlMappingsHolder
+
+        LinkGenerator linkGenerator = ctx.getBean("grailsLinkGenerator", LinkGenerator)
+        if (linkGenerator instanceof CachingLinkGenerator) {
+          linkGenerator.clearCache()
+       }
+    }
 
     @CompileStatic
     private static UrlMappingsHolder createUrlMappingsHolder(ApplicationContext applicationContext) {
