@@ -23,6 +23,8 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.grails.io.support.Resource;
 import org.grails.io.support.UrlResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,13 +53,15 @@ public enum Environment {
     TEST,
 
     /**
-     * For the application data source, primarly for backward compatability for those applications
+     * For the application data source, primarily for backward compatibility for those applications
      * that use ApplicationDataSource.groovy.
      */
     APPLICATION,
 
     /** A custom environment */
     CUSTOM;
+
+    private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
 
     /**
      * Constant used to resolve the environment via System.getProperty(Environment.KEY)
@@ -659,9 +663,23 @@ public enum Environment {
         try {
             Class.forName("org.springframework.boot.devtools.RemoteSpringApplication");
             reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
+            LOG.debug("Found spring-dev-tools on the class path");
         }
         catch (ClassNotFoundException e) {
             reloadingAgentEnabled = false;
+            try {
+                String jvmVersion = System.getProperty("java.specification.version");
+                if(jvmVersion.equals("1.8")) {
+                    Class.forName("org.springsource.loaded.TypeRegistry");
+                    LOG.debug("Found spring-loaded on the class path");
+                    reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
+                } else {
+                    LOG.warn("Found spring-loaded on classpath but JVM is not 1.8 - skipping");
+                }
+            }
+            catch (ClassNotFoundException e1) {
+                reloadingAgentEnabled = false;
+            }
         }
         return reloadingAgentEnabled;
     }

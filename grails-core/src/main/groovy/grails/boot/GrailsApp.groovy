@@ -103,7 +103,7 @@ class GrailsApp extends SpringApplication {
         log.debug("Current base directory is [{}]. Reloading base directory is [{}]", new File("."), BuildSettings.BASE_DIR)
 
         if(environment.isReloadEnabled()) {
-            log.debug("Reloading status: ", environment.isReloadEnabled())
+            log.debug("Reloading status: {}", environment.isReloadEnabled())
             enableDevelopmentModeWatch(environment, applicationContext)
         }
         printRunStatus(applicationContext)
@@ -326,8 +326,6 @@ class GrailsApp extends SpringApplication {
             }
             directoryWatcher.start()
         }
-
-
     }
 
     static boolean isDevelopmentModeActive() {
