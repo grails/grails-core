@@ -45,6 +45,12 @@ ext {
                 names:['micronaut'],
                 modules:['spring','inject','runtime', 'inject-groovy', 'runtime-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
         ],
+        'micronaut.micronaut-runtime-groovy': [
+                version: micronautRuntimeGroovyVersion,
+                group:'io.micronaut',
+                names:['micronaut-runtime-groovy'],
+                modules:['']
+        ],
         'micronaut.spring': [
                 version: micronautSpringVersion,
                 group:'io.micronaut.spring',
