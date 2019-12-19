@@ -39,7 +39,6 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.PropertyResolver
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.util.ClassUtils
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -105,6 +104,7 @@ class GrailsApp extends SpringApplication {
         if(environment.isReloadEnabled()) {
             log.debug("Reloading status: {}", environment.isReloadEnabled())
             enableDevelopmentModeWatch(environment, applicationContext)
+            environment.isDevtoolsRestart()
         }
         printRunStatus(applicationContext)
 
