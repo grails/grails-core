@@ -20,10 +20,10 @@ import grails.core.GrailsApplication;
 import grails.databinding.TypedStructuredBindingEditor;
 import grails.databinding.converters.FormattedValueConverter;
 import grails.databinding.converters.ValueConverter;
-import io.micronaut.context.exceptions.NoSuchBeanException;
 import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter;
 import org.grails.databinding.converters.web.LocaleAwareNumberConverter;
 import org.grails.plugins.databinding.DataBindingConfigurationProperties;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
@@ -47,7 +47,7 @@ public class DefaultConvertersConfiguration {
         LocaleResolver localResolver;
         try {
             localResolver = grailsApplication.getMainContext().getBean(LocaleResolver.class);
-        } catch (NoSuchBeanException e) {
+        } catch (NoSuchBeanDefinitionException e) {
             localResolver = null;
         }
         this.localResolver = localResolver;
