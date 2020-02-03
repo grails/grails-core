@@ -40,7 +40,7 @@ class ResponseRedirector {
     public static final String ARGUMENT_PERMANENT = "permanent"
     public static final String ARGUMENT_ABSOLUTE = "absolute"
     public static final String GRAILS_REDIRECT_ISSUED = GrailsApplicationAttributes.REDIRECT_ISSUED
-    private static final String BLANK = "";
+    private static final String BLANK = ""
     private static final String KEEP_PARAMS_WHEN_REDIRECT = 'keepParamsWhenRedirect'
 
     LinkGenerator linkGenerator
@@ -67,7 +67,7 @@ class ResponseRedirector {
         }
 
         if (response.committed) {
-            throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
+            throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.")
         }
 
         boolean permanent
@@ -79,9 +79,10 @@ class ResponseRedirector {
             permanent = Boolean.TRUE == permanentArgument
         }
 
+        final Map namedParameters = new LinkedHashMap<>(arguments)
         // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
         // which includes the contextPath
-        arguments.put LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK
+        namedParameters.put LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK
 
         boolean absolute
         def absoluteArgument = arguments.get(ARGUMENT_ABSOLUTE)
@@ -99,12 +100,11 @@ class ResponseRedirector {
             // instead of arguments.params so we merge them.
             def webRequest = GrailsWebRequest.lookup(request)
             if (webRequest.originalParams) {
-                Map existingParams = (Map) arguments.get(LinkGenerator.ATTRIBUTE_PARAMS) ?: [:]
-                arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, existingParams + webRequest.originalParams)
+                final Map configuredParams = (Map) arguments.get(LinkGenerator.ATTRIBUTE_PARAMS) ?: [:]
+                namedParameters.put(LinkGenerator.ATTRIBUTE_PARAMS, configuredParams + webRequest.originalParams)
             }
         }
-
-        redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent, absolute)
+        redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(namedParameters), request, response, permanent, absolute)
     }
 
     /*
@@ -116,7 +116,7 @@ class ResponseRedirector {
             log.debug "Executing redirect with response [$response]"
         }
 
-        String processedActualUri = processedUrl(actualUri, request);
+        String processedActualUri = processedUrl(actualUri, request)
 
         String redirectURI
         if (absolute) {
