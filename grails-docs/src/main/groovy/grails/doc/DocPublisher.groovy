@@ -25,6 +25,7 @@ import org.radeox.api.engine.WikiRenderEngine
 import org.radeox.engine.context.BaseInitialRenderContext
 import org.radeox.engine.context.BaseRenderContext
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.util.regex.Pattern
 
@@ -264,7 +265,7 @@ class DocPublisher {
         def legacyLinks = [:]
         if (legacyLinksFile.exists()) {
             legacyLinksFile.withInputStream { input ->
-                legacyLinks = new Yaml().load(input)
+                legacyLinks = new Yaml(new SafeConstructor()).load(input)
             }
         }
 
@@ -536,7 +537,7 @@ class DocPublisher {
             }
             else if(propertiesFile.name.endsWith('.yml')) {
                 propertiesFile.withInputStream { input ->
-                    def ymls = new Yaml().loadAll(input)
+                    def ymls = new Yaml(new SafeConstructor()).loadAll(input)
                     for(yml in ymls) {
                         if(yml instanceof Map) {
                             def config = yml.grails?.doc

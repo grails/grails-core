@@ -34,6 +34,7 @@ import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import org.grails.config.NavigableMap
 import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.SafeConstructor
 
 /**
  * Abstract implementation of the profile class
@@ -107,7 +108,7 @@ abstract class AbstractProfile implements Profile {
 
     protected void initialize() {
         def profileYml = profileDir.createRelative("profile.yml")
-        def profileConfig = (Map<String, Object>) new Yaml().loadAs(profileYml.getInputStream(), Map)
+        def profileConfig = (Map<String, Object>) new Yaml(new SafeConstructor()).loadAs(profileYml.getInputStream(), Map)
 
         name = profileConfig.get("name")?.toString()
         description = profileConfig.get("description")?.toString() ?: ''
@@ -137,7 +138,7 @@ abstract class AbstractProfile implements Profile {
                 else if(fileName.endsWith('.yml')) {
                     def yamlCommand = profileDir.createRelative("commands/$fileName")
                     if(yamlCommand.exists()) {
-                        def data = new Yaml().loadAs(yamlCommand.getInputStream(), Map.class)
+                        def data = new Yaml(new SafeConstructor()).loadAs(yamlCommand.getInputStream(), Map.class)
                         Command cmd = new DefaultMultiStepCommand(clsName.toString(), this, data)
                         Object minArguments = data?.minArguments
                         cmd.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
