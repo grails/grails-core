@@ -21,7 +21,6 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import grails.core.GrailsDomainClass;
 import grails.core.support.GrailsApplicationAware;
-import grails.util.Environment;
 import groovy.lang.Closure;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
@@ -53,7 +52,6 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
-    private static boolean developmentMode = Environment.isDevelopmentMode();
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         // no-op
