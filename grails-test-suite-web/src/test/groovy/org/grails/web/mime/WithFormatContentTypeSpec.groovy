@@ -2,7 +2,6 @@ package org.grails.web.mime
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import grails.util.Holders
 import grails.web.mime.MimeType
 import spock.lang.Issue
 import spock.lang.Specification
