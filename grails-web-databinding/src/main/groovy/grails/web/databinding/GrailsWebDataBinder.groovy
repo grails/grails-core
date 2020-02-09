@@ -659,7 +659,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         def formatString
         if(code) {
             def locale = getLocale()
-            formatString = messageSource.getMessage(code, [] as Object[], locale)
+            formatString = messageSource.getMessage((String) code, [] as Object[], locale)
         }
         if(!formatString) {
             formatString = super.getFormatString(annotation)
