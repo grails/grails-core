@@ -12,6 +12,7 @@ import org.grails.web.databinding.bindingsource.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 @Configuration
 public class DataBindingConfiguration {
@@ -37,7 +38,10 @@ public class DataBindingConfiguration {
         final ApplicationContext mainContext = grailsApplication.getMainContext();
         final ValueConverter[] mainContextConverters = mainContext
                 .getBeansOfType(ValueConverter.class).values().toArray(new ValueConverter[0]);
-        dataBinder.setValueConverters(ArrayUtils.concat(valueConverters, mainContextConverters));
+        final ValueConverter[] allValueConverters = ArrayUtils.concat(valueConverters, mainContextConverters);
+        AnnotationAwareOrderComparator.sort(allValueConverters);
+        dataBinder.setValueConverters(allValueConverters);
+
         final FormattedValueConverter[] mainContextFormattedValueConverters = mainContext
                 .getBeansOfType(FormattedValueConverter.class).values().toArray(new FormattedValueConverter[0]);
         dataBinder.setFormattedValueConverters(ArrayUtils.concat(formattedValueConverters, mainContextFormattedValueConverters));
