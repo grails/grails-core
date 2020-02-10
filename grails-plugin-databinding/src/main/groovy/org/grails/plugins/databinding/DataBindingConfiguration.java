@@ -4,6 +4,7 @@ import grails.core.GrailsApplication;
 import grails.databinding.TypedStructuredBindingEditor;
 import grails.databinding.converters.FormattedValueConverter;
 import grails.databinding.converters.ValueConverter;
+import grails.databinding.events.DataBindingListener;
 import grails.web.databinding.GrailsWebDataBinder;
 import io.micronaut.core.util.ArrayUtils;
 import org.grails.databinding.bindingsource.DataBindingSourceCreator;
@@ -26,12 +27,13 @@ public class DataBindingConfiguration {
             GrailsApplication grailsApplication,
             ValueConverter[] valueConverters,
             FormattedValueConverter[] formattedValueConverters,
-            TypedStructuredBindingEditor[] structuredBindingEditors) {
+            TypedStructuredBindingEditor[] structuredBindingEditors,
+            DataBindingListener[] dataBindingListeners) {
+
         GrailsWebDataBinder dataBinder = new GrailsWebDataBinder(grailsApplication);
         dataBinder.setConvertEmptyStringsToNull(configurationProperties.isConvertEmptyStringsToNull());
         dataBinder.setTrimStrings(configurationProperties.isTrimStrings());
         dataBinder.setAutoGrowCollectionLimit(configurationProperties.getAutoGrowCollectionLimit());
-        dataBinder.setStructuredBindingEditors(structuredBindingEditors);
         final ApplicationContext mainContext = grailsApplication.getMainContext();
         final ValueConverter[] mainContextConverters = mainContext
                 .getBeansOfType(ValueConverter.class).values().toArray(new ValueConverter[0]);
@@ -42,6 +44,9 @@ public class DataBindingConfiguration {
         final TypedStructuredBindingEditor[] mainContextStructuredBindingEditors = mainContext
                 .getBeansOfType(TypedStructuredBindingEditor.class).values().toArray(new TypedStructuredBindingEditor[0]);
         dataBinder.setStructuredBindingEditors(ArrayUtils.concat(structuredBindingEditors, mainContextStructuredBindingEditors));
+        final DataBindingListener[] mainContextDataBindingListeners = mainContext
+                .getBeansOfType(DataBindingListener.class).values().toArray(new DataBindingListener[0]);
+        dataBinder.setDataBindingListeners(ArrayUtils.concat(dataBindingListeners,mainContextDataBindingListeners));
         return dataBinder;
     }
 
