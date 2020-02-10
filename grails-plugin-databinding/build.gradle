@@ -7,4 +7,15 @@ dependencies {
 
     compile project(':grails-core'), project(':grails-web')
 
+    testCompile project(':grails-test-suite-base')
+    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+        exclude module:'grails-plugin-codecs'
+        exclude module:'grails-plugin-rest'
+        exclude module:'grails-plugin-interceptors'
+        exclude module:'grails-test'
+        exclude module:'grails-core'
+        exclude module:'async'
+        exclude module:'gsp'
+    }
+
 }
