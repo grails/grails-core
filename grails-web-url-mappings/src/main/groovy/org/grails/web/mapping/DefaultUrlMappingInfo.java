@@ -158,6 +158,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     @Override
     public String toString() {
+        if (urlData == null) {
+            return null;
+        }
         return urlData.getUrlPattern();
     }
 
