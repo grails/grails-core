@@ -24,6 +24,7 @@ import org.eclipse.aether.graph.Dependency
 import org.grails.config.NavigableMap
 import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.SafeConstructor
 
 
 /**
@@ -48,7 +49,7 @@ class DefaultFeature implements Feature {
         this.name = name
         this.location = location
         def featureYml = location.createRelative("feature.yml")
-        def featureConfig = (Map<String, Object>) new Yaml().loadAs(featureYml.getInputStream(), Map)
+        def featureConfig = (Map<String, Object>) new Yaml(new SafeConstructor()).loadAs(featureYml.getInputStream(), Map)
         configuration.merge(featureConfig)
         def dependencyMap = configuration.get("dependencies")
 
