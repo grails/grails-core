@@ -108,7 +108,7 @@ abstract class AbstractProfile implements Profile {
 
     protected void initialize() {
         def profileYml = profileDir.createRelative("profile.yml")
-        def profileConfig = (Map<String, Object>) new Yaml(new SafeConstructor()).loadAs(profileYml.getInputStream(), Map)
+        Map<String, Object> profileConfig = new Yaml(new SafeConstructor()).<Map<String, Object>> load(profileYml.getInputStream())
 
         name = profileConfig.get("name")?.toString()
         description = profileConfig.get("description")?.toString() ?: ''
