@@ -87,12 +87,8 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 	    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
 	    cd ..
 
-	    version="$TRAVIS_TAG"
-      version=${version:1}
-      majorVersion=${version:0:4}
-      majorVersion="${majorVersion}x"
 	    # Trigger the functional tests
-	    git clone -b ${majorVersion} https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
+	    git clone -b 4.0.x https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
 	    cd functional-tests
 	    echo "$(date)" > .snapshot
 	    git add .snapshot
