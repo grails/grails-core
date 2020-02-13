@@ -82,12 +82,17 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
         	fi
 	    fi
-	elif [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
+	elif [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_BRANCH =~ ^master|[234]\..\.x$ ]]; then
 	    echo "Builder Leading Publishing Snapshot..."
 	    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
 	    cd ..
+
+	    version="$TRAVIS_TAG"
+      version=${version:1}
+      majorVersion=${version:0:4}
+      majorVersion="${majorVersion}x"
 	    # Trigger the functional tests
-	    git clone -b master https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
+	    git clone -b ${majorVersion} https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
 	    cd functional-tests
 	    echo "$(date)" > .snapshot
 	    git add .snapshot
