@@ -15,5 +15,6 @@ class StaticCompilePropSpec extends Specification {
         then:
         environment
         environment.systemProperties['micronaut.groovy.config.compileStatic'] == "false"
+        System.getProperty('micronaut.groovy.config.compileStatic') == "false"
     }
 }
