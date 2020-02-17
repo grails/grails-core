@@ -138,7 +138,7 @@ abstract class AbstractProfile implements Profile {
                 else if(fileName.endsWith('.yml')) {
                     def yamlCommand = profileDir.createRelative("commands/$fileName")
                     if(yamlCommand.exists()) {
-                        def data = new Yaml(new SafeConstructor()).loadAs(yamlCommand.getInputStream(), Map.class)
+                        Map<String, Object> data = new Yaml(new SafeConstructor()).<Map>load(yamlCommand.getInputStream())
                         Command cmd = new DefaultMultiStepCommand(clsName.toString(), this, data)
                         Object minArguments = data?.minArguments
                         cmd.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1

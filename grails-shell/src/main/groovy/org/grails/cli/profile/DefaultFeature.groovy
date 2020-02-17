@@ -49,7 +49,7 @@ class DefaultFeature implements Feature {
         this.name = name
         this.location = location
         def featureYml = location.createRelative("feature.yml")
-        def featureConfig = (Map<String, Object>) new Yaml(new SafeConstructor()).loadAs(featureYml.getInputStream(), Map)
+        Map<String, Object> featureConfig = new Yaml(new SafeConstructor()).<Map<String, Object>>load(featureYml.getInputStream())
         configuration.merge(featureConfig)
         def dependencyMap = configuration.get("dependencies")
 
