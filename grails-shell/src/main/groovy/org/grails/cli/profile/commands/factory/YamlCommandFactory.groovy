@@ -53,7 +53,7 @@ class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
             if(resource.filename.endsWith('.json')) {
                 data = jsonSlurper.parse(is, "UTF-8") as Map
             } else {
-                data = yamlParser.loadAs(is, Map)
+                data = yamlParser.<Map>load(is)
             }
         } finally {
             is?.close()
