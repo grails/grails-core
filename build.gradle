@@ -128,6 +128,12 @@ ext {
             names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
             modules: ['']
         ],
+        h2: [
+            version: h2Version,
+            group  : 'com.h2database',
+            names  : ['h2'],
+            modules: ['']
+        ],
     ]
 
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
