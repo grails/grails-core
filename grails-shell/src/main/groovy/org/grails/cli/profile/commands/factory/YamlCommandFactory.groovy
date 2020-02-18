@@ -23,6 +23,7 @@ import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.DefaultMultiStepCommand
 import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.util.regex.Pattern
 
@@ -35,7 +36,7 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
-    protected Yaml yamlParser=new Yaml()
+    protected Yaml yamlParser=new Yaml(new SafeConstructor())
     // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
     protected JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
 
@@ -52,7 +53,7 @@ class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
             if(resource.filename.endsWith('.json')) {
                 data = jsonSlurper.parse(is, "UTF-8") as Map
             } else {
-                data = yamlParser.loadAs(is, Map)
+                data = yamlParser.<Map>load(is)
             }
         } finally {
             is?.close()

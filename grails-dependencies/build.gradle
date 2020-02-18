@@ -76,14 +76,6 @@ publishing {
                             delegate.scope "runtime"
                         }
 
-                        delegate.dependency {
-                            delegate.groupId "org.grails"
-                            delegate.artifactId "grails-plugin-testing"
-                            delegate.version( project.version )
-                            delegate.scope "test"
-                        }
-
-
                     }
                 }
             }

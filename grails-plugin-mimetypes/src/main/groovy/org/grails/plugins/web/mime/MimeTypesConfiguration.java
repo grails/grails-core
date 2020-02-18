@@ -23,10 +23,7 @@ import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeProvider;
 import grails.web.mime.MimeTypeResolver;
 import grails.web.mime.MimeUtility;
-import groovy.transform.CompileStatic;
-import groovy.transform.TypeCheckingMode;
 import io.micronaut.context.BeanDefinitionRegistry;
-import io.micronaut.context.annotation.Factory;
 import org.grails.web.mime.DefaultMimeTypeResolver;
 import org.grails.web.mime.DefaultMimeUtility;
 import org.springframework.context.ApplicationContext;
@@ -36,7 +33,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 

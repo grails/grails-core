@@ -1,8 +1,15 @@
 package grails.web.mapping
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.util.GrailsWebMockUtil
 import grails.web.http.HttpHeaders
+import org.grails.support.MockApplicationContext
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingInfo
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 
@@ -10,6 +17,15 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class RedirectWithParamsSpec extends AbstractUrlMappingsSpec {
+
+    UrlMappings createUrlMappingHolder(String mappings) {
+        ByteArrayResource res = new ByteArrayResource(mappings.bytes)
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+        def evaluator = new DefaultUrlMappingEvaluator(ctx)
+        List mappingsList = evaluator.evaluateMappings(res)
+        new DefaultUrlMappingsHolder(mappingsList)
+    }
 
     @Issue('#10622, #10965')
     void "Test that redirects keeps params previously stored in the request only with the option enabled"() {
@@ -34,6 +50,92 @@ class RedirectWithParamsSpec extends AbstractUrlMappingsSpec {
         then: 'the location header includes the params'
         1 * response.setStatus(302)
         1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/example/my-action?foo=bar&baz=123")
+
+        cleanup:
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
+    void "Test that keepParamsWhenRedirect flag redirects also merge params from UrlMappings config with original params"() {
+
+        given: 'a link generator'
+        UrlMappings urlMappings = createUrlMappingHolder('''
+        mappings {
+          '/images'(redirect:[uri:'/v1/images', permanent:true, keepParamsWhenRedirect: true, params: [test: '123']])
+          "/v1/$controller"(namespace: "v1")
+        }
+        ''')
+        LinkGenerator linkGenerator = new LinkGeneratorFactory().create(urlMappings)
+        ResponseRedirector responseRedirector = new ResponseRedirector(linkGenerator)
+
+        and: 'and the params for the redirect'
+        GrailsWebRequest webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.request.addParameter('foo', 'bar')
+
+        and: 'mocking request and response'
+        HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> webRequest }
+        HttpServletResponse response = Mock(HttpServletResponse)
+
+        when:
+        UrlMappingInfo[] matchedUrlMappings = urlMappings.matchAll("/images")
+
+        then:
+        matchedUrlMappings
+        matchedUrlMappings.size() == 1
+        matchedUrlMappings[0] instanceof DefaultUrlMappingInfo
+
+        when: 'the response is redirected'
+        DefaultUrlMappingInfo urlMappingInfo = (DefaultUrlMappingInfo) matchedUrlMappings[0]
+        responseRedirector.redirect(request, response, (Map) urlMappingInfo.redirectInfo)
+
+        then: 'the location header includes the params'
+        1 * response.setStatus(301)
+        1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/v1/images?test=123&foo=bar")
+    }
+
+    void "Test keepParamsWhenRedirect flag redirects alongside original request parameters"() {
+
+        given: 'a link generator'
+        UrlMappings urlMappings = createUrlMappingHolder('''
+        mappings {
+          '/images'(redirect:[uri:'/v1/images', permanent:true, keepParamsWhenRedirect: true])
+          "/v1/$controller"(namespace: "v1")
+        }
+        ''')
+        LinkGenerator linkGenerator = new LinkGeneratorFactory().create(urlMappings)
+        ResponseRedirector responseRedirector = new ResponseRedirector(linkGenerator)
+
+        and: 'and the params for the redirect'
+        GrailsWebRequest webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.request.addParameter('foo', 'bar')
+
+        and: 'mocking request and response'
+        HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> webRequest }
+        HttpServletResponse response = Mock(HttpServletResponse)
+
+        when:
+        UrlMappingInfo[] matchedUrlMappings = urlMappings.matchAll("/images")
+
+        then:
+        matchedUrlMappings
+        matchedUrlMappings.size() == 1
+        matchedUrlMappings[0] instanceof DefaultUrlMappingInfo
+
+        when: 'the response is redirected'
+        DefaultUrlMappingInfo urlMappingInfo = (DefaultUrlMappingInfo) matchedUrlMappings[0]
+        responseRedirector.redirect(request, response, (Map) urlMappingInfo.redirectInfo)
+
+        then: 'the location header includes the params'
+        1 * response.setStatus(301)
+        1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/v1/images?foo=bar")
+
+        when:
+        webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.request.addParameter('baz', '123')
+        responseRedirector.redirect(request, response, (Map) urlMappingInfo.redirectInfo)
+
+        then: 'the location header includes the params'
+        1 * response.setStatus(301)
+        1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/v1/images?baz=123")
 
         cleanup:
         RequestContextHolder.setRequestAttributes(null)

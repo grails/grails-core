@@ -39,7 +39,6 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.PropertyResolver
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.util.ClassUtils
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -59,6 +58,7 @@ class GrailsApp extends SpringApplication {
 
     private static boolean developmentModeActive = false
     private static DirectoryWatcher directoryWatcher
+    private static final String COMPILE_STATIC_PROP = 'micronaut.groovy.config.compileStatic'
 
     boolean enableBeanCreationProfiler = false
     ConfigurableEnvironment configuredEnvironment
@@ -103,8 +103,9 @@ class GrailsApp extends SpringApplication {
         log.debug("Current base directory is [{}]. Reloading base directory is [{}]", new File("."), BuildSettings.BASE_DIR)
 
         if(environment.isReloadEnabled()) {
-            log.debug("Reloading status: ", environment.isReloadEnabled())
+            log.debug("Reloading status: {}", environment.isReloadEnabled())
             enableDevelopmentModeWatch(environment, applicationContext)
+            environment.isDevtoolsRestart()
         }
         printRunStatus(applicationContext)
 
@@ -148,7 +149,7 @@ class GrailsApp extends SpringApplication {
         if (objectMapper != null) {
             beanExcludes.add(objectMapper)
         }
-        def micronautContext = new io.micronaut.context.DefaultApplicationContext(micronautConfiguration);
+        def micronautContext = new io.micronaut.context.DefaultApplicationContext(micronautConfiguration)
         micronautContext
                 .environment
                 .addPropertySource("grails-config", [(MicronautBeanFactoryConfiguration.PREFIX + ".bean-excludes"): (Object)beanExcludes])
@@ -183,6 +184,7 @@ class GrailsApp extends SpringApplication {
         }
 
         def env = Environment.current
+        environment.systemProperties[COMPILE_STATIC_PROP] = "false"
         environment.addActiveProfile(env.name)
         configuredEnvironment = environment
     }
@@ -326,8 +328,6 @@ class GrailsApp extends SpringApplication {
             }
             directoryWatcher.start()
         }
-
-
     }
 
     static boolean isDevelopmentModeActive() {

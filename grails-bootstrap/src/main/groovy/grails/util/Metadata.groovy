@@ -23,6 +23,7 @@ import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.lang.ref.Reference
 import java.lang.ref.SoftReference
@@ -167,7 +168,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     private Object loadYml(InputStream input) {
-        Yaml yaml = new Yaml()
+        Yaml yaml = new Yaml(new SafeConstructor())
         def loadedYaml = yaml.loadAll(input)
         List result = []
         for(Object yamlObject : loadedYaml) {

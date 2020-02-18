@@ -23,11 +23,13 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.grails.io.support.Resource;
 import org.grails.io.support.UrlResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Locale;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -51,13 +53,15 @@ public enum Environment {
     TEST,
 
     /**
-     * For the application data source, primarly for backward compatability for those applications
+     * For the application data source, primarily for backward compatibility for those applications
      * that use ApplicationDataSource.groovy.
      */
     APPLICATION,
 
     /** A custom environment */
     CUSTOM;
+
+    private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
 
     /**
      * Constant used to resolve the environment via System.getProperty(Environment.KEY)
@@ -362,7 +366,55 @@ public enum Environment {
         Environment env = Environment.getCurrent();
         return isDevelopmentEnvironmentAvailable() && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
     }
-    
+
+    /**
+     * Checks if the run of the app is due to spring dev-tools or not.
+     * @return True if spring-dev-tools restart
+     */
+    public static boolean isDevtoolsRestart() {
+        File pidFile = new File(BuildSettings.TARGET_DIR.toString() + File.separator + ".grailspid");
+        LOG.debug("Looking for pid file at: {}", pidFile);
+        boolean isDevToolsRestart = false;
+        try {
+            if(Environment.isDevelopmentMode()) {
+                String pid = ManagementFactory.getRuntimeMXBean().getName();
+                if(pidFile.exists())  {
+                    if(pid.equals(Files.readAllLines(pidFile.toPath()).get(0))) {
+                        LOG.debug("spring-dev-tools restart detected.");
+                        isDevToolsRestart = true;
+                    } else {
+                        LOG.debug("spring-dev-tools first app start - creating pid file.");
+                        writeDevToolsPidFile(pidFile, pid);
+                    }
+                } else {
+                    LOG.debug("spring-dev-tools pid file did not exist.");
+                    writeDevToolsPidFile(pidFile, pid);
+                }
+            }
+        } catch(Exception ex) {
+            LOG.error("spring-dev-tools restart detection error: {}", ex);
+        }
+        LOG.debug("spring-dev-tools restart: {}", isDevToolsRestart);
+        return isDevToolsRestart;
+    }
+
+    private static void writeDevToolsPidFile(File pidFile, String content) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(pidFile));
+            writer.write(content);
+        } catch(Exception ex) {
+            LOG.error("spring-dev-tools restart unable to write pid file: {}", ex);
+        } finally {
+            try {
+                if(writer != null) {
+                    writer.flush();
+                    writer.close();
+                }
+            } catch (Exception ignored) { }
+        }
+    }
+
     /**
      * Check whether the application is deployed
      * @return true if is
@@ -659,9 +711,23 @@ public enum Environment {
         try {
             Class.forName("org.springframework.boot.devtools.RemoteSpringApplication");
             reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
+            LOG.debug("Found spring-dev-tools on the class path");
         }
         catch (ClassNotFoundException e) {
             reloadingAgentEnabled = false;
+            try {
+                String jvmVersion = System.getProperty("java.specification.version");
+                if(jvmVersion.equals("1.8")) {
+                    Class.forName("org.springsource.loaded.TypeRegistry");
+                    LOG.debug("Found spring-loaded on the class path");
+                    reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
+                } else {
+                    LOG.warn("Found spring-loaded on classpath but JVM is not 1.8 - skipping");
+                }
+            }
+            catch (ClassNotFoundException e1) {
+                reloadingAgentEnabled = false;
+            }
         }
         return reloadingAgentEnabled;
     }

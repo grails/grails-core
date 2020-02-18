@@ -17,12 +17,11 @@
 package grails.rest.web
 
 import grails.artefact.Artefact
+import grails.core.support.proxy.ProxyHandler
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import grails.web.mime.MimeType
-import grails.core.support.proxy.ProxyHandler
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Issue
@@ -30,10 +29,10 @@ import spock.lang.Specification
 
 class RespondMethodSpec extends Specification implements ControllerUnitTest<BookController>, DomainUnitTest<Book> {
 
-    void setup() {
-        def ga = grailsApplication
-        ga.config.grails.mime.types =
-            [ html: ['text/html','application/xhtml+xml'],
+    Closure doWithConfig() {{ config ->
+        // unit tests in real applications will not need to do
+        // this because the real Config.groovy will be loaded
+        config.grails.mime.types = [html         : ['text/html', 'application/xhtml+xml'],
             xml: ['text/xml', 'application/xml'],
             text: 'text/plain',
             js: 'text/javascript',
@@ -46,13 +45,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
             form: 'application/x-www-form-urlencoded',
             multipartForm: 'multipart/form-data'
         ]
-
-        defineBeans {
-            mimeTypes(MimeTypesFactoryBean) {
-                grailsApplication = ga
-            }
-        }
-    }
+    }}
 
     void "Test that the respond method produces the correct model for a domain instance and no specific content type"() {
         given:"A book instance"
