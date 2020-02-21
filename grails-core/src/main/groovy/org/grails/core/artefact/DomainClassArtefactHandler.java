@@ -53,7 +53,6 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
-    private static boolean developmentMode = Environment.isDevelopmentMode();
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         // no-op
