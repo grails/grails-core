@@ -58,7 +58,6 @@ class GrailsApp extends SpringApplication {
 
     private static boolean developmentModeActive = false
     private static DirectoryWatcher directoryWatcher
-    private static final String COMPILE_STATIC_PROP = 'micronaut.groovy.config.compileStatic'
 
     boolean enableBeanCreationProfiler = false
     ConfigurableEnvironment configuredEnvironment
@@ -149,7 +148,7 @@ class GrailsApp extends SpringApplication {
         if (objectMapper != null) {
             beanExcludes.add(objectMapper)
         }
-        def micronautContext = new io.micronaut.context.DefaultApplicationContext(micronautConfiguration)
+        def micronautContext = new io.micronaut.context.DefaultApplicationContext(micronautConfiguration);
         micronautContext
                 .environment
                 .addPropertySource("grails-config", [(MicronautBeanFactoryConfiguration.PREFIX + ".bean-excludes"): (Object)beanExcludes])
@@ -184,7 +183,6 @@ class GrailsApp extends SpringApplication {
         }
 
         def env = Environment.current
-        environment.systemProperties[COMPILE_STATIC_PROP] = "false"
         environment.addActiveProfile(env.name)
         configuredEnvironment = environment
     }
