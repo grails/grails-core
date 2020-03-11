@@ -315,7 +315,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                     usedParams.add(propName);
 
                     if (value != null) {
-                        token = token.replaceFirst(DOUBLE_WILDCARD_PATTERN.pattern(), value.toString());
+                        token = token.replaceFirst(DOUBLE_WILDCARD_PATTERN.pattern(), value.toString().replace("$", "\\$"));
                         tokenSet = true;
                     }
                     else {
