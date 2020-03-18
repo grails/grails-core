@@ -1,7 +1,10 @@
 package org.grails.web.mapping
 
 import grails.core.DefaultGrailsApplication
+import grails.gorm.validation.ConstrainedProperty
+import grails.gorm.validation.DefaultConstrainedProperty
 import grails.web.mapping.UrlMapping
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.junit.Test
 import org.springframework.mock.web.MockServletContext
 
@@ -169,5 +172,15 @@ class RegexUrlMappingTests {
         Collections.sort(urls)
         Collections.reverse(urls)
         assertEquals(correctOrder, urls)
+    }
+
+    @Test
+    void testDollarSignParamsAllowed() {
+        def parser = new DefaultUrlMappingParser()
+        def application = new DefaultGrailsApplication()
+        def defaultRegistry = new DefaultConstraintRegistry()
+        def constraints = [new DefaultConstrainedProperty(UrlMapping.class, "controller", String.class, defaultRegistry), new DefaultConstrainedProperty(UrlMapping.class, "action", String.class, defaultRegistry), new DefaultConstrainedProperty(UrlMapping.class, "id", String.class, defaultRegistry), new DefaultConstrainedProperty(UrlMapping.class, "format", String.class, defaultRegistry)]
+        def m1 = new RegexUrlMapping(parser.parse('/(*)/(*)?/(*)?(.(*))?'), null, null, null, null, null, null, UrlMapping.ANY_VERSION, constraints as ConstrainedProperty[], application)
+        assert m1.createURL([id: 'AST$RING', action: "save", controller: "someController"], null) == '/someController/save/AST$RING'
     }
 }
