@@ -91,7 +91,11 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
             }
         }
         for (key in keys) {
-            configObject[camelToKebabCase(key)] = configObject[key]
+            if (!configObject[camelToKebabCase(key)]) {
+                configObject[camelToKebabCase(key)] = configObject[key]
+            } else {
+                throw new ConfigurationException("Key [" + key + "] defined as both camel and kebab case.")
+            }
         }
     }
 

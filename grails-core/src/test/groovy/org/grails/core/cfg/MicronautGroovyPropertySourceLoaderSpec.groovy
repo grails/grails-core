@@ -1,6 +1,7 @@
 package org.grails.core.cfg
 
 import grails.util.Metadata
+import io.micronaut.context.exceptions.ConfigurationException
 import org.grails.config.NavigableMap
 import spock.lang.Specification
 
@@ -101,6 +102,19 @@ info:
         finalMap.get("micronaut.http.services.example-service.path")
     }
 
+    void "test parsing configuration file with duplicated keys"() {
+        setup:
+        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithCamelCaseAndKebabCaseVars)
+        MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
+        Map<String, Object> finalMap = [:]
+
+        when:
+        groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
+
+        then:
+        thrown ConfigurationException
+    }
+
     private byte[] getApplicationGroovyWithDsl() {
         '''
 grails.gorm.default.constraints = {
@@ -143,6 +157,13 @@ micronaut{
 '''
 micronaut.http.services.exampleService.url = "http://localhost:8080"
 micronaut.http.services.exampleService.path = "/example"
+'''.bytes
+    }
+
+    private byte[] getApplicationGroovyWithCamelCaseAndKebabCaseVars() {
+'''
+micronaut.http.services.exampleService.url = "http://localhost:8080"
+micronaut.http.services."example-service".url = "http://localhost:8080"
 '''.bytes
     }
 }
