@@ -41,6 +41,7 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
                         appVersion: Metadata.getCurrent().getApplicationVersion())
                 try {
                     def configObject = configSlurper.parse(input.getText("UTF-8"))
+                    convertKeysToKebab(configObject)
                     def propertySource = new NavigableMap()
                     propertySource.merge(configObject, false)
                     finalMap.putAll(propertySource)
@@ -73,4 +74,25 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
     Set<String> getExtensions() {
         return Collections.singleton("groovy")
     }
+
+    private void convertKeysToKebab(ConfigObject configObject) {
+        def camelToKebabCase = {String text ->
+            text.replaceAll(/([A-Z])/, /-$1/).toLowerCase().replaceAll(/^-/, '')
+        }
+        List<String> keys = []
+        for (key in configObject.keySet()) {
+            if (key.getClass() == String && configObject[key]) {
+                if (configObject[key].getClass() == ConfigObject) {
+                    convertKeysToKebab(configObject[key] as ConfigObject)
+                }
+                if (camelToKebabCase(key as String) != key) {
+                    keys.add(key as String)
+                }
+            }
+        }
+        for (key in keys) {
+            configObject[camelToKebabCase(key)] = configObject[key]
+        }
+    }
+
 }

@@ -67,6 +67,39 @@ info:
         Metadata.reset()
     }
 
+    void "test parsing configuration file with camel cased keys"() {
+        setup:
+        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithCamelCaseVars)
+        MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
+        Map<String, Object> finalMap = [:]
+
+        when:
+        groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
+
+        then:
+        noExceptionThrown()
+        finalMap.containsKey("micronaut.http.services.example-service.url")
+        finalMap.containsKey("micronaut.http.services.example-service.path")
+        finalMap.get("micronaut.http.services.example-service.url")
+        finalMap.get("micronaut.http.services.example-service.path")
+    }
+
+    void "test parsing configuration file with flattened camel cased keys"() {
+        setup:
+        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithFlatCamelCaseVars)
+        MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
+        Map<String, Object> finalMap = [:]
+
+        when:
+        groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
+
+        then:
+        noExceptionThrown()
+        finalMap.containsKey("micronaut.http.services.example-service.url")
+        finalMap.containsKey("micronaut.http.services.example-service.path")
+        finalMap.get("micronaut.http.services.example-service.url")
+        finalMap.get("micronaut.http.services.example-service.path")
+    }
 
     private byte[] getApplicationGroovyWithDsl() {
         '''
@@ -88,6 +121,28 @@ userHomeVar=userHome
 grailsHomeVar=grailsHome
 appNameVar=appName
 appVersionVar=appVersion
+'''.bytes
+    }
+
+    private byte[] getApplicationGroovyWithCamelCaseVars() {
+'''
+micronaut{
+    http {
+        services{
+            exampleService{
+                url = "http://localhost:8080"
+                path = "/example"
+            }
+        }
+    }
+}
+'''.bytes
+    }
+
+    private byte[] getApplicationGroovyWithFlatCamelCaseVars() {
+'''
+micronaut.http.services.exampleService.url = "http://localhost:8080"
+micronaut.http.services.exampleService.path = "/example"
 '''.bytes
     }
 }
