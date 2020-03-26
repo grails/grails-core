@@ -21,8 +21,6 @@ import java.util.stream.Stream
 @CompileStatic
 class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
 
-    AtomicBoolean loaded = new AtomicBoolean(false)
-
     @Override
     int getOrder() {
         return DEFAULT_POSITION
@@ -30,25 +28,22 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
 
     @Override
     protected void processInput(String name, InputStream input, Map<String, Object> finalMap) throws IOException {
-        if (loaded.compareAndSet(false, true)) {
-            def env = Environment.current.name
-            if (input.available()) {
-                ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
-                configSlurper.setBinding(
-                        userHome: System.getProperty('user.home'),
-                        grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
-                        appName: Metadata.getCurrent().getApplicationName(),
-                        appVersion: Metadata.getCurrent().getApplicationVersion())
-                try {
-                    def configObject = configSlurper.parse(input.getText("UTF-8"))
-                    def propertySource = new NavigableMap()
-                    propertySource.merge(configObject, false)
-                    finalMap.putAll(propertySource)
-                } catch (Throwable e) {
-                    throw new ConfigurationException("Exception occurred reading configuration [" + name + "]: " + e.getMessage(), e)
-                }
+        def env = Environment.current.name
+        if (input.available()) {
+            ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
+            configSlurper.setBinding(
+                userHome: System.getProperty('user.home'),
+                grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
+                appName: Metadata.getCurrent().getApplicationName(),
+                appVersion: Metadata.getCurrent().getApplicationVersion())
+            try {
+                def configObject = configSlurper.parse(input.getText("UTF-8"))
+                def propertySource = new NavigableMap()
+                propertySource.merge(configObject, false)
+                finalMap.putAll(propertySource)
+            } catch (Throwable e) {
+                throw new ConfigurationException("Exception occurred reading configuration [" + name + "]: " + e.getMessage(), e)
             }
-
         }
     }
 
