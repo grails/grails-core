@@ -67,6 +67,29 @@ info:
         Metadata.reset()
     }
 
+    void "test loading multiple configuration files"() {
+        setup:
+        InputStream inputStreamWithDsl = new ByteArrayInputStream(applicationGroovyWithDsl)
+        InputStream inputStreamWithUnknown = new ByteArrayInputStream(applicationGroovyWithUnknownVars)
+
+        MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
+        Map<String, Object> finalMap = [:]
+
+        when:
+        groovyPropertySourceLoader.processInput("test-application.groovy", inputStreamWithDsl, finalMap)
+        groovyPropertySourceLoader.processInput("external-config.groovy", inputStreamWithUnknown, finalMap)
+
+        then:
+        noExceptionThrown()
+        finalMap.get("grails") instanceof NavigableMap
+        finalMap.get("grails.gorm.default.constraints")
+        finalMap.get("grails.gorm.default.constraints") instanceof Closure
+        finalMap.containsKey("undefinedVar")
+        !finalMap.get("undefinedVar")
+        finalMap.containsKey("my.local.var")
+        !finalMap.get("my.local.var")
+        finalMap.get("my") instanceof NavigableMap
+    }
 
     private byte[] getApplicationGroovyWithDsl() {
         '''
