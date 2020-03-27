@@ -39,7 +39,7 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
             try {
                 def configObject = configSlurper.parse(input.getText("UTF-8"))
                 def propertySource = new NavigableMap()
-                propertySource.merge(configObject, false)
+                propertySource.merge(configObject.flatten(), false)
                 finalMap.putAll(propertySource)
             } catch (Throwable e) {
                 throw new ConfigurationException("Exception occurred reading configuration [" + name + "]: " + e.getMessage(), e)
@@ -68,4 +68,5 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
     Set<String> getExtensions() {
         return Collections.singleton("groovy")
     }
+
 }
