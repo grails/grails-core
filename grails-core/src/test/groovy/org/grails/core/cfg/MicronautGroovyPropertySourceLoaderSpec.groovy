@@ -19,9 +19,7 @@ class MicronautGroovyPropertySourceLoaderSpec extends Specification {
         groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
 
         then:
-        noExceptionThrown()
-        finalMap.get("grails") instanceof NavigableMap
-        finalMap.get("grails.gorm.default.constraints")
+        finalMap.size() == 1
         finalMap.get("grails.gorm.default.constraints") instanceof Closure
     }
 
@@ -35,12 +33,7 @@ class MicronautGroovyPropertySourceLoaderSpec extends Specification {
         groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
 
         then:
-        noExceptionThrown()
-        finalMap.containsKey("undefinedVar")
-        !finalMap.get("undefinedVar")
-        finalMap.containsKey("my.local.var")
-        !finalMap.get("my.local.var")
-        finalMap.get("my") instanceof NavigableMap
+        finalMap.isEmpty()
     }
 
     void "test parsing configuration for built-in variables"() {
@@ -59,7 +52,8 @@ info:
         groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
 
         then:
-        noExceptionThrown()
+        finalMap.size() == 4
+        finalMap.containsKey("grailsHomeVar") & !finalMap.get("grailsHomeVar")
         finalMap.get("userHomeVar")
         finalMap.get("appNameVar")
         finalMap.get("appVersionVar")
@@ -68,9 +62,10 @@ info:
         Metadata.reset()
     }
 
-    void "test parsing configuration file with camel cased keys"() {
+    void "test nested configurations are flattened"() {
+
         setup:
-        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithCamelCaseVars)
+        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithNesting)
         MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
         Map<String, Object> finalMap = [:]
 
@@ -78,33 +73,16 @@ info:
         groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
 
         then:
-        noExceptionThrown()
-        finalMap.containsKey("micronaut.http.services.example-service.url")
-        finalMap.containsKey("micronaut.http.services.example-service.path")
-        finalMap.get("micronaut.http.services.example-service.url")
-        finalMap.get("micronaut.http.services.example-service.path")
-    }
-
-    void "test parsing configuration file with flattened camel cased keys"() {
-        setup:
-        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithFlatCamelCaseVars)
-        MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
-        Map<String, Object> finalMap = [:]
-
-        when:
-        groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
-
-        then:
-        noExceptionThrown()
-        finalMap.containsKey("micronaut.http.services.example-service.url")
-        finalMap.containsKey("micronaut.http.services.example-service.path")
-        finalMap.get("micronaut.http.services.example-service.url")
-        finalMap.get("micronaut.http.services.example-service.path")
+        finalMap.size() == 2
+        finalMap.containsKey("micronaut.http.services.exampleService.url")
+        finalMap.containsKey("micronaut.http.services.exampleService.path")
+        finalMap.get("micronaut.http.services.exampleService.url")
+        finalMap.get("micronaut.http.services.exampleService.path")
     }
 
     void "test parsing configuration file with duplicated keys"() {
         setup:
-        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithCamelCaseAndKebabCaseVars)
+        InputStream inputStream = new ByteArrayInputStream(applicationGroovyWithDuplicateEntries)
         MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
         Map<String, Object> finalMap = [:]
 
@@ -112,31 +90,29 @@ info:
         groovyPropertySourceLoader.processInput("test-application.groovy", inputStream, finalMap)
 
         then:
-        thrown ConfigurationException
+        finalMap.size() == 1
+        finalMap.get("micronaut.http.services.exampleService.url") == "http://localhost:8080"
     }
 
     void "test loading multiple configuration files"() {
         setup:
         InputStream inputStreamWithDsl = new ByteArrayInputStream(applicationGroovyWithDsl)
-        InputStream inputStreamWithUnknown = new ByteArrayInputStream(applicationGroovyWithUnknownVars)
+        InputStream inputSteamBuiltInVars = new ByteArrayInputStream(applicationGroovyBuiltInVars)
 
         MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
         Map<String, Object> finalMap = [:]
 
         when:
         groovyPropertySourceLoader.processInput("test-application.groovy", inputStreamWithDsl, finalMap)
-        groovyPropertySourceLoader.processInput("external-config.groovy", inputStreamWithUnknown, finalMap)
+        groovyPropertySourceLoader.processInput("builtin-config.groovy", inputSteamBuiltInVars, finalMap)
 
         then:
-        noExceptionThrown()
-        finalMap.get("grails") instanceof NavigableMap
-        finalMap.get("grails.gorm.default.constraints")
+        finalMap.size() == 5
+        finalMap.containsKey("grailsHomeVar") & !finalMap.get("grailsHomeVar")
+        finalMap.containsKey("appNameVar") & !finalMap.get("appNameVar")
+        finalMap.containsKey("appVersionVar")  & !finalMap.get("appVersionVar")
+        finalMap.get("userHomeVar")
         finalMap.get("grails.gorm.default.constraints") instanceof Closure
-        finalMap.containsKey("undefinedVar")
-        !finalMap.get("undefinedVar")
-        finalMap.containsKey("my.local.var")
-        !finalMap.get("my.local.var")
-        finalMap.get("my") instanceof NavigableMap
     }
 
     private byte[] getApplicationGroovyWithDsl() {
@@ -162,7 +138,7 @@ appVersionVar=appVersion
 '''.bytes
     }
 
-    private byte[] getApplicationGroovyWithCamelCaseVars() {
+    private byte[] getApplicationGroovyWithNesting() {
 '''
 micronaut{
     http {
@@ -177,17 +153,10 @@ micronaut{
 '''.bytes
     }
 
-    private byte[] getApplicationGroovyWithFlatCamelCaseVars() {
+    private byte[] getApplicationGroovyWithDuplicateEntries() {
 '''
 micronaut.http.services.exampleService.url = "http://localhost:8080"
-micronaut.http.services.exampleService.path = "/example"
-'''.bytes
-    }
-
-    private byte[] getApplicationGroovyWithCamelCaseAndKebabCaseVars() {
-'''
 micronaut.http.services.exampleService.url = "http://localhost:8080"
-micronaut.http.services."example-service".url = "http://localhost:8080"
 '''.bytes
     }
 }
