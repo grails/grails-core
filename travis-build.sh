@@ -88,7 +88,7 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 	    cd ..
 
 	    # Trigger the functional tests
-	    git clone -b 4.0.x https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
+	    git clone -b $TRAVIS_BRANCH https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
 	    cd functional-tests
 	    echo "$(date)" > .snapshot
 	    git add .snapshot
