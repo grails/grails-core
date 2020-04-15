@@ -38,7 +38,7 @@ deploy:
     tags: true
     all_branches: true
 after_deploy:
-- "./gradlew sdkMinorRelease"
+- "./gradlew sdkMajorRelease"
 cache:
   directories:
   - "$HOME/.gradle"
