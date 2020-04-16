@@ -35,8 +35,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Graeme Rocher
  * @since 3.0
  */
-//TODO: Figure-out the problem and uncomment CompileStatic
-//@CompileStatic
+@CompileStatic
 abstract class AbstractGrailsControllerUrlMappings implements UrlMappings {
 
     UrlMappings urlMappingsHolderDelegate
@@ -185,20 +184,19 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings {
 
     protected UrlMappingInfo[] collectControllerMappings(UrlMappingInfo[] infos) {
         def webRequest = GrailsWebRequest.lookup()
-        infos.collect( { UrlMappingInfo info ->
-            if(info.redirectInfo) {
+        infos.collect({ UrlMappingInfo info ->
+            if (info.redirectInfo) {
                 return info
             }
-            if(webRequest != null) {
+            if (webRequest != null) {
                 webRequest.resetParams()
                 info.configure(webRequest)
             }
-            def controllerKey = new ControllerKey(info.namespace, info.controllerName, info.actionName, info.pluginName)
+            ControllerKey controllerKey = new ControllerKey(info.namespace, info.controllerName, info.actionName, info.pluginName)
             GrailsControllerClass controllerClass = info ? mappingsToGrailsControllerMap.get(controllerKey) : null
-            if(controllerClass) {
+            if (controllerClass) {
                 return new GrailsControllerUrlMappingInfo(controllerClass, info)
-            }
-            else {
+            } else {
                 return info
             }
         }) as UrlMappingInfo[]
@@ -215,18 +213,11 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings {
     }
 
     @Canonical
-    class ControllerKey {
+    static class ControllerKey {
         String namespace
         String controller
         String action
         String plugin
-
-        ControllerKey(String namespace, String controller, String action, String plugin) {
-            this.namespace = namespace
-            this.controller = controller
-            this.action = action
-            this.plugin = plugin
-        }
     }
 }
 
