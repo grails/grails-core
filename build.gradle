@@ -477,6 +477,14 @@ subprojects { project ->
     }
 
     test {
+        testLogging {
+            events "passed", "skipped", "failed"
+
+            showExceptions true
+            exceptionFormat "full"
+            showCauses true
+            showStackTraces true
+        }
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
         if (isTravisBuild) {
             maxParallelForks = 2
