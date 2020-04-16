@@ -122,7 +122,6 @@ public class GrailsClassUtilsTests {
     public void testAssignableFromOrPrimitiveCompatible() {
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(double.class, Double.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Integer.class, int.class));
-        assertTrue(GrailsClassUtils.isGroovyAssignableFrom(TestCase.class, GrailsClassUtilsTests.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Number.class, int.class));
     }
 
