@@ -15,19 +15,15 @@
  */
 package org.grails.web.mapping.mvc
 
-import grails.util.GrailsNameUtils
-import grails.web.UrlConverter
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
-import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
-import grails.web.mapping.UrlCreator
-import grails.web.mapping.UrlMapping
-import grails.web.mapping.UrlMappingInfo
-import grails.web.mapping.UrlMappings
-import grails.web.mapping.UrlMappingsHolder
+import grails.util.GrailsNameUtils
+import grails.web.UrlConverter
+import grails.web.mapping.*
+import groovy.transform.Canonical
+import groovy.transform.CompileStatic
+import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.http.HttpMethod
 
@@ -39,8 +35,9 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Graeme Rocher
  * @since 3.0
  */
-@CompileStatic
-abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
+//TODO: Figure-out the problem and uncomment CompileStatic
+//@CompileStatic
+abstract class AbstractGrailsControllerUrlMappings implements UrlMappings {
 
     UrlMappings urlMappingsHolderDelegate
     UrlConverter urlConverter
@@ -188,7 +185,7 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
     protected UrlMappingInfo[] collectControllerMappings(UrlMappingInfo[] infos) {
         def webRequest = GrailsWebRequest.lookup()
-        infos.collect() { UrlMappingInfo info ->
+        infos.collect( { UrlMappingInfo info ->
             if(info.redirectInfo) {
                 return info
             }
@@ -204,7 +201,7 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
             else {
                 return info
             }
-        } as UrlMappingInfo[]
+        }) as UrlMappingInfo[]
     }
 
     protected UrlMappingInfo collectControllerMapping(UrlMappingInfo info) {
