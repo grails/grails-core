@@ -16,15 +16,18 @@ package org.grails.commons;
 
 import grails.core.ArtefactHandler;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
-import org.grails.commons.CodecArtefactHandler;
 import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Marc Palmer
  */
-public class CodecArtefactHandlerTests extends TestCase {
+public class CodecArtefactHandlerTests {
 
+    @Test
     public void testIsCodecClass() {
 
         ArtefactHandler handler = new CodecArtefactHandler();
@@ -34,24 +37,25 @@ public class CodecArtefactHandlerTests extends TestCase {
                 "static def encode = { str -> }\n" +
                 "static def decode = { str -> }\n" +
                 "}\n");
-        assertTrue("class was an encoder/decoder", handler.isArtefact(fullCodecClass));
+        assertTrue(handler.isArtefact(fullCodecClass), "class was an encoder/decoder");
 
         Class<?> decodeOnlyCodecClass = gcl.parseClass("class DecodeOnlyCodec {\n" +
                 "static def decode = { str -> }\n" +
                 "}\n");
-        assertTrue("class was a decoder", handler.isArtefact(decodeOnlyCodecClass));
+        assertTrue(handler.isArtefact(decodeOnlyCodecClass), "class was a decoder");
 
         Class<?> encodeOnlyCodecClass = gcl.parseClass("class EncodeOnlyCodec {\n" +
                 "static def encode = { str -> }\n" +
                 "}\n");
-        assertTrue("class was an encoder", handler.isArtefact(encodeOnlyCodecClass));
+        assertTrue(handler.isArtefact(encodeOnlyCodecClass), "class was an encoder");
 
         Class<?> nonCodecClass = gcl.parseClass("class SomeFoo {\n" +
                 "static def encode = { str -> }\n" +
                 "}\n");
-        assertFalse("class was not a codec", handler.isArtefact(nonCodecClass));
+        assertFalse(handler.isArtefact(nonCodecClass), "class was not a codec");
     }
 
+    @Test
     public void testDomainClassWithNameEndingInCodecIsNotACodec() {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class<?> c = gcl.parseClass("@grails.persistence.Entity\nclass MySpecialCodec { Long id;Long version;}\n");

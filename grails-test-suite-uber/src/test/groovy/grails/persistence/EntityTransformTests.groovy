@@ -11,6 +11,19 @@ import static org.junit.jupiter.api.Assertions.*
  */
 class EntityTransformTests {
 
+    @Delegate protected GroovyShell shell
+
+    @BeforeEach
+    void setup() {
+        shell = createNewShell()
+    }
+
+
+    protected GroovyShell createNewShell() {
+        return new GroovyShell()
+    }
+
+
     // test for http://jira.codehaus.org/browse/GRAILS-5238
     void testGRAILS_5238() {
         def p = evaluate('''
@@ -114,6 +127,7 @@ p = new Permission(user:u, permission:"uber")
         assertNotNull entity.one
     }
 
+    @Test
     void testToStringOverrideTests() {
         def entities = evaluate('''
 
