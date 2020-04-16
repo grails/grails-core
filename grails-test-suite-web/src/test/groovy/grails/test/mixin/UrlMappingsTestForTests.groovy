@@ -2,7 +2,7 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.testing.web.UrlMappingsUnitTest
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import spock.lang.Specification
 
 class UrlMappingsTestForTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
