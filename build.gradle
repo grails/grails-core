@@ -416,7 +416,7 @@ subprojects { project ->
 
 
     configure([compileGroovy, compileTestGroovy]) {
-        groovyOptions.fork(jvmArgs: ['-XX:MaxPermSize=512m'], memoryInitialSize: '128M', memoryMaximumSize: '1G')
+        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
         options.encoding = "UTF-8"
     }
@@ -452,13 +452,8 @@ subprojects { project ->
 
         compile groovyDependency
 
-        testCompile "org.codehaus.groovy:groovy-test:${groovyVersion}", {
-            exclude group:'junit', module: 'junit'
-            exclude group:'org.codehaus.groovy', module: 'groovy'
-            exclude group:'org.hamcrest', module: 'hamcrest-core'
-        }
-
-//        testCompile("org.codehaus.groovy:groovy-test-junit5:${groovyVersion}")
+        testCompile "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
+        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
 
         if (project.name != "grails-docs") {
             // Logging
@@ -466,13 +461,8 @@ subprojects { project ->
             compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
             // Testing
-            testCompile "junit:junit:${junitVersion}"
             testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
-            testCompile("org.spockframework:spock-core:${spockVersion}") {
-                transitive = false
-                exclude group:'junit', module: 'junit-dep'
-                exclude group:'org.codehaus.groovy', module: 'groovy-all'
-            }
+            testCompile("org.spockframework:spock-core:${spockVersion}") { transitive = false }
             // Required by Spock's Mocking
             testCompile "cglib:cglib-nodep:${cglibVersion}"
             testCompile "org.objenesis:objenesis:${objenesisVersion}"
@@ -481,6 +471,10 @@ subprojects { project ->
 
     def debugArguments = ['-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
                           '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
+
+    tasks.withType(Test) {
+        useJUnitPlatform()
+    }
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]

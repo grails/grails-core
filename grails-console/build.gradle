@@ -1,6 +1,7 @@
 dependencies {
     compile project(":grails-core")
     compile "org.codehaus.groovy:groovy-console:$groovyVersion"
+    compile "org.codehaus.groovy:groovy-swing:$groovyVersion"
     compile "org.codehaus.groovy:groovy-groovysh:$groovyVersion"
     compile "org.fusesource.jansi:jansi:$jansiVersion",
             "jline:jline:$jlineVersion",
