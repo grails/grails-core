@@ -1,16 +1,19 @@
 package org.grails.plugins
 
-import grails.util.Environment
-
 import grails.core.DefaultGrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
+import grails.util.Environment
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.*
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class GrailsPluginTests extends GroovyTestCase {
+class GrailsPluginTests {
 
+    @Test
     void testPluginPath() {
 
         def gcl = new GroovyClassLoader()
@@ -27,6 +30,7 @@ class TestOneGrailsPlugin {
         assertEquals "/plugins/test-one-0.1", plugin.pluginPath
     }
 
+    @Test
     void testPluginPathLongName() {
 
         def gcl = new GroovyClassLoader()
@@ -43,6 +47,7 @@ class TestOnetwoThreeFourfiveGrailsPlugin {
         assertEquals "/plugins/test-onetwo-three-fourfive-0.1", plugin.pluginPath
     }
 
+    @Test
     void testPluginPathCamelCase() {
 
         def gcl = new GroovyClassLoader()
@@ -59,6 +64,7 @@ class TestOneGrailsPlugin {
         assertEquals "/plugins/testOne-0.1", plugin.pluginPathCamelCase
     }
 
+    @Test
     void testPluginPathCamelCaseLongName() {
 
         def gcl = new GroovyClassLoader()
@@ -75,6 +81,7 @@ class TestOnetwoThreeFourfiveGrailsPlugin {
         assertEquals "/plugins/testOnetwoThreeFourfive-0.1", plugin.pluginPathCamelCase
     }
 
+    @Test
     void testFileSystemName() {
 
         def gcl = new GroovyClassLoader()
@@ -91,6 +98,7 @@ class TestOneGrailsPlugin {
         assertEquals "test-one-0.1", plugin.fileSystemName
     }
 
+    @Test
     void testSimpleEnvironmentEvaluation() {
         def gcl = new GroovyClassLoader()
         def test1 = gcl.parseClass('''
@@ -107,6 +115,7 @@ class TestGrailsPlugin {
         assertFalse plugin.supportsEnvironment(Environment.PRODUCTION)
     }
 
+    @Test
     void testListEnvironmentEvaluation() {
         def gcl = new GroovyClassLoader()
         def test1 = gcl.parseClass('''
@@ -124,6 +133,7 @@ class TestGrailsPlugin {
         assertFalse plugin.supportsEnvironment(Environment.PRODUCTION)
     }
 
+    @Test
     void testEnvironmentsAndLoadIntoPluginManager() {
         def gcl = new GroovyClassLoader()
         def test1 = gcl.parseClass('''

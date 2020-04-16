@@ -16,6 +16,8 @@
 package grails.spring
 
 import grails.util.Holders
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.aop.SpringProxy
 import org.springframework.beans.factory.BeanIsAbstractException
 import org.springframework.beans.factory.ObjectFactory
@@ -24,6 +26,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.stereotype.Component
+
+import static org.junit.jupiter.api.Assertions.*
 
 /**
  * @author Graeme Rocher
@@ -296,7 +300,7 @@ class BeanBuilderTests extends GroovyTestCase {
 
         def knights = ctx.knights
         assert knights
-        shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
+        assertThrows(org.springframework.beans.factory.BeanIsAbstractException) {
             ctx.abstractBean
         }
         assertEquals "Lancelot", knights.leader
@@ -316,7 +320,7 @@ class BeanBuilderTests extends GroovyTestCase {
         }
         def ctx = bb.createApplicationContext()
 
-        shouldFail(BeanIsAbstractException) {
+        assertThrows(BeanIsAbstractException) {
             ctx.abstractBean
         }
         def knights = ctx.knights
@@ -578,7 +582,7 @@ class BeanBuilderTests extends GroovyTestCase {
         def ctx  = bb.createApplicationContext()
 
         def beanWithList = ctx.getBean("beanWithList")
-        assertEquals 2, beanWithList.people.size()
+        assertEquals 2, (int) beanWithList.people.size()
         assertEquals "bart", beanWithList.people[0].person
 
         def beanWithMap = ctx.getBean("beanWithMap")
@@ -826,9 +830,9 @@ bb.createApplicationContext()
  
         def ctx = bb.createApplicationContext()
  
-        assertTrue 'singletonBean should have been a singleton', ctx.isSingleton('singletonBean')
-        assertFalse 'nonSingletonBean should not have been a singleton', ctx.isSingleton('nonSingletonBean')
-        assertTrue 'unSpecifiedScopeBean should not have been a singleton', ctx.isSingleton('unSpecifiedScopeBean')
+        assertTrue ctx.isSingleton('singletonBean'), 'singletonBean should have been a singleton'
+        assertFalse ctx.isSingleton('nonSingletonBean'), 'nonSingletonBean should not have been a singleton'
+        assertTrue ctx.isSingleton('unSpecifiedScopeBean'), 'unSpecifiedScopeBean should not have been a singleton'
     }
 }
 

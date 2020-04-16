@@ -1,10 +1,15 @@
 package grails.persistence
 
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.*
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class EntityTransformTests extends GroovyShellTestCase {
+class EntityTransformTests {
 
     // test for http://jira.codehaus.org/browse/GRAILS-5238
     void testGRAILS_5238() {
@@ -102,7 +107,7 @@ p = new Permission(user:u, permission:"uber")
         assertNull entity.version
 
         entity.many = new HashSet()
-        assertEquals 0, entity.many.size()
+        assertEquals 0, (int) entity.many.size()
 
         entity.one = entity.class.newInstance()
 

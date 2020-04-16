@@ -2,8 +2,11 @@ package org.grails.web.codecs
 
 import grails.core.DefaultGrailsApplication
 import org.grails.plugins.codecs.HTMLCodec
+import org.junit.jupiter.api.Test
 
-class HTMLCodecTests extends GroovyTestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals
+
+class HTMLCodecTests {
 
     def getEncoderXml() {
         def htmlCodec = new HTMLCodec()
@@ -33,6 +36,7 @@ class HTMLCodecTests extends GroovyTestCase {
         return htmlCodec.getDecoder()
     }
 
+    @Test
     void testEncodeXml() {
         def encoder = getEncoderXml()
         assertEquals('&lt;tag&gt;', encoder.encode('<tag>'))
@@ -41,6 +45,7 @@ class HTMLCodecTests extends GroovyTestCase {
         assertEquals("Vid\u00E9o", encoder.encode("Vid\u00E9o"))
     }
 
+    @Test
     void testEncodeHtml() {
         def encoder = getEncoderHtml()
         assertEquals('&lt;tag&gt;', encoder.encode('<tag>'))
@@ -49,6 +54,7 @@ class HTMLCodecTests extends GroovyTestCase {
         assertEquals("Vid&eacute;o", encoder.encode("Vid\u00E9o"))
     }
 
+    @Test
     void testDecode() {
         def decoder = getDecoder()
         assertEquals('<tag>', decoder.decode('&lt;tag&gt;'))
