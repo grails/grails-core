@@ -1,9 +1,6 @@
 package org.grails.io.support;
 
-import junit.framework.TestCase;
-import org.grails.io.support.GrailsResourceUtils;
-import org.grails.io.support.Resource;
-import org.grails.io.support.UrlResource;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -11,7 +8,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class GrailsResourceUtilsTests extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class GrailsResourceUtilsTests {
 
     private static final String TEST_URL = "file:///test/grails/app/grails-app/domain/Test.groovy";
     private static final String TEST_PACKAGE_URL = "file:///test/grails/app/grails-app/domain/mycompany/Test.groovy";
@@ -23,11 +23,13 @@ public class GrailsResourceUtilsTests extends TestCase {
 
     private static final String UNIT_TESTS_URL = "file:///test/grails/app/grails-tests/SomeTests.groovy";
 
+    @Test
     public void testGetArtifactDirectory() {
         assertEquals("controllers", GrailsResourceUtils.getArtefactDirectory(TEST_CONTROLLER_URL));
         assertEquals("domain", GrailsResourceUtils.getArtefactDirectory(TEST_PACKAGE_URL));
     }
 
+    @Test
     public void testJavaAndGroovySources() {
         assertEquals("mycompany.Test", GrailsResourceUtils.getClassName(TEST_PACKAGE_URL));
         assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/grails-app/domain/mycompany/Test.java").getPath()));
@@ -55,42 +57,51 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/java/mycompany/Test.groovy").getPath()));
     }
 
+    @Test
     public void testIsDomainClass() throws Exception {
         URL testUrl = new URL(TEST_URL);
         assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
     }
 
+    @Test
     public void testGetPathFromRoot() throws Exception {
         assertEquals("mycompany/Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_PACKAGE_URL));
         assertEquals("Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_URL));
     }
 
+    @Test
     public void testGetClassNameResource() throws Exception {
         Resource r = new UrlResource(new URL(TEST_URL));
         assertEquals("Test", GrailsResourceUtils.getClassName(r));
     }
 
+    @Test
     public void testGetClassNameString() {
         assertEquals("Test", GrailsResourceUtils.getClassName(TEST_URL));
     }
 
+    @Test
     public void testIsGrailsPath() {
         assertTrue(GrailsResourceUtils.isGrailsPath(TEST_URL));
     }
 
+    @Test
     public void testIsTestPath() {
         assertTrue(GrailsResourceUtils.isGrailsPath(UNIT_TESTS_URL));
     }
 
+    @Test
     public void testGetTestNameResource() throws Exception {
         Resource r = new UrlResource(new URL(UNIT_TESTS_URL));
         assertEquals("SomeTests", GrailsResourceUtils.getClassName(r));
     }
 
+    @Test
     public void testGetTestNameString() {
         assertEquals("SomeTests", GrailsResourceUtils.getClassName(UNIT_TESTS_URL));
     }
 
+    @Test
     public void testGetViewsDirForURL() throws Exception {
         Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
         assertEquals(toFileUrl("/test/grails/app/grails-app/views"), viewsDir.getURL().toString());
@@ -99,6 +110,7 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals(toFileUrl("/test/grails/app/grails-app/views"), viewsDir.getURL().toString());
     }
 
+    @Test
     public void testGetAppDir() throws Exception {
         Resource appDir = GrailsResourceUtils.getAppDir(new UrlResource(TEST_CONTROLLER_URL));
         assertEquals(toFileUrl("/test/grails/app/grails-app"), appDir.getURL().toString());
@@ -107,6 +119,7 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals(toFileUrl("/test/grails/app/grails-app"), appDir.getURL().toString());
     }
 
+    @Test
     public void testGetDirWithinWebInf() throws Exception {
         Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
         Resource pluginViews = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_PLUGIN_CTRL));
@@ -131,6 +144,7 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("/WEB-INF/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(viewsDir));
     }
 
+    @Test
     public void testGetPluginContextPath() throws Exception {
         MockServletContext servletContext = new MockServletContext("/myapp");
         MockHttpServletRequest request = new MockHttpServletRequest(servletContext);
@@ -148,6 +162,7 @@ public class GrailsResourceUtilsTests extends TestCase {
                 new UrlResource(WEBINF_PLUGIN_CTRL), request.getContextPath()));
     }
 
+    @Test
     public void testAppendPiecesForUri() {
         assertEquals("", GrailsResourceUtils.appendPiecesForUri(""));
         assertEquals("/alpha/beta/gamma", GrailsResourceUtils.appendPiecesForUri("/alpha", "/beta", "/gamma"));

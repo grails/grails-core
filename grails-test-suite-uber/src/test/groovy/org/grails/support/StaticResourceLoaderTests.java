@@ -14,10 +14,13 @@
  */
 package org.grails.support;
 
-import junit.framework.TestCase;
 import org.grails.core.io.StaticResourceLoader;
-import org.springframework.core.io.UrlResource;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the StaticResourceLoader class
@@ -28,8 +31,9 @@ import org.springframework.core.io.Resource;
  *        Created: Feb 26, 2007
  *        Time: 3:49:27 PM
  */
-public class StaticResourceLoaderTests extends TestCase {
+public class StaticResourceLoaderTests {
 
+    @Test
     public void testGetResource() throws Exception {
         StaticResourceLoader srl = new StaticResourceLoader();
         srl.setBaseResource(new UrlResource("http://grails.org"));
@@ -38,6 +42,7 @@ public class StaticResourceLoaderTests extends TestCase {
         assertEquals("http://grails.org/Home", r.getURL().toString());
     }
 
+    @Test
     public void testIllegalState() {
         StaticResourceLoader srl = new StaticResourceLoader();
 

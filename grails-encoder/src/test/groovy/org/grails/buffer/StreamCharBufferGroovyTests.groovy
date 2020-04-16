@@ -13,7 +13,7 @@ class StreamCharBufferGroovyTests {
         charBuffer.writer.write('0123456789')
         assertEquals((int) 7, (int) charBuffer.indexOf('7'))
         // test caching
-        assertEquals(1, charBuffer.indexOf('123'))
+        assertEquals(1, (int) charBuffer.indexOf('123'))
         // test another java.lang.String method
         assertEquals('xxxxxxxxxx', charBuffer.replaceAll(/\d/, 'x'))
     }

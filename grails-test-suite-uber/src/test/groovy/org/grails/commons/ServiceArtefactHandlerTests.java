@@ -16,14 +16,17 @@ package org.grails.commons;
 
 import grails.core.ArtefactHandler;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
 import org.grails.core.artefact.ServiceArtefactHandler;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Marc Palmer
  */
-public class ServiceArtefactHandlerTests extends TestCase {
+public class ServiceArtefactHandlerTests {
 
+    @Test
     public void testIsServiceClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 

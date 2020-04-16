@@ -14,7 +14,9 @@
  */
 package grails.util;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests for the GrailsUtils class.
@@ -22,14 +24,14 @@ import junit.framework.TestCase;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GrailsUtilTests extends TestCase {
+public class GrailsUtilTests {
 
     public void testGrailsVersion() {
         // assertEquals("4.1.0.M1", GrailsUtil.getGrailsVersion());
         assertEquals("4.1.0.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         System.setProperty(Environment.KEY, "");
     }
