@@ -213,23 +213,23 @@ class GrailsParameterMapTests {
         assertEquals 42, map.byte('bad', 42)
         assertEquals 42, map.byte('nonexistent', 42)
 
-        assertEquals '1', map.char('one')
+        assertEquals '1' as char, map.char('one')
         assertNull map.char('longNumber')
         assertNull map.char("test")
         assertNull map.char("bad")
         assertNull map.char("nonexistant")
-        assertEquals '0', map.char('zero')
-        assertEquals '1', map.char('one', 'A' as Character)
-        assertEquals '0', map.char('zero', 'A' as Character)
-        assertEquals 'A', map.char('bad', 'A' as Character)
-        assertEquals 'A', map.char('nonexistent', 'A' as Character)
-        assertEquals '1', map.char('one', (char)'A')
-        assertEquals '0', map.char('zero', (char)'A')
-        assertEquals 'A', map.char('bad', (char)'A')
-        assertEquals 'A', map.char('nonexistent', (char)'A')
-        assertEquals 'z', map.char('z')
-        assertEquals 'z', map.char('z', (char)'A')
-        assertEquals 'z', map.char('z', 'A' as Character)
+        assertEquals '0' as char, map.char('zero')
+        assertEquals '1' as char, map.char('one', 'A' as Character)
+        assertEquals '0' as char, map.char('zero', 'A' as Character)
+        assertEquals 'A' as char, map.char('bad', 'A' as Character)
+        assertEquals 'A' as char, map.char('nonexistent', 'A' as Character)
+        assertEquals '1' as char, map.char('one', (char)'A')
+        assertEquals '0' as char, map.char('zero', (char)'A')
+        assertEquals 'A' as char, map.char('bad', (char)'A')
+        assertEquals 'A' as char, map.char('nonexistent', (char)'A')
+        assertEquals 'z' as char, map.char('z')
+        assertEquals 'z' as char, map.char('z', (char)'A')
+        assertEquals 'z' as char, map.char('z', 'A' as Character)
 
         assertEquals 1, map.int('one')
         assertNull map.int("test")
@@ -275,8 +275,8 @@ class GrailsParameterMapTests {
         assertEquals 42.0, map.double('bad', 42.0)
         assertEquals 42.0, map.double('nonexistent', 42.0)
 
-        assertEquals 1.0, map.float('one')
-        assertEquals 1.399999976158142, map.float('decimals')
+        assertEquals 1.0f, map.float('one')
+        assertEquals 1.399999976158142f, map.float('decimals')
         assertNull map.float("bad")
         assertNull map.float("nonexistant")
         assertEquals 0.0f, map.float('zero')
@@ -430,12 +430,12 @@ class GrailsParameterMapTests {
         mockRequest.addParameter("address.postCode", "345435")
         theMap = new GrailsParameterMap(mockRequest)
 
-        def theClone = theMap.clone()
+        GrailsParameterMap theClone = theMap.clone()
 
-        assertEquals("clone size should be the same as original", theMap.size(), theClone.size())
+        assertEquals(theMap.size(), theClone.size(), "clone size should be the same as original")
 
         theMap.each { k, v ->
-            assertEquals("the clone should have the same value for $k as the original", theMap[k], theClone[k])
+            assertEquals(theMap[k], theClone[k], "the clone should have the same value for $k as the original")
         }
     }
 
