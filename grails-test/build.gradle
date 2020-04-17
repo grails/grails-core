@@ -4,22 +4,11 @@ dependencies {
 
     compile "org.springframework.boot:spring-boot-test:$springBootVersion"
     // Testing
-    compile "org.codehaus.groovy:groovy-test:$groovyVersion", {
-        transitive = false
-        exclude group:'junit', module: 'junit'
-        exclude group:'org.codehaus.groovy', module: 'groovy'
-        exclude group:'org.hamcrest', module: 'hamcrest-core'
-    }
-    compile "junit:junit:${junitVersion}", {
-        exclude group:'org.hamcrest', module: 'hamcrest-core'
-    }
+    compile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+    compile("org.codehaus.groovy:groovy-test:$groovyVersion")
+    compile("org.spockframework:spock-core:$spockVersion") { transitive = false }
+    compile "org.junit.platform:junit-platform-runner:1.6.0"
 
-
-    compile("org.spockframework:spock-core:${spockVersion}") {
-        transitive = false
-        exclude group:'junit', module: 'junit-dep'
-        exclude group:'org.codehaus.groovy', module: 'groovy-all'
-    }
 
     provided project(":grails-plugin-mimetypes")
     provided project(":grails-web")

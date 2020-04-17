@@ -16,14 +16,17 @@ package org.grails.commons;
 
 import grails.core.ArtefactHandler;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
 import org.grails.web.servlet.boostrap.BootstrapArtefactHandler;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Marc Palmer
  */
-public class BootStrapArtefactHandlerTests extends TestCase {
+public class BootStrapArtefactHandlerTests {
 
+    @Test
     public void testIsBootStrapClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 

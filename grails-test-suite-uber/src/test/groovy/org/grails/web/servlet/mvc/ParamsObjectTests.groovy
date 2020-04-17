@@ -1,7 +1,10 @@
 package org.grails.web.servlet.mvc
 
 import grails.web.servlet.mvc.GrailsParameterMap
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * Tests the behaviour of the GrailsParameterMap params object.
@@ -9,11 +12,12 @@ import org.springframework.mock.web.MockHttpServletRequest
  * @author Graeme Rocher
  * @since 1.1
  */
-class ParamsObjectTests extends GroovyTestCase {
+class ParamsObjectTests {
 
     /**
      * The grails params object exhibits multi dimensional behaviour. This test tests that.
      */
+    @Test
     void testMultiDHashBehaviour() {
         def request = new MockHttpServletRequest()
 

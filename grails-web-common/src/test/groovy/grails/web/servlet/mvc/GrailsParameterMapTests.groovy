@@ -1,5 +1,6 @@
 package grails.web.servlet.mvc
 
+import org.junit.jupiter.api.Test
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
@@ -7,11 +8,14 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
 import spock.lang.Issue
 
-class GrailsParameterMapTests extends GroovyTestCase {
+import static org.junit.jupiter.api.Assertions.*
+
+class GrailsParameterMapTests {
 
     GrailsParameterMap theMap
     MockHttpServletRequest mockRequest = new MockHttpServletRequest()
 
+    @Test
     void testSubmapViaArraySubscript() {
         mockRequest.addParameter("name", "Dierk Koenig")
         mockRequest.addParameter("dob", "01/01/1970")
@@ -22,6 +26,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert theMap['name', 'dob'] == [name:"Dierk Koenig", dob:"01/01/1970"]
     }
 
+    @Test
     void testDateMessageSourceFormat() {
 
         try {
@@ -41,6 +46,8 @@ class GrailsParameterMapTests extends GroovyTestCase {
             RequestContextHolder.resetRequestAttributes()
         }
     }
+
+    @Test
     void testDateMethodMultipleFormats() {
         def request = new MockHttpServletRequest()
         def params = new GrailsParameterMap(request)
@@ -52,6 +59,8 @@ class GrailsParameterMapTests extends GroovyTestCase {
 
         assert val == cal.time
     }
+
+    @Test
     void testDateMethod() {
         def request = new MockHttpServletRequest()
         def params = new GrailsParameterMap(request)
@@ -64,6 +73,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert val == cal.time
     }
 
+    @Test
     void testParseRequestBodyForPutRequest() {
         def request = new MockHttpServletRequest()
         request.content = 'foo=bar&one=two'.bytes
@@ -89,7 +99,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert '' == params.foo
     }
 
-
+    @Test
     void testParseRequestBodyForPutRequestWithCharset() {
         def request = new MockHttpServletRequest()
         request.content = 'foo=bar&one=two'.bytes
@@ -115,6 +125,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert '' == params.foo
     }
 
+    @Test
     void testParseRequestBodyForPatchRequest() {
         def request = new MockHttpServletRequest()
         request.content = 'foo=bar&one=two'.bytes
@@ -141,6 +152,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert '' == params.foo
     }
 
+    @Test
     void testPlusOperator() {
         mockRequest.addParameter("album", "Foxtrot")
 
@@ -153,6 +165,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertTrue newMap.containsKey('vocalist')
     }
 
+    @Test
     void testMultiDimensionParamsWithUnderscore() {
         mockRequest.addParameter("a.b.c", "on")
         mockRequest.addParameter("_a.b.c", "")
@@ -166,6 +179,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert theMap['a']['b']['_c'] == ""
     }
 
+    @Test
     void testConversionHelperMethods() {
         def map = new GrailsParameterMap(mockRequest)
 
@@ -199,23 +213,23 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals 42, map.byte('bad', 42)
         assertEquals 42, map.byte('nonexistent', 42)
 
-        assertEquals '1', map.char('one')
+        assertEquals '1' as char, map.char('one')
         assertNull map.char('longNumber')
         assertNull map.char("test")
         assertNull map.char("bad")
         assertNull map.char("nonexistant")
-        assertEquals '0', map.char('zero')
-        assertEquals '1', map.char('one', 'A' as Character)
-        assertEquals '0', map.char('zero', 'A' as Character)
-        assertEquals 'A', map.char('bad', 'A' as Character)
-        assertEquals 'A', map.char('nonexistent', 'A' as Character)
-        assertEquals '1', map.char('one', (char)'A')
-        assertEquals '0', map.char('zero', (char)'A')
-        assertEquals 'A', map.char('bad', (char)'A')
-        assertEquals 'A', map.char('nonexistent', (char)'A')
-        assertEquals 'z', map.char('z')
-        assertEquals 'z', map.char('z', (char)'A')
-        assertEquals 'z', map.char('z', 'A' as Character)
+        assertEquals '0' as char, map.char('zero')
+        assertEquals '1' as char, map.char('one', 'A' as Character)
+        assertEquals '0' as char, map.char('zero', 'A' as Character)
+        assertEquals 'A' as char, map.char('bad', 'A' as Character)
+        assertEquals 'A' as char, map.char('nonexistent', 'A' as Character)
+        assertEquals '1' as char, map.char('one', (char)'A')
+        assertEquals '0' as char, map.char('zero', (char)'A')
+        assertEquals 'A' as char, map.char('bad', (char)'A')
+        assertEquals 'A' as char, map.char('nonexistent', (char)'A')
+        assertEquals 'z' as char, map.char('z')
+        assertEquals 'z' as char, map.char('z', (char)'A')
+        assertEquals 'z' as char, map.char('z', 'A' as Character)
 
         assertEquals 1, map.int('one')
         assertNull map.int("test")
@@ -261,8 +275,8 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals 42.0, map.double('bad', 42.0)
         assertEquals 42.0, map.double('nonexistent', 42.0)
 
-        assertEquals 1.0, map.float('one')
-        assertEquals 1.399999976158142, map.float('decimals')
+        assertEquals 1.0f, map.float('one')
+        assertEquals 1.399999976158142f, map.float('decimals')
         assertNull map.float("bad")
         assertNull map.float("nonexistant")
         assertEquals 0.0f, map.float('zero')
@@ -293,6 +307,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals true, map.boolean('my_checkbox')
     }
 
+    @Test
     @Issue("https://github.com/grails/grails-core/issues/11126")
     void testDontAutoEvaluateBlankDates() {
         mockRequest.addParameter("foo", "date.struct")
@@ -303,6 +318,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert theMap['foo'] == "date.struct" : "should not be modified"
     }
 
+    @Test
     @Issue("https://github.com/grails/grails-core/issues/11126")
     void testDontAutoEvaluateDates() {
         mockRequest.addParameter("foo", "date.struct")
@@ -313,6 +329,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert theMap['foo'] == "date.struct" : "should not be modified"
     }
 
+    @Test
     @Issue("https://github.com/grails/grails-core/issues/11126")
     void testGetDateDoesConversion() {
         mockRequest.addParameter("foo", "date.struct")
@@ -325,6 +342,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert theMap.getDate("foo").month == Calendar.JULY
     }
 
+    @Test
     void testIterateOverMapContainingDate() {
         mockRequest.addParameter("stuff", "07")
         mockRequest.addParameter("foo", "date.struct")
@@ -343,6 +361,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
 
     }
 
+    @Test
     void testMultiDimensionParams() {
         mockRequest.addParameter("a.b.c", "cValue")
         mockRequest.addParameter("a.b", "bValue")
@@ -362,6 +381,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert theMap.a.e.g == "gValue"
     }
 
+    @Test
     void testToQueryString() {
         mockRequest.addParameter("name", "Dierk Koenig")
         mockRequest.addParameter("dob", "01/01/1970")
@@ -376,6 +396,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert queryString.find { it == 'dob=01%2F01%2F1970' }
     }
 
+    @Test
     void testSimpleMappings() {
         mockRequest.addParameter("test", "1")
         theMap = new GrailsParameterMap(mockRequest)
@@ -383,6 +404,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals "1", theMap['test']
     }
 
+    @Test
     void testToQueryStringWithMultiD() {
         mockRequest.addParameter("name", "Dierk Koenig")
         mockRequest.addParameter("dob", "01/01/1970")
@@ -401,21 +423,23 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert queryString.find { it == 'address.town=Swindon' }
     }
 
+    @Test
     void testCloning() {
         mockRequest.addParameter("name", "Dierk Koenig")
         mockRequest.addParameter("dob", "01/01/1970")
         mockRequest.addParameter("address.postCode", "345435")
         theMap = new GrailsParameterMap(mockRequest)
 
-        def theClone = theMap.clone()
+        GrailsParameterMap theClone = theMap.clone()
 
-        assertEquals("clone size should be the same as original", theMap.size(), theClone.size())
+        assertEquals(theMap.size(), theClone.size(), "clone size should be the same as original")
 
         theMap.each { k, v ->
-            assertEquals("the clone should have the same value for $k as the original", theMap[k], theClone[k])
+            assertEquals(theMap[k], theClone[k], "the clone should have the same value for $k as the original")
         }
     }
 
+    @Test
     void testNestedKeyAutoGeneration() {
         def request = new MockHttpServletRequest()
         def params = new GrailsParameterMap(request)
@@ -448,6 +472,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert params['prefix']['alpha'].beta == 'delta'
     }
 
+    @Test
     // GRAILS-10882
     void testGRAILS10882() {
         def request = new MockHttpServletRequest('POST', '/cgi-bin/php.cgi')
@@ -459,7 +484,8 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert params.size() > 0
         assert System.currentTimeMillis() - startTime < 1000L
     }
-    
+
+    @Test
     void testNestedKeys() {
         def request = new MockHttpServletRequest()
         def requestParams = ['a.b.c.d': '1', 'a.b.e': '2']

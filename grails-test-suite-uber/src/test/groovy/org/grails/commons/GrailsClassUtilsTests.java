@@ -17,16 +17,20 @@ package org.grails.commons;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 import spock.lang.Issue;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author Graeme Rocher
  */
-public class GrailsClassUtilsTests extends TestCase {
+public class GrailsClassUtilsTests {
 
+    @Test
     public void testFindPropertyNameForValue() {
         TestBean testBean = new TestBean();
 
@@ -34,83 +38,101 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("welcomeMessage", GrailsClassUtils.findPropertyNameForValue(testBean, TestBean.getWelcomeMessage()));
     }
 
+    @Test
     public void testBooleanMatchesboolean() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Boolean.class, boolean.class));
     }
 
+    @Test
     public void testbooleanMatchesBoolean() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(boolean.class, Boolean.class));
     }
 
+    @Test
     public void testIntegerMatchesint() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Integer.class, int.class));
     }
 
+    @Test
     public void testintMatchesInteger() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(int.class, Integer.class));
     }
 
+    @Test
     public void testShortMatchesshort() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Short.class, short.class));
     }
 
+    @Test
     public void testshortMatchesShort() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(short.class, Short.class));
     }
 
+    @Test
     public void testByteMatchesbyte() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Byte.class, byte.class));
     }
 
+    @Test
     public void testbyteMatchesByte() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(byte.class, Byte.class));
     }
 
+    @Test
     public void testCharacterMatcheschar() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Character.class, char.class));
     }
 
+    @Test
     public void testcharMatchesCharacter() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(char.class, Character.class));
     }
 
+    @Test
     public void testLongMatcheslong() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Long.class, long.class));
     }
 
+    @Test
     public void testlongMatchesLong() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(long.class, Long.class));
     }
 
+    @Test
     public void testFloatMatchesfloat() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Float.class, float.class));
     }
 
+    @Test
     public void testfloatMatchesFloat() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(float.class, Float.class));
     }
 
+    @Test
     public void testDoubleMatchesdouble() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(Double.class, double.class));
     }
 
+    @Test
     public void testdoubleMatchesDouble() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(double.class, Double.class));
     }
 
+    @Test
     public void testAssignableFromOrPrimitiveCompatible() {
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(double.class, Double.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Integer.class, int.class));
-        assertTrue(GrailsClassUtils.isGroovyAssignableFrom(TestCase.class, GrailsClassUtilsTests.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Number.class, int.class));
     }
 
+    @Test
     public void testGetterNames() {
         assertEquals("getConstraints", GrailsClassUtils.getGetterName("constraints"));
         assertEquals("getURL", GrailsClassUtils.getGetterName("URL"));
         assertEquals("getUrl", GrailsClassUtils.getGetterName("Url"));
     }
 
+    @Test
     public void testIsGetterOrSetter() {
         assertTrue(GrailsClassUtils.isSetter("setSomething", new Class[] { String.class }));
         assertTrue(GrailsNameUtils.isGetter("getSomething", new Class[0]));
@@ -154,6 +176,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsNameUtils.isGetter(null, null));
     }
 
+    @Test
     public void testGetPropertyForGetter() {
         assertEquals("something", GrailsNameUtils.getPropertyForGetter("getSomething"));
         assertEquals("URL", GrailsNameUtils.getPropertyForGetter("getURL"));
@@ -176,6 +199,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertNull(GrailsNameUtils.getPropertyForGetter("get0"));
     }
 
+    @Test
     public void testGetStaticField() {
         assertEquals("SomeFieldValue",
                 GrailsClassUtils.getStaticFieldValue(ClassWithStaticFieldAndStaticPropertyWithSameName.class, "name"));
@@ -183,6 +207,7 @@ public class GrailsClassUtilsTests extends TestCase {
                 GrailsClassUtils.getStaticPropertyValue(ClassWithStaticFieldAndStaticPropertyWithSameName.class, "name"));
     }
 
+    @Test
     public void testGetStaticProperty() {
         assertEquals(HttpServletRequest.BASIC_AUTH,
                 GrailsClassUtils.getStaticPropertyValue(HttpServletRequest.class, "BASIC_AUTH"));
@@ -190,6 +215,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("hello", GrailsClassUtils.getStaticPropertyValue(TestBean.class, "welcomeMessage"));
     }
 
+    @Test
     public void testIsPublicStatic() throws Exception {
         assertTrue(GrailsClassUtils.isPublicStatic(HttpServletRequest.class.getDeclaredField("BASIC_AUTH")));
 
@@ -198,6 +224,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isPublicStatic(TestBean.class.getDeclaredField("welcomeMessage")));
     }
 
+    @Test
     public void testGetPropertyOrStatic() {
         TestBean bean = new TestBean();
         assertEquals("hello", GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(bean, "welcomeMessage"));
@@ -206,6 +233,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("Cardiacs", GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(bean, "favouriteArtist"));
     }
 
+    @Test
     public void testGetFieldValue() {
         TestBean bean = new TestBean();
 
@@ -214,6 +242,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("Cardiacs", GrailsClassUtils.getFieldValue(bean, "favouriteArtist"));
     }
 
+    @Test
     public void testIsAssignableOrConvertibleFrom() {
 
         // test number
@@ -346,6 +375,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(null, int.class));
     }
 
+    @Test
     public void testIsPropertyGetter() throws Exception {
         assertTrue(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getName", null)));
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("setName", null)));
@@ -355,6 +385,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getTitle", null)));
     }
 
+    @Test
     @Issue("https://github.com/grails/grails-core/issues/10343")
     public void testPropertiesBeginningWithSingleLowerCaseLetter() throws Exception {
         assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getaString", null)));

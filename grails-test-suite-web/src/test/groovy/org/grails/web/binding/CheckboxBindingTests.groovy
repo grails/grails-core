@@ -14,6 +14,7 @@ import spock.lang.Specification
 class CheckboxBindingTests extends Specification implements ControllerUnitTest<CheckboxBindingController>, DomainUnitTest<Pizza> {
 
     void testBindingCheckedValuesToObject() {
+        given:
         params.name = "Capricciosa"
         params."_delivery" = ""
         params."delivery" = "on"
@@ -32,8 +33,8 @@ class CheckboxBindingTests extends Specification implements ControllerUnitTest<C
         model.pizza.options.stuffedCrust
     }
 
-    @Test
     void testBindingUncheckedValuesToObject() {
+        given:
         params.name = "Capricciosa"
         params."_delivery" = ""
         params.options = [_extraAnchovies: '', _stuffedCrust: '']

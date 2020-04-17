@@ -1,17 +1,17 @@
 package org.grails.plugins;
 
+import grails.plugins.PluginFilter;
+import org.junit.jupiter.api.Test;
+
 import java.util.Set;
 
-import grails.plugins.PluginFilter;
-import junit.framework.TestCase;
-import org.grails.plugins.ExcludingPluginFilter;
-import org.grails.plugins.IdentityPluginFilter;
-import org.grails.plugins.IncludingPluginFilter;
-import org.grails.plugins.PluginFilterRetriever;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("rawtypes")
-public class PluginFilterFactoryTests extends TestCase {
+public class PluginFilterFactoryTests {
 
+    @Test
     public void testIncludeFilterOne() throws Exception {
         PluginFilterRetriever fb = new PluginFilterRetriever();
         PluginFilter bean = fb.getPluginFilter("one", null);
@@ -23,6 +23,7 @@ public class PluginFilterFactoryTests extends TestCase {
         assertTrue(suppliedNames.contains("one"));
     }
 
+    @Test
     public void testIncludeFilter() throws Exception {
         PluginFilterRetriever fb = new PluginFilterRetriever();
         PluginFilter bean = fb.getPluginFilter("one, two", " three , four ");
@@ -34,6 +35,7 @@ public class PluginFilterFactoryTests extends TestCase {
         assertTrue(suppliedNames.contains("two"));
     }
 
+    @Test
     public void testExcludeFilter() throws Exception {
         PluginFilterRetriever fb = new PluginFilterRetriever();
         PluginFilter bean = fb.getPluginFilter(null, " three , four ");
@@ -45,6 +47,7 @@ public class PluginFilterFactoryTests extends TestCase {
         assertTrue(suppliedNames.contains("four"));
     }
 
+    @Test
     public void testDefaultFilter() throws Exception {
         PluginFilterRetriever fb = new PluginFilterRetriever();
         PluginFilter bean = fb.getPluginFilter(null, null);

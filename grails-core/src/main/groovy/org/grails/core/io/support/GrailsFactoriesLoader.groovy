@@ -64,7 +64,7 @@ class GrailsFactoriesLoader extends FactoriesLoaderSupport {
         for(Class<? extends T> clazz : loadFactoryClasses(factoryClass, classLoader)) {
             results.add(hasArguments ? clazz.newInstance(arguments) : clazz.newInstance()) 
         }
-        OrderComparator.sort(results)
+        OrderComparator.sort((List<?>) results)
         results
     }
     

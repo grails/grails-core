@@ -15,19 +15,15 @@
  */
 package org.grails.web.mapping.mvc
 
-import grails.util.GrailsNameUtils
-import grails.web.UrlConverter
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
-import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
-import grails.web.mapping.UrlCreator
-import grails.web.mapping.UrlMapping
-import grails.web.mapping.UrlMappingInfo
-import grails.web.mapping.UrlMappings
-import grails.web.mapping.UrlMappingsHolder
+import grails.util.GrailsNameUtils
+import grails.web.UrlConverter
+import grails.web.mapping.*
+import groovy.transform.Canonical
+import groovy.transform.CompileStatic
+import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.http.HttpMethod
 
@@ -40,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @since 3.0
  */
 @CompileStatic
-abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
+abstract class AbstractGrailsControllerUrlMappings implements UrlMappings {
 
     UrlMappings urlMappingsHolderDelegate
     UrlConverter urlConverter
@@ -188,23 +184,22 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
     protected UrlMappingInfo[] collectControllerMappings(UrlMappingInfo[] infos) {
         def webRequest = GrailsWebRequest.lookup()
-        infos.collect() { UrlMappingInfo info ->
-            if(info.redirectInfo) {
+        infos.collect({ UrlMappingInfo info ->
+            if (info.redirectInfo) {
                 return info
             }
-            if(webRequest != null) {
+            if (webRequest != null) {
                 webRequest.resetParams()
                 info.configure(webRequest)
             }
-            def controllerKey = new ControllerKey(info.namespace, info.controllerName, info.actionName, info.pluginName)
+            ControllerKey controllerKey = new ControllerKey(info.namespace, info.controllerName, info.actionName, info.pluginName)
             GrailsControllerClass controllerClass = info ? mappingsToGrailsControllerMap.get(controllerKey) : null
-            if(controllerClass) {
+            if (controllerClass) {
                 return new GrailsControllerUrlMappingInfo(controllerClass, info)
-            }
-            else {
+            } else {
                 return info
             }
-        } as UrlMappingInfo[]
+        }) as UrlMappingInfo[]
     }
 
     protected UrlMappingInfo collectControllerMapping(UrlMappingInfo info) {
@@ -218,18 +213,11 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
     }
 
     @Canonical
-    class ControllerKey {
+    static class ControllerKey {
         String namespace
         String controller
         String action
         String plugin
-
-        ControllerKey(String namespace, String controller, String action, String plugin) {
-            this.namespace = namespace
-            this.controller = controller
-            this.action = action
-            this.plugin = plugin
-        }
     }
 }
 

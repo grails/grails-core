@@ -28,7 +28,7 @@ ext {
     // Sets release version
     grailsVersion = '4.1.0.BUILD-SNAPSHOT'
     // grailsVersion = '4.1.0.M1'
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.6"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "3.0.3"
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
@@ -416,7 +416,7 @@ subprojects { project ->
 
 
     configure([compileGroovy, compileTestGroovy]) {
-        groovyOptions.fork(jvmArgs: ['-XX:MaxPermSize=512m'], memoryInitialSize: '128M', memoryMaximumSize: '1G')
+        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
         options.encoding = "UTF-8"
     }
@@ -452,11 +452,10 @@ subprojects { project ->
 
         compile groovyDependency
 
-        testCompile "org.codehaus.groovy:groovy-test:${groovyVersion}", {
-            exclude group:'junit', module: 'junit'
-            exclude group:'org.codehaus.groovy', module: 'groovy'
-            exclude group:'org.hamcrest', module: 'hamcrest-core'
-        }
+        testCompile "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
+        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
+        testCompile "org.junit.platform:junit-platform-runner:1.6.0"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
 
         if (project.name != "grails-docs") {
             // Logging
@@ -464,13 +463,8 @@ subprojects { project ->
             compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
             // Testing
-            testCompile "junit:junit:${junitVersion}"
             testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
-            testCompile("org.spockframework:spock-core:${spockVersion}") {
-                transitive = false
-                exclude group:'junit', module: 'junit-dep'
-                exclude group:'org.codehaus.groovy', module: 'groovy-all'
-            }
+            testCompile("org.spockframework:spock-core:${spockVersion}") { transitive = false }
             // Required by Spock's Mocking
             testCompile "cglib:cglib-nodep:${cglibVersion}"
             testCompile "org.objenesis:objenesis:${objenesisVersion}"
@@ -480,7 +474,19 @@ subprojects { project ->
     def debugArguments = ['-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
                           '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
 
+    tasks.withType(Test) {
+        useJUnitPlatform()
+    }
+
     test {
+        testLogging {
+            events "passed", "skipped", "failed"
+
+            showExceptions true
+            exceptionFormat "full"
+            showCauses true
+            showStackTraces true
+        }
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
         if (isTravisBuild) {
             maxParallelForks = 2

@@ -18,20 +18,22 @@ import grails.util.GrailsWebMockUtil;
 import grails.web.mvc.FlashScope;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Graeme Rocher
  */
 @SuppressWarnings({"unchecked","rawtypes"})
-public class GrailsFlashScopeTests extends TestCase {
+public class GrailsFlashScopeTests {
 
     private static final String ERRORS_PROPERTY = "errors";
 
+    @Test
     public void testPutNull() {
         GrailsWebMockUtil.bindMockWebRequest();
 
@@ -39,6 +41,7 @@ public class GrailsFlashScopeTests extends TestCase {
         fs.put("test",null);
     }
 
+    @Test
     public void testNextState() {
 
         GrailsWebMockUtil.bindMockWebRequest();
@@ -77,6 +80,7 @@ public class GrailsFlashScopeTests extends TestCase {
     /**
      * Bug: GRAILS-3083
      */
+    @Test
     public void testPutMap() {
 
         GrailsWebMockUtil.bindMockWebRequest();

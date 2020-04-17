@@ -16,6 +16,8 @@
 package grails.spring
 
 import grails.util.Holders
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.aop.SpringProxy
 import org.springframework.beans.factory.BeanIsAbstractException
 import org.springframework.beans.factory.ObjectFactory
@@ -25,20 +27,22 @@ import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.stereotype.Component
 
+import static org.junit.jupiter.api.Assertions.*
+
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
-class BeanBuilderTests extends GroovyTestCase {
+class BeanBuilderTests {
 
     private BeanBuilder bb = new BeanBuilder()
 
-    @Override
+    @BeforeEach
     protected void setUp() {
-        super.setUp()
         Holders.setPluginManager null
     }
 
+    @Test
     void testImportSpringXml() {
 
         bb.beans {
@@ -51,6 +55,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "hello", foo
     }
 
+    @Test
     void testImportBeansFromGroovy() {
 
         bb.beans {
@@ -63,6 +68,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "hello", foo
     }
 
+    @Test
     void testInheritPropertiesFromAbstractBean() {
 
         bb.beans {
@@ -83,7 +89,7 @@ class BeanBuilderTests extends GroovyTestCase {
         def ctx = bb.createApplicationContext()
         def bean = ctx.getBean("myConcreteB")
 
-        assertEquals 10, bean.age
+        assertEquals(10, (Integer) bean.age)
         assertNotNull bean.bean1
     }
 
@@ -103,6 +109,7 @@ class BeanBuilderTests extends GroovyTestCase {
 //        assertNotNull p
 //    }
 
+    @Test
     void testUseSpringNamespaceAsMethod() {
 
         bb.beans {
@@ -125,7 +132,7 @@ class BeanBuilderTests extends GroovyTestCase {
 
         def appCtx = bb.createApplicationContext()
         def fred = appCtx.getBean("fred")
-        assertTrue (fred instanceof SpringProxy)
+        assertTrue(fred instanceof SpringProxy)
 
         fred.birthday()
 
@@ -135,6 +142,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "Fred", birthDaySender.peopleSentCards[0].name
     }
 
+    @Test
     void testUseTwoSpringNamespaces() {
 
             TestScope scope = new TestScope()
@@ -197,6 +205,7 @@ class BeanBuilderTests extends GroovyTestCase {
             assertEquals 4, scope.instanceCount
     }
 
+    @Test
     void testSpringAOPSupport() {
 
         bb.beans {
@@ -227,6 +236,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "Fred", birthDaySender.peopleSentCards[0].name
     }
 
+    @Test
     void testSpringScopedProxyBean() {
 
         GenericApplicationContext appCtx = bb.getSpringConfig().getUnrefreshedApplicationContext()
@@ -250,6 +260,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals 2, scope.instanceCount
     }
 
+    @Test
     void testSpringNamespaceBean() {
         bb.beans {
             xmlns util:"http://www.springframework.org/schema/util"
@@ -265,6 +276,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assert ['one', 'two'] == appCtx.getBean("foo")
     }
 
+    @Test
     void testNamedArgumentConstructor() {
         bb.beans {
             holyGrail(HolyGrailQuest)
@@ -281,6 +293,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals quest, knights.quest
     }
 
+    @Test
     void testAbstractBeanDefinition() {
         bb.beans {
             abstractBean {
@@ -296,12 +309,13 @@ class BeanBuilderTests extends GroovyTestCase {
 
         def knights = ctx.knights
         assert knights
-        shouldFail(org.springframework.beans.factory.BeanIsAbstractException) {
+        assertThrows(org.springframework.beans.factory.BeanIsAbstractException) {
             ctx.abstractBean
         }
         assertEquals "Lancelot", knights.leader
     }
 
+    @Test
     void testAbstractBeanDefinitionWithClass() {
         bb.beans {
             abstractBean(KnightOfTheRoundTable) { bean ->
@@ -316,7 +330,7 @@ class BeanBuilderTests extends GroovyTestCase {
         }
         def ctx = bb.createApplicationContext()
 
-        shouldFail(BeanIsAbstractException) {
+        assertThrows(BeanIsAbstractException) {
             ctx.abstractBean
         }
         def knights = ctx.knights
@@ -324,6 +338,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "Lancelot", knights.leader
     }
 
+    @Test
     void testScopes() {
         bb.beans {
             myBean(ScopeTest) { bean ->
@@ -344,6 +359,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals b1, b2
     }
 
+    @Test
     void testSimpleBean() {
         bb.beans {
             bean1(Bean1) {
@@ -365,6 +381,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals(["bart", "lisa"], bean1.children)
     }
 
+    @Test
     void testBeanWithParentRef() {
         bb.beans {
             homer(Bean1) {
@@ -389,6 +406,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "homer",bart.parent?.person
     }
 
+    @Test
     void testWithAnonymousInnerBean() {
         bb.beans {
             bart(Bean1) {
@@ -418,6 +436,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "homer", marge.bean1.person
     }
 
+    @Test
     void testAnonymousInnerBeanViaBeanMethod() {
         bb.beans {
             bart(Bean1) {
@@ -447,6 +466,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "homer", marge.bean1.person
     }
 
+    @Test
     void testAnonymousInnerBeanViaBeanMethodWithConstructorArgs() {
         bb.beans {
             bart(Bean1) {
@@ -475,6 +495,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "lisa", marge.bean3.bean1.person
     }
 
+    @Test
     void testWithUntypedAnonymousInnerBean() {
         bb.beans {
             homer(Bean1Factory)
@@ -504,6 +525,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "homer", marge.bean1.person
     }
 
+    @Test
     void testBeanReferences() {
         bb.beans {
             homer(Bean1) {
@@ -540,6 +562,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertTrue marge.children.contains(lisa)
     }
 
+    @Test
     void testBeanWithConstructor() {
         bb.beans {
             homer(Bean1) {
@@ -559,6 +582,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals 40, marge.age
     }
 
+    @Test
     void testBeanWithListAndMapConstructor() {
         bb.beans {
             bart(Bean1) {
@@ -578,7 +602,7 @@ class BeanBuilderTests extends GroovyTestCase {
         def ctx  = bb.createApplicationContext()
 
         def beanWithList = ctx.getBean("beanWithList")
-        assertEquals 2, beanWithList.people.size()
+        assertEquals 2, (int) beanWithList.people.size()
         assertEquals "bart", beanWithList.people[0].person
 
         def beanWithMap = ctx.getBean("beanWithMap")
@@ -586,6 +610,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "bart", beanWithMap.peopleByName.bart.person
     }
 
+    @Test
     void testBeanWithFactoryMethod() {
         bb.beans {
             homer(Bean1) {
@@ -604,6 +629,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assert "marge", marge.person
     }
 
+    @Test
     void testBeanWithFactoryMethodUsingClosureArgs() {
         bb.beans {
             homer(Bean1) {
@@ -621,6 +647,8 @@ class BeanBuilderTests extends GroovyTestCase {
 
         assert "marge", marge.person
     }
+
+    @Test
     void testBeanWithFactoryMethodWithConstructorArgs() {
         bb.beans {
             beanFactory(Bean1FactoryWithArgs) {}
@@ -651,6 +679,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assert "mcBain", ctx.getBean("mcBain").person
     }
 
+    @Test
     void testGetBeanDefinitions() {
         bb.beans {
             jeff(Bean1) {
@@ -665,13 +694,14 @@ class BeanBuilderTests extends GroovyTestCase {
         }
 
         def beanDefinitions = bb.beanDefinitions
-        assertNotNull 'beanDefinitions was null', beanDefinitions
-        assertEquals 'beanDefinitions was the wrong size', 3, beanDefinitions.size()
-        assertNotNull 'beanDefinitions did not contain jeff', beanDefinitions['jeff']
-        assertNotNull 'beanDefinitions did not contain guillaume', beanDefinitions['guillaume']
-        assertNotNull 'beanDefinitions did not contain graeme', beanDefinitions['graeme']
+        assertNotNull beanDefinitions, 'beanDefinitions was null'
+        assertEquals 3, beanDefinitions.size(), 'beanDefinitions was the wrong size'
+        assertNotNull beanDefinitions['jeff'], 'beanDefinitions did not contain jeff'
+        assertNotNull beanDefinitions['guillaume'], 'beanDefinitions did not contain guillaume'
+        assertNotNull beanDefinitions['graeme'], 'beanDefinitions did not contain graeme'
     }
 
+    @Test
     void testBeanWithFactoryBean() {
         bb.beans {
             myFactory(Bean1Factory)
@@ -690,6 +720,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "homer", homer.person
     }
 
+    @Test
     void testBeanWithFactoryBeanAndMethod() {
         bb.beans {
             myFactory(Bean1Factory)
@@ -707,6 +738,7 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals "homer", homer.person
     }
 
+    @Test
     void testLoadExternalBeans() {
         def pr = new PathMatchingResourcePatternResolver()
         def r = pr.getResource("grails/spring/resources1.groovy")
@@ -720,6 +752,7 @@ class BeanBuilderTests extends GroovyTestCase {
         def dataSource = ctx.getBean("dataSource")
     }
 
+    @Test
     void testHolyGrailWiring() {
 
         bb.beans {
@@ -737,6 +770,7 @@ class BeanBuilderTests extends GroovyTestCase {
         knight.embarkOnQuest()
     }
 
+    @Test
     void testAbstractBeanSpecifyingClass() {
 
         bb.beans {
@@ -767,10 +801,11 @@ class BeanBuilderTests extends GroovyTestCase {
 
         def homerBean = ctx.getBean("homerBean")
 
-        assertEquals 45, homerBean.age
+        assertEquals 45, ((Integer) homerBean.age)
         assertEquals "homer", homerBean.person
     }
 
+    @Test
     void testBeanBuilderWithScript() {
         def script = '''
 def bb = new grails.spring.BeanBuilder()
@@ -781,13 +816,14 @@ quest(grails.spring.HolyGrailQuest) {}
 knight(grails.spring.KnightOfTheRoundTable, "Bedivere") { quest = quest }
 }
 bb.createApplicationContext()
- '''
+'''
         def ctx = new GroovyShell().evaluate(script)
 
         def knight = ctx.getBean('knight')
         knight.embarkOnQuest()
     }
 
+    @Test
     // test for GRAILS-5057
     void testRegisterBeans() {
 
@@ -811,7 +847,8 @@ bb.createApplicationContext()
 
         assertEquals "Fred", appCtx.getBean("personA").name
     }
-    
+
+    @Test
     void testSingletonPropertyOnBeanDefinition() {
         def bb = new BeanBuilder()
         bb.beans {
@@ -826,9 +863,9 @@ bb.createApplicationContext()
  
         def ctx = bb.createApplicationContext()
  
-        assertTrue 'singletonBean should have been a singleton', ctx.isSingleton('singletonBean')
-        assertFalse 'nonSingletonBean should not have been a singleton', ctx.isSingleton('nonSingletonBean')
-        assertTrue 'unSpecifiedScopeBean should not have been a singleton', ctx.isSingleton('unSpecifiedScopeBean')
+        assertTrue ctx.isSingleton('singletonBean'), 'singletonBean should have been a singleton'
+        assertFalse ctx.isSingleton('nonSingletonBean'), 'nonSingletonBean should not have been a singleton'
+        assertTrue ctx.isSingleton('unSpecifiedScopeBean'), 'unSpecifiedScopeBean should not have been a singleton'
     }
 }
 
