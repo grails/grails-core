@@ -72,8 +72,6 @@ class VndErrorRenderingSpec extends Specification{
 
     }
 
-    //TODO: Remove @Ignore and figure out why the JSON is incorrect
-    @Ignore
     void "Test VND error rendering in JSON" () {
         given:"A registry with VND error registered"
             def registry = new DefaultRendererRegistry()
