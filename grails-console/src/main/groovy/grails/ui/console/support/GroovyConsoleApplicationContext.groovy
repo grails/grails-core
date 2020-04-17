@@ -45,7 +45,7 @@ class GroovyConsoleApplicationContext extends GenericApplicationContext {
         final GroovyConsoleApplicationContext self = this
         groovy.ui.Console groovyConsole = new groovy.ui.Console(binding) {
             @Override
-            void exit(EventObject evt) {
+            boolean exit(EventObject evt) {
                 super.exit(evt)
                 self.close()
             }

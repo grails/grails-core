@@ -50,7 +50,7 @@ class GroovyConsoleWebApplicationContext extends DevelopmentWebApplicationContex
         final GroovyConsoleWebApplicationContext self = this
         groovy.ui.Console groovyConsole = new groovy.ui.Console(binding) {
             @Override
-            void exit(EventObject evt) {
+            boolean exit(EventObject evt) {
                 super.exit(evt)
                 self.close()
                 System.exit(0)
