@@ -392,6 +392,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         final String pluginMinGrailsVersion = GrailsVersionUtils.getLowerVersion(pluginGrailsVersion);
         final String pluginMaxGrailsVersion = GrailsVersionUtils.getUpperVersion(pluginGrailsVersion);
 
+        if (appGrailsVersion == null) {
+            return true;
+        }
+
         if (pluginMinGrailsVersion == "*") {
             LOG.error("grailsVersion not formatted as expected, unable to determine compatibility.");
             return false;
