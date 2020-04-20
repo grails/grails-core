@@ -405,7 +405,7 @@ class GrailsApp extends SpringApplication {
         }
     }
 
-    protected void configureDirectoryWatcher(DirectoryWatcher directoryWatcher, String location) {
+    void configureDirectoryWatcher(DirectoryWatcher directoryWatcher, String location) {
         directoryWatcher.addWatchDirectory(new File(location, "grails-app"), ['groovy', 'java'])
         directoryWatcher.addWatchDirectory(new File(location, "src/main/groovy"), ['groovy', 'java'])
         directoryWatcher.addWatchDirectory(new File(location, "src/main/java"), ['groovy', 'java'])
