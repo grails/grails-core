@@ -537,7 +537,7 @@ subprojects { project ->
     }
 }
 
-task clean(type: Delete) {
+task clean(type: Delete, group: 'build') {
     delete buildDir,
            homeBinDir,
            homeConfDir,
