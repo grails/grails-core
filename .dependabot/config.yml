@@ -5,4 +5,4 @@ update_configs:
     update_schedule: "daily"
     default_labels:
       - "type: dependency-upgrade"
-    target_branch: "4.0.x"
+    target_branch: "master"
