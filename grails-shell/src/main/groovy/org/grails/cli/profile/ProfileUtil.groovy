@@ -25,7 +25,7 @@ class ProfileUtil {
                     dependencyExclusions.add(new Exclusion((String) ex.group, (String) ex.module, (String) ex.classifier, (String) ex.extension))
                 }
             }
-            dependency.setExclusions(dependencyExclusions)
+            dependency = dependency.setExclusions(dependencyExclusions)
         }
         dependency
     }
