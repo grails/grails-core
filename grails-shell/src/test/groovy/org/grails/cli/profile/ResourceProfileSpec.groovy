@@ -58,10 +58,21 @@ class ResourceProfileSpec extends Specification {
         def baseProfile = Mock(Profile)
         baseProfile.getDependencies() >> [ new Dependency(new DefaultArtifact("foo:bar:2.0"), "test")]
         baseProfile.getBuildPlugins() >> [ "foo-plug"]
+        baseProfile.features >> []
         profileRepository.getProfile("base") >> baseProfile
+        profileRepository.getProfile("base", true) >> baseProfile
 
         expect:
         profile.version == '1.0.1'
+        !profile.dependencies.isEmpty()
+        !profile.features.isEmpty()
+
+        when:
+        Feature feature = profile.features.find { (it.name == "hibernate") }
+
+        then:
+        feature
+        !feature.dependencies.isEmpty()
 
     }
 
@@ -161,8 +172,8 @@ build:
     plugins:
         - bar
 dependencies:
-    compile:
-        - org.grails:grails-core:3.1.0
+    - scope: compile
+      coords: org.grails:grails-core:3.1.0
 """.bytes
     }
 
@@ -179,8 +190,8 @@ build:
     plugins:
         - bar
 dependencies:
-    compile:
-        - org.grails:grails-core:3.1.0
+    - scope: compile
+      coords: org.grails:grails-core:3.1.0
 """.bytes
     }
 
@@ -194,10 +205,10 @@ build:
     excludes:
         - foo-plug
 dependencies:
-    excludes:
-        - foo:bar:*
-    compile:
-        - org.grails:grails-core:3.1.0
+    - scope: excludes
+      coords: foo:bar:*
+    - scope: compile
+      coords: org.grails:grails-core:3.1.0
 """.bytes
     }
 
@@ -219,8 +230,8 @@ steps:
         """
 description: Adds GORM for Hibernate 5 to the project
 dependencies:
-    compile:
-        - "org.hibernate:hibernate-core:5.4.0.Final"
+    - scope: compile
+      coords: "org.hibernate:hibernate-core:5.4.0.Final"
 """.bytes
     }
 

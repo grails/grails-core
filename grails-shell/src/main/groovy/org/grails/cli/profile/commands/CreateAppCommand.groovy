@@ -27,21 +27,14 @@ import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.GrailsCli
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.Feature
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
-import org.grails.cli.profile.ProfileRepositoryAware
+import org.grails.cli.profile.*
+import org.grails.cli.profile.commands.io.GradleDependency
 import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
+
+import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.Paths
 
 /**
  * Command for creating Grails applications
@@ -400,10 +393,13 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
         dependencies = dependencies.unique()
 
-        dependencies = dependencies.sort({ Dependency dep -> dep.scope }).collect() { Dependency dep ->
-            String artifactStr = resolveArtifactString(dep)
-            "    ${dep.scope} \"${artifactStr}\"".toString()
-        }.unique().join(ln)
+        List<GradleDependency> gradleDependencies = convertToGradleDependencies(dependencies)
+
+        String dependencyString = gradleDependencies
+                .sort({ GradleDependency dep-> dep.scope})
+                .collect( {GradleDependency dep-> dep.toString(4)})
+                .unique()
+                .join(ln)
 
         def buildRepositories = profile.buildRepositories.collect(repositoryUrl.curry(8)).unique().join(ln)
 
@@ -431,7 +427,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             }
             replacefilter {
                 replacetoken("@dependencies@")
-                replacevalue(dependencies)
+                replacevalue(dependencyString)
             }
             replacefilter {
                 replacetoken("@buildDependencies@")
@@ -461,7 +457,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     protected Iterable<Feature> evaluateFeatures(Profile profile, List<String> requestedFeatures) {
         if (requestedFeatures) {
             List<String> allFeatureNames = profile.features*.name
-            List<String> validFeatureNames = requestedFeatures.intersect(allFeatureNames)
+            Collection<String> validFeatureNames = requestedFeatures.intersect(allFeatureNames)
             requestedFeatures.removeAll(allFeatureNames)
             requestedFeatures.each { String invalidFeature ->
                 List possibleSolutions = allFeatureNames.findAll {
@@ -690,6 +686,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         } catch (Throwable t) {
             // Ignore error deleting temporal directory
         }
+    }
+
+    protected List<GradleDependency> convertToGradleDependencies(List<Dependency> dependencies) {
+        List<GradleDependency> gradleDependencies = []
+        gradleDependencies.addAll(dependencies.collect { new GradleDependency(it) })
+        gradleDependencies
     }
 
     static class CreateAppCommandObject {
