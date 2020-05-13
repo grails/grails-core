@@ -62,10 +62,6 @@ class DefaultFeature implements Feature {
                         continue
                     }
                     String coords = (String) entry.coords
-
-                    if (coords.count(':') == 1) {
-                        coords = "$coords:BOM"
-                    }
                     Dependency dependency = createDependency(coords, scope, entry)
                     dependencies.add(dependency)
                 }
