@@ -31,7 +31,10 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.*
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -43,6 +46,7 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.process.JavaForkOptions
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+import org.gradle.util.VersionNumber
 import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
@@ -93,6 +97,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureProfile(project)
 
         applyDefaultPlugins(project)
+
+        configureGroovy(project)
 
         registerToolingModelBuilder(project, registry)
 
@@ -206,6 +212,23 @@ class GrailsGradlePlugin extends GroovyPlugin {
             TaskContainer tasks = project.tasks
             tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
         }
+    }
+
+    @CompileStatic
+    protected void configureGroovy(Project project) {
+        project.configurations.all( { Configuration configuration ->
+                configuration.resolutionStrategy.eachDependency({ DependencyResolveDetails details ->
+                    String dependencyName = details.requested.name
+                    String group = details.requested.group
+                    String version = details.requested.version
+                    final String minimumSupportedGroovyVersion = '3.0.3'
+                    final String groovyVersion = VersionNumber.parse(version) >= VersionNumber.parse(minimumSupportedGroovyVersion) ? version : minimumSupportedGroovyVersion
+                    if (group == 'org.codehaus.groovy' && dependencyName.startsWith('groovy')) {
+                        details.useVersion(groovyVersion)
+                        return
+                    }
+                } as Action<DependencyResolveDetails>)
+        } as Action<Configuration>)
     }
 
     @CompileStatic
