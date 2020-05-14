@@ -454,7 +454,7 @@ subprojects { project ->
         compile groovyDependency
 
         testCompile "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
-        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
+        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.2"
         testCompile "org.junit.platform:junit-platform-runner:1.6.2"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
 
