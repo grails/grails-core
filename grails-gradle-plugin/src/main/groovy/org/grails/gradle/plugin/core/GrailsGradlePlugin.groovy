@@ -215,18 +215,19 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void configureGroovy(Project project) {
-        project.configurations.all( { Configuration configuration ->
+        final String groovyVersion = project.properties['groovyVersion']
+        if (groovyVersion) {
+            project.configurations.all({ Configuration configuration ->
                 configuration.resolutionStrategy.eachDependency({ DependencyResolveDetails details ->
                     String dependencyName = details.requested.name
                     String group = details.requested.group
-                    String version = details.requested.version
-                    final String groovyVersion = project.properties['groovyVersion'] ?: '3.0.3'
                     if (group == 'org.codehaus.groovy' && dependencyName.startsWith('groovy')) {
                         details.useVersion(groovyVersion)
                         return
                     }
                 } as Action<DependencyResolveDetails>)
-        } as Action<Configuration>)
+            } as Action<Configuration>)
+        }
     }
 
     @CompileStatic
