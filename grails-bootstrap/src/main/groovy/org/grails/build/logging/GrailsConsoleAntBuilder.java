@@ -16,7 +16,7 @@
 package org.grails.build.logging;
 
 import grails.build.logging.GrailsConsole;
-import groovy.util.AntBuilder;
+import groovy.ant.AntBuilder;
 
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildLogger;

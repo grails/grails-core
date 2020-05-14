@@ -20,6 +20,7 @@ import grails.build.logging.GrailsConsole
 import grails.io.IOUtils
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import groovy.ant.AntBuilder
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
