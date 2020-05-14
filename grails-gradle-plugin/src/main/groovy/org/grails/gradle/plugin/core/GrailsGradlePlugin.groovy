@@ -46,7 +46,6 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.process.JavaForkOptions
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
-import org.gradle.util.VersionNumber
 import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
@@ -221,8 +220,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
                     String dependencyName = details.requested.name
                     String group = details.requested.group
                     String version = details.requested.version
-                    final String minimumSupportedGroovyVersion = '3.0.3'
-                    final String groovyVersion = VersionNumber.parse(version) >= VersionNumber.parse(minimumSupportedGroovyVersion) ? version : minimumSupportedGroovyVersion
+                    final String groovyVersion = project.properties['groovyVersion'] ?: '3.0.3'
                     if (group == 'org.codehaus.groovy' && dependencyName.startsWith('groovy')) {
                         details.useVersion(groovyVersion)
                         return
