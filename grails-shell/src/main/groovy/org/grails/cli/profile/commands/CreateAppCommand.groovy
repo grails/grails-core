@@ -226,6 +226,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 if(gormDep != null) {
                     variables['gorm.version'] = gormDep
                 }
+                String groovyDep = mpr.profileDependencyVersions.versionProperties.get('groovy.version')
+                if(groovyDep != null) {
+                    variables['groovy.version'] = groovyDep
+                }
             }
 
             Path appFullDirectory = Paths.get(cmd.baseDir.path, appname)
