@@ -27,12 +27,14 @@ import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -68,6 +70,7 @@ import javax.inject.Inject
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
+    public static final String DEFAULT_GROOVY_VERSION = "2.5.14"
 
     protected static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
     // NOTE: mongodb, neo4j etc. should NOT be included here so they can be independently versioned
@@ -94,6 +97,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureProfile(project)
 
         applyDefaultPlugins(project)
+
+        configureGroovy(project)
 
         registerToolingModelBuilder(project, registry)
 
@@ -214,6 +219,21 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
             }
         }
+    }
+
+    @CompileStatic
+    protected void configureGroovy(Project project) {
+        final String groovyVersion = project.properties['groovyVersion'] ?: DEFAULT_GROOVY_VERSION
+        project.configurations.all({ Configuration configuration ->
+            configuration.resolutionStrategy.eachDependency({ DependencyResolveDetails details ->
+                String dependencyName = details.requested.name
+                String group = details.requested.group
+                if (group == 'org.codehaus.groovy' && dependencyName.startsWith('groovy')) {
+                    details.useVersion(groovyVersion)
+                    return
+                }
+            } as Action<DependencyResolveDetails>)
+        } as Action<Configuration>)
     }
 
     @CompileStatic
