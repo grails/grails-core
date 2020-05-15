@@ -270,12 +270,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                 }
             }
             else if(event instanceof ContextClosedEvent) {
-                pluginManager.shutdown()
                 Map<String, Object> eventMap = [:]
                 eventMap.put('source', pluginManager)
-                for (GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                for (GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans.asList().reverse()) {
                     lifeCycle.onShutdown(eventMap)
                 }
+                pluginManager.shutdown()
                 ShutdownOperations.runOperations()
                 Holders.clear()
                 GrailsApp.setDevelopmentModeActive(false)

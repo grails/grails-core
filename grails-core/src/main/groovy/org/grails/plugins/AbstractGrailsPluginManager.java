@@ -350,7 +350,11 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void shutdown() {
         checkInitialised();
         try {
-            for (GrailsPlugin plugin : pluginList) {
+            // Shutdown plugins in reverse dependency order
+            List<GrailsPlugin> reversePluginList = new ArrayList<>(pluginList);
+            Collections.reverse(reversePluginList);
+
+            for (GrailsPlugin plugin : reversePluginList) {
                 if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
                 if (plugin.supportsCurrentScopeAndEnvironment()) {
                     plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_SHUTDOWN, plugin);
