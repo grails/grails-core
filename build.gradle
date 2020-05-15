@@ -14,7 +14,7 @@ buildscript {
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
-        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
+        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
     }
 }
 
