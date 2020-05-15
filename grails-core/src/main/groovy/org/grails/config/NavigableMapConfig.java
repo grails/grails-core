@@ -42,6 +42,10 @@ import java.util.StringTokenizer;
  * @since 3.0
  */
 
+/**
+ * @deprecated This class behavior is related to {@link NavigableMap} which will be removed in future.
+ */
+@Deprecated
 public abstract class NavigableMapConfig implements Config {
     protected static final Logger LOG = LoggerFactory.getLogger(NavigableMapConfig.class);
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -106,7 +110,7 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public Object get(Object key) {
-        return configMap.getProperty(key.toString());
+        return configMap.get(key.toString());
     }
 
     @Override
