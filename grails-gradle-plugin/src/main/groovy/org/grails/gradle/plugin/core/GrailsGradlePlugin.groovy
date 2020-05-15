@@ -31,7 +31,10 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.*
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -93,6 +96,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureProfile(project)
 
         applyDefaultPlugins(project)
+
+        configureGroovy(project)
 
         registerToolingModelBuilder(project, registry)
 
@@ -205,6 +210,23 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.afterEvaluate {
             TaskContainer tasks = project.tasks
             tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
+        }
+    }
+
+    @CompileStatic
+    protected void configureGroovy(Project project) {
+        final String groovyVersion = project.properties['groovyVersion']
+        if (groovyVersion) {
+            project.configurations.all({ Configuration configuration ->
+                configuration.resolutionStrategy.eachDependency({ DependencyResolveDetails details ->
+                    String dependencyName = details.requested.name
+                    String group = details.requested.group
+                    if (group == 'org.codehaus.groovy' && dependencyName.startsWith('groovy')) {
+                        details.useVersion(groovyVersion)
+                        return
+                    }
+                } as Action<DependencyResolveDetails>)
+            } as Action<Configuration>)
         }
     }
 
