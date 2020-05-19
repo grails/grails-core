@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import java.util.regex.Pattern
 
 /**
- * @deprecated This class is deprecated to reduce complexities. Use {code}config.getProperty(String key, Class<T> targetType){code} instead.
+ * @deprecated This class is deprecated to reduce complexity, improve performance, and increase maintainability. Use {code}config.getProperty(String key, Class<T> targetType){code} instead.
  */
 @Deprecated
 @EqualsAndHashCode
