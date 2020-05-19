@@ -110,7 +110,7 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public Object get(Object key) {
-        return configMap.get(key.toString());
+        return configMap.getProperty(key.toString());
     }
 
     @Override
