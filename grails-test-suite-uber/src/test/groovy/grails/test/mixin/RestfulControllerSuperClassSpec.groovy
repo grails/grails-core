@@ -96,7 +96,7 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
         controller.index(-1)
 
         then:"return model is 100"
-        assert model.videoList.size == 10
+        assert model.videoList.size() == 10
         assert model.videoCount == 101
     }
 
