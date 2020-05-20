@@ -98,6 +98,9 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
         then:"return model is 100"
         assert model.videoList.size() == 10
         assert model.videoCount == 101
+
+        cleanup:
+        Video.list().each { it.delete() }
     }
 
 
