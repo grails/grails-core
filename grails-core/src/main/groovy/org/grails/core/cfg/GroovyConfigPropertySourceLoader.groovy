@@ -50,7 +50,6 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
     }
 
     List<PropertySource<?>> load(String name, Resource resource, List<String> filteredKeys) throws IOException {
-        if (loaded.compareAndSet(false, true)) {
             def env = Environment.current.name
 
             if(resource.exists()) {
@@ -82,7 +81,6 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                     throw new GrailsConfigurationException("Error loading $resource.filename due to [${e.getClass().name}]: $e.message", e)
                 }
             }
-        }
-        return Collections.emptyList()
+            return Collections.emptyList()
     }
 }
