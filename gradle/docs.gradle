@@ -3,7 +3,7 @@ buildscript {
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
-        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
+//        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
     }
 }
 /**
@@ -74,7 +74,7 @@ task javadoc(type:Javadoc) {
     verbose = false
 }
 
-task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
+tasks.withType(Groovydoc) {
     def subs = subprojects.findAll {
         it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' && !it.name.startsWith("grails-test-suite") }
     def groovydocClasspath = files(subs.configurations.documentation)
