@@ -55,9 +55,9 @@ import java.util.jar.JarFile;
  * <p>When the path location contains an Ant-style pattern, e.g.:
  * <pre>
  * /WEB-INF/*-context.xml
- * com/mycompany/**&#47;applicationContext.xml
+ * com/mycompany&#47;**&#47;applicationContext.xml
  * file:C:/some/path/*-context.xml
- * classpath:com/mycompany/**&#47;applicationContext.xml</pre>
+ * classpath:com/mycompany&#47;**&#47;applicationContext.xml</pre>
  * the resolver follows a more complex but defined procedure to try to resolve
  * the wildcard. It produces a <code>Resource</code> for the path up to the last
  * non-wildcard segment and obtains a <code>URL</code> from it. If this URL is
@@ -127,7 +127,7 @@ import java.util.jar.JarFile;
  * in multiple class path locations. This is because a resource such as<pre>
  *     com/mycompany/package1/service-context.xml
  * </pre>may be in only one location, but when a path such as<pre>
- *     classpath:com/mycompany/**&#47;service-context.xml
+ *     classpath:com/mycompany&#47;**&#47;service-context.xml
  * </pre>is used to try to resolve it, the resolver will work off the (first) URL
  * returned by <code>getResource("com/mycompany");</code>. If this base package
  * node exists in multiple classloader locations, the actual end resource may
