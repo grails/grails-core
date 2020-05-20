@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import java.util.regex.Pattern
 
 /**
- * @deprecated This class is deprecated to reduce complexity, improve performance, and increase maintainability. Use {code}config.getProperty(String key, Class<T> targetType){code} instead.
+ * @deprecated This class is deprecated to reduce complexity, improve performance, and increase maintainability. Use {@code config.getProperty(String key, Class<T> targetType)} instead.
  */
 @Deprecated
 @EqualsAndHashCode
@@ -429,7 +429,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     /**
-     * @deprecated This class will be removed in future. Use {code}config.getProperty(String key, Class<T> targetType){code} instead of dot based navigation.
+     * @deprecated This class will be removed in future. Use {@code config.getProperty(String key, Class<T> targetType)} instead of dot based navigation.
      */
     @Deprecated
     @CompileStatic
