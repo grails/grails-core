@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class GrailsUtilTests {
 
     public void testGrailsVersion() {
-         assertEquals("4.1.0.M1", GrailsUtil.getGrailsVersion());
-//        assertEquals("4.1.0.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
+//         assertEquals("4.1.0.M2", GrailsUtil.getGrailsVersion());
+        assertEquals("4.1.0.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
     }
 
     @AfterEach
