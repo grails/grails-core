@@ -430,6 +430,7 @@ subprojects { project ->
         onlyIf {
             !isTestSuite
         }
+        classpath += configurations.documentation
         jvmArgs "-Xmx512M"
     }
 
