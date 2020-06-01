@@ -41,6 +41,7 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
         assert model.videoCount == 0
     }
 
+
     void "Test the save action returns the correct model, status and location"() {
         when:"The save action is executed"
             request.method = 'POST'
@@ -85,6 +86,21 @@ class RestfulControllerSuperClassSpec extends Specification implements Controlle
             response.status == HttpStatus.OK.value()
             response.getHeader('Location') != null
 
+    }
+
+    void "Test negative max param still only returns min size list"() {
+        given: "save objects"
+        101.times { new Video(title:"Existing + ${it}").save(failOnError: true) }
+
+        when:"The index action is executed with param"
+        controller.index(-1)
+
+        then:"return model is 100"
+        assert model.videoList.size() == 10
+        assert model.videoCount == 101
+
+        cleanup:
+        Video.list().each { it.delete() }
     }
 
 
