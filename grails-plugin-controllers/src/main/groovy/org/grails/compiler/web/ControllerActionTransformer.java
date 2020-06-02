@@ -39,7 +39,6 @@ import grails.util.TypeConvertingMap;
 import groovy.lang.Closure;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -420,6 +419,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         MethodCallExpression callExpression = new MethodCallExpression(
                 new VariableExpression("this"), methodNode.getName(), arguments);
         callExpression.setMethodTarget(methodNode);
+        callExpression.setImplicitThis(false);
 
         blockStatement.addStatement(new ReturnStatement(callExpression));
 
