@@ -75,7 +75,7 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                         propertySource.merge(runtimeConfig, false)
                     }
                     final NavigableMapPropertySource navigableMapPropertySource = new NavigableMapPropertySource(name, propertySource)
-                    addFile(name)
+                    loadedFiles.add(name)
                     return Collections.<PropertySource<?>>singletonList(navigableMapPropertySource)
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)
@@ -84,9 +84,5 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
             }
         }
         return Collections.emptyList()
-    }
-
-    synchronized void addFile(String name) {
-        loadedFiles.add(name)
     }
 }
