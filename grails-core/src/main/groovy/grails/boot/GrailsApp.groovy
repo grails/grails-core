@@ -14,6 +14,7 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.context.ApplicationContextBuilder
 import io.micronaut.context.ApplicationContextConfiguration
 import io.micronaut.core.util.StringUtils
+import io.micronaut.spring.context.env.MicronautEnvironment
 import io.micronaut.spring.context.factory.MicronautBeanFactoryConfiguration
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
@@ -21,6 +22,7 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.grails.boot.internal.JavaCompiler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
+import org.grails.config.NavigableMapPropertySource
 import org.grails.core.util.BeanCreationProfilingPostProcessor
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
@@ -101,14 +103,39 @@ class GrailsApp extends SpringApplication {
         log.debug("Application directory discovered as: {}", IOUtils.findApplicationDirectory())
         log.debug("Current base directory is [{}]. Reloading base directory is [{}]", new File("."), BuildSettings.BASE_DIR)
 
+        loadPluginConfigurationsToMicronautContext(applicationContext)
+
         if(environment.isReloadEnabled()) {
             log.debug("Reloading status: {}", environment.isReloadEnabled())
             enableDevelopmentModeWatch(environment, applicationContext)
             environment.isDevtoolsRestart()
         }
         printRunStatus(applicationContext)
-
         return applicationContext
+    }
+
+    @SuppressWarnings("GrMethodMayBeStatic")
+    private void loadPluginConfigurationsToMicronautContext(ConfigurableApplicationContext applicationContext) {
+        GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager)
+        ConfigurableApplicationContext parentApplicationContext = (ConfigurableApplicationContext) applicationContext.parent
+        ConfigurableEnvironment parentContextEnv = parentApplicationContext.getEnvironment()
+        if (parentContextEnv instanceof MicronautEnvironment) {
+            if (log.isDebugEnabled()) {
+                log.debug("Loading configurations from the plugins to the parent Micronaut context")
+            }
+            final io.micronaut.context.env.Environment micronautEnv = ((io.micronaut.context.env.Environment) parentContextEnv.getEnvironment())
+            final GrailsPlugin[] plugins = pluginManager.allPlugins
+            Arrays.stream(plugins.reverse())
+                    .filter({ plugin -> plugin.propertySource != null && plugin.propertySource instanceof NavigableMapPropertySource })
+                    .forEach({ plugin ->
+                        if (log.isDebugEnabled()) {
+                            log.debug("Loading configurations from {} plugin to the parent Micronaut context", plugin.name)
+                        }
+                        micronautEnv.addPropertySource("grails.plugins.$plugin.name", ((Map) plugin.propertySource.getSource()))
+                    })
+
+            applicationContext.setParent(parentApplicationContext)
+        }
     }
 
     @Override
