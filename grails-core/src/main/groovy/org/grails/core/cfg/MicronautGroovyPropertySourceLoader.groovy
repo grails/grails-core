@@ -9,7 +9,6 @@ import io.micronaut.context.exceptions.ConfigurationException
 import io.micronaut.core.io.ResourceLoader
 import org.grails.config.NavigableMap
 
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.stream.Stream
 
 /**

@@ -416,7 +416,7 @@ subprojects { project ->
 
 
     configure([compileGroovy, compileTestGroovy]) {
-        groovyOptions.fork(jvmArgs: ['-XX:MaxPermSize=512m'], memoryInitialSize: '128M', memoryMaximumSize: '1G')
+        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
         options.encoding = "UTF-8"
     }

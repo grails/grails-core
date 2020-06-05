@@ -24,7 +24,6 @@ import org.grails.config.NavigableMap
 import org.grails.config.NavigableMapPropertySource
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.springframework.boot.env.PropertySourceLoader
-import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.PropertySource
 import org.springframework.core.io.Resource
 
@@ -76,7 +75,7 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                         propertySource.merge(runtimeConfig, false)
                     }
 
-                    return Collections.<PropertySource>singletonList(new NavigableMapPropertySource(name, propertySource))
+                    return Collections.<PropertySource<?>> singletonList(new NavigableMapPropertySource(name, propertySource))
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)
                     throw new GrailsConfigurationException("Error loading $resource.filename due to [${e.getClass().name}]: $e.message", e)
