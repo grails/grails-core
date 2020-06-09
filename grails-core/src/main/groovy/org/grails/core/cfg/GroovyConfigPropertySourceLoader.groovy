@@ -24,7 +24,6 @@ import org.grails.config.NavigableMap
 import org.grails.config.NavigableMapPropertySource
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.springframework.boot.env.PropertySourceLoader
-import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.PropertySource
 import org.springframework.core.io.Resource
 
