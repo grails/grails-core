@@ -40,8 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
     final String[] fileExtensions = ['groovy'] as String[]
-
-    AtomicBoolean loaded = new AtomicBoolean(false)
+    final Set<String> loadedFiles = new HashSet<>(1)
 
     @Override
     List<PropertySource<?>> load(String name, Resource resource) throws IOException {
@@ -49,7 +48,7 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
     }
 
     List<PropertySource<?>> load(String name, Resource resource, List<String> filteredKeys) throws IOException {
-        if (loaded.compareAndSet(false, true)) {
+        if (!loadedFiles.contains(name)) {
             def env = Environment.current.name
 
             if(resource.exists()) {
@@ -74,8 +73,9 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                         def runtimeConfig = configSlurper.parse( runtimeResource.getURL() )
                         propertySource.merge(runtimeConfig, false)
                     }
-
-                    return Collections.<PropertySource<?>> singletonList(new NavigableMapPropertySource(name, propertySource))
+                    final NavigableMapPropertySource navigableMapPropertySource = new NavigableMapPropertySource(name, propertySource)
+                    loadedFiles.add(name)
+                    return Collections.<PropertySource<?>>singletonList(navigableMapPropertySource)
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)
                     throw new GrailsConfigurationException("Error loading $resource.filename due to [${e.getClass().name}]: $e.message", e)
