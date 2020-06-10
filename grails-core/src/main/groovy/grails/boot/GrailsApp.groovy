@@ -13,6 +13,8 @@ import groovy.util.logging.Slf4j
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.ApplicationContextBuilder
 import io.micronaut.context.ApplicationContextConfiguration
+import io.micronaut.context.env.AbstractPropertySourceLoader
+import io.micronaut.context.env.PropertySource
 import io.micronaut.core.util.StringUtils
 import io.micronaut.spring.context.env.MicronautEnvironment
 import io.micronaut.spring.context.factory.MicronautBeanFactoryConfiguration
@@ -22,7 +24,6 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.grails.boot.internal.JavaCompiler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
-import org.grails.config.NavigableMapPropertySource
 import org.grails.core.util.BeanCreationProfilingPostProcessor
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
@@ -125,15 +126,16 @@ class GrailsApp extends SpringApplication {
             }
             final io.micronaut.context.env.Environment micronautEnv = ((io.micronaut.context.env.Environment) parentContextEnv.getEnvironment())
             final GrailsPlugin[] plugins = pluginManager.allPlugins
-            Arrays.stream(plugins.reverse())
-                    .filter({ plugin -> plugin.propertySource != null && plugin.propertySource instanceof NavigableMapPropertySource })
-                    .forEach({ plugin ->
+            Integer priority = AbstractPropertySourceLoader.DEFAULT_POSITION
+            Arrays.stream(plugins)
+                    .filter({ GrailsPlugin plugin -> plugin.propertySource != null })
+                    .forEach({ GrailsPlugin plugin ->
                         if (log.isDebugEnabled()) {
                             log.debug("Loading configurations from {} plugin to the parent Micronaut context", plugin.name)
                         }
-                        micronautEnv.addPropertySource("grails.plugins.$plugin.name", ((Map) plugin.propertySource.getSource()))
+                        micronautEnv.addPropertySource(PropertySource.of("grails.plugins.$plugin.name", (Map) plugin.propertySource.source, --priority))
                     })
-
+            micronautEnv.refresh()
             applicationContext.setParent(parentApplicationContext)
         }
     }
