@@ -6,6 +6,6 @@ dependencies {
     compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
     compileOnly "io.micronaut:micronaut-inject-groovy:$micronautVersion"
 
-    compile project(":grails-web"), project(":grails-encoder")
-    runtime project(":grails-codecs")
+    api project(":grails-web"), project(":grails-encoder")
+    runtimeOnly project(":grails-codecs")
 }

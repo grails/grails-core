@@ -1,5 +1,5 @@
 dependencies {
-    compile "org.springframework:spring-tx:${springVersion}"
+    api "org.springframework:spring-tx:${springVersion}"
 
-    compile project(":grails-core"), project(":grails-plugin-datasource")
+    api project(":grails-core"), project(":grails-plugin-datasource")
 }

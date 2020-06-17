@@ -11,7 +11,6 @@ buildscript {
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
-//        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
@@ -284,6 +283,7 @@ subprojects { project ->
         project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
     }
 
+    apply plugin: 'java-library'
     apply plugin: 'groovy'
 //    apply plugin: "io.github.groovylang.groovydoc"
     if(!isTestSuite) {
@@ -451,24 +451,24 @@ subprojects { project ->
         documentation "org.codehaus.groovy:groovy-cli-picocli:$groovyVersion"
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
-        compile groovyDependency
+        api groovyDependency
 
-        testCompile "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
-        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.2"
-        testCompile "org.junit.platform:junit-platform-runner:1.6.2"
+        testImplementation "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
+        testImplementation "org.junit.platform:junit-platform-runner:1.6.2"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
 
         if (project.name != "grails-docs") {
             // Logging
-            compile "org.slf4j:slf4j-api:$slf4jVersion"
-            compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+            api "org.slf4j:slf4j-api:$slf4jVersion"
+            api "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
             // Testing
-            testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
-            testCompile("org.spockframework:spock-core:${spockVersion}") { transitive = false }
+            testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
+            testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
             // Required by Spock's Mocking
-            testCompile "cglib:cglib-nodep:${cglibVersion}"
-            testCompile "org.objenesis:objenesis:${objenesisVersion}"
+            testImplementation "cglib:cglib-nodep:${cglibVersion}"
+            testImplementation "org.objenesis:objenesis:${objenesisVersion}"
         }
     }
 

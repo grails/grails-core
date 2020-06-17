@@ -2,10 +2,8 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
     }
-    dependencies {
-//        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
-    }
 }
+
 /**
  * Since Grails is a mixed Groovy/Java codebase the javadoc tool needs stubs in order for javadoc compilation to pass
  * This target generates a set of stubs for the Groovy sources
@@ -52,7 +50,7 @@ task docs {
 
 task javadoc(type:Javadoc) {
     def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
-    classpath = files(subs.configurations.compile)
+    classpath = files(subs.configurations.compileClasspath)
     dependsOn stubs
     maxMemory = '256M'
     destinationDir = file("$docs.destinationDir/javadoc")

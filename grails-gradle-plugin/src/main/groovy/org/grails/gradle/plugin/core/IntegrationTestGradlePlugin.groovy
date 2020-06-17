@@ -61,8 +61,8 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             DependencyHandler dependencies = project.dependencies
             dependencies.add("integrationTestCompile", SourceSets.findMainSourceSet(project).output)
             dependencies.add("integrationTestCompile", SourceSets.findSourceSet(project, SourceSet.TEST_SOURCE_SET_NAME).output)
-            dependencies.add("integrationTestCompile", project.configurations.findByName("testCompile"))
-            dependencies.add("integrationTestRuntime", project.configurations.findByName("testRuntime"))
+            dependencies.add("integrationTestCompile", project.configurations.findByName("testCompileClasspath"))
+            dependencies.add("integrationTestRuntime", project.configurations.findByName("testRuntimeClasspath"))
 
             TaskContainer tasks = project.tasks
             Test integrationTestTask = tasks.create('integrationTest', Test)

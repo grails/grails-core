@@ -13,8 +13,8 @@ sourceSets {
 dependencies {
   integrationTestCompile sourceSets.main.output
   integrationTestCompile sourceSets.test.output
-  integrationTestCompile configurations.testCompile
-  integrationTestRuntime configurations.testRuntime
+  integrationTestCompile configurations.testCompileClasspath
+  integrationTestRuntime configurations.testRuntimeClasspath
 }
 
 // Define integration test task
