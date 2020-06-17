@@ -285,7 +285,6 @@ subprojects { project ->
 
     apply plugin: 'java-library'
     apply plugin: 'groovy'
-//    apply plugin: "io.github.groovylang.groovydoc"
     if(!isTestSuite) {
         apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
@@ -431,7 +430,6 @@ subprojects { project ->
             !isTestSuite
         })
         classpath += configurations.documentation
-//        jvmArgs "-Xmx512M"
     }
 
     configure([javadoc]) {
