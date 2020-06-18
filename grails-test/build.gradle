@@ -1,13 +1,13 @@
 dependencies {
 
-    compile "org.springframework:spring-tx:${springVersion}"
+    api "org.springframework:spring-tx:${springVersion}"
 
-    compile "org.springframework.boot:spring-boot-test:$springBootVersion"
+    api "org.springframework.boot:spring-boot-test:$springBootVersion"
     // Testing
-    compile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
-    compile("org.codehaus.groovy:groovy-test:$groovyVersion")
-    compile("org.spockframework:spock-core:$spockVersion") { transitive = false }
-    compile "org.junit.platform:junit-platform-runner:1.6.0"
+    api "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+    api("org.codehaus.groovy:groovy-test:$groovyVersion")
+    api("org.spockframework:spock-core:$spockVersion") { transitive = false }
+    api "org.junit.platform:junit-platform-runner:1.6.0"
 
 
     provided project(":grails-plugin-mimetypes")
@@ -23,5 +23,5 @@ dependencies {
     provided "org.apache.ant:ant-junit:${antVersion}"
 
     // needed for Spock
-    compile "org.objenesis:objenesis:${objenesisVersion}"
+    api "org.objenesis:objenesis:${objenesisVersion}"
 }

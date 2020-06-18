@@ -2,10 +2,8 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
     }
-    dependencies {
-        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
-    }
 }
+
 /**
  * Since Grails is a mixed Groovy/Java codebase the javadoc tool needs stubs in order for javadoc compilation to pass
  * This target generates a set of stubs for the Groovy sources
@@ -52,7 +50,7 @@ task docs {
 
 task javadoc(type:Javadoc) {
     def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
-    classpath = files(subs.configurations.compile)
+    classpath = files(subs.configurations.compileClasspath)
     dependsOn stubs
     maxMemory = '256M'
     destinationDir = file("$docs.destinationDir/javadoc")
@@ -74,7 +72,7 @@ task javadoc(type:Javadoc) {
     verbose = false
 }
 
-task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
+tasks.withType(Groovydoc) {
     def subs = subprojects.findAll {
         it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' && !it.name.startsWith("grails-test-suite") }
     def groovydocClasspath = files(subs.configurations.documentation)
@@ -82,13 +80,12 @@ task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
     // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
     groovydocClasspath -= groovydocClasspath.filter { it.name == 'javaee-web-api-6.0.jar' }
 
-    classpath = groovydocClasspath
-    groovyClasspath = groovydocClasspath
+    classpath += groovydocClasspath
+    groovyClasspath += groovydocClasspath
     destinationDir = file("$docs.destinationDir/api")
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
     source subs.sourceSets.main.groovy.srcDirs
-    jvmArgs "-Xmx768M"
 // Can't make these link methods to work
 //    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")
 //    link("http://download.oracle.com/javase/1.5.0/docs/api", "java." , "javax.")

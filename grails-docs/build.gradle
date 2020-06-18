@@ -1,28 +1,28 @@
 configurations {
     // Required to keep Gradle classes off the test compile classpath.
-    gradleConf.extendsFrom compile
+    gradleConf.extendsFrom compileClasspath
 }
 
 dependencies {
     gradleConf gradleApi()
-    compile "commons-lang:commons-lang:$commonsLangVersion",
+    api "commons-lang:commons-lang:$commonsLangVersion",
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
             'org.grails:grails-gdoc-engine:1.0.1',
             'org.yaml:snakeyaml:1.14',
             "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
-    compile 'org.asciidoctor:asciidoctorj:1.5.4'
-    compile('org.xhtmlrenderer:core-renderer:R8') {
+    api 'org.asciidoctor:asciidoctorj:1.5.4'
+    api('org.xhtmlrenderer:core-renderer:R8') {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }
 
-    runtime "org.slf4j:slf4j-api:$slf4jVersion"
+    runtimeOnly "org.slf4j:slf4j-api:$slf4jVersion"
 
-    runtime('com.lowagie:itext:2.0.8')
+    runtimeOnly('com.lowagie:itext:2.0.8')
 
-    compile 'org.jsoup:jsoup:1.7.3'
-    testCompile("org.spockframework:spock-core:${spockVersion}") { transitive = false }
+    api 'org.jsoup:jsoup:1.7.3'
+    testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
 }
 
 sourceSets {

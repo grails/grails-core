@@ -1,13 +1,13 @@
 dependencies {
-    compile project(":grails-core"),
+    api project(":grails-core"),
             project(":grails-web"),
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-validation'),
             project(':grails-plugin-domain-class')
 
-    compile("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
-    runtime project(':grails-plugin-i18n')
+    api("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+    runtimeOnly project(':grails-plugin-i18n')
 
-    testRuntime "jline:jline:$jlineVersion"
-    testRuntime "org.fusesource.jansi:jansi:$jansiVersion"
+    testRuntimeOnly "jline:jline:$jlineVersion"
+    testRuntimeOnly "org.fusesource.jansi:jansi:$jansiVersion"
 }

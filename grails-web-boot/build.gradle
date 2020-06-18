@@ -1,10 +1,10 @@
 dependencies {
-    compile project(":grails-web-common")
+    api project(":grails-web-common")
 
-    testCompile project(":grails-plugin-controllers")
+    testImplementation project(":grails-plugin-controllers")
 
-    testCompile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
-    testRuntime "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatLog4jVersion"
-    testRuntime project(":grails-plugin-i18n")
-    testRuntime project(":grails-plugin-url-mappings")
+    testImplementation "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
+    testRuntimeOnly "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatLog4jVersion"
+    testRuntimeOnly project(":grails-plugin-i18n")
+    testRuntimeOnly project(":grails-plugin-url-mappings")
 }

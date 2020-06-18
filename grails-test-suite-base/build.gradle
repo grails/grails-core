@@ -1,10 +1,10 @@
 dependencies {
-    compile project(':grails-bootstrap'),
+    api project(':grails-bootstrap'),
             project(':grails-core'),
             project(':grails-spring'),
             project(':grails-web'),
             project(':grails-test'),
             project(':grails-plugin-domain-class')
 
-    compile "org.grails.plugins:converters:$legacyConvertersVersion"
+    api "org.grails.plugins:converters:$legacyConvertersVersion"
 }
