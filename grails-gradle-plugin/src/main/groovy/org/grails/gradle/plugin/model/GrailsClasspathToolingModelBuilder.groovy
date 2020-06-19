@@ -35,10 +35,10 @@ class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
 
     @Override
     Object buildAll(String modelName, Project project) {
-        // testRuntime includes provided
+        // testRuntimeClasspath includes provided
         try {
 
-            List<URL> runtimeDependencies = project.getConfigurations().getByName("testRuntime").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
+            List<URL> runtimeDependencies = project.getConfigurations().getByName("testRuntimeClasspath").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
                 artifact.getFile().toURI().toURL()
             }
 

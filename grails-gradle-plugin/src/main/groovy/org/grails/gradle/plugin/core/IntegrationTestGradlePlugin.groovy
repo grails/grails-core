@@ -33,7 +33,7 @@ import org.grails.gradle.plugin.util.SourceSets
 /**
  * Gradle plugin for adding separate src/integration-test folder to hold integration tests
  *
- * Adds integrationTestCompile and integrationTestRuntime configurations that extend from testCompile and testRuntime
+ * Adds integrationTestCompile and integrationTestRuntime configurations that extend from testCompileClasspath and testRuntimeClasspath
  *
  *
  */
