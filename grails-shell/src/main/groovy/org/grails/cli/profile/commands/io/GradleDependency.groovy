@@ -20,11 +20,11 @@ import org.eclipse.aether.graph.Dependency
 class GradleDependency {
 
     static final Map<String, String> SCOPE_MAP = [
-        compile: 'api',
+        compile: 'implementation',
         runtime: 'runtimeOnly',
         testRuntime: 'testRuntimeOnly',
         testCompile: 'testImplementation',
-        provided: 'developmentOnly'
+//        provided: 'developmentOnly'
     ]
 
     private String scope
@@ -36,8 +36,8 @@ class GradleDependency {
     }
 
     GradleDependency(Dependency dependency) {
-        this(dependency.scope, dependency)
-//        this(SCOPE_MAP.get(dependency.scope) ?: dependency.scope, dependency)
+//        this(dependency.scope, dependency)
+        this(SCOPE_MAP.get(dependency.scope) ?: dependency.scope, dependency)
     }
 
     GradleDependency(String scope, Dependency dependency) {
