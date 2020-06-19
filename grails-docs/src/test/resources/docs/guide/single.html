@@ -2506,7 +2506,7 @@ log.error <span class="string"><span class="delimiter">&quot;</span><span class=
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">dependencies {
-    testCompile <span class="string"><span class="delimiter">&quot;</span><span class="content">org.grails:grails-datastore-test-support</span><span class="delimiter">&quot;</span></span>
+    testImplementation <span class="string"><span class="delimiter">&quot;</span><span class="content">org.grails:grails-datastore-test-support</span><span class="delimiter">&quot;</span></span>
 }</code></pre>
 </div>
 </div>
@@ -5401,8 +5401,8 @@ $ grails compile</code></pre>
   runtime <span class="string"><span class="delimiter">'</span><span class="content">org.grails.plugins:asset-pipeline</span><span class="delimiter">'</span></span>
   runtime <span class="string"><span class="delimiter">'</span><span class="content">org.grails.plugins:scaffolding</span><span class="delimiter">'</span></span>
 
-  testCompile <span class="string"><span class="delimiter">'</span><span class="content">org.grails:grails-plugin-testing</span><span class="delimiter">'</span></span>
-  testCompile <span class="string"><span class="delimiter">'</span><span class="content">org.grails.plugins:geb</span><span class="delimiter">'</span></span>
+  testImplementation <span class="string"><span class="delimiter">'</span><span class="content">org.grails:grails-plugin-testing</span><span class="delimiter">'</span></span>
+  testImplementation <span class="string"><span class="delimiter">'</span><span class="content">org.grails.plugins:geb</span><span class="delimiter">'</span></span>
 
   <span class="comment">// Note: It is recommended to update to a more robust driver (Chrome, Firefox etc.)</span>
   testRuntimeOnly <span class="string"><span class="delimiter">'</span><span class="content">org.seleniumhq.selenium:selenium-htmlunit-driver:2.44.0</span><span class="delimiter">'</span></span>

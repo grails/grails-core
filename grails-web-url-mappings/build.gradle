@@ -25,7 +25,7 @@ dependencies {
     provided "org.fusesource.jansi:jansi:$jansiVersion"
     provided "jline:jline:$jlineVersion"
 
-    testCompile project(":grails-test-suite-base")
+    testImplementation project(":grails-test-suite-base")
 }
 tasks.withType(Test) {
     testLogging {
