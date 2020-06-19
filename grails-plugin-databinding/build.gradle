@@ -6,7 +6,7 @@ dependencies {
     compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
 
     api project(':grails-core'), project(':grails-web')
-//    compile "io.micronaut:micronaut-runtime-groovy:$micronautRuntimeGroovyVersion"
+//    api "io.micronaut:micronaut-runtime-groovy:$micronautRuntimeGroovyVersion"
 
     testImplementation project(':grails-test-suite-base')
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion", {

@@ -10,7 +10,7 @@ subprojects { subproject ->
 
         configurations {
             libsConfigurations << libs {
-                extendsFrom compile, runtime
+                extendsFrom compileClasspath, runtimeClasspath
                 ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
             }
         }
