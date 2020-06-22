@@ -63,7 +63,6 @@ class PublishGuideTask extends AbstractCompile {
     }
 
     @CompileDynamic
-    @Override
     @TaskAction
     protected void compile() {
         def urls = getClasspath().files.collect() { File f -> f.toURI().toURL() }

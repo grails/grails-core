@@ -88,7 +88,6 @@ class ProfileCompilerTask extends AbstractCompile {
         super.setDestinationDir(destinationDir)
     }
 
-    @Override
     protected void compile() {
 
         boolean profileYmlExists = config?.exists()

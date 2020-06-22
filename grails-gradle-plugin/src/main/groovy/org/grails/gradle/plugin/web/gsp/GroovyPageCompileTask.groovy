@@ -51,7 +51,6 @@ class GroovyPageCompileTask extends AbstractCompile {
     }
 
     @CompileDynamic
-    @Override
     protected void compile() {
 
         def compileTask = this
