@@ -332,7 +332,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def grailsVersion = project.property('grailsVersion')
 
         if (!grailsVersion) {
-            def grailsCoreDep = project.configurations.getByName('compile').dependencies.find { Dependency d -> d.name == 'grails-core' }
+            def grailsCoreDep = project.configurations.getByName('compileClasspath').dependencies.find { Dependency d -> d.name == 'grails-core' }
             grailsVersion = grailsCoreDep.version
         }
         grailsVersion
@@ -581,7 +581,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
             ConfigurationContainer configurations = project.configurations
-            Configuration runtime = configurations.getByName('runtime')
+            Configuration runtime = configurations.getByName('runtimeClasspath')
             Configuration developmentOnly = configurations.findByName('developmentOnly')
             Configuration console = configurations.getByName('console')
             SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)

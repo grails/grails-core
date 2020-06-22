@@ -48,7 +48,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
 
     static final String CONFIGURATION_NAME = 'grails'
 
-    public static final String RUNTIME_CONFIGURATION = "runtime"
+    public static final String RUNTIME_CONFIGURATION = "runtimeClasspath"
 
     @Inject
     GrailsProfileGradlePlugin( ProjectPublicationRegistry publicationRegistry, ProjectConfigurationActionContainer configurationActionContainer, ImmutableModuleIdentifierFactory immutableModuleIdentifierFactory) {

@@ -22,7 +22,7 @@ dependencies {
     api "jline:jline:$jlineVersion"
     api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
 
-    api("org.springframework.boot:spring-boot-cli:$springBootVersion") {
+    api "org.springframework.boot:spring-boot-cli:$springBootVersion", {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
 
