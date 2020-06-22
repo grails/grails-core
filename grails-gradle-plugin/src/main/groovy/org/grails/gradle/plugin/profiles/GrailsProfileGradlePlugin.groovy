@@ -22,13 +22,10 @@ import org.apache.tools.ant.DirectoryScanner
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencyResolveDetails
-import org.gradle.api.artifacts.ModuleVersionSelector
-import org.gradle.api.artifacts.component.ProjectComponentSelector
 import org.gradle.api.file.CopySpec
 import org.gradle.api.internal.artifacts.ImmutableModuleIdentifierFactory
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
-import org.gradle.api.internal.java.JavaLibrary
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
