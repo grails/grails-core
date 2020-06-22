@@ -48,10 +48,10 @@ class GrailsBuildPlugin implements Plugin<Project> {
         }
 
         def sourceDependencies = dependencies.collect { ResolvedDependency resolvedDependency ->
-            def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion,
-                resolvedDependency.configuration)
-            dependency.transitive = false
+            def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion)
+            dependency.setTransitive(false)
             dependency.artifact { artifact ->
+                dependency.setTargetConfiguration(resolvedDependency.configuration)
                 artifact.name = dependency.name
                 artifact.type = targetClassifier
                 if('pom' == targetClassifier) {
