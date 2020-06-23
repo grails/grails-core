@@ -33,7 +33,7 @@ import org.grails.gradle.plugin.util.SourceSets
 /**
  * Gradle plugin for adding separate src/integration-test folder to hold integration tests
  *
- * Adds integrationTestCompile and integrationTestRuntime configurations that extend from testCompileClasspath and testRuntimeClasspath
+ * Adds integrationTestImplementation and integrationTestRuntimeOnly configurations that extend from testCompileClasspath and testRuntimeClasspath
  *
  *
  */
@@ -59,10 +59,10 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             integrationTest.resources.srcDir(resources)
 
             DependencyHandler dependencies = project.dependencies
-            dependencies.add("integrationTestCompile", SourceSets.findMainSourceSet(project).output)
-            dependencies.add("integrationTestCompile", SourceSets.findSourceSet(project, SourceSet.TEST_SOURCE_SET_NAME).output)
-            dependencies.add("integrationTestCompile", project.configurations.findByName("testCompileClasspath"))
-            dependencies.add("integrationTestRuntime", project.configurations.findByName("testRuntimeClasspath"))
+            dependencies.add("integrationTestImplementation", SourceSets.findMainSourceSet(project).output)
+            dependencies.add("integrationTestImplementation", SourceSets.findSourceSet(project, SourceSet.TEST_SOURCE_SET_NAME).output)
+            dependencies.add("integrationTestImplementation", project.configurations.findByName("testCompileClasspath"))
+            dependencies.add("integrationTestRuntimeOnly", project.configurations.findByName("testRuntimeClasspath"))
 
             TaskContainer tasks = project.tasks
             Test integrationTestTask = tasks.create('integrationTest', Test)
