@@ -22,6 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.Copy
@@ -207,7 +208,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
                 from "${project.projectDir}/src/main/templates"
                 into "${processResources.destinationDir}/META-INF/templates"
             }
-
+            processResources.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE)
             processResources.dependsOn(*processResourcesDependencies)
             project.processResources {
                 exclude "spring/resources.groovy"
