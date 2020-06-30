@@ -1305,6 +1305,23 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         book.datePublished == null
         !book.hasErrors()
     }
+
+    void 'test binding an Date to code in @BindingFormat'() {
+        given:
+        Locale.setDefault(Locale.getInstance("en", "US", ""))
+        messageSource.addMessage 'my.date.format', Locale.US, 'MMddyyyy'
+        def child = new Child()
+
+        when: 'a valid date string is bound'
+        binder.bind child, [birthDate: '11151969'] as SimpleMapDataBindingSource
+
+        then: 'the date is initialized'
+        !child.hasErrors()
+        child.birthDate
+        Calendar.NOVEMBER == child.birthDate.month
+        15 == child.birthDate.date
+        69 == child.birthDate.year
+    }
     
     void 'Test binding String to currency in a domain class'() {
         given:
