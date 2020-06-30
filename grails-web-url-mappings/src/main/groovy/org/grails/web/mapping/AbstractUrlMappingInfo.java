@@ -22,7 +22,6 @@ import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.util.UriUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -106,7 +105,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
         if (!GrailsStringUtils.isBlank(id)) {
             try {
                 dispatchParams.put(GrailsWebRequest.ID_PARAMETER, UriUtils.decode(id, encoding));
-            } catch (UnsupportedEncodingException e) {
+            } catch (IllegalArgumentException e) {
                 dispatchParams.put(GrailsWebRequest.ID_PARAMETER, id);
             }
         }
