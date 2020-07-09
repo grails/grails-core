@@ -49,19 +49,23 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
 
         def allTasks = project.tasks
-        def compileGroovyPages = allTasks.create("compileGroovyPages", GroovyPageCompileTask) {
+        def compileGroovyPages = allTasks.create("compileGroovyPages", GroovyPageForkCompileTask) {
             destinationDir = destDir
+            tmpDir = getTmpDir(project)
             source = project.file("${project.projectDir}/grails-app/views")
             serverpath = "/WEB-INF/grails-app/views/"
-            classpath = allClasspath
         }
 
-        def compileWebappGroovyPages = allTasks.create("compileWebappGroovyPages", GroovyPageCompileTask) {
+        compileGroovyPages.setClasspath( allClasspath )
+
+        def compileWebappGroovyPages = allTasks.create("compileWebappGroovyPages", GroovyPageForkCompileTask) {
             destinationDir = destDir
             source = project.file("${project.projectDir}/src/main/webapp")
+            tmpDir = getTmpDir(project)
             serverpath = "/"
-            classpath = allClasspath
         }
+
+        compileWebappGroovyPages.setClasspath( allClasspath )
 
 
         compileGroovyPages.dependsOn( allTasks.findByName("classes") )
@@ -88,6 +92,12 @@ class GroovyPagePlugin implements Plugin<Project> {
 
     protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
         output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
+    }
+
+    protected File getTmpDir(Project project) {
+        def tmpdir = new File(project.buildDir as String, "gsptmp")
+        tmpdir.mkdirs()
+        return tmpdir
     }
 
 }
