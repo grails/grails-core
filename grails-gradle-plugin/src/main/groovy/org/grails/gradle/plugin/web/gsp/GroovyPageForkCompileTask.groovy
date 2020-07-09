@@ -16,10 +16,12 @@ import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 
 /**
- * Abstract Gradle task for compiling templates, using GenericGroovyTemplateCompiler
+ * Abstract Gradle task for compiling templates, using GroovyPageCompilerForkTask
+ * This Task is a Forked Java Task that is configurable with fork options provided
+ * by {@link GspCompileOptions}
  *
- * @author Graeme Rocher
- * @since 1.0
+ * @author David Estes
+ * @since 4.0
  */
 @CompileStatic
 class GroovyPageForkCompileTask extends AbstractCompile {
