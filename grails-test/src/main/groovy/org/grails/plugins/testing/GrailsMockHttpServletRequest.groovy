@@ -29,7 +29,6 @@ import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Part
-import groovy.json.JsonSlurper
 import grails.web.mime.MimeType
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -242,11 +241,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      */
     def getJSON() {
         if (!cachedJson) {
-            String encoding = this.getCharacterEncoding();
-            if (encoding == null) {
-                encoding = "UTF-8";
-            }
-            cachedJson = new JsonSlurper().parseText(request.inputStream,encoding)
+            cachedJson = GrailsMockHttpServletRequest.classLoader.loadClass("grails.converters.JSON").parse(this)
         }
         return cachedJson
     }
