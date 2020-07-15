@@ -36,7 +36,7 @@ ext {
         'javax.annotation-api': [
                 version: javaxAnnotationApiVersion,
                 group:'javax.annotation',
-                name:'javax.annotation',
+                names:['javax.annotation'],
                 modules:['api']
         ],
         'micronaut': [
@@ -66,7 +66,8 @@ ext {
         'gorm.hibernate': [
             version: hibernateDatastoreVersion,
             group  : 'org.grails',
-            names  : ['grails-datastore-gorm-hibernate5']
+            names  : ['grails-datastore-gorm-hibernate5'],
+            modules: ['']
         ],
         'scaffolding-core': [
                 version: scaffoldingCoreVersion,
@@ -126,6 +127,12 @@ ext {
             version: testingSupportVersion,
             group  : 'org.grails',
             names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
+            modules: ['']
+        ],
+        'views-json-testing-support': [
+            version: viewsVersion,
+            group  : 'org.grails',
+            names  : ['views-json-testing-support'],
             modules: ['']
         ],
         h2: [
