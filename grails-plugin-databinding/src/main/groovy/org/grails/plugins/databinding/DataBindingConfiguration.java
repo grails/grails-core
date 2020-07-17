@@ -10,6 +10,7 @@ import io.micronaut.core.util.ArrayUtils;
 import org.grails.databinding.bindingsource.DataBindingSourceCreator;
 import org.grails.web.databinding.bindingsource.*;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -51,6 +52,7 @@ public class DataBindingConfiguration {
         final DataBindingListener[] mainContextDataBindingListeners = mainContext
                 .getBeansOfType(DataBindingListener.class).values().toArray(new DataBindingListener[0]);
         dataBinder.setDataBindingListeners(ArrayUtils.concat(dataBindingListeners,mainContextDataBindingListeners));
+        dataBinder.setMessageSource(mainContext.getBean("messageSource", MessageSource.class));
         return dataBinder;
     }
 
