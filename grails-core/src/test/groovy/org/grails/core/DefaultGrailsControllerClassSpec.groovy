@@ -30,8 +30,8 @@ class DefaultGrailsControllerClassSpec extends Specification {
         controllerClass.setGrailsApplication(new DefaultGrailsApplication())
 
         expect: "the default scope is prototype"
-        controllerClass.getScope() == PROTOTYPE
-        !controllerClass.isSingleton()
+        controllerClass.getScope() == SINGLETON
+        controllerClass.isSingleton()
     }
 
     void "test getScope when scope is specified on the controller, and not specified in config"() {
