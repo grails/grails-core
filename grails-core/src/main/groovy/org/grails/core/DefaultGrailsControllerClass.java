@@ -77,7 +77,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
         if (this.scope == null) {
-            this.scope = grailsApplication.getConfig().getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, "prototype");
+            this.scope = grailsApplication.getConfig().getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, SCOPE_SINGLETON);
         }
     }
 
