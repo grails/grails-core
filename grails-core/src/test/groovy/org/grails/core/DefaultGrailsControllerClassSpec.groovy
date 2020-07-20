@@ -16,12 +16,12 @@ class DefaultGrailsControllerClassSpec extends Specification {
         given:
         def controllerClass = new DefaultGrailsControllerClass(NotSpecifiedController)
         def grailsApplication = new DefaultGrailsApplication()
-        grailsApplication.getConfig().put(Settings.CONTROLLERS_DEFAULT_SCOPE, SINGLETON)
+        grailsApplication.getConfig().put(Settings.CONTROLLERS_DEFAULT_SCOPE, PROTOTYPE)
         controllerClass.setGrailsApplication(grailsApplication)
 
         expect: "the configuration value is used"
-        controllerClass.getScope() == SINGLETON
-        controllerClass.isSingleton()
+        controllerClass.getScope() == PROTOTYPE
+        !controllerClass.isSingleton()
     }
 
     void "test getScope when scope is not specified on the controller, and not specified in config"() {
@@ -30,35 +30,35 @@ class DefaultGrailsControllerClassSpec extends Specification {
         controllerClass.setGrailsApplication(new DefaultGrailsApplication())
 
         expect: "the default scope is prototype"
-        controllerClass.getScope() == PROTOTYPE
-        !controllerClass.isSingleton()
+        controllerClass.getScope() == SINGLETON
+        controllerClass.isSingleton()
     }
 
     void "test getScope when scope is specified on the controller, and not specified in config"() {
         given:
-        def controllerClass = new DefaultGrailsControllerClass(SingletonController)
+        def controllerClass = new DefaultGrailsControllerClass(PrototypeController)
 
         expect:
-        controllerClass.getScope() == SINGLETON
-        controllerClass.isSingleton()
+        controllerClass.getScope() == PROTOTYPE
+        !controllerClass.isSingleton()
     }
 
     void "test getScope when scope is specified both in the controller and config"() {
         given:
-        def controllerClass = new DefaultGrailsControllerClass(SingletonController)
+        def controllerClass = new DefaultGrailsControllerClass(PrototypeController)
         def grailsApplication = new DefaultGrailsApplication()
-        grailsApplication.getConfig().put(Settings.CONTROLLERS_DEFAULT_SCOPE, PROTOTYPE)
+        grailsApplication.getConfig().put(Settings.CONTROLLERS_DEFAULT_SCOPE, SINGLETON)
         controllerClass.setGrailsApplication(grailsApplication)
 
         expect: "controller's setting to have priority"
-        controllerClass.getScope() == SINGLETON
-        controllerClass.isSingleton()
+        controllerClass.getScope() == PROTOTYPE
+        !controllerClass.isSingleton()
     }
 
     class NotSpecifiedController {
     }
 
-    class SingletonController {
-        static scope = "singleton"
+    class PrototypeController {
+        static scope = "prototype"
     }
 }
