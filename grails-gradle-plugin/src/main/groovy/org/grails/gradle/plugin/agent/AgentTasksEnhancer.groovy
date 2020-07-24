@@ -58,6 +58,8 @@ class AgentTasksEnhancer implements Action<Project> {
             if(agentConfig.exclusions) {
                 agentArgs.put('exclusions', agentConfig.exclusions)
             }
+            agentArgs.put("profile","grails")
+            agentArgs.put("caching","true")
             exec.systemProperty('springloaded', agentArgs.collect { entry -> "$entry.key=$entry.value"}.join(';'))
         }
 
