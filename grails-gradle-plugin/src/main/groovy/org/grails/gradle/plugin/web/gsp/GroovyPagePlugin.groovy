@@ -14,6 +14,8 @@ import org.gradle.api.tasks.bundling.War
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.grails.gradle.plugin.util.SourceSets
+import org.grails.gradle.plugin.core.GrailsExtension
+import org.apache.tools.ant.taskdefs.condition.Os
 
 /**
  * A plugin that adds support for compiling Groovy Server Pages (GSP)
@@ -68,6 +70,19 @@ class GroovyPagePlugin implements Plugin<Project> {
         compileWebappGroovyPages.setClasspath( allClasspath )
 
 
+        project.afterEvaluate {
+            GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
+            if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
+                Jar pathingJar = (Jar) allTasks.findByName('pathingJar')
+                allClasspath = project.files("${project.buildDir}/classes/groovy/main", "${project.buildDir}/resources/main", pathingJar.archivePath)
+                compileGroovyPages.dependsOn(pathingJar)
+                compileGroovyPages.setClasspath(allClasspath)
+                compileWebappGroovyPages.dependsOn(pathingJar)
+                compileWebappGroovyPages.setClasspath(allClasspath)
+            }
+        }
+
+
         compileGroovyPages.dependsOn( allTasks.findByName("classes") )
         compileGroovyPages.dependsOn( compileWebappGroovyPages )
 
@@ -101,5 +116,3 @@ class GroovyPagePlugin implements Plugin<Project> {
     }
 
 }
-
-
