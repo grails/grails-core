@@ -13,4 +13,5 @@ dependencies {
 
     api "org.springframework:spring-webmvc:${springVersion}"
     api "org.springframework:spring-context-support:${springVersion}"
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
 }

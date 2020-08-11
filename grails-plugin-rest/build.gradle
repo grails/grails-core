@@ -8,6 +8,7 @@ dependencies {
 
     api "org.grails.plugins:converters:$legacyConvertersVersion"
 
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     testImplementation project(":grails-plugin-url-mappings"),
                 project(":grails-test-suite-base")
 }

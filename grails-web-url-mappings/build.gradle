@@ -25,6 +25,8 @@ dependencies {
     provided "org.fusesource.jansi:jansi:$jansiVersion"
     provided "jline:jline:$jlineVersion"
 
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
+
     testImplementation project(":grails-test-suite-base")
 }
 tasks.withType(Test) {
