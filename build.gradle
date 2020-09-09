@@ -25,8 +25,8 @@ ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
     bintrayPublish = false
     // Sets release version
-    grailsVersion = '4.1.0.BUILD-SNAPSHOT'
-//    grailsVersion = '4.1.0.M2'
+//    grailsVersion = '4.1.0.BUILD-SNAPSHOT'
+    grailsVersion = '4.1.0.M2'
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "3.0.5"
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
