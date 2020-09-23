@@ -37,11 +37,11 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
 	if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
 
-#	    echo "Publishing archives"
+	    echo "Publishing archives"
 
-#	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
-#	    ./gradlew --stop
-#	    ./gradlew --no-daemon publish bintrayUpload
+	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
+	    ./gradlew --stop
+	    ./gradlew --no-daemon publish bintrayUpload
 
 	    if [[ $EXIT_STATUS == 0 ]]; then
 	        ./gradlew --stop
