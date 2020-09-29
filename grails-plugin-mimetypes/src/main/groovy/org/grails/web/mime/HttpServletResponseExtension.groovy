@@ -181,8 +181,10 @@ class HttpServletResponseExtension {
         HttpServletRequest request = webRequest.getCurrentRequest()
         MimeType[] result = (MimeType[]) request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPES)
         if (!result) {
-            //Use existing getFormat logic which handles params.format Mime Type Cache when a ?format is used and a Url Mapping has ?.format
-            def formatOverride = getFormat(response)
+            def formatOverride = webRequest?.params?.format
+            if (!formatOverride) {
+                formatOverride = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT)
+            }
             if (formatOverride) {
                 def allMimes = getMimeTypes()
                 MimeType mime = allMimes.find { MimeType it -> it.extension == formatOverride }
