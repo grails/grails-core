@@ -3,6 +3,7 @@ package org.grails.web.mapping
 import grails.testing.web.UrlMappingsUnitTest
 import grails.web.mapping.UrlCreator
 import org.springframework.core.io.ByteArrayResource
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -25,6 +26,23 @@ class AdditionalParamsMappingTests extends Specification implements UrlMappingsU
         "/users/bob/profile?q=test" == creator.createRelativeURL("user", "profile",[id:"bob",q:"test"], "utf-8")
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/11406')
+    void testWebRequestParametersNotOverwritten() {
+        when:
+        webRequest.currentRequest.addParameter('format', 'json')
+
+        and:
+        def info = urlMappingsHolder.match("/example/index")
+        info.configure webRequest
+
+        then:
+        "example" == info.controllerName
+        "index" == info.actionName
+
+        and:
+        'json' == webRequest.params.format
+    }
+
     static class UrlMappings {
         static mappings = {
             "/$controller/$action?/$id?"{
@@ -35,6 +53,11 @@ class AdditionalParamsMappingTests extends Specification implements UrlMappingsU
 
             "/users/$id?/$action?" {
                 controller = "user"
+            }
+
+            "/example/index?(.$format)?" {
+                controller = "example"
+                action = "index"
             }
 
         }
