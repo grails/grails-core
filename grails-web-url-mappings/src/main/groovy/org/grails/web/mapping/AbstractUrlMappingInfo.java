@@ -88,7 +88,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
             if (param instanceof CharSequence) {
                 param = param.toString();
             }
-            dispatchParams.putIfAbsent(name, param);
+            dispatchParams.put(name, param);
         }
 
         final String viewName = getViewName();
