@@ -4,7 +4,7 @@
 #### Slack Signup
 - [Slack Signup](https://grails-slack.cfapps.io/)
 
-Grails
+Grails and amazing
 ===
 
 [Grails](https://grails.org/) is a framework used to build web applications with the [Groovy](https://groovy-lang.org/) programming language. The core framework is very extensible and there are numerous [plugins](https://plugins.grails.org/) available that provide easy integration of add-on features.
