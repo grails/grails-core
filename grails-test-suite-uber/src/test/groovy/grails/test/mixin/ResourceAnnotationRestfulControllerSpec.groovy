@@ -15,7 +15,8 @@ import spock.lang.Specification
 /**
  * @author Graeme Rocher
  */
-class ResourceAnnotationRestfulControllerSpec extends Specification implements DataTest, ControllerUnitTest {
+//TODO: Replace ControllerUnitTest<Object> with ControllerUnitTest once update to Groovy 3.0.7
+class ResourceAnnotationRestfulControllerSpec extends Specification implements DataTest, ControllerUnitTest<Object> {
 
     @Shared Class domainClass
     @Shared Class controllerClass
