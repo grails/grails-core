@@ -469,7 +469,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
             int port = request.getServerPort();
             
             //ignore port append if the request was forwarded from a VIP as actual source port is now not known
-            if (forwardedScheme != null && (("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443))) {
+            if (forwardedScheme == null && (("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443))) {
                 sb.append(":").append(port);
             }
             String contextPath = request.getContextPath();
