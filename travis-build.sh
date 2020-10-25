@@ -36,10 +36,9 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 	git config --global user.email "$GIT_EMAIL"
 
 	if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-
 	    echo "Publishing archives"
-
 	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
+
 	    ./gradlew --stop
 	    ./gradlew --no-daemon publish bintrayUpload
 
@@ -48,40 +47,42 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 	        ./gradlew --no-daemon assemble || EXIT_STATUS=$?
 
 	        if [[ $EXIT_STATUS == 0 ]]; then
-			    # Tag and release the docs
-			    # version="$TRAVIS_TAG"
-       #                      version=${version:1}
-       #                      majorVersion=${version:0:4}
-       #                      majorVersion="${majorVersion}x"
-                git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git -b $TRAVIS_BRANCH grails-doc --single-branch > /dev/null
-			    cd grails-doc
 
-			    echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
-			    git add gradle.properties
-			    git commit -m "Release $TRAVIS_TAG docs"
-			    git tag $TRAVIS_TAG
-			    git push --tags
-			    git push
-			    cd ..
+            # Tag and release the docs
+            version="$TRAVIS_TAG"
+            version=${version:1}
+            majorVersion=${version:0:4}
+            majorVersion="${majorVersion}x"
+            git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git -b $majorVersion grails-doc --single-branch > /dev/null
 
-			    # Update the website
-                echo "set released version in static website"      
-			    git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
-			    cd grails-static-website
-			    version="$TRAVIS_TAG"
-                            version=${version:1}
-			    ./release.sh $version
-	                    git commit -a -m "Updating grails version at static website for Travis build: https://travis-ci.org/$TRAVIS_REPO_SLUG/builds/$TRAVIS_BUILD_ID" && {
-                                git push origin HEAD || true
-                            }			    
-			    cd ..
-			    rm -rf grails-static-website
+            cd grails-doc
 
-			    # Rebuild Artifactory index
-			    curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
+            echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
+            git add gradle.properties
+            git commit -m "Release $TRAVIS_TAG docs"
+            git tag $TRAVIS_TAG
+            git push --tags
+            git push
+            cd ..
 
+            # Update the website
+            echo "set released version in static website"
+			      git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
+			      cd grails-static-website
+			      version="$TRAVIS_TAG"
+            version=${version:1}
+            ./release.sh $version
+                        git commit -a -m "Updating grails version at static website for Travis build: https://travis-ci.org/$TRAVIS_REPO_SLUG/builds/$TRAVIS_BUILD_ID" && {
+                                  git push origin HEAD || true
+                              }
+			      cd ..
+			      rm -rf grails-static-website
+
+			      # Rebuild Artifactory index
+			      curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
         	fi
 	    fi
+
 	elif [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_BRANCH =~ ^master|[234]\..\.x$ ]]; then
 	    echo "Builder Leading Publishing Snapshot..."
 	    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
