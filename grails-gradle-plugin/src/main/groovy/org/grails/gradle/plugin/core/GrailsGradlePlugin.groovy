@@ -420,6 +420,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.configurations {
                 agent
             }
+            project.dependencies.add("runtimeOnly", "io.micronaut:micronaut-inject-groovy")
             project.afterEvaluate(new AgentTasksEnhancer())
         }
     }
