@@ -3,6 +3,7 @@ package grails.web.mapping
 import grails.util.GrailsWebMockUtil
 import grails.web.http.HttpHeaders
 import org.springframework.web.context.request.RequestContextHolder
+import spock.lang.IgnoreRest
 import spock.lang.Issue
 
 import javax.servlet.http.HttpServletRequest
@@ -29,27 +30,95 @@ import javax.servlet.http.HttpServletResponse
  */
 class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
 
+    @IgnoreRest
     @Issue('#10308')
     void "Test mapping with group and nested collection"() {
         given:
         def linkGenerator = getLinkGenerator {
             "/foos"(resources: 'foo') {
                 collection {
-                    '/baz'(controller: 'foo', action: 'baz')
+                    '/baz'(controller: 'foo1', action: 'baz')
                 }
             }
 
             group "/g", {
                 "/bars"(resources: 'bar') {
                     collection {
-                        '/baz'(controller: 'bar', action: 'baz')
+//                        '/baz'(controller: 'bar1', action: 'baz')
+                        '/baz'(resources: 'baz')
                     }
                 }
             }
         }
 
         expect:
-        linkGenerator.link(controller:'bar', action:'baz', params:[barId:1]) == 'http://localhost/g/bars/1/baz'
+        linkGenerator.link(controller:'bar1', action:'baz', params:[barId:1, bazId:2]) == 'http://localhost/g/bars/1/baz' //http://localhost/g/bars/baz?barId=1
+        linkGenerator.link(controller:'foo1', action:'baz', params:[fooId:1]) == 'http://localhost/foos/baz?fooId=1'
+
+//        http://localhost/bar/baz?userId=1
+    }
+
+    @IgnoreRest
+    void "Test mapping with group and nested collection....."() {
+        given:
+        def linkGenerator = getLinkGenerator {
+            "/books"(resources: 'book') {
+                collection {
+                    "/authors"(resources: 'author')
+                }
+            }
+        }
+
+        expect:
+        linkGenerator.link(controller:'author', action:'show', method:'GET', params:[bookId:1, id:2]) == 'http://localhost/books/authors/2?bookId=1'
+
+        //'http://localhost/books/authors/2?bookId=1'
+    }
+
+//    https://github.com/grails/grails-core/issues/10308
+//    https://github.com/grails/grails-core/issues/10844
+
+    @IgnoreRest
+    @Issue('#10844')
+    void "Test mapping with group and nested collection (II)"() {
+        given:
+        def linkGenerator = getLinkGenerator {
+            '/api1/employees'(resources: 'employeea') {
+                collection {
+                    '/search'(controller: 'employee1', action: 'search1', method: 'GET')
+                }
+            }
+
+            group '/api2', {
+                '/employees'(resources: 'employeeb') {
+                    collection {
+                        '/search'(controller: 'employee2', action: 'search2', method: 'GET')
+                    }
+                }
+            }
+
+//            get "/$controller/$id(.$format)?"(action:"show")
+//
+//            "/$controller/$action?/$id?(.$format)?"{
+//                constraints {
+//                    // apply constraints here
+//                }
+//            }
+        }
+
+        expect:
+        linkGenerator.link(controller: 'employee1', action: 'search1', method: 'GET', params: [employeeaId: 1]) == 'http://localhost/api1/employees/search?userId=1'
+        linkGenerator.link(controller: 'employee2', action: 'search2', method: 'GET', params: [employeebId: 1]) == 'http://localhost/api2/employees/search?userId=1'
+
+//        http://localhost/employee2/search2?userId=1
+
+//        and:
+        linkGenerator.link(resource: 'employeea', method: 'PUT', params: [id: 1]) == 'http://localhost/api1/employees/1'
+        linkGenerator.link(resource: 'employeeb', method: 'PUT', params: [id: 1]) == 'http://localhost/api2/employees/1'
+
+        and:
+        linkGenerator.link(resource: 'employeea', method: 'POST', params: [employeeaId: 1]) == 'http://localhost/api1/employees?employeeaId=1'
+        linkGenerator.link(resource: 'employeeb', method: 'POST', params: [employeebId: 1]) == 'http://localhost/api2/employees?employeebId=1'
     }
 
     @Issue('#9417')

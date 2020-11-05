@@ -578,6 +578,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             this.isInCollection = true;
             try {
                 callable.setDelegate(this);
+//                callable.setResolveStrategy(Closure.DELEGATE_FIRST);
                 callable.call();
             } finally {
                 isInCollection = previousState ;
