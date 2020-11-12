@@ -2,6 +2,14 @@ configurations.testCompileClasspath {
     exclude module: "grails-plugin-testing"
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if(details.requested.group == 'io.micronaut' && details.requested.name.startsWith('micronaut')) {
+            details.useVersion(micronautVersion)
+        }
+    }
+}
+
 dependencies {
 
     testImplementation project(':grails-test-suite-base'),
