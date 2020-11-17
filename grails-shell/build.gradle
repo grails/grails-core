@@ -26,14 +26,14 @@ dependencies {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
 
-    compileOnly("org.apache.maven:maven-resolver-provider:3.5.4") {
+    implementation("org.apache.maven:maven-resolver-provider:3.5.4") {
         exclude group: "com.google.guava", module: "guava"
     }
 
-    compileOnly("org.apache.maven.resolver:maven-resolver-connector-basic:1.1.1")
-    compileOnly("org.apache.maven.resolver:maven-resolver-impl:1.1.1")
-    compileOnly("org.apache.maven.resolver:maven-resolver-transport-file:1.1.1")
-    compileOnly("org.apache.maven.resolver:maven-resolver-transport-http:1.1.1") {
+    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.1.1")
+    implementation("org.apache.maven.resolver:maven-resolver-impl:1.1.1")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.1.1")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.1.1") {
         exclude group: "org.slf4j", module:"jcl-over-slf4j"
     }
 
