@@ -572,8 +572,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileDynamic
     protected void configurePathingJar(Project project) {
-        if (project.tasks.findByName("pathingJar") == null) {
-            project.afterEvaluate {
+        project.afterEvaluate {
+            if (project.tasks.findByName("pathingJar") == null) {
                 ConfigurationContainer configurations = project.configurations
                 Configuration runtime = configurations.getByName('runtime')
                 Configuration developmentOnly = configurations.findByName('developmentOnly')
