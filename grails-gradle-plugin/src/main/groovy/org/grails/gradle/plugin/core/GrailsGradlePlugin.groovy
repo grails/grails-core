@@ -27,11 +27,12 @@ import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.apache.tools.ant.taskdefs.condition.Os
-import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.*
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -132,13 +133,15 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected void configureProfile(Project project) {
-        def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
-
-        profileConfiguration.incoming.beforeResolve() {
-            if (!profileConfiguration.allDependencies) {
-                addDefaultProfile(project, profileConfiguration)
+        if (project.configurations.findByName(PROFILE_CONFIGURATION) == null) {
+            def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
+            profileConfiguration.incoming.beforeResolve() {
+                if (!profileConfiguration.allDependencies) {
+                    addDefaultProfile(project, profileConfiguration)
+                }
             }
         }
+
     }
 
     protected void applyDefaultPlugins(Project project) {
@@ -179,32 +182,33 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileDynamic
     protected Task createBuildPropertiesTask(Project project) {
+        if (project.tasks.findByName("buildProperties") == null) {
+            File resourcesDir = SourceSets.findMainSourceSet(project).output.resourcesDir
+            File buildInfoFile = new File(resourcesDir, "META-INF/grails.build.info")
 
-        File resourcesDir = SourceSets.findMainSourceSet(project).output.resourcesDir
-        File buildInfoFile = new File(resourcesDir, "META-INF/grails.build.info")
 
+            Task buildPropertiesTask = project.tasks.create("buildProperties")
+            Map<String, Object> buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
+                                                           'info.app.name': project.name,
+                                                           'info.app.version':  project.version instanceof Serializable ? project.version : project.version.toString(),
+                                                           'info.app.grailsVersion': project.properties.get('grailsVersion')]
 
-        Task buildPropertiesTask = project.tasks.create("buildProperties")
-        Map<String, Object> buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
-                                        'info.app.name': project.name,
-                                        'info.app.version':  project.version instanceof Serializable ? project.version : project.version.toString(),
-                                        'info.app.grailsVersion': project.properties.get('grailsVersion')]
-
-        buildPropertiesTask.inputs.properties(buildPropertiesContents)
-        buildPropertiesTask.outputs.file(buildInfoFile)
-        buildPropertiesTask.doLast {
-            project.buildDir.mkdirs()
-            ant.mkdir(dir:buildInfoFile.parentFile)
-            ant.propertyfile(file: buildInfoFile) {
-                for(me in buildPropertiesTask.inputs.properties) {
-                    entry key: me.key, value: me.value
+            buildPropertiesTask.inputs.properties(buildPropertiesContents)
+            buildPropertiesTask.outputs.file(buildInfoFile)
+            buildPropertiesTask.doLast {
+                project.buildDir.mkdirs()
+                ant.mkdir(dir:buildInfoFile.parentFile)
+                ant.propertyfile(file: buildInfoFile) {
+                    for(me in buildPropertiesTask.inputs.properties) {
+                        entry key: me.key, value: me.value
+                    }
                 }
             }
-        }
 
-        project.afterEvaluate {
-            TaskContainer tasks = project.tasks
-            tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
+            project.afterEvaluate {
+                TaskContainer tasks = project.tasks
+                tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
+            }
         }
     }
 
@@ -231,7 +235,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected GrailsExtension registerGrailsExtension(Project project) {
-        project.extensions.add("grails", new GrailsExtension(project))
+        if (project.extensions.findByName("grails") == null) {
+            project.extensions.add("grails", new GrailsExtension(project))
+        }
     }
 
     @CompileStatic
@@ -253,12 +259,14 @@ class GrailsGradlePlugin extends GroovyPlugin {
             for (ctxCommand in applicationContextCommands) {
                 String taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
                 String commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
-                project.tasks.create(taskName, ApplicationContextCommandTask) {
-                    classpath = fileCollection
-                    command = commandName
-                    systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-                    if (project.hasProperty('args')) {
-                        args(CommandLineParser.translateCommandline(project.args))
+                if (project.tasks.findByName(taskName) == null) {
+                    project.tasks.create(taskName, ApplicationContextCommandTask) {
+                        classpath = fileCollection
+                        command = commandName
+                        systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+                        if (project.hasProperty('args')) {
+                            args(CommandLineParser.translateCommandline(project.args))
+                        }
                     }
                 }
             }
@@ -373,28 +381,30 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected void configureConsoleTask(Project project) {
         TaskContainer tasks = project.tasks
-        def consoleConfiguration = project.configurations.create("console")
-        def findMainClass = tasks.findByName('findMainClass')
-        def consoleTask = createConsoleTask(project, tasks, consoleConfiguration)
-        def shellTask = createShellTask(project, tasks, consoleConfiguration)
+        if (project.configurations.findByName("console") == null) {
+            def consoleConfiguration = project.configurations.create("console")
+            def findMainClass = tasks.findByName('findMainClass')
+            def consoleTask = createConsoleTask(project, tasks, consoleConfiguration)
+            def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
-        findMainClass.doLast {
-            ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) project.getExtensions().getByName("ext")
-            def mainClassName = extraProperties.get('mainClassName')
-            if(mainClassName) {
-                consoleTask.args mainClassName
-                shellTask.args mainClassName
-                project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
+            findMainClass.doLast {
+                ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) project.getExtensions().getByName("ext")
+                def mainClassName = extraProperties.get('mainClassName')
+                if (mainClassName) {
+                    consoleTask.args mainClassName
+                    shellTask.args mainClassName
+                    project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
+                        task.args mainClassName
+                    }
+                }
+                project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
                     task.args mainClassName
                 }
             }
-            project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
-                task.args mainClassName
-            }
-        }
 
-        consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)
-        shellTask.dependsOn(tasks.findByName('classes'), findMainClass)
+            consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)
+            shellTask.dependsOn(tasks.findByName('classes'), findMainClass)
+        }
     }
 
     @CompileDynamic
@@ -532,22 +542,26 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileDynamic
     protected void configureRunScript(Project project) {
-        project.tasks.create("runScript", ApplicationContextScriptTask) {
-            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
-            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            if (project.hasProperty('args')) {
-                args(CommandLineParser.translateCommandline(project.args))
+        if (project.tasks.findByName("runScript") == null) {
+            project.tasks.create("runScript", ApplicationContextScriptTask) {
+                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+                if (project.hasProperty('args')) {
+                    args(CommandLineParser.translateCommandline(project.args))
+                }
             }
         }
     }
 
     @CompileDynamic
     protected void configureRunCommand(Project project) {
-        project.tasks.create("runCommand", ApplicationContextCommandTask) {
-            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
-            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            if (project.hasProperty('args')) {
-                args(CommandLineParser.translateCommandline(project.args))
+        if (project.tasks.findByName("runCommand") == null) {
+            project.tasks.create("runCommand", ApplicationContextCommandTask) {
+                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+                if (project.hasProperty('args')) {
+                    args(CommandLineParser.translateCommandline(project.args))
+                }
             }
         }
     }
@@ -558,45 +572,47 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileDynamic
     protected void configurePathingJar(Project project) {
-        project.afterEvaluate {
-            ConfigurationContainer configurations = project.configurations
-            Configuration runtime = configurations.getByName('runtime')
-            Configuration developmentOnly = configurations.findByName('developmentOnly')
-            Configuration console = configurations.getByName('console')
-            SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
-            SourceSetOutput output = mainSourceSet?.output
-            FileCollection mainFiles = resolveClassesDirs(output, project)
+        if (project.tasks.findByName("pathingJar") == null) {
+            project.afterEvaluate {
+                ConfigurationContainer configurations = project.configurations
+                Configuration runtime = configurations.getByName('runtime')
+                Configuration developmentOnly = configurations.findByName('developmentOnly')
+                Configuration console = configurations.getByName('console')
+                SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
+                SourceSetOutput output = mainSourceSet?.output
+                FileCollection mainFiles = resolveClassesDirs(output, project)
 
-            Jar pathingJar
+                Jar pathingJar
 
-            if (developmentOnly != null) {
-                pathingJar = createPathingJarTask(project, "pathingJar", runtime, developmentOnly)
-            } else {
-                pathingJar = createPathingJarTask(project, "pathingJar", runtime)
-            }
-            
-            FileCollection pathingClasspath = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath) + mainFiles
-
-            Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
-            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath) + mainFiles
-
-            GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
-
-            if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
-                project.tasks.withType(JavaExec) { JavaExec task ->
-                    if (task.name in ['console', 'shell'] || task instanceof ApplicationContextCommandTask || task instanceof ApplicationContextScriptTask) {
-                        task.dependsOn(pathingJarCommand)
-                        task.doFirst {
-                            classpath = pathingClasspathCommand
-                        }
-                    } else {
-                        task.dependsOn(pathingJar)
-                        task.doFirst {
-                            classpath = pathingClasspath
-                        }
-                    }
+                if (developmentOnly != null) {
+                    pathingJar = createPathingJarTask(project, "pathingJar", runtime, developmentOnly)
+                } else {
+                    pathingJar = createPathingJarTask(project, "pathingJar", runtime)
                 }
 
+                FileCollection pathingClasspath = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath) + mainFiles
+
+                Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
+                FileCollection pathingClasspathCommand = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath) + mainFiles
+
+                GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
+
+                if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    project.tasks.withType(JavaExec) { JavaExec task ->
+                        if (task.name in ['console', 'shell'] || task instanceof ApplicationContextCommandTask || task instanceof ApplicationContextScriptTask) {
+                            task.dependsOn(pathingJarCommand)
+                            task.doFirst {
+                                classpath = pathingClasspathCommand
+                            }
+                        } else {
+                            task.dependsOn(pathingJar)
+                            task.doFirst {
+                                classpath = pathingClasspath
+                            }
+                        }
+                    }
+
+                }
             }
         }
     }
