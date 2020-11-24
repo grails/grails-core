@@ -28,7 +28,7 @@ ext {
     // Sets release version
     grailsVersion = '4.0.6.BUILD-SNAPSHOT'
 //    grailsVersion = '4.0.6'
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.6"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.14-SNAPSHOT"
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
