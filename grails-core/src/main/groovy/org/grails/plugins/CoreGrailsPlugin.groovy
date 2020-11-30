@@ -74,10 +74,7 @@ class CoreGrailsPlugin extends Plugin {
         grailsBeanOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer) {
             delegate.grailsApplication = application
         }
-        propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer) {
-            placeholderPrefix = placeHolderPrefix
-        }
-
+        propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer, placeHolderPrefix, config.toProperties())
         Class proxyCreatorClazz = null
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
