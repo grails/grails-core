@@ -42,7 +42,7 @@ ext {
                 version: micronautVersion,
                 group:'io.micronaut',
                 names:['micronaut'],
-                modules:['spring', 'inject','runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
+                modules:['inject','runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
         ],
         'micronaut.micronaut-runtime-groovy': [
                 version: micronautRuntimeGroovyVersion,
@@ -54,7 +54,7 @@ ext {
                 version: micronautSpringVersion,
                 group:'io.micronaut.spring',
                 names:['micronaut-spring'],
-                modules:['context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+                modules:['spring', 'context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
         ],
         gorm: [
             version: datastoreVersion,
@@ -188,6 +188,7 @@ allprojects {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://oss.jfrog.org/oss-snapshot-local" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {

@@ -99,6 +99,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         configureGroovy(project)
 
+        configureMicronaut(project)
+
         registerToolingModelBuilder(project, registry)
 
         registerGrailsExtension(project)
@@ -210,6 +212,23 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.afterEvaluate {
             TaskContainer tasks = project.tasks
             tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
+        }
+    }
+
+    @CompileStatic
+    protected void configureMicronaut(Project project) {
+        final String micronautVersion = project.properties['micronautVersion']
+        if (micronautVersion) {
+            project.configurations.all({ Configuration configuration ->
+                configuration.resolutionStrategy.eachDependency({ DependencyResolveDetails details ->
+                    String dependencyName = details.requested.name
+                    String group = details.requested.group
+                    if (group == 'io.micronaut' && dependencyName.startsWith('micronaut')) {
+                        details.useVersion(micronautVersion)
+                        return
+                    }
+                } as Action<DependencyResolveDetails>)
+            } as Action<Configuration>)
         }
     }
 
