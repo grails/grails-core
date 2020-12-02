@@ -52,8 +52,9 @@ jobs:
         if: ${{ github.ref == 'refs/heads/4.0.x' }}
       - name: Set CI_GROOVY_VERSION for Grails
         run: |
+          cd ../groovy
           echo 'CI_GROOVY_VERSION<<EOF' >> $GITHUB_ENV
-          cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]' >> $GITHUB_ENV
+          echo "$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]' >> $GITHUB_ENV)" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - name: echo CI_GROOVY_VERSION
         run: echo $CI_GROOVY_VERSION
