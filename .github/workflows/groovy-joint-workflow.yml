@@ -1,0 +1,68 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: "Grails Joint Validation Build"
+#  GROOVY_2_5_X == Grails 4.0.x
+#  GROOVY_3_0_X == grails master
+#  Groovy master branch does not map to any due to changed package names.
+on:
+  push:
+    branches:
+      - master
+      - 4.0.x
+  pull_request:
+    branches:
+      - master
+      - 4.0.x
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-18.04]
+        java: [11.0.6]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: env
+        run: env
+
+      # Select correct Groovy branch for this build:
+      - name: Checkout Groovy 3_0_X (Grails 4.1.x)
+        run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X
+        if: ${{ github.ref == 'refs/heads/master' }}
+      - name: Checkout Groovy 2_5_X (Grails 4.0.x)
+        run: cd .. && git clone --depth 1 https://github.com/grails/grails-core.git -b GROOVY_2_5_X
+        if: ${{ github.ref == 'refs/heads/4.0.x' }}
+      - name: Set CI_GROOVY_VERSION for Grails
+        run: |
+          cd ../groovy
+          echo 'CI_GROOVY_VERSION<<EOF' >> $GITHUB_ENV
+          echo "$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]' >> $GITHUB_ENV)" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: echo CI_GROOVY_VERSION
+        run: echo $CI_GROOVY_VERSION
+
+      - name: Build and install groovy (no docs)
+        run: cd ../groovy && ./gradlew clean install -x groovydoc -x javadoc -x javadocAll -x groovydocAll -x asciidoc -x docGDK --no-build-cache --no-scan --no-daemon
+        timeout-minutes: 60
+
+      - name: Build Grails
+        run: ./gradlew clean build test -x groovydoc --no-build-cache --no-scan --no-daemon
+        timeout-minutes: 60
