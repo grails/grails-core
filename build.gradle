@@ -214,8 +214,9 @@ allprojects {
                     //specifying a fixed version for all libraries with 'org.gradle' group
                     if (details.requested.group == 'org.codehaus.groovy') {
                         details.useVersion groovyVersion
-                    } else if (details.requested.group == 'io.micronaut') {
-                        details.useVersion micronautVersion
+                    }
+                    if (details.requested.group == "org.spockframework") {
+                        details.useVersion(spockVersion)
                     }
                 }
             }
