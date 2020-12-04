@@ -1,17 +1,13 @@
 dependencies {
     compileOnly "io.micronaut:micronaut-inject-java:$micronautVersion"
     compileOnly "io.micronaut:micronaut-inject-groovy:$micronautVersion"
-    compileOnly ("io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion") {
-        exclude group: "io.micronaut"
-    }
+    compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
     compileOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
     annotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
     annotationProcessor "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
     api "io.micronaut:micronaut-inject:$micronautVersion"
-    api ("io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion") {
-        exclude group: "io.micronaut"
-    }
+    api "io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion"
     api 'javax.persistence:javax.persistence-api:2.2'
     api "javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion"
 
