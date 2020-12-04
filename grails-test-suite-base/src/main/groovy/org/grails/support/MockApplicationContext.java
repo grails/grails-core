@@ -143,6 +143,16 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     @Override
+    public <T> ObjectProvider<T> getBeanProvider(Class<T> requiredType, boolean allowEagerInit) {
+        return getBeanProvider(requiredType);
+    }
+
+    @Override
+    public <T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType, boolean allowEagerInit) {
+        return getBeanProvider(requiredType);
+    }
+
+    @Override
     public String[] getBeanNamesForType(ResolvableType type) {
         return new String[0];
     }
