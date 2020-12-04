@@ -8,7 +8,6 @@
     compileOnly "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
 
     api project(':grails-core'), project(':grails-web')
-//    api "io.micronaut:micronaut-runtime-groovy:$micronautRuntimeGroovyVersion"
 
     testImplementation project(':grails-test-suite-base')
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion", {
