@@ -44,6 +44,12 @@ ext {
                 names:['micronaut'],
                 modules:['aop', 'bom', 'inject','runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
         ],
+        'micronaut.cache': [
+                version: micronautCacheVersion,
+                group: 'io.micronaut.cache',
+                names:['micronaut-cache'],
+                modules:['core']
+        ],
         'micronaut.micronaut-runtime-groovy': [
                 version: micronautRuntimeGroovyVersion,
                 group:'io.micronaut',
