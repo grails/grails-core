@@ -144,10 +144,6 @@ class ControllersGrailsPlugin extends Plugin {
             multipartConfig = multipartConfigElement
         }
 
-        viewNameTranslator(DefaultRequestToViewNameTranslator) {
-            stripLeadingSlash = false
-        }
-
         for (controller in application.getArtefacts(ControllerArtefactHandler.TYPE)) {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
