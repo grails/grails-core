@@ -55,6 +55,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
     protected static final String APPLICATION_YML = "application.yml"
     protected static final String BUILD_GRADLE = "build.gradle"
+    public static final String UNZIP_PROFILE_TEMP_DIR = "tempgrailsapp"
 
     ProfileRepository profileRepository
     Map<String, String> variables = [:]
@@ -362,7 +363,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
         if(tmpDir == null) {
             def jarFile = IOUtils.findJarFile(url)
-            tmpDir = File.createTempDir()
+            tmpDir = Files.createTempDirectory(UNZIP_PROFILE_TEMP_DIR).toFile()
             tmpDir.deleteOnExit()
             ant.unzip(src: jarFile, dest: tmpDir)
             unzippedDirectories.put(url, tmpDir)

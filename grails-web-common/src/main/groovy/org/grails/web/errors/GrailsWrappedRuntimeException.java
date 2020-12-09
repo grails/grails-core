@@ -58,9 +58,10 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     private static final Constructor<? extends GrailsApplicationAttributes> grailsApplicationAttributesConstructor = ClassUtils.getConstructorIfAvailable(grailsApplicationAttributesClass, ServletContext.class);
 
     private static final long serialVersionUID = 7284065617154554366L;
+    private static final Pattern ANY_GSP_DETAILS = Pattern.compile("_gsp.run");
     private static final Pattern PARSE_DETAILS_STEP1 = Pattern.compile("\\((\\w+)\\.groovy:(\\d+)\\)");
     private static final Pattern PARSE_DETAILS_STEP2 = Pattern.compile("at\\s{1}(\\w+)\\$_closure\\d+\\.doCall\\(\\1:(\\d+)\\)");
-    private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("(\\S+?)_\\S+?_gsp.run\\((\\S+?\\.gsp):(\\d+)\\)");
+    private static final Pattern PARSE_GSP_DETAILS_STEP1 = Pattern.compile("_gsp\\.run\\(((\\w+?)_.*?):(\\d+)\\)");
     public static final String URL_PREFIX = "/WEB-INF/grails-app/";
     private static final Log LOG  = LogFactory.getLog(GrailsWrappedRuntimeException.class);
     private String className = UNKNOWN;
@@ -111,10 +112,11 @@ public class GrailsWrappedRuntimeException extends GrailsException {
             Matcher m2 = PARSE_DETAILS_STEP2.matcher(stackTrace);
             Matcher gsp = PARSE_GSP_DETAILS_STEP1.matcher(stackTrace);
             try {
-                if (gsp.find()) {
-                    className = gsp.group(2);
+                if (ANY_GSP_DETAILS.matcher(stackTrace).find() && gsp.find()) {
+                    System.out.println(gsp.group(1) + " " + gsp.group(2) + " " + gsp.group(3));
+                    className = gsp.group(1);
                     lineNumber = Integer.parseInt(gsp.group(3));
-                    gspFile = URL_PREFIX + "views/" + gsp.group(1)  + '/' + className;
+                    gspFile = URL_PREFIX + "views/" + gsp.group(2)  + '/' + className;
                 }
                 else {
                     if (m1.find()) {
