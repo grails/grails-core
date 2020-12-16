@@ -1,5 +1,6 @@
 #### Build Status
-- [![Build Status](https://travis-ci.org/grails/grails-core.svg?branch=master)](https://travis-ci.org/grails/grails-core)
+- ![Java CI](https://github.com/grails/grails-core/workflows/Java%20CI/badge.svg)
+- ![Grails Joint Validation Build](https://github.com/grails/grails-core/workflows/Grails%20Joint%20Validation%20Build/badge.svg)
 
 #### Slack Signup
 - [Slack Signup](https://grails-slack.cfapps.io/)
