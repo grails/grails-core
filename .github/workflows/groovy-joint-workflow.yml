@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-  name: "Grails Joint Validation Build"
+name: "Grails Joint Validation Build"
 #  GROOVY_2_5_X == Grails 4.0.x
 #  GROOVY_3_0_X == grails master
 #  Groovy master branch does not map to any due to changed package names.
