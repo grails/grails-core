@@ -1,0 +1,26 @@
+name-template: $NEXT_PATCH_VERSION
+tag-template: v$NEXT_PATCH_VERSION
+categories:
+  - title: 🚀 Features
+    labels:
+      - "type: enhancement"
+      - "type: new feature"
+      - "type: major"
+  - title: 🚀 Bug Fixes/Improvements
+    labels:
+      - "type: improvement"
+      - "type: bug"
+      - "type: minor"
+  - title: 🛠 Dependency upgrades
+    labels:
+      - "type: dependency-upgrade"
+      - "dependencies"
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
