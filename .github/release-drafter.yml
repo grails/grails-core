@@ -13,7 +13,7 @@ categories:
       - "type: minor"
   - title: 🛠 Dependency upgrades
     labels:
-      - "type: dependency-upgrade"
+      - "type: dependency upgrade"
       - "dependencies"
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 template: |
