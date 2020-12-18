@@ -17,7 +17,6 @@ jobs:
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
-      RUN_TESTS_ONLY: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -47,10 +46,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           report_paths: '**/build/test-results/test/TEST-*.xml'
       - name: Run Assemble
-        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
+        if: success() && github.event_name == 'push' && matrix.java == '8'
         run: ./gradlew assemble
       - name: Publish to repo.grails.org
-        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
+        if: success() && github.event_name == 'push' && matrix.java == '8'
         env:
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
@@ -60,3 +59,20 @@ jobs:
         run: |
           echo $SECRING_FILE | base64 -d > secring.gpg
           ./gradlew -Dorg.gradle.internal.publish.checksums.insecure=true -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="secring.gpg" publish
+      - name: Extract branch name
+        if: success() && github.event_name == 'push' && matrix.java == '8'
+        id: extract_branch
+        run: echo ::set-output name=value::${GITHUB_REF:11}
+      - name: Create Snapshot Message for the Workflow Dispatch
+        if: success() && github.event_name == 'push' && matrix.java == '8'
+        id: dispatch_message
+        run: echo ::set-output name=value::{\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}
+      - name: Invoke the Java CI workflow in Grails Functional Tests
+        if: success() && github.event_name == 'push' && matrix.java == '8'
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Java CI
+          repo: grails/grails3-funtional-tests
+          ref: ${{ steps.extract_branch.outputs.value }}
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.dispatch_message.outputs.value }}
