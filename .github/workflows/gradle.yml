@@ -58,7 +58,7 @@ jobs:
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
         run: |
           echo $SECRING_FILE | base64 -d > secring.gpg
-          ./gradlew -Dorg.gradle.internal.publish.checksums.insecure=true -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="secring.gpg" publish
+          ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="secring.gpg" publish
       - name: Extract branch name
         if: success() && github.event_name == 'push' && matrix.java == '8'
         id: extract_branch
