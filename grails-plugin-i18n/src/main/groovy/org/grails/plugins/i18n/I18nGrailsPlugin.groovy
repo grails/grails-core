@@ -64,6 +64,7 @@ class I18nGrailsPlugin extends Plugin {
             paramName = "lang"
         }
 
+        localeResolver(SessionLocaleResolver)
     }}
 
     @Override

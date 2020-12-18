@@ -24,7 +24,9 @@ class GrailsSpringApplicationSpec extends Specification{
 
     void "Test run Grails via SpringApplication"() {
         when:"SpringApplication is used to run a Grails app"
-            context = (AnnotationConfigServletWebServerApplicationContext)SpringApplication.run(Application)
+        SpringApplication springApplication  = new SpringApplication(Application)
+        springApplication.allowBeanDefinitionOverriding = true
+        context = (AnnotationConfigServletWebServerApplicationContext) springApplication.run()
 
         then:"The application runs"
             context != null
