@@ -96,7 +96,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.maven_sync_message.outputs.value }}
       - name: Grails SDK Release
-        if: success() &&
+        if: success()
         run: |
           if [ $BETA ]; then
             (set -x; ./gradle sdkMinorRelease)
