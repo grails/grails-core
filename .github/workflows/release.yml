@@ -75,7 +75,7 @@ jobs:
           COMMIT_NAME: ${{ env.GIT_USER_NAME }}
       - name: Run post-release
         if: success()
-        uses: micronaut-projects/github-actions/post-release@grails
+        uses: micronaut-projects/github-actions/post-release@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
