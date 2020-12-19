@@ -110,9 +110,6 @@ jobs:
       - name: Create GitHub release
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
-          args:
-           - build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
+          args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
