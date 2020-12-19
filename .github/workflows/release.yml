@@ -11,6 +11,7 @@ jobs:
     env:
       GIT_USER_NAME: puneetbehl
       GIT_USER_EMAIL: behlp@objectcomputing.com
+      GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -39,7 +40,8 @@ jobs:
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
         run: |
           echo "Publishing Artifacts"
-          ./gradlew bintrayUpload
+          (set -x; ./gradlew bintrayUpload --no-daemon)
+          (set -x; ./gradlew assemble --no-daemon)
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
       - name: Run post-release
