@@ -1,5 +1,16 @@
 name-template: $NEXT_PATCH_VERSION
 tag-template: v$NEXT_PATCH_VERSION
+version-resolver:
+  major:
+    labels:
+      - 'type: major'
+  minor:
+    labels:
+      - 'type: minor'
+  patch:
+    labels:
+      - 'type: patch'
+  default: patch
 categories:
   - title: 🚀 Features
     labels:

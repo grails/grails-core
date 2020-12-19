@@ -1,0 +1,86 @@
+name: Release
+on:
+  release:
+    types: [published]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8']
+    env:
+      GIT_USER_NAME: puneetbehl
+      GIT_USER_EMAIL: behlp@objectcomputing.com
+      GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - uses: gradle/wrapper-validation-action@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Set the current release version
+        id: release_version
+        run: echo ::set-output name=release_version::${GITHUB_REF:11}
+      - name: Run pre-release
+        uses: micronaut-projects/github-actions/pre-release@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish, Upload to Bintray
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: |
+          echo "Publishing Artifacts"
+          (set -x; ./gradlew bintrayUpload --no-daemon)
+          (set -x; ./gradlew assemble --no-daemon)
+      - name: Export Gradle Properties
+        uses: micronaut-projects/github-actions/export-gradle-properties@master
+      - name: Run post-release
+        if: success()
+        uses: micronaut-projects/github-actions/post-release@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SNAPSHOT_SUFFIX: .BUILD-SNAPSHOT
+      - name: Create Message for the Maven Central Sync
+        if: success()
+        id: maven_sync_message
+        run: |
+          echo ::set-output name=value::{\"release_version\":\"$RELEASE_VERSION\"}
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
+      - name: Invoke the Maven Central Sync workflow
+        if: success()
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Maven Central Sync
+          ref: master
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.maven_sync_message.outputs.value }}
+      - name: Grails SDK Release
+        if: success()
+        run: |
+          if [ $BETA ]; then
+            (set -x; ./gradle sdkMinorRelease)
+          else
+            ( set -x; ./gradlew sdkMajorRelease)
+          fi
+        env:
+          BETA: ${{ contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC') }}
+          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
+          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+      - name: Upload artifacts to the Github release
+        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        with:
+          args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

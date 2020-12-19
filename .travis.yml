@@ -2,7 +2,10 @@ language: groovy
 dist: trusty
 branches:
   only:
-    - 4.0.x
+    - 2.5.x
+    - 3.0.x
+    - 3.1.x
+    - 3.2.x
     - 3.3.x
 jdk:
 - openjdk8
