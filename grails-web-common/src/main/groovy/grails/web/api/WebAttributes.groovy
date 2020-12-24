@@ -20,6 +20,7 @@ import grails.core.GrailsControllerClass
 import grails.plugins.GrailsPluginManager
 import grails.web.mvc.FlashScope
 import grails.web.servlet.mvc.GrailsParameterMap
+import groovy.transform.Generated
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
@@ -41,6 +42,7 @@ trait WebAttributes {
     
     private GrailsApplication grailsApplication
 
+    @Generated
     GrailsWebRequest currentRequestAttributes() {
         (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
     }
@@ -50,6 +52,7 @@ trait WebAttributes {
      *
      * @return The GrailsApplicationAttributes instance
      */
+    @Generated
     GrailsApplicationAttributes getGrailsAttributes() {
         currentRequestAttributes().getAttributes()
     }
@@ -58,6 +61,7 @@ trait WebAttributes {
      * Obtains the currently executing controller name
      * @return The controller name
      */
+    @Generated
     String getControllerName() {
         currentRequestAttributes().getControllerName()
     }
@@ -66,6 +70,7 @@ trait WebAttributes {
      * Obtains the currently executing controller namespace
      * @return The controller name
      */
+    @Generated
     String getControllerNamespace() {
         currentRequestAttributes().getControllerNamespace()
     }
@@ -75,6 +80,7 @@ trait WebAttributes {
      *
      * @return The controller class
      */
+    @Generated
     GrailsControllerClass getControllerClass() {
         currentRequestAttributes().getControllerClass()
     }
@@ -85,6 +91,7 @@ trait WebAttributes {
      * @param delegate The object the method is being invoked on
      * @return The plugin context path
      */
+    @Generated
     String getPluginContextPath() {
         GrailsPluginManager manager = getGrailsApplication().getMainContext().getBean(GrailsPluginManager.class)
         final String pluginPath = manager ? manager.getPluginPathForInstance(this) : null
@@ -95,6 +102,7 @@ trait WebAttributes {
      * Obtains the currently executing action name
      * @return The action name
      */
+    @Generated
     String getActionName() {
         currentRequestAttributes().getActionName()
     }
@@ -104,6 +112,7 @@ trait WebAttributes {
      *
      * @return The FlashScope instance
      */
+    @Generated
     FlashScope getFlash() {
         currentRequestAttributes().getFlashScope()
     }
@@ -113,6 +122,7 @@ trait WebAttributes {
      *
      * @return The GrailsParameterMap instance
      */
+    @Generated
     GrailsParameterMap getParams() {
         currentRequestAttributes().getParams()
     }
@@ -121,6 +131,7 @@ trait WebAttributes {
      *
      * @return The GrailsWebRequest instance
      */
+    @Generated
     GrailsWebRequest getWebRequest() {
         currentRequestAttributes()
     }
@@ -129,6 +140,7 @@ trait WebAttributes {
      * Obtains the GrailsApplication instance
      * @return The GrailsApplication instance
      */
+    @Generated
     GrailsApplication getGrailsApplication() {
         if (grailsApplication == null) {
             grailsApplication = getGrailsAttributes().getGrailsApplication()

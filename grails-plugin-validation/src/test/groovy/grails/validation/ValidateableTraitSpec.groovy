@@ -2,12 +2,15 @@ package grails.validation
 
 import grails.util.ClosureToMapPopulator
 import grails.util.Holders
+import groovy.transform.Generated
 import org.grails.core.support.GrailsApplicationDiscoveryStrategy
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.validation.FieldError
 import spock.lang.Issue
 import spock.lang.Specification
+
+import java.lang.reflect.Method
 
 /**
  * Ensure validation logic for command object with {@code Validateable} and whether or not compatible with domain class.
@@ -297,6 +300,13 @@ class ValidateableTraitSpec extends Specification {
         then:
         obj.someValidateable.validate(['name'])
     }
+
+    void "test that all Validateable trait methods are marked as Generated"() {
+        expect: "all Validateable methods are marked as Generated on implementation class"
+        Validateable.getMethods().each { Method traitMethod ->
+            assert TestGeneratedAnnotations.class.getMethod(traitMethod.name, traitMethod.parameterTypes).isAnnotationPresent(Generated)
+        }
+    }
 }
 
 class MyValidateable implements Validateable {
@@ -397,4 +407,8 @@ class SubClassValidateable extends SuperClassValidateable implements Validateabl
     static constraints = {
         subName matches: /SUB/
     }
+}
+
+class TestGeneratedAnnotations implements Validateable {
+
 }
