@@ -1,7 +1,10 @@
 package org.grails.plugins.web.rest.transform
 
 import grails.web.Action
+import groovy.transform.Generated
 import spock.lang.Specification
+
+import java.lang.reflect.Method
 
 /**
  * @author Graeme Rocher
@@ -29,5 +32,11 @@ class LinkableTransformSpec extends Specification {
         then:"The link is added to the available links"
             links[0].href == '/foo'
 
+        when: "find all added methods"
+            List<Method> addedLinkMethods = book.getClass().getMethods().findAll {it.name == 'link' || it.name == 'links'}
+        then: "they are marked as Generated"
+            addedLinkMethods.each {
+                assert it.isAnnotationPresent(Generated)
+            }
     }
 }

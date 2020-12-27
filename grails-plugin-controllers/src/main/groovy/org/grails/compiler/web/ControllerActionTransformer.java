@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 
 import groovy.transform.CompilationUnitAware;
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
@@ -778,6 +779,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                             BlockStatement constructorLogic = new BlockStatement();
                             ConstructorNode constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorLogic);
                             commandObjectNode.addConstructor(constructorNode);
+                            AnnotatedNodeUtils.markAsGenerated(commandObjectNode, constructorNode);
                             constructorLogic.addStatements(objectInitializerStatements);
                         }
                         argumentIsValidateable = true;

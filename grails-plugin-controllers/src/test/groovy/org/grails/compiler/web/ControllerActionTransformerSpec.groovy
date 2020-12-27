@@ -5,8 +5,10 @@ import grails.util.BuildSettings
 import grails.util.GrailsWebMockUtil
 import grails.web.Action
 import grails.web.servlet.context.GrailsWebApplicationContext
+import groovy.transform.Generated
 import org.codehaus.groovy.control.CompilationUnit
 
+import java.lang.reflect.Constructor
 import java.lang.reflect.Modifier
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
@@ -52,6 +54,9 @@ class ControllerActionTransformerSpec extends Specification {
         then:
           controller
           controller.getClass().getMethod("action", [] as Class[]) != null
+
+        and: 'its not marked as Generated'
+            false == controller.getClass().getMethod("action", [] as Class[]).isAnnotationPresent(Generated)
     }
 
     void 'Test that user applied annotations are applied to generated action methods'() {
@@ -226,6 +231,33 @@ class ControllerActionTransformerSpec extends Specification {
         controller
         myCommand
         myCommand.validate()
+    }
+
+    void "Test command object injected constructor will be marked as Generated"() {
+
+        when:
+        def cls = gcl.parseClass('''
+            class TestMyCommandObjController {
+                def action(MyCommand myCommand) {
+                }
+
+                def $test() {
+                    new MyCommand(name: "Sally")
+                }
+
+            }
+
+            class MyCommand {
+                String name
+            }
+            ''')
+        def controller = cls.newInstance()
+        def myCommand = controller.$test()
+
+        then:
+        myCommand.getClass().getConstructors().each { Constructor constructor ->
+            assert constructor.isAnnotationPresent(Generated)
+        }
     }
 
     def cleanup() {

@@ -18,6 +18,7 @@ package org.grails.plugins.web.rest.transform
 import grails.rest.Link
 import grails.rest.Linkable
 import groovy.transform.CompileStatic
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
@@ -67,14 +68,17 @@ class LinkableTransform implements ASTTransformation{
             linkMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", linkArg)))
             def linkMethod = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [mapParameter] as Parameter[], null, linkMethodBody)
             classNode.addMethod(linkMethod)
+            AnnotatedNodeUtils.markAsGenerated(classNode, linkMethod)
 
             def linkParameter = new Parameter(new ClassNode(Link), LINK_METHOD)
             def linkMethod2 = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [linkParameter] as Parameter[], null, new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", new VariableExpression(linkParameter))));
             classNode.addMethod(linkMethod2)
+            AnnotatedNodeUtils.markAsGenerated(classNode, linkMethod2)
         }
         if (classNode.getMethods(LINKS_METHOD).isEmpty()) {
             def linksMethod = new MethodNode(LINKS_METHOD, PUBLIC, new ClassNode(Collection), ZERO_PARAMETERS, null, new ReturnStatement(resourceLinksVariable))
             classNode.addMethod(linksMethod)
+            AnnotatedNodeUtils.markAsGenerated(classNode, linksMethod)
         }
     }
 

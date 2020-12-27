@@ -23,6 +23,7 @@ import groovy.lang.Mixin;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -294,6 +295,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiProperty, lookupMethodName, methodBody);
             classNode.addMethod(lookupMethod);
             GrailsASTUtils.addCompileStaticAnnotation(lookupMethod);
+            AnnotatedNodeUtils.markAsGenerated(classNode, lookupMethod);
         }
         return lookupMethod;
     }
@@ -341,7 +343,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                     new ClassExpression(classNode), new ConstantExpression(apiProperty)), Token.newSymbol(Types.EQUAL, 0, 0),
                     new VariableExpression(setterParameter))));
 
-            GrailsASTUtils.addCompileStaticAnnotation(classNode.addMethod(setterName, Modifier.PUBLIC | Modifier.STATIC, ClassHelper.VOID_TYPE, new Parameter[]{setterParameter}, null, setterBody));
+            MethodNode methodNode = classNode.addMethod(setterName, Modifier.PUBLIC | Modifier.STATIC, ClassHelper.VOID_TYPE, new Parameter[]{setterParameter}, null, setterBody);
+            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
+            AnnotatedNodeUtils.markAsGenerated(classNode, methodNode);
         }
     }
 

@@ -1,5 +1,6 @@
 package org.grails.compiler.injection
 
+import groovy.transform.Generated
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
@@ -9,6 +10,8 @@ import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.validation.Errors
 
 import spock.lang.Specification
+
+import java.lang.reflect.Method
 
 class ASTValidationErrorsHelperSpec extends Specification {
 
@@ -71,5 +74,26 @@ class ASTValidationErrorsHelperSpec extends Specification {
 
         then:
             localErrors.is(widget.getErrors())
+    }
+
+    void 'Test injected errors property methods are marked with Generated annotation'() {
+        given:
+        def widgetClass = gcl.parseClass('class MyWidget{}')
+
+        and: 'injected method names to it'
+        List<String> injectedMethodNames = [
+            "setErrors",
+            "getErrors",
+            "hasErrors",
+            "clearErrors",
+            "initErrors"
+        ]
+
+        expect: 'injected methods marked as Generated'
+        widgetClass.getMethods().each { Method widgetMethod ->
+            if (widgetMethod.name in injectedMethodNames) {
+                assert widgetMethod.isAnnotationPresent(Generated)
+            }
+        }
     }
 }
