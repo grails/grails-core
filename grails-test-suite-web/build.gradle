@@ -11,7 +11,7 @@ configurations.testCompileClasspath {
 dependencies {
 
     testImplementation 'javax.servlet.jsp:jsp-api:2.1'
-    testImplementation 'jstl:jstl:1.1.2'
+    testImplementation 'jstl:jstl:1.2'
     testImplementation 'javax.el:el-api:1.0'
     testImplementation project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
