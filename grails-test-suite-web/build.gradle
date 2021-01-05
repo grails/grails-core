@@ -57,7 +57,7 @@ dependencies {
 
     // Required for tag library support
     testCompile 'taglibs:standard:1.1.2'
-    testCompile "javax.servlet:jstl:1.1.2"
+    testCompile "javax.servlet:jstl:1.2"
 
     testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
         exclude module:'grails-plugin-codecs'
