@@ -26,7 +26,7 @@ jobs:
         id: release_version
         run: echo ::set-output name=release_version::${GITHUB_REF:11}
       - name: Run pre-release
-        uses: micronaut-projects/github-actions/pre-release@master
+        uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish, Upload to Bintray
