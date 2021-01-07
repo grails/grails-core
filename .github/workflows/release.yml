@@ -100,7 +100,7 @@ jobs:
         if: success()
         run: |
           if [ $BETA ]; then
-            (set -x; ./gradle sdkMinorRelease)
+            (set -x; ./gradlew sdkMinorRelease)
           else
             ( set -x; ./gradlew sdkMajorRelease)
           fi
