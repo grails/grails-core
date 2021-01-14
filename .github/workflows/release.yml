@@ -46,7 +46,7 @@ jobs:
         uses: micronaut-projects/github-actions/export-gradle-properties@master
       - name: Run post-release
         if: success()
-        uses: micronaut-projects/github-actions/post-release@master
+        uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
