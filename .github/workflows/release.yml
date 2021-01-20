@@ -22,6 +22,13 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
+      - name: Extract Target Branch
+        id: extract_branch
+        run: |
+          echo "Determining Target Branch"
+          TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
+          echo $TARGET_BRANCH
+          echo ::set-output name=value::${TARGET_BRANCH}
       - name: Set the current release version
         id: release_version
         run: echo ::set-output name=release_version::${GITHUB_REF:11}
@@ -72,6 +79,23 @@ jobs:
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Message for the Grails Documentation Release
+        if: success()
+        id: grails_docs_release_message
+        run: |
+          echo ::set-output name=value::{\"grails_version\":\"$RELEASE_VERSION\"}
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
+      - name: Invoke grails-doc release workflow
+        if: success()
+        id: grails_doc
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Release
+          repo: grails/grails-doc
+          ref: ${{ steps.extract_branch.outputs.value }}
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Grails SDK Release
         if: success()
         run: |
