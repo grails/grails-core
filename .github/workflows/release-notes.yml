@@ -24,9 +24,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           prerelease: true
-          name: 4.1.0.RC1
-          tag: v4.1.0.RC1
-          version: 4.1.0.RC1
+          name: 5.0.0.M1
+          tag: v5.0.0.M1
+          version: 5.0.0.M1
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
