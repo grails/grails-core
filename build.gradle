@@ -26,7 +26,7 @@ ext {
     bintrayPublish = false
     grailsVersion = project.projectVersion
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
-    isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
+    isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [

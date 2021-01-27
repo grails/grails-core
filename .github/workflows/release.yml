@@ -57,7 +57,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          SNAPSHOT_SUFFIX: .BUILD-SNAPSHOT
+          SNAPSHOT_SUFFIX: -SNAPSHOT
       - name: Create Message for the Maven Central Sync
         if: success()
         id: maven_sync_message
