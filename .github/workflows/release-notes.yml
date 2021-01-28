@@ -22,6 +22,11 @@ jobs:
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          prerelease: false
+          name: 4.0.7
+          tag: v4.0.7
+          version: 4.0.7
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
