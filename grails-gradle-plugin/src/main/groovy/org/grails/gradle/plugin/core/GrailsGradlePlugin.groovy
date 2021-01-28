@@ -176,6 +176,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
         'web'
     }
 
+    protected String getDefaultMicronautVersion() {
+        '1.3.7'
+    }
+
     void addDefaultProfile(Project project, Configuration profileConfig) {
         project.dependencies.add('profile', "org.grails.profiles:${System.getProperty("grails.profile") ?: defaultProfile}:")
     }
@@ -430,7 +434,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.configurations {
                 agent
             }
-            project.dependencies.add("runtimeOnly", "io.micronaut:micronaut-inject-groovy")
+            final String micronautVersion = project.properties['micronautVersion']
+            project.dependencies.add("runtimeOnly", "io.micronaut:micronaut-inject-groovy:${micronautVersion?:defaultMicronautVersion}")
             project.afterEvaluate(new AgentTasksEnhancer())
         }
     }
