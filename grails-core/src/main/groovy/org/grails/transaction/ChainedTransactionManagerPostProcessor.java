@@ -135,6 +135,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     protected BeanDefinition addChainedTransactionManager(BeanDefinitionRegistry registry) {
         renameBean(TRANSACTION_MANAGER, PRIMARY_TRANSACTION_MANAGER, registry);
         BeanDefinition beanDefinition = new RootBeanDefinition(ChainedTransactionManager.class);
+        beanDefinition.setPrimary(true);
         registry.registerBeanDefinition(TRANSACTION_MANAGER, beanDefinition);
         return beanDefinition;
     }
@@ -224,6 +225,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
             }
         }
         BeanDefinition oldBeanDefinition = registry.getBeanDefinition(oldName);
+        oldBeanDefinition.setPrimary(false);
         registry.removeBeanDefinition(oldName);
         registry.registerBeanDefinition(newName, oldBeanDefinition);
         // re-link possible child beans to new parent name
