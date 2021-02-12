@@ -352,8 +352,8 @@ class GrailsApp extends SpringApplication {
     @CompileDynamic
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
-            def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
+            String protocol = app.config.getProperty('server.ssl.key-store') ? 'https' : 'http'
             String context_path = app.config.getProperty('server.context-path', '')
             if(context_path){
                 println("WARNING: 'server.context-path: ${context_path}' is deprecated. Please use 'server.contextPath: ${context_path}'")
