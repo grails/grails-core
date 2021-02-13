@@ -442,13 +442,13 @@ class GrailsApp extends SpringApplication {
 
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
-            def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
             applicationContext.publishEvent(
                     new ApplicationPreparedEvent(
                             this,
                             StringUtils.EMPTY_STRING_ARRAY, (ConfigurableApplicationContext)applicationContext.getParent())
             )
+            String protocol = app.config.getProperty('server.ssl.key-store') ? 'https' : 'http'
             String contextPath = app.config.getProperty('server.servlet.context-path', '')
             String hostName = app.config.getProperty('server.address', 'localhost')
             int port
