@@ -1,6 +1,6 @@
 dependencies {
 
-    compile 'javax.xml.bind:jaxb-api:2.3.0'
+    compile 'javax.xml.bind:jaxb-api:2.3.1'
 
     compile project(":grails-web"),
             project(":grails-plugin-controllers"),
