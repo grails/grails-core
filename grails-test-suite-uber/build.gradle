@@ -11,7 +11,7 @@ dependencies {
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'
-    testRuntime 'jstl:jstl:1.1.2'
+    testRuntime 'jstl:jstl:1.2'
     testRuntime 'javax.el:el-api:2.2'
     testRuntime "com.h2database:h2:$h2Version"
     testRuntime "org.springframework:spring-aspects:${springVersion}"
