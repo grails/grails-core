@@ -37,7 +37,7 @@ ext {
     signing = [
             'keyId': System.getenv("SIGNING_KEY") ?: project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : null,
             'password': System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signing.password") ? project.getProperty('signing.password') : null,
-            'secretKeyRingFile': System.getenv("SECRING_FILE") ?: project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : null
+            'secretKeyRingFile': project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : null
     ]
     dependencyVersions = [
         'javax.annotation-api': [
