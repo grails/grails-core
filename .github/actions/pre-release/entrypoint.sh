@@ -33,7 +33,6 @@ echo "Pushing release version and recreating v${release_version} tag"
 git add gradle.properties
 git add grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
 git commit -m "Release v${release_version}"
-git push origin $target_branch
 git push origin :refs/tags/v${release_version}
 git tag -fa v${release_version} -m "Release v${release_version}"
 git push origin $target_branch --tags
