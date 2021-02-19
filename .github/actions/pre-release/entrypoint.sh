@@ -35,7 +35,7 @@ git add grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
 git commit -m "Release v${release_version}"
 git push origin :refs/tags/v${release_version}
 git tag -fa v${release_version} -m "Release v${release_version}"
-git push origin $target_branch --tags
+git push origin v${release_version}
 
 echo "Closing again the release after updating the tag"
 release_url=`cat $GITHUB_EVENT_PATH | jq '.release.url' | sed -e 's/^"\(.*\)"$/\1/g'`
