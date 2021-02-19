@@ -51,7 +51,7 @@ jobs:
         run: |
           echo $SECRING_FILE | base64 -d > secring.gpg
           echo "Publishing Artifacts"
-          (set -x; ./gradlew -Psigning.secretKeyRingFile="secring.gpg" publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon)
+          (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon)
           (set -x; ./gradlew assemble --no-daemon)
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master

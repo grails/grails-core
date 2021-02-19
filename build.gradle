@@ -31,11 +31,6 @@ ext {
     isReleaseVersion = !isBuildSnapshot
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    signing = [
-            'keyId': System.getenv("SIGNING_KEY") ?: project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : null,
-            'password': System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signing.password") ? project.getProperty('signing.password') : null,
-            'secretKeyRingFile': project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : null
-    ]
     dependencyVersions = [
         'javax.annotation-api': [
                 version: javaxAnnotationApiVersion,
@@ -173,6 +168,11 @@ ext {
 // artifacts' POMs.
 ext.jointBuildGroovyJarProperty = System.getProperty('groovy.jar')
 ext.groovyDependency = null
+
+ext."signing.keyId" = System.getenv("SIGNING_KEY") ?: project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : null
+ext."signing.password" = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signing.password") ? project.getProperty('signing.password') : null
+ext."signing.secretKeyRingFile" = project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : null
+
 if (jointBuildGroovyJarProperty) {
     def jointBuildGroovyJar = file(jointBuildGroovyJarProperty)
     if (jointBuildGroovyJar.exists()) {
@@ -380,6 +380,11 @@ subprojects { project ->
 
         tasks.withType(Sign) {
             onlyIf { isReleaseVersion }
+        }
+
+        //do not generate extra load on Nexus with new staging repository if signing fails
+        tasks.withType(io.github.gradlenexus.publishplugin.InitializeNexusStagingRepository).configureEach {
+            shouldRunAfter(tasks.withType(Sign))
         }
     }
 
