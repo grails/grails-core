@@ -36,7 +36,7 @@ jobs:
         uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish, Upload to Bintray
+      - name: Publish to Sonatype OSSRH
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
