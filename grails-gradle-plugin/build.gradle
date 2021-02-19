@@ -24,6 +24,6 @@ dependencies {
 
     compile "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
     compile 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-    compile "io.spring.gradle:dependency-management-plugin:0.6.1.RELEASE"
+    compile "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
     compile 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0'
 }
