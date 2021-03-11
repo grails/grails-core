@@ -27,6 +27,7 @@ import java.util.Set;
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.compiler.ast.GrailsDomainClassInjector;
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
@@ -198,6 +199,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             MethodNode mn = new MethodNode("toString", Modifier.PUBLIC, new ClassNode(String.class), new Parameter[0], new ClassNode[0], s);
             classNode.addMethod(mn);
             classesWithInjectedToString.add(classNode);
+            AnnotatedNodeUtils.markAsGenerated(classNode, mn);
         }
     }
 

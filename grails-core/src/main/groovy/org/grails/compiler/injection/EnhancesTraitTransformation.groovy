@@ -19,6 +19,7 @@ import grails.artefact.Enhances
 import grails.compiler.traits.TraitInjector
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileStatic
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.CastExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
@@ -29,7 +30,10 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
+import java.lang.reflect.Modifier
+
 import static java.lang.reflect.Modifier.*
+
 /**
  * Implementation for {@link Enhances)
  *
@@ -75,10 +79,14 @@ class EnhancesTraitTransformation extends AbstractArtefactTypeAstTransformation 
 
 
             def classNodeRef = ClassHelper.make(traitClassName).getPlainNodeReference()
-            transformerNode.addMethod("getTrait", PUBLIC, ClassHelper.CLASS_Type.getPlainNodeReference(), GrailsASTUtils.ZERO_PARAMETERS, null, new ReturnStatement( new ClassExpression(classNodeRef)))
+            MethodNode getTraitMethodNode = transformerNode.addMethod(
+                    "getTrait", PUBLIC, ClassHelper.CLASS_Type.getPlainNodeReference(), GrailsASTUtils.ZERO_PARAMETERS, null, new ReturnStatement( new ClassExpression(classNodeRef)))
+            AnnotatedNodeUtils.markAsGenerated(transformerNode, getTraitMethodNode)
 
             def strArrayType = ClassHelper.STRING_TYPE.makeArray()
-            transformerNode.addMethod("getArtefactTypes", PUBLIC, strArrayType, GrailsASTUtils.ZERO_PARAMETERS, null, new ReturnStatement( CastExpression.asExpression(strArrayType, expr)))
+            MethodNode getArtefactTypesMethodNode = transformerNode.addMethod(
+                    "getArtefactTypes", PUBLIC, strArrayType, GrailsASTUtils.ZERO_PARAMETERS, null, new ReturnStatement( CastExpression.asExpression(strArrayType, expr)))
+            AnnotatedNodeUtils.markAsGenerated(transformerNode, getArtefactTypesMethodNode)
 
             def ast = source.AST
             transformerNode.module = ast

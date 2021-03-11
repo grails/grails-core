@@ -18,6 +18,7 @@ package grails.validation
 import grails.util.Holders
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
@@ -41,19 +42,27 @@ import org.springframework.validation.FieldError
 trait Validateable {
     private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper()
     private static Map<String, Constrained> constraintsMapInternal
-    Errors errors
+
+    private Errors errors
 
     /**
      * @return The errors
      */
+    @Generated
     Errors getErrors() {
         initErrors()
         errors
     }
 
+    @Generated
+    void setErrors(Errors errors) {
+        this.errors = errors
+    }
+
     /**
      * @return Whether the object has errors
      */
+    @Generated
     Boolean hasErrors() {
         initErrors()
         errors.hasErrors()
@@ -62,6 +71,7 @@ trait Validateable {
     /**
      * Clear the errors
      */
+    @Generated
     void clearErrors() {
         errors = null
     }
@@ -69,6 +79,7 @@ trait Validateable {
     /**
      * @return The map of applied constraints
      */
+    @Generated
     static Map<String, Constrained> getConstraintsMap() {
         if (constraintsMapInternal == null) {
             org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator evaluator = findConstraintsEvaluator()
@@ -89,6 +100,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate() {
         validate null, null, null
     }
@@ -98,6 +110,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(Closure<?>... adHocConstraintsClosures) {
         validate(null, null, adHocConstraintsClosures)
     }
@@ -107,6 +120,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(Map<String, Object> params) {
         validate params, null
     }
@@ -116,6 +130,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         validate(null, params, adHocConstraintsClosures)
     }
@@ -125,6 +140,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(List fieldsToValidate) {
         validate fieldsToValidate, null, null
     }
@@ -134,6 +150,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(List fieldsToValidate, Closure<?>... adHocConstraintsClosures) {
         validate(fieldsToValidate, null, adHocConstraintsClosures)
     }
@@ -143,6 +160,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(List fieldsToValidate, Map<String, Object> params) {
         validate fieldsToValidate, params, null
     }
@@ -152,6 +170,7 @@ trait Validateable {
      *
      * @return True if it is valid
      */
+    @Generated
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
@@ -236,6 +255,7 @@ trait Validateable {
         }
     }
 
+    @Generated
     static boolean defaultNullable() {
         false
     }

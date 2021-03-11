@@ -26,6 +26,7 @@ import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import grails.web.mvc.FlashScope
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.mapping.model.config.GormProperties
@@ -47,26 +48,30 @@ trait ResponseRedirector implements WebAttributes {
 
     private LinkGenerator linkGenerator
 
-    boolean useJsessionId = false
+    private boolean useJsessionId = false
 
     private RequestDataValueProcessor requestDataValueProcessor
     private Collection<RedirectEventListener> redirectListeners
 
+    @Generated
     @Autowired(required=false)
     void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
         this.redirectListeners = redirectListeners
     }
 
+    @Generated
     @Autowired(required = false)
     void setRequestDataValueProcessor(RequestDataValueProcessor requestDataValueProcessor) {
         this.requestDataValueProcessor = requestDataValueProcessor
     }
 
+    @Generated
     @Autowired
     void setGrailsLinkGenerator(LinkGenerator linkGenerator) {
         this.linkGenerator = linkGenerator
     }
 
+    @Generated
     LinkGenerator getGrailsLinkGenerator() {
         if(this.linkGenerator == null) {
             this.linkGenerator = webRequest.getApplicationContext().getBean(LinkGenerator)
@@ -80,6 +85,7 @@ trait ResponseRedirector implements WebAttributes {
      * @param object A domain class
      * @return null
      */
+    @Generated
     void redirect(object) {
         if(object) {
 
@@ -105,6 +111,7 @@ trait ResponseRedirector implements WebAttributes {
      * @param argMap The arguments
      * @return null
      */
+    @Generated
     void redirect(Map argMap) {
 
         if (argMap.isEmpty()) {
@@ -124,6 +131,7 @@ trait ResponseRedirector implements WebAttributes {
      * Obtains the chain model which is used to chain request attributes from one request to the next via flash scope
      * @return The chainModel
      */
+    @Generated
     Map getChainModel() {
         (Map)getFlash().get(FlashScope.CHAIN_MODEL)
     }
@@ -136,6 +144,7 @@ trait ResponseRedirector implements WebAttributes {
      *
      * @return Result of the redirect call
      */
+    @Generated
     void chain(Map args) {
         String controller = (args.controller ?: GrailsNameUtils.getLogicalPropertyName( getClass().name, ControllerArtefactHandler.TYPE)).toString()
         String action = args.action?.toString()
@@ -179,5 +188,15 @@ trait ResponseRedirector implements WebAttributes {
             url = response.encodeRedirectURL(url)
         }
         response.sendRedirect url
+    }
+
+    @Generated
+    boolean isUseJsessionId() {
+        return useJsessionId
+    }
+
+    @Generated
+    void setUseJsessionId(boolean useJsessionId) {
+        this.useJsessionId = useJsessionId
     }
 }

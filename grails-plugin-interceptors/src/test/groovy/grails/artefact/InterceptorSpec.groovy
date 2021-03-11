@@ -16,6 +16,7 @@
 package grails.artefact
 
 import grails.util.GrailsWebMockUtil
+import groovy.transform.Generated
 import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
@@ -28,6 +29,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.servlet.http.HttpServletRequest
+import java.lang.reflect.Method
 
 /**
  * @author graemerocher
@@ -362,6 +364,13 @@ class InterceptorSpec extends Specification {
     void clearMatch(i, HttpServletRequest request) {
         request.removeAttribute(i.getClass().name + InterceptorArtefactHandler.MATCH_SUFFIX)
     }
+
+    void "test that all Interceptor trait methods are marked as Generated"() {
+        expect: "all Interceptor methods are marked as Generated on implementation class"
+        Interceptor.getMethods().each { Method traitMethod ->
+            assert TestGeneratedAnnotations.class.getMethod(traitMethod.name, traitMethod.parameterTypes).isAnnotationPresent(Generated)
+        }
+    }
 }
 
 class TestInterceptor implements Interceptor {
@@ -450,4 +459,8 @@ class TestExcludeUriWithContextPathInterceptor implements Interceptor {
     TestExcludeUriWithContextPathInterceptor() {
         matchAll().excludes(uri: "/grails/mgmt/*")
     }
+}
+
+class TestGeneratedAnnotations implements Interceptor {
+
 }

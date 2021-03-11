@@ -17,6 +17,7 @@ package grails.web.databinding
 
 import grails.databinding.CollectionDataBindingSource
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.springframework.validation.BindingResult
 
 /**
@@ -32,32 +33,39 @@ import org.springframework.validation.BindingResult
 @CompileStatic
 trait DataBinder {
 
+    @Generated
     BindingResult bindData(target, bindingSource, Map includeExclude) {
         bindData target, bindingSource, includeExclude, null
     }
 
+    @Generated
     BindingResult bindData(target, bindingSource) {
         bindData target, bindingSource, Collections.EMPTY_MAP, null
     }
 
+    @Generated
     BindingResult bindData(target, bindingSource, String filter) {
         bindData target, bindingSource, Collections.EMPTY_MAP, filter
     }
 
+    @Generated
     BindingResult bindData(target, bindingSource, List excludes) {
         bindData target, bindingSource, [exclude: excludes], null
     }
 
+    @Generated
     BindingResult bindData(target, bindingSource, List excludes, String filter) {
         bindData target, bindingSource, [exclude: excludes], filter
     }
 
+    @Generated
     BindingResult bindData(target, bindingSource, Map includeExclude, String filter) {
         List includeList = convertToListIfCharSequence(includeExclude?.include)
         List excludeList = convertToListIfCharSequence(includeExclude?.exclude)
         DataBindingUtils.bindObjectToInstance target, bindingSource, includeList, excludeList, filter
     }
 
+    @Generated
     void bindData(Class targetType, Collection collectionToPopulate, CollectionDataBindingSource collectionBindingSource) {
         DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
     }

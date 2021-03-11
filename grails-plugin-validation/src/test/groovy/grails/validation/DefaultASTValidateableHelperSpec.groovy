@@ -1,7 +1,7 @@
 package grails.validation
 
 import grails.util.Holders
-
+import groovy.transform.Generated
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.web.context.support.GenericWebApplicationContext
 import org.codehaus.groovy.ast.ClassNode
@@ -15,6 +15,8 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 
 import spock.lang.Specification
+
+import java.lang.reflect.Method
 
 /**
  * Tests relevant to grails.validation.Validateable
@@ -78,6 +80,11 @@ class DefaultASTValidateableHelperSpec extends Specification {
             constraints.count.range == 1..10
     }
 
+    void 'Test constraints getter method is marked as Generated'() {
+        expect:
+        widgetClass.getMethod('getConstraints').isAnnotationPresent(Generated)
+    }
+
     void 'Test validate method returns has a declared return type of boolean, not Boolean'() {
         when:
             def validateListArgMethod = widgetClass.metaClass.methods.find {
@@ -116,6 +123,20 @@ class DefaultASTValidateableHelperSpec extends Specification {
         then:
             !isValid
             3 == errorCount
+    }
+
+    void 'Test validate method is marked as Generated'() {
+        when:
+        Method validateListArgMethod = widgetClass.getMethods().find { Method it ->
+            'validate' == it.name && it.parameterTypes.length == 1
+        }
+        Method validateNoArgMethod = widgetClass.getMethods().find { Method it ->
+            'validate' == it.name && it.parameterTypes.length == 0
+        }
+
+        then:
+        validateListArgMethod.isAnnotationPresent(Generated)
+        validateNoArgMethod.isAnnotationPresent(Generated)
     }
 
     void 'Test clearErrors'() {

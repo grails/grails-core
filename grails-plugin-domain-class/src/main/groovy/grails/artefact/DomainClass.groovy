@@ -18,6 +18,7 @@ package grails.artefact
 import grails.util.Holders
 import grails.validation.Constrained
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.web.plugins.support.DefaultConstrainedDiscovery
@@ -38,6 +39,7 @@ trait DomainClass {
     /**
      * @return The constrained properties for this domain class
      */
+    @Generated
     static Map<String, Constrained> getConstrainedProperties() {
         MappingContext mappingContext = Holders?.grailsApplication?.mappingContext
         PersistentEntity persistentEntity = mappingContext?.getPersistentEntity(this.name)

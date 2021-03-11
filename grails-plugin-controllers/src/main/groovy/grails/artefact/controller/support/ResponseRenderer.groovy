@@ -26,6 +26,7 @@ import grails.web.mime.MimeType
 import grails.web.mime.MimeUtility
 import groovy.json.StreamingJsonBuilder
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.grails.gsp.GroovyPageTemplate
@@ -71,16 +72,19 @@ trait ResponseRenderer extends WebAttributes {
     private GroovyPageLayoutFinder groovyPageLayoutFinder
     private GrailsPluginManager pluginManager
 
+    @Generated
     @Autowired(required = false)
     void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
         this.groovyPageLayoutFinder = groovyPageLayoutFinder
     }
 
+    @Generated
     @Autowired(required = false)
     void setMimeUtility(MimeUtility mimeUtility) {
         this.mimeUtility = mimeUtility
     }
 
+    @Generated
     @Autowired(required = false)
     void setActionResultTransformers(ActionResultTransformer[] actionResultTransformers) {
         this.actionResultTransformers = actionResultTransformers.toList()
@@ -91,6 +95,7 @@ trait ResponseRenderer extends WebAttributes {
      *
      * @param object The object to render
      */
+    @Generated
     void render(object) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
@@ -110,6 +115,7 @@ trait ResponseRenderer extends WebAttributes {
      *
      * @param closure The markup to render
      */
+    @Generated
     void render(Closure closure) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
@@ -125,6 +131,7 @@ trait ResponseRenderer extends WebAttributes {
      * @param argMap The name arguments
      * @param closure The closure to render
      */
+    @Generated
     void render(Map argMap, Closure closure) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
@@ -155,6 +162,7 @@ trait ResponseRenderer extends WebAttributes {
      * @param argMap The named arguments
      * @param body The text to render
      */
+    @Generated
     void render(Map argMap, CharSequence body) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
@@ -171,6 +179,7 @@ trait ResponseRenderer extends WebAttributes {
      *
      * @param txt The text to render
      */
+    @Generated
     void render(CharSequence txt) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
@@ -197,6 +206,7 @@ trait ResponseRenderer extends WebAttributes {
      * @param argMap The named arguments
      * @param writable The writable
      */
+    @Generated
     void render(Map argMap, Writable writable) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
@@ -214,6 +224,7 @@ trait ResponseRenderer extends WebAttributes {
      *
      * @param argMap The named argument map
      */
+    @Generated
     void render(Map argMap) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
