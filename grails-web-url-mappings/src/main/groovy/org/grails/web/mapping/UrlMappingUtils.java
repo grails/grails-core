@@ -170,6 +170,9 @@ public class UrlMappingUtils {
             Map<String, Object> urlAttrs = new HashMap<>();
             urlAttrs.put("controller", info.getControllerName());
             urlAttrs.put("action", info.getActionName());
+            // returned url is always pass to RequestDispather so it has to be relative
+            // otherwise RequestDispather append its own context and context appears twice in url
+            urlAttrs.put(LinkGenerator.ATTRIBUTE_INCLUDE_CONTEXT, false);
 
             forwardUrl.append(linkGenerator.link(urlAttrs));
         }
