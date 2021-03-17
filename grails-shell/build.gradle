@@ -3,7 +3,7 @@ apply plugin:'application'
 mainClassName = "org.grails.cli.GrailsCli"
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 ext {
