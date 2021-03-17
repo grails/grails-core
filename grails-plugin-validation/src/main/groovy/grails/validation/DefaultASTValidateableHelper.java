@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -160,8 +161,10 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final MethodNode methodNode = new MethodNode(getConstraintsMethodName, Modifier.STATIC | Modifier.PUBLIC, new ClassNode(Map.class), ZERO_PARAMETERS, null, methodBlockStatement);
             if (classNode.redirect() == null) {
                 classNode.addMethod(methodNode);
+                AnnotatedNodeUtils.markAsGenerated(classNode, methodNode);
             } else {
                 classNode.redirect().addMethod(methodNode);
+                AnnotatedNodeUtils.markAsGenerated(classNode.redirect(), methodNode);
             }
         }
     }
@@ -222,9 +225,11 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final StaticMethodCallExpression invokeValidateInstanceExpression = new StaticMethodCallExpression(validationSupportClassNode, "validateInstance", validateInstanceArguments);
             validateMethodCode.addStatement(new ExpressionStatement(invokeValidateInstanceExpression));
             final Parameter fieldsToValidateParameter = new Parameter(new ClassNode(List.class), fieldsToValidateParameterName);
-            classNode.addMethod(new MethodNode(
-                  VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,
-                  new Parameter[]{fieldsToValidateParameter}, EMPTY_CLASS_ARRAY, validateMethodCode));
+            MethodNode methodNode = new MethodNode(
+                    VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,
+                    new Parameter[]{fieldsToValidateParameter}, EMPTY_CLASS_ARRAY, validateMethodCode);
+            classNode.addMethod(methodNode);
+            AnnotatedNodeUtils.markAsGenerated(classNode, methodNode);
         }
         final MethodNode noArgValidateMethod = classNode.getMethod(VALIDATE_METHOD_NAME,ZERO_PARAMETERS);
         if (noArgValidateMethod == null) {
@@ -234,9 +239,11 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             validateInstanceArguments.addExpression(new CastExpression(new ClassNode(List.class), new ConstantExpression(null)));
             final Expression callListArgValidateMethod = new MethodCallExpression(new VariableExpression("this"), VALIDATE_METHOD_NAME, validateInstanceArguments);
             validateMethodCode.addStatement(new ReturnStatement(callListArgValidateMethod));
-            classNode.addMethod(new MethodNode(
-                  VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,
-                  ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, validateMethodCode));
+            MethodNode methodNode = new MethodNode(
+                    VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,
+                    ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, validateMethodCode);
+            classNode.addMethod(methodNode);
+            AnnotatedNodeUtils.markAsGenerated(classNode, methodNode);
         }
     }
 }

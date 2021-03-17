@@ -1,6 +1,7 @@
 package org.grails.compiler.injection
 
 import grails.persistence.Entity
+import groovy.transform.Generated
 import groovy.transform.ToString
 import spock.lang.Specification
 
@@ -16,6 +17,9 @@ class DefaultDomainClassInjectorSpec extends Specification {
 
         then:
         test.toString().endsWith("Test : 1")
+
+        and: 'toString is marked as Generated'
+        test.class.getMethod('toString').isAnnotationPresent(Generated)
     }
 
     void "test domain with groovy.transform.ToString"() {
@@ -25,6 +29,9 @@ class DefaultDomainClassInjectorSpec extends Specification {
 
         then:
         test.toString().endsWith("TestWithGroovy(1)")
+
+        and: 'toString is marked as Generated'
+        test.class.getMethod('toString').isAnnotationPresent(Generated)
     }
 
     @Entity

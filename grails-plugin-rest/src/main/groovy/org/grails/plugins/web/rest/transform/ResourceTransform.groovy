@@ -16,6 +16,8 @@
 package org.grails.plugins.web.rest.transform
 
 import grails.io.IOUtils
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils
+import org.grails.compiler.injection.GrailsASTUtils
 import org.grails.datastore.gorm.transactions.transform.TransactionalTransform
 
 import static java.lang.reflect.Modifier.*
@@ -194,6 +196,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                     urlMappingsSetter.addAnnotation(qualifierAnnotation)
                     urlMappingsSetter.addAnnotation(controllerMethodAnnotation)
                     newControllerClassNode.addMethod(urlMappingsSetter)
+                    AnnotatedNodeUtils.markAsGenerated(newControllerClassNode, urlMappingsSetter)
                     processVariableScopes(source, newControllerClassNode, urlMappingsSetter)
 
 
@@ -225,6 +228,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                     initialiseUrlMappingsMethod.addAnnotation(new AnnotationNode(new ClassNode(PostConstruct).getPlainNodeReference()))
                     initialiseUrlMappingsMethod.addAnnotation(controllerMethodAnnotation)
                     newControllerClassNode.addMethod(initialiseUrlMappingsMethod)
+                    AnnotatedNodeUtils.markAsGenerated(newControllerClassNode, initialiseUrlMappingsMethod)
                     processVariableScopes(source, newControllerClassNode, initialiseUrlMappingsMethod)
                 }
             }
@@ -249,7 +253,9 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
     ConstructorNode addConstructor(ClassNode controllerClassNode, ClassNode domainClassNode, boolean readOnly) {
         BlockStatement constructorBody = new BlockStatement()
         constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(ClassNode.SUPER, new TupleExpression(new ClassExpression(domainClassNode),new ConstantExpression(readOnly, true)))))
-        controllerClassNode.addConstructor(Modifier.PUBLIC, ZERO_PARAMETERS, ClassNode.EMPTY_ARRAY, constructorBody)
+        ConstructorNode constructorNode = controllerClassNode.addConstructor(Modifier.PUBLIC, ZERO_PARAMETERS, ClassNode.EMPTY_ARRAY, constructorBody)
+        AnnotatedNodeUtils.markAsGenerated(controllerClassNode, constructorNode)
+        return constructorNode
     }
     
     void setCompilationUnit(CompilationUnit unit) {

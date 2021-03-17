@@ -16,6 +16,7 @@
 package org.grails.cli.profile.commands.events
 
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.grails.cli.profile.commands.script.GroovyScriptCommand
 
 
@@ -35,6 +36,7 @@ trait CommandEvents {
      * @param eventName The name of the event
      * @param callable The closure that is executed when the event is fired
      */
+    @Generated
     void on(String eventName, @DelegatesTo(GroovyScriptCommand) Closure callable) {
         EventStorage.registerEvent(eventName, callable)
     }
@@ -46,6 +48,7 @@ trait CommandEvents {
      * @param eventName The name of the event
      * @param callable The closure that is executed when the event is fired
      */
+    @Generated
     void before(String commandName, @DelegatesTo(GroovyScriptCommand) Closure callable) {
         EventStorage.registerEvent("${commandName}Start", callable)
     }
@@ -56,6 +59,7 @@ trait CommandEvents {
      * @param eventName The name of the event
      * @param callable The closure that is executed when the event is fired
      */
+    @Generated
     void after(String commandName, @DelegatesTo(GroovyScriptCommand) Closure callable) {
         EventStorage.registerEvent("${commandName}End", callable)
     }
@@ -66,6 +70,7 @@ trait CommandEvents {
      * @param eventName The name of the event
      * @param args The arguments to the event
      */
+    @Generated
     void notify(String eventName, Object...args) {
         EventStorage.fireEvent(this, eventName, args)
     }

@@ -2,6 +2,7 @@ package org.grails.compiler.injection
 
 import grails.artefact.Enhanced
 import grails.persistence.PersistenceMethod
+import groovy.transform.Generated
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
 import grails.compiler.ast.ClassInjector
@@ -34,7 +35,8 @@ class GrailsArtefactTransformerSpec extends Specification {
 
         then:"The annotation is present"
             theAnnotation != null
-
+        and: 'it has also Generated annotation'
+            true == theMethod.isAnnotationPresent(Generated)
     }
 
     void 'Test instance property is available in all classes in the hierarcy'() {
@@ -77,6 +79,10 @@ class GrailsArtefactTransformerSpec extends Specification {
             1 == setterMethods?.size()
             1 == setterMethods[0].paramsCount
             String == setterMethods[0].parameterTypes[0].theClass
+
+        and: 'they are marked as Generated'
+            true == getterMethods[0].cachedMethod.isAnnotationPresent(Generated)
+            true == setterMethods[0].cachedMethod.isAnnotationPresent(Generated)
     }
 
     void 'Test properties defined in class take precedence over properties defined in InstanceApi'() {
@@ -97,6 +103,34 @@ class GrailsArtefactTransformerSpec extends Specification {
             1 == setterMethods?.size()
             1 == setterMethods[0].paramsCount
             List == setterMethods[0].parameterTypes[0].theClass
+
+        and: 'they are marked as Generated'
+            true == getterMethods[0].cachedMethod.isAnnotationPresent(Generated)
+            true == setterMethods[0].cachedMethod.isAnnotationPresent(Generated)
+    }
+
+    void 'Test InstanceApi overridden methods are not marked as Generated'() {
+        given:
+        def testClass = gcl.parseClass('''
+            class TestClass {
+                List somePropertyDefinedInTestInstanceApi
+                
+                List getSomePropertyDefinedInTestInstanceApi() {
+                    return this.somePropertyDefinedInTestInstanceApi
+                }
+            }
+            ''')
+
+        when:
+        def getterMethods = testClass.methods.findAll { 'getSomePropertyDefinedInTestInstanceApi' == it.name }
+        def setterMethods = testClass.methods.findAll { 'setSomePropertyDefinedInTestInstanceApi' == it.name }
+
+        then:
+        1 == getterMethods?.size()
+        false == getterMethods[0].isAnnotationPresent(Generated)
+
+        1 == setterMethods?.size()
+        true == setterMethods[0].isAnnotationPresent(Generated)
     }
 
     void 'Test that set* and get* methods which are not property accessors are added even if they overload actual accessors'() {
@@ -127,6 +161,12 @@ class GrailsArtefactTransformerSpec extends Specification {
             1 == oneArgGetters?.size()
             String == oneArgGetters[0].returnType
             String == oneArgGetters[0].parameterTypes[0].theClass
+
+        and: 'they are marked as Generated'
+            true == oneArgSetters[0].cachedMethod.isAnnotationPresent(Generated)
+            true == twoArgSetters[0].cachedMethod.isAnnotationPresent(Generated)
+            true == noArgGetters[0].cachedMethod.isAnnotationPresent(Generated)
+            true == oneArgGetters[0].cachedMethod.isAnnotationPresent(Generated)
     }
 
     void 'Test version attribute on @Enhanced'() {

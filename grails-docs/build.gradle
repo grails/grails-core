@@ -9,11 +9,11 @@ dependencies {
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
             'org.grails:grails-gdoc-engine:1.0.1',
-            'org.yaml:snakeyaml:1.14',
+            'org.yaml:snakeyaml:1.28',
             "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
-    api 'org.asciidoctor:asciidoctorj:1.5.4'
-    api('org.xhtmlrenderer:core-renderer:R8') {
+    api 'org.asciidoctor:asciidoctorj:2.4.2'
+    api('org.xhtmlrenderer:core-renderer:8.0') {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }
 

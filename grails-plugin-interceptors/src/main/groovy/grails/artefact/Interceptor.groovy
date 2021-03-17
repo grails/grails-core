@@ -25,6 +25,7 @@ import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod
 import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
 import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
@@ -55,22 +56,24 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     /**
      * The order the interceptor should execute in
      */
-    int order = 0
+    private int order = 0
 
     /**
      * The matchers defined by this interceptor
      */
-    final Collection<Matcher> matchers = new ConcurrentLinkedQueue<>()
+    private final Collection<Matcher> matchers = new ConcurrentLinkedQueue<>()
 
     /**
      * @return Whether the current interceptor does match
      */
+    @Generated
     boolean doesMatch() {
         doesMatch(request)
     }
     /**
      * @return Whether the current interceptor does match
      */
+    @Generated
     boolean doesMatch(HttpServletRequest request) {
         Collection<Matcher> allMatchers = matchers
         if (allMatchers.isEmpty()) {
@@ -108,6 +111,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     /**
      * Matches all requests
      */
+    @Generated
     Matcher matchAll() {
         def matcher = new UrlMappingMatcher(this)
         matcher.matchAll()
@@ -118,6 +122,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     /**
      * @return The current model
      */
+    @Generated
     Map<String, Object> getModel() {
         def modelAndView = (ModelAndView) currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
         return modelAndView?.modelMap
@@ -128,6 +133,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param model The model to set
      */
+    @Generated
     void setModel(Map<String, Object> model) {
         def request = currentRequestAttributes()
         def modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
@@ -141,6 +147,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     /**
      * @return The current view
      */
+    @Generated
     String getView() {
         def modelAndView = (ModelAndView) currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
         return modelAndView?.viewName
@@ -151,6 +158,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param view The name of the view
      */
+    @Generated
     void setView(String view) {
         def request = currentRequestAttributes()
         def modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
@@ -166,6 +174,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @return The ModelAndView
      */
+    @Generated
     ModelAndView getModelAndView() {
         (ModelAndView) currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
     }
@@ -175,6 +184,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param mav The ModelAndView
      */
+    @Generated
     void setModelAndView(ModelAndView mav) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
     }
@@ -184,6 +194,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param t The exception or null if none was thrown
      */
+    @Generated
     Throwable getThrowable() {
         def request = currentRequestAttributes()
 
@@ -195,6 +206,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param arguments The match arguments
      */
+    @Generated
     Matcher match(Map arguments) {
         def matcher = new UrlMappingMatcher(this)
         matcher.matches(arguments)
@@ -207,6 +219,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @return Whether the action should continue and execute
      */
+    @Generated
     boolean before() { true }
 
     /**
@@ -214,6 +227,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @return True if view rendering should continue, false otherwise
      */
+    @Generated
     boolean after() { true }
 
     /**
@@ -221,6 +235,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param t The exception instance if an exception was thrown, null otherwise
      */
+    @Generated
     void afterView() {}
 
     /**
@@ -229,6 +244,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      * @param headerName The header name
      * @param headerValue The header value
      */
+    @Generated
     void header(String headerName, headerValue) {
         if (headerValue != null) {
             final HttpServletResponse response = getResponse()
@@ -241,6 +257,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      *
      * @param argMap
      */
+    @Generated
     void render(Map argMap) {
         boolean isRenderView = argMap.containsKey(RenderDynamicMethod.ARGUMENT_VIEW)
         if (isRenderView) {
@@ -265,4 +282,27 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         }
     }
 
+    /**
+     * The order the interceptor should execute in
+     */
+    @Generated
+    int getOrder() {
+        return order
+    }
+
+    /**
+     * The order the interceptor should execute in
+     */
+    @Generated
+    void setOrder(int order) {
+        this.order = order
+    }
+
+    /**
+     * The matchers defined by this interceptor
+     */
+    @Generated
+    Collection<Matcher> getMatchers() {
+        return matchers
+    }
 }

@@ -23,6 +23,7 @@ import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
 import groovy.transform.TypeChecked;
 import groovy.transform.TypeCheckingMode;
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
@@ -291,6 +292,8 @@ public class GrailsASTUtils {
         }
 
         classNode.addMethod(methodNode);
+        AnnotatedNodeUtils.markAsGenerated(classNode, methodNode);
+
         return methodNode;
     }
 
@@ -429,8 +432,7 @@ public class GrailsASTUtils {
         }
 
         classNode.addMethod(methodNode);
-
-        return methodNode;
+        return AnnotatedNodeUtils.markAsGenerated(classNode, methodNode);
     }
 
     /**
@@ -471,6 +473,7 @@ public class GrailsASTUtils {
             } else {
                 constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorBody);
                 classNode.addConstructor(constructorNode);
+                AnnotatedNodeUtils.markAsGenerated(classNode, constructorNode);
             }
             constructorNode.addAnnotation(new AnnotationNode(new ClassNode(GrailsDelegatingConstructor.class)));
             return constructorNode;
@@ -481,6 +484,7 @@ public class GrailsASTUtils {
             if (cn == null) {
                 cn = new ConstructorNode(Modifier.PUBLIC, copyParameters(constructorParams, genericsPlaceholders), null, constructorBody);
                 classNode.addConstructor(cn);
+                AnnotatedNodeUtils.markAsGenerated(classNode, cn);
             }
             else {
                 List<AnnotationNode> annotations = cn.getAnnotations(new ClassNode(GrailsDelegatingConstructor.class));
@@ -494,7 +498,9 @@ public class GrailsASTUtils {
             ConstructorNode defaultConstructor = getDefaultConstructor(classNode);
             if (defaultConstructor == null) {
                 // add empty
-                classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, new BlockStatement()));
+                ConstructorNode constructorNode = new ConstructorNode(Modifier.PUBLIC, new BlockStatement());
+                classNode.addConstructor(constructorNode);
+                AnnotatedNodeUtils.markAsGenerated(classNode, constructorNode);
             }
             cn.addAnnotation(new AnnotationNode(new ClassNode(GrailsDelegatingConstructor.class)));
             return cn;
@@ -984,6 +990,7 @@ public class GrailsASTUtils {
         MethodNode existing = controllerClassNode.getMethod(methodNode.getName(), methodNode.getParameters());
         if (existing == null) {
             controllerClassNode.addMethod(methodNode);
+            AnnotatedNodeUtils.markAsGenerated(controllerClassNode, methodNode);
         }
     }
 

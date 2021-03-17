@@ -17,6 +17,7 @@
 package grails.web.api
 
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 
@@ -38,10 +39,12 @@ trait ServletAttributes implements WebAttributes {
     private ServletContext servletContext
     private ApplicationContext applicationContext
 
+    @Generated
     HttpServletRequest getRequest() {
         currentRequestAttributes().getCurrentRequest()
     }
 
+    @Generated
     HttpSession getSession() {
         return currentRequestAttributes().getSession()
     }
@@ -50,6 +53,7 @@ trait ServletAttributes implements WebAttributes {
      * Obtains the ApplicationContext instance
      * @return The ApplicationContext instance
      */
+    @Generated
     ApplicationContext getApplicationContext() {
         if (applicationContext == null) {
             this.applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
@@ -62,6 +66,7 @@ trait ServletAttributes implements WebAttributes {
      *
      * @return The HttpServletResponse instance
      */
+    @Generated
     HttpServletResponse getResponse() {
         currentRequestAttributes().getCurrentResponse()
     }
@@ -71,6 +76,7 @@ trait ServletAttributes implements WebAttributes {
      *
      * @return The ServletContext instance
      */
+    @Generated
     ServletContext getServletContext() {
         if (servletContext == null) {
             servletContext = currentRequestAttributes().getServletContext()

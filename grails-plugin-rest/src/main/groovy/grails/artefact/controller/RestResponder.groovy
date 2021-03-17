@@ -23,7 +23,9 @@ import grails.rest.Resource
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
+import groovy.transform.Generated
 import org.grails.datastore.mapping.model.config.GormProperties
+import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
@@ -48,16 +50,35 @@ trait RestResponder {
 
     private String PROPERTY_RESPONSE_FORMATS = "responseFormats"
 
-    @Autowired(required = false)
-    RendererRegistry rendererRegistry
+    private RendererRegistry rendererRegistry
+    private ProxyHandler proxyHandler
 
+    @Generated
     @Autowired(required = false)
-    ProxyHandler proxyHandler
-    
+    void setRendererRegistry(RendererRegistry rendererRegistry) {
+        this.rendererRegistry = rendererRegistry
+    }
+
+    @Generated
+    RendererRegistry getRendererRegistry() {
+        return this.rendererRegistry
+    }
+
+    @Generated
+    @Autowired(required = false)
+    void setProxyHandler(ProxyHandler proxyHandler) {
+        this.proxyHandler = proxyHandler
+    }
+
+    @Generated
+    ProxyHandler getProxyHandler() {
+        return this.proxyHandler
+    }
 
     /**
      * Same as {@link RestResponder#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
      */
+    @Generated
     def respond(Map args, value) {
         internalRespond value, args
     }
@@ -72,6 +93,7 @@ trait RestResponder {
      * @param value The value
      * @return
      */
+    @Generated
     def respond(Map value) {
         internalRespond value
     }
@@ -79,6 +101,7 @@ trait RestResponder {
     /**
      * Same as {@link RestResponder#respond(java.util.Map)}, but here to support Groovy named arguments
      */
+    @Generated
     def respond(Map namedArgs, Map value) {
         internalRespond value, namedArgs
     }
@@ -94,6 +117,7 @@ trait RestResponder {
      * @param args The arguments
      * @return
      */
+    @Generated
     def respond(value, Map args = [:]) {
         internalRespond value, args
     }

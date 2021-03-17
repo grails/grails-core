@@ -442,8 +442,8 @@ class GrailsApp extends SpringApplication {
 
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
-            def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
+            String protocol = app.config.getProperty('server.ssl.key-store') ? 'https' : 'http'
             applicationContext.publishEvent(
                     new ApplicationPreparedEvent(
                             this,

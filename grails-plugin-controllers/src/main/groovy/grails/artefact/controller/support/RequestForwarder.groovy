@@ -19,6 +19,7 @@ import grails.web.UrlConverter
 import grails.web.api.WebAttributes
 import grails.web.mapping.LinkGenerator
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.grails.web.mapping.UrlMappingUtils
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -43,6 +44,7 @@ trait RequestForwarder implements WebAttributes {
     private UrlConverter urlConverter
     private LinkGenerator linkGenerator
 
+    @Generated
     @Autowired(required=false)
     void setUrlConverter(UrlConverter urlConverter) {
         this.urlConverter = urlConverter
@@ -61,6 +63,7 @@ trait RequestForwarder implements WebAttributes {
      * @param params The parameters
      * @return The forwarded URL
      */
+    @Generated
     String forward(Map params) {
 
         GrailsWebRequest webRequest = getWebRequest()

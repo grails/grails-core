@@ -284,7 +284,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     @Override
     public UrlMappingData getUrlData() {
-        return null;
+        return urlData;
     }
 
     @Override

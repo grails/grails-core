@@ -28,6 +28,7 @@ import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 import grails.web.databinding.DataBindingUtils
 import groovy.transform.CompileStatic
+import groovy.transform.Generated
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
@@ -87,6 +88,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param callable
      * @return  The result of the closure execution selected
      */
+    @Generated
     def withFormat(Closure callable) {
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         mimeTypesSupport.withFormat((HttpServletResponse)response, callable)
@@ -98,6 +100,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param headerName The header name
      * @param headerValue The header value
      */
+    @Generated
     void header(String headerName, headerValue) {
         if (headerValue != null) {
             final HttpServletResponse response = getResponse()
@@ -112,6 +115,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param collectionToPopulate The collection to populate
      * @param request The request
      */
+    @Generated
     void bindData(Class targetType, Collection collectionToPopulate, ServletRequest request) {
         DataBindingUtils.bindToCollection targetType, collectionToPopulate, request
     }
@@ -120,6 +124,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * Return true if there are an errors
      * @return true if there are errors
      */
+    @Generated
     boolean hasErrors() {
         getErrors()?.hasErrors()
     }
@@ -129,6 +134,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      *
      * @param errors The error instance
      */
+    @Generated
     void setErrors(Errors errors) {
         def webRequest = currentRequestAttributes()
         setErrorsInternal(webRequest, errors)
@@ -140,6 +146,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      *
      * @return The Errors instance
      */
+    @Generated
     Errors getErrors() {
         def webRequest = currentRequestAttributes()
         getErrorsInternal(webRequest)
@@ -151,6 +158,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      *
      * @return The ModelAndView
      */
+    @Generated
     ModelAndView getModelAndView() {
         (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
     }
@@ -160,6 +168,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      *
      * @param mav The ModelAndView
      */
+    @Generated
     void setModelAndView(ModelAndView mav) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
     }
@@ -169,6 +178,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      *
      * @return The action URI
      */
+    @Generated
     String getActionUri() {
         "/${getControllerName()}/${getActionName()}"
     }
@@ -177,6 +187,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * Returns the URI of the currently executing controller
      * @return The controller URI
      */
+    @Generated
     String getControllerUri() {
         "/${getControllerName()}"
     }
@@ -187,6 +198,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param name The name of the template
      * @return The template URI
      */
+    @Generated
     String getTemplateUri(String name) {
         getGrailsAttributes().getTemplateUri(name, getRequest())
     }
@@ -197,6 +209,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param name The name of the view
      * @return The template URI
      */
+    @Generated
     String getViewUri(String name) {
         getGrailsAttributes().getViewUri(name, getRequest())
     }
@@ -207,6 +220,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param argMap The arguments
      * @return null
      */
+    @Generated
     void redirect(Map argMap) {
 
         if (argMap.isEmpty()) {
@@ -246,6 +260,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @param callable The closure to execute
      * @return The result of the closure execution
      */
+    @Generated
     TokenResponseHandler withForm(Closure callable) {
         withForm getWebRequest(), callable
     }
@@ -265,6 +280,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * }
      * </code></pre>
      */
+    @Generated
     TokenResponseHandler withForm(GrailsWebRequest webRequest, Closure callable) {
         TokenResponseHandler handler
         if (isTokenValid(webRequest)) {
@@ -317,14 +333,15 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
         }
         if (tokensHolderInSession.isEmpty()) request.getSession(false)?.removeAttribute(SynchronizerTokensHolder.HOLDER)
     }
- 
-     public static ApplicationContext getStaticApplicationContext() {
+
+    @Generated
+    public static ApplicationContext getStaticApplicationContext() {
          RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes()
          if (!(requestAttributes instanceof GrailsWebRequest)) {
              return ContextLoader.getCurrentWebApplicationContext()
          }
          ((GrailsWebRequest)requestAttributes).getApplicationContext()
-     }
+    }
 
 
     /**
@@ -342,6 +359,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
      * @return the initialized command object or null if the command object is a domain class, the body or
      * parameters included an id and no corresponding record was found in the database.
      */
+    @Generated
     def initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
         final HttpServletRequest request = getRequest()
         def commandObjectInstance = null
@@ -463,6 +481,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
         commandParams
     }
 
+    @Generated
     @SuppressWarnings("unchecked")
     Method getExceptionHandlerMethodFor(final Class<? extends Exception> exceptionType) throws Exception {
         if(!Exception.class.isAssignableFrom(exceptionType)) {

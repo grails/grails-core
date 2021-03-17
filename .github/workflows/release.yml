@@ -36,18 +36,20 @@ jobs:
         uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish, Upload to Bintray
+      - name: Publish to Sonatype OSSRH
         env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
         run: |
+          echo $SECRING_FILE | base64 -d > secring.gpg
           echo "Publishing Artifacts"
-          (set -x; ./gradlew bintrayUpload --no-daemon)
+          (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon)
           (set -x; ./gradlew assemble --no-daemon)
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
@@ -58,21 +60,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           SNAPSHOT_SUFFIX: -SNAPSHOT
-      - name: Create Message for the Maven Central Sync
-        if: success()
-        id: maven_sync_message
-        run: |
-          echo ::set-output name=value::{\"release_version\":\"$RELEASE_VERSION\"}
-        env:
-          RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
-      - name: Invoke the Maven Central Sync workflow
-        if: success()
-        uses: benc-uk/workflow-dispatch@v1.1
-        with:
-          workflow: Maven Central Sync
-          ref: master
-          token: ${{ secrets.GH_TOKEN }}
-          inputs: ${{ steps.maven_sync_message.outputs.value }}
       - name: Upload artifacts to the Github release
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:

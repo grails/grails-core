@@ -16,7 +16,7 @@
 package grails.web.databinding
 
 import groovy.transform.CompileStatic
-
+import groovy.transform.Generated
 import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
 import org.springframework.validation.BindingResult
 
@@ -34,6 +34,7 @@ trait WebDataBinding {
      * @param bindingSource The binding source
      * @return The BindingResult
      */
+    @Generated
     BindingResult setProperties(final bindingSource) {
         DataBindingUtils.bindObjectToInstance(this, bindingSource)
     }
@@ -45,6 +46,7 @@ trait WebDataBinding {
      @link DataBindingLazyMetaPropertyMap
      }
      */
+    @Generated
     Map<?, ?> getProperties() {
         new DataBindingLazyMetaPropertyMap(this)
     }
