@@ -85,6 +85,12 @@ class GroovyPageForkCompileTask extends AbstractCompile {
                         javaExecSpec.setMaxHeapSize( compileOptions.forkOptions.memoryMaximumSize )
                         javaExecSpec.setMinHeapSize( compileOptions.forkOptions.memoryInitialSize )
 
+                        //This is the OLD Style and seems kinda silly to be hard coded this way. but restores functionality
+                        //for now
+                        def configFiles = [
+                            project.file("grails-app/conf/application.yml").canonicalPath,
+                            project.file("grails-app/conf/application.groovy").canonicalPath
+                        ].join(',')
 
                         def arguments = [
                             srcDir.canonicalPath,
@@ -93,7 +99,7 @@ class GroovyPageForkCompileTask extends AbstractCompile {
                             targetCompatibility,
                             packageName,
                             serverpath,
-                            project.file("grails-app/conf/application.yml").canonicalPath,
+                            configFiles,
                             compileOptions.encoding
                         ]
 
