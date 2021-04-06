@@ -1,11 +1,13 @@
 package org.grails.io.support;
 
+import grails.util.BuildSettings;
 import junit.framework.TestCase;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
 import org.grails.io.support.UrlResource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
+import spock.util.environment.RestoreSystemProperties;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -154,6 +156,14 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("/alpha/beta/gamma", GrailsResourceUtils.appendPiecesForUri("/alpha/", "/beta/", "/gamma"));
         assertEquals("/alpha/beta/gamma/", GrailsResourceUtils.appendPiecesForUri("/alpha/", "/beta/", "/gamma/"));
         assertEquals("alpha/beta/gamma", GrailsResourceUtils.appendPiecesForUri("alpha", "beta", "gamma"));
+    }
+
+    @RestoreSystemProperties
+    public void testGetPathFromBaseDir() {
+        System.setProperty(BuildSettings.APP_BASE_DIR, "/test/grails/app");
+        assertEquals("views/demo/index.gsp", GrailsResourceUtils.getPathFromBaseDir("/test/grails/app/grails-app/views/demo/index.gsp"));
+        assertEquals("src/main/demo/index.gsp", GrailsResourceUtils.getPathFromBaseDir("/test/grails/app/src/main/demo/index.gsp"));
+        assertEquals("/alpha/index.gsp", GrailsResourceUtils.getPathFromBaseDir("/alpha/index.gsp"));
     }
 
     private String toFileUrl(String path) {
