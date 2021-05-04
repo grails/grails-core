@@ -152,7 +152,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 basenames.add(baseName);
         }
 
-        List<String> mergedBasenames = Arrays.asList(basenamesDefinition);
+        List<String> mergedBasenames = new ArrayList<>(Arrays.asList(basenamesDefinition));
         basenames.removeAll(mergedBasenames);
         mergedBasenames.addAll(basenames);
         super.setBasenames(mergedBasenames.toArray(new String[0]));
