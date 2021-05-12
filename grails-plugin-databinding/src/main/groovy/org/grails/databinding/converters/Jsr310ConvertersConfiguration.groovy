@@ -326,7 +326,7 @@ class Jsr310ConvertersConfiguration {
         new ValueConverter() {
             @Override
             boolean canConvert(Object value) {
-                value instanceof String
+                value instanceof CharSequence
             }
             @Override
             Object convert(Object value) {

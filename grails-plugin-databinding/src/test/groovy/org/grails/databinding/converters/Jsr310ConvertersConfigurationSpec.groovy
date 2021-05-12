@@ -222,7 +222,11 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
 
         expect:
         converter.targetType == Instant
+        converter.canConvert("2021-05-11T22:55:41.017Z")
+        converter.canConvert(new StringBuilder("2021-05-11T22:55:41.017Z"))
+        !converter.canConvert(3)
         converter.convert("2021-05-11T22:55:41.017Z") instanceof Instant
+        converter.convert(new StringBuilder("2021-05-11T22:55:41.017Z")) instanceof Instant
     }
 
     void "instantValueConverter"() {
