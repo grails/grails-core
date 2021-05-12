@@ -12,13 +12,6 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
     Jsr310ConvertersConfiguration config = new Jsr310ConvertersConfiguration(formatStrings: AbstractDataBindingGrailsPlugin.DEFAULT_DATE_FORMATS)
 
     @Shared
-    LocalDate localDate = LocalDate.of(1941, 1, 5)
-
-    @Shared
-    LocalTime localTime = LocalTime.of(8, 0, 0, 0)
-
-
-    @Shared
     Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
     void setupSpec() {
@@ -221,6 +214,19 @@ class Jsr310ConvertersConfigurationSpec extends Specification {
         converter.targetType == Period
         converter.canConvert('')
         converter.convert("P2D") instanceof Period
+    }
+
+    void "instantStringValueConverter"() {
+        given:
+        def converter = config.instantStringValueConverter()
+
+        expect:
+        converter.targetType == Instant
+        converter.canConvert("2021-05-11T22:55:41.017Z")
+        converter.canConvert(new StringBuilder("2021-05-11T22:55:41.017Z"))
+        !converter.canConvert(3)
+        converter.convert("2021-05-11T22:55:41.017Z") instanceof Instant
+        converter.convert(new StringBuilder("2021-05-11T22:55:41.017Z")) instanceof Instant
     }
 
     void "instantValueConverter"() {
