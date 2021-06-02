@@ -27,7 +27,7 @@ ext {
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
     isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
-    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    isCiBuild = System.getenv().get("TRAVIS") == 'true' || System.getenv().get("CI") as Boolean
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [
         'javax.annotation-api': [
@@ -277,7 +277,7 @@ subprojects { project ->
     }
 
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
-    ext.isCiBuild = project.hasProperty("isCiBuild")
+    ext.isCiBuild = project.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
     ext.pomInfo = {
         delegate.name 'Grails'
         delegate.description 'Grails Web Application Framework'
@@ -501,7 +501,7 @@ subprojects { project ->
             showStackTraces true
         }
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
-        if (isTravisBuild) {
+        if (isCiBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
             afterSuite {

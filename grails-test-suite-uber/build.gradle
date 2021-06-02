@@ -87,9 +87,9 @@ dependencies {
 }
 
 test {
-     maxParallelForks = isTravisBuild ? 2 : 4
-     forkEvery = isTravisBuild ? 25 : 100
-     if(!isTravisBuild) {
+     maxParallelForks = isCiBuild ? 2 : 4
+     forkEvery = isCiBuild ? 25 : 100
+     if(!isCiBuild) {
          maxHeapSize = '1024m'
      }
      excludes = [
