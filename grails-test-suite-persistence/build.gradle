@@ -67,8 +67,8 @@ dependencies {
 
 test {
     maxParallelForks = 2
-    forkEvery = isTravisBuild ? 25 : 100
-    if(!isTravisBuild) {
+    forkEvery = isCiBuild ? 25 : 100
+    if(!isCiBuild) {
         maxHeapSize = '2048m'
     }
     excludes = ['**/GrailsDomainBinderTests.class',
