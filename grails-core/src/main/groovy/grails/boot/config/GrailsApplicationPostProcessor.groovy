@@ -292,6 +292,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @SuppressWarnings("GrMethodMayBeStatic")
     private void loadPluginConfigurationsToMicronautContext(ConfigurableApplicationContext applicationContext) {
+        String[] beanNames = applicationContext.getBeanNamesForType(GrailsPluginManager)
+        if (beanNames.length == 0) {
+            // do not continue if PluginManager is not available
+            return
+        }
+
         GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager)
         ConfigurableApplicationContext parentApplicationContext = (ConfigurableApplicationContext) applicationContext.parent
         ConfigurableEnvironment parentContextEnv = parentApplicationContext.getEnvironment()
@@ -314,5 +320,4 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             applicationContext.setParent(parentApplicationContext)
         }
     }
-
 }
