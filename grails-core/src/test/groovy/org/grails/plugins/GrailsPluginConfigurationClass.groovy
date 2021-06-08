@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 
+import java.nio.file.Files
+
 @CompileStatic
 @Configuration
 class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
@@ -53,7 +55,7 @@ class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
         }
 
         protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
-            String tempDir = System.getProperty("java.io.tmpdir")
+            File tempDir = Files.createTempDirectory("MockTestGrailsPlugin").toFile()
             if (YAML_EXISTS && path == PLUGIN_YML_PATH) {
                 File file = new File(tempDir, "plugin.yml")
                 file.write("bar: foo\n")
@@ -89,7 +91,7 @@ class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
         }
 
         protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
-            String tempDir = System.getProperty("java.io.tmpdir")
+            File tempDir = Files.createTempDirectory("MockTestTwoGrailsPlugin").toFile()
             if (YAML_EXISTS && path == PLUGIN_YML_PATH) {
                 File file = new File(tempDir, "plugin.yml")
                 file.write("bar: foo2\n")
