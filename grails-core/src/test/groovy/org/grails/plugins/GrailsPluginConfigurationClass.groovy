@@ -1,5 +1,6 @@
 package org.grails.plugins
 
+import grails.boot.config.GrailsAutoConfiguration
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
@@ -14,7 +15,7 @@ import org.springframework.core.io.Resource
 
 @CompileStatic
 @Configuration
-class GrailsPluginConfigurationClass {
+class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
 
     public static Boolean YAML_EXISTS = false
     public static Boolean GROOVY_EXISTS = true
@@ -57,12 +58,15 @@ class GrailsPluginConfigurationClass {
                 File file = new File(tempDir, "plugin.yml")
                 file.write("bar: foo\n")
                 file.append("foo: one\n")
+                file.append("example:\n")
+                file.append("  bar: foo\n")
                 return new FileSystemResource(file)
             }
             if (GROOVY_EXISTS && path == PLUGIN_GROOVY_PATH) {
                 File file = new File(tempDir, "plugin.groovy")
                 file.write("bar = 'foo'\n")
                 file.append("foo = 'one'\n")
+                file.append("example.bar = 'foo'\n")
                 return new FileSystemResource(file)
             }
             return null

@@ -1,6 +1,7 @@
 package org.grails.plugins
 
 import grails.boot.GrailsApp
+import grails.boot.config.GrailsAutoConfiguration
 import io.micronaut.spring.context.env.MicronautEnvironment
 import org.springframework.context.ConfigurableApplicationContext
 import spock.lang.Specification
@@ -45,6 +46,17 @@ class PluginGroovyPropertySourceLoaderSpec extends Specification {
         expect:
         environment.getProperty("bar", String.class) == 'foo'
         environment.getProperty("abc", String.class) == 'xyz'
+    }
+
+    void "test that the configuration binding of plugin.groovy using @ConfigurationProperties is working inside the micronaut context"() {
+
+        given:
+        GrailsApp app = new GrailsApp(GrailsPluginConfigurationClass.class, GrailsAutoConfiguration.class, ConfigBindingExampleConfiguration.class)
+        ConfigurableApplicationContext context = app.run()
+        ConfigBindingExampleProperties properties = context.parent.getBean(ConfigBindingExampleProperties.class)
+
+        expect:
+        properties.bar == 'foo'
     }
 }
 
