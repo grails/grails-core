@@ -2,6 +2,7 @@ package org.grails.config
 
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+import org.springframework.core.env.SystemEnvironmentPropertySource
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -76,5 +77,27 @@ class PropertySourcesConfigSpec extends Specification {
 
         then: 'the second value is not merged with the first value'
         cfg.foo.bar == ['two': '2']
+    }
+
+    @Issue('grails/grails-core#11774')
+    void 'test that system environment variables are accessible consistently through PropertySourcesConfig'() {
+        given: 'a PropertySourcesConfig with system environment variables'
+        def propertySource = new SystemEnvironmentPropertySource('foo', [(envProperty): 'bar'])
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(propertySource)
+        def config = new PropertySourcesConfig(propertySources)
+
+        expect: 'the environment variable to be accessible through different variants'
+        propertySource.getProperty('my.configuration.property') == 'bar' // accessible by property path
+        config.getProperty(envProperty) == 'bar' // accessible by exact env variable name
+        config.my.configuration.property == 'bar' // accessible by dot notation
+
+        where:
+        envProperty << [
+                'my.configuration.property',
+                'my_configuration_property',
+                'MY.CONFIGURATION.PROPERTY',
+                'MY_CONFIGURATION_PROPERTY',
+        ]
     }
 }
