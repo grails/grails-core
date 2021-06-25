@@ -88,7 +88,9 @@ class PropertySourcesConfigSpec extends Specification {
         def config = new PropertySourcesConfig(propertySources)
 
         expect: 'the environment variable to be accessible through different variants'
-        propertySource.getProperty('my.configuration.property') == 'bar' // accessible by property path
+        propertySource.getProperty('my.configuration.property') == 'bar'
+        propertySource.getProperty(envProperty) == 'bar'
+        config.getProperty('my.configuration.property') == 'bar' // accessible by property path
         config.getProperty(envProperty) == 'bar' // accessible by exact env variable name
         config.my.configuration.property == 'bar' // accessible by dot notation
 
