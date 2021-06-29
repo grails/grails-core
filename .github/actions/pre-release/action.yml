@@ -1,0 +1,12 @@
+name: 'Grails pre-release action'
+description: 'Performs some actions before doing a release'
+inputs:
+  token:
+    description: 'GitHub token to authenticate the requests'  
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.token }}
