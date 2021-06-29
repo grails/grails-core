@@ -1,0 +1,107 @@
+name: Release
+on:
+  release:
+    types: [published]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8']
+    env:
+      GIT_USER_NAME: puneetbehl
+      GIT_USER_EMAIL: behlp@objectcomputing.com
+      GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - uses: gradle/wrapper-validation-action@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Extract Target Branch
+        id: extract_branch
+        run: |
+          echo "Determining Target Branch"
+          TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
+          echo $TARGET_BRANCH
+          echo ::set-output name=value::${TARGET_BRANCH}
+      - name: Set the current release version
+        id: release_version
+        run: echo ::set-output name=release_version::${GITHUB_REF:11}
+      - name: Run pre-release
+        uses: ./.github/actions/pre-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Assemble
+        run: |
+          - ./gradlew clean compileTestGroovy assemble --no-daemon
+      - name: Publish to Sonatype OSSRH
+        if: success()
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
+        run: |
+          echo $SECRING_FILE | base64 -d > secring.gpg
+          echo "Publishing Artifacts"
+          (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" uploadArchives --no-daemon)
+          (set -x; ./gradlew assemble --no-daemon)
+      - name: Close And Release Sonatype Staging Repository
+        if: success()
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
+        run: |
+          ./gradlew closeAndReleaseRepository --no-daemon
+      - name: Export Gradle Properties
+        uses: micronaut-projects/github-actions/export-gradle-properties@master
+      - name: Run post-release
+        if: success()
+        uses: ./.github/actions/post-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SNAPSHOT_SUFFIX: -SNAPSHOT
+      - name: Upload artifacts to the Github release
+        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        with:
+          args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Message for the Grails Documentation Release
+        if: success()
+        id: grails_docs_release_message
+        run: |
+          echo ::set-output name=value::{\"grails_version\":\"$RELEASE_VERSION\"}
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
+      - name: Invoke grails-doc release workflow
+        if: success()
+        id: grails_doc
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Release
+          repo: grails/grails-doc
+          ref: ${{ steps.extract_branch.outputs.value }}
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
+      - name: Grails SDK Release
+        if: success()
+        run: |
+          if $BETA ; then
+            (set -x; ./gradlew sdkMinorRelease)
+          else
+            ( set -x; ./gradlew sdkMajorRelease)
+          fi
+        env:
+          BETA: ${{ contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC') }}
+          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
+          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}

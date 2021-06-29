@@ -18,7 +18,7 @@ publishing {
                     mkp.properties {
                         for (dep in plugins) {
                             String version = dep.value
-                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                            if (!isSnapshot && version.endsWith("-SNAPSHOT")) {
                                 throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$dep.key] for a release!")
                             }
                             mkp."${dep.key}.version"(version)
@@ -26,7 +26,7 @@ publishing {
 
                         for (dep in dependencyVersions) {
                             String version = dep.value.version
-                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                            if (!isSnapshot && version.endsWith("-SNAPSHOT")) {
                                 throw new RuntimeException("Cannot have a snapshot dependency on [$dep.key] for a release!")
                             }
                             mkp."${dep.key}.version"(version)
@@ -90,7 +90,7 @@ publishing {
                                     mkp.groupId 'org.grails.plugins'
                                     mkp.artifactId plugin.key
                                     String version = plugin.value
-                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                                    if (!isSnapshot && version.endsWith("-SNAPSHOT")) {
                                         throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$plugin.key] for a release!")
                                     }
                                     mkp.version "\${${plugin.key}.version}"
@@ -102,7 +102,7 @@ publishing {
                                     mkp.groupId 'org.grails.profiles'
                                     mkp.artifactId profile.key
                                     String version = profile.value
-                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                                    if (!isSnapshot && version.endsWith("-SNAPSHOT")) {
                                         throw new RuntimeException("Cannot have a snapshot dependency on a profile [$profile.key] for a release!")
                                     }
                                     mkp.version(version)

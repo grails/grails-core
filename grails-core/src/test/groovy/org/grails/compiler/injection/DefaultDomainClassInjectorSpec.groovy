@@ -14,7 +14,7 @@ class DefaultDomainClassInjectorSpec extends GroovyTestCase {
         assert test.toString().endsWith("Test : 1")
     }
 
-    void "test domain with groovy.transform.ToString"() {
+    void "test domain with groovy transform ToString"() {
         TestWithGroovy test = new TestWithGroovy()
         test.id = 1
         assert test.toString().endsWith("TestWithGroovy(1)")

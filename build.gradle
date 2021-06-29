@@ -21,13 +21,10 @@ apply plugin: 'idea'
 
 ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
-    // Sets release version
-    grailsVersion = '3.3.13.TEST'
-//     grailsVersion = '3.3.13'
-    isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
+    grailsVersion = project.projectVersion
     isSnapshot = grailsVersion.endsWith("SNAPSHOT")
     isRelease = !isSnapshot
-    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    isTravisBuild = System.getenv().get("TRAVIS") == 'true' || System.getenv().get("CI") as Boolean
     dependencyVersions = [
             datastore       : [
                     version: datastoreVersion,
@@ -97,7 +94,7 @@ ext {
 
 }
 
-version = grailsVersion
+version = project.projectVersion
 group = "org.grails"
 
 // directories created during the build which are related
