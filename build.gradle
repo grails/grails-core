@@ -1,12 +1,10 @@
 buildscript {
     repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://repo.grails.org/grails/core" }
-        jcenter()
-        maven { url 'https://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
@@ -15,83 +13,82 @@ buildscript {
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
     }
 }
-
-import groovyx.net.http.RESTClient
-import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
 
 ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
-    bintrayPublish = false
     // Sets release version
-    grailsVersion = '3.3.13.BUILD-SNAPSHOT'
+    grailsVersion = '3.3.13.TEST'
 //     grailsVersion = '3.3.13'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
+    isSnapshot = grailsVersion.endsWith("SNAPSHOT")
+    isRelease = !isSnapshot
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     dependencyVersions = [
-        datastore: [
-            version: datastoreVersion,
-            group  : 'org.grails',
-            names  : ['grails-datastore'],
-            modules: ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'gorm-async', 'test-support', 'hibernate-core', 'gorm-test']
-        ],
-        groovy: [
-            version: groovyVersion,
-            group  : 'org.codehaus.groovy',
-            names  : ['groovy'],
-            modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio']
-        ],
-        spring: [
-            version: springVersion,
-            group  : 'org.springframework',
-            names  : ['spring'],
-            modules: ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc', 'jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket']
-        ],
-        directoryWatcher: [
-            version: directoryWatcherVersion,
-            group  : 'io.methvin',
-            names  : ['directory-watcher'],
-            modules: ['']
-        ],
-        springLoaded: [
-            version: springLoadedVersion,
-            group  : 'org.springframework',
-            names  : ['springloaded'],
-            modules: ['']
-        ],
-        async: [
-            version: asyncVersion,
-            group  : 'org.grails.plugins',
-            names  : ['async', 'events'],
-            modules: ['']
-        ],
-        asyncImpls: [
-            version: asyncVersion,
-            group  : 'org.grails',
-            names  : ['grails-async', 'grails-events'],
-            modules: ['gpars', 'rxjava', 'rxjava2']
-        ],
-        spock: [
-            version: spockVersion,
-            group  : 'org.spockframework',
-            names  : ['spock-core', 'spock-spring'],
-            modules: ['']
-        ],
-        gsp: [
-            version: gspVersion,
-            group  : 'org.grails.plugins',
-            names  : ['gsp'],
-            modules: ['']
-        ],
-        testingSupport: [
-            version: testingSupportVersion,
-            group  : 'org.grails',
-            names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
-            modules: ['']
-        ],
+            datastore       : [
+                    version: datastoreVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-datastore'],
+                    modules: ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'gorm-async', 'test-support', 'hibernate-core', 'gorm-test']
+            ],
+            groovy          : [
+                    version: groovyVersion,
+                    group  : 'org.codehaus.groovy',
+                    names  : ['groovy'],
+                    modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio']
+            ],
+            spring          : [
+                    version: springVersion,
+                    group  : 'org.springframework',
+                    names  : ['spring'],
+                    modules: ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc', 'jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket']
+            ],
+            directoryWatcher: [
+                    version: directoryWatcherVersion,
+                    group  : 'io.methvin',
+                    names  : ['directory-watcher'],
+                    modules: ['']
+            ],
+            springLoaded    : [
+                    version: springLoadedVersion,
+                    group  : 'org.springframework',
+                    names  : ['springloaded'],
+                    modules: ['']
+            ],
+            async           : [
+                    version: asyncVersion,
+                    group  : 'org.grails.plugins',
+                    names  : ['async', 'events'],
+                    modules: ['']
+            ],
+            asyncImpls      : [
+                    version: asyncVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-async', 'grails-events'],
+                    modules: ['gpars', 'rxjava', 'rxjava2']
+            ],
+            spock           : [
+                    version: spockVersion,
+                    group  : 'org.spockframework',
+                    names  : ['spock-core', 'spock-spring'],
+                    modules: ['']
+            ],
+            gsp             : [
+                    version: gspVersion,
+                    group  : 'org.grails.plugins',
+                    names  : ['gsp'],
+                    modules: ['']
+            ],
+            testingSupport  : [
+                    version: testingSupportVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
+                    modules: ['']
+            ],
     ]
 
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
@@ -116,6 +113,12 @@ ext {
 
 }
 
+ext.nexusUsername = project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : System.getenv("SONATYPE_USERNAME") ?: ''
+ext.nexusPassword = project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : System.getenv("SONATYPE_PASSWORD") ?: ''
+ext."signing.keyId" = project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : System.getenv("SIGNING_KEY") ?: null
+ext."signing.password" = project.hasProperty("signing.password") ? project.getProperty('signing.password') : System.getenv("SIGNING_PASSPHRASE") ?: null
+ext."signing.secretKeyRingFile" = project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : null
+
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
 // configurations, so place the dependency in a shared variable. The
 // 'compile' is required so that Groovy appears as a dependency in the
@@ -131,17 +134,27 @@ if (jointBuildGroovyJarProperty) {
     }
 } else {
     groovyDependency = dependencies.create("org.codehaus.groovy:groovy:${groovyVersion}") {
-        exclude module:"commons-cli"
-        exclude module:"ant"
+        exclude module: "commons-cli"
+        exclude module: "ant"
+    }
+}
+
+if (isRelease) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'io.codearte.nexus-staging'
+
+    ext.ossStagingProfileId = System.getenv("SONATYPE_STAGING_PROFILE_ID") ?: project.hasProperty("sonatypeOssStagingProfileId") ? project.sonatypeOssStagingProfileId : ''
+
+    nexusStaging {
+        stagingProfileId = ossStagingProfileId
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        if(groovyVersion.endsWith('-SNAPSHOT')) {
+        if (groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
                 name 'JFrog OSS snapshot repo'
                 url 'https://oss.jfrog.org/oss-snapshot-local/'
@@ -238,16 +251,16 @@ subprojects { project ->
 
     }
 
-    if(!project.hasProperty("artifactoryPublishPassword") && System.getenv("ARTIFACTORY_PASSWORD")) {
+    if (!project.hasProperty("artifactoryPublishPassword") && System.getenv("ARTIFACTORY_PASSWORD")) {
         project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
     }
 
     apply plugin: 'groovy'
     apply plugin: "io.github.groovylang.groovydoc"
-    if(!isTestSuite) {
+    if (!isTestSuite) {
         apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
-        apply plugin: 'com.jfrog.bintray'
+        apply plugin: 'signing'
     }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
@@ -267,25 +280,23 @@ subprojects { project ->
 
         publishing {
 
-            repositories {
-                maven {
-                    credentials {
-                        def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                        def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                        username = u
-                        password = p
-                    }
-                    if (isBuildSnapshot) {
-                        url  "https://repo.grails.org/grails/libs-snapshots-local"
-                    } else {
-                        url  "https://repo.grails.org/grails/libs-releases-local"
-                    }
+            if (isSnapshot) {
 
+                repositories {
+                    maven {
+                        credentials {
+                            def u = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : System.getenv("ARTIFACTORY_USERNAME") ?: ''
+                            def p = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : System.getenv("ARTIFACTORY_PASSWORD") ?: ''
+                            username = u
+                            password = p
+                        }
+                        url "https://repo.grails.org/grails/libs-snapshots-local"
+                    }
                 }
             }
 
-            if(project.name == 'grails-dependencies') return
-            if(project.name == 'grails-bom') return
+            if (project.name == 'grails-dependencies') return
+            if (project.name == 'grails-bom') return
 
             publications {
                 maven(MavenPublication) {
@@ -302,72 +313,42 @@ subprojects { project ->
                 }
             }
         }
-
-        bintray {
-            user = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-            key = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-            publications = ['maven']
-            publish = true
-            dryRun = false
-            pkg {
-                repo = 'grails-core'
-                userOrg = 'grails'
-                name = 'grails-core'
-                desc = 'Grails Framework'
-                websiteUrl = 'http://grails.org'
-                issueTrackerUrl = 'https://github.com/grails/grails-core/issues'
-                vcsUrl = 'https://github.com/grails/grails-core'
-                licenses = ['Apache-2.0']
-                publicDownloadNumbers = true
-                version {
-                    name = project.version
-                    gpg {
-                        sign = true
-                        passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
-                    }
-                    mavenCentralSync {
-                        sync = false
-                        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-                        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-                        user = ossUser
-                        password = ossPass
-                    }
-
-                }
-            }
-        }
     }
 
-    if(project.name == 'grails-dependencies') return
-    if(project.name == 'grails-bom') return
+    tasks.withType(Sign) {
+        onlyIf { isRelease }
+    }
+
+    if (project.name == 'grails-dependencies') return
+    if (project.name == 'grails-bom') return
 
     sourceCompatibility = "1.7"
     targetCompatibility = "1.7"
 
-    if(project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test|grails-compat)/) {
+    if (project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test|grails-compat)/) {
         dependencies {
             provided "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
             provided("org.springframework:spring-test:${springVersion}") {
-                exclude group: 'commons-logging', module:'commons-logging'
+                exclude group: 'commons-logging', module: 'commons-logging'
             }
         }
     }
 
-    if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
+    if (project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
             provided 'hsqldb:hsqldb:1.8.0.10'
             provided "com.h2database:h2:$h2Version"
         }
     }
 
-    jar{
+    jar {
         manifest.mainAttributes(
-            "Built-By": System.properties['user.name'],
-            "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-            "Implementation-Title": "Grails",
-            "Implementation-Version": grailsVersion,
-            "Implementation-Vendor": 'grails.org')
+                "Built-By": System.properties['user.name'],
+                "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+                "Implementation-Title": "Grails",
+                "Implementation-Version": grailsVersion,
+                "Implementation-Vendor": 'grails.org')
     }
 
 
@@ -408,9 +389,9 @@ subprojects { project ->
         compile groovyDependency
 
         testCompile "org.codehaus.groovy:groovy-test:${groovyVersion}", {
-            exclude group:'junit', module: 'junit'
-            exclude group:'org.codehaus.groovy', module: 'groovy'
-            exclude group:'org.hamcrest', module: 'hamcrest-core'
+            exclude group: 'junit', module: 'junit'
+            exclude group: 'org.codehaus.groovy', module: 'groovy'
+            exclude group: 'org.hamcrest', module: 'hamcrest-core'
         }
 
         if (project.name != "grails-docs") {
@@ -423,8 +404,8 @@ subprojects { project ->
             testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
             testCompile("org.spockframework:spock-core:${spockVersion}") {
                 transitive = false
-                exclude group:'junit', module: 'junit-dep'
-                exclude group:'org.codehaus.groovy', module: 'groovy-all'
+                exclude group: 'junit', module: 'junit-dep'
+                exclude group: 'org.codehaus.groovy', module: 'groovy-all'
             }
             // Required by Spock's Mocking
             testCompile "cglib:cglib-nodep:${cglibVersion}"
@@ -447,14 +428,14 @@ subprojects { project ->
         } else {
             maxHeapSize = '1024m'
         }
-        if(System.getProperty("debug.tests")) {
+        if (System.getProperty("debug.tests")) {
             jvmArgs debugArguments
         }
     }
 
     task singleTest(type: Test) {
         // task for running a single test with -DsingleTest.single=TestName singleTest
-        if(System.getProperty("debug.tests")) {
+        if (System.getProperty("debug.tests")) {
             jvmArgs debugArguments
         }
     }
@@ -462,10 +443,10 @@ subprojects { project ->
     configurations {
         meta
         published.extendsFrom archives, meta
-        all*.exclude group:'commons-logging', module: 'commons-logging'
+        all*.exclude group: 'commons-logging', module: 'commons-logging'
     }
 
-    if(!isTestSuite) {
+    if (!isTestSuite) {
 
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
@@ -487,46 +468,11 @@ subprojects { project ->
 
 task clean(type: Delete) {
     delete buildDir,
-           homeBinDir,
-           homeConfDir,
-           homeDistDir,
-           homeLibDir,
-           homeSrcDir
-}
-
-def bintrayUser = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-def bintrayKey = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-
-task synchronizeWithMavenCentral() {
-    description = "Syncs with Maven Central/Sonatype"
-    doLast {
-        println """
-Synchronizing with Maven central. This may take a few minutes ...
-If this fails, log on to http://oss.sonatype.org/ using the centralUser credentials
-and progress through process manually -> Close -> Publish ... under staging repositories
-"""
-        try {
-            // doesn't exist.. try sync
-            def client = new RESTClient('https://api.bintray.com/maven_central_sync/grails/grails-core/')
-            client.headers['Authorization'] = 'Basic ' + "$bintrayUser:$bintrayKey".getBytes('iso-8859-1').encodeBase64()
-            def body = /{}/
-            def resp = client.post(
-                    path: "grails-core/versions/$grailsVersion",
-                    body: body,
-                    requestContentType: JSON
-            )
-            assert resp.status == 200
-            println resp.data.status
-            println resp.data.messages.join('\n')
-        } catch (groovyx.net.http.HttpResponseException e) {
-            println "Error: $e"
-            println "Message: $e.message"
-            println "Body: $e.response.data"
-            throw e
-        }
-    }
+            homeBinDir,
+            homeConfDir,
+            homeDistDir,
+            homeLibDir,
+            homeSrcDir
 }
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
