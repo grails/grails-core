@@ -13,7 +13,6 @@ buildscript {
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
-        classpath "de.marcphilipp.gradle:nexus-publish-plugin:0.4.0"
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0"
     }
 }
@@ -318,12 +317,6 @@ subprojects { project ->
 
     tasks.withType(Sign) {
         onlyIf { isRelease }
-    }
-
-    tasks.withType(de.marcphilipp.gradle.nexus.InitializeNexusStagingRepository).each { Task task ->
-        task.configure {
-            shouldRunAfter(tasks.withType(Sign))
-        }
     }
 
     if (project.name == 'grails-dependencies') return
