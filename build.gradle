@@ -257,7 +257,6 @@ subprojects { project ->
     if (!isTestSuite) {
         apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
-        apply plugin: 'signing'
     }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
@@ -266,6 +265,10 @@ subprojects { project ->
     apply plugin: 'optional-base'
 
     if (!isTestSuite) {
+
+        nexus {
+            sign = isRelease
+        }
 
         modifyPom {
             delegate.project {
@@ -310,10 +313,6 @@ subprojects { project ->
                 }
             }
         }
-    }
-
-    tasks.withType(Sign) {
-        onlyIf { isRelease }
     }
 
     if (project.name == 'grails-dependencies') return
