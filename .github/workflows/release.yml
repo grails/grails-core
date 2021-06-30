@@ -35,12 +35,6 @@ jobs:
         uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Assemble
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
-        run: |
-          ./gradlew clean compileTestGroovy assemble --no-daemon
       - name: Publish to Sonatype OSSRH
         if: success()
         env:
