@@ -69,7 +69,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          SNAPSHOT_SUFFIX: -SNAPSHOT
+          SNAPSHOT_SUFFIX: .BUILD-SNAPSHOT
       - name: Upload artifacts to the Github release
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
