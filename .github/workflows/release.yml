@@ -37,7 +37,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Assemble
         run: |
-          - ./gradlew clean compileTestGroovy assemble --no-daemon
+          ./gradlew clean compileTestGroovy assemble --no-daemon
       - name: Publish to Sonatype OSSRH
         if: success()
         env:
