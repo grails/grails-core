@@ -57,7 +57,7 @@ jobs:
           echo $SECRING_FILE | base64 -d > secring.gpg
           echo "Publishing Artifacts"
           (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" uploadArchives --no-daemon)
-          (set -x; ./gradlew assemble --no-daemon)
+          (set -x; ./gradlew assemble -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" --no-daemon)
       - name: Close And Release Sonatype Staging Repository
         if: success()
         env:
