@@ -143,6 +143,7 @@ if (isRelease) {
     ext.ossStagingProfileId = System.getenv("SONATYPE_STAGING_PROFILE_ID") ?: project.hasProperty("sonatypeOssStagingProfileId") ? project.sonatypeOssStagingProfileId : ''
 
     nexusStaging {
+        numberOfRetries = 40
         stagingProfileId = ossStagingProfileId
     }
 }

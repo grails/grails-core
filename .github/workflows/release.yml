@@ -58,34 +58,14 @@ jobs:
           echo "Publishing Artifacts"
           (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" uploadArchives --no-daemon)
           (set -x; ./gradlew assemble -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" --no-daemon)
-      - name: Close Sonatype Staging Repository
+      - name: Close And Release Sonatype Staging Repository
         if: success()
-        uses: nick-invision/retry@v2
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-        with:
-          retry_wait_seconds: 10
-          timeout_minutes: 20
-          max_attempts: 3
-          retry_on: error
-          command: |
-            ./gradlew closeRepository --no-daemon
-      - name: Release Sonatype Staging Repository
-        if: success()
-        uses: nick-invision/retry@v2
-        env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-        with:
-          retry_wait_seconds: 10
-          timeout_minutes: 20
-          max_attempts: 3
-          retry_on: error
-          command: |
-            ./gradlew releaseRepository --no-daemon
+        run: |
+          ./gradlew closeAndReleaseRepository --no-daemon
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
       - name: Run post-release
