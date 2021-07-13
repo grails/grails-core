@@ -9,6 +9,8 @@ import org.springframework.core.io.Resource
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.nio.file.Files
+
 class BinaryPluginSpec extends Specification {
 
     @Shared
@@ -95,7 +97,7 @@ class MockConfigBinaryGrailsPlugin extends BinaryGrailsPlugin {
     }
 
     protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
-        String tempDir = System.getProperty("java.io.tmpdir")
+        File tempDir = Files.createTempDirectory("MockConfigBinaryGrailsPlugin").toFile()
         if (YAML_EXISTS && path == PLUGIN_YML_PATH) {
             File file = new File(tempDir, "plugin.yml")
             file.write("foo: bar")
