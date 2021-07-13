@@ -122,7 +122,7 @@ class ResponseRedirector {
         if (absolute) {
             redirectURI = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri
         } else {
-            redirectURI = processedActualUri
+            redirectURI = linkGenerator.contextPath + processedActualUri
         }
 
         String redirectUrl = useJessionId ? response.encodeRedirectURL(redirectURI) : redirectURI
