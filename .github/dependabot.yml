@@ -1,0 +1,64 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: 4.0.x
+  ignore:
+  - dependency-name: org.gradle:gradle-tooling-api
+    versions:
+    - 6.8.1
+    - 6.8.2
+    - 6.8.3
+  - dependency-name: javax.servlet.jsp:jsp-api
+    versions:
+    - 2.2.1
+  - dependency-name: com.lowagie:itext
+    versions:
+    - 4.2.2
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: master
+  ignore:
+  - dependency-name: org.apache.maven.resolver:maven-resolver-impl
+    versions:
+    - 1.6.1
+  - dependency-name: org.apache.maven.resolver:maven-resolver-connector-basic
+    versions:
+    - 1.6.1
+  - dependency-name: org.apache.maven.resolver:maven-resolver-transport-file
+    versions:
+    - 1.6.1
+  - dependency-name: org.apache.maven.resolver:maven-resolver-transport-http
+    versions:
+    - 1.6.1
+  - dependency-name: org.yaml:snakeyaml
+    versions:
+    - "1.27"
+    - "1.28"
+  - dependency-name: org.xhtmlrenderer:core-renderer
+    versions:
+    - "8.0"
+  - dependency-name: jstl:jstl
+    versions:
+    - "1.2"
+  - dependency-name: javax.el:el-api
+    versions:
+    - "2.2"
+  - dependency-name: net.sf.expectit:expectit-core
+    versions:
+    - 0.9.0
+  - dependency-name: org.junit.platform:junit-platform-runner
+    versions:
+    - 1.7.0
+  - dependency-name: org.junit.jupiter:junit-jupiter-engine
+    versions:
+    - 5.7.0
+  - dependency-name: org.junit.jupiter:junit-jupiter-api
+    versions:
+    - 5.7.0
