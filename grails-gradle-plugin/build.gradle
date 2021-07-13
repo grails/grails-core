@@ -25,5 +25,5 @@ dependencies {
     api "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
     api 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
     api "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
-    api 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0'
+    api 'com.netflix.nebula:gradle-extra-configurations-plugin:6.0.0'
 }
