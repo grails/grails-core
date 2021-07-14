@@ -1,26 +1,32 @@
 package org.grails.commons
 
 import grails.util.GrailsMetaClassUtils
+import org.junit.jupiter.api.Test
 import org.springframework.beans.BeanUtils
+
+import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertNotNull
 
 /**
  * Tests for the GrailsMetaClassUtils class.
  *
  * @author Graeme Rocher
  */
-class GrailsMetaClassUtilsTests extends GroovyTestCase {
+class GrailsMetaClassUtilsTests {
 
+    @Test
     void testGetMetaRegistry() {
         assertNotNull(GrailsMetaClassUtils.getRegistry())
     }
 
+    @Test
     void testCopyExpandoMetaClass() {
         def metaClass = new ExpandoMetaClass(Dummy, true)
 
         // add property
         metaClass.getFoo = {-> "bar" }
         // add instance method
-        metaClass.foo = { String txt -> "bar:$txt" }
+        metaClass.foo = { String txt -> "bar:$txt".toString() }
         // add static method
         metaClass.'static'.bar = {-> "foo" }
         // add constructor

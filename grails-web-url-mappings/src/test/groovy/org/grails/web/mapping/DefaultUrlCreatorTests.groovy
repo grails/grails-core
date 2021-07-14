@@ -1,12 +1,16 @@
 package org.grails.web.mapping
 
 import grails.util.GrailsWebMockUtil
-
 import org.grails.web.mapping.DefaultUrlCreator
-import org.springframework.web.context.request.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Test
+import org.springframework.web.context.request.RequestContextHolder
 
-class DefaultUrlCreatorTests extends GroovyTestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals
 
+class DefaultUrlCreatorTests {
+
+    @Test
     void testCreateUrl() {
 
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -22,6 +26,7 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
         assertEquals "/foo/index?hello=world&fred=flintstone", creator.createURL(hello:"world", fred:"flintstone", "utf-8")
     }
 
+    @Test
     void testCreateUrlNoCharacterEncoding() {
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.currentRequest.characterEncoding = null
@@ -31,6 +36,7 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
         assertEquals "/foo/index", creator.createURL(null, "utf-8")
     }
 
+    @AfterEach
     void tearDown() {
         RequestContextHolder.resetRequestAttributes()
     }

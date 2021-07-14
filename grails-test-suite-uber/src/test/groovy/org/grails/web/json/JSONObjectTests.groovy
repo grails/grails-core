@@ -1,13 +1,15 @@
 package org.grails.web.json
 
+import org.junit.jupiter.api.Test
 import spock.lang.Issue
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class JSONObjectTests extends GroovyTestCase {
+class JSONObjectTests {
 
+    @Test
     void testContainsKey() {
         JSONObject j = new JSONObject()
         j.put('test', 1)

@@ -1,9 +1,13 @@
 package org.grails.test.support
 
 import org.grails.test.support.ControllerNameExtractor
+import org.junit.jupiter.api.Test
 
-class ControllerNameExtractorTests extends GroovyTestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals
 
+class ControllerNameExtractorTests {
+
+    @Test
     void testExtractControllerNameFromTestClassName() {
 
         String[] testClassSuffixes = ['Test', 'Tests']

@@ -1,18 +1,28 @@
 package org.grails.commons
+
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class DefaultGrailsCodecClassTests extends GroovyTestCase {
+class DefaultGrailsCodecClassTests {
 
+    @BeforeEach
     protected void setUp() {
         ExpandoMetaClass.enableGlobally()
     }
 
+    @AfterEach
     protected void tearDown() {
         ExpandoMetaClass.disableGlobally()
     }
 
+    @Test
     void testCodecWithClosures() {
         def codecClass = new DefaultGrailsCodecClass(CodecWithClosuresCodec)
         codecClass.afterPropertiesSet();
@@ -20,6 +30,7 @@ class DefaultGrailsCodecClassTests extends GroovyTestCase {
         assertEquals "decoded", codecClass.decoder.decode("stuff")
     }
 
+    @Test
     void testCodecWithMethods() {
         def codecClass = new DefaultGrailsCodecClass(CodecWithMethodsCodec)
         codecClass.afterPropertiesSet();
