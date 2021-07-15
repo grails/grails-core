@@ -39,10 +39,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -65,6 +62,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private long pluginCacheMillis = Long.MIN_VALUE;
     private boolean searchClasspath = false;
     private String messageBundleLocationPattern = "classpath*:*.properties";
+    String[] basenamesDefinition = {};
 
     public PluginAwareResourceBundleMessageSource() {
     }
@@ -84,6 +82,12 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     public void setResourceResolver(PathMatchingResourcePatternResolver resourceResolver) {
         this.resourceResolver = resourceResolver;
+    }
+
+    @Override
+    public void setBasenames(String... basenames){
+        basenamesDefinition = basenames;
+        super.setBasenames(basenames);
     }
 
     public void afterPropertiesSet() throws Exception {
@@ -148,8 +152,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 basenames.add(baseName);
         }
 
-        setBasenames(basenames.toArray( new String[basenames.size()]));
-
+        List<String> mergedBasenames = new ArrayList<>(Arrays.asList(basenamesDefinition));
+        basenames.removeAll(mergedBasenames);
+        mergedBasenames.addAll(basenames);
+        super.setBasenames(mergedBasenames.toArray(new String[0]));
     }
 
 
