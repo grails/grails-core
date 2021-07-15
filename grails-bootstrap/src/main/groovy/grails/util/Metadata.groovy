@@ -18,7 +18,6 @@ package grails.util
 import grails.config.ConfigMap
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
-import org.grails.config.NavigableMap
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
@@ -27,7 +26,6 @@ import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.lang.ref.Reference
 import java.lang.ref.SoftReference
-import java.util.*
 
 /**
  * Represents the application Metadata and loading mechanics.
@@ -36,7 +34,7 @@ import java.util.*
  * @since 1.1
  */
 @CompileStatic
-class Metadata extends NavigableMap implements ConfigMap  {
+class Metadata implements ConfigMap, Cloneable {
     private static final long serialVersionUID = -582452926111226898L
     public static final String FILE = "application.yml"
     public static final String APPLICATION_VERSION = "info.app.version"
@@ -72,7 +70,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     private Metadata(Map<String, String> properties) {
-        merge(properties, true)
+        merge(this, properties)
         afterLoading()
     }
 
@@ -100,7 +98,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
 
     private void afterLoading() {
         // allow override via system properties
-        merge(new LinkedHashMap(System.properties).findAll { key, val -> val }, true)
+        merge(this, new LinkedHashMap(System.properties).findAll { key, val -> val })
         def value = get(WAR_DEPLOYED)
         warDeployed = value != null ? Boolean.valueOf(value.toString()) : false
     }
@@ -132,18 +130,17 @@ class Metadata extends NavigableMap implements ConfigMap  {
             }
 
             url = classLoader.getResource(BUILD_INFO_FILE)
-            if(url != null) {
-                if(IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
+            if (url != null) {
+                if (IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
                     url.withInputStream { input ->
                         loadAndMerge(input)
                     }
                 }
-            }
-            else {
+            } else {
                 // try WAR packaging resolve
                 url = classLoader.getResource("../../" + BUILD_INFO_FILE)
-                if(url != null) {
-                    if(IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
+                if (url != null) {
+                    if (IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
                         url.withInputStream { input ->
                             loadAndMerge(input)
                         }
@@ -161,7 +158,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
         try {
             def props = new Properties()
             props.load(input)
-            merge(props, true)
+            merge(this, props)
         } catch (Throwable e) {
             // ignore
         }
@@ -171,10 +168,10 @@ class Metadata extends NavigableMap implements ConfigMap  {
         Yaml yaml = new Yaml(new SafeConstructor())
         def loadedYaml = yaml.loadAll(input)
         List result = []
-        for(Object yamlObject : loadedYaml) {
-            if(yamlObject instanceof Map) { // problem here with CompileStatic
+        for (Object yamlObject : loadedYaml) {
+            if (yamlObject instanceof Map) { // problem here with CompileStatic
                 result.add(yamlObject)
-                merge((Map)yamlObject)
+                merge(this, (Map) yamlObject)
             }
         }
 
@@ -234,8 +231,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
             Metadata metadata = ref.get()
             if (metadata != null && metadata.getMetadataFile() != null && metadata.getMetadataFile().equals(file)) {
                 return metadata
-            }
-            else {
+            } else {
                 createAndBindNew(file)
             }
         }
@@ -340,7 +336,6 @@ class Metadata extends NavigableMap implements ConfigMap  {
     }
 
 
-
     static class FinalReference<T> extends SoftReference<T> {
         private final T ref
 
@@ -363,7 +358,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
     @Override
     <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         def v = getProperty(key, targetType)
-        if(v == null) {
+        if (v == null) {
             return defaultValue
         }
         return v
@@ -372,8 +367,8 @@ class Metadata extends NavigableMap implements ConfigMap  {
     @Override
     <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
         def value = get(key)
-        if(value == null) {
-            throw new IllegalStateException("Value for key ["+key+"] cannot be resolved")
+        if (value == null) {
+            throw new IllegalStateException("Value for key [" + key + "] cannot be resolved")
         }
         return value.asType(targetType)
     }
@@ -381,5 +376,18 @@ class Metadata extends NavigableMap implements ConfigMap  {
     @Override
     Iterator<Map.Entry<String, Object>> iterator() {
         return entrySet().iterator()
+    }
+
+    def merge(Map<String, Object> lhs = [:], Map<String, Object> rhs) {
+        return rhs.inject((Map) lhs.clone()) { map, Map.Entry<String, Object> entry ->
+            if (map[entry.key] instanceof Map && entry.value instanceof Map) {
+                map[entry.key] = merge((Map) map[entry.key], (Map) entry.value)
+            } else if (map[entry.key] instanceof Collection && entry.value instanceof Collection) {
+                map[entry.key] += entry.value
+            } else {
+                map[entry.key] = entry.value
+            }
+            return map
+        }
     }
 }
