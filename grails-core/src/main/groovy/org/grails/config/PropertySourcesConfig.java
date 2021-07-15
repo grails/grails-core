@@ -25,6 +25,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
 import org.springframework.core.env.PropertySourcesPropertyResolver;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -115,6 +116,13 @@ public class PropertySourcesConfig extends NavigableMapConfig {
                     value = processAndEvaluate(value);
                 }
                 map.put(propertyName, value);
+
+                if (enumerablePropertySource instanceof SystemEnvironmentPropertySource) {
+                    // in case of a SystemEnvironmentPropertySource, add the environment variable
+                    // also by an alias key, so that the property can be looked up by dot syntax
+                    String alias = propertyName.toLowerCase().replace('_', '.');
+                    map.put(alias, value);
+                }
             }
 
             configMap.merge(map, true);
