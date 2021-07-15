@@ -67,6 +67,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             TaskContainer tasks = project.tasks
             Test integrationTestTask = tasks.create('integrationTest', Test)
             integrationTestTask.group = LifecycleBasePlugin.VERIFICATION_GROUP
+            integrationTestTask.description = 'Runs the integration tests.'
             setClassesDirs(integrationTestTask, integrationTest)
             integrationTestTask.classpath = integrationTest.runtimeClasspath
             integrationTestTask.maxParallelForks = 1
