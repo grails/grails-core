@@ -15,7 +15,7 @@ env:
   global:
   - TERM=dumb
   - MALLOC_ARENA_MAX=1
-  - GRADLE_OPTS="-Xmx768m -Xms256m -XX:MaxPermSize=372m -XX:+CMSClassUnloadingEnabled"
+  - GRADLE_OPTS="-Xmx768m -Xms256m -XX:+CMSClassUnloadingEnabled"
   - GIT_NAME="Graeme Rocher"
   - GIT_EMAIL="graeme.rocher@gmail.com"
   - secure: HMX1CzkCcj9Qal1Syk3kJR1VBQcmT5Uo986dL4r28q00YoyrfRjtAIqvCJSKO1t7aCeJkG74sdeNs43EYpkXCAS9c/ffWAWK1G+YAO5XgJi9cWj/B5F6MGD3YAbO86PIUceq3VcoGztflBB7i9N9YakYt41vnMPULHFBEpLtfOQ=
