@@ -165,14 +165,16 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             if(Modifier.isAbstract(classNode.getModifiers())) return false
 
             def classNodeName = classNode.name
-
-            File sourceDirectory = findSourceDirectory(compilationTargetDirectory)
-            def sourceFactoriesFile = new File(sourceDirectory, "src/main/resources/META-INF/grails.factories")
             def props = new Properties()
             def superTypeName = superType.getName()
-            if (sourceFactoriesFile.exists()) {
+
+            File sourceDirectory = findSourceDirectory(compilationTargetDirectory)
+            // generate META-INF/grails.factories
+            def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
+            factoriesFile.parentFile.mkdirs()
+            if (factoriesFile.exists()) {
                 // update
-                sourceFactoriesFile.withInputStream { InputStream input ->
+                factoriesFile.withInputStream { InputStream input ->
                     props.load(input)
                 }
 
@@ -183,12 +185,24 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 else if (!existing.contains(classNodeName)) {
                     props.put(superTypeName, [existing, classNodeName].join(','))
                 }
+            }
+            def sourceFactoriesFile = new File(sourceDirectory, "src/main/resources/META-INF/grails.factories")
+            if (sourceFactoriesFile.exists()) {
+                // update
+                sourceFactoriesFile.withInputStream { InputStream input ->
+                    props.load(input)
+                }
+
+                def existing = props.getProperty(superTypeName)
+                if (!existing) {
+                    props.put(superTypeName, classNodeName)
+                } else if (!existing.contains(classNodeName)) {
+                    props.put(superTypeName, [existing, classNodeName].join(','))
+                }
             } else {
                 props.put(superTypeName, classNodeName)
             }
-            // generate META-INF/grails.factories
-            def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
-            factoriesFile.parentFile.mkdirs()
+
             factoriesFile.withWriter {  Writer writer ->
                 props.store(writer, "Grails Factories File")
             }
