@@ -8,7 +8,7 @@ repositories {
 
 ext {
 //    gradleToolingApiVersion = gradle.gradleVersion
-    gradleToolingApiVersion = '6.5'
+    gradleToolingApiVersion = '6.8.3'
 }
 
 dependencies {

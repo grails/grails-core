@@ -45,6 +45,5 @@ include (
         'grails-test-suite-web',
 
         // Gradle Plugin
-        'grails-gradle-plugin',
         'grails-gradle-model'
 )
