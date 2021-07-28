@@ -2,7 +2,7 @@
   "extends": [
     "config:base"
   ],
-  "labels": ["type: dependency-upgrade"],
+  "labels": ["type: dependency upgrade"],
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],
