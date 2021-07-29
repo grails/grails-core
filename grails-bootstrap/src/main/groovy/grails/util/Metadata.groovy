@@ -26,6 +26,7 @@ import io.micronaut.context.env.SystemPropertiesPropertySource
 import io.micronaut.context.env.yaml.YamlPropertySourceLoader
 import io.micronaut.core.convert.format.MapFormat
 import io.micronaut.core.naming.conventions.StringConvention
+import io.micronaut.core.value.PropertyResolver
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
@@ -345,7 +346,7 @@ class Metadata implements ConfigMap, Cloneable {
 
     @Override
     Object get(Object key) {
-        return resolver.getProperty(key.toString(), Object).orElse(null)
+        return ((PropertyResolver) resolver).getProperty(key.toString(), Object).orElse(null)
     }
 
     @Override
@@ -385,7 +386,7 @@ class Metadata implements ConfigMap, Cloneable {
 
     @Override
     Object getOrDefault(Object key, Object defaultValue) {
-        return resolver.getProperty(key.toString(), Object).orElse(defaultValue)
+        return ((PropertyResolver) resolver).getProperty(key.toString(), Object).orElse(defaultValue)
     }
 
     @Override
@@ -464,7 +465,7 @@ class Metadata implements ConfigMap, Cloneable {
 
     @Override
     <T> T getProperty(String key, Class<T> targetType) {
-        return resolver.getProperty(key, targetType).orElse(null)
+        return ((PropertyResolver) resolver).getProperty(key, targetType).orElse(null)
     }
 
     @Override
@@ -487,7 +488,7 @@ class Metadata implements ConfigMap, Cloneable {
 
     @Override
     Object navigate(String... path) {
-        return ((Optional<Object>) resolver.getProperty(path.join("."), Object)).orElse(null)
+        return ((Optional<Object>) ((PropertyResolver) resolver).getProperty(path.join(".").toString(), Object)).orElse(null)
     }
 
     @Override
