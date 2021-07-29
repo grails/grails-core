@@ -18,14 +18,24 @@ package grails.util
 import grails.config.ConfigMap
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
+import io.micronaut.context.env.PropertiesPropertySourceLoader
+import io.micronaut.context.env.PropertySource
+import io.micronaut.context.env.PropertySourcePropertyResolver
+import io.micronaut.context.env.SystemPropertiesPropertySource
+import io.micronaut.context.env.yaml.YamlPropertySourceLoader
+import io.micronaut.core.convert.format.MapFormat
+import io.micronaut.core.naming.conventions.StringConvention
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.lang.ref.Reference
 import java.lang.ref.SoftReference
+import java.util.function.BiConsumer
+import java.util.function.BiFunction
+import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * Represents the application Metadata and loading mechanics.
@@ -34,6 +44,7 @@ import java.lang.ref.SoftReference
  * @since 1.1
  */
 @CompileStatic
+@Slf4j
 class Metadata implements ConfigMap, Cloneable {
     private static final long serialVersionUID = -582452926111226898L
     public static final String FILE = "application.yml"
@@ -47,10 +58,11 @@ class Metadata implements ConfigMap, Cloneable {
     private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata")
     public static final String BUILD_INFO_FILE = "META-INF/grails.build.info"
 
+    private PropertySourcePropertyResolver resolver = new PropertySourcePropertyResolver()
     private Resource metadataFile
     private boolean warDeployed
     private String servletVersion = DEFAULT_SERVLET_VERSION
-    private Object source
+    private Map<String, Object> finalMap = null
 
     private Metadata() {
         loadFromDefault()
@@ -70,15 +82,9 @@ class Metadata implements ConfigMap, Cloneable {
     }
 
     private Metadata(Map<String, String> properties) {
-        merge(this, properties)
+        Map<String, Object> propertiesMap = new LinkedHashMap<String, Object>(properties)
+        resolver.addPropertySource(PropertySource.of(propertiesMap))
         afterLoading()
-    }
-
-    /**
-     * @return The source of the metadata
-     */
-    Object getSource() {
-        return source
     }
 
     Resource getMetadataFile() {
@@ -98,7 +104,7 @@ class Metadata implements ConfigMap, Cloneable {
 
     private void afterLoading() {
         // allow override via system properties
-        merge(this, new LinkedHashMap(System.properties).findAll { key, val -> val })
+        resolver.addPropertySource(new SystemPropertiesPropertySource())
         def value = get(WAR_DEPLOYED)
         warDeployed = value != null ? Boolean.valueOf(value.toString()) : false
     }
@@ -124,7 +130,7 @@ class Metadata implements ConfigMap, Cloneable {
             }
             if (url != null) {
                 url.withInputStream { input ->
-                    this.@source = loadYml(input)
+                    resolver.addPropertySource(PropertySource.of("application", new YamlPropertySourceLoader().read("application", input)))
                 }
                 this.metadataFile = new UrlResource(url)
             }
@@ -133,7 +139,8 @@ class Metadata implements ConfigMap, Cloneable {
             if (url != null) {
                 if (IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
                     url.withInputStream { input ->
-                        loadAndMerge(input)
+                        def buildInfo = new PropertiesPropertySourceLoader().read("build.info", input)
+                        resolver.addPropertySource(PropertySource.of("build.info", buildInfo))
                     }
                 }
             } else {
@@ -142,7 +149,8 @@ class Metadata implements ConfigMap, Cloneable {
                 if (url != null) {
                     if (IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
                         url.withInputStream { input ->
-                            loadAndMerge(input)
+                            def buildInfo = new PropertiesPropertySourceLoader().read("build.info", input)
+                            resolver.addPropertySource(PropertySource.of("build.info", buildInfo))
                         }
                     }
                 }
@@ -154,28 +162,8 @@ class Metadata implements ConfigMap, Cloneable {
         }
     }
 
-    private void loadAndMerge(InputStream input) {
-        try {
-            def props = new Properties()
-            props.load(input)
-            merge(this, props)
-        } catch (Throwable e) {
-            // ignore
-        }
-    }
-
-    private Object loadYml(InputStream input) {
-        Yaml yaml = new Yaml(new SafeConstructor())
-        def loadedYaml = yaml.loadAll(input)
-        List result = []
-        for (Object yamlObject : loadedYaml) {
-            if (yamlObject instanceof Map) { // problem here with CompileStatic
-                result.add(yamlObject)
-                merge(this, (Map) yamlObject)
-            }
-        }
-
-        return result
+    private void loadYml(InputStream input) {
+        resolver.addPropertySource(PropertySource.of(new YamlPropertySourceLoader().read("metadata", input)))
     }
 
     private void loadFromInputStream(InputStream inputStream) {
@@ -335,6 +323,120 @@ class Metadata implements ConfigMap, Cloneable {
         return metadata == null ? null : metadata.get()
     }
 
+    @Override
+    int size() {
+        return getAllProperties().size()
+    }
+
+    @Override
+    boolean isEmpty() {
+        return getAllProperties().isEmpty()
+    }
+
+    @Override
+    boolean containsKey(Object key) {
+        return resolver.containsProperty(key.toString())
+    }
+
+    @Override
+    boolean containsValue(Object value) {
+        return getAllProperties().containsValue(value)
+    }
+
+    @Override
+    Object get(Object key) {
+        return resolver.getProperty(key.toString(), Object).orElse(null)
+    }
+
+    @Override
+    Object put(String key, Object value) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object remove(Object key) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    void putAll(Map<? extends String, ?> m) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    void clear() {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Set<String> keySet() {
+        return getAllProperties().keySet()
+    }
+
+    @Override
+    Collection<Object> values() {
+        return getAllProperties().values()
+    }
+
+    @Override
+    Set<Entry<String, Object>> entrySet() {
+        return getAllProperties().entrySet()
+    }
+
+    @Override
+    Object getOrDefault(Object key, Object defaultValue) {
+        return resolver.getProperty(key.toString(), Object).orElse(defaultValue)
+    }
+
+    @Override
+    void forEach(BiConsumer<? super String, ? super Object> action) {
+        getAllProperties().forEach(action)
+    }
+
+    @Override
+    void replaceAll(BiFunction<? super String, ? super Object, ?> function) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object putIfAbsent(String key, Object value) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    boolean remove(Object key, Object value) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    boolean replace(String key, Object oldValue, Object newValue) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object replace(String key, Object value) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object computeIfAbsent(String key, Function<? super String, ?> mappingFunction) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object computeIfPresent(String key, BiFunction<? super String, ? super Object, ?> remappingFunction) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object compute(String key, BiFunction<? super String, ? super Object, ?> remappingFunction) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
+
+    @Override
+    Object merge(String key, Object value, BiFunction<? super Object, ? super Object, ?> remappingFunction) {
+        throw new UnsupportedOperationException("Metadata cannot be mutated")
+    }
 
     static class FinalReference<T> extends SoftReference<T> {
         private final T ref
@@ -351,8 +453,18 @@ class Metadata implements ConfigMap, Cloneable {
     }
 
     @Override
+    def getAt(Object key) {
+        return null
+    }
+
+    @Override
+    void setAt(Object key, Object value) {
+
+    }
+
+    @Override
     <T> T getProperty(String key, Class<T> targetType) {
-        return get(key)?.asType(targetType)
+        return resolver.getProperty(key, targetType).orElse(null)
     }
 
     @Override
@@ -374,20 +486,29 @@ class Metadata implements ConfigMap, Cloneable {
     }
 
     @Override
+    Object navigate(String... path) {
+        return ((Optional<Object>) resolver.getProperty(path.join("."), Object)).orElse(null)
+    }
+
+    @Override
     Iterator<Map.Entry<String, Object>> iterator() {
         return entrySet().iterator()
     }
 
-    def merge(Map<String, Object> lhs = [:], Map<String, Object> rhs) {
-        return rhs.inject((Map) lhs.clone()) { map, Map.Entry<String, Object> entry ->
-            if (map[entry.key] instanceof Map && entry.value instanceof Map) {
-                map[entry.key] = merge((Map) map[entry.key], (Map) entry.value)
-            } else if (map[entry.key] instanceof Collection && entry.value instanceof Collection) {
-                map[entry.key] += entry.value
-            } else {
-                map[entry.key] = entry.value
-            }
-            return map
+    @Override
+    void forEach(Consumer<? super Entry<String, Object>> action) {
+        entrySet().forEach(action)
+    }
+
+    @Override
+    Spliterator<Entry<String, Object>> spliterator() {
+        return entrySet().spliterator()
+    }
+
+    private Map<String, Object> getAllProperties() {
+        if (finalMap == null) {
+            finalMap = resolver.getAllProperties(StringConvention.RAW, MapFormat.MapTransformation.NESTED)
         }
+        return finalMap
     }
 }

@@ -4,6 +4,7 @@ dependencies {
     api ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
     api ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
     api "org.yaml:snakeyaml:1.29"
+    api "io.micronaut:micronaut-inject:$micronautVersion"
     
     compileOnly("io.methvin:directory-watcher:$methvinDirectoryWatcherVersion")
     compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
