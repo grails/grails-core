@@ -26,6 +26,7 @@ import io.micronaut.context.env.SystemPropertiesPropertySource
 import io.micronaut.context.env.yaml.YamlPropertySourceLoader
 import io.micronaut.core.convert.format.MapFormat
 import io.micronaut.core.naming.conventions.StringConvention
+import io.micronaut.core.type.Argument
 import io.micronaut.core.value.PropertyResolver
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
@@ -351,7 +352,10 @@ class Metadata implements ConfigMap, Cloneable {
 
     @Override
     Object put(String key, Object value) {
-        throw new UnsupportedOperationException("Metadata cannot be mutated")
+        resolver.addPropertySource(PropertySource.of([(key): value]))
+        if (finalMap != null ) {
+            finalMap.put(key, value)
+        }
     }
 
     @Override
@@ -361,7 +365,10 @@ class Metadata implements ConfigMap, Cloneable {
 
     @Override
     void putAll(Map<? extends String, ?> m) {
-        throw new UnsupportedOperationException("Metadata cannot be mutated")
+        resolver.addPropertySource(PropertySource.of(m))
+        if (finalMap != null ) {
+            finalMap.putAll(m)
+        }
     }
 
     @Override
