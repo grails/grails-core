@@ -13,6 +13,6 @@
         "^org\\.codehaus\\.groovy"
       ],
       "groupName": "groovy monorepo"
-    },
+    }
   ]
 }
