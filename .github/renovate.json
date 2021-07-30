@@ -7,6 +7,12 @@
     {
       "matchPackagePatterns": ["*"],
       "allowedVersions": "!/SNAPSHOT$/"
-    }
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.codehaus\\.groovy"
+      ],
+      "groupName": "groovy monorepo"
+    },
   ]
 }
