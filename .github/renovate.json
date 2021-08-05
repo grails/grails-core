@@ -13,6 +13,14 @@
         "^org\\.codehaus\\.groovy"
       ],
       "groupName": "groovy monorepo"
+    },
+    {
+      "matchPackageNames": [
+        "io.micronaut:micronaut-runtime",
+        "io.micronaut:micronaut-inject-java",
+        "io.micronaut:micronaut-inject-groovy"
+      ],
+      "groupName": "Micronaut monorepo"
     }
   ]
 }
