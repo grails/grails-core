@@ -21,6 +21,12 @@
         "io.micronaut:micronaut-inject-groovy"
       ],
       "groupName": "Micronaut monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^io\\.micronaut\\.spring"
+      ],
+      "groupName": "Micronaut Spring monorepo"
     }
   ]
 }
