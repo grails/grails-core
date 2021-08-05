@@ -16,6 +16,7 @@
     },
     {
       "matchPackageNames": [
+        "io.micronaut:micronaut-inject",
         "io.micronaut:micronaut-runtime",
         "io.micronaut:micronaut-inject-java",
         "io.micronaut:micronaut-inject-groovy"
