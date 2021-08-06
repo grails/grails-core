@@ -21,6 +21,12 @@
       "groupName": "apache-ant monorepo"
     },
     {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.tomcat"
+      ],
+      "groupName": "apache-tomcat monorepo"
+    },
+    {
       "matchPackageNames": [
         "io.micronaut:micronaut-inject",
         "io.micronaut:micronaut-runtime",
