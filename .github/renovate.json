@@ -15,6 +15,12 @@
       "groupName": "groovy monorepo"
     },
     {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.ant"
+      ],
+      "groupName": "apache-ant monorepo"
+    },
+    {
       "matchPackageNames": [
         "io.micronaut:micronaut-inject",
         "io.micronaut:micronaut-runtime",
