@@ -264,6 +264,10 @@ allprojects {
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
     }
+
+    tasks.withType(GroovyCompile).configureEach {
+        options.incremental = true
+    }
 }
 
 apply from: "gradle/idea.gradle"
