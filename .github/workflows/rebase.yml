@@ -20,7 +20,7 @@ jobs:
           reactions: '+1'
       - name: Automatic Rebase
         id: automatic-rebase
-        uses: cirrus-actions/rebase@1.4
+        uses: cirrus-actions/rebase@1.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Reply Comment with Failure

@@ -7,6 +7,39 @@
     {
       "matchPackagePatterns": ["*"],
       "allowedVersions": "!/SNAPSHOT$/"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.codehaus\\.groovy"
+      ],
+      "groupName": "groovy monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.ant"
+      ],
+      "groupName": "apache-ant monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.tomcat"
+      ],
+      "groupName": "apache-tomcat monorepo"
+    },
+    {
+      "matchPackageNames": [
+        "io.micronaut:micronaut-inject",
+        "io.micronaut:micronaut-runtime",
+        "io.micronaut:micronaut-inject-java",
+        "io.micronaut:micronaut-inject-groovy"
+      ],
+      "groupName": "Micronaut monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^io\\.micronaut\\.spring"
+      ],
+      "groupName": "Micronaut Spring monorepo"
     }
   ]
 }
