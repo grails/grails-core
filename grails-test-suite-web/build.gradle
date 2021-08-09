@@ -59,7 +59,7 @@ dependencies {
     testImplementation 'taglibs:standard:1.1.2'
     testImplementation "javax.servlet:jstl:1.2"
 
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'
@@ -82,7 +82,7 @@ dependencies {
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
