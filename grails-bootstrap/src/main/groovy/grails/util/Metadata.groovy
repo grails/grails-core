@@ -103,6 +103,7 @@ class Metadata extends PropertySourcePropertyResolver {
         if (!containsProperty(APPLICATION_NAME)) {
             final Map<String, Object> m = [(APPLICATION_NAME): (Object) "grailsApplication"]
             addPropertySource("appName", m)
+            resetCaches()
         }
         def value = get(WAR_DEPLOYED)
         warDeployed = value != null ? Boolean.valueOf(value.toString()) : false
