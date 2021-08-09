@@ -16,7 +16,6 @@
 package grails.util
 
 import grails.io.IOUtils
-import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.micronaut.context.env.PropertiesPropertySourceLoader
 import io.micronaut.context.env.PropertySource
@@ -37,7 +36,6 @@ import java.lang.ref.SoftReference
  * @author Graeme Rocher
  * @since 1.1
  */
-@CompileStatic
 @Slf4j
 class Metadata extends PropertySourcePropertyResolver {
     private static final long serialVersionUID = -582452926111226898L
@@ -101,7 +99,7 @@ class Metadata extends PropertySourcePropertyResolver {
         // allow override via system properties
         PropertySource systemPropertiesPropertySource = new SystemPropertiesPropertySource()
         addPropertySource(systemPropertiesPropertySource)
-        
+
         if (!containsProperty(APPLICATION_NAME)) {
             final Map<String, Object> m = [(APPLICATION_NAME): (Object) "grailsApplication"]
             addPropertySource("appName", m)
@@ -329,7 +327,7 @@ class Metadata extends PropertySourcePropertyResolver {
     }
 
     Object get(Object key) {
-        return getProperty(key.toString(), Object).orElse(null)
+        return getProperty(key.toString(), Object.class, null)
     }
 
     void clear() {
@@ -347,7 +345,7 @@ class Metadata extends PropertySourcePropertyResolver {
             loadFromDefault()
         }
     }
-    
+
     private void clearCatalog(Map<String, Object>[] catalog) {
         synchronized (catalog) {
             for (int i = 0; i < catalog.length; i++) {
