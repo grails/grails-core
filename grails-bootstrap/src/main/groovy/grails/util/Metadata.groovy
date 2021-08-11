@@ -16,6 +16,7 @@
 package grails.util
 
 import grails.io.IOUtils
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import io.micronaut.context.env.PropertiesPropertySourceLoader
 import io.micronaut.context.env.PropertySource
@@ -37,11 +38,13 @@ import java.lang.ref.SoftReference
  * @since 1.1
  */
 @Slf4j
+@CompileStatic
 class Metadata extends PropertySourcePropertyResolver {
     private static final long serialVersionUID = -582452926111226898L
     public static final String FILE = "application.yml"
     public static final String APPLICATION_VERSION = "info.app.version"
     public static final String APPLICATION_NAME = "info.app.name"
+    public static final String DEFAULT_APPLICATION_NAME = "grailsApplication"
     public static final String APPLICATION_GRAILS_VERSION = "info.app.grailsVersion"
     public static final String SERVLET_VERSION = "info.app.servletVersion"
     public static final String WAR_DEPLOYED = "info.app.warDeployed"
@@ -101,12 +104,11 @@ class Metadata extends PropertySourcePropertyResolver {
         addPropertySource(systemPropertiesPropertySource)
 
         if (!containsProperty(APPLICATION_NAME)) {
-            final Map<String, Object> m = [(APPLICATION_NAME): (Object) "grailsApplication"]
+            final Map<String, Object> m = [(APPLICATION_NAME): (Object) DEFAULT_APPLICATION_NAME]
             addPropertySource("appName", m)
             resetCaches()
         }
-        def value = get(WAR_DEPLOYED)
-        warDeployed = value != null ? Boolean.valueOf(value.toString()) : false
+        warDeployed = ((PropertyResolver) this).getProperty(WAR_DEPLOYED, Boolean.class).orElse(false)
     }
 
     /**
@@ -249,28 +251,29 @@ class Metadata extends PropertySourcePropertyResolver {
      * @return The application version
      */
     String getApplicationVersion() {
-        return get(APPLICATION_VERSION)?.toString()
+        return ((PropertyResolver) this).getProperty(APPLICATION_VERSION, String.class).orElse(null)
     }
 
     /**
      * @return The Grails version used to build the application
      */
     String getGrailsVersion() {
-        return get(APPLICATION_GRAILS_VERSION)?.toString() ?: getClass().getPackage().getImplementationVersion()
+        return ((PropertyResolver) this).getProperty(APPLICATION_GRAILS_VERSION, String.class)
+                .orElse(getClass().getPackage().getImplementationVersion())
     }
 
     /**
      * @return The environment the application expects to run in
      */
     String getEnvironment() {
-        return get(Environment.KEY)?.toString()
+        return ((PropertyResolver) this).getProperty(Environment.KEY, String.class).orElse(null)
     }
 
     /**
      * @return The application name
      */
     String getApplicationName() {
-        return get(APPLICATION_NAME)?.toString()
+        return ((PropertyResolver) this).getProperty(APPLICATION_NAME, String.class).orElse(DEFAULT_APPLICATION_NAME)
     }
 
 
@@ -278,12 +281,11 @@ class Metadata extends PropertySourcePropertyResolver {
      * @return The version of the servlet spec the application was created for
      */
     String getServletVersion() {
-        String servletVersion = get(SERVLET_VERSION)?.toString()
-        if (servletVersion == null) {
-            servletVersion = System.getProperty(SERVLET_VERSION) != null ? System.getProperty(SERVLET_VERSION) : this.servletVersion
-            return servletVersion
+        Optional<String> servletVersion = ((PropertyResolver) this).getProperty(SERVLET_VERSION, String.class)
+        if (!servletVersion.isPresent()) {
+            servletVersion = Optional.of(System.getProperty(SERVLET_VERSION))
         }
-        return servletVersion
+        servletVersion.orElse(DEFAULT_SERVLET_VERSION)
     }
 
 
@@ -327,8 +329,9 @@ class Metadata extends PropertySourcePropertyResolver {
         return containsProperty(key.toString())
     }
 
+    @Deprecated
     Object get(Object key) {
-        return getProperty(key.toString(), Object.class, null)
+        return ((PropertyResolver) this).getProperty(key.toString(), Object.class).orElse(null)
     }
 
     void clear() {
@@ -375,12 +378,12 @@ class Metadata extends PropertySourcePropertyResolver {
 
     @Override
     <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        return getProperty(key, targetType).orElse(defaultValue)
+        return ((PropertyResolver) this).getProperty(key, targetType).orElse(defaultValue)
     }
 
     @Override
     <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
-        return getProperty(key, Object.class)
+        return ((PropertyResolver) this).getProperty(key, Object.class)
                 .map(value -> value.asType(targetType))
                 .orElseThrow(() -> new IllegalStateException("Value for key [" + key + "] cannot be resolved"))
     }
