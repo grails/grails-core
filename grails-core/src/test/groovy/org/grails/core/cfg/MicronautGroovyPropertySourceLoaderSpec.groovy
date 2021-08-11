@@ -109,7 +109,7 @@ info:
         then:
         finalMap.size() == 5
         finalMap.containsKey("grailsHomeVar") & !finalMap.get("grailsHomeVar")
-        finalMap.containsKey("appNameVar") & !finalMap.get("appNameVar")
+        finalMap.containsKey("appNameVar") & finalMap.get("appNameVar") == Metadata.DEFAULT_APPLICATION_NAME
         finalMap.containsKey("appVersionVar")  & !finalMap.get("appVersionVar")
         finalMap.get("userHomeVar")
         finalMap.get("grails.gorm.default.constraints") instanceof Closure
