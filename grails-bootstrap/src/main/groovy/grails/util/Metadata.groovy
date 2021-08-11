@@ -392,4 +392,9 @@ class Metadata extends PropertySourcePropertyResolver {
     Object navigate(String... path) {
         return ((Optional<Object>) ((PropertyResolver) this).getProperty(path.join(".").toString(), Object)).orElse(null)
     }
+
+    @Deprecated
+    Object getProperty(String propertyName) {
+        return get(propertyName)
+    }
 }
