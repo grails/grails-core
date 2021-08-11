@@ -48,7 +48,7 @@ class EnvironmentTests {
             }
         }
 
-        assertEquals "dev", Environment.executeForEnvironment(Environment.DEVELOPMENT) {DefaultGrailsPluginManagerSpec
+        assertEquals "dev", Environment.executeForEnvironment(Environment.DEVELOPMENT) {
             environments {
                 production {
                     "prod"
