@@ -18,6 +18,13 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
       - uses: gradle/wrapper-validation-action@v1
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
@@ -37,9 +44,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to Sonatype OSSRH
+        if: success()
         env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
@@ -61,7 +67,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          SNAPSHOT_SUFFIX: .BUILD-SNAPSHOT
+          SNAPSHOT_SUFFIX: -SNAPSHOT
       - name: Upload artifacts to the Github release
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
@@ -82,6 +88,16 @@ jobs:
         with:
           workflow: Release
           repo: grails/grails-doc
+          ref: ${{ steps.extract_branch.outputs.value }}
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
+      - name: Invoke grails-static-website release workflow
+        if: success()
+        id: grails_static_website
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Release
+          repo: grails/grails-static-website
           ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
