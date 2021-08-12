@@ -18,7 +18,7 @@ package grails.util
 import groovy.transform.CompileStatic
 
 /**
- * A category for use with maps that want type conversion capabilities.
+ * TypeConvertingMap is a Map with type conversion capabilities.
  *
  * Type converting maps have no inherent ordering. Two maps with identical entries
  * but arranged in a different order internally are considered equal.

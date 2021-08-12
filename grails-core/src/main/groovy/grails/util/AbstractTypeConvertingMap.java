@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * An category for use with maps that want type conversion capabilities
+ * AbstractTypeConvertingMap is a Map with type conversion capabilities.
  *
  * Type converting maps have no inherent ordering. Two maps with identical entries
  * but arranged in a different order internally are considered equal.
