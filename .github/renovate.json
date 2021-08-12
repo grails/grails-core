@@ -28,6 +28,14 @@
     },
     {
       "matchPackageNames": [
+        "org.grails:grails-testing-support",
+        "org.grails:grails-web-testing-support",
+        "org.grails:grails-gorm-testing-support"
+      ],
+      "groupName": "grails-testing-support monorepo"
+    },
+    {
+      "matchPackageNames": [
         "io.micronaut:micronaut-inject",
         "io.micronaut:micronaut-runtime",
         "io.micronaut:micronaut-inject-java",
