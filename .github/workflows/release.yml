@@ -98,6 +98,16 @@ jobs:
           ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
+      - name: Invoke grails-static-website release workflow
+        if: success()
+        id: grails_static_website
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Release
+          repo: grails/grails-static-website
+          ref: ${{ steps.extract_branch.outputs.value }}
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Grails SDK Release
         if: success()
         run: |
