@@ -27,6 +27,12 @@
       "groupName": "apache-tomcat monorepo"
     },
     {
+      "matchPackagePatterns": [
+        "^io\\.micronaut\\"
+      ],
+      "groupName": "micronaut monorepo"
+    },
+    {
       "matchPackageNames": [
         "org.grails:grails-testing-support",
         "org.grails:grails-web-testing-support",
