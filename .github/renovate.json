@@ -28,7 +28,7 @@
     },
     {
       "matchPackagePatterns": [
-        "^io\\.micronaut\\"
+        "^io\\.micronaut"
       ],
       "groupName": "micronaut monorepo"
     },
