@@ -199,7 +199,7 @@ class GrailsApp extends SpringApplication {
     }
 
     protected ApplicationContextBuilder newMicronautContextBuilder() {
-        return ApplicationContext.build()
+        return ApplicationContext.builder()
     }
 
     @Override

@@ -10,6 +10,7 @@ dependencies {
     annotationProcessor "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
     annotationProcessor "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
     api "io.micronaut:micronaut-inject:$micronautVersion"
+    api "javax.inject:javax.inject:1"
     api "io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion"
     api "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
     api "io.micronaut:micronaut-runtime:$micronautVersion"
