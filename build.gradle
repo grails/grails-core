@@ -36,6 +36,12 @@ ext {
                 names:['javax.annotation'],
                 modules:['api']
         ],
+        'jakarta.annotation-api': [
+                version: $jakartaAnnotationApiVersion,
+                group:'jakarta.annotation',
+                names:['jakarta.annotation-api'],
+                modules:[]
+        ],
         'micronaut': [
                 version: micronautVersion,
                 group:'io.micronaut',
