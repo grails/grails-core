@@ -17,7 +17,6 @@ package grails.util
 
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 import io.micronaut.context.env.PropertiesPropertySourceLoader
 import io.micronaut.context.env.PropertySource
 import io.micronaut.context.env.PropertySourcePropertyResolver
@@ -37,7 +36,6 @@ import java.lang.ref.SoftReference
  * @author Graeme Rocher
  * @since 1.1
  */
-@Slf4j
 @CompileStatic
 class Metadata extends PropertySourcePropertyResolver {
     private static final long serialVersionUID = -582452926111226898L
