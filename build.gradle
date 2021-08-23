@@ -36,7 +36,7 @@ ext {
                 names:['javax.annotation'],
                 modules:['api']
         ],
-        'jakarta.annotation-api': [
+        'jakarta.annotation': [
                 version: jakartaAnnotationApiVersion,
                 group:'jakarta.annotation',
                 names:['jakarta.annotation-api'],
