@@ -36,11 +36,11 @@ ext {
                 names:['javax.annotation'],
                 modules:['api']
         ],
-        'jakarta.annotation': [
+        'jakarta-annotation': [
                 version: jakartaAnnotationApiVersion,
                 group:'jakarta.annotation',
                 names:['jakarta.annotation-api'],
-                modules:[]
+                modules:['']
         ],
         'micronaut': [
                 version: micronautVersion,
