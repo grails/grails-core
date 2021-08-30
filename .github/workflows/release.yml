@@ -98,7 +98,7 @@ jobs:
         with:
           workflow: Release
           repo: grails/grails-static-website
-          ref: ${{ steps.extract_branch.outputs.value }}
+          ref: master
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Grails SDK Release
