@@ -265,6 +265,21 @@ public class JSONObject implements JSONElement, Map {
 
 
     /**
+     * Get the value object associated with a key.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key does not exist.
+     * @return The object associated with the key. If the key is not found then return the default value.
+     */
+    public Object get(String key, Object defValue) {
+        try {
+            return get(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
+    }
+
+    /**
      * Get the boolean value associated with a key.
      *
      * @param key A key string.
@@ -284,6 +299,23 @@ public class JSONObject implements JSONElement, Map {
         }
         throw new JSONException("JSONObject[" + quote(key) +
                 "] is not a Boolean.");
+    }
+
+
+    /**
+     * Get the boolean value associated with a key.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key does not exist or if the value is not a Boolean or the String
+     *                 "true" or "false".
+     * @return The truth.
+     */
+    public boolean getBoolean(String key, boolean defValue) {
+        try {
+            return getBoolean(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
     }
 
 
@@ -308,6 +340,22 @@ public class JSONObject implements JSONElement, Map {
 
 
     /**
+     * Get the double value associated with a key.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key does not exist or if the value is not a Number object and cannot be
+     *                converted to a number.
+     * @return The numeric value.
+     */
+    public double getDouble(String key, double defValue) {
+        try {
+            return getDouble(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
+    }
+
+    /**
      * Get the int value associated with a key. If the number value is too
      * large for an int, it will be clipped.
      *
@@ -320,6 +368,23 @@ public class JSONObject implements JSONElement, Map {
         Object o = get(key);
         return o instanceof Number ?
                 ((Number) o).intValue() : (int) getDouble(key);
+    }
+
+
+    /**
+     * Get the int value associated with a key. If the number value is too
+     * large for an int, it will be clipped.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key is not found or if the value cannot be converted to an integer.
+     * @return The integer value.
+     */
+    public int getInt(String key, int defValue) {
+        try {
+            return getInt(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
     }
 
 
@@ -342,6 +407,22 @@ public class JSONObject implements JSONElement, Map {
 
 
     /**
+     * Get the JSONArray value associated with a key.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key is not found or if the value is not a JSONArray.
+     * @return A JSONArray which is the value.
+     */
+    public JSONArray getJSONArray(String key, JSONArray defValue) {
+        try {
+            return getJSONArray(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
+    }
+
+
+    /**
      * Get the JSONObject value associated with a key.
      *
      * @param key A key string.
@@ -356,6 +437,22 @@ public class JSONObject implements JSONElement, Map {
         }
         throw new JSONException("JSONObject[" + quote(key) +
                 "] is not a JSONObject.");
+    }
+
+
+    /**
+     * Get the JSONObject value associated with a key.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key is not found or if the value is not a JSONObject.
+     * @return A JSONObject which is the value.
+     */
+    public JSONObject getJSONObject(String key, JSONObject defValue) {
+        try {
+            return getJSONObject(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
     }
 
 
@@ -376,6 +473,23 @@ public class JSONObject implements JSONElement, Map {
 
 
     /**
+     * Get the long value associated with a key. If the number value is too
+     * long for a long, it will be clipped.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key is not found or if the value cannot be converted to a long.
+     * @return The long value.
+     */
+    public long getLong(String key, long defValue) {
+        try {
+            return getLong(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
+    }
+
+
+    /**
      * Get the string associated with a key.
      *
      * @param key A key string.
@@ -384,6 +498,22 @@ public class JSONObject implements JSONElement, Map {
      */
     public String getString(String key) throws JSONException {
         return get(key).toString();
+    }
+
+
+    /**
+     * Get the string associated with a key.
+     *
+     * @param key A key string.
+     * @param defValue Value to return if the key does not exist.
+     * @return A string which is the value.
+     */
+    public String getString(String key, String defValue) {
+        try {
+            return getString(key);
+        } catch (JSONException ignore) {
+            return defValue;
+        }
     }
 
 
