@@ -16,7 +16,7 @@ buildscript {
     }
 }
 
-import groovyx.net.http.RESTClient
+
 import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
@@ -65,6 +65,12 @@ ext {
                 group:'io.micronaut.spring',
                 names:['micronaut-spring'],
                 modules:['spring', 'context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+        ],
+        'mongodb': [
+                version: mongodbJavaDriverVersion,
+                group: 'org.mongodb',
+                names: ['mongodb-driver'],
+                modules: ['core', 'sync']
         ],
         gorm: [
             version: datastoreVersion,
