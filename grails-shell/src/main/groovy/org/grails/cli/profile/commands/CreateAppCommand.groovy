@@ -28,13 +28,22 @@ import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.GrailsCli
-import org.grails.cli.profile.*
+import org.grails.cli.profile.CommandDescription
+import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.Feature
+import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.cli.profile.commands.io.GradleDependency
 import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 
-import java.nio.file.*
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 
 /**
@@ -55,6 +64,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
     protected static final String APPLICATION_YML = "application.yml"
     protected static final String BUILD_GRADLE = "build.gradle"
+    protected static final String GRADLE_PROPERTIES = "gradle.properties"
     public static final String UNZIP_PROFILE_TEMP_DIR = "tempgrailsapp"
 
     ProfileRepository profileRepository
@@ -154,6 +164,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     protected void appendFeatureFiles(File skeletonDir) {
         def ymlFiles = findAllFilesByName(skeletonDir, APPLICATION_YML)
         def buildGradleFiles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
+        def gradlePropertiesFiles = findAllFilesByName(skeletonDir, GRADLE_PROPERTIES)
 
         ymlFiles.each { File newYml ->
             File oldYml = new File(getDestinationDirectory(newYml), APPLICATION_YML)
@@ -168,6 +179,15 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         buildGradleFiles.each { File srcFile ->
             File destFile = new File(getDestinationDirectory(srcFile), BUILD_GRADLE)
             destFile.text = destFile.getText(ENCODING) + System.lineSeparator() + srcFile.getText(ENCODING)
+        }
+
+        gradlePropertiesFiles.each { File srcFile->
+            File destFile = new File(getDestinationDirectory(srcFile), GRADLE_PROPERTIES)
+            if (!destFile.exists()) {
+                destFile.createNewFile()
+            }
+            destFile.append(srcFile.getText(ENCODING))
+//            destFile.text = destFile.getText(ENCODING) + srcFile.getText(ENCODING)
         }
     }
 
@@ -411,7 +431,11 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 .unique()
                 .join(ln)
 
-        def buildRepositories = profile.buildRepositories.collect(repositoryUrl.curry(8)).unique().join(ln)
+        def buildRepositories = profile.buildRepositories
+        for (Feature f in features) {
+            buildRepositories.addAll(f.getBuildRepositories())
+        }
+        buildRepositories = buildRepositories.collect(repositoryUrl.curry(8)).unique().join(ln)
 
         buildDependencies = buildDependencies.collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
@@ -609,16 +633,16 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         Set<File> sourceBuildGradles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
 
         sourceBuildGradles.each { File srcFile ->
-            File srcDir = srcFile.parentFile
-            File destDir = getDestinationDirectory(srcFile)
-            File destFile = new File(destDir, BUILD_GRADLE)
+            final File srcDir = srcFile.parentFile
+            final File destDir = getDestinationDirectory(srcFile)
+            final File destFile = new File(destDir, BUILD_GRADLE)
 
             ant.copy(file:"${srcDir}/.gitignore", todir: destDir, failonerror:false)
 
             if (!destFile.exists()) {
                 ant.copy file:srcFile, tofile:destFile
             } else if (buildMergeProfileNames.contains(participatingProfile.name)) {
-                def concatFile = "${destDir}/concat.gradle"
+                def concatFile = "${destDir}/concat-build.gradle"
                 ant.move(file:destFile, tofile: concatFile)
                 ant.concat([destfile: destFile, fixlastline: true], {
                     path {
@@ -627,6 +651,27 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                     }
                 })
                 ant.delete(file: concatFile, failonerror: false)
+            }
+        }
+
+        Set<File> sourceGradleProperties = findAllFilesByName(skeletonDir, GRADLE_PROPERTIES)
+
+        sourceGradleProperties.each { File srcFile ->
+            File destDir = getDestinationDirectory(srcFile)
+            File destFile = new File(destDir, GRADLE_PROPERTIES)
+
+            if (!destFile.exists()) {
+                ant.copy file: srcFile, tofile: destFile
+            } else {
+                def concatGradlePropertiesFile = "${destDir}/concat-gradle.properties"
+                ant.move(file: destFile, tofile: concatGradlePropertiesFile)
+                ant.concat([destfile: destFile, fixlastline: true], {
+                    path {
+                        pathelement location: concatGradlePropertiesFile
+                        pathelement location: srcFile
+                    }
+                })
+                ant.delete(file: concatGradlePropertiesFile, failonerror: false)
             }
         }
 
@@ -646,6 +691,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                     exclude name: exc
                 }
                 exclude name: "**/"+BUILD_GRADLE
+                exclude name: "**/"+GRADLE_PROPERTIES
                 binaryFileExtensions.each { ext ->
                     exclude(name: "**/*.${ext}")
                 }
