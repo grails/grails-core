@@ -21,6 +21,7 @@ import groovy.ant.AntBuilder;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.DefaultLogger;
+import org.apache.tools.ant.MagicNames;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.types.LogLevel;
@@ -50,7 +51,7 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
         final Project project = new Project();
 
         final ProjectHelper helper = ProjectHelper.getProjectHelper();
-        project.addReference(ProjectHelper.PROJECTHELPER_REFERENCE, helper);
+        project.addReference(MagicNames.REFID_PROJECT_HELPER, helper);
         helper.getImportStack().addElement("AntBuilder"); // import checks that stack is not empty
 
         addGrailsConsoleBuildListener(project);
