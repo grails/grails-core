@@ -54,6 +54,12 @@
         "^io\\.micronaut\\.spring"
       ],
       "groupName": "Micronaut Spring monorepo"
-    }
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.maven\\.resolver"
+      ],
+      "groupName": "apache-maven-resolver monorepo"
+    },
   ]
 }
