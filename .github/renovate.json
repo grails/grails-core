@@ -60,6 +60,6 @@
         "^org\\.apache\\.maven\\.resolver"
       ],
       "groupName": "apache-maven-resolver monorepo"
-    },
+    }
   ]
 }
