@@ -16,7 +16,7 @@ dependencies {
                 project(':grails-spring')
 
     testImplementation "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.1.0.M1", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.1.0.RC3", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -57,7 +57,7 @@ dependencies {
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
@@ -67,8 +67,8 @@ dependencies {
 
 test {
     maxParallelForks = 2
-    forkEvery = isTravisBuild ? 25 : 100
-    if(!isTravisBuild) {
+    forkEvery = isCiBuild ? 25 : 100
+    if(!isCiBuild) {
         maxHeapSize = '2048m'
     }
     excludes = ['**/GrailsDomainBinderTests.class',

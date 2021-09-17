@@ -15,15 +15,19 @@
 package org.grails.plugins.testing
 
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * Test case for {@link org.grails.plugins.testing.GrailsMockHttpServletResponse}.
  */
-class GrailsMockHttpServletResponseTests extends GroovyTestCase {
+class GrailsMockHttpServletResponseTests {
     /**
      * Tests that the left-shift operator appends the given text to the
      * response output.
      */
+    @Test
     void testLeftShift() {
         def testResponse = new GrailsMockHttpServletResponse()
         assertEquals "", testResponse.contentAsString

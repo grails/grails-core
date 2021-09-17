@@ -4,9 +4,9 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath "commons-io:commons-io:2.8.0"
-        classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
-        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
+        classpath "commons-io:commons-io:2.11.0"
+        classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.2"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
@@ -16,7 +16,7 @@ buildscript {
     }
 }
 
-import groovyx.net.http.RESTClient
+
 import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
@@ -27,7 +27,7 @@ ext {
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
     isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
-    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    isCiBuild = System.getenv().get("TRAVIS") == 'true' || System.getenv().get("CI") as Boolean
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [
         'javax.annotation-api': [
@@ -35,6 +35,12 @@ ext {
                 group:'javax.annotation',
                 names:['javax.annotation'],
                 modules:['api']
+        ],
+        'jakarta-annotation': [
+                version: jakartaAnnotationApiVersion,
+                group:'jakarta.annotation',
+                names:['jakarta.annotation-api'],
+                modules:['']
         ],
         'micronaut': [
                 version: micronautVersion,
@@ -59,6 +65,12 @@ ext {
                 group:'io.micronaut.spring',
                 names:['micronaut-spring'],
                 modules:['spring', 'context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+        ],
+        'mongodb': [
+                version: mongodbJavaDriverVersion,
+                group: 'org.mongodb',
+                names: ['mongodb-driver'],
+                modules: ['core', 'sync']
         ],
         gorm: [
             version: datastoreVersion,
@@ -277,7 +289,7 @@ subprojects { project ->
     }
 
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
-    ext.isCiBuild = project.hasProperty("isCiBuild")
+    ext.isCiBuild = project.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
     ext.pomInfo = {
         delegate.name 'Grails'
         delegate.description 'Grails Web Application Framework'
@@ -466,9 +478,9 @@ subprojects { project ->
         api groovyDependency
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
-        testImplementation "org.junit.platform:junit-platform-runner:1.7.1"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.0"
+        testImplementation "org.junit.platform:junit-platform-runner:1.8.0"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.0"
 
         if (project.name != "grails-docs") {
             // Logging
@@ -501,7 +513,7 @@ subprojects { project ->
             showStackTraces true
         }
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
-        if (isTravisBuild) {
+        if (isCiBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
             afterSuite {

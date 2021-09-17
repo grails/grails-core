@@ -1,20 +1,25 @@
 package org.grails.cli
 
-import org.grails.build.parsing.ScriptNameResolver;
+import org.grails.build.parsing.ScriptNameResolver
+import org.junit.jupiter.api.Test
 
-class ScriptNameResolverTests extends GroovyTestCase {
+import static org.junit.jupiter.api.Assertions.assertTrue
+
+class ScriptNameResolverTests {
+
+    @Test
     void testFoo() {
-        assert ScriptNameResolver.resolvesTo('F', 'Foo')
-        assert ScriptNameResolver.resolvesTo('FB', 'FooBar')
-        assert ScriptNameResolver.resolvesTo('FoB', 'FooBar')
-        assert ScriptNameResolver.resolvesTo('FBa', 'FooBar')
-        assert ScriptNameResolver.resolvesTo('FoBa', 'FooBar')
-        assert ScriptNameResolver.resolvesTo('FooBar', 'FooBar')
-        assert !ScriptNameResolver.resolvesTo('FB', 'FooBarZoo')
-        assert !ScriptNameResolver.resolvesTo('FBaz', 'FooBar')
-        assert !ScriptNameResolver.resolvesTo('FBr', 'FooBar')
-        assert !ScriptNameResolver.resolvesTo('F', 'FooBar')
-        assert !ScriptNameResolver.resolvesTo('Fo', 'FooBar')
-        assert !ScriptNameResolver.resolvesTo('Foo', 'FooBar')
+        assertTrue ScriptNameResolver.resolvesTo('F', 'Foo')
+        assertTrue ScriptNameResolver.resolvesTo('FB', 'FooBar')
+        assertTrue ScriptNameResolver.resolvesTo('FoB', 'FooBar')
+        assertTrue ScriptNameResolver.resolvesTo('FBa', 'FooBar')
+        assertTrue ScriptNameResolver.resolvesTo('FoBa', 'FooBar')
+        assertTrue ScriptNameResolver.resolvesTo('FooBar', 'FooBar')
+        assertTrue !ScriptNameResolver.resolvesTo('FB', 'FooBarZoo')
+        assertTrue !ScriptNameResolver.resolvesTo('FBaz', 'FooBar')
+        assertTrue !ScriptNameResolver.resolvesTo('FBr', 'FooBar')
+        assertTrue !ScriptNameResolver.resolvesTo('F', 'FooBar')
+        assertTrue !ScriptNameResolver.resolvesTo('Fo', 'FooBar')
+        assertTrue !ScriptNameResolver.resolvesTo('Foo', 'FooBar')
     }
 }

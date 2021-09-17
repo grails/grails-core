@@ -65,6 +65,6 @@ class CreateReleasesDropdownTask extends DefaultTask {
 
     @CompileDynamic
     List<SoftwareVersion> parseSoftwareVersions(Object result) {
-        result.findAll { it.name.startsWith('v') }.collect { SoftwareVersion.build(it.name.replace('v', '')) }.sort().reverse()
+        result.findAll { it.name.startsWith('v') }.collect { SoftwareVersion.build(it.name.replace('v', '')) }.sort().unique().reverse()
     }
 }

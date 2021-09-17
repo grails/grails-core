@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - '[4-9]+.[0-9]+.x'
+      - '[3-9]+.[3-9]+.x'
   workflow_dispatch:
 jobs:
   release_notes:
@@ -26,9 +27,9 @@ jobs:
         with:
           prerelease: true
           commitish: master
-          name: 5.0.0.RC1
-          tag: v5.0.0.RC1
-          version: 5.0.0.RC1
+          name: 5.0.0
+          tag: v5.0.0
+          version: 5.0.0
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'

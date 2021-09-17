@@ -11,7 +11,7 @@
     api project(':grails-core'), project(':grails-web')
 
     testImplementation project(':grails-test-suite-base')
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'

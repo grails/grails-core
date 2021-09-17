@@ -15,11 +15,14 @@
 package org.grails.plugins.testing
 
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.*
 
 /**
  * Test case for {@link org.grails.plugins.testing.GrailsMockHttpServletRequest}.
  */
-class GrailsMockHttpServletRequestTests extends GroovyTestCase {
+class GrailsMockHttpServletRequestTests {
     static final String TEST_XML_CONTENT = """\
 <root>
   <item qty="10">
@@ -43,6 +46,7 @@ class GrailsMockHttpServletRequestTests extends GroovyTestCase {
  { qty: 2, name: "Chair", type: "Furniture" } ]
 """
 
+    @Test
     void testGetXML() {
         // Set up the test data.
         def request = new GrailsMockHttpServletRequest()
@@ -54,6 +58,7 @@ class GrailsMockHttpServletRequestTests extends GroovyTestCase {
         verifyXmlResult request.XML
     }
 
+    @Test
     void testGetXMLMultipleCalls() {
         def request = new GrailsMockHttpServletRequest()
         request.method = 'POST'
@@ -70,14 +75,16 @@ class GrailsMockHttpServletRequestTests extends GroovyTestCase {
         verifyXmlResult request.XML
     }
 
+    @Test
     void testGetXMLNoContent() {
         def request = new GrailsMockHttpServletRequest()
         request.method = 'POST'
-        shouldFail {
+        assertThrows(Exception) {
             request.XML
         }
     }
 
+    @Test
     void testGetXMLContentNotXml() {
         // Set up the test data.
         def content = """\
@@ -90,11 +97,12 @@ Second line
         request.content = content.getBytes("UTF-8")
 
         // Test the method.
-        shouldFail {
+        assertThrows(Exception) {
             request.XML
         }
     }
 
+    @Test
     void testGetJSON() {
         // Set up the test data.
         def request = new GrailsMockHttpServletRequest()
@@ -105,6 +113,7 @@ Second line
         verifyJsonResult request.JSON
     }
 
+    @Test
     void testGetJSONMultipleCalls() {
         // Set up the test data.
         def request = new GrailsMockHttpServletRequest()
@@ -121,11 +130,13 @@ Second line
         verifyJsonResult request.JSON
     }
 
+    @Test
     void testGetJSONNoContent() {
         def request = new GrailsMockHttpServletRequest()
-        assert request.JSON.size() == 0
+        assertEquals 0, (Integer) request.JSON.size()
     }
 
+    @Test
     void testGetJSONContentNotJson() {
         // Set up the test data.
         def content = """\
@@ -137,18 +148,18 @@ Second line
         request.content = content.getBytes("UTF-8")
 
         // Test the method.
-        assert !request.JSON : "should not contain JSON"
+        assertTrue request.JSON.isEmpty(), "should not contain JSON"
     }
 
     private void verifyXmlResult(xml) {
-        assertEquals 3, xml.item.size()
-        assertEquals "Apple", xml.item[1].name.text()
-        assertEquals "2", xml.item[2].@qty.text()
+        assertEquals 3, (int) xml.item.size()
+        assertEquals "Apple", (String) xml.item[1].name.text()
+        assertEquals "2", (String) xml.item[2].@qty.text()
     }
 
     private void verifyJsonResult(json) {
-        assertEquals 3, json.size()
-        assertEquals "Apple", json[1].name
-        assertEquals 2, json[2].qty
+        assertEquals 3, (int) json.size()
+        assertEquals "Apple", (String) json[1].name
+        assertEquals 2, (int) json[2].qty
     }
 }

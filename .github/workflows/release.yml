@@ -18,9 +18,17 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
       - uses: gradle/wrapper-validation-action@v1
-      - name: Set up JDK
-        uses: actions/setup-java@v1
+      - uses: actions/cache@v2
         with:
+          path: |
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
           java-version: ${{ matrix.java }}
       - name: Extract Target Branch
         id: extract_branch
@@ -37,6 +45,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to Sonatype OSSRH
+        if: success()
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -83,10 +92,20 @@ jobs:
           ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
+      - name: Invoke grails-static-website release workflow
+        if: success()
+        id: grails_static_website
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Release
+          repo: grails/grails-static-website
+          ref: master
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Grails SDK Release
         if: success()
         run: |
-          if [ $BETA ]; then
+          if $BETA ; then
             (set -x; ./gradlew sdkMinorRelease)
           else
             ( set -x; ./gradlew sdkMajorRelease)

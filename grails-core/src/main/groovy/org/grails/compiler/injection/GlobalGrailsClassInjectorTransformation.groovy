@@ -165,11 +165,13 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             if(Modifier.isAbstract(classNode.getModifiers())) return false
 
             def classNodeName = classNode.name
+            def props = new Properties()
+            def superTypeName = superType.getName()
+
+            File sourceDirectory = findSourceDirectory(compilationTargetDirectory)
             // generate META-INF/grails.factories
             def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
             factoriesFile.parentFile.mkdirs()
-            def props = new Properties()
-            def superTypeName = superType.getName()
             if (factoriesFile.exists()) {
                 // update
                 factoriesFile.withInputStream { InputStream input ->
@@ -183,15 +185,38 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 else if (!existing.contains(classNodeName)) {
                     props.put(superTypeName, [existing, classNodeName].join(','))
                 }
+            }
+            def sourceFactoriesFile = new File(sourceDirectory, "src/main/resources/META-INF/grails.factories")
+            if (sourceFactoriesFile.exists()) {
+                // update
+                sourceFactoriesFile.withInputStream { InputStream input ->
+                    props.load(input)
+                }
+
+                def existing = props.getProperty(superTypeName)
+                if (!existing) {
+                    props.put(superTypeName, classNodeName)
+                } else if (!existing.contains(classNodeName)) {
+                    props.put(superTypeName, [existing, classNodeName].join(','))
+                }
             } else {
                 props.put(superTypeName, classNodeName)
             }
+
             factoriesFile.withWriter {  Writer writer ->
                 props.store(writer, "Grails Factories File")
             }
             return true
         }
         return false
+    }
+
+    private static File findSourceDirectory(File compilationTargetDirectory) {
+        File sourceDirectory = compilationTargetDirectory
+        while (sourceDirectory != null && !(sourceDirectory.name in ["build", "target"])) {
+            sourceDirectory = sourceDirectory.parentFile
+        }
+        sourceDirectory.parentFile
     }
 
     static Set<String> pendingPluginClasses = []

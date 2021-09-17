@@ -1,12 +1,16 @@
 package org.grails.commons.metaclass
 
 import grails.beans.util.LazyMetaPropertyMap
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.*
 
 /**
  * @author Graeme Rocher
  */
-class LazyMetaPropertyMapTests extends GroovyTestCase {
+class LazyMetaPropertyMapTests {
 
+    @Test
     void testOverridePropertiesRecursionBug() {
         PropertyMapTest.metaClass.getProperties = {-> new LazyMetaPropertyMap(delegate) }
 
@@ -16,26 +20,30 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertEquals 3, obj.properties.size()
     }
 
+    @Test
     void testSelectSubMap() {
 
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Bart", age:11, other:"stuff"))
 
         def submap = map['name', 'age']
-        assertEquals 2, submap.size()
+        assertEquals 2, (int) submap.size()
         assertEquals "Bart", submap.name
-        assertEquals 11, submap.age
+        assertEquals 11, (int) submap.age
     }
 
+    @Test
     void testSize() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
         assertEquals 3, map.size()
     }
 
+    @Test
     void testIsEmpty() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
         assertFalse map.isEmpty()
     }
 
+    @Test
     void testContainsKey() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
 
@@ -44,6 +52,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertFalse map.containsKey("fo")
     }
 
+    @Test
     void testContainsValue() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Homer", age:45))
 
@@ -52,6 +61,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertFalse map.containsValue("fo")
     }
 
+    @Test
     void testGet() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Homer", age:45))
 
@@ -60,7 +70,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertEquals "Homer", map['name']
 
         assertEquals 45, map.get("age")
-        assertEquals 45, map.age
+        assertEquals 45, (int) map.age
         assertEquals 45, map['age']
 
         assertNull map.foo
@@ -68,6 +78,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertNull map.get('foo')
     }
 
+    @Test
     void testPut() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Bart", age:11))
 
@@ -83,6 +94,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertEquals "lisa", map.name
     }
 
+    @Test
     void testKeySet() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Bart", age:11))
 
@@ -92,6 +104,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         assertTrue keys.contains("age")
     }
 
+    @Test
     void testValues() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest(name:"Bart", age:11))
 

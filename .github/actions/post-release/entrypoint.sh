@@ -65,7 +65,7 @@ curl -s --request POST -H "Authorization: Bearer $1" -H "Content-Type: applicati
 
 echo "Setting new snapshot version"
 sed -i "s/^projectVersion.*$/projectVersion\=${next_version}$SNAPSHOT_SUFFIX/" gradle.properties
-sed -i "s/assertEquals(\".*$/assertEquals(\"${release_version}$SNAPSHOT_SUFFIX\", GrailsUtil.getGrailsVersion());/" grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
+sed -i "s/assertEquals(\".*$/assertEquals(\"${next_version}$SNAPSHOT_SUFFIX\", GrailsUtil.getGrailsVersion());/" grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
 sed -n "/assertEquals(\".*/p" grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
 cat gradle.properties
 

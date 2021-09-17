@@ -2,13 +2,17 @@ package org.grails.plugins
 
 import grails.core.DefaultGrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class PluginLoadOrderTests extends GroovyTestCase {
+class PluginLoadOrderTests {
 
+    @Test
     void testPluginLoadBeforeAfter() {
         def gcl = new GroovyClassLoader()
 

@@ -1,16 +1,21 @@
 package org.grails.web.filters
 
 import org.grails.web.filters.HiddenHttpMethodFilter
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+
 import javax.servlet.FilterChain
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class HiddenHttpMethodFilterTests extends GroovyTestCase {
+class HiddenHttpMethodFilterTests {
 
+    @Test
     void testDefaultCase() {
         def filter = new HiddenHttpMethodFilter()
         def req = new MockHttpServletRequest()
@@ -22,6 +27,7 @@ class HiddenHttpMethodFilterTests extends GroovyTestCase {
         assertEquals "POST", method
     }
 
+    @Test
     void testWithParameter() {
         def filter = new HiddenHttpMethodFilter()
         def req = new MockHttpServletRequest()
@@ -34,6 +40,7 @@ class HiddenHttpMethodFilterTests extends GroovyTestCase {
         assertEquals "DELETE", method
     }
 
+    @Test
     void testWithHeader() {
         def filter = new HiddenHttpMethodFilter()
         def req = new MockHttpServletRequest()
