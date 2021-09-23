@@ -72,9 +72,9 @@ dependencies {
 
     // These dependencies are not required, but due to a Groovy compiler bug they are loaded by Groovy and hence
     // have to be on the path for compilation even though they shouldn't be
-    provided "org.apache.ant:ant:${antVersion}"
-    provided "jline:jline:$jlineVersion"
-    provided "org.fusesource.jansi:jansi:$jansiVersion"
+    api "org.apache.ant:ant:${antVersion}"
+    api "jline:jline:$jlineVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
 
 }
 

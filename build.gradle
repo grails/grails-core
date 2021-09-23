@@ -6,7 +6,7 @@ buildscript {
     dependencies {
         classpath "commons-io:commons-io:2.11.0"
         classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
-        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.2"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
@@ -340,8 +340,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    apply plugin: 'provided-base'
-    apply plugin: 'optional-base'
+    apply plugin: 'nebula.optional-base'
 
     if (!isTestSuite) {
 
@@ -415,9 +414,9 @@ subprojects { project ->
 
     if(project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test|grails-compat)/) {
         dependencies {
-            provided "javax.servlet:javax.servlet-api:$servletApiVersion"
+            api "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
-            provided("org.springframework:spring-test:${springVersion}") {
+            api("org.springframework:spring-test:${springVersion}") {
                 exclude group: 'commons-logging', module:'commons-logging'
             }
         }
@@ -425,8 +424,8 @@ subprojects { project ->
 
     if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            provided 'hsqldb:hsqldb:1.8.1.1'
-            provided "com.h2database:h2:$h2Version"
+            api 'hsqldb:hsqldb:1.8.1.1'
+            api "com.h2database:h2:$h2Version"
         }
     }
 
