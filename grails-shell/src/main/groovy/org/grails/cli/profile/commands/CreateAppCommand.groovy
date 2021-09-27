@@ -462,7 +462,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     protected Iterable<Feature> evaluateFeatures(Profile profile, List<String> requestedFeatures) {
         if (requestedFeatures) {
             List<String> allFeatureNames = profile.features*.name
-            List<String> validFeatureNames = requestedFeatures.intersect(allFeatureNames)
+            Collection<String> validFeatureNames = requestedFeatures.intersect(allFeatureNames)
             requestedFeatures.removeAll(allFeatureNames)
             requestedFeatures.each { String invalidFeature ->
                 List possibleSolutions = allFeatureNames.findAll {

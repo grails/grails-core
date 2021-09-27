@@ -12,7 +12,7 @@ import org.grails.web.mapping.DefaultUrlMappingsHolder
 import spock.lang.Issue
 import spock.lang.Specification
 
-class RestfulUrlMappingspec extends Specification {
+class RestfulUrlMappingSpec extends Specification {
 
     def mappings = {
         delete "/$controller/$id(.$format)?"(action: "delete")
