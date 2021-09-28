@@ -717,9 +717,9 @@ public enum Environment {
         catch (ClassNotFoundException e) {
             reloadingAgentEnabled = false;
             try {
+                Class.forName("org.springsource.loaded.TypeRegistry");
                 String jvmVersion = System.getProperty("java.specification.version");
                 if(jvmVersion.equals("1.8")) {
-                    Class.forName("org.springsource.loaded.TypeRegistry");
                     LOG.get().debug("Found spring-loaded on the class path");
                     reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
                 } else {
