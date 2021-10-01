@@ -58,7 +58,7 @@ task docs(group: 'documentation') {
 }
 
 task javadoc(type:Javadoc, group: 'documentation') {
-    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
+    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' }
     classpath = files(subs.configurations.compileClasspath)
     dependsOn stubs
     maxMemory = '256M'
@@ -83,7 +83,7 @@ task javadoc(type:Javadoc, group: 'documentation') {
 
 tasks.register('groovydoc', Groovydoc) {
     final Set<Project> subProjects = subprojects.findAll {
-        it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' && !it.name.startsWith("grails-test-suite") }
+        it.name != 'grails-dependencies' && it.name != 'grails-bom' && !it.name.startsWith("grails-test-suite") }
     def groovydocClasspath = files(configurations.documentation  + subProjects.configurations.compileClasspath)
     // exclude problematic jar file from javadoc classpath
     // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
