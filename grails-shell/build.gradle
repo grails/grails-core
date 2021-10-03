@@ -26,7 +26,7 @@ dependencies {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
 
-    implementation("org.apache.maven:maven-resolver-provider:3.8.2") {
+    implementation("org.apache.maven:maven-resolver-provider:3.8.3") {
         exclude group: "com.google.guava", module: "guava"
     }
 
