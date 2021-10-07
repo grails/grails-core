@@ -39,6 +39,7 @@ import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -261,6 +262,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             Path appFullDirectory = Paths.get(cmd.baseDir.path, appname)
 
             File projectTargetDirectory = cmd.inplace ? new File(".").canonicalFile : appFullDirectory.toAbsolutePath().normalize().toFile()
+
+            if (projectTargetDirectory.exists()) {
+                throw new FileAlreadyExistsException(appFullDirectory.toString())
+            }
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
 
