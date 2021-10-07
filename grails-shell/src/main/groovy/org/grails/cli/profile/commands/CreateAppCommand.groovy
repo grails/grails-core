@@ -39,13 +39,14 @@ import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 
-import java.nio.file.FileAlreadyExistsException
+import java.nio.file.DirectoryNotEmptyException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
+import java.util.stream.Stream
 
 /**
  * Command for creating Grails applications
@@ -263,8 +264,9 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
             File projectTargetDirectory = cmd.inplace ? new File(".").canonicalFile : appFullDirectory.toAbsolutePath().normalize().toFile()
 
-            if (projectTargetDirectory.exists()) {
-                throw new FileAlreadyExistsException(appFullDirectory.toString())
+            if (projectTargetDirectory.exists() && !isDirectoryEmpty(projectTargetDirectory)) {
+                GrailsConsole.getInstance().error(new DirectoryNotEmptyException(projectTargetDirectory.absolutePath))
+                return false
             }
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
@@ -335,6 +337,15 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             System.err.println "Cannot find profile $profileName"
             return false
         }
+    }
+
+    private boolean isDirectoryEmpty(File target) {
+        if (target.isDirectory()) {
+            try (Stream<Path> entries = Files.list(Paths.get(target.toURI()))) {
+                return !entries.findFirst().isPresent()
+            }
+        }
+        return false
     }
 
     @Override
