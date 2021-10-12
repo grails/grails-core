@@ -188,6 +188,42 @@ class SomeClass implements grails.validation.Validateable {
         c
     }
 
+    @Issue('GRAILS-12101')
+    void 'Test compiling mapping with inner class'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+import groovy.transform.TypeCheckingMode
+
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass implements grails.validation.Validateable {
+
+    enum TestKind {
+        BIG,
+        SMALL
+    }
+    
+    String name
+    TestKind testKind
+    
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+    
+    static mapping = {
+        testKind(enumType: "string", defaultValue: TestKind.SMALL)
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
+
     @Issue('GRAILS-11242')
     void 'Test compiling Validateable with inner class'() {
         given:
