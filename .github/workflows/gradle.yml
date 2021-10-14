@@ -44,6 +44,7 @@ jobs:
           ./gradlew --stop
           (set -x; ./gradlew check -x grails-test-suite-persistence:test -x grails-test-suite-uber:test -x grails-test-suite-web:test --no-daemon)
       - name: Publish Test Report
+        if: failure()
         uses: scacap/action-surefire-report@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
