@@ -105,7 +105,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
      * @param source The data binding source
      * @see DataBindingSource
@@ -115,7 +115,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
      * @param source The data binding source
      * @param listener A listener which will be notified of data binding events triggered
@@ -128,11 +128,11 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
      * @param source The data binding source
-     * @param whiteList A list of property names to be included during this 
-     * data binding.  All other properties represented in the binding source 
+     * @param whiteList A list of property names to be included during this
+     * data binding.  All other properties represented in the binding source
      * will be ignored
      * @see DataBindingSource
      */
@@ -141,14 +141,14 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
      * @param source The data binding source
-     * @param whiteList A list of property names to be included during this 
-     * data binding.  All other properties represented in the binding source 
+     * @param whiteList A list of property names to be included during this
+     * data binding.  All other properties represented in the binding source
      * will be ignored
      * @param blackList A list of properties names to be excluded during
-     * this data binding.  
+     * this data binding.
      * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source, List whiteList, List blackList) {
@@ -156,9 +156,9 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
-     * @param gpath A GPathResult which represents the data being bound.  
+     * @param gpath A GPathResult which represents the data being bound.
      * @see DataBindingSource
      */
     void bind(obj, GPathResult gpath) {
@@ -166,7 +166,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
      * @param source The data binding source
      * @param filter Only properties beginning with filter will be included in the
@@ -174,11 +174,11 @@ class SimpleDataBinder implements DataBinder {
      * source contains data for properties &quot;person.name&quot; and &quot;author.name&quot;
      * the value of &quot;person.name&quot; will be bound to obj.name.  The value of
      * &quot;author.name&quot; will be ignored.
-     * @param whiteList A list of property names to be included during this 
-     * data binding.  All other properties represented in the binding source 
+     * @param whiteList A list of property names to be included during this
+     * data binding.  All other properties represented in the binding source
      * will be ignored
      * @param blackList A list of properties names to be excluded during
-     * this data binding.  
+     * this data binding.
      * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList) {
@@ -186,7 +186,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * 
+     *
      * @param obj The object being bound to
      * @param source The data binding source
      * @param filter Only properties beginning with filter will be included in the
@@ -194,11 +194,11 @@ class SimpleDataBinder implements DataBinder {
      * source contains data for properties &quot;person.name&quot; and &quot;author.name&quot;
      * the value of &quot;person.name&quot; will be bound to obj.name.  The value of
      * &quot;author.name&quot; will be ignored.
-     * @param whiteList A list of property names to be included during this 
-     * data binding.  All other properties represented in the binding source 
+     * @param whiteList A list of property names to be included during this
+     * data binding.  All other properties represented in the binding source
      * will be ignored
      * @param blackList A list of properties names to be excluded during
-     * this data binding.  
+     * this data binding.
      * @param listener A listener which will be notified of data binding events triggered
      * by this binding
      * @see DataBindingSource
@@ -376,7 +376,7 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
-        
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected initializeArray(obj, String propertyName, Class arrayType, int index) {
         Object[] array = obj[propertyName]
@@ -395,8 +395,8 @@ class SimpleDataBinder implements DataBinder {
     protected boolean isBasicType(Class c) {
         BASIC_TYPES.contains(c) || c.isPrimitive()
     }
-    
-    
+
+
     protected Class<?> getReferencedTypeForCollectionInClass(String propertyName, Class clazz) {
         Class referencedType
         def field = getField(clazz, propertyName)
@@ -465,7 +465,7 @@ class SimpleDataBinder implements DataBinder {
         }
         return (Collection)val
     }
-    
+
     protected getDefaultCollectionInstanceForType(Class type) {
         def val
         if (List.isAssignableFrom(type)) {
@@ -540,7 +540,7 @@ class SimpleDataBinder implements DataBinder {
         }
         converter
     }
-    
+
     /**
      * @param annotation An instance of grails.databinding.BindingUsing or org.grails.databinding.BindingUsing
      * @return the value Class of the annotation
@@ -553,7 +553,7 @@ class SimpleDataBinder implements DataBinder {
         }
         value
     }
-    
+
     /**
      * @param annotation An instance of grails.databinding.BindingFormat or org.grails.databinding.BindingFormat
      * @return the value String of the annotation
@@ -595,7 +595,7 @@ class SimpleDataBinder implements DataBinder {
             enumClass.valueOf(value)
         } catch (IllegalArgumentException iae) {}
     }
-    
+
     protected preprocessValue(propertyValue) {
         propertyValue
     }
@@ -611,10 +611,10 @@ class SimpleDataBinder implements DataBinder {
                 }
             }
         }
-        
+
         setPropertyValue obj, source, metaProperty, propertyValue, listener, convertCollectionElements
     }
-    
+
     protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, boolean convertCollectionElements) {
         def propName = metaProperty.name
         def propertyType
@@ -622,6 +622,9 @@ class SimpleDataBinder implements DataBinder {
         if (metaProperty instanceof MetaBeanProperty) {
             def mbp = (MetaBeanProperty)metaProperty
             propertyType = mbp.getter?.returnType ?: mbp.field?.type
+            if(propertyType?.interface) {
+                propertyType = mbp.field?.type
+            }
             propertyGetter = mbp.getter
         }
         if (propertyType == null || propertyType == Object) {
@@ -744,9 +747,9 @@ class SimpleDataBinder implements DataBinder {
         }
         else{
             obj[propName] = propertyType.newInstance()
-        }        
+        }
     }
-    
+
     protected ValueInitializer getPropertyInitializer(obj, String propName){
         def initializer = getValueInitializerForField obj, propName
         initializer
@@ -771,7 +774,7 @@ class SimpleDataBinder implements DataBinder {
         initializer
     }
     /**
-     * @param annotation An instance of grails.databinding.BindInitializer 
+     * @param annotation An instance of grails.databinding.BindInitializer
      * @return the value Class of the annotation
      */
     protected Class getValueOfBindInitializer(Annotation annotation) {
@@ -782,7 +785,7 @@ class SimpleDataBinder implements DataBinder {
         }
         value
     }
-    
+
     protected convert(Class typeToConvertTo, value) {
         if (value == null || typeToConvertTo.isAssignableFrom(value?.getClass())) {
             return value

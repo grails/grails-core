@@ -141,17 +141,17 @@ class SimpleDataBinderSpec extends Specification {
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
     }
-    
+
     @Issue('GRAILS-10925')
     void 'Test binding a Date to a Date property marked with @BindingFormat'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
         def nowDate = new Date()
-        
+
         when:
         binder.bind obj, [formattedUtilDate: nowDate] as SimpleMapDataBindingSource
-        
+
         then:
         obj.formattedUtilDate == nowDate
     }
@@ -519,44 +519,44 @@ class SimpleDataBinderSpec extends Specification {
         widget.names[1] == null
         widget.names[2] == 'two'
     }
-    
+
     void 'Test @BindUsing on a List<Integer>'() {
         given:
         def binder = new SimpleDataBinder()
         def widget = new Widget()
-        
+
         when:
         binder.bind widget, [listOfIntegers: '4'] as SimpleMapDataBindingSource
-        
+
         then:
         widget.listOfIntegers == [0, 1, 2, 3]
     }
-    
+
     @Issue('GRAILS-10853')
     void 'Test adding new elements to a Set using indexed properties'() {
         given:
         def binder = new SimpleDataBinder()
         def widget = new Widget()
-        
+
         when:
         binder.bind widget, ['factories[2]': [name: 'Tres'], 'factories[0]': [name: 'Uno'], 'factories[1]': [name: 'Dos']] as SimpleMapDataBindingSource
-        
+
         then:
         widget.factories.size() == 3
         widget.factories.find { it.name == 'Uno' }
         widget.factories.find { it.name == 'Dos' }
         widget.factories.find { it.name == 'Tres' }
     }
-    
+
     @Issue('GRAILS-10865')
     void 'Test binding to an inherited typed collection'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new ClassWithInheritedTypedCollection()
-        
+
         when:
         binder.bind obj, [list: ['1', '2', '3'], 'map[one]': '1', 'map[two]': '2' ] as SimpleMapDataBindingSource
-        
+
         then:
         obj.list == [1, 2, 3]
         obj.map.one == 1
@@ -612,6 +612,22 @@ class SimpleDataBinderSpec extends Specification {
         comment.attachments.find { it.filename == 'foo.txt' }
         comment.attachments.find { it.filename == 'bar.txt' }
     }
+
+    @Issue('https://github.com/grails/grails-core/issues/12150')
+    void 'binding when class and embedded classes both implements an interface'() {
+        given:
+        SimpleDataBinder binder = new SimpleDataBinder()
+
+        and:
+        SimpleMapDataBindingSource input = [a: [data: 'abc']] as SimpleMapDataBindingSource
+        ClassB classWithInterface = new ClassB()
+
+        when:
+        binder.bind(classWithInterface, input)
+
+        then:
+        classWithInterface.a.data == 'abc'
+    }
 }
 
 class Factory {
@@ -632,7 +648,7 @@ class Widget {
     byte[] byteArray
     Integer[] integers
     List<String> names
-    @BindUsing({ obj, source -> 
+    @BindUsing({ obj, source ->
         def cnt = source['listOfIntegers'] as int
         def result = []
         cnt.times { result << it }
@@ -688,3 +704,18 @@ class Attachment {
     String filename
 }
 
+interface InterfaceA {
+    String getData()
+}
+
+interface InterfaceB {
+    InterfaceA getA()
+}
+
+class ClassA implements InterfaceA {
+    String data
+}
+
+class ClassB implements InterfaceB {
+    ClassA a
+}
