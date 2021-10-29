@@ -32,6 +32,7 @@ import org.grails.databinding.xml.GPathResultMap
 import java.lang.annotation.Annotation
 import java.lang.reflect.Array
 import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -622,7 +623,7 @@ class SimpleDataBinder implements DataBinder {
         if (metaProperty instanceof MetaBeanProperty) {
             def mbp = (MetaBeanProperty)metaProperty
             propertyType = mbp.getter?.returnType ?: mbp.field?.type
-            if(propertyType?.interface) {
+            if(propertyType && (propertyType.interface || Modifier.isAbstract(propertyType.modifiers))) {
                 propertyType = mbp.field?.type
             }
             propertyGetter = mbp.getter

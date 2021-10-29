@@ -614,7 +614,7 @@ class SimpleDataBinderSpec extends Specification {
     }
 
     @Issue('https://github.com/grails/grails-core/issues/12150')
-    void 'binding when class and embedded classes both implements an interface'() {
+    void 'Test binding when class and embedded classes both implements an interface'() {
         given:
         SimpleDataBinder binder = new SimpleDataBinder()
 
@@ -627,6 +627,22 @@ class SimpleDataBinderSpec extends Specification {
 
         then:
         classWithInterface.a.data == 'abc'
+    }
+
+    @Issue('https://github.com/grails/grails-core/issues/12150')
+    void 'Test binding when class and embedded classes extends abstract class and implements an interface'() {
+        given:
+        SimpleDataBinder binder = new SimpleDataBinder()
+
+        and:
+        SimpleMapDataBindingSource input = [a: [data: 'abc']] as SimpleMapDataBindingSource
+        FromAbstractB fromAbstractB = new FromAbstractB()
+
+        when:
+        binder.bind(fromAbstractB, input)
+
+        then:
+        fromAbstractB.a.data == 'abc'
     }
 }
 
@@ -718,4 +734,12 @@ class ClassA implements InterfaceA {
 
 class ClassB implements InterfaceB {
     ClassA a
+}
+
+class AbstractB {
+    ClassA a
+}
+
+class FromAbstractB extends AbstractB {
+
 }
