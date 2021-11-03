@@ -1,5 +1,6 @@
 package org.grails.web.mapping
 
+import grails.build.logging.GrailsConsole
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.web.CamelCaseUrlConverter
@@ -10,11 +11,13 @@ import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.mock.web.MockServletContext
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
+@IgnoreIf({ env['CI'] })
 class UrlMappingsWithHttpMethodSpec extends Specification{
 
     def mappings = {
