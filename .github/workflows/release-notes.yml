@@ -25,11 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          prerelease: true
           commitish: master
-          name: 5.0.0
-          tag: v5.0.0
-          version: 5.0.0
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
