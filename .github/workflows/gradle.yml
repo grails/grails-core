@@ -52,6 +52,8 @@ jobs:
       - name: Run Assemble
         if: success() && github.event_name == 'push' && matrix.java == '8'
         run: ./gradlew assemble
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: Publish to repo.grails.org
         if: success() && github.event_name == 'push' && matrix.java == '8'
         env:
