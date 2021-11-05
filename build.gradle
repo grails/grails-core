@@ -16,7 +16,6 @@ buildscript {
     }
 }
 
-
 import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'

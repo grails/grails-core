@@ -1,3 +1,21 @@
+plugins {
+    id "com.gradle.enterprise" version "3.7.1"
+    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.4.2'
+}
+
+gradleEnterprise {
+    server = 'https://ge.grails.org'
+    buildScan {
+        publishAlways()
+        publishIfAuthenticated()
+        uploadInBackground = System.getenv("CI") == null
+        capture {
+            taskInputFiles = true
+        }
+    }
+
+}
+
 rootProject.name = "grails.core.ROOT"
 
 include (
