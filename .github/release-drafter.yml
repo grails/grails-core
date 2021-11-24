@@ -1,5 +1,5 @@
-name-template: $NEXT_PATCH_VERSION
-tag-template: v$NEXT_PATCH_VERSION
+name-template: $RESOLVED_VERSION
+tag-template: v$RESOLVED_VERSION
 version-resolver:
   major:
     labels:

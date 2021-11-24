@@ -10,6 +10,7 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.util.WebUtils
 import org.springframework.mock.web.MockServletContext
 import spock.lang.IgnoreIf
 import spock.lang.Specification
@@ -20,6 +21,10 @@ import spock.lang.Specification
 @IgnoreIf({ env['CI'] })
 class UrlMappingsWithHttpMethodSpec extends Specification{
 
+    def setup() {
+        WebUtils.clearGrailsWebRequest()
+    }
+    
     def mappings = {
          "/foo"( controller:"bar", action:"save", method:"POST" )
          "/foo2"( controller:"bar", action:"save", method:"PUT" )
