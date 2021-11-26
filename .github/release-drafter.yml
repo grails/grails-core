@@ -26,9 +26,13 @@ categories:
     labels:
       - "type: dependency upgrade"
       - "dependencies"
+  - title: ⚙️ Build/CI
+    labels:
+        - "type: ci"
+        - "type: build"
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 template: |
-  ## Changes
+  ## What's Changed
 
   $CHANGES
 
