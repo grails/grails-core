@@ -33,7 +33,7 @@ class PublishGuide extends DefaultTask {
     @Input @Optional String sourceRepo
     @Input @Optional Properties properties = new Properties()
     @Input @Nested Collection macros = []
-    @InputDirectory File workDir = project.buildDir as File
+    @OutputDirectory File workDir = project.buildDir as File
 
     @TaskAction
     def publishGuide() {
