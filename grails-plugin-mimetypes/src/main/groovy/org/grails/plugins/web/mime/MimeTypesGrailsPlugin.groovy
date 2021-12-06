@@ -1,7 +1,4 @@
-package org.grails.plugins.web.mime;
-
-import groovy.lang.Closure;
-
+package org.grails.plugins.web.mime
 /**
  * Provides content negotiation capabilities to Grails via a new withFormat method on controllers
  * as well as a format property on the HttpServletRequest instance.
@@ -11,9 +8,9 @@ import groovy.lang.Closure;
  * @deprecated Use {@link MimeTypesConfiguration} instead
  */
 @Deprecated
-public class MimeTypesGrailsPlugin extends AbstractMimeTypesGrailsPlugin {
+class MimeTypesGrailsPlugin extends AbstractMimeTypesGrailsPlugin {
     @Override
-    public Closure doWithSpring() {
+    Closure doWithSpring() {
         return super.doWithSpring();
     }
 }
