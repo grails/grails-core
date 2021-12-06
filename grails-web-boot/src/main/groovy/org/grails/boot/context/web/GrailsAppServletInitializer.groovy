@@ -2,6 +2,7 @@ package org.grails.boot.context.web
 
 import grails.boot.GrailsAppBuilder
 import groovy.transform.CompileStatic
+import org.springframework.boot.ApplicationContextFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.builder.ParentContextApplicationContextInitializer
 import org.springframework.boot.builder.SpringApplicationBuilder
@@ -42,7 +43,7 @@ abstract class GrailsAppServletInitializer extends SpringBootServletInitializer 
         }
         builder.initializers(new ServletContextApplicationContextInitializer(
                 servletContext))
-        builder.contextClass(AnnotationConfigServletWebServerApplicationContext.class)
+        builder.application().setApplicationContextFactory(ApplicationContextFactory.ofContextClass(AnnotationConfigServletWebServerApplicationContext))
         builder = configure(builder)
         SpringApplication application = builder.build()
         if (application.getAllSources().isEmpty()

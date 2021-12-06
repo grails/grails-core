@@ -19,6 +19,7 @@ import grails.boot.GrailsApp
 import grails.ui.console.support.GroovyConsoleApplicationContext
 import grails.ui.console.support.GroovyConsoleWebApplicationContext
 import groovy.transform.CompileStatic
+import org.springframework.boot.ApplicationContextFactory
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.io.ResourceLoader
 import org.springframework.util.ClassUtils
@@ -47,12 +48,11 @@ class GrailsSwingConsole extends GrailsApp {
         configureApplicationContextClass()
     }
 
-    public configureApplicationContextClass() {
-        if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-            setApplicationContextClass(GroovyConsoleWebApplicationContext)
-        }
-        else {
-            setApplicationContextClass(GroovyConsoleApplicationContext)
+    void configureApplicationContextClass() {
+        if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
+            setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GroovyConsoleWebApplicationContext))
+        } else {
+            setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GroovyConsoleApplicationContext))
         }
     }
 
