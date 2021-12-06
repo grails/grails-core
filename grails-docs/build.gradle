@@ -21,7 +21,7 @@ dependencies {
 
     runtimeOnly('com.lowagie:itext:2.0.8')
 
-    api 'org.jsoup:jsoup:1.14.2'
+    api 'org.jsoup:jsoup:1.14.3'
     testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
 }
 
@@ -31,16 +31,15 @@ sourceSets {
     }
 }
 
-task docFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
-    version = null
-    archiveName = "grails-doc-files.jar"
+tasks.register("docFilesJar", Jar) {
+    description = 'Package up files used for generating documentation.'
+    archiveVersion = null
+    archiveFileName = "grails-doc-files.jar"
     from "src/main/template"
-    doLast {
-        copy {
-            from docFilesJar.archivePath
-            into "${buildDir}/classes/groovy/main"
-        }
-    }
+}
+
+tasks.named('jar', Jar) {
+    from docFilesJar
 }
 
 jar.dependsOn docFilesJar

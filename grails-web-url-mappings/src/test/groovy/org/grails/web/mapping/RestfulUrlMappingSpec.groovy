@@ -9,10 +9,15 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.util.WebUtils
 import spock.lang.Issue
 import spock.lang.Specification
 
 class RestfulUrlMappingSpec extends Specification {
+
+    def setup() {
+        WebUtils.clearGrailsWebRequest()
+    }
 
     def mappings = {
         delete "/$controller/$id(.$format)?"(action: "delete")
