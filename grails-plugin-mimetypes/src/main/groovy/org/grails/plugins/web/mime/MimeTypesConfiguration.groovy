@@ -28,9 +28,9 @@ import io.micronaut.context.annotation.Factory
 import org.grails.web.mime.DefaultMimeTypeResolver
 import org.grails.web.mime.DefaultMimeUtility
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Primary
+
+import javax.inject.Named
+import javax.inject.Singleton
 
 /**
  * Configuration for Codecs
@@ -52,21 +52,18 @@ class MimeTypesConfiguration {
         this.mimeTypeProviders = mimeTypeProviders
     }
 
-    @Bean("mimeTypesHolder")
-    @Primary
-    MimeTypesHolder mimeTypesHolder() {
-        final MimeType[] mimeTypes = mimeTypes()
-        if (applicationContext instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
-                    MimeType.BEAN_NAME,
-                    mimeTypes
-            )
-        }
+    /**
+     * @deprecated As of Grails 5.1.0, this is not required anymore. It was only used because earlier there was no way to register {@link MimeType} as {@code MimeType[]}.
+     */
+    @Deprecated
+    @Named("mimeTypesHolder")
+    @Singleton
+    MimeTypesHolder mimeTypesHolder(MimeType[] mimeTypes) {
         return new MimeTypesHolder(mimeTypes)
     }
 
-    @Bean("mimeTypes")
-    @Primary
+    @Named("mimeTypes")
+    @Singleton
     MimeType[] mimeTypes() {
         final Config config = grailsApplication.getConfig()
         final Map<CharSequence, Object> mimeConfig = getMimeConfig(config)
@@ -99,14 +96,14 @@ class MimeTypesConfiguration {
         return mimeTypes
     }
 
-    @Bean("grailsMimeUtility")
-    @Primary
+    @Named("grailsMimeUtility")
+    @Singleton
     protected MimeUtility mimeUtility(MimeTypesHolder mimeTypesHolder) {
         return new DefaultMimeUtility(mimeTypesHolder.mimeTypes)
     }
 
-    @Bean("mimeTypeResolver")
-    @Primary
+    @Named("mimeTypeResolver")
+    @Singleton
     protected MimeTypeResolver mimeTypeResolver() {
         return new DefaultMimeTypeResolver()
     }
