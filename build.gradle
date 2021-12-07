@@ -7,7 +7,6 @@ buildscript {
         classpath "commons-io:commons-io:2.11.0"
         classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0"
-        classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
@@ -27,7 +26,7 @@ ext {
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
     isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
-    isCiBuild = System.getenv().get("TRAVIS") == 'true' || System.getenv().get("CI") as Boolean
+    isCiBuild = System.getenv().get("CI") as Boolean
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [
         'javax.annotation-api': [
@@ -587,12 +586,6 @@ apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
-}
-
-apply plugin: "com.github.adrianbk.tcitrigger"
-
-tciTrigger {
-    gitHubRepo 'grails/grails3-functional-tests'
 }
 
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
