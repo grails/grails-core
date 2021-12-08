@@ -97,7 +97,6 @@ class GrailsApp extends SpringApplication {
     @Override
     ConfigurableApplicationContext run(String... args) {
         ConfigurableApplicationContext applicationContext = super.run(args)
-
         Environment environment = Environment.getCurrent()
 
         log.info("Application starting in environment: {}", environment.getName())
@@ -143,6 +142,7 @@ class GrailsApp extends SpringApplication {
     @Override
     protected ConfigurableApplicationContext createApplicationContext() {
         setAllowBeanDefinitionOverriding(true)
+        setAllowCircularReferences(true)
         ConfigurableApplicationContext applicationContext = super.createApplicationContext()
         def now = System.currentTimeMillis()
 
