@@ -28,7 +28,6 @@ import io.micronaut.context.annotation.Factory
 import org.grails.web.mime.DefaultMimeTypeResolver
 import org.grails.web.mime.DefaultMimeUtility
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 
@@ -55,13 +54,7 @@ class MimeTypesConfiguration {
     @Bean("mimeTypesHolder")
     @Primary
     MimeTypesHolder mimeTypesHolder() {
-        final MimeType[] mimeTypes = mimeTypes()
-        if (applicationContext instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
-                    MimeType.BEAN_NAME,
-                    mimeTypes
-            )
-        }
+        final MimeType[] mimeTypes = grailsApplication.mainContext.getBean("mimeTypes", MimeType[].class)
         return new MimeTypesHolder(mimeTypes)
     }
 
