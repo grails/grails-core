@@ -78,14 +78,13 @@ dependencies {
 
 }
 
-compileGroovy.doFirst {
-    delete("${buildDir}/classes/main/META-INF")
-    sourceSets.main.output.classesDirs.files.each {
-        ant.mkdir(dir:it)
-        ant.propertyfile(file:"${it.path}/grails.build.properties") {
-            entry key:"grails.version", value:version
-        }
-    }
+def writeProps = tasks.register('writeGrailsProperties', WriteProperties) {
+    outputFile = file("${buildDir}/grails.build.properties")
+    property("grails.version", project.version)
+}
+
+tasks.named('processResources') {
+    from writeProps
 }
 
 eclipse {
