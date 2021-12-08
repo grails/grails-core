@@ -58,7 +58,8 @@ class MimeTypesConfiguration {
     @Deprecated
     @Named("mimeTypesHolder")
     @Singleton
-    MimeTypesHolder mimeTypesHolder(MimeType[] mimeTypes) {
+    MimeTypesHolder mimeTypesHolder() {
+        final MimeType[] mimeTypes = grailsApplication.mainContext.getBean("mimeTypes", MimeType[].class)
         return new MimeTypesHolder(mimeTypes)
     }
 
