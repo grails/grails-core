@@ -46,6 +46,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
     @Autowired(required = false)
     Collection<MimeTypeProvider> mimeTypeProviders = []
 
+    @Override
     MimeType[] getObject() {
         final grailsApplication = this.grailsApplication ?: applicationContext.getBean(GrailsApplication)
         def config = grailsApplication?.config
@@ -78,8 +79,10 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
 
     }
 
-    Class<?> getObjectType() { MimeType[] }
+    @Override
+    Class<?> getObjectType() { MimeType[].class }
 
+    @Override
     boolean isSingleton() { true }
 
 
