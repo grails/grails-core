@@ -43,6 +43,7 @@ import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
@@ -80,6 +81,7 @@ trait ResponseRenderer extends WebAttributes {
 
     @Generated
     @Autowired(required = false)
+    @Qualifier("grailsMimeUtility")
     void setMimeUtility(MimeUtility mimeUtility) {
         this.mimeUtility = mimeUtility
     }
