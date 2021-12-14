@@ -5,6 +5,9 @@ on:
       release:
         description: The Grails Release (e.g. 5.0.3)
         required: true
+     target_branch:
+       description: The Target Branch (e.g. 5.0.x)
+       required: true
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -30,13 +33,15 @@ jobs:
       - name: Extract Target Branch
         id: extract_branch
         run: |
-          echo "Determining Target Branch"
-          TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
           echo $TARGET_BRANCH
           echo ::set-output name=value::${TARGET_BRANCH}
+        env:
+          TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
       - name: Set the current release version
         id: release_version
-        run: echo ::set-output name=release_version::${GITHUB_REF:11}
+        run: echo ::set-output name=release_version::${VERSION}
+        env:
+          VERSION: ${{ github.event.inputs.release }}
       - name: Run pre-release
         uses: ./.github/actions/pre-release
         with:
