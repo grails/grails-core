@@ -22,7 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: "refs/tags/v${{ github.event.inputs.release }}"
+          ref: "v${{ github.event.inputs.release }}"
           token: ${{ secrets.GH_TOKEN }}
       - uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
@@ -42,10 +42,6 @@ jobs:
         run: echo ::set-output name=release_version::${VERSION}
         env:
           VERSION: ${{ github.event.inputs.release }}
-      - name: Run pre-release
-        uses: ./.github/actions/pre-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Assemble
         id: assemble
         uses: gradle/gradle-build-action@v2
@@ -58,6 +54,7 @@ jobs:
         if: steps.assemble.outcome == 'success'
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
+          created_tag: v${{ github.event.inputs.release }}
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,9 +102,11 @@ jobs:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
       - name: Run post-release
-        if: steps.assemble.success == 'success'
+        if: steps.assemble.outcome == 'success'
         uses: ./.github/actions/post-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           SNAPSHOT_SUFFIX: -SNAPSHOT
+          TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
+          RELEASE_VERSION: ${{ github.event.inputs.release }}
