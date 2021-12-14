@@ -42,10 +42,6 @@ jobs:
         run: echo ::set-output name=release_version::${VERSION}
         env:
           VERSION: ${{ github.event.inputs.release }}
-      - name: Run pre-release
-        uses: ./.github/actions/pre-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Assemble
         id: assemble
         uses: gradle/gradle-build-action@v2
