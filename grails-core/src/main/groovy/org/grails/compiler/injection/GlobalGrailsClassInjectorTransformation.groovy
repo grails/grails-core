@@ -168,40 +168,18 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             def props = new Properties()
             def superTypeName = superType.getName()
 
-            File sourceDirectory = findSourceDirectory(compilationTargetDirectory)
             // generate META-INF/grails.factories
-            def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
-            factoriesFile.parentFile.mkdirs()
-            if (factoriesFile.exists()) {
-                // update
-                factoriesFile.withInputStream { InputStream input ->
-                    props.load(input)
-                }
-
-                def existing = props.getProperty(superTypeName)
-                if(!existing) {
-                    props.put(superTypeName, classNodeName)
-                }
-                else if (!existing.contains(classNodeName)) {
-                    props.put(superTypeName, [existing, classNodeName].join(','))
-                }
+            File factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
+            if (!factoriesFile.parentFile.exists()) {
+                factoriesFile.parentFile.mkdirs()
             }
-            def sourceFactoriesFile = new File(sourceDirectory, "src/main/resources/META-INF/grails.factories")
-            if (sourceFactoriesFile.exists()) {
-                // update
-                sourceFactoriesFile.withInputStream { InputStream input ->
-                    props.load(input)
-                }
+            loadFromFile(props, factoriesFile)
 
-                def existing = props.getProperty(superTypeName)
-                if (!existing) {
-                    props.put(superTypeName, classNodeName)
-                } else if (!existing.contains(classNodeName)) {
-                    props.put(superTypeName, [existing, classNodeName].join(','))
-                }
-            } else {
-                props.put(superTypeName, classNodeName)
-            }
+            File sourceDirectory = findSourceDirectory(compilationTargetDirectory)
+            File sourceFactoriesFile = new File(sourceDirectory, "src/main/resources/META-INF/grails.factories")
+            loadFromFile(props, sourceFactoriesFile)
+
+            addToProps(props, superTypeName, classNodeName)
 
             factoriesFile.withWriter {  Writer writer ->
                 props.store(writer, "Grails Factories File")
@@ -209,6 +187,31 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             return true
         }
         return false
+    }
+
+    private static void loadFromFile(Properties props, File factoriesFile) {
+        if (factoriesFile.exists()) {
+            Properties fileProps = new Properties()
+            factoriesFile.withInputStream { InputStream input ->
+                fileProps.load(input)
+                fileProps.each { Map.Entry prop->
+                    addToProps(props, (String) prop.key, (String) prop.value)
+                }
+            }
+        }
+    }
+
+    private static Properties addToProps(Properties props, String superTypeName, String classNodeNames) {
+        final List<String> classNodesNameList = classNodeNames.tokenize(',')
+        classNodesNameList.forEach(classNodeName -> {
+            String existing = props.getProperty(superTypeName)
+            if (!existing) {
+                props.put(superTypeName, classNodeName)
+            } else if (existing && !existing.contains(classNodeName)) {
+                props.put(superTypeName, [existing, classNodeName].join(','))
+            }
+        })
+        props
     }
 
     private static File findSourceDirectory(File compilationTargetDirectory) {

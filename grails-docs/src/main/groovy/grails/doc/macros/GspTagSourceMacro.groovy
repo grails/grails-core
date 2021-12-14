@@ -15,6 +15,9 @@
  */
 package grails.doc.macros
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+
 import java.util.regex.Pattern
 import org.radeox.macro.BaseMacro
 import org.radeox.macro.CodeMacro
@@ -22,8 +25,11 @@ import org.radeox.macro.parameter.BaseMacroParameter
 import org.radeox.macro.parameter.MacroParameter
 import org.radeox.util.Encoder
 
-class GspTagSourceMacro extends BaseMacro {
+class GspTagSourceMacro extends BaseMacro implements Serializable {
 
+    private static final long serialVersionUID = 0L;
+
+    @InputDirectory
     List baseDirs
 
     GspTagSourceMacro(basedir) {
@@ -31,6 +37,7 @@ class GspTagSourceMacro extends BaseMacro {
         baseDirs = basedir.collect { f -> f as File }
     }
 
+    @Input
     String getName() { "source" }
 
     void execute(Writer out, MacroParameter params) {

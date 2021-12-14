@@ -217,6 +217,11 @@ if (isReleaseVersion) {
                 stagingProfileId = ossStagingProfileId
             }
         }
+
+        transitionCheckOptions {
+            maxRetries.set(40)
+            delayBetween.set(java.time.Duration.ofMillis(2000))
+        }
     }
 }
 

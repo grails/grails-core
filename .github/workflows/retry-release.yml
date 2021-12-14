@@ -1,7 +1,10 @@
-name: Release
+name: Retry Release
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: The Grails Release (e.g. 5.0.3)
+        required: true
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -16,6 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
+          ref: "refs/tags/v${{ github.event.inputs.release }}"
           token: ${{ secrets.GH_TOKEN }}
       - uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
@@ -42,49 +46,25 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: assemble
-      - name: Generate secring file
-        env:
-          SECRING_FILE: ${{ secrets.SECRING_FILE }}
-        run: echo $SECRING_FILE | base64 -d > ${{ github.workspace }}/secring.gpg
-      - name: Publish to Sonatype OSSRH
-        id: publish
-        if: steps.assemble.outcome == 'success'
-        uses: gradle/gradle-build-action@v2
-        env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
-          SECRING_FILE: ${{ secrets.SECRING_FILE }}
-        with:
-          arguments: -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg publishToSonatype closeAndReleaseSonatypeStagingRepository
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
-      - name: Run post-release
-        if: steps.publish.success == 'success'
-        uses: ./.github/actions/post-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          SNAPSHOT_SUFFIX: -SNAPSHOT
       - name: Upload artifacts to the Github release
         id: upload_artifact
-        if: steps.publish.outcome == 'success'
+        if: steps.assemble.outcome == 'success'
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Message for the Grails Documentation Release
-        if: steps.publish.outcome == 'success'
+        if: steps.assemble.outcome == 'success'
         id: grails_docs_release_message
         run: |
           echo ::set-output name=value::{\"grails_version\":\"$RELEASE_VERSION\"}
         env:
           RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
       - name: Invoke grails-doc release workflow
-        if: steps.publish.outcome == 'success'
+        if: steps.assemble.outcome == 'success'
         id: grails_doc
         uses: benc-uk/workflow-dispatch@v1.1
         with:
@@ -94,7 +74,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Invoke grails-static-website release workflow
-        if: steps.publish.outcome == 'success'
+        if: steps.assemble.outcome == 'success'
         id: grails_static_website
         uses: benc-uk/workflow-dispatch@v1.1
         with:
@@ -119,3 +99,10 @@ jobs:
         env:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+      - name: Run post-release
+        if: steps.assemble.success == 'success'
+        uses: ./.github/actions/post-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SNAPSHOT_SUFFIX: -SNAPSHOT
