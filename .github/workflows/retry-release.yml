@@ -54,6 +54,7 @@ jobs:
         if: steps.assemble.outcome == 'success'
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
+          created_tag: v${{ github.event.inputs.release }}
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
