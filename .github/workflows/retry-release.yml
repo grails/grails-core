@@ -5,9 +5,9 @@ on:
       release:
         description: The Grails Release (e.g. 5.0.3)
         required: true
-     target_branch:
-       description: The Target Branch (e.g. 5.0.x)
-       required: true
+      target_branch:
+        description: The Target Branch (e.g. 5.0.x)
+        required: true
 jobs:
   release:
     runs-on: ubuntu-latest
