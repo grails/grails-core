@@ -48,13 +48,6 @@ jobs:
           arguments: assemble
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
-      - name: Run post-release
-        if: steps.assemble.success == 'success'
-        uses: ./.github/actions/post-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          SNAPSHOT_SUFFIX: -SNAPSHOT
       - name: Upload artifacts to the Github release
         id: upload_artifact
         if: steps.assemble.outcome == 'success'
@@ -106,3 +99,10 @@ jobs:
         env:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+      - name: Run post-release
+        if: steps.assemble.success == 'success'
+        uses: ./.github/actions/post-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SNAPSHOT_SUFFIX: -SNAPSHOT
