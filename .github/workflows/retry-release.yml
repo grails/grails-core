@@ -22,7 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: "refs/tags/v${{ github.event.inputs.release }}"
+          ref: "v${{ github.event.inputs.release }}"
           token: ${{ secrets.GH_TOKEN }}
       - uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
@@ -102,9 +102,11 @@ jobs:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
       - name: Run post-release
-        if: steps.assemble.success == 'success'
+        if: steps.assemble.outcome == 'success'
         uses: ./.github/actions/post-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           SNAPSHOT_SUFFIX: -SNAPSHOT
+          TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
+          RELEASE_VERSION: ${{ github.event.inputs.release }}
