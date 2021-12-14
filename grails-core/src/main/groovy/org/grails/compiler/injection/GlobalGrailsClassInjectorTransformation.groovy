@@ -198,8 +198,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                     addToProps(props, (String) prop.key, (String) prop.value)
                 }
             }
-        }4
-        // update
+        }
     }
 
     private static Properties addToProps(Properties props, String superTypeName, String classNodeNames) {
