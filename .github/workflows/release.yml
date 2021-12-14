@@ -18,13 +18,6 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
       - uses: gradle/wrapper-validation-action@v1
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
@@ -44,46 +37,54 @@ jobs:
         uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Assemble
+        id: assemble
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assemble
+      - name: Generate secring file
+        env:
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
+        run: echo $SECRING_FILE | base64 -d > ${{ github.workspace }}/secring.gpg
       - name: Publish to Sonatype OSSRH
-        if: success()
+        id: publish
+        if: steps.assemble.outcome == 'success'
+        uses: gradle/gradle-build-action@v2
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
-        run: |
-          echo $SECRING_FILE | base64 -d > secring.gpg
-          echo "Publishing Artifacts"
-          (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon)
-          (set -x; ./gradlew assemble --no-daemon)
+        with:
+          arguments: -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg publishToSonatype closeAndReleaseSonatypeStagingRepository
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
       - name: Run post-release
-        if: success()
+        if: steps.publish.success == 'success'
         uses: ./.github/actions/post-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           SNAPSHOT_SUFFIX: -SNAPSHOT
       - name: Upload artifacts to the Github release
+        id: upload_artifact
+        if: steps.publish.outcome == 'success'
         uses: Roang-zero1/github-upload-release-artifacts-action@master
         with:
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Message for the Grails Documentation Release
-        if: success()
+        if: steps.publish.outcome == 'success'
         id: grails_docs_release_message
         run: |
           echo ::set-output name=value::{\"grails_version\":\"$RELEASE_VERSION\"}
         env:
           RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
       - name: Invoke grails-doc release workflow
-        if: success()
+        if: steps.publish.outcome == 'success'
         id: grails_doc
         uses: benc-uk/workflow-dispatch@v1.1
         with:
@@ -93,7 +94,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Invoke grails-static-website release workflow
-        if: success()
+        if: steps.publish.outcome == 'success'
         id: grails_static_website
         uses: benc-uk/workflow-dispatch@v1.1
         with:
@@ -102,15 +103,19 @@ jobs:
           ref: master
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
-      - name: Grails SDK Release
-        if: success()
-        run: |
-          if $BETA ; then
-            (set -x; ./gradlew sdkMinorRelease)
-          else
-            ( set -x; ./gradlew sdkMajorRelease)
-          fi
+      - name: Grails SDK Minor Release
+        if: steps.upload_artifact.outcome == 'success' && contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC')
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: sdkMinorRelease
         env:
-          BETA: ${{ contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC') }}
+          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
+          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+      - name: Grails SDK Major Release
+        if: steps.upload_artifact.outcome == 'success' && !contains(steps.release_version.outputs.release_version, 'M') && !contains(steps.release_version.outputs.release_version, 'RC'))
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: sdkMajorRelease
+        env:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
