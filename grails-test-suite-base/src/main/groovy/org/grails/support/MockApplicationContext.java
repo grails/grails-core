@@ -201,6 +201,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return null;
     }
 
+    @Override
+    public <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException {
+        return findAnnotationOnBean(beanName, annotationType);
+    }
+
     public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) throws BeansException {
         Map<String, Object> submap = new HashMap<String, Object>();
         for (Object beanName : beans.keySet()) {
