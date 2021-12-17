@@ -63,7 +63,7 @@ jobs:
       - name: Export Gradle Properties
         uses: micronaut-projects/github-actions/export-gradle-properties@master
       - name: Run post-release
-        if: steps.publish.success == 'success'
+        if: steps.publish.outcome == 'success'
         uses: ./.github/actions/post-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
