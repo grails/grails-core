@@ -37,7 +37,6 @@ import java.lang.reflect.Modifier
 @CompileStatic
 class GlobalGrailsClassInjectorTransformation implements ASTTransformation, CompilationUnitAware {
 
-
     public static final ClassNode ARTEFACT_HANDLER_CLASS = ClassHelper.make("grails.core.ArtefactHandler")
     public static final ClassNode APPLICATION_CONTEXT_COMMAND_CLASS = ClassHelper.make("grails.dev.commands.ApplicationCommand")
     public static final ClassNode TRAIT_INJECTOR_CLASS = ClassHelper.make("grails.compiler.traits.TraitInjector")
@@ -52,8 +51,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         if(url == null ) return
         if(!GrailsResourceUtils.isProjectSource(new UrlResource(url))) return;
-
-
 
         List<ArtefactHandler> artefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler)
         ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
@@ -77,7 +74,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
             pluginVersion = projectVersion
 
-
             def classNodeName = classNode.name
 
             if(classNodeName.endsWith("GrailsPlugin") && !classNode.isAbstract()) {
@@ -90,7 +86,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 continue
             }
 
-
             if(updateGrailsFactoriesWithType(classNode, ARTEFACT_HANDLER_CLASS, compilationTargetDirectory)) {
                 continue
             }
@@ -102,7 +97,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             }
 
             if(!GrailsResourceUtils.isGrailsResource(new UrlResource(url))) continue;
-
 
             if(projectName && projectVersion) {
                 GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(projectName.toString()), version:projectVersion])
@@ -130,7 +124,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 }
             }
 
-
             if(!transformedClasses.contains(classNodeName)) {
                 def globalClassInjectors = GrailsAwareInjectionOperation.globalClassInjectors
 
@@ -139,7 +132,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 }
             }
         }
-
 
         // now create or update grails-plugin.xml
         // first check if plugin.xml exists
@@ -273,6 +265,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                     for(entry in pluginProperties) {
                         delegate."$entry.key"(entry.value)
                     }
+
                     // if there are pending classes to add to the plugin.xml add those
                     if(artefactClasses) {
                         def antPathMatcher = new AntPathMatcher()
@@ -284,7 +277,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                             }
                         }
                     }
-
                 }
             }
 
@@ -338,7 +330,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             Writable writable = new StreamingMarkupBuilder().bind {
                 mkp.yield pluginXml
             }
-
 
             pluginXmlFile.withWriter("UTF-8") { Writer writer ->
                 writable.writeTo(writer)
