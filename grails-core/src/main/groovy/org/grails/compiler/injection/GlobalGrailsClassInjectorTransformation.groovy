@@ -79,7 +79,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
             def classNodeName = classNode.name
 
-            if(classNodeName.endsWith("GrailsPlugin")) {
+            if(classNodeName.endsWith("GrailsPlugin") && !classNode.isAbstract()) {
                 pluginClassNode = classNode
 
                 if(!classNode.getProperty('version')) {
