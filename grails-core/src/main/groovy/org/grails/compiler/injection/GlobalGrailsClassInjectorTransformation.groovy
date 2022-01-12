@@ -5,6 +5,7 @@ import grails.compiler.ast.ClassInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
 import grails.plugins.metadata.GrailsPlugin
+import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 import groovy.transform.CompilationUnitAware
@@ -69,7 +70,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             def projectName = classNode.getNodeMetaData("projectName")
             def projectVersion = classNode.getNodeMetaData("projectVersion")
             if(projectVersion == null) {
-                projectVersion = GrailsUtil.getGrailsVersion()
+                projectVersion = Environment.getGrailsVersion()
             }
 
             pluginVersion = projectVersion
