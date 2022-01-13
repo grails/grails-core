@@ -287,6 +287,16 @@ allprojects {
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
     }
+
+    // This added to prevent remote cache miss, because project JAR include manifest file with Build-By and Created-By properties which might be different for CI vs Local.
+    normalization {
+        runtimeClasspath {
+            metaInf {
+                ignoreAttribute("Built-By")
+                ignoreAttribute("Created-By")
+            }
+        }
+    }
 }
 
 apply from: "gradle/idea.gradle"
