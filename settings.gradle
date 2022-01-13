@@ -22,7 +22,10 @@ buildCache {
         push = true
         enabled = true
         url = 'https://ge.grails.org/cache/'
-// note the trailing slash!
+        credentials {
+            username = System.getenv('GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER')
+            password = System.getenv('GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY')
+        }
     }}
 
 rootProject.name = "grails.core.ROOT"
