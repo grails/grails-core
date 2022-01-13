@@ -27,14 +27,8 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
-      - name: Run Tests
-        if: github.event_name == 'pull_request'
-        id: tests
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: check
       - name: Run Build
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request'
         id: build
         uses: gradle/gradle-build-action@v2
         env:

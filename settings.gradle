@@ -16,6 +16,15 @@ gradleEnterprise {
 
 }
 
+buildCache {
+    local { enabled = false }
+    remote(HttpBuildCache) {
+        push = true
+        enabled = true
+        url = 'https://ge.grails.org/cache/'
+// note the trailing slash!
+    }}
+
 rootProject.name = "grails.core.ROOT"
 
 include (
