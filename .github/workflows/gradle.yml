@@ -27,6 +27,15 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
+      - name: Run Tests
+        if: github.event_name == 'pull_request'
+        id: tests
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: check
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
       - name: Run Build
         if: github.event_name == 'pull_request'
         id: build
@@ -36,7 +45,7 @@ jobs:
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
         with:
-          arguments: clean build -Dscan.tag.exp4
+          arguments: build
       - name: Publish Test Report
         if: steps.build.outcome == 'failure' || steps.tests.outcome == 'failure'
         uses: scacap/action-surefire-report@v1

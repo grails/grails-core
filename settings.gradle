@@ -17,9 +17,9 @@ gradleEnterprise {
 }
 
 buildCache {
-    local { enabled = false }
+    local { enabled = System.getenv('CI') != 'true' }
     remote(HttpBuildCache) {
-        push = true
+        push = System.getenv('CI') == 'true'
         enabled = true
         url = 'https://ge.grails.org/cache/'
         credentials {
