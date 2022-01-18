@@ -41,12 +41,6 @@ ext {
                 names:['jakarta.annotation-api'],
                 modules:['']
         ],
-        'logback': [
-            version: logbackVersion,
-            group: 'ch.qos.logback',
-            names: ['logback'],
-            modules: ['core', 'classic']
-        ],
         'micronaut': [
                 version: micronautVersion,
                 group:'io.micronaut',
