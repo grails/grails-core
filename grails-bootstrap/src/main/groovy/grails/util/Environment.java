@@ -719,12 +719,8 @@ public enum Environment {
             try {
                 Class.forName("org.springsource.loaded.TypeRegistry");
                 String jvmVersion = System.getProperty("java.specification.version");
-                if(jvmVersion.equals("1.8")) {
-                    LOG.get().debug("Found spring-loaded on the class path");
-                    reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
-                } else {
-                    LOG.get().warn("Found spring-loaded on classpath but JVM is not 1.8 - skipping");
-                }
+                LOG.get().debug("Found spring-loaded on the class path");
+                reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
             }
             catch (ClassNotFoundException e1) {
                 reloadingAgentEnabled = false;
