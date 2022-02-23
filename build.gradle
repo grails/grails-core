@@ -440,8 +440,8 @@ subprojects { project ->
 
     if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            api 'hsqldb:hsqldb:1.8.1.1'
-            api "com.h2database:h2:$h2Version"
+            testImplementation 'hsqldb:hsqldb:1.8.1.1'
+            testImplementation "com.h2database:h2:$h2Version"
         }
     }
 
