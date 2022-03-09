@@ -11,7 +11,6 @@ dependencies {
 
 
     api project(":grails-plugin-mimetypes")
-    api project(":grails-web")
     api "org.grails.plugins:converters:$legacyConvertersVersion"
 
     // command line requirements
@@ -24,4 +23,8 @@ dependencies {
 
     // needed for Spock
     api "org.objenesis:objenesis:${objenesisVersion}"
+
+    api("org.springframework:spring-test:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 }

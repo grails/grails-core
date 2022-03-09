@@ -8,6 +8,8 @@ dependencies {
     api("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
     runtimeOnly project(':grails-plugin-i18n')
 
+    testImplementation project(":grails-test")
+
     testRuntimeOnly "jline:jline:$jlineVersion"
     testRuntimeOnly "org.fusesource.jansi:jansi:$jansiVersion"
 }
