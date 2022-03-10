@@ -1,5 +1,6 @@
 package grails.config
 
+import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.io.FileSystemResource
@@ -10,6 +11,34 @@ import spock.lang.Specification
  *
  */
 class PropertySourceConfigSpec extends Specification {
+
+    void "specifying targetType as Map in getProperty method should not return NavigableMap"() {
+        given:
+        Map input = ['mongodb.username': 'test',
+                     'mongodb.password': 'foo']
+
+        when:
+        PropertySourcesConfig config = new PropertySourcesConfig()
+        config.merge(input)
+        Map value = config.getProperty("mongodb", Map.class)
+
+        then:
+        !(value instanceof NavigableMap)
+    }
+
+    void "specifying targetType as Map in getProperty method should not return NavigableMap for List of Map value"() {
+        given:
+        Map input = ['grails.mongodb.connections[0].username': 'test',
+                     'grails.mongodb.connections[0].password': 'foo']
+
+        when:
+        PropertySourcesConfig config = new PropertySourcesConfig()
+        config.merge(input)
+
+        then:
+        !(config.getProperty("grails.mongodb", Map.class) instanceof NavigableMap)
+        !(config.getProperty("grails.mongodb", List.class).get(0) instanceof NavigableMap)
+    }
 
 
     void "should merge sub-documents in yaml file to single config"() {
