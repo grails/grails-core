@@ -17,16 +17,15 @@ package org.grails.plugins.web.mime
 
 import grails.config.Config
 import grails.config.Settings
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
+import grails.core.GrailsApplication
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeProvider
-import org.grails.config.NavigableMap
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.springframework.beans.factory.FactoryBean
-import grails.core.GrailsApplication
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 
 /**
  * Creates the MimeType[] object that defines the configured mime types.
@@ -89,6 +88,6 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected Map<CharSequence, CharSequence> getMimeConfig(Config config) {
-        return config.getProperty(Settings.MIME_TYPES, NavigableMap.class)
+        return config.getProperty(Settings.MIME_TYPES, Map.class)
     }
 }
