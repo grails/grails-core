@@ -24,13 +24,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.util.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -276,7 +275,7 @@ public abstract class NavigableMapConfig implements Config {
         if (cache.containsKey(from)) {
             return cache.get(from);
         }
-        final HashMap<Object, Object> to = new HashMap<>();
+        final Map<Object, Object> to = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry: from.entrySet()) {
             if (entry.getValue() instanceof NavigableMap) {
                 to.put(entry.getKey(), convertToMap((NavigableMap) entry.getValue(), cache));
