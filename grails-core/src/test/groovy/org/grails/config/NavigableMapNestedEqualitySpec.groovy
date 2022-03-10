@@ -151,8 +151,8 @@ grails:
         def config = new PropertySourcesConfig(propertySources)
 
         expect:
-        config.getProperty('grails.mime.types', Map) == ( config.grails.mime.types )
-        config.getProperty('grails.mime.types', Map).is( config.grails.mime.types )
+        config.getProperty('grails.mime.types', Object) == ( config.grails.mime.types )
+        config.getProperty('grails.mime.types', Object).is( config.grails.mime.types )
 
 
     }
