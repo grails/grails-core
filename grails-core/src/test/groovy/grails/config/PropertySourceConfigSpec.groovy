@@ -36,8 +36,8 @@ class PropertySourceConfigSpec extends Specification {
         config.merge(input)
 
         then:
-        !(config.getProperty("grails.mongodb", Map.class) instanceof NavigableMap)
-        !(config.getProperty("grails.mongodb", List.class).get(0) instanceof NavigableMap)
+        !(config.getProperty("grails.mongodb.connections[0]", Map.class) instanceof NavigableMap)
+        !(config.getProperty("grails.mongodb.connections", List.class).get(0) instanceof NavigableMap)
     }
 
 
