@@ -24,11 +24,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.util.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -270,10 +271,41 @@ public abstract class NavigableMapConfig implements Config {
         return System.getenv(name) != null;
     }
 
+    private Map<Object, Object> convertToMap(NavigableMap from, IdentityHashMap<NavigableMap, Map<Object, Object>> cache) {
+        if (cache.containsKey(from)) {
+            return cache.get(from);
+        }
+        final Map<Object, Object> to = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry: from.entrySet()) {
+            if (entry.getValue() instanceof NavigableMap) {
+                to.put(entry.getKey(), convertToMap((NavigableMap) entry.getValue(), cache));
+            } else if (entry.getValue() instanceof List) {
+                List<Object> newList = new ArrayList<>();
+                for (Object o: (List<?>) entry.getValue()) {
+                    if (o instanceof NavigableMap) {
+                        newList.add(convertToMap((NavigableMap) o, cache));
+                    } else {
+                        newList.add(o);
+                    }
+                }
+                to.put(entry.getKey(), newList);
+            } else {
+                to.put(entry.getKey(), entry.getValue());
+            }
+        }
+        cache.put(from, to);
+        return to;
+    }
+
     private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
         if (originalValue != null) {
             if (targetType.isInstance(originalValue)) {
-                return (T) originalValue;
+                if (originalValue instanceof NavigableMap && targetType.equals(Map.class)) {
+                    final IdentityHashMap<NavigableMap, Map<Object, Object>> cache = new IdentityHashMap<>();
+                    return (T) convertToMap((NavigableMap) originalValue, cache);
+                } else {
+                    return (T) originalValue;
+                }
             } else {
                 if (!(originalValue instanceof NavigableMap)) {
                     try {

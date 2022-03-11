@@ -12,7 +12,7 @@ jobs:
   release_notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Check if it has release drafter config file
         id: check_release_drafter
         run: |
@@ -22,7 +22,7 @@ jobs:
         id: extract_branch
         run: echo ::set-output name=value::${GITHUB_REF:11}
       # If it has release drafter:
-      - uses: release-drafter/release-drafter@v5.17.6
+      - uses: release-drafter/release-drafter@v5.19.0
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

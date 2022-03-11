@@ -24,6 +24,7 @@ import grails.web.mime.MimeTypeProvider
 import grails.web.mime.MimeTypeResolver
 import grails.web.mime.MimeUtility
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import io.micronaut.context.annotation.Factory
 import org.grails.web.mime.DefaultMimeTypeResolver
 import org.grails.web.mime.DefaultMimeUtility
@@ -104,6 +105,7 @@ class MimeTypesConfiguration {
         return new DefaultMimeTypeResolver()
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     protected Map<CharSequence, Object> getMimeConfig(Config config) {
         return config.getProperty(Settings.MIME_TYPES, Map.class)
     }

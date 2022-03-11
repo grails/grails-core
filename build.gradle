@@ -55,7 +55,7 @@ ext {
         ],
         'micronaut.micronaut-runtime-groovy': [
                 version: micronautRuntimeGroovyVersion,
-                group:'io.micronaut',
+                group:'io.micronaut.groovy',
                 names:['micronaut'],
                 modules:['runtime-groovy']
         ],
@@ -428,11 +428,11 @@ subprojects { project ->
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 
-    if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
+    if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite)/) {
         dependencies {
             api "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
-            api("org.springframework:spring-test:${springVersion}") {
+            testImplementation("org.springframework:spring-test:${springVersion}") {
                 exclude group: 'commons-logging', module:'commons-logging'
             }
         }
@@ -440,8 +440,8 @@ subprojects { project ->
 
     if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            api 'hsqldb:hsqldb:1.8.1.1'
-            api "com.h2database:h2:$h2Version"
+            testImplementation 'hsqldb:hsqldb:1.8.1.1'
+            testImplementation "com.h2database:h2:$h2Version"
         }
     }
 
