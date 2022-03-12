@@ -40,7 +40,7 @@ enum Color {
 
     String id
 
-    public Color(String id) {
+    Color(String id) {
         this.id = id
     }
 

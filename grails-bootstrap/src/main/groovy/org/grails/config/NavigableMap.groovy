@@ -103,7 +103,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     @Override
-    void putAll(Map<? extends String, ?> m) {
+    void putAll(Map<? extends String, ? extends Object> m) {
         delegateMap.putAll m
     }
 
