@@ -118,7 +118,7 @@ trait ResponseRenderer extends WebAttributes {
      * @param closure The markup to render
      */
     @Generated
-    void render(Closure closure) {
+    void render(@DelegatesTo(strategy = Closure.DELEGATE_FIRST) Closure closure) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
 
@@ -134,7 +134,7 @@ trait ResponseRenderer extends WebAttributes {
      * @param closure The closure to render
      */
     @Generated
-    void render(Map argMap, Closure closure) {
+    void render(Map argMap, @DelegatesTo(strategy = Closure.DELEGATE_FIRST) Closure closure) {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
         HttpServletResponse response = webRequest.currentResponse
         String explicitSiteMeshLayout = argMap[ARGUMENT_LAYOUT]?.toString() ?: null
@@ -152,7 +152,7 @@ trait ResponseRenderer extends WebAttributes {
         applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
     }
 
-    private void renderJsonInternal(HttpServletResponse response, Closure callable) {
+    private void renderJsonInternal(HttpServletResponse response, @DelegatesTo(value = StreamingJsonBuilder.StreamingJsonDelegate.class, strategy = Closure.DELEGATE_FIRST) Closure callable) {
         response.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), response.getCharacterEncoding() ?: "UTF-8"))
         def jsonBuilder = new StreamingJsonBuilder(response.writer)
         jsonBuilder.call callable
@@ -484,7 +484,7 @@ trait ResponseRenderer extends WebAttributes {
         return statusSet
     }
 
-    private void renderMarkupInternal(GrailsWebRequest webRequest, Closure closure, HttpServletResponse response) {
+    private void renderMarkupInternal(GrailsWebRequest webRequest, @DelegatesTo(strategy = Closure.DELEGATE_FIRST) Closure closure, HttpServletResponse response) {
         StreamingMarkupBuilder b = new StreamingMarkupBuilder()
         b.encoding = response.characterEncoding
 

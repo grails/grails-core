@@ -40,11 +40,11 @@ enum Color {
 
     String id
 
-    public Color(String id) {
+    Color(String id) {
         this.id = id
     }
 
-    public static getById(String id) {
+    static getById(String id) {
         Color.find{ it.id == id }
     }
 }
