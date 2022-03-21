@@ -1,5 +1,6 @@
 package org.grails.config
 
+
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
 import spock.lang.Ignore
@@ -49,9 +50,20 @@ class PropertySourcesConfigSpec extends Specification {
             config.getProperty('three.four', Date) == null
             config.getProperty('flush.mode', FlushModeType) == FlushModeType.COMMIT
             !config.empty.value
+    }
 
+    @Issue("https://github.com/grails/grails-spring-security-core/issues/724")
+    void "Test accessing a NavigableMap property as Map class"() {
+        given:
+        def source = new NavigableMap()
+        source.merge(["grails": ["plugin": ["springsecurity": ["userLookup": ["usernamePropertyName": "username"]]]]])
+        def propertySource = new MapPropertySource("springsecurity", source)
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(propertySource)
+        def config = new PropertySourcesConfig(propertySources)
 
-
+        expect:
+        config.getProperty("grails.plugin.springsecurity", ConfigObject.class)
     }
 
     /*

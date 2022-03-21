@@ -307,7 +307,7 @@ public abstract class NavigableMapConfig implements Config {
                     return (T) originalValue;
                 }
             } else {
-                if (!(originalValue instanceof NavigableMap)) {
+                if (!(originalValue instanceof NavigableMap) || Map.class.isAssignableFrom(targetType)) {
                     try {
                         T value = conversionService.convert(originalValue, targetType);
                         return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
