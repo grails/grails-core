@@ -42,10 +42,10 @@ class CreateReleasesDropdownTask extends DefaultTask {
         def result = slurper.parseText(json)
         String selectHtml = "<select onChange='window.document.location.href=this.options[this.selectedIndex].value;'>"
         String snapshotHref = "https://${org}.github.io/${repo}/snapshot/guide/single.html"
-        if (version.endsWith("BUILD-SNAPSHOT")) {
+        if (version.endsWith("-SNAPSHOT")) {
             selectHtml += "<option selected='selected' value='${snapshotHref}'>SNAPSHOT</option>"
         } else {
-            selectHtml += "<option value='${snapshotHref}'>${version}</option>"
+            selectHtml += "<option value='${snapshotHref}'>SNAPSHOT</option>"
         }
         parseSoftwareVersions(result).each { softwareVersion ->
             String versionName = softwareVersion.versionText
@@ -65,6 +65,6 @@ class CreateReleasesDropdownTask extends DefaultTask {
 
     @CompileDynamic
     List<SoftwareVersion> parseSoftwareVersions(Object result) {
-        result.findAll { it.name.startsWith('v') }.collect { SoftwareVersion.build(it.name.replace('v', '')) }.sort().reverse()
+        result.findAll { it.name.startsWith('v') }.collect { SoftwareVersion.build(it.name.replace('v', '')) }.sort().unique().reverse()
     }
 }

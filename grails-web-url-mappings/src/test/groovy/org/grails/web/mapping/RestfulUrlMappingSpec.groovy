@@ -9,10 +9,15 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.util.WebUtils
 import spock.lang.Issue
 import spock.lang.Specification
 
-class RestfulUrlMappingspec extends Specification {
+class RestfulUrlMappingSpec extends Specification {
+
+    def setup() {
+        WebUtils.clearGrailsWebRequest()
+    }
 
     def mappings = {
         delete "/$controller/$id(.$format)?"(action: "delete")
@@ -26,8 +31,8 @@ class RestfulUrlMappingspec extends Specification {
     @Issue('https://github.com/grails/grails-core/issues/10995')
     void 'test that the right link is generated for restful mapping'() {
         expect:
-        linkGenerator.link(resource: 'user', action: 'show', id: 1) == 'http://localhost/user/1'
-        linkGenerator.link(resource: 'user', action: 'show', id: 1, method: 'GET') == 'http://localhost/user/1'
+        linkGenerator.link(resource: 'user', action: 'show', id: 1, absolute: true) == 'http://localhost/user/1'
+        linkGenerator.link(resource: 'user', action: 'show', id: 1, method: 'GET', absolute: true) == 'http://localhost/user/1'
     }
 
     LinkGenerator getLinkGenerator() {

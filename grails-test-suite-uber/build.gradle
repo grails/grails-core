@@ -10,7 +10,7 @@ dependencies {
 
     api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
-    testRuntimeOnly 'javax.servlet.jsp:jsp-api:2.1'
+    testRuntimeOnly 'javax.servlet.jsp:jsp-api:2.2'
     testRuntimeOnly 'jstl:jstl:1.2'
     testRuntimeOnly 'javax.el:el-api:2.2'
     testRuntimeOnly "com.h2database:h2:$h2Version"
@@ -28,7 +28,7 @@ dependencies {
                 project(":grails-plugin-databinding"),
                 project(':grails-spring')
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.1.0.M1", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.2.2", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -68,14 +68,14 @@ dependencies {
         exclude module:'grails-web-common'
         exclude module:'grails-encoder'
     }
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
         exclude module:'grails-core'
         exclude module:'async'
     }
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'

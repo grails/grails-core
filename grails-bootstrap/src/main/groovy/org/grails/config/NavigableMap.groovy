@@ -103,7 +103,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     @Override
-    void putAll(Map<? extends String, ?> m) {
+    void putAll(Map<? extends String, ? extends Object> m) {
         delegateMap.putAll m
     }
 
@@ -295,7 +295,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         Object result = get(name)
         if (!(result instanceof NavigableMap)) {
             if (LOG.isWarnEnabled()) {
-                LOG.warn("Accessing config through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.")
+                LOG.warn("Accessing config key '{}' through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.", name)
             }
         }
         return result
@@ -369,19 +369,19 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         currentMap
     }
     
-    public Map<String, Object> toFlatConfig() {
-        Map<String,Object> flatConfig = [:]
+    Map<String, Object> toFlatConfig() {
+        Map<String, Object> flatConfig = [:]
         flattenKeys(flatConfig, this, [], false)
         flatConfig
     }
     
-    public Properties toProperties() {
+    Properties toProperties() {
         Properties properties = new Properties()
-        flattenKeys((Map<String, Object>)properties, this, [], true)
+        flattenKeys((Map<Object, Object>) properties, this, [], true)
         properties
     }
     
-    private void flattenKeys(Map<String, Object> flatConfig, Map currentMap, List<String> path, boolean forceStrings) {
+    private void flattenKeys(Map<? extends Object, Object> flatConfig, Map currentMap, List<String> path, boolean forceStrings) {
         currentMap.each { key, value ->
             String stringKey = String.valueOf(key)
             if(value != null) {
@@ -441,7 +441,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             this.parent = parent
             this.path = path
             if (LOG.isWarnEnabled()) {
-                LOG.warn("Accessing config through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.")
+                LOG.warn("Accessing config key '{}' through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.", path)
             }
         }
 

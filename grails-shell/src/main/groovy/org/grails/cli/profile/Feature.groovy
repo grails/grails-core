@@ -59,6 +59,11 @@ interface Feature {
     List<String> getBuildPlugins()
 
     /**
+     * @return The build repositories url
+     */
+    List<String> getBuildRepositories()
+
+    /**
      * @return The configuration for the feature
      */
     NavigableMap getConfiguration()

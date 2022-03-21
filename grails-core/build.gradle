@@ -10,8 +10,13 @@ dependencies {
     annotationProcessor "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
     annotationProcessor "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
     api "io.micronaut:micronaut-inject:$micronautVersion"
-    api "io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion"
-    api "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
+    api "javax.inject:javax.inject:1"
+    api "io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion", {
+        exclude group:"org.slf4j", module: "slf4j-simple"
+    }
+    api "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion", {
+        exclude group:"org.slf4j", module: "slf4j-simple"
+    }
     api "io.micronaut:micronaut-runtime:$micronautVersion"
     api 'javax.persistence:javax.persistence-api:2.2'
     api "javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion"
@@ -31,7 +36,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    compileOnly("org.springframework:spring-test:${springVersion}") {
+    testImplementation("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
@@ -74,20 +79,19 @@ dependencies {
 
     // These dependencies are not required, but due to a Groovy compiler bug they are loaded by Groovy and hence
     // have to be on the path for compilation even though they shouldn't be
-    provided "org.apache.ant:ant:${antVersion}"
-    provided "jline:jline:$jlineVersion"
-    provided "org.fusesource.jansi:jansi:$jansiVersion"
+    api "org.apache.ant:ant:${antVersion}"
+    api "jline:jline:$jlineVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
 
 }
 
-compileGroovy.doFirst {
-    delete("${buildDir}/classes/main/META-INF")
-    sourceSets.main.output.classesDirs.files.each {
-        ant.mkdir(dir:it)
-        ant.propertyfile(file:"${it.path}/grails.build.properties") {
-            entry key:"grails.version", value:version
-        }
-    }
+def writeProps = tasks.register('writeGrailsProperties', WriteProperties) {
+    outputFile = file("${buildDir}/grails.build.properties")
+    property("grails.version", project.version)
+}
+
+tasks.named('processResources') {
+    from writeProps
 }
 
 eclipse {

@@ -612,6 +612,38 @@ class SimpleDataBinderSpec extends Specification {
         comment.attachments.find { it.filename == 'foo.txt' }
         comment.attachments.find { it.filename == 'bar.txt' }
     }
+
+    @Issue('https://github.com/grails/grails-core/issues/12150')
+    void 'Test binding when class and embedded classes both implements an interface'() {
+        given:
+        SimpleDataBinder binder = new SimpleDataBinder()
+
+        and:
+        SimpleMapDataBindingSource input = [a: [data: 'abc']] as SimpleMapDataBindingSource
+        ClassB classWithInterface = new ClassB()
+
+        when:
+        binder.bind(classWithInterface, input)
+
+        then:
+        classWithInterface.a.data == 'abc'
+    }
+
+    @Issue('https://github.com/grails/grails-core/issues/12150')
+    void 'Test binding when class and embedded classes extends abstract class and implements an interface'() {
+        given:
+        SimpleDataBinder binder = new SimpleDataBinder()
+
+        and:
+        SimpleMapDataBindingSource input = [a: [data: 'abc']] as SimpleMapDataBindingSource
+        FromAbstractB fromAbstractB = new FromAbstractB()
+
+        when:
+        binder.bind(fromAbstractB, input)
+
+        then:
+        fromAbstractB.a.data == 'abc'
+    }
 }
 
 class Factory {
@@ -688,3 +720,26 @@ class Attachment {
     String filename
 }
 
+interface InterfaceA {
+    String getData()
+}
+
+interface InterfaceB {
+    InterfaceA getA()
+}
+
+class ClassA implements InterfaceA {
+    String data
+}
+
+class ClassB implements InterfaceB {
+    ClassA a
+}
+
+class AbstractB {
+    ClassA a
+}
+
+class FromAbstractB extends AbstractB {
+
+}

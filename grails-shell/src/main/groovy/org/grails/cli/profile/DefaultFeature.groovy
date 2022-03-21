@@ -43,6 +43,7 @@ class DefaultFeature implements Feature {
     final NavigableMap configuration = new NavigableMap()
     final List<Dependency> dependencies = []
     final List<String> buildPlugins
+    final List<String> buildRepositories
 
     DefaultFeature(Profile profile, String name, Resource location) {
         this.profile = profile
@@ -68,6 +69,7 @@ class DefaultFeature implements Feature {
             }
         }
         this.buildPlugins = (List<String>)configuration.get("build.plugins", [])
+        this.buildRepositories = (List<String>) configuration.get("build.repositories", [])
     }
 
     @Override

@@ -4,19 +4,18 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath "commons-io:commons-io:2.8.0"
-        classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
-        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
-        classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
+        classpath "commons-io:commons-io:2.11.0"
+        classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
+        classpath "org.gradle:test-retry-gradle-plugin:1.3.1"
     }
 }
 
-import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
@@ -27,7 +26,7 @@ ext {
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
     isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
-    isCiBuild = System.getenv().get("TRAVIS") == 'true' || System.getenv().get("CI") as Boolean
+    isCiBuild = System.getenv().get("CI") as Boolean
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [
         'javax.annotation-api': [
@@ -35,6 +34,12 @@ ext {
                 group:'javax.annotation',
                 names:['javax.annotation'],
                 modules:['api']
+        ],
+        'jakarta-annotation': [
+                version: jakartaAnnotationApiVersion,
+                group:'jakarta.annotation',
+                names:['jakarta.annotation-api'],
+                modules:['']
         ],
         'micronaut': [
                 version: micronautVersion,
@@ -50,7 +55,7 @@ ext {
         ],
         'micronaut.micronaut-runtime-groovy': [
                 version: micronautRuntimeGroovyVersion,
-                group:'io.micronaut',
+                group:'io.micronaut.groovy',
                 names:['micronaut'],
                 modules:['runtime-groovy']
         ],
@@ -59,6 +64,12 @@ ext {
                 group:'io.micronaut.spring',
                 names:['micronaut-spring'],
                 modules:['spring', 'context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+        ],
+        'mongodb': [
+                version: mongodbJavaDriverVersion,
+                group: 'org.mongodb',
+                names: ['mongodb-driver'],
+                modules: ['core', 'sync']
         ],
         gorm: [
             version: datastoreVersion,
@@ -201,10 +212,16 @@ if (isReleaseVersion) {
                 def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
                 def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
                 def ossStagingProfileId = System.getenv("SONATYPE_STAGING_PROFILE_ID") ?: project.hasProperty("sonatypeOssStagingProfileId") ? project.sonatypeOssStagingProfileId : ''
+                nexusUrl = uri("https://s01.oss.sonatype.org/service/local/")
                 username = ossUser
                 password = ossPass
                 stagingProfileId = ossStagingProfileId
             }
+        }
+
+        transitionCheckOptions {
+            maxRetries.set(40)
+            delayBetween.set(java.time.Duration.ofMillis(2000))
         }
     }
 }
@@ -263,6 +280,16 @@ allprojects {
 
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
+    // This added to prevent remote cache miss, because project JAR include manifest file with Build-By and Created-By properties which might be different for CI vs Local.
+    normalization {
+        runtimeClasspath {
+            metaInf {
+                ignoreAttribute("Built-By")
+                ignoreAttribute("Created-By")
+            }
+        }
     }
 }
 
@@ -328,8 +355,8 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    apply plugin: 'provided-base'
-    apply plugin: 'optional-base'
+    apply plugin: 'nebula.optional-base'
+    apply plugin: "org.gradle.test-retry"
 
     if (!isTestSuite) {
 
@@ -401,11 +428,11 @@ subprojects { project ->
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 
-    if(project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test|grails-compat)/) {
+    if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite)/) {
         dependencies {
-            provided "javax.servlet:javax.servlet-api:$servletApiVersion"
+            api "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
-            provided("org.springframework:spring-test:${springVersion}") {
+            testImplementation("org.springframework:spring-test:${springVersion}") {
                 exclude group: 'commons-logging', module:'commons-logging'
             }
         }
@@ -413,8 +440,8 @@ subprojects { project ->
 
     if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            provided 'hsqldb:hsqldb:1.8.1.1'
-            provided "com.h2database:h2:$h2Version"
+            testImplementation 'hsqldb:hsqldb:1.8.1.1'
+            testImplementation "com.h2database:h2:$h2Version"
         }
     }
 
@@ -466,9 +493,9 @@ subprojects { project ->
         api groovyDependency
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.2"
-        testImplementation "org.junit.platform:junit-platform-runner:1.7.1"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.2"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+        testImplementation "org.junit.platform:junit-platform-runner:1.8.2"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
 
         if (project.name != "grails-docs") {
             // Logging
@@ -492,6 +519,11 @@ subprojects { project ->
     }
 
     test {
+        retry {
+            maxRetries = 2
+            maxFailures = 20
+            failOnPassedAfterRetry = true
+        }
         testLogging {
             events "passed", "skipped", "failed"
 
@@ -570,12 +602,6 @@ apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
-}
-
-apply plugin: "com.github.adrianbk.tcitrigger"
-
-tciTrigger {
-    gitHubRepo 'grails/grails3-functional-tests'
 }
 
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {

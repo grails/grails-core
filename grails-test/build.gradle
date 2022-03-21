@@ -7,21 +7,24 @@ dependencies {
     api "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
     api("org.codehaus.groovy:groovy-test:$groovyVersion")
     api("org.spockframework:spock-core:$spockVersion") { transitive = false }
-    api "org.junit.platform:junit-platform-runner:1.7.1"
+    api "org.junit.platform:junit-platform-runner:1.8.2"
 
 
-    provided project(":grails-plugin-mimetypes")
-    provided project(":grails-web")
-    provided "org.grails.plugins:converters:$legacyConvertersVersion"
+    api project(":grails-plugin-mimetypes")
+    api "org.grails.plugins:converters:$legacyConvertersVersion"
 
     // command line requirements
-    provided  "jline:jline:$jlineVersion"
-    provided "org.fusesource.jansi:jansi:$jansiVersion"
+    api  "jline:jline:$jlineVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
 
     // Ant
-    provided "org.apache.ant:ant:${antVersion}"
-    provided "org.apache.ant:ant-junit:${antVersion}"
+    api "org.apache.ant:ant:${antVersion}"
+    api "org.apache.ant:ant-junit:${antVersion}"
 
     // needed for Spock
     api "org.objenesis:objenesis:${objenesisVersion}"
+
+    api("org.springframework:spring-test:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 }

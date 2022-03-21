@@ -17,34 +17,38 @@ package org.grails.web.metaclass
 
 import grails.artefact.Controller
 import grails.util.GrailsWebMockUtil
-
 import org.grails.core.exceptions.GrailsRuntimeException
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.web.context.request.RequestContextHolder
+
+import static org.junit.jupiter.api.Assertions.*
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class WithFormMethodTests extends GroovyTestCase {
+class WithFormMethodTests {
 
     private withForm = new WithFormMethod()
     private request
 
-    @Override
-    protected void setUp() {
-        super.setUp()
+    @BeforeEach
+    void setUp() {
         request = GrailsWebMockUtil.bindMockWebRequest()
     }
 
-    @Override
-    protected void tearDown() {
+    @AfterEach
+    void tearDown() {
         RequestContextHolder.resetRequestAttributes()
     }
 
+    @Test
     void testMissingToken() {
 
-        shouldFail(GrailsRuntimeException) {
+        assertThrows(GrailsRuntimeException) {
             withForm.withForm(request) {
                 // should not get here
             }.invalidToken {
@@ -53,11 +57,12 @@ class WithFormMethodTests extends GroovyTestCase {
         }
     }
 
+    @Test
     void testTokenHolderEmpty() {
 
         request.session.setAttribute(SynchronizerTokensHolder.HOLDER,new SynchronizerTokensHolder())
 
-        shouldFail(GrailsRuntimeException) {
+        assertThrows(GrailsRuntimeException) {
             withForm.withForm(request) {
                 // should not get here
             }.invalidToken {
@@ -66,6 +71,7 @@ class WithFormMethodTests extends GroovyTestCase {
         }
     }
 
+    @Test
     void testTokenInvalidWithEmptyTokenHolder() {
         def url = "http://grails.org/submit"
 
@@ -74,7 +80,7 @@ class WithFormMethodTests extends GroovyTestCase {
         request.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_URI,url)
         request.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_KEY,UUID.randomUUID().toString())
 
-        shouldFail(GrailsRuntimeException) {
+        assertThrows(GrailsRuntimeException) {
             withForm.withForm(request) {
                 // should not get here
             }.invalidToken {
@@ -83,8 +89,9 @@ class WithFormMethodTests extends GroovyTestCase {
         }
     }
 
+    @Test
     void testTokenInvalid() {
-        def url = "http://grails.org/submit"
+        def url = "https://grails.org/submit"
 
         SynchronizerTokensHolder tokensHolder = new SynchronizerTokensHolder()
         tokensHolder.generateToken(url)
@@ -93,7 +100,7 @@ class WithFormMethodTests extends GroovyTestCase {
         request.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_URI,url)
         request.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_KEY,UUID.randomUUID().toString())
 
-        shouldFail(GrailsRuntimeException) {
+        assertThrows(GrailsRuntimeException) {
             withForm.withForm(request) {
                 // should not get here
             }.invalidToken {
@@ -102,6 +109,7 @@ class WithFormMethodTests extends GroovyTestCase {
         }
     }
 
+    @Test
     void testTokenValid() {
         def url = "http://grails.org/submit"
 
@@ -121,6 +129,7 @@ class WithFormMethodTests extends GroovyTestCase {
         assertEquals "bar", result.foo
     }
 
+    @Test
     void testNonEmptyHolderStays() {
         def url1 = "http://grails.org/submit1"
         def url2 = "http://grails.org/submit2"
@@ -145,6 +154,7 @@ class WithFormMethodTests extends GroovyTestCase {
         assertTrue tokensHolder.isValid(url2, token2)
     }
 
+    @Test
     void testEmptyHolderIsDeleted() {
         def url = "http://grails.org/submit"
 
@@ -164,8 +174,9 @@ class WithFormMethodTests extends GroovyTestCase {
         assertNull request.session.getAttribute(SynchronizerTokensHolder.HOLDER)
     }
 
+    @Test
     void testHandleDoubleSubmit() {
-        def url = "http://grails.org/submit"
+        def url = "https://grails.org/submit"
 
         SynchronizerTokensHolder tokensHolder = new SynchronizerTokensHolder()
         def token = tokensHolder.generateToken(url)
@@ -182,7 +193,7 @@ class WithFormMethodTests extends GroovyTestCase {
 
         assertEquals "bar", result.foo
 
-        shouldFail(GrailsRuntimeException) {
+        assertThrows(GrailsRuntimeException) {
             withForm.withForm(request) {
                 // should not get here
             }.invalidToken {
@@ -191,9 +202,10 @@ class WithFormMethodTests extends GroovyTestCase {
         }
     }
 
+    @Test
     void testHandleSubmitOfTwoForms() {
-        def url1 = "http://grails.org/submit1"
-        def url2 = "http://grails.org/submit2"
+        def url1 = "https://grails.org/submit1"
+        def url2 = "https://grails.org/submit2"
 
         SynchronizerTokensHolder tokensHolder = new SynchronizerTokensHolder()
         def token1 = tokensHolder.generateToken(url1)
@@ -225,9 +237,10 @@ class WithFormMethodTests extends GroovyTestCase {
         assertEquals "bar", result2.foo
     }
 
+    @Test
     void testHandleSubmitOfTwoFormsWithSameURL() {
-        def url1 = "http://grails.org/submit"
-        def url2 = "http://grails.org/submit"
+        def url1 = "https://grails.org/submit"
+        def url2 = "https://grails.org/submit"
 
         SynchronizerTokensHolder tokensHolder = new SynchronizerTokensHolder()
         def token1 = tokensHolder.generateToken(url1)
@@ -258,7 +271,7 @@ class WithFormMethodTests extends GroovyTestCase {
 
         assertEquals "bar", result2.foo
 
-        shouldFail(GrailsRuntimeException) {
+        assertThrows(GrailsRuntimeException) {
             withForm.withForm(request2) {
                 return [foo:"bar"]
             }.invalidToken {

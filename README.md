@@ -1,3 +1,5 @@
+[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.grails.org/scans)
+
 #### Build Status
 - ![Java CI](https://github.com/grails/grails-core/workflows/Java%20CI/badge.svg)
 - ![Grails Joint Validation Build](https://github.com/grails/grails-core/workflows/Grails%20Joint%20Validation%20Build/badge.svg)
@@ -31,7 +33,7 @@ To build Grails, clone this GitHub repository and execute the install Gradle tar
 
 If you encounter out of memory errors when trying to run the install target, try adjusting Gradle build settings. For example:
 
-    export GRADLE_OPTS="-Xmx2G -Xms2G -XX:NewSize=512m -XX:MaxNewSize=512m -XX:MaxPermSize=1G"
+    export GRADLE_OPTS="-Xmx2G -Xms2G -XX:NewSize=512m -XX:MaxNewSize=512m"
 
 Performing a Release
 ---

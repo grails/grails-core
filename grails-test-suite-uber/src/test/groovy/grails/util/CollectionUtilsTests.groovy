@@ -15,8 +15,13 @@
  */
 package grails.util
 
-class CollectionUtilsTests extends GroovyTestCase {
+import org.junit.jupiter.api.Test
 
+import static org.junit.jupiter.api.Assertions.*
+
+class CollectionUtilsTests {
+
+    @Test
     void testNewMapEvenArgs() {
         def map = CollectionUtils.newMap("foo", 1, "bar", 2, "baz", 42)
         assertNotNull map
@@ -26,24 +31,28 @@ class CollectionUtilsTests extends GroovyTestCase {
         assertEquals 42, map.baz
     }
 
+    @Test
     void testNewMapOddArgs() {
-        shouldFail(IllegalArgumentException) {
+        assertThrows(IllegalArgumentException) {
             CollectionUtils.newMap "foo", 1, "bar"
         }
     }
 
+    @Test
     void testNewMapNull() {
         def map = CollectionUtils.newMap(null)
         assertTrue map instanceof Map
         assertEquals 0, map.size()
     }
 
+    @Test
     void testNewSetNull() {
         def set = CollectionUtils.newSet(null)
         assertTrue set instanceof Set
         assertEquals 0, set.size()
     }
 
+    @Test
     void testNewSet() {
         def set = CollectionUtils.newSet(1, 2, 42)
         assertTrue set instanceof Set
@@ -53,12 +62,14 @@ class CollectionUtilsTests extends GroovyTestCase {
         assertTrue set.contains(42)
     }
 
+    @Test
     void testNewListNull() {
         def list = CollectionUtils.newList(null)
         assertTrue list instanceof List
         assertEquals 0, list.size()
     }
 
+    @Test
     void testNewList() {
         def list = CollectionUtils.newList(1, 2, 42)
         assertTrue list instanceof List
