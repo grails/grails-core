@@ -394,6 +394,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             
             GrailsASTUtils.copyAnnotations(methodNode, method);
 
+            AnnotatedNodeUtils.markAsGenerated(classNode, method);
             methodNode.addAnnotation(DELEGATING_METHOD_ANNOATION);
             annotateActionMethod(classNode, parameters, method);
             wrapMethodBodyWithExceptionHandling(classNode, method);
