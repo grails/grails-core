@@ -1,5 +1,5 @@
 # Container image that runs your code
-FROM alpine:20220316
+FROM alpine:20220328
 
 RUN apk add --no-cache curl jq git bash
 
