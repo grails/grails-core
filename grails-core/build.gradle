@@ -36,7 +36,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    testImplementation("org.springframework:spring-test:${springVersion}") {
+    compileOnly("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")

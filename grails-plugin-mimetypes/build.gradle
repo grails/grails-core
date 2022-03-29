@@ -10,6 +10,4 @@ dependencies {
     compileOnly "io.micronaut:micronaut-runtime:$micronautVersion"
 
     api project(":grails-web")
-
-    testImplementation project(":grails-test")
 }

@@ -6,6 +6,8 @@ import grails.ui.support.DevelopmentWebApplicationContext
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
+import org.springframework.mock.web.MockServletConfig
+import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.support.GenericWebApplicationContext
 
 /*
