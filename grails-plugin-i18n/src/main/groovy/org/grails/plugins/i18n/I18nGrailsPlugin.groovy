@@ -24,10 +24,8 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.util.logging.Slf4j
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
-import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource
-import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 import java.nio.file.Files
 
@@ -59,12 +57,6 @@ class I18nGrailsPlugin extends Plugin {
             }
             defaultEncoding = encoding
         }
-
-        localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
-            paramName = "lang"
-        }
-
-        localeResolver(SessionLocaleResolver)
     }}
 
     @Override
