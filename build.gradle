@@ -428,11 +428,11 @@ subprojects { project ->
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 
-    if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite)/) {
+    if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
             api "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
-            testImplementation("org.springframework:spring-test:${springVersion}") {
+            api("org.springframework:spring-test:${springVersion}") {
                 exclude group: 'commons-logging', module:'commons-logging'
             }
         }
