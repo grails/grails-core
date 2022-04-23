@@ -4,7 +4,7 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath "commons-io:commons-io:2.11.0"
+        classpath "commons-io:commons-io:20030203.000550"
         classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
