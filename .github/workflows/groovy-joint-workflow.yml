@@ -50,7 +50,7 @@ jobs:
       # Select correct Groovy branch for this build:
       - name: Checkout Groovy 4_0_X (Grails 6.0.x)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
-        if: github.ref == 'refs/heads/6.0.x'
+        if: github.ref == 'refs/heads/6.0.x' || github.base_ref == '6.0.x'
       - name: Checkout Groovy 3_0_X (Grails 4.1.x)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
         if: github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
