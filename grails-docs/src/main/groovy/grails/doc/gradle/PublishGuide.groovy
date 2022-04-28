@@ -32,7 +32,7 @@ class PublishGuide extends DefaultTask {
     @Input @Optional Boolean asciidoc = false
     @Input @Optional String sourceRepo
     @Input @Optional Properties properties = new Properties()
-    @Input @Nested Collection macros = []
+    @Input @Optional Collection macros = []
     @OutputDirectory File workDir = project.buildDir as File
 
     @TaskAction
