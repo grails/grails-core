@@ -26,6 +26,9 @@ on:
     branches:
       - master
       - '[4-9]+.[0-9]+.x'
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
