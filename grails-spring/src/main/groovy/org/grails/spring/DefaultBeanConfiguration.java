@@ -219,7 +219,9 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
             bd.setConstructorArgumentValues(cav);
         }
         if(clazz != null) {
-            bd.setLazyInit( clazz.getAnnotation(Lazy.class) != null);
+            if (clazz.getAnnotation(Lazy.class) != null) {
+                bd.setLazyInit(true);
+            }
             bd.setBeanClass(clazz);
         }
         bd.setScope(singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE);
