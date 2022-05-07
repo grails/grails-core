@@ -52,6 +52,26 @@ class PluginAstReader {
         if(className.endsWith("GrailsPlugin")) {
             visitContents(className, classNode);
         }
+
+        pluginInfo.setName(GrailsNameUtils.getPluginName(className + ".groovy"));
+
+        for (Map.Entry entry : pluginInfo.getProperties().entrySet()) {
+            final Object key = entry.getKey();
+            final Object value = entry.getValue();
+            if (value instanceof Map) {
+                Map<String, String> map = (Map<String, String>)value;
+                for (Map.Entry me : map.entrySet()) {
+                    final String k = String.valueOf(me.getKey());
+                    final String v = String.valueOf(me.getValue());
+
+                    if (v != null && v.length() > 2 && v.startsWith("@") && v.endsWith("@")) {
+                        String token = v.substring(1, v.length() - 1);
+                        map.put(k, String.valueOf(pluginInfo.getProperties().get(token)));
+                    }
+                }
+            }
+        }
+
         return pluginInfo;
     }
 
@@ -61,8 +81,6 @@ class PluginAstReader {
             @Override
             public void visitProperty(PropertyNode node) {
                 String name = node.getName();
-
-
 
                 final Expression expr = node.getField().getInitialExpression();
 
@@ -77,15 +95,38 @@ class PluginAstReader {
                     }
                     else if (expr instanceof MapExpression) {
                         final Map<String, String> map = new LinkedHashMap<String, String>();
+                        MapExpression mapExpr = (MapExpression)expr;
+                        for (MapEntryExpression mee : mapExpr.getMapEntryExpressions()) {
+                            Expression keyExpr = mee.getKeyExpression();
+                            Expression valueExpr = mee.getValueExpression();
+                            String valueObj = valueExpr.getText();
+                            if(valueExpr instanceof ConstantExpression) {
+                                valueObj = String.valueOf(((ConstantExpression)valueExpr).getValue());
+                            }
+                            else if (valueExpr instanceof VariableExpression) {
+                                VariableExpression ve = (VariableExpression)valueExpr;
+                                valueObj = String.format("@%s@", ve.getName());
+                            }
+                            map.put(keyExpr.getText(), valueObj);
+                        }
                         value = map;
-                        for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
-                            map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
+                    }
+                    else if (expr instanceof MethodCallExpression) {
+                        Expression objectExpr = ((MethodCallExpression)expr).getObjectExpression();
+                        Expression methodExpr = ((MethodCallExpression)expr).getMethod();
+                        if (objectExpr instanceof ClassExpression && methodExpr instanceof ConstantExpression) {
+                            String objectExprName = objectExpr.getText();
+                            String methodNameExprName = String.valueOf(((ConstantExpression)methodExpr).getValue());
+                            if (objectExprName.equals("grails.util.GrailsUtil") && methodNameExprName.equals("getGrailsVersion")) {
+                                value = getClass().getPackage().getImplementationVersion();
+                            }
                         }
                     }
+                    else if (expr instanceof ConstantExpression)  {
+                        value = String.valueOf(((ConstantExpression)expr).getValue());
+                    }
                     else {
-                        if(expr instanceof ConstantExpression)  {
-                            value = expr.getText();
-                        }
+                        value = expr.getText();
                     }
                     if(value != null) {
                         pluginInfo.setProperty(name, value);
@@ -102,8 +143,6 @@ class PluginAstReader {
         };
 
         classNode.visitContents(visitor);
-
-        pluginInfo.setName(GrailsNameUtils.getPluginName(className + ".groovy"));
     }
 
 
@@ -158,12 +197,15 @@ class PluginAstReader {
             return null;
         }
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        public Map getProperties() {
-            Map props = new HashMap();
+        public Map<String, Object> getProperties() {
+            Map<String, Object> props = new HashMap<>();
             props.putAll(attributes);
-            props.put(NAME, name);
-            props.put(VERSION, version);
+            if (name != null) {
+                props.put(NAME, name);
+            }
+            if (version != null) {
+                props.put(VERSION, version);
+            }
             return props;
         }
 
