@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins
+package org.grails.plugins;
 
-import org.grails.plugins.codecs.DefaultCodecLookup
+import org.grails.plugins.codecs.DefaultCodecLookup;
 
 /**
  * @deprecated Use {@link org.grails.plugins.codecs.CodecsGrailsPlugin} instead
  */
 @Deprecated
-class CodecsGrailsPlugin extends org.grails.plugins.codecs.CodecsGrailsPlugin {
+public class CodecsGrailsPlugin extends org.grails.plugins.codecs.CodecsGrailsPlugin {
 
-    Closure doWithSpring() {{->
-        codecLookup(DefaultCodecLookup)
-    }}
 }

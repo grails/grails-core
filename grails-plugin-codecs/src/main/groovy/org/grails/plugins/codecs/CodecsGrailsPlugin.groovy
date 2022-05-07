@@ -45,4 +45,7 @@ class CodecsGrailsPlugin extends Plugin {
             RawCodec
     ]
 
+    Closure doWithSpring() {{->
+        codecLookup(DefaultCodecLookup)
+    }}
 }
