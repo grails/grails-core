@@ -145,6 +145,7 @@ class TestGrailsPlugin {
 
         DefaultGrailsApplication application = new DefaultGrailsApplication()
         def pluginManager = new DefaultGrailsPluginManager([test1] as Class[], application)
+        pluginManager.setLoadCorePlugins(false)
 
         pluginManager.loadPlugins()
         assertNotNull pluginManager.getGrailsPlugin("test")
@@ -153,6 +154,7 @@ class TestGrailsPlugin {
             System.setProperty(Environment.KEY, Environment.PRODUCTION.getName())
 
             pluginManager = new DefaultGrailsPluginManager([test1] as Class[], application)
+            pluginManager.setLoadCorePlugins(false)
             pluginManager.loadPlugins()
             assertNull pluginManager.getGrailsPlugin("test")
         } finally {
