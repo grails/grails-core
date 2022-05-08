@@ -3,15 +3,98 @@ package org.grails.plugins
 import grails.core.DefaultGrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
 import grails.util.Environment
+import grails.util.GrailsUtil
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.*
 
 /**
  * @author Graeme Rocher
+ * @author Michael Yan
  * @since 1.0
  */
 class GrailsPluginTests {
+
+    @Test
+    void testPluginVersion() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOneGrailsPlugin {
+    def version = '0.1'
+    def scopes = 'test'
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "0.1", plugin.version
+    }
+
+    @Test
+    void testPluginGrailsVersion() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+import grails.util.GrailsUtil
+
+class TestOneGrailsPlugin {
+    def version = '0.1'
+    def grailsVersion = GrailsUtil.getGrailsVersion()
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "0.1", plugin.version
+        assertEquals GrailsUtil.getGrailsVersion(), plugin.properties.grailsVersion
+    }
+
+    @Test
+    void testPluginName() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOneGrailsPlugin {
+    def version = '0.1'
+    def scopes = 'test'
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "testOne", plugin.name
+        assertEquals "testOne-0.1", plugin.fullName
+    }
+
+    @Test
+    void testPluginProperties() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOneGrailsPlugin {
+    def version = '0.1'
+    def scopes = 'test'
+    def environments = 'dev'    
+    def pluginExcludes = [
+        "grails-app/views/error.gsp"
+    ]
+    def dependsOn = [core: version, domainClass: version, services: version]
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "0.1", plugin.properties.version
+        assertEquals "test", plugin.properties.scopes
+        assertEquals "dev", plugin.properties.environments
+        assertEquals ["grails-app/views/error.gsp"], plugin.properties.pluginExcludes
+        assertEquals [core: '0.1', domainClass: '0.1', services: '0.1'], plugin.properties.dependsOn
+    }
 
     @Test
     void testPluginPath() {
