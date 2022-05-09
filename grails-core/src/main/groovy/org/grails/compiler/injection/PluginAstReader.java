@@ -56,10 +56,22 @@ class PluginAstReader {
 
         pluginInfo.setName(GrailsNameUtils.getPluginName(className + ".groovy"));
 
-        for (Map.Entry entry : pluginInfo.getProperties().entrySet()) {
-            final Object key = entry.getKey();
+        Map<String, Object> pluginProperties = pluginInfo.getProperties();
+        for (Map.Entry<String, Object> entry : pluginProperties.entrySet()) {
+            final String key = entry.getKey();
             final Object value = entry.getValue();
-            if (value instanceof Map) {
+            if (value instanceof String) {
+                String val = (String)value;
+                if (val != null && val.length() > 2 && val.startsWith("@") && val.endsWith("@")) {
+                    String token = val.substring(1, val.length() - 1);
+                    val = String.valueOf(pluginProperties.get(token));
+                    pluginInfo.setProperty(key, val);
+                }
+                if (key.equals("version")) {
+                    pluginInfo.setVersion(val);
+                }
+            }
+            else if (value instanceof Map) {
                 Map<String, String> map = (Map<String, String>)value;
                 for (Map.Entry me : map.entrySet()) {
                     final String k = String.valueOf(me.getKey());
@@ -67,7 +79,12 @@ class PluginAstReader {
 
                     if (v != null && v.length() > 2 && v.startsWith("@") && v.endsWith("@")) {
                         String token = v.substring(1, v.length() - 1);
-                        map.put(k, String.valueOf(pluginInfo.getProperties().get(token)));
+                        String newValue = String.valueOf(pluginProperties.get(token));
+                        if (newValue != null && newValue.length() > 2 && newValue.startsWith("@") && newValue.endsWith("@")) {
+                            token = newValue.substring(1, newValue.length() - 1);
+                            newValue = String.valueOf(pluginProperties.get(token));
+                        }
+                        map.put(k, newValue);
                     }
                 }
             }
@@ -122,6 +139,10 @@ class PluginAstReader {
                                 value = getClass().getPackage().getImplementationVersion();
                             }
                         }
+                    }
+                    else if (expr instanceof VariableExpression) {
+                        VariableExpression ve = (VariableExpression)expr;
+                        value = String.format("@%s@", ve.getName());
                     }
                     else if (expr instanceof ConstantExpression)  {
                         value = String.valueOf(((ConstantExpression)expr).getValue());
