@@ -872,36 +872,44 @@ bb.createApplicationContext()
     @Test
     void testLazyBeanDefinition() {
         bb.beans {
-            lazyAnnoBean(LazyBean)
-            lazyInitBean(Bean1) { bean ->
+            generalBean(GeneralBean) { bean ->
+                name = 'generalBean'
+            }
+            generalLazyBean(GeneralBean) { bean ->
                 bean.lazyInit = true
-                person = 'lazyBean'
+                name = 'generalLazyBean'
             }
-            generalBean(Bean1) { bean ->
-                person = 'generalBean'
-            }
-            nonLazyBean(LazyBean) { bean ->
+            lazyBean(LazyBean)
+            lazyBeanInitFalse(LazyBean) { bean ->
                 bean.lazyInit = false
             }
+            lazyBeanValueFalse(LazyBeanValueFalse)
         }
 
-        def lazyAnnoBean = bb.getBeanDefinition('lazyAnnoBean')
-        assertNotNull lazyAnnoBean, 'beanDefinition was null'
-        assertTrue lazyAnnoBean.isLazyInit(), 'lazyAnnoBean is not lazy'
-        assertNotNull lazyAnnoBean.getLazyInit(), 'getLazyInit of lazyAnnoBean is null'
-
-        def lazyInitBean = bb.getBeanDefinition('lazyInitBean')
-        assertNotNull lazyInitBean, 'beanDefinition was null'
-        assertTrue lazyInitBean.isLazyInit(), 'lazyInitBean is not lazy'
-        assertNotNull lazyInitBean.getLazyInit(), 'getLazyInit of lazyInitBean is null'
-
         def generalBean = bb.getBeanDefinition('generalBean')
-        assertFalse generalBean.isLazyInit(), 'generalBean is not lazy'
-        assertNull generalBean.getLazyInit(), 'getLazyInit of generalBean is not null'
+        assertNotNull generalBean, 'beanDefinition should be not null'
+        assertFalse generalBean.isLazyInit(), 'generalBean should not be lazy default'
+        assertNull generalBean.getLazyInit(), 'getLazyInit of generalBean should be null default'
 
-        def nonLazyBean = bb.getBeanDefinition('nonLazyBean')
-        assertFalse nonLazyBean.isLazyInit(), 'nonLazyBean is not lazy'
-        assertNotNull nonLazyBean.getLazyInit(), 'getLazyInit of nonLazyBean is null'
+        def generalLazyBean = bb.getBeanDefinition('generalLazyBean')
+        assertNotNull generalLazyBean, 'beanDefinition should be not null'
+        assertTrue generalLazyBean.isLazyInit(), 'generalLazyBean should be lazy'
+        assertNotNull generalLazyBean.getLazyInit(), 'getLazyInit of generalLazyBean should be not null'
+
+        def lazyBean = bb.getBeanDefinition('lazyBean')
+        assertNotNull lazyBean, 'beanDefinition should be not null'
+        assertTrue lazyBean.isLazyInit(), 'lazyBean should be lazy'
+        assertNotNull lazyBean.getLazyInit(), 'getLazyInit of lazyBean should be not null'
+
+        def lazyBeanInitFalse = bb.getBeanDefinition('lazyBeanInitFalse')
+        assertNotNull lazyBeanInitFalse, 'beanDefinition should be not null'
+        assertFalse lazyBeanInitFalse.isLazyInit(), 'lazyBean but init false, so it should be not lazy'
+        assertNotNull lazyBeanInitFalse.getLazyInit(), 'getLazyInit of lazyBeanInitFalse should be not null'
+
+        def lazyBeanValueFalse = bb.getBeanDefinition('lazyBeanValueFalse')
+        assertNotNull lazyBeanValueFalse, 'beanDefinition should be not null'
+        assertFalse lazyBeanValueFalse.isLazyInit(), 'lazyBeanValueFalse wit false value, so it should be not lazy'
+        assertNotNull lazyBeanValueFalse.getLazyInit(), 'getLazyInit of lazyBeanValueFalse should be not null'
     }
 }
 
@@ -975,10 +983,17 @@ class Bean6 {
     Map<String, Bean1> peopleByName
 }
 
-// lazy bean
+// GeneralBean
+class GeneralBean {
+    String name
+}
 
+// lazy bean
 @Lazy
 class LazyBean {}
+
+@Lazy(value = false)
+class LazyBeanValueFalse {}
 
 // a factory bean
 class Bean1Factory {
