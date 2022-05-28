@@ -17,6 +17,7 @@ package org.grails.config;
 
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
+import groovy.util.ConfigObject;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.slf4j.Logger;
@@ -297,6 +298,26 @@ public abstract class NavigableMapConfig implements Config {
         return to;
     }
 
+    private ConfigObject convertPropsToMap(ConfigObject config) {
+        for(Map.Entry<String, Object> entry: (Set<Map.Entry<String, Object>>) config.entrySet()) {
+            final IdentityHashMap<NavigableMap, Map<Object, Object>> cache = new IdentityHashMap<>();
+            if (entry.getValue() instanceof NavigableMap) {
+                config.setProperty(entry.getKey(), convertToMap((NavigableMap) entry.getValue(), cache));
+            } else if (entry.getValue() instanceof List) {
+                final List<Object> newList = new ArrayList<>();
+                for (Object o: (List<?>) entry.getValue()) {
+                    if (o instanceof NavigableMap) {
+                        newList.add(convertToMap((NavigableMap) o, cache));
+                    } else {
+                        newList.add(o);
+                    }
+                }
+                config.setProperty(entry.getKey(), newList);
+            }
+        }
+        return config;
+    }
+
     private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
         if (originalValue != null) {
             if (targetType.isInstance(originalValue)) {
@@ -310,6 +331,9 @@ public abstract class NavigableMapConfig implements Config {
                 if (!(originalValue instanceof NavigableMap) || Map.class.isAssignableFrom(targetType)) {
                     try {
                         T value = conversionService.convert(originalValue, targetType);
+                        if (value instanceof ConfigObject) {
+                            convertPropsToMap((ConfigObject) value);
+                        }
                         return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
                     } catch (ConversionException e) {
                         if (targetType.isEnum()) {

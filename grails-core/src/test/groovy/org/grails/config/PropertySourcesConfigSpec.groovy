@@ -66,6 +66,32 @@ class PropertySourcesConfigSpec extends Specification {
         config.getProperty("grails.plugin.springsecurity", ConfigObject.class)
     }
 
+    void "Test accessing a NavigableMap with nested NavigableMap property as Map class"() {
+        given:
+        def source = new NavigableMap()
+        def chainMap = new NavigableMap()
+        chainMap.merge(["chainMap" :[
+                [pattern: '/assets/**', filters: 'none'],
+                [pattern: '/**/js/**', filters: 'none'],
+                [pattern: '/**/css/**', filters: 'none'],
+                [pattern: '/**/images/**', filters: 'none'],
+                [pattern: '/**/favicon.ico', filters: 'none'],
+                [pattern: '/**', filters: 'JOINED_FILTERS']
+        ]])
+        source.merge(["grails": ["plugin": ["springsecurity": ["filterChain": chainMap, "userLookup": ["usernamePropertyName": "username"]]]]])
+        def propertySource = new MapPropertySource("springsecurity", source)
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(propertySource)
+        def config = new PropertySourcesConfig(propertySources)
+
+        when:
+        def securityConfig = config.getProperty("grails.plugin.springsecurity", ConfigObject.class)
+
+        then:
+        !(securityConfig.userLookup instanceof NavigableMap)
+        !(securityConfig.filterChain.chainMap instanceof NavigableMap)
+    }
+
     /*
 
       We need to settle on whether the following is a bug or not.
