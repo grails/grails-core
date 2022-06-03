@@ -102,9 +102,9 @@ class SystemOutAndErrSwapper {
         swappedInOut = null
         swappedInErr = null
 
-        def streams = []
-        streams << (echoOut ? ((MultiplexingOutputStream)swappedInOutStream).streams.last() : swappedInOutStream)
-        streams << (echoErr ? ((MultiplexingOutputStream)swappedInErrStream).streams.last() : swappedInErrStream)
+        List<OutputStream> streams = []
+        streams << (echoOut ? ((MultiplexingOutputStream) swappedInOutStream).streams.last() : swappedInOutStream)
+        streams << (echoErr ? ((MultiplexingOutputStream) swappedInErrStream).streams.last() : swappedInErrStream)
 
         swappedInOutStream = null
         swappedInErrStream = null
