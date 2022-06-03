@@ -8,11 +8,28 @@ updates:
     target-branch: 4.0.x
     labels:
       - "type: dependency upgrade"
+    ignore:
+      - dependency-name: "*"      
+        update-types: ["version-update:semver-major"]      
   - package-ecosystem: gradle
     directory: "/"
     schedule:
       interval: daily
     open-pull-requests-limit: 10
-    target-branch: 5.1.x
+    target-branch: 5.2.x
     labels:
       - "type: dependency upgrade"
+    ignore:
+      - dependency-name: "*"      
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    target-branch: 6.0.x
+    labels:
+      - "type: dependency upgrade"
+    ignore:
+      - dependency-name: "*"      
+        update-types: ["version-update:semver-patch", "version-update:semver-minor]         
