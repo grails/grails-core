@@ -199,8 +199,10 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                     if (value instanceof Number) {
                         writer.call (propertyName,(Number) value)
                     }
-                    else if (value instanceof CharSequence || value instanceof Enum) {
-                        writer.call(propertyName, value.toString())
+                    else if (value instanceof CharSequence) {
+                        writer.call(propertyName, ((CharSequence) value).toString())
+                    } else if (value instanceof Enum) {
+                        writer.call(propertyName, ((Enum) value).toString())
                     }
                     else {
                         if (MappingFactory.isSimpleType(pd.getPropertyType().getName())) {
