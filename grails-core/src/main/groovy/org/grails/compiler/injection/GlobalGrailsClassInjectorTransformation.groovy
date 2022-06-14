@@ -81,8 +81,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         def compilationTargetDirectory = resolveCompilationTargetDirectory(source)
 
         for (ClassNode classNode : classes) {
-            projectName = String.valueOf(classNode.getNodeMetaData("projectName"))
-            projectVersion = String.valueOf(classNode.getNodeMetaData("projectVersion"))
+            projectName = classNode.getNodeMetaData("projectName") ? String.valueOf(classNode.getNodeMetaData("projectName")) : null
+            projectVersion = classNode.getNodeMetaData("projectVersion") ? String.valueOf(classNode.getNodeMetaData("projectVersion")) : null
             if(projectVersion == null) {
                 projectVersion = getClass().getPackage().getImplementationVersion()
             }
