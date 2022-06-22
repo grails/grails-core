@@ -28,7 +28,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           commitish: ${{ steps.extract_branch.outputs.value }}
-          filter-by-commitish: true
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
