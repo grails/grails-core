@@ -33,6 +33,7 @@ import java.lang.annotation.Annotation
 import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
+import java.security.ProtectionDomain
 
 /**
  * A data binder that will bind nested Maps to an object.
@@ -220,7 +221,7 @@ class SimpleDataBinder implements DataBinder {
                 def metaProperty = obj.metaClass.getMetaProperty propName
 
                 if (metaProperty) { // normal property
-                    if (isOkToBind(metaProperty.name, whiteList, blackList)) {
+                    if (isOkToBind(metaProperty, whiteList, blackList)) {
                         def val = source[key]
                         try {
                             def converter = getValueConverter(obj, metaProperty.name)
@@ -237,7 +238,7 @@ class SimpleDataBinder implements DataBinder {
                     def descriptor = getIndexedPropertyReferenceDescriptor propName
                     if (descriptor) { // indexed property
                         metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
-                        if (metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
+                        if (metaProperty && isOkToBind(metaProperty, whiteList, blackList)) {
                             def val = source.getPropertyValue key
                             processIndexedProperty obj, metaProperty, descriptor, val, source, listener, errors
                         }
@@ -245,7 +246,7 @@ class SimpleDataBinder implements DataBinder {
                         def restOfPropertyName = propName[1..-1]
                         if (!source.containsProperty(restOfPropertyName)) {
                             metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
-                            if (metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
+                            if (metaProperty && isOkToBind(metaProperty, whiteList, blackList)) {
                                 if ((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
                                     bindProperty obj, source, metaProperty, false, listener, errors
                                 }
@@ -257,8 +258,12 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
-    protected isOkToBind(String propName, List whiteList, List blackList) {
-        'metaClass' != propName && !blackList?.contains(propName) && (!whiteList || whiteList.contains(propName) || whiteList.find { it -> it?.toString()?.startsWith(propName + '.')})
+    protected boolean isOkToBind(String propName, List whiteList, List blackList) {
+        'class' != propName && 'classLoader' != propName && 'protectionDomain' != propName && 'metaClass' != propName && !blackList?.contains(propName) && (!whiteList || whiteList.contains(propName) || whiteList.find { it -> it?.toString()?.startsWith(propName + '.')})
+    }
+
+    protected boolean isOkToBind(MetaProperty property, List whitelist, List blacklist) {
+        isOkToBind(property.name, whitelist, blacklist) && (property.type != null && !(ClassLoader.class.isAssignableFrom(property.type) || ProtectionDomain.class.isAssignableFrom(property.type)))
     }
 
     protected IndexedPropertyReferenceDescriptor getIndexedPropertyReferenceDescriptor(propName) {
