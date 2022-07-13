@@ -19,7 +19,7 @@ dependencies {
 
     runtime "org.slf4j:slf4j-api:$slf4jVersion"
 
-    runtime('com.lowagie:itext:2.0.8')
+    runtime('com.lowagie:itext:2.1.7')
 
     compile 'org.jsoup:jsoup:1.7.3'
     testCompile "junit:junit:$junitVersion"
