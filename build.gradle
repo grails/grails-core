@@ -270,6 +270,7 @@ subprojects { project ->
 
         nexus {
             sign = isRelease
+            repositoryUrl = "https://s01.oss.sonatype.org/service/local/"
         }
 
         modifyPom {
