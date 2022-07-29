@@ -28,7 +28,7 @@ dependencies {
         exclude group: "com.google.guava", module: "guava"
     }
 
-    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.8.0")
+    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.8.2")
     implementation("org.apache.maven.resolver:maven-resolver-impl:1.8.0")
     implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.8.0")
     implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.8.0") {
