@@ -235,7 +235,7 @@ enum Environment {
     }
 
     static void setCurrentReloadError(Throwable currentReloadError) {
-        Environment.currentReloadError = currentReloadError
+        Environment.@currentReloadError = currentReloadError
     }
 
     static MultipleCompilationErrorsException getCurrentCompilationError() {
