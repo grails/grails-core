@@ -644,6 +644,30 @@ class SimpleDataBinderSpec extends Specification {
         then:
         fromAbstractB.a.data == 'abc'
     }
+
+    void 'Test binding when property is static Object, it should not bind'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+
+        when:
+        binder.bind widget, [objectStaticProp: 6174] as SimpleMapDataBindingSource
+
+        then:
+        widget.objectStaticProp instanceof Closure
+    }
+
+    void 'Test binding when property is static, it should not bind'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+
+        when:
+        binder.bind widget, [stringStaticProp: 'abc'] as SimpleMapDataBindingSource
+
+        then:
+        widget.stringStaticProp == 'unchanged'
+    }
 }
 
 class Factory {
@@ -673,6 +697,8 @@ class Widget {
     List<Integer> listOfIntegers = []
     List<Long> listOfLongs = []
     Set<Factory> factories
+    static objectStaticProp = { -> 495 }
+    static String stringStaticProp = 'unchanged'
 }
 
 class Gadget extends Widget {
