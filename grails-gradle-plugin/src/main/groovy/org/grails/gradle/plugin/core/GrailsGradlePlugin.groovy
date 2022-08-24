@@ -506,7 +506,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
         } else if (!FindMainClassTask.class.isAssignableFrom(findMainClassTask.class)) {
             def grailsFindMainClass = project.tasks.create(name: "grailsFindMainClass", type: FindMainClassTask)
-            findMainClassTask.dependsOn(grailsFindMainClass)
+            grailsFindMainClass.dependsOn(findMainClassTask)
+            findMainClassTask.finalizedBy(grailsFindMainClass)
         }
     }
 
