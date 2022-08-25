@@ -104,12 +104,12 @@ jobs:
       - name: Grails SDK Release
         if: success()
         run: |
-          if $BETA ; then
+          if $MINOR ; then
             (set -x; ./gradlew sdkMinorRelease)
           else
             ( set -x; ./gradlew sdkMajorRelease)
           fi
         env:
-          BETA: ${{ contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC') }}
+          MINOR: ${{ startsWith(steps.release_version.outputs.release_version, '3.3') || startsWith(steps.release_version.outputs.release_version, '4.1.') || contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC') }}
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
