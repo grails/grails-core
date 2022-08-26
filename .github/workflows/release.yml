@@ -105,7 +105,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Grails SDK Minor Release
-        if: steps.upload_artifact.outcome == 'success' && contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC')
+        if: steps.upload_artifact.outcome == 'success' && (startsWith(steps.release_version.outputs.release_version, '3.3') || startsWith(steps.release_version.outputs.release_version, '4.1.') ||  contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC'))
         uses: gradle/gradle-build-action@v2
         with:
           arguments: sdkMinorRelease
@@ -113,7 +113,7 @@ jobs:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
       - name: Grails SDK Major Release
-        if: steps.upload_artifact.outcome == 'success' && !contains(steps.release_version.outputs.release_version, 'M') && !contains(steps.release_version.outputs.release_version, 'RC')
+        if: steps.upload_artifact.outcome == 'success' && !(startsWith(steps.release_version.outputs.release_version, '3.3') || startsWith(steps.release_version.outputs.release_version, '4.1.') || contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC'))
         uses: gradle/gradle-build-action@v2
         with:
           arguments: sdkMajorRelease
