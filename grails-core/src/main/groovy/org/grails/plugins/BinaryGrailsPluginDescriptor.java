@@ -15,7 +15,7 @@
  */
 package org.grails.plugins;
 
-import groovy.util.slurpersupport.GPathResult;
+import groovy.xml.slurpersupport.GPathResult;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.io.support.SpringIOUtils;
 import org.springframework.core.io.Resource;

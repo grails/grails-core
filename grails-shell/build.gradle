@@ -14,15 +14,15 @@ dependencies {
     api project(":grails-bootstrap")
     api project(":grails-gradle-model")
     api "org.apache.ant:ant:$antVersion"
-    api "org.codehaus.groovy:groovy-ant:$groovyVersion"
-    api "org.codehaus.groovy:groovy-json:$groovyVersion"
-    api "org.codehaus.groovy:groovy-jmx:$groovyVersion"
+    api "org.apache.groovy:groovy-ant:$groovyVersion"
+    api "org.apache.groovy:groovy-json:$groovyVersion"
+    api "org.apache.groovy:groovy-jmx:$groovyVersion"
     api "org.fusesource.jansi:jansi:$jansiVersion"
     api "jline:jline:$jlineVersion"
     api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
 
     api "org.springframework.boot:spring-boot-cli:$springBootVersion", {
-        exclude group: "org.codehaus.groovy", module: "groovy"
+        exclude group: "org.apache.groovy", module: "groovy"
     }
     implementation("org.apache.maven:maven-resolver-provider:3.8.3") {
         exclude group: "com.google.guava", module: "guava"

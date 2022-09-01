@@ -28,7 +28,7 @@ import grails.validation.DeferredBindingActions
 import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty

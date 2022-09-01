@@ -61,7 +61,7 @@ publishing {
                                                 mkp.artifactId 'jna'
                                             }
                                             mkp.exclusion {
-                                                mkp.groupId 'org.codehaus.groovy'
+                                                mkp.groupId 'org.apache.groovy'
                                                 mkp.artifactId 'groovy-ant'
                                             }
                                         }

@@ -1,5 +1,5 @@
 dependencies {
     api project(":grails-web")
 
-    api "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    api "org.apache.groovy:groovy-ant:$groovyVersion"
 }

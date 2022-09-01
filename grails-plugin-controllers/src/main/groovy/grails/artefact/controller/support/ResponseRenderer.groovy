@@ -27,7 +27,7 @@ import grails.web.mime.MimeUtility
 import groovy.json.StreamingJsonBuilder
 import groovy.transform.CompileStatic
 import groovy.transform.Generated
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.SpringIOUtils

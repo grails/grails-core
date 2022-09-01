@@ -19,7 +19,8 @@ import groovy.grape.Grape
 import groovy.grape.GrapeEngine
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
 import org.springframework.boot.cli.compiler.dependencies.Dependency
 import org.springframework.boot.cli.compiler.dependencies.DependencyManagement
 

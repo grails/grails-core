@@ -11,7 +11,8 @@ import grails.util.GrailsUtil
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.XmlSlurper
+import groovy.xml.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import groovy.xml.StreamingMarkupBuilder
 import org.codehaus.groovy.ast.*
@@ -221,7 +222,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
     protected static void generatePluginXml(ClassNode pluginClassNode, String pluginVersion, Set<String> transformedClasses, File pluginXmlFile) {
         def pluginXmlExists = pluginXmlFile.exists()
-        Set pluginClasses = []
+        Set<String> pluginClasses = []
         pluginClasses.addAll(transformedClasses)
         pluginClasses.addAll(pendingPluginClasses)
 

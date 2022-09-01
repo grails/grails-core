@@ -15,9 +15,9 @@
  */
 package org.grails.web.databinding.bindingsource
 
-import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.Node
-import groovy.util.slurpersupport.NodeChild
+import groovy.xml.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.Node
+import groovy.xml.slurpersupport.NodeChild
 
 import org.grails.databinding.xml.GPathResultMap
 
