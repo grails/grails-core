@@ -91,7 +91,7 @@ ext {
         ],
         groovy: [
             version: groovyVersion,
-            group  : 'org.codehaus.groovy',
+            group  : 'org.apache.groovy',
             names  : ['groovy'],
             modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio', 'dateutil', 'macro']
         ],
@@ -196,7 +196,7 @@ if (jointBuildGroovyJarProperty) {
         throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
     }
 } else {
-    groovyDependency = dependencies.create("org.codehaus.groovy:groovy:${groovyVersion}") {
+    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
         exclude module:"commons-cli"
         exclude module:"ant"
     }
@@ -247,11 +247,15 @@ allprojects {
                 cacheChangingModulesFor cacheHours, 'hours'
                 eachDependency { DependencyResolveDetails details ->
                     //specifying a fixed version for all libraries with 'org.gradle' group
-                    if (details.requested.group == 'org.codehaus.groovy') {
+                    if (details.requested.group == 'org.apache.groovy') {
                         details.useVersion groovyVersion
                     }
                     if (details.requested.group == "org.spockframework") {
                         details.useVersion(spockVersion)
+                    }
+                    if (details.requested.group == 'org.codehaus.groovy') {
+                        details.useTarget(group: "org.apache.groovy", name: details.requested.name, version: groovyVersion)
+                        details.because "The dependency coordinates are changed in Apache Groovy 4"
                     }
                 }
             }
@@ -418,8 +422,11 @@ subprojects { project ->
     if(project.name == 'grails-dependencies') return
     if(project.name == 'grails-bom') return
 
-    compileJava {
-        options.release = 11
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
+
+    java {
+        disableAutoTargetJvm()
     }
 
     if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
@@ -480,13 +487,15 @@ subprojects { project ->
     dependencies {
         documentation("org.fusesource.jansi:jansi:$jansiVersion")
         documentation("jline:jline:$jlineVersion")
-        documentation "org.codehaus.groovy:groovy-ant:$groovyVersion"
-        documentation "org.codehaus.groovy:groovy-cli-picocli:$groovyVersion"
+        documentation "org.apache.groovy:groovy-ant:$groovyVersion"
+        documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
+        api platform("org.apache.groovy:groovy-bom:$groovyVersion")
+        annotationProcessor platform("org.apache.groovy:groovy-bom:$groovyVersion")
         api groovyDependency
 
-        testImplementation "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
+        testImplementation "org.apache.groovy:groovy-test-junit5:${groovyVersion}"
         testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.0"
         testImplementation "org.junit.platform:junit-platform-runner:1.9.0"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.0"

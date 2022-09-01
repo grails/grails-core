@@ -1,7 +1,9 @@
 dependencies {
     compileOnly "io.micronaut:micronaut-inject-java:$micronautVersion"
     compileOnly "io.micronaut:micronaut-inject-groovy:$micronautVersion"
-    compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
+    compileOnly ("io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion") {
+        exclude group: "org.codehaus.groovy", module: "groovy-bom"
+    }
     compileOnly "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
     compileOnly "io.micronaut:micronaut-runtime:$micronautVersion"
     compileOnly "org.aspectj:aspectjrt:$aspectjVersion",
@@ -39,8 +41,7 @@ dependencies {
     compileOnly("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
-
+    compileOnly("org.apache.groovy:groovy-templates:$groovyVersion")
 
     api project(":grails-bootstrap"), {
         exclude group:"org.fusesource.jansi", module:"jansi"
@@ -48,7 +49,7 @@ dependencies {
         exclude group:"net.java.dev.jna", module:"jna"
 
         // Ant
-        exclude group:"org.codehaus.groovy", module:"groovy-ant"
+        exclude group:"org.apache.groovy", module:"groovy-ant"
         exclude group:"org.apache.ant", module:"ant"
         exclude group:"org.apache.ant", module:"ant-launcher"
         exclude group:"org.apache.ivy", module:"ivy"

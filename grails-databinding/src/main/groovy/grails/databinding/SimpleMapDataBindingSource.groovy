@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class SimpleMapDataBindingSource implements DataBindingSource {
 
-    protected Map map
+    protected Map<String, ?> map
     boolean dataSourceAware = true
 
     SimpleMapDataBindingSource(Map map) {

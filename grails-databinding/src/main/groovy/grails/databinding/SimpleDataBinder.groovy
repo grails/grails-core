@@ -21,7 +21,7 @@ import grails.databinding.events.DataBindingListener
 import grails.databinding.initializers.ValueInitializer
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.ClosureValueInitializer
 import org.grails.databinding.IndexedPropertyReferenceDescriptor

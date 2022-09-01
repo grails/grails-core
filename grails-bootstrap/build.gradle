@@ -1,8 +1,8 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    api ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
-    api ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
+    api ( "org.apache.groovy:groovy-xml:$groovyVersion" )
+    api ( "org.apache.groovy:groovy-templates:$groovyVersion" )
     api "org.yaml:snakeyaml:1.30"
     api "io.micronaut:micronaut-inject:$micronautVersion"
     
@@ -12,7 +12,7 @@ dependencies {
     compileOnly("net.java.dev.jna:jna:$jnaVersion")
 
     // Ant
-    compileOnly "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    compileOnly "org.apache.groovy:groovy-ant:$groovyVersion"
 
     testImplementation("org.fusesource.jansi:jansi:$jansiVersion")
     testImplementation("jline:jline:$jlineVersion")

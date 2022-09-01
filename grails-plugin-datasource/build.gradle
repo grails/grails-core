@@ -3,7 +3,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    api "org.codehaus.groovy:groovy-sql:$groovyVersion"
+    api "org.apache.groovy:groovy-sql:$groovyVersion"
 
     api("org.springframework:spring-context:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'

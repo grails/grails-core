@@ -14,7 +14,7 @@ configurations {
 }
 
 dependencies {
-    documentation "org.codehaus.groovy:groovy-groovydoc:$groovyVersion"
+    documentation "org.apache.groovy:groovy-groovydoc:$groovyVersion"
 }
 
 task stubs {
@@ -23,7 +23,7 @@ task stubs {
         def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
         isolatedAnt.execute {
             mkdir(dir: destinationDir)
-            taskdef(name: "generatestubs", classname: "org.codehaus.groovy.grails.cli.GenerateStubsTask") {
+            taskdef(name: "generatestubs", classname: "org.apache.groovy.grails.cli.GenerateStubsTask") {
                 classpath {
                     for(sub in subprojects) {
                         pathelement path: sub.sourceSets.main.compileClasspath.asPath

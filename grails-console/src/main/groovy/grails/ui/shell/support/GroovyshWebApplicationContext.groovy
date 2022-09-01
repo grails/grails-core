@@ -19,7 +19,7 @@ import grails.core.GrailsApplication
 import grails.ui.support.DevelopmentWebApplicationContext
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
-import org.codehaus.groovy.tools.shell.Groovysh
+import org.apache.groovy.groovysh.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
 
