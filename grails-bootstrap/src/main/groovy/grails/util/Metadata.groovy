@@ -281,7 +281,7 @@ class Metadata extends PropertySourcePropertyResolver {
     String getServletVersion() {
         Optional<String> servletVersion = ((PropertyResolver) this).getProperty(SERVLET_VERSION, String.class)
         if (!servletVersion.isPresent()) {
-            servletVersion = Optional.of(System.getProperty(SERVLET_VERSION))
+            servletVersion = Optional.ofNullable(System.getProperty(SERVLET_VERSION))
         }
         servletVersion.orElse(DEFAULT_SERVLET_VERSION)
     }
