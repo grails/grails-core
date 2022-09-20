@@ -122,7 +122,7 @@ class ArtefactTypeAstTransformationSpec extends Specification {
 				}
 			"""
 
-		t = clazz.newInstance()
+		t = clazz.getDeclaredConstructor().newInstance()
 
 		then: "Trait is applied"
 		t instanceof Test10531Trait
