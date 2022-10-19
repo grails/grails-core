@@ -22,7 +22,7 @@ jobs:
         id: extract_branch
         run: echo ::set-output name=value::${GITHUB_REF:11}
       # If it has release drafter:
-      - uses: release-drafter/release-drafter@df69d584deac33d8569990cb6413f82447181076 # tag=v5.21.0
+      - uses: release-drafter/release-drafter@6df64e4ba4842c203c604c1f45246c5863410adb # tag=v5.21.1
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
