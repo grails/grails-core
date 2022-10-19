@@ -1,7 +1,7 @@
 buildscript {
     repositories {
-        maven { url "https://repo.grails.org/grails/core" }
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
         classpath "commons-io:commons-io:2.11.0"
@@ -229,6 +229,7 @@ if (isReleaseVersion) {
 allprojects {
     repositories {
         mavenLocal()
+        mavenCentral()
         maven { url "https://repo.grails.org/grails/core" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         if(groovyVersion.endsWith('-SNAPSHOT')) {
