@@ -15,15 +15,6 @@
  */
 package org.grails.compiler.web;
 
-import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
-import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
-import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
-import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
-import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
-import static org.grails.compiler.injection.GrailsASTUtils.hasAnnotation;
-import static org.grails.compiler.injection.GrailsASTUtils.hasParameters;
-import static org.grails.compiler.injection.GrailsASTUtils.removeAnnotation;
-import static org.grails.compiler.injection.GrailsASTUtils.isInheritedFromTrait;
 import grails.artefact.Artefact;
 import grails.artefact.controller.support.AllowedMethodsHelper;
 import grails.compiler.DelegatingMethod;
@@ -31,29 +22,25 @@ import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.util.CollectionUtils;
+import grails.util.TypeConvertingMap;
 import grails.validation.Validateable;
 import grails.web.Action;
 import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
-import grails.util.TypeConvertingMap;
 import groovy.lang.Closure;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletResponse;
-
 import groovy.transform.CompilationUnitAware;
 import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
-import org.codehaus.groovy.ast.*;
+import org.apache.groovy.ast.tools.ClassNodeUtils;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -98,6 +85,28 @@ import org.grails.plugins.web.controllers.DefaultControllerExceptionHandlerMetaD
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
+import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
+import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.hasAnnotation;
+import static org.grails.compiler.injection.GrailsASTUtils.hasParameters;
+import static org.grails.compiler.injection.GrailsASTUtils.isInheritedFromTrait;
+import static org.grails.compiler.injection.GrailsASTUtils.removeAnnotation;
 
 /**
  * Enhances controller classes by converting closures actions to method actions and binding
@@ -285,7 +294,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
 
         for (MethodNode newMethod : deferredNewMethods) {
-            classNode.addMethod(newMethod);
+            ClassNodeUtils.addGeneratedMethod(classNode, newMethod);
         }
     }
 
@@ -394,7 +403,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             
             GrailsASTUtils.copyAnnotations(methodNode, method);
 
-            AnnotatedNodeUtils.markAsGenerated(classNode, method);
             methodNode.addAnnotation(DELEGATING_METHOD_ANNOATION);
             annotateActionMethod(classNode, parameters, method);
             wrapMethodBodyWithExceptionHandling(classNode, method);
@@ -481,7 +489,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
             wrapMethodBodyWithExceptionHandling(controllerClassNode, methodNode);
             annotateActionMethod(controllerClassNode, parameters, methodNode);
-            controllerClassNode.addMethod(methodNode);
+            ClassNodeUtils.addGeneratedMethod(controllerClassNode, methodNode);
         }
     }
 
@@ -657,11 +665,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         MethodNode convertedMethod = convertToMethodAction(classNode, actionMethod, source, context);
         if (convertedMethod != null) {
-            classNode.addMethod(convertedMethod);
+            ClassNodeUtils.addGeneratedMethod(classNode, convertedMethod);
         }
         classNode.getProperties().remove(property);
         classNode.getFields().remove(property.getField());
-        classNode.addMethod(actionMethod);
+        ClassNodeUtils.addGeneratedMethod(classNode, actionMethod);
     }
 
     protected BlockStatement initializeActionParameters(ClassNode classNode, ASTNode actionNode,
@@ -779,8 +787,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                         if(declaredConstructors.isEmpty() && !objectInitializerStatements.isEmpty()) {
                             BlockStatement constructorLogic = new BlockStatement();
                             ConstructorNode constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorLogic);
-                            commandObjectNode.addConstructor(constructorNode);
-                            AnnotatedNodeUtils.markAsGenerated(commandObjectNode, constructorNode);
+                            ClassNodeUtils.addGeneratedConstructor(commandObjectNode, constructorNode);
                             constructorLogic.addStatements(objectInitializerStatements);
                         }
                         argumentIsValidateable = true;
