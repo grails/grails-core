@@ -43,6 +43,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
             def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestTransformedToController {
 
                 def action = {
@@ -57,12 +58,13 @@ class ControllerActionTransformerSpec extends Specification {
           controller.getClass().getMethod("action", [] as Class[]) != null
 
         and: 'its not marked as Generated'
-            false == controller.getClass().getMethod("action", [] as Class[]).isAnnotationPresent(Generated)
+            controller.getClass().getMethod("action", [] as Class[]).isAnnotationPresent(Generated)
     }
 
     void 'Test that user applied annotations are applied to generated action methods'() {
         given:
         def cls = gcl.parseClass('''
+        @grails.artefact.Artefact('Controller')
         class SomeController {
             @Deprecated
             def action1(){}
@@ -210,6 +212,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
         def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestMyCommandObjController {
 
                 def action(MyCommand myCommand) {
@@ -238,6 +241,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
         def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestMyCommandObjController {
                 def action(MyCommand myCommand) {
                 }
@@ -265,6 +269,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
         def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestMyCommandObjController {
                 def action(MyCommand myCommand) {
                 }
@@ -295,7 +300,7 @@ class ControllerActionTransformerSpec extends Specification {
         actionAsClosureMethodWithoutCommand.isAnnotationPresent(Generated)
 
         Method actionAsClosureMethodWitCommand = controller.getClass().getMethod('actionAsClos', myCommand.class)
-        !actionAsClosureMethodWitCommand.isAnnotationPresent(Generated)
+        actionAsClosureMethodWitCommand.isAnnotationPresent(Generated)
     }
 
     def cleanup() {
