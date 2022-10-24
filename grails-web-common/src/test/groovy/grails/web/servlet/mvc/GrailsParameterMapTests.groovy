@@ -494,4 +494,17 @@ class GrailsParameterMapTests {
         assert '[a.b.c.d:1, a:[b.c.d:1, b:[c.d:1, c:[d:1], e:2], b.e:2], a.b.e:2]' == params.toString()
         assert params != null
     }
+
+    @Test
+    void testArrayKeys() {
+        def request = new MockHttpServletRequest()
+        def requestParams = ['a[3].b': '1', 'a[4].b': '2']
+        request.setParameters(requestParams)
+        def params = new GrailsParameterMap(request)
+        assert '[a[3].b:1, a[4].b:2, a:[3: [b:1], 4:[b:2]]]' == params.toString()
+        // right now grails also breaks it up by also adding:
+        // "[a[0]:[b:1], a[1]:[b:2]]"
+        // Personally, I think that's useless, but whether you want to retain it, I don't know.
+        assert params != null
+    }
 }
