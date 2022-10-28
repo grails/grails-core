@@ -87,7 +87,7 @@ jobs:
       - name: Invoke grails-doc release workflow
         if: steps.publish.outcome == 'success'
         id: grails_doc
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@b8ac4001bdf17685419a1b65af6fa92fc9a3de0e # tag=v1.2
         with:
           workflow: Release
           repo: grails/grails-doc
@@ -97,7 +97,7 @@ jobs:
       - name: Invoke grails-static-website release workflow
         if: steps.publish.outcome == 'success'
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@b8ac4001bdf17685419a1b65af6fa92fc9a3de0e # tag=v1.2
         with:
           workflow: Release
           repo: grails/grails-static-website

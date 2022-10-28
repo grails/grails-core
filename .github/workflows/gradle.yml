@@ -71,7 +71,7 @@ jobs:
         run: echo ::set-output name=value::{\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}
       - name: Invoke the Java CI workflow in Grails Functional Tests
         if: steps.publish.outcome == 'success' && github.event_name == 'push' && matrix.java == '8'
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@b8ac4001bdf17685419a1b65af6fa92fc9a3de0e # tag=v1.2
         with:
           workflow: Java CI
           repo: grails/grails3-functional-tests
