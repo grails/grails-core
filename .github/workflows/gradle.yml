@@ -11,8 +11,16 @@ on:
       - '[4-9]+.[0-9]+.x'
       - '[3-9]+.[3-9]+.x'
   workflow_dispatch:
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
 jobs:
   build:
+    permissions:
+      contents: read  #  to fetch code (actions/checkout)
+      checks: write  #  to publish result as PR check (scacap/action-surefire-report)
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
