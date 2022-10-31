@@ -2,8 +2,13 @@ name: Release
 on:
   release:
     types: [published]
+permissions: {}
 jobs:
   release:
+    permissions:
+      contents: write  #  to create release
+      issues: write  #  to modify milestones
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
