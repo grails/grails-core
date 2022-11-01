@@ -9,6 +9,7 @@ import groovy.transform.Generated
 import org.codehaus.groovy.control.CompilationUnit
 
 import java.lang.reflect.Constructor
+import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
@@ -42,6 +43,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
             def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestTransformedToController {
 
                 def action = {
@@ -56,12 +58,13 @@ class ControllerActionTransformerSpec extends Specification {
           controller.getClass().getMethod("action", [] as Class[]) != null
 
         and: 'its not marked as Generated'
-            false == controller.getClass().getMethod("action", [] as Class[]).isAnnotationPresent(Generated)
+            controller.getClass().getMethod("action", [] as Class[]).isAnnotationPresent(Generated)
     }
 
     void 'Test that user applied annotations are applied to generated action methods'() {
         given:
         def cls = gcl.parseClass('''
+        @grails.artefact.Artefact('Controller')
         class SomeController {
             @Deprecated
             def action1(){}
@@ -209,6 +212,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
         def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestMyCommandObjController {
 
                 def action(MyCommand myCommand) {
@@ -237,6 +241,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         when:
         def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class TestMyCommandObjController {
                 def action(MyCommand myCommand) {
                 }
@@ -258,6 +263,44 @@ class ControllerActionTransformerSpec extends Specification {
         myCommand.getClass().getConstructors().each { Constructor constructor ->
             assert constructor.isAnnotationPresent(Generated)
         }
+    }
+
+    void "Test Controller Action transformer marks its new methods as Generated"() {
+
+        when:
+        def cls = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
+            class TestMyCommandObjController {
+                def action(MyCommand myCommand) {
+                }
+                
+                def actionAsClos = { MyCommand myCommand ->
+                }
+                
+                def $test() {
+                    new MyCommand(name: "Sally")
+                }
+            }
+
+            class MyCommand {
+                String name
+            }
+            ''')
+        def controller = cls.newInstance()
+        def myCommand = controller.$test()
+
+        then:
+        Method actionMethodWithoutCommand = controller.getClass().getMethod('action')
+        actionMethodWithoutCommand.isAnnotationPresent(Generated)
+
+        Method actionMethodWitCommand = controller.getClass().getMethod('action', myCommand.class)
+        !actionMethodWitCommand.isAnnotationPresent(Generated)
+
+        Method actionAsClosureMethodWithoutCommand = controller.getClass().getMethod('actionAsClos')
+        actionAsClosureMethodWithoutCommand.isAnnotationPresent(Generated)
+
+        Method actionAsClosureMethodWitCommand = controller.getClass().getMethod('actionAsClos', myCommand.class)
+        actionAsClosureMethodWitCommand.isAnnotationPresent(Generated)
     }
 
     def cleanup() {
