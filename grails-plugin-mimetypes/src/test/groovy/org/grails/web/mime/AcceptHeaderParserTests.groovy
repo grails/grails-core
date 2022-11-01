@@ -1,20 +1,27 @@
 package org.grails.web.mime
 
-import grails.util.Holders
 import grails.core.DefaultGrailsApplication
+import grails.util.Holders
 import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.mime.DefaultAcceptHeaderParser
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class AcceptHeaderParserTests extends GroovyTestCase {
+class AcceptHeaderParserTests {
 
     def config
+
+    @BeforeEach
     protected void setUp() {
         def configObject = new ConfigSlurper().parse("""
 grails.mime.types = [ xml: ['text/xml', 'application/xml'],
@@ -37,11 +44,13 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
     }
 
+    @AfterEach
     protected void tearDown() {
         config = null
         Holders.setConfig null
     }
 
+    @Test
     void testXmlContentTypeWithCharset() {
 
         DefaultAcceptHeaderParser parser = getAcceptHeaderParser()
@@ -62,6 +71,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         parser
     }
 
+    @Test
     void testXmlContentTypeWithCharsetAndVersion() {
         def mimes = getAcceptHeaderParser().parse("text/xml; charset=UTF-8; v=1.1")
 
@@ -74,6 +84,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals('1.1', mimes[0].version)
     }
 
+    @Test
     void testGRAILS10678() {
         def mimes = getAcceptHeaderParser().parse("application/json;")
 
@@ -81,7 +92,8 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals "application/json", mimes[0].name
         assertEquals "json", mimes[0].extension
     }
-    
+
+    @Test
     void testFirefox2AcceptHeaderOrdering() {
 
         def mimes = getAcceptHeaderParser().parse("text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5")
@@ -92,6 +104,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['html', 'xml', 'html', 'text', 'all'], mimes.extension)
     }
 
+    @Test
     void testFirefox3AcceptHeaderOrdering() {
 
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
@@ -101,6 +114,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['html','html','xml', 'all'], mimes.extension)
     }
 
+    @Test
     void testParseAcceptHeaderWithNonNumericQualityValue() {
 
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=blah,*/*;q=0.8")
@@ -110,6 +124,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['html','html','xml', 'all'], mimes.extension)
     }
 
+    @Test
     void testAcceptHeaderWithQNumberOrdering() {
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=1.1,*/*;q=0.8")
 
@@ -118,6 +133,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['xml','html','html', 'all'], mimes.extension)
     }
 
+    @Test
     void testPrototypeHeaderOrdering() {
         def mimes = getAcceptHeaderParser().parse("text/javascript, text/html, application/xml, text/xml, */*")
 
@@ -127,6 +143,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(["text/javascript",'text/html', 'application/xml', '*/*'], mimes.name)
     }
 
+    @Test
     void testOldBrowserHeader() {
         def mimes = getAcceptHeaderParser().parse("*/*")
 
@@ -134,6 +151,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['all'], mimes.extension)
     }
 
+    @Test
     // test for GRAILS-3389
     void testAcceptExtensionWithTokenNoValue() {
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;token,*/*;q=0.8")
@@ -143,6 +161,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['html','html', 'xml','all'], mimes.extension)
     }
 
+    @Test
     // test for GRAILS-3493
     void testAcceptHeaderWithNoQValue() {
         def mimes = getAcceptHeaderParser().parse("application/xml; charset=UTF-8")
@@ -150,6 +169,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals 1, mimes.size()
     }
 
+    @Test
     void testAcceptExtensionWithCustomVndTypeAndVersion() {
         def mimesV1 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=1.0; charset=UTF-8")
         def mimesV2 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=2.0; charset=UTF-8")

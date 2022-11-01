@@ -31,7 +31,13 @@ import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.io.support.GrailsResourceUtils;
-import org.grails.plugins.*;
+import org.grails.plugins.AbstractGrailsPluginManager;
+import org.grails.plugins.BinaryGrailsPlugin;
+import org.grails.plugins.BinaryGrailsPluginDescriptor;
+import org.grails.plugins.CorePluginFinder;
+import org.grails.plugins.DefaultGrailsPlugin;
+import org.grails.plugins.IdentityPluginFilter;
+import org.grails.plugins.PluginFilterRetriever;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.BeansException;
@@ -48,7 +54,16 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -392,6 +407,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         final String pluginMinGrailsVersion = GrailsVersionUtils.getLowerVersion(pluginGrailsVersion);
         final String pluginMaxGrailsVersion = GrailsVersionUtils.getUpperVersion(pluginGrailsVersion);
 
+        if (appGrailsVersion == null) {
+            return true;
+        }
+
         if (pluginMinGrailsVersion == "*") {
             LOG.error("grailsVersion not formatted as expected, unable to determine compatibility.");
             return false;
@@ -399,9 +418,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
 
         VersionComparator comparator = new VersionComparator();
 
-        if (pluginMinGrailsVersion == pluginMaxGrailsVersion){
+        if (pluginMinGrailsVersion.equals(pluginMaxGrailsVersion)) {
             //exact version compatibility required
-            if(appGrailsVersion != pluginMinGrailsVersion){
+            if (!appGrailsVersion.equals(pluginMinGrailsVersion)) {
                 LOG.warn("Plugin [" + plugin.getName() + ":" + plugin.getVersion() +
                         "] may not be compatible with this application as the application Grails version is not equal" +
                         " to the one that plugin requires. Plugin is compatible with Grails version " +

@@ -95,7 +95,7 @@ public class JSONObject implements JSONElement, Map {
     private static boolean useStreamingJavascriptEncoder=false;
     static {
         try {
-            javascriptEncoder = (StreamingEncoder)ClassUtils.forName("org.grails.plugins.codecs.JSONEncoder", JSONObject.class.getClassLoader()).newInstance();
+            javascriptEncoder = (StreamingEncoder)ClassUtils.forName("grails.encoders.JSONEncoder", JSONObject.class.getClassLoader()).newInstance();
             javascriptEncoderStateless = (EncodesToWriter)javascriptEncoder;
             useStreamingJavascriptEncoder = true;
         }

@@ -17,6 +17,7 @@ package grails.ui.support
 
 import grails.boot.GrailsApp
 import groovy.transform.CompileStatic
+import org.springframework.boot.ApplicationContextFactory
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.support.GenericWebApplicationContext
 
@@ -34,11 +35,10 @@ class DevelopmentGrailsApplication extends GrailsApp {
     }
 
     protected configureApplicationContextClass() {
-        if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-            setApplicationContextClass(DevelopmentWebApplicationContext)
-        }
-        else {
-            setApplicationContextClass(GenericWebApplicationContext)
+        if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
+            setApplicationContextFactory(ApplicationContextFactory.ofContextClass(DevelopmentWebApplicationContext))
+        } else {
+            setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GenericWebApplicationContext))
         }
     }
 }

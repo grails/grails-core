@@ -1,11 +1,16 @@
 package grails.util
 
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class ClosureToMapPopulatorTests extends GroovyTestCase {
+class ClosureToMapPopulatorTests {
 
+    @Test
     void testPopulate() {
         def populator = new ClosureToMapPopulator()
 
@@ -17,6 +22,6 @@ class ClosureToMapPopulatorTests extends GroovyTestCase {
 
         assertEquals "bar", result.foo
         assertEquals "two", result.one
-        assertEquals "should have returned a list", ["four", "five"], result.three
+        assertEquals(["four", "five"], result.three, "should have returned a list")
     }
 }

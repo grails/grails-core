@@ -15,11 +15,15 @@
 package org.grails.plugins.testing
 
 import org.grails.plugins.testing.GrailsMockHttpSession
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertNull
 
 /**
  * Test case for {@link org.grails.plugins.testing.GrailsMockHttpSession}.
  */
-class GrailsMockHttpSessionTests extends GroovyTestCase {
+class GrailsMockHttpSessionTests {
     /**
      * Tests that property access on the session retrieves the value
      * for the attribute with the same name as the property unless
@@ -27,6 +31,7 @@ class GrailsMockHttpSessionTests extends GroovyTestCase {
      * the session should only retrieve an attribute if the property
      * is missing.
      */
+    @Test
     void testGetProperty() {
         // Set up the test session with some attributes.
         def testSession = new GrailsMockHttpSession()
@@ -52,6 +57,7 @@ class GrailsMockHttpSessionTests extends GroovyTestCase {
      * notation, while real properties on the session can still be
      * modified.
      */
+    @Test
     void testSetProperty() {
         // Set up the test session.
         def testSession = new GrailsMockHttpSession()
@@ -75,6 +81,7 @@ class GrailsMockHttpSessionTests extends GroovyTestCase {
      * the session should only retrieve an attribute if the property
      * is missing.
      */
+    @Test
     void testGetAt() {
         // Set up the test session with some attributes.
         def testSession = new GrailsMockHttpSession()
@@ -96,6 +103,7 @@ class GrailsMockHttpSessionTests extends GroovyTestCase {
      * notation, while real properties on the session can still be
      * modified.
      */
+    @Test
     void testPutAt() {
         // Set up the test session.
         def testSession = new GrailsMockHttpSession()

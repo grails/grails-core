@@ -1,6 +1,10 @@
 package grails.doc.internal
 
-class StringEscapeCategoryTests extends GroovyTestCase {
+import org.junit.jupiter.api.Test
+
+class StringEscapeCategoryTests {
+
+    @Test
     void testEncodeAsUrl() {
         assert StringEscapeCategory.encodeAsUrlPath("test") == "test"
         assert StringEscapeCategory.encodeAsUrlPath("test space") == "test%20space"
@@ -9,6 +13,7 @@ class StringEscapeCategoryTests extends GroovyTestCase {
         assert StringEscapeCategory.encodeAsUrlPath("<test%20hey>") == "%3Ctest%2520hey%3E"
     }
 
+    @Test
     void testEncodeAsUrlFragment() {
         assert StringEscapeCategory.encodeAsUrlFragment("test") == "test"
         assert StringEscapeCategory.encodeAsUrlFragment("test space") == "test%20space"
@@ -17,6 +22,7 @@ class StringEscapeCategoryTests extends GroovyTestCase {
         assert StringEscapeCategory.encodeAsUrlFragment("<test%20hey>") == "%3Ctest%2520hey%3E"
     }
 
+    @Test
     void testEncodeAsHtml() {
         assert StringEscapeCategory.encodeAsHtml("test") == "test"
         assert StringEscapeCategory.encodeAsHtml("test space") == "test space"

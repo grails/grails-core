@@ -1,5 +1,6 @@
 package org.grails.web.mapping
 
+
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.web.CamelCaseUrlConverter
@@ -7,6 +8,7 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
 /**
@@ -60,6 +62,7 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
             uri == "$baseUrl/$path"
     }
 
+    @IgnoreIf({ env['GITHUB_WORKFLOW'] })
     void "absolute links are generated when a relative link is asked for, but the deployment context is not known or set"() {
         when:
             context = null

@@ -1,10 +1,16 @@
 package org.grails.web.codecs
 
-class Base64CodecTests extends GroovyTestCase {
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.*
+
+class Base64CodecTests {
 
     byte[] dataPrimitive = new byte[256]
     Byte[] dataWrapper = new Byte[256]
 
+    @BeforeEach
     protected void setUp() {
         for (i in 0..255) {
             dataPrimitive[i] = i
@@ -12,6 +18,7 @@ class Base64CodecTests extends GroovyTestCase {
         }
     }
 
+    @Test
     void testEncode() {
 
         def expectedResult = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w=='
@@ -20,13 +27,14 @@ class Base64CodecTests extends GroovyTestCase {
         String primitiveResult = dataPrimitive.encodeAsBase64()
         String wrapperResult = dataWrapper.encodeAsBase64()
 
-        assertEquals(expectedResult,primitiveResult)
+        assertEquals(expectedResult, primitiveResult)
         assertEquals(expectedResult,wrapperResult)
 
         //make sure encoding null returns null
         assertNull null.encodeAsBase64()
     }
 
+    @Test
     void testDecode() {
         String data = 'd2hhdA=='
         byte[] result = data.decodeBase64()
@@ -40,11 +48,13 @@ class Base64CodecTests extends GroovyTestCase {
         assertNull null.decodeBase64()
     }
 
+    @Test
     void testRountrip() {
-        assertEquals(dataPrimitive, dataPrimitive.encodeAsBase64().decodeBase64())
-        assertEquals(dataWrapper, dataWrapper.encodeBase64().decodeBase64())
+        assertArrayEquals(dataPrimitive, dataPrimitive.encodeAsBase64().decodeBase64())
+        assertArrayEquals(dataWrapper, dataWrapper.encodeBase64().decodeBase64())
     }
 
+    @Test
     void testEncodeDecodeAsBase64() {
         assertEquals "dGVzdA==", "test".bytes.encodeAsBase64()
         assertEquals "dGVzdA==", "test".encodeAsBase64()

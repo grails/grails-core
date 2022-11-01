@@ -3,16 +3,20 @@ package org.grails.orm.support
 import grails.spring.BeanBuilder
 import grails.transaction.TransactionManagerAware
 import org.grails.transaction.TransactionManagerPostProcessor
+import org.junit.jupiter.api.Test
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.PlatformTransactionManager
+
+import static org.junit.jupiter.api.Assertions.assertNotNull
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class TransactionManagerPostProcessorTests extends GroovyTestCase{
+class TransactionManagerPostProcessorTests {
 
+    @Test
     void testTransactionManagerPostProccessor() {
         def bb = new BeanBuilder()
 
@@ -35,8 +39,8 @@ class TransactionManagerPostProcessorTests extends GroovyTestCase{
         def ctx = bb.createApplicationContext()
 
         MyBean bean = ctx.getBean("myBean")
-        assert bean
-        assert bean.tm
+        assertNotNull bean
+        assertNotNull bean.tm
     }
 }
 

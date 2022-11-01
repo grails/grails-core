@@ -1,5 +1,5 @@
 dependencies {
-    compile project(":grails-web")
+    api project(":grails-web")
 
-    provided "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    api "org.codehaus.groovy:groovy-ant:$groovyVersion"
 }

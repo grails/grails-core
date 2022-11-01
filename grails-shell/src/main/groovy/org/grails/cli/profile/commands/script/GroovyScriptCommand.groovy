@@ -20,6 +20,7 @@ import grails.build.logging.GrailsConsole
 import grails.codegen.model.ModelBuilder
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import groovy.ant.AntBuilder
 import groovy.transform.CompileStatic
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.cli.GrailsCli

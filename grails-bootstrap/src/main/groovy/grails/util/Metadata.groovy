@@ -15,19 +15,20 @@
  */
 package grails.util
 
-import grails.config.ConfigMap
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
-import org.grails.config.NavigableMap
+import io.micronaut.context.env.PropertiesPropertySourceLoader
+import io.micronaut.context.env.PropertySource
+import io.micronaut.context.env.PropertySourcePropertyResolver
+import io.micronaut.context.env.SystemPropertiesPropertySource
+import io.micronaut.context.env.yaml.YamlPropertySourceLoader
+import io.micronaut.core.value.PropertyResolver
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.lang.ref.Reference
 import java.lang.ref.SoftReference
-import java.util.*
 
 /**
  * Represents the application Metadata and loading mechanics.
@@ -36,11 +37,12 @@ import java.util.*
  * @since 1.1
  */
 @CompileStatic
-class Metadata extends NavigableMap implements ConfigMap  {
+class Metadata extends PropertySourcePropertyResolver {
     private static final long serialVersionUID = -582452926111226898L
     public static final String FILE = "application.yml"
     public static final String APPLICATION_VERSION = "info.app.version"
     public static final String APPLICATION_NAME = "info.app.name"
+    public static final String DEFAULT_APPLICATION_NAME = "grailsApplication"
     public static final String APPLICATION_GRAILS_VERSION = "info.app.grailsVersion"
     public static final String SERVLET_VERSION = "info.app.servletVersion"
     public static final String WAR_DEPLOYED = "info.app.warDeployed"
@@ -52,13 +54,15 @@ class Metadata extends NavigableMap implements ConfigMap  {
     private Resource metadataFile
     private boolean warDeployed
     private String servletVersion = DEFAULT_SERVLET_VERSION
-    private Object source
+    private Map<String, Object> props = null
+    private Map<String, Object> finalMap = null
 
     private Metadata() {
         loadFromDefault()
     }
 
     private Metadata(Resource res) {
+        metadataFile = res
         loadFromFile(res)
     }
 
@@ -72,15 +76,9 @@ class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     private Metadata(Map<String, String> properties) {
-        merge(properties, true)
+        props = new LinkedHashMap<String, Object>(properties)
+        addPropertySource(PropertySource.of(props))
         afterLoading()
-    }
-
-    /**
-     * @return The source of the metadata
-     */
-    Object getSource() {
-        return source
     }
 
     Resource getMetadataFile() {
@@ -100,9 +98,15 @@ class Metadata extends NavigableMap implements ConfigMap  {
 
     private void afterLoading() {
         // allow override via system properties
-        merge(new LinkedHashMap(System.properties).findAll { key, val -> val }, true)
-        def value = get(WAR_DEPLOYED)
-        warDeployed = value != null ? Boolean.valueOf(value.toString()) : false
+        PropertySource systemPropertiesPropertySource = new SystemPropertiesPropertySource()
+        addPropertySource(systemPropertiesPropertySource)
+
+        if (!containsProperty(APPLICATION_NAME)) {
+            final Map<String, Object> m = [(APPLICATION_NAME): (Object) DEFAULT_APPLICATION_NAME]
+            addPropertySource("appName", m)
+            resetCaches()
+        }
+        warDeployed = ((PropertyResolver) this).getProperty(WAR_DEPLOYED, Boolean.class).orElse(false)
     }
 
     /**
@@ -126,26 +130,27 @@ class Metadata extends NavigableMap implements ConfigMap  {
             }
             if (url != null) {
                 url.withInputStream { input ->
-                    this.@source = loadYml(input)
+                    addPropertySource(PropertySource.of("application", new YamlPropertySourceLoader().read("application", input)))
                 }
                 this.metadataFile = new UrlResource(url)
             }
 
             url = classLoader.getResource(BUILD_INFO_FILE)
-            if(url != null) {
-                if(IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
+            if (url != null) {
+                if (IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
                     url.withInputStream { input ->
-                        loadAndMerge(input)
+                        def buildInfo = new PropertiesPropertySourceLoader().read("build.info", input)
+                        addPropertySource(PropertySource.of("build.info", buildInfo))
                     }
                 }
-            }
-            else {
+            } else {
                 // try WAR packaging resolve
                 url = classLoader.getResource("../../" + BUILD_INFO_FILE)
-                if(url != null) {
-                    if(IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
+                if (url != null) {
+                    if (IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
                         url.withInputStream { input ->
-                            loadAndMerge(input)
+                            def buildInfo = new PropertiesPropertySourceLoader().read("build.info", input)
+                            addPropertySource(PropertySource.of("build.info", buildInfo))
                         }
                     }
                 }
@@ -157,28 +162,8 @@ class Metadata extends NavigableMap implements ConfigMap  {
         }
     }
 
-    private void loadAndMerge(InputStream input) {
-        try {
-            def props = new Properties()
-            props.load(input)
-            merge(props, true)
-        } catch (Throwable e) {
-            // ignore
-        }
-    }
-
-    private Object loadYml(InputStream input) {
-        Yaml yaml = new Yaml(new SafeConstructor())
-        def loadedYaml = yaml.loadAll(input)
-        List result = []
-        for(Object yamlObject : loadedYaml) {
-            if(yamlObject instanceof Map) { // problem here with CompileStatic
-                result.add(yamlObject)
-                merge((Map)yamlObject)
-            }
-        }
-
-        return result
+    private void loadYml(InputStream input) {
+        addPropertySource(PropertySource.of(new YamlPropertySourceLoader().read("metadata", input)))
     }
 
     private void loadFromInputStream(InputStream inputStream) {
@@ -234,8 +219,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
             Metadata metadata = ref.get()
             if (metadata != null && metadata.getMetadataFile() != null && metadata.getMetadataFile().equals(file)) {
                 return metadata
-            }
-            else {
+            } else {
                 createAndBindNew(file)
             }
         }
@@ -265,28 +249,29 @@ class Metadata extends NavigableMap implements ConfigMap  {
      * @return The application version
      */
     String getApplicationVersion() {
-        return get(APPLICATION_VERSION)?.toString()
+        return ((PropertyResolver) this).getProperty(APPLICATION_VERSION, String.class).orElse(null)
     }
 
     /**
      * @return The Grails version used to build the application
      */
     String getGrailsVersion() {
-        return get(APPLICATION_GRAILS_VERSION)?.toString() ?: getClass().getPackage().getImplementationVersion()
+        return ((PropertyResolver) this).getProperty(APPLICATION_GRAILS_VERSION, String.class)
+                .orElse(getClass().getPackage().getImplementationVersion())
     }
 
     /**
      * @return The environment the application expects to run in
      */
     String getEnvironment() {
-        return get(Environment.KEY)?.toString()
+        return ((PropertyResolver) this).getProperty(Environment.KEY, String.class).orElse(null)
     }
 
     /**
      * @return The application name
      */
     String getApplicationName() {
-        return get(APPLICATION_NAME)?.toString()
+        return ((PropertyResolver) this).getProperty(APPLICATION_NAME, String.class).orElse(DEFAULT_APPLICATION_NAME)
     }
 
 
@@ -294,12 +279,11 @@ class Metadata extends NavigableMap implements ConfigMap  {
      * @return The version of the servlet spec the application was created for
      */
     String getServletVersion() {
-        String servletVersion = get(SERVLET_VERSION)?.toString()
-        if (servletVersion == null) {
-            servletVersion = System.getProperty(SERVLET_VERSION) != null ? System.getProperty(SERVLET_VERSION) : this.servletVersion
-            return servletVersion
+        Optional<String> servletVersion = ((PropertyResolver) this).getProperty(SERVLET_VERSION, String.class)
+        if (!servletVersion.isPresent()) {
+            servletVersion = Optional.ofNullable(System.getProperty(SERVLET_VERSION))
         }
-        return servletVersion
+        servletVersion.orElse(DEFAULT_SERVLET_VERSION)
     }
 
 
@@ -339,7 +323,42 @@ class Metadata extends NavigableMap implements ConfigMap  {
         return metadata == null ? null : metadata.get()
     }
 
+    boolean containsKey(Object key) {
+        return containsProperty(key.toString())
+    }
 
+    @Deprecated
+    Object get(Object key) {
+        return ((PropertyResolver) this).getProperty(key.toString(), Object.class).orElse(null)
+    }
+
+    void clear() {
+        propertySources.clear()
+        clearCatalog(rawCatalog)
+        clearCatalog(nonGenerated)
+        clearCatalog(catalog)
+        resetCaches()
+        if (metadataFile != null) {
+            loadFromFile(metadataFile)
+        } else if (props != null ) {
+            addPropertySource(PropertySource.of(props))
+            afterLoading()
+        } else {
+            loadFromDefault()
+        }
+    }
+
+    private void clearCatalog(Map<String, Object>[] catalog) {
+        synchronized (catalog) {
+            for (int i = 0; i < catalog.length; i++) {
+                catalog[i] = null
+            }
+        }
+    }
+
+    Object getOrDefault(Object key, Object defaultValue) {
+        return ((PropertyResolver) this).getProperty(key.toString(), Object).orElse(defaultValue)
+    }
 
     static class FinalReference<T> extends SoftReference<T> {
         private final T ref
@@ -356,30 +375,24 @@ class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     @Override
-    <T> T getProperty(String key, Class<T> targetType) {
-        return get(key)?.asType(targetType)
-    }
-
-    @Override
     <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        def v = getProperty(key, targetType)
-        if(v == null) {
-            return defaultValue
-        }
-        return v
+        return ((PropertyResolver) this).getProperty(key, targetType).orElse(defaultValue)
     }
 
     @Override
     <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
-        def value = get(key)
-        if(value == null) {
-            throw new IllegalStateException("Value for key ["+key+"] cannot be resolved")
-        }
-        return value.asType(targetType)
+        return ((PropertyResolver) this).getProperty(key, Object.class)
+                .map(value -> value.asType(targetType))
+                .orElseThrow(() -> new IllegalStateException("Value for key [" + key + "] cannot be resolved"))
     }
 
-    @Override
-    Iterator<Map.Entry<String, Object>> iterator() {
-        return entrySet().iterator()
+    @Deprecated
+    Object navigate(String... path) {
+        return ((Optional<Object>) ((PropertyResolver) this).getProperty(path.join(".").toString(), Object)).orElse(null)
+    }
+
+    @Deprecated
+    Object getProperty(String propertyName) {
+        return get(propertyName)
     }
 }

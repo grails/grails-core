@@ -145,7 +145,7 @@ class JSONConverterTests extends Specification implements ControllerUnitTest<JSO
     // GRAILS-11517
     void testMoreStringsWithQuotes2() {
         expect:
-        '{"key":"<a href=\\"#\\" class=\\"link\\">link<\\/a>"}' == (['key': '<a href="#" class="link">link</a>'] as JSON).toString()
+        '{"key":"<a href=\\"#\\" class=\\"link\\">link<\\u002fa>"}' == (['key': '<a href="#" class="link">link</a>'] as JSON).toString()
     }
 
     // GRAILS-10393

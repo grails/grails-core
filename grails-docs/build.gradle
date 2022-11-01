@@ -1,33 +1,28 @@
 configurations {
     // Required to keep Gradle classes off the test compile classpath.
-    gradleConf.extendsFrom compile
+    gradleConf.extendsFrom compileClasspath
 }
 
 dependencies {
     gradleConf gradleApi()
-    compile "commons-lang:commons-lang:$commonsLangVersion",
+    api "commons-lang:commons-lang:$commonsLangVersion",
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
             'org.grails:grails-gdoc-engine:1.0.1',
-            'org.yaml:snakeyaml:1.29',
+            'org.yaml:snakeyaml:1.33',
             "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
-    compile 'org.asciidoctor:asciidoctorj:2.5.2'
-    compile('org.xhtmlrenderer:core-renderer:8.0') {
+    api 'org.asciidoctor:asciidoctorj:2.5.6'
+    api('org.xhtmlrenderer:core-renderer:8.0') {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }
 
-    runtime "org.slf4j:slf4j-api:$slf4jVersion"
+    runtimeOnly "org.slf4j:slf4j-api:$slf4jVersion"
 
-    runtime('com.lowagie:itext:2.0.8')
+    runtimeOnly('com.lowagie:itext:2.0.8')
 
-    compile 'org.jsoup:jsoup:1.7.3'
-    testCompile "junit:junit:$junitVersion"
-    testCompile("org.spockframework:spock-core:${spockVersion}") {
-        transitive = false
-        exclude group:'junit', module: 'junit-dep'    
-        exclude group:'org.codehaus.groovy', module: 'groovy-all'    
-    }
+    api 'org.jsoup:jsoup:1.15.3'
+    testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
 }
 
 sourceSets {
@@ -36,16 +31,15 @@ sourceSets {
     }
 }
 
-task docFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
-    version = null
-    archiveName = "grails-doc-files.jar"
+tasks.register("docFilesJar", Jar) {
+    description = 'Package up files used for generating documentation.'
+    archiveVersion = null
+    archiveFileName = "grails-doc-files.jar"
     from "src/main/template"
-    doLast {
-        copy {
-            from docFilesJar.archivePath
-            into "${buildDir}/classes/groovy/main"
-        }
-    }
+}
+
+tasks.named('jar', Jar) {
+    from docFilesJar
 }
 
 jar.dependsOn docFilesJar

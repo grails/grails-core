@@ -16,9 +16,9 @@ package org.grails.web.mapping;
 
 import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingParser;
-import junit.framework.TestCase;
-import org.grails.web.mapping.DefaultUrlMappingData;
-import org.grails.web.mapping.DefaultUrlMappingParser;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for the UrlMappingData class
@@ -29,8 +29,9 @@ import org.grails.web.mapping.DefaultUrlMappingParser;
  *        Created: Mar 5, 2007
  *        Time: 7:50:41 AM
  */
-public class UrlMappingDataTests extends TestCase {
+public class UrlMappingDataTests {
 
+    @Test
     public void testOptionals() {
         UrlMappingData data = new DefaultUrlMappingData("/surveys/(*)?");
 
@@ -38,6 +39,7 @@ public class UrlMappingDataTests extends TestCase {
         assertTrue(data.isOptional(0));
     }
 
+    @Test
     public void testTokens() {
         UrlMappingData data = new DefaultUrlMappingData("/blog/(*)/2007/(*)?");
 
@@ -54,6 +56,7 @@ public class UrlMappingDataTests extends TestCase {
         assertTrue(data.isOptional(1));
     }
 
+    @Test
     public void testLogicalUrls() {
         UrlMappingData data = new DefaultUrlMappingData("/blog/(*)?/2007/*/*?");
 
@@ -66,6 +69,7 @@ public class UrlMappingDataTests extends TestCase {
         assertEquals("/blog", urls[2]);
     }
 
+    @Test
     public void testUrlMappingDataParser() {
         UrlMappingParser parser = new DefaultUrlMappingParser();
 

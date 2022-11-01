@@ -1,4 +1,4 @@
 dependencies {
-    compile project(":grails-web-common")
-    compile('commons-fileupload:commons-fileupload:1.4')
+    api project(":grails-web-common")
+    api('commons-fileupload:commons-fileupload:1.4')
 }

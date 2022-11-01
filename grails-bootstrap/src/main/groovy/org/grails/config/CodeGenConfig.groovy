@@ -250,13 +250,13 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     public Object getProperty(String name) {
         if ("configMap".equals(name))
             return this.configMap
-        return configMap.getProperty(name)
+        return configMap.get(name)
     }
 
     public Object get(String name) {
         if ("configMap".equals(name))
             return this.configMap
-        return configMap.getProperty(name)
+        return configMap.get(name)
     }
 
     @Override
@@ -265,7 +265,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     }
 
     public <T> T getProperty(String name, Class<T> requiredType) {
-        return convertToType( configMap.getProperty(name), requiredType )
+        return convertToType( configMap.get(name), requiredType )
     }
 
     @Override

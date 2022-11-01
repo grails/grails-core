@@ -37,7 +37,7 @@ class AllowedMethodsHelper {
             if(value instanceof String) {
                 isAllowed = method.equalsIgnoreCase(value)
             } else if (value instanceof List) {
-                isAllowed = value.find { String s -> method.equalsIgnoreCase(s) }
+                isAllowed = value.find { s -> method.equalsIgnoreCase((String) s) }
             } else {
                 isAllowed = false
             }

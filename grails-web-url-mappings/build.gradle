@@ -1,7 +1,7 @@
 dependencies {
-    compile project(":grails-web-common")
+    api project(":grails-web-common")
 
-    compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
+    api("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
         exclude group: 'org.springframework', module:'spring-core'
         exclude group: 'org.springframework', module:'spring-context'
         exclude group: 'org.springframework', module:'spring-web'
@@ -22,10 +22,12 @@ dependencies {
         exclude group: 'java-persistence', module:'persistence-api'
     }
 
-    provided "org.fusesource.jansi:jansi:$jansiVersion"
-    provided "jline:jline:$jlineVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
+    api "jline:jline:$jlineVersion"
 
-    testCompile project(":grails-test-suite-base")
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
+
+    testImplementation project(":grails-test-suite-base")
 }
 tasks.withType(Test) {
     testLogging {

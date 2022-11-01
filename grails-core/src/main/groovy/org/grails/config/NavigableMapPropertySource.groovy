@@ -24,9 +24,11 @@ import org.springframework.util.StringUtils
 /**
  * A {@link org.springframework.core.env.PropertySource} that doesn't return values for navigable submaps
  *
+ * @deprecated This class behavior is closely tied to {@link org.grails.config.NavigableMap} which will be removed in future release.
  * @author Graeme Rocher
  * @since 3.0.7
  */
+@Deprecated
 @CompileStatic
 class NavigableMapPropertySource extends MapPropertySource {
 
@@ -36,7 +38,7 @@ class NavigableMapPropertySource extends MapPropertySource {
     NavigableMapPropertySource(String name, NavigableMap source) {
         super(name, source)
         this.propertyNames = source.keySet().findAll() { key ->
-            !(source[key] instanceof NavigableMap)
+            !(source.get(key) instanceof NavigableMap)
         }
         navigablePropertyNames =  StringUtils.toStringArray(source.keySet());
     }

@@ -29,11 +29,11 @@ class PublishGuide extends DefaultTask {
     @InputDirectory @Optional File resourcesDir = new File(project.projectDir, "resources")
     @Input @Optional List propertiesFiles = []
     @Input @Optional String language = ""
-    @Input @Optional boolean asciidoc = false
+    @Input @Optional Boolean asciidoc = false
     @Input @Optional String sourceRepo
     @Input @Optional Properties properties = new Properties()
-    Collection macros = []
-    File workDir = project.buildDir as File
+    @Input @Nested Collection macros = []
+    @OutputDirectory File workDir = project.buildDir as File
 
     @TaskAction
     def publishGuide() {

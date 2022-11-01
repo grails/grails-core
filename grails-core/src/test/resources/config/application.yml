@@ -1,0 +1,23 @@
+---
+grails:
+  profile: web
+  somekey: somevalue
+a1:
+  a2: 1
+  b2: 2
+  c2:
+    a3: 1
+    b2: 2
+    c3: 1
+  d2: 1
+---
+a1:
+  a2: 3
+  b2: 4
+  c2:
+    a3: 3
+    b2: 4
+  e2: 2
+---
+grails:
+  somekey: !!null

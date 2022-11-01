@@ -11,10 +11,10 @@ sourceSets {
 
 // Setup dependencies for integration testing
 dependencies {
-  integrationTestCompile sourceSets.main.output
-  integrationTestCompile sourceSets.test.output
-  integrationTestCompile configurations.testCompile
-  integrationTestRuntime configurations.testRuntime
+  integrationTestImplementation sourceSets.main.output
+  integrationTestImplementation sourceSets.test.output
+  integrationTestImplementation configurations.testCompileClasspath
+  integrationTestRuntimeOnly configurations.testRuntimeClasspath
 }
 
 // Define integration test task

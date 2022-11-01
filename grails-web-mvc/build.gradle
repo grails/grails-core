@@ -1,8 +1,8 @@
 dependencies {
-    compile project(":grails-web-common"),            
+    api project(":grails-web-common"),
             project(":grails-web-url-mappings")
 
-    compile "org.grails:grails-web-sitemesh:$gspVersion", {
+    api "org.grails:grails-web-sitemesh:$gspVersion", {
         exclude group:'org.grails', module:'grails-web-common'
     }
 }

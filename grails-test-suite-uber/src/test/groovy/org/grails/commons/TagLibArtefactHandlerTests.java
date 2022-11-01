@@ -16,14 +16,17 @@ package org.grails.commons;
 
 import grails.core.ArtefactHandler;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
 import org.grails.core.artefact.TagLibArtefactHandler;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Marc Palmer
  */
-public class TagLibArtefactHandlerTests extends TestCase {
+public class TagLibArtefactHandlerTests {
 
+    @Test
     public void testIsTagLibClass() {
         GroovyClassLoader gcl = new GroovyClassLoader();
 

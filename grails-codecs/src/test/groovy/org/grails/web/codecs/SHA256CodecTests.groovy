@@ -1,7 +1,12 @@
 package org.grails.web.codecs
 
-class SHA256CodecTests extends GroovyTestCase {
+import org.junit.jupiter.api.Test
 
+import static org.junit.jupiter.api.Assertions.*
+
+class SHA256CodecTests {
+
+    @Test
     void testEncode() {
 
         def expectedResult = '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'
@@ -17,9 +22,10 @@ class SHA256CodecTests extends GroovyTestCase {
         assertNull null.encodeAsSHA256()
     }
 
+    @Test
     void testDecode() {
-        shouldFail(UnsupportedOperationException) {
+        assertThrows(UnsupportedOperationException, {
             [1,2,3,4,5].decodeSHA256()
-        }
+        })
     }
 }

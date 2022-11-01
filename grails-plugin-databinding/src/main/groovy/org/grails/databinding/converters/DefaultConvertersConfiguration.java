@@ -164,6 +164,11 @@ public class DefaultConvertersConfiguration {
         return jsr310ConvertersConfiguration.periodValueConverter();
     }
 
+    @Bean("instantStringValueConverter")
+    ValueConverter instantStringValueConverter() {
+        return jsr310ConvertersConfiguration.instantStringValueConverter();
+    }
+
     @Bean("instantValueConverter")
     ValueConverter instantValueConverter() {
         return jsr310ConvertersConfiguration.instantValueConverter();

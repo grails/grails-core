@@ -12,22 +12,22 @@ jobs:
   release_notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Check if it has release drafter config file
         id: check_release_drafter
         run: |
           has_release_drafter=$([ -f .github/release-drafter.yml ] && echo "true" || echo "false")
           echo ::set-output name=has_release_drafter::${has_release_drafter}
-
+      - name: Extract branch name
+        id: extract_branch
+        run: echo ::set-output name=value::${GITHUB_REF:11}
       # If it has release drafter:
-      - uses: release-drafter/release-drafter@v5.15.0
+      - uses: release-drafter/release-drafter@6df64e4ba4842c203c604c1f45246c5863410adb # tag=v5.21.1
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          prerelease: false
-          commitish: 4.0.x
-          filter-by-commitish: true
+          commitish: ${{ steps.extract_branch.outputs.value }}
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'

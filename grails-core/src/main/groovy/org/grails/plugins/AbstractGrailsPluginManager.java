@@ -488,18 +488,15 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     static ConfigSlurper getConfigSlurper(GrailsApplication application) {
         String environment = Environment.getCurrent().getName();
         ConfigSlurper configSlurper = new ConfigSlurper(environment);
-        Map binding = new HashMap();
-
+        final Map<String, Object> binding = new HashMap<>();
         // configure config slurper binding
         binding.put(CONFIG_BINDING_USER_HOME, System.getProperty("user.home"));
         binding.put(CONFIG_BINDING_GRAILS_HOME, System.getProperty("grails.home"));
-
         if (application != null) {
-            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME));
-            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION));
+            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().getApplicationName());
+            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().getApplicationVersion());
             binding.put(GrailsApplication.APPLICATION_ID, application);
         }
-
         configSlurper.setBinding(binding);
         return configSlurper;
     }

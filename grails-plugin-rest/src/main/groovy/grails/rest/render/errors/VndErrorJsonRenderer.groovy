@@ -57,13 +57,11 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
 
             writer.call(object.allErrors) { ObjectError oe ->
                 final msg = messageSource.getMessage(oe, locale)
-                writer
-
-                String logref = resolveLogRef(target, oe)
+                final String logref = resolveLogRef(target, oe)
+                final String path = linkGenerator.link(resource: target, method: HttpMethod.GET, absolute: absoluteLinks)
 
                 delegate.call(LOGREF_ATTRIBUTE, logref)
                 delegate.call(MESSAGE_ATTRIBUTE, msg)
-                def path = linkGenerator.link(resource: target, method: HttpMethod.GET, absolute: absoluteLinks)
                 delegate.call(PATH_ATTRIBUTE, path)
                 delegate.call(LINKS_ATTRIBUTE) {
                     delegate.call(RESOURCE_ATTRIBUTE) {

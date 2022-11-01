@@ -36,6 +36,8 @@ import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 
+import static org.grails.cli.profile.ProfileUtil.createDependency
+
 /**
  * Abstract implementation of the profile class
  *
@@ -169,32 +171,23 @@ abstract class AbstractProfile implements Profile {
 
 
 
-        def dependencyMap = profileConfig.get("dependencies")
+        def dependenciesConfig = profileConfig.get("dependencies")
 
-        if(dependencyMap instanceof Map) {
-            for(entry in ((Map)dependencyMap)) {
-                def scope = entry.key
-                def value = entry.value
-                if(value instanceof List) {
-                    if("excludes".equals(scope)) {
-                        List<Exclusion> exclusions =[]
-                        for(dep in ((List)value)) {
-                            def artifact = new DefaultArtifact(dep.toString())
-                            exclusions.add new Exclusion(artifact.groupId ?: null, artifact.artifactId ?: null, artifact.classifier ?: null, artifact.extension ?: null)
-                        }
-                        exclusionDependencySelector = new ExclusionDependencySelector(exclusions)
-                    }
-                    else {
-
-                        for(dep in ((List)value)) {
-                            String coords = dep.toString()
-                            if(coords.count(':') == 1) {
-                                coords = "$coords:BOM"
-                            }
-                            dependencies.add new Dependency(new DefaultArtifact(coords),scope.toString())
-                        }
+        if (dependenciesConfig instanceof List) {
+            List<Exclusion> exclusions =[]
+            for (entry in dependenciesConfig) {
+                if (entry instanceof Map) {
+                    def scope = (String) entry.scope
+                    String coords = (String) entry.coords
+                    if (scope == 'excludes') {
+                        def artifact = new DefaultArtifact(coords)
+                        exclusions.add new Exclusion(artifact.groupId ?: null, artifact.artifactId ?: null, artifact.classifier ?: null, artifact.extension ?: null)
+                    } else {
+                        Dependency dependency = createDependency(coords, scope, entry)
+                        dependencies.add(dependency)
                     }
                 }
+                exclusionDependencySelector = new ExclusionDependencySelector(exclusions)
             }
         }
 
@@ -316,7 +309,7 @@ abstract class AbstractProfile implements Profile {
     }
 
     List<Dependency> getDependencies() {
-        List<Dependency> calculatedDependencies = []
+            List<Dependency> calculatedDependencies = []
         def parents = getExtends()
         for(profile in parents) {
             def dependencies = profile.dependencies

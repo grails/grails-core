@@ -21,7 +21,7 @@ class DataSourceGrailsPluginSpec extends Specification {
         DataSourceGrailsPlugin plugin = new DataSourceGrailsPlugin()
         plugin.setPluginManager(Mock(GrailsPluginManager))
         GrailsApplication application = Mock(GrailsApplication)
-        application.getConfig() >> new PropertySourcesConfig('dataSource.pooled':true,'dataSource.url':'jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE')
+        application.getConfig() >> new PropertySourcesConfig('dataSource.pooled':true,'dataSource.url':'jdbc:h2:mem:devDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE')
 
         plugin.setGrailsApplication(application)
 

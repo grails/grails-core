@@ -42,7 +42,7 @@ class ServletRenderContext extends AbstractRenderContext {
     private boolean writerObtained = false
 
     ServletRenderContext(GrailsWebRequest webRequest) {
-        this(webRequest, Collections.emptyMap())
+        this(webRequest, Collections.<String, Object> emptyMap())
     }
 
     ServletRenderContext(GrailsWebRequest webRequest, Map<String, Object> arguments) {
@@ -52,17 +52,17 @@ class ServletRenderContext extends AbstractRenderContext {
             final argsMap = arguments
             final incObject = argsMap != null ?  argsMap.get(IncludeExcludeSupport.INCLUDES_PROPERTY) : null
             final excObject = argsMap != null ? argsMap.get(IncludeExcludeSupport.EXCLUDES_PROPERTY) : null
-            List includes = incObject instanceof List ? (List)incObject : null
-            List excludes = excObject instanceof List ? (List)excObject : null
-            if(includes != null) {
+            List<String> includes = incObject instanceof List ? (List<String>) incObject : null
+            List<String> excludes = excObject instanceof List ? (List<String>) excObject : null
+            if (includes != null) {
                 this.includes = includes
             }
-            if(excludes != null) {
+            if (excludes != null) {
                 this.excludes = excludes
             }
         }
         else {
-            this.arguments = Collections.emptyMap()
+            this.arguments = Collections.<String, Object> emptyMap()
         }
     }
 

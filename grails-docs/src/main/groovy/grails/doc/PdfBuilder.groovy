@@ -14,6 +14,8 @@
  */
 package grails.doc
 
+import org.jsoup.parser.Parser
+
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -69,7 +71,7 @@ class PdfBuilder {
     static boolean debugPdf = Boolean.getBoolean("grails.docs.debug.pdf")
     
     private static String cleanupHtml(File htmlFile, String xml) {
-        String result = cleanHtml ? Jsoup.parse(xml).outerHtml() : xml
+        String result = cleanHtml ? Jsoup.parse(xml, "", Parser.xmlParser()).outerHtml() : xml
         result = removeCssLinks(result)
         result = result.replaceAll('</head>', pdfCss() + '</head>')
         if(debugPdf) {

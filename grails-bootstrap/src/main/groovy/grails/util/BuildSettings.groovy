@@ -61,9 +61,9 @@ class BuildSettings {
     public static final String PROFILE_REPOSITORIES = "grails.profiles.repositories"
 
     public static final String BUILD_SCOPE = "build"
-    public static final String COMPILE_SCOPE = "compile"
-    public static final String RUNTIME_SCOPE = "runtime"
-    public static final String TEST_SCOPE = "test"
+    public static final String COMPILE_SCOPE = "compileClasspath"
+    public static final String RUNTIME_SCOPE = "runtimeClasspath"
+    public static final String TEST_SCOPE = "testCompileClasspath"
     public static final String PROVIDED_SCOPE = "provided"
 
     public static final String BUILD_SCOPE_DESC = "Dependencies for the build system only"

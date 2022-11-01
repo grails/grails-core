@@ -3,34 +3,45 @@ apply plugin:'application'
 mainClassName = "org.grails.cli.GrailsCli"
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 ext {
-//    gradleToolingApiVersion = gradle.gradleVersion
-    gradleToolingApiVersion = '5.0'
+    gradleToolingApiVersion = '6.9'
 }
 
 dependencies {
-    compile project(":grails-bootstrap")
-    compile project(":grails-gradle-model")
-    compile "org.apache.ant:ant:$antVersion"
-    compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
-    compile "org.codehaus.groovy:groovy-json:$groovyVersion"
-    compile "org.codehaus.groovy:groovy-jmx:$groovyVersion"
-    compile "org.fusesource.jansi:jansi:$jansiVersion"
-    compile "jline:jline:$jlineVersion"
-    compile "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
+    api project(":grails-bootstrap")
+    api project(":grails-gradle-model")
+    api "org.apache.ant:ant:$antVersion"
+    api "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    api "org.codehaus.groovy:groovy-json:$groovyVersion"
+    api "org.codehaus.groovy:groovy-jmx:$groovyVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
+    api "jline:jline:$jlineVersion"
+    api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
 
-    compile("org.springframework.boot:spring-boot-cli:$springBootVersion") {
+    api "org.springframework.boot:spring-boot-cli:$springBootVersion", {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
+    implementation("org.apache.maven:maven-resolver-provider:3.8.3") {
+        exclude group: "com.google.guava", module: "guava"
+    }
 
-    testCompile "net.sf.expectit:expectit-core:0.9.0"
-    testCompile "com.github.jnr:jnr-posix:3.1.11"
+    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.8.0")
+    implementation("org.apache.maven.resolver:maven-resolver-impl:1.8.0")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.8.0")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.8.0") {
+        exclude group: "org.slf4j", module:"jcl-over-slf4j"
+        exclude group: "commons-codec", module:"commons-codec"
+    }
+    implementation("commons-codec:commons-codec:1.15")
 
-    runtime "org.slf4j:slf4j-simple:$slf4jVersion"
-    runtime "org.codehaus.plexus:plexus-component-api:1.0-alpha-33"
+    testImplementation "net.sf.expectit:expectit-core:0.9.0"
+    testImplementation "com.github.jnr:jnr-posix:3.1.15"
+
+    runtimeOnly "org.slf4j:slf4j-simple:$slf4jVersion"
+    runtimeOnly "org.codehaus.plexus:plexus-component-api:1.0-alpha-33"
 
 }
 

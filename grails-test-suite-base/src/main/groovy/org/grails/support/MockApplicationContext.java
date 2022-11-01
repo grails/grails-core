@@ -143,13 +143,23 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     @Override
+    public <T> ObjectProvider<T> getBeanProvider(Class<T> requiredType, boolean allowEagerInit) {
+        return getBeanProvider(requiredType);
+    }
+
+    @Override
+    public <T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType, boolean allowEagerInit) {
+        return getBeanProvider(requiredType);
+    }
+
+    @Override
     public String[] getBeanNamesForType(ResolvableType type) {
         return new String[0];
     }
 
     @Override
     public String[] getBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
-        return getBeanNamesForType(type);
+        return new String[0];
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -189,6 +199,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
             return o.getClass().getAnnotation(annotation);
         }
         return null;
+    }
+
+    @Override
+    public <A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException {
+        return findAnnotationOnBean(beanName, annotationType);
     }
 
     public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) throws BeansException {

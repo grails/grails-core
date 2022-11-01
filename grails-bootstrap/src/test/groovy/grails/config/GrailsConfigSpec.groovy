@@ -1,6 +1,7 @@
 package grails.config
 
 import org.grails.config.CodeGenConfig
+import org.grails.config.NavigableMap
 import spock.lang.Specification
 
 class GrailsConfigSpec extends Specification{
@@ -64,27 +65,10 @@ class GrailsConfigSpec extends Specification{
         config.navigate(Boolean, 'booleanValue') == true
         config.navigate(Boolean, 'falseValue') == false
     }
-    
-    def "should support null safe navigation for getting"() {
-        given:
-        CodeGenConfig config = new CodeGenConfig()
-        expect:
-        config.a.b.c as Boolean == false
-        config.a.b.c as Map == null
-    }
-
-    def "should support null safe navigation for setting"() {
-        given:
-        CodeGenConfig config = new CodeGenConfig()
-        when:
-        config.a.b.c = 1
-        then:
-        config.configMap == [a: [b: [c: 1]], 'a.b':['c':1],'a.b.c':1]
-    }
 
     def "should support merging values when map is set"() {
         given:
-        CodeGenConfig config = new CodeGenConfig()
+        CodeGenConfig config = new CodeGenConfig([a: [b: [c: 1]], 'a.b': [c: 1], 'a.b.c': 1])
         when:
         config.a.b.c = 1
         config.a = [d: 2]
@@ -98,25 +82,15 @@ class GrailsConfigSpec extends Specification{
 
     def "should support merging values when map already exists"() {
         given:
-        CodeGenConfig config = new CodeGenConfig()
+        CodeGenConfig config = new CodeGenConfig([a: [b: [c: 1]], 'a.b': [c: 1], 'a.b.c': 1])
         when:
-        config.a.b.c = 1
-        config.a = [d: 2]
+        config.getProperty("a", Map).d = 2
         then:
         config.configMap == [a: [b: [c: 1], d: 2],'a.b':['c':1], 'a.b.c':1, 'a.d':2]
         when:
         config.a.b.e = 3
         then:
         config.configMap == [a:[b:[c:1, e:3], d:2], 'a.b':[c:1, e:3], 'a.b.c':1, 'a.d':2, 'a.b.e':3]
-    }
-        
-    def "should support setting map in null safe navigation"() {
-        given:
-        CodeGenConfig config = new CodeGenConfig()
-        when:
-        config.a.b.c = [d: 3, e: [f: 4]]
-        then:
-        config.configMap == [a:[b:[c:[d:3, e:[f:4]]]],'a.b': [c:[d:3, e:[f:4]]], 'a.b.c.d':3, 'a.b.c.e.f':4, 'a.b.c.e':[f:4], 'a.b.c':[d:3, e:[f:4]]]
     }
     
     def "should support cloning"() {
@@ -174,33 +148,14 @@ class GrailsConfigSpec extends Specification{
     
     def "should support with"() {
         given:
-        CodeGenConfig config = new CodeGenConfig()
+        CodeGenConfig config = new CodeGenConfig([a: [b: [c: [:]]]])
         when:
-        config.a.b.c.with {
+        config.getProperty('a.b.c', Map).with {
             d = 1
             e = 2
         }
         then:
         config.configMap == [a: [b: [c: [d: 1, e: 2]]], 'a.b.c': [d:1, e:2],'a.b': [c:[d:1, e:2]], 'a.b.c.d':1, 'a.b.c.e':2]
-    }
-    
-    def "null safe navigation should be supported without creating keys"() {
-        given:
-        CodeGenConfig config = new CodeGenConfig()
-        def subconfigReference = config.a.b.c.d.e
-        expect:
-        config.configMap.size() == 0
-        when:
-        subconfigReference.f.g = 1
-        then:
-        config.configMap == ['a.b.c.d.e.f.g': 1,
-                             'a.b.c.d.e.f': [g:1],
-                             'a.b.c.d.e': [f:[g:1]],
-                             'a.b.c.d': [e:[f:[g:1]]],
-                             'a.b.c': [d:[e:[f:[g:1]]]],
-                             'a.b': [c:[d:[e:[f:[g:1]]]]],
-                             'a': [b:[c:[d:[e:[f:[g:1]]]]]]]
-        subconfigReference.f == [g: 1]
     }
     
     def "merging should support parsing flat keys"() {

@@ -33,18 +33,17 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
         // unit tests in real applications will not need to do
         // this because the real Config.groovy will be loaded
         config.grails.mime.types = [html         : ['text/html', 'application/xhtml+xml'],
-            xml: ['text/xml', 'application/xml'],
-            text: 'text/plain',
-            js: 'text/javascript',
-            rss: 'application/rss+xml',
-            atom: 'application/atom+xml',
-            css: 'text/css',
-            csv: 'text/csv',
-            all: '*/*',
-            json: ['application/json','text/json'],
-            form: 'application/x-www-form-urlencoded',
-            multipartForm: 'multipart/form-data'
-        ]
+                                    xml          : ['text/xml', 'application/xml'],
+                                    text         : 'text/plain',
+                                    js           : 'text/javascript',
+                                    rss          : 'application/rss+xml',
+                                    atom         : 'application/atom+xml',
+                                    css          : 'text/css',
+                                    csv          : 'text/csv',
+                                    all          : '*/*',
+                                    json         : ['application/json', 'text/json'],
+                                    form         : 'application/x-www-form-urlencoded',
+                                    multipartForm: 'multipart/form-data']
     }}
 
     void "Test that the respond method produces the correct model for a domain instance and no specific content type"() {

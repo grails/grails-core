@@ -1,4 +1,4 @@
 dependencies {
-    compile project(":grails-web"), project(":grails-plugin-controllers")
-    provided "junit:junit:${junitVersion}"
+    api project(":grails-web"), project(":grails-plugin-controllers")
+    api "junit:junit:${junitVersion}"
 }

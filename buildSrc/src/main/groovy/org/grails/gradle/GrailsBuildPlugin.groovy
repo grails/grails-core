@@ -2,14 +2,13 @@ package org.grails.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
-import org.gradle.api.artifacts.ResolvedDependency
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalDependency
-import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.ResolvedDependency
+import org.gradle.api.attributes.Usage
+import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 import org.gradle.api.specs.Spec
-import org.gradle.api.specs.Specs
 
 class GrailsBuildPlugin implements Plugin<Project> {
 
@@ -48,9 +47,8 @@ class GrailsBuildPlugin implements Plugin<Project> {
         }
 
         def sourceDependencies = dependencies.collect { ResolvedDependency resolvedDependency ->
-            def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion,
-                resolvedDependency.configuration)
-            dependency.transitive = false
+            def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion)
+            dependency.setTransitive(false)
             dependency.artifact { artifact ->
                 artifact.name = dependency.name
                 artifact.type = targetClassifier
@@ -66,6 +64,9 @@ class GrailsBuildPlugin implements Plugin<Project> {
         }
 
         project.configurations.detachedConfiguration(sourceDependencies as Dependency[])
+                .with(true) {
+                    attributes.attribute(Usage.USAGE_ATTRIBUTE, (Usage) project.objects.named(Usage, Usage.JAVA_RUNTIME))
+                }
     }
 
 }

@@ -2,13 +2,17 @@ package org.grails.commons
 
 import grails.core.DefaultArtefactInfo
 import org.grails.core.DefaultGrailsControllerClass
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class DefaultArtefactInfoTests extends GroovyTestCase {
+class DefaultArtefactInfoTests {
 
+    @Test
     void testAddGrailsClass() {
         def info = new DefaultArtefactInfo()
 

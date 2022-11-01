@@ -1,15 +1,23 @@
 buildscript {
     repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://repo.grails.org/grails/core" }
     }
-    dependencies {
-        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
-    }
 }
+
 /**
  * Since Grails is a mixed Groovy/Java codebase the javadoc tool needs stubs in order for javadoc compilation to pass
  * This target generates a set of stubs for the Groovy sources
  */
+
+configurations {
+    documentation
+}
+
+dependencies {
+    documentation "org.codehaus.groovy:groovy-groovydoc:$groovyVersion"
+}
+
 task stubs {
     ext.destinationDir = "$buildDir/docs/stubs"
     doFirst {
@@ -46,16 +54,16 @@ task stubs {
     }
 }
 
-task docs {
+task docs(group: 'documentation') {
     ext.destinationDir = file("${projectDir}/doc")
 }
 
-task javadoc(type:Javadoc) {
-    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
-    classpath = files(subs.configurations.compile)
+task javadoc(type:Javadoc, group: 'documentation') {
+    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' }
+    classpath = files(subs.configurations.compileClasspath)
     dependsOn stubs
     maxMemory = '256M'
-    destinationDir = file("$docs.destinationDir/javadoc")
+    destinationDir = file("${project.tasks.findByName('docs').destinationDir}/javadoc")
     source subs.sourceSets.main.groovy.srcDirs + stubs.destinationDir
     include "org/codehaus/groovy/grails/**", "grails/**"
     exclude "**/**.groovy"
@@ -68,27 +76,25 @@ task javadoc(type:Javadoc) {
         version = true
         use = true
         breakIterator = true
-        links("http://java.sun.com/j2ee/1.4/docs/api", "http://java.sun.com/j2se/1.5.0/docs/api", "http://static.springframework.org/spring/docs/2.5.x/api")
+        links("https://java.sun.com/j2ee/1.4/docs/api", "https://java.sun.com/j2se/1.5.0/docs/api", "https://static.springframework.org/spring/docs/2.5.x/api")
 //        tags("todo:a:To do")  todo fix the javadoc task to accept this option
     }
     verbose = false
 }
 
-task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
-    def subs = subprojects.findAll {
-        it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' && !it.name.startsWith("grails-test-suite") }
-    def groovydocClasspath = files(subs.configurations.compile)
+tasks.register('groovydoc', Groovydoc) {
+    final Set<Project> subProjects = subprojects.findAll {
+        it.name != 'grails-dependencies' && it.name != 'grails-bom' && !it.name.startsWith("grails-test-suite") }
+    def groovydocClasspath = files(configurations.documentation  + subProjects.configurations.compileClasspath)
     // exclude problematic jar file from javadoc classpath
     // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
     groovydocClasspath -= groovydocClasspath.filter { it.name == 'javaee-web-api-6.0.jar' }
-
     classpath = groovydocClasspath
     groovyClasspath = groovydocClasspath
-    destinationDir = file("$docs.destinationDir/api")
+    destinationDir = file("${project.tasks.findByName('docs').destinationDir}/api")
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
-    source subs.sourceSets.main.groovy.srcDirs
-    jvmArgs "-Xmx768M"
+    source subProjects.sourceSets.main.groovy.srcDirs
 // Can't make these link methods to work
 //    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")
 //    link("http://download.oracle.com/javase/1.5.0/docs/api", "java." , "javax.")
@@ -100,28 +106,29 @@ task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask) {
 
 task fetchGrailsDocsSource {
     doLast {
-        ant {
-            mkdir dir: buildDir
-            get src:"http://nodeload.github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
-            unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
-                mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
-            }
+        ant.mkdir dir: buildDir
+        ant.get src:"https://github.com/grails/grails-doc/archive/refs/heads/master.zip", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
+        ant.unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
+            mapper(type: 'regexp', from:/(grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/)
         }
     }
 }
 
-task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"]) {
+task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], group: 'documentation') {
+    startParameter.setCurrentDir(new File("${buildDir}/grails-docs-src"));
+    startParameter.setSearchUpwards(false)
+    startParameter.useEmptySettings()
     buildFile = "${buildDir}/grails-docs-src/build.gradle"
     tasks = ["clean", "assemble"]
 
     doFirst {
-        project.oldGrailsHome = System.getProperty("grails.home")
+        ext.oldGrailsHome = System.getProperty("grails.home")
         System.setProperty("grails.home", projectDir.absolutePath)
         System.setProperty("disable.groovydocs", "true")
     }
 
     doLast {
-        if (project.oldGrailsHome) System.setProperty("grails.home", project.oldGrailsHome)
+        if (ext.oldGrailsHome) System.setProperty("grails.home", (String) project.oldGrailsHome)
         else System.clearProperty("grails.home")
         System.clearProperty("disable.groovydocs")
 
@@ -133,7 +140,7 @@ task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"]) 
 
         copy {
             from file("${buildDir}/grails-docs-src/build/docs")
-            into docs.destinationDir
+            into project.tasks.findByName("docs").destinationDir
         }
     }
 }

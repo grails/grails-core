@@ -1,18 +1,22 @@
 package org.grails.reload
 
 import grails.spring.BeanBuilder
-import org.junit.Ignore
-import org.springframework.aop.framework.ProxyFactoryBean
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
+import org.junit.Ignore
+import org.junit.jupiter.api.Test
+import org.springframework.aop.framework.ProxyFactoryBean
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
 @Ignore //TODO Ignore for JDK 11
-class SpringProxiedBeanReloadTests extends GroovyTestCase {
+class SpringProxiedBeanReloadTests {
 
+    @Test
     void testReloadCGLibProxiedBean() {
         def gcl = new GroovyClassLoader()
         def cls = gcl.parseClass("class Book { String title = 'The Stand'; String author }")

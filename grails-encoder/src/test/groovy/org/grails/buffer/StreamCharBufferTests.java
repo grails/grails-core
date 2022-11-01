@@ -27,7 +27,10 @@ import java.io.Writer;
 import java.util.Arrays;
 
 import grails.io.IOUtils;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -35,11 +38,11 @@ import junit.framework.TestCase;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBufferTests extends TestCase {
+public class StreamCharBufferTests {
     private static final int TESTROUNDS = 1;
     static char[] testbuffer = new char[Short.MAX_VALUE];
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         if (testbuffer == null) {
             for (int i = 0; i < TESTROUNDS; i++) {
@@ -50,6 +53,7 @@ public class StreamCharBufferTests extends TestCase {
         }
     }
 
+    @Test
     public void testEquals() throws Exception {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();
@@ -68,6 +72,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(charBuffer.hashCode(),charBuffer2.hashCode());
     }
 
+    @Test
     public void testSerialization() throws Exception {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();
@@ -93,6 +98,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(10, charBuffer.size());
     }
 
+    @Test
     public void testBufferedConnectedStringWriting() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(10,0,10);
         charBuffer.setSubStringChunkMinSize(6);
@@ -100,6 +106,7 @@ public class StreamCharBufferTests extends TestCase {
         doBufferedTesting(charBuffer);
     }
 
+    @Test
     public void testBufferedConnectedStringWritingResizeableChunkSize() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(10);
         charBuffer.setSubStringChunkMinSize(6);
@@ -127,6 +134,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(0, charBuffer.size());
     }
 
+    @Test
     public void testSubStreamCharBuffer() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();
@@ -153,6 +161,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("ABCDE12345!>OOOOO<-----1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
     }
 
+    @Test
     public void testReaderWithStringArrays() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(10);
         charBuffer.setSubStringChunkMinSize(6);
@@ -169,6 +178,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(28, charBuffer.size());
     }
 
+    @Test
     public void testStringCharArrays() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();
@@ -183,6 +193,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testWritingStringBuilder() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(10,0,10);
         Writer writer=charBuffer.getWriter();
@@ -195,6 +206,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testWritingStringBuffer() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(10,0,10);
         Writer writer=charBuffer.getWriter();
@@ -207,6 +219,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testWritingStringBuilder2() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(100,0,100);
         Writer writer=charBuffer.getWriter();
@@ -219,6 +232,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testWritingStringBuffer2() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer(100,0,100);
         Writer writer=charBuffer.getWriter();
@@ -231,6 +245,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testStringCharArraysWriteTo() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         charBuffer.setSubStringChunkMinSize(0);
@@ -249,6 +264,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testStringCharArraysWriteTo2() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         charBuffer.setSubStringChunkMinSize(10000);
@@ -267,6 +283,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(25, charBuffer.size());
     }
 
+    @Test
     public void testToString() throws IOException {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();
@@ -279,14 +296,16 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(12, charBuffer.size());
     }
 
+    @Test
     public void testToCharArray() throws IOException {
         StreamCharBuffer charBuffer = createTestInstance();
         char[] result = charBuffer.toCharArray();
-        assertTrue(Arrays.equals(testbuffer, result));
+        assertArrayEquals(testbuffer, result);
 
         assertEquals(testbuffer.length, charBuffer.size());
     }
 
+    @Test
     public void testToReader() throws IOException {
         StreamCharBuffer charBuffer = createTestInstance();
         Reader input = charBuffer.getReader();
@@ -294,11 +313,12 @@ public class StreamCharBufferTests extends TestCase {
                 .size());
         copy(input, charsOut, 2048);
         char[] result = charsOut.toCharArray();
-        assertTrue(Arrays.equals(testbuffer, result));
+        assertArrayEquals(testbuffer, result);
 
         assertEquals(testbuffer.length, charBuffer.size());
     }
 
+    @Test
     public void testToReaderOneByOne() throws IOException {
         StreamCharBuffer charBuffer = createTestInstance();
         Reader input = charBuffer.getReader();
@@ -311,17 +331,19 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(testbuffer.length, charBuffer.size());
     }
 
+    @Test
     public void testWriteTo() throws IOException {
         StreamCharBuffer charBuffer = createTestInstance();
         CharArrayWriter charsWriter = new CharArrayWriter(charBuffer
                 .size());
         charBuffer.writeTo(charsWriter);
         char[] result = charsWriter.toCharArray();
-        assertTrue(Arrays.equals(testbuffer, result));
+        assertArrayEquals(testbuffer, result);
 
         assertEquals(testbuffer.length, charBuffer.size());
     }
 
+    @Test
     public void testReadWrite() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer();
         Writer writer=buf.getWriter();
@@ -340,6 +362,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("1234512345", sw.toString());
     }
 
+    @Test
     public void testReadWriteWithChunks() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(5);
         Writer writer=buf.getWriter();
@@ -358,6 +381,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("1234512345", sw.toString());
     }
 
+    @Test
     public void testReadWriteWithChunks2() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(3);
         Writer writer=buf.getWriter();
@@ -376,6 +400,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("1234512345", sw.toString());
     }
 
+    @Test
     public void testReadWriteWithChunks3() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(3);
         Writer writer=buf.getWriter();
@@ -398,11 +423,13 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("123451234512345", buf.toString());
     }
 
+    @Test
     public void testReadWriteWithChunksRemoveAfterReading() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(3);
         doRemoveChunksAfterReadingTesting(buf);
     }
 
+    @Test
     public void testIsEmptyAnsIsSizeLarger() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(3);
         assertEquals(true, buf.isEmpty());
@@ -438,21 +465,25 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("", buf.toString());
     }
 
+    @Test
     public void testReadWriteWithChunksRemoveAfterReading2() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(3, 0);
         doRemoveChunksAfterReadingTesting(buf);
     }
 
+    @Test
     public void testReadWriteWithChunksRemoveAfterReading3() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(1, 0);
         doRemoveChunksAfterReadingTesting(buf);
     }
 
+    @Test
     public void testReadWriteWithChunksRemoveAfterReading4() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(1000, 0);
         doRemoveChunksAfterReadingTesting(buf);
     }
 
+    @Test
     public void testReadWriteWithChunksRemoveAfterReading5() throws IOException {
         StreamCharBuffer buf=new StreamCharBuffer(5, 0);
         doRemoveChunksAfterReadingTesting(buf);

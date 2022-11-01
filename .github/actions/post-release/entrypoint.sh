@@ -18,7 +18,11 @@ if [ -z "$GIT_USER_NAME" ]; then
 fi
 
 echo -n "Determining release version: "
-release_version=${GITHUB_REF:11}
+if [ -z "$RELEASE_VERSION" ]; then
+  release_version=${GITHUB_REF:11}
+else
+  release_version=${RELEASE_VERSION}
+fi
 echo $release_version
 
 echo -n "Determining next version: "
@@ -29,10 +33,15 @@ echo ::set-output name=next_version::${next_version}
 echo "Configuring git"
 git config --global user.email "$GIT_USER_EMAIL"
 git config --global user.name "$GIT_USER_NAME"
+git config --global --add safe.directory /github/workspace
 git fetch
 
 echo -n "Determining target branch: "
-target_branch=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
+if [ -z "$TARGET_BRANCH" ]; then
+  target_branch=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
+else
+  target_branch=${TARGET_BRANCH}
+fi
 echo $target_branch
 git checkout $target_branch
 

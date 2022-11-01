@@ -1,7 +1,6 @@
 package org.grails.cli.profile.repository
 
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
-import org.springframework.util.ObjectUtils
 
 /**
  *  The configuration of a repository. See {@link org.springframework.boot.cli.compiler.grape.RepositoryConfiguration}
@@ -11,6 +10,9 @@ import org.springframework.util.ObjectUtils
  * @since 3.2
  */
 class GrailsRepositoryConfiguration {
+
+    private static final int INITIAL_HASH = 7
+    private static final int MULTIPLIER = 31
 
     final String name
     final URI uri
@@ -54,7 +56,7 @@ class GrailsRepositoryConfiguration {
 
     @Override
     int hashCode() {
-        ObjectUtils.nullSafeHashCode(name)
+        nullSafeHashCode(name)
     }
 
     boolean hasCredentials() {
@@ -76,5 +78,16 @@ class GrailsRepositoryConfiguration {
             name = obj.name
         }
         this.name == name
+    }
+
+    static int nullSafeHashCode(char[] array) {
+        if (array == null) {
+            return 0;
+        }
+        int hash = INITIAL_HASH;
+        for (char element : array) {
+            hash = MULTIPLIER * hash + element;
+        }
+        return hash;
     }
 }

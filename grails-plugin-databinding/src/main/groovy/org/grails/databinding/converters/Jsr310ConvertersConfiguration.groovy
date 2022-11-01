@@ -322,6 +322,25 @@ class Jsr310ConvertersConfiguration {
     }
 
     @Bean
+    ValueConverter instantStringValueConverter() {
+        new ValueConverter() {
+            @Override
+            boolean canConvert(Object value) {
+                value instanceof CharSequence
+            }
+            @Override
+            Object convert(Object value) {
+                Instant.parse((CharSequence) value)
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                Instant
+            }
+        }
+    }
+
+    @Bean
     ValueConverter instantValueConverter() {
         new ValueConverter() {
             @Override

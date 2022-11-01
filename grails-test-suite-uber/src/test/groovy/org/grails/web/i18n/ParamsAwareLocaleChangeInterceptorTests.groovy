@@ -1,22 +1,28 @@
 package org.grails.web.i18n
 
 import grails.util.GrailsWebMockUtil
-
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
+import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertNotEquals
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
+class ParamsAwareLocaleChangeInterceptorTests {
 
+    @AfterEach
     protected void tearDown() {
         RequestContextHolder.resetRequestAttributes()
     }
 
+    @Test
     void testSwitchLocaleWithStringArrayParamsObject() {
 
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -40,7 +46,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
         assert localeChangeInterceptor.preHandle(request, response, null)
 
-        assertNotSame locale, localeResolver.resolveLocale(request)
+        assertNotEquals locale, localeResolver.resolveLocale(request)
 
         locale = localeResolver.resolveLocale(request)
 
@@ -48,6 +54,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
         assertEquals "DE", locale.getCountry()
     }
 
+    @Test
     void testSwitchLocaleWithParamsObject() {
 
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -71,7 +78,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
         assert localeChangeInterceptor.preHandle(request, response, null)
 
-        assertNotSame locale, localeResolver.resolveLocale(request)
+        assertNotEquals locale, localeResolver.resolveLocale(request)
 
         locale = localeResolver.resolveLocale(request)
 
@@ -79,7 +86,8 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
         assertEquals "DE", locale.getCountry()
     }
 
-    void testSwithLocaleWithRequestParameter() {
+    @Test
+    void testSwitchLocaleWithRequestParameter() {
 
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
@@ -102,7 +110,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
         assert localeChangeInterceptor.preHandle(request, response, null)
 
-        assertNotSame locale, localeResolver.resolveLocale(request)
+        assertNotEquals locale, localeResolver.resolveLocale(request)
 
         locale = localeResolver.resolveLocale(request)
 

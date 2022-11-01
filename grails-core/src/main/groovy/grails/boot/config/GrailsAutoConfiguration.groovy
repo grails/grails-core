@@ -22,6 +22,7 @@ import grails.core.GrailsApplicationClass
 import groovy.transform.CompileStatic
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import org.springframework.aop.config.AopConfigUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -51,6 +52,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
                 field.setAccessible(true)
                 Object obj = field.get(null)
                 List<Class<?>> list = (List<Class<?>>) obj
+                list.add(GroovyAwareInfrastructureAdvisorAutoProxyCreator.class)
                 list.add(GroovyAwareAspectJAwareAdvisorAutoProxyCreator.class)
             }
         } catch (Throwable e) {

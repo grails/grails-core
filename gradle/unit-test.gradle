@@ -6,8 +6,8 @@ configurations {
 }
 
 dependencies {
-    testRuntime files('src/test', 'src/grails/grails-app/utils', projectDir, "src/war/WEB-INF", coreJar.archivePath)
-    coverage "net.sourceforge.cobertura:cobertura:1.9.3"
+    testRuntimeOnly files('src/test', 'src/grails/grails-app/utils', projectDir, "src/war/WEB-INF", coreJar.archivePath)
+    coverage "net.sourceforge.cobertura:cobertura:2.1.1"
 }
 
 // we disable the default test task of the java plugin as we use a bunch of custom ones.

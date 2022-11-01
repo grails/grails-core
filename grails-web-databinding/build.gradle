@@ -1,4 +1,4 @@
 dependencies {
-    compile project(":grails-databinding")
-    compile project(":grails-web-common")
+    api project(":grails-databinding")
+    api project(":grails-web-common")
 }

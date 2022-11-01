@@ -16,7 +16,7 @@ class MockHibernateGrailsPlugin {
     def doWithSpring = {
         dataSource(DataSource) {
             driverClassName = 'org.h2.Driver'
-            url = 'jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000'
+            url = 'jdbc:h2:mem:grailsDB;LOCK_TIMEOUT=10000'
             username = 'sa'
             password = ''
         }

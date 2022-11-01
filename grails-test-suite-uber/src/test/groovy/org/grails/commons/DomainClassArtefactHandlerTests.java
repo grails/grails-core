@@ -16,14 +16,17 @@ package org.grails.commons;
 
 import grails.core.ArtefactHandler;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
 import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Marc Palmer
  */
-public class DomainClassArtefactHandlerTests extends TestCase {
+public class DomainClassArtefactHandlerTests {
 
+    @Test
     public void testIsDomainClass() {
 
         GroovyClassLoader gcl = new GroovyClassLoader();

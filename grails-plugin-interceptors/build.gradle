@@ -1,4 +1,4 @@
 dependencies {
-    compile project(":grails-plugin-controllers")
-    compile project(":grails-plugin-url-mappings")
+    api project(":grails-plugin-controllers")
+    api project(":grails-plugin-url-mappings")
 }

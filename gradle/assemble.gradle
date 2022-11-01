@@ -10,7 +10,7 @@ subprojects { subproject ->
 
         configurations {
             libsConfigurations << libs {
-                extendsFrom compile, runtime
+                extendsFrom compileClasspath, runtimeClasspath
                 ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
             }
         }
@@ -139,7 +139,7 @@ task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
     applicationName = 'grails'
     defaultJvmOpts = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
     outputDir = file('bin')
-    classpath = rootProject.childProjects['grails-shell'].configurations.runtime
+    classpath = rootProject.childProjects['grails-shell'].configurations.runtimeClasspath
     projectArtifacts = rootProject.childProjects['grails-shell'].tasks['jar'].outputs.files.collect { "dist/${it.name}" }
     doLast {
         ant.replace(file: file('bin/grails'), token: 'media/gradle.icns', value: 'media/icons/grails.icns')

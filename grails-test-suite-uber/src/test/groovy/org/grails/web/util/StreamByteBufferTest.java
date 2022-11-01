@@ -1,28 +1,27 @@
 package org.grails.web.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import org.grails.buffer.StreamByteBuffer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.*;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-import org.grails.buffer.StreamByteBuffer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for StreamByteBuffer.
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamByteBufferTest extends TestCase {
+public class StreamByteBufferTest {
     private static final int TESTROUNDS = 10000;
     private static final String TEST_STRING = "Hello \u00f6\u00e4\u00e5\u00d6\u00c4\u00c5";
 
     static byte[] testbuffer = new byte[256 * TESTROUNDS];
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         if (testbuffer == null) {
             for (int i = 0; i < TESTROUNDS; i++) {
@@ -33,12 +32,14 @@ public class StreamByteBufferTest extends TestCase {
         }
     }
 
+    @Test
     public void testToByteArray() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         byte[] result = byteBuffer.readAsByteArray();
         assertTrue(Arrays.equals(testbuffer, result));
     }
 
+    @Test
     public void testToString() throws IOException {
         StreamByteBuffer byteBuffer = new StreamByteBuffer();
         PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
@@ -47,6 +48,7 @@ public class StreamByteBufferTest extends TestCase {
         assertEquals(TEST_STRING, byteBuffer.readAsString("UTF-8"));
     }
 
+    @Test
     public void testToStringRetain() throws IOException {
         StreamByteBuffer byteBuffer = new StreamByteBuffer(1024, StreamByteBuffer.ReadMode.RETAIN_AFTER_READING);
         PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
@@ -58,6 +60,7 @@ public class StreamByteBufferTest extends TestCase {
         assertEquals(TEST_STRING, byteBuffer.readAsString("UTF-8"));
     }
 
+    @Test
     public void testToInputStream() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         InputStream input = byteBuffer.getInputStream();
@@ -68,6 +71,7 @@ public class StreamByteBufferTest extends TestCase {
         assertTrue(Arrays.equals(testbuffer, result));
     }
 
+    @Test
     public void testStreamByteBuffer() throws Exception {
         StreamByteBuffer streamBuf=new StreamByteBuffer(32000);
         OutputStream output=streamBuf.getOutputStream();
@@ -85,6 +89,7 @@ public class StreamByteBufferTest extends TestCase {
         input.close();
     }
 
+    @Test
     public void testStreamByteBuffer2() throws Exception {
         StreamByteBuffer streamBuf=new StreamByteBuffer(32000);
         OutputStream output=streamBuf.getOutputStream();
@@ -99,6 +104,7 @@ public class StreamByteBufferTest extends TestCase {
         input.close();
     }
 
+    @Test
     public void testStreamByteBuffer3() throws Exception {
         bufferTest(10000,10000);
         bufferTest(1,10000);
@@ -154,6 +160,7 @@ public class StreamByteBufferTest extends TestCase {
         input.close();
     }
 
+    @Test
     public void testWriteTo() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         ByteArrayOutputStream bytesOut = new ByteArrayOutputStream(byteBuffer.totalBytesUnread());
@@ -162,6 +169,7 @@ public class StreamByteBufferTest extends TestCase {
         assertTrue(Arrays.equals(testbuffer, result));
     }
 
+    @Test
     public void testToInputStreamOneByOne() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         InputStream input = byteBuffer.getInputStream();

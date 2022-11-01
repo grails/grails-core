@@ -1,11 +1,12 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    compile ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
-    compile ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
-    compile "org.yaml:snakeyaml:1.29"
+    api ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
+    api ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
+    api "org.yaml:snakeyaml:1.33"
+    api "io.micronaut:micronaut-inject:$micronautVersion"
     
-    compileOnly("io.methvin:directory-watcher:0.15.0")
+    compileOnly("io.methvin:directory-watcher:$methvinDirectoryWatcherVersion")
     compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
     compileOnly("jline:jline:$jlineVersion")
     compileOnly("net.java.dev.jna:jna:$jnaVersion")
@@ -13,8 +14,8 @@ dependencies {
     // Ant
     compileOnly "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
-    testCompile("org.fusesource.jansi:jansi:$jansiVersion")
-    testCompile("jline:jline:$jlineVersion")
+    testImplementation("org.fusesource.jansi:jansi:$jansiVersion")
+    testImplementation("jline:jline:$jlineVersion")
 
 }
 

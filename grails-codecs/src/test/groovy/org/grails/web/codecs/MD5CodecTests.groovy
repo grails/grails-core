@@ -1,7 +1,12 @@
 package org.grails.web.codecs
 
-class MD5CodecTests extends GroovyTestCase {
+import org.junit.jupiter.api.Test
 
+import static org.junit.jupiter.api.Assertions.*
+
+class MD5CodecTests {
+
+    @Test
     void testEncode() {
 
         def expectedResult = 'ed076287532e86365e841e92bfc50d8c'
@@ -17,9 +22,10 @@ class MD5CodecTests extends GroovyTestCase {
         assertNull null.encodeAsMD5()
     }
 
+    @Test
     void testDecode() {
-        shouldFail(UnsupportedOperationException) {
+        assertThrows(UnsupportedOperationException, {
             [1,2,3,4,5].decodeMD5()
-        }
+        })
     }
 }

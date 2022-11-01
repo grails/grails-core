@@ -21,11 +21,14 @@ on:
   push:
     branches:
       - master
-      - 4.0.x
+      - '[4-9]+.[0-9]+.x'
   pull_request:
     branches:
       - master
-      - 4.0.x
+      - '[4-9]+.[0-9]+.x'
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
@@ -35,10 +38,11 @@ jobs:
         java: [11.0.6]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: 'adopt'
           java-version: ${{ matrix.java }}
       - name: env
         run: env
@@ -46,9 +50,9 @@ jobs:
       # Select correct Groovy branch for this build:
       - name: Checkout Groovy 3_0_X (Grails 4.1.x)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
-        if: github.ref == 'refs/heads/master' || github.base_ref == 'master'
+        if: github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
       - name: Checkout Groovy 2_5_X (Grails 4.0.x)
-        run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_2_5_X --single-branch
+        run: cd .. && git clone --depth 1 https://github.com/grails/grails-core.git -b GROOVY_2_5_X --single-branch
         if: github.ref == 'refs/heads/4.0.x' || github.base_ref == '4.0.x'
       - name: Set CI_GROOVY_VERSION for Grails
         run: |

@@ -17,20 +17,25 @@ package org.grails.web.pages;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyObjectSupport;
-import junit.framework.TestCase;
-import org.grails.web.pages.GroovyPagesUriSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-public class GroovyPagesUriSupportTests extends TestCase {
+public class GroovyPagesUriSupportTests {
 
+    @Test
     public void testGetLogicalControllerNameWithNonController() {
         GroovyPagesUriSupport uriSupport = new DefaultGroovyPagesUriService();
 
         assertNull(uriSupport.getLogicalControllerName(new FooInterceptor()));
     }
+
+    @Test
     public void testGetViewURI() {
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar.gsp", uriSupport.getViewURI("foo", "bar"));
@@ -38,6 +43,7 @@ public class GroovyPagesUriSupportTests extends TestCase {
         assertEquals("/foo/bar/foo.gsp", uriSupport.getViewURI("foo", "bar/foo"));
     }
 
+    @Test
     public void testNoSuffxGetViewURI() {
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar", uriSupport.getNoSuffixViewURI("foo", "bar"));
@@ -45,6 +51,7 @@ public class GroovyPagesUriSupportTests extends TestCase {
         assertEquals("/foo/bar/foo", uriSupport.getNoSuffixViewURI("foo", "bar/foo"));
     }
 
+    @Test
     public void testGetTemplateURI() {
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/_bar.gsp", uriSupport.getTemplateURI("foo", "bar"));
@@ -53,6 +60,7 @@ public class GroovyPagesUriSupportTests extends TestCase {
         assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "bar/foo"));
     }
 
+    @Test
     public void testGetTemplateURIForController() throws IllegalAccessException, InstantiationException {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
@@ -61,6 +69,7 @@ public class GroovyPagesUriSupportTests extends TestCase {
         assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI(controller, "bar/foo"));
     }
 
+    @Test
     public void testGetViewURIForController() throws IllegalAccessException, InstantiationException {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
@@ -70,7 +79,8 @@ public class GroovyPagesUriSupportTests extends TestCase {
         assertEquals("/foo/bar/foo.gsp", uriSupport.getViewURI(controller, "bar/foo"));
     }
 
-   public void testNoSuffixGetViewURIForController() throws IllegalAccessException, InstantiationException {
+    @Test
+    public void testNoSuffixGetViewURIForController() throws IllegalAccessException, InstantiationException {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar", uriSupport.getNoSuffixViewURI(controller, "bar"));

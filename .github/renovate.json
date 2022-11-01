@@ -1,0 +1,66 @@
+{
+  "extends": [
+    "config:base",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "labels": ["type: dependency upgrade"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "allowedVersions": "!/SNAPSHOT$/"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.codehaus\\.groovy"
+      ],
+      "groupName": "groovy monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.ant"
+      ],
+      "groupName": "apache-ant monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.tomcat"
+      ],
+      "groupName": "apache-tomcat monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^io\\.micronaut"
+      ],
+      "groupName": "micronaut monorepo"
+    },
+    {
+      "matchPackageNames": [
+        "org.grails:grails-testing-support",
+        "org.grails:grails-web-testing-support",
+        "org.grails:grails-gorm-testing-support"
+      ],
+      "groupName": "grails-testing-support monorepo"
+    },
+    {
+      "matchPackageNames": [
+        "io.micronaut:micronaut-inject",
+        "io.micronaut:micronaut-runtime",
+        "io.micronaut:micronaut-inject-java",
+        "io.micronaut:micronaut-inject-groovy"
+      ],
+      "groupName": "Micronaut monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^io\\.micronaut\\.spring"
+      ],
+      "groupName": "Micronaut Spring monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.apache\\.maven\\.resolver"
+      ],
+      "groupName": "apache-maven-resolver monorepo"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ import junit.framework.TestCase;
  * @author graemerocher
  *
  */
-public class PluginTests extends TestCase {
+public class PluginTests {
 
     public void testTempPluginTests() {
         // does nothing. All of the below is commented out because it relates to

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.grails.plugins.web.mime
 
 import grails.plugins.Plugin
-import grails.util.GrailsUtil
 import org.grails.web.mime.DefaultMimeTypeResolver
 import grails.web.mime.MimeTypeResolver
 import org.grails.web.mime.DefaultMimeUtility
@@ -32,10 +31,6 @@ import grails.web.mime.MimeType
  */
 @Deprecated
 abstract class AbstractMimeTypesGrailsPlugin extends Plugin {
-
-    def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [core:version, controllers:version]
-    def observe = ['controllers']
 
     Closure doWithSpring() {{->
         "${MimeType.BEAN_NAME}"(MimeTypesFactoryBean)

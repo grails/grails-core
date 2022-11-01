@@ -1,19 +1,25 @@
 package grails.web
 
-import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import grails.core.DefaultGrailsApplication
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.2
  */
-class JSONBuilderTests extends GroovyTestCase {
+class JSONBuilderTests {
 
+    @BeforeEach
     void setUp() {
         def initializer = new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication())
         initializer.initialize()
     }
-    
+
+    @Test
     void testSimple() {
         def builder = new JSONBuilder()
 
@@ -24,6 +30,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"rootprop":"something"}', result.toString()
     }
 
+    @Test
     void testArrays() {
         def builder = new JSONBuilder()
 
@@ -35,6 +42,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"categories":["a","b","c"],"rootprop":"something"}', result.toString()
     }
 
+    @Test
     void testSubObjects() {
         def builder = new JSONBuilder()
 
@@ -49,6 +57,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"categories":["a","b","c"],"rootprop":"something","test":{"subprop":10}}', result.toString()
     }
 
+    @Test
     void testAssignedObjects() {
 
         def builder = new JSONBuilder()
@@ -64,6 +73,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"categories":["a","b","c"],"rootprop":"something","test":{"subprop":10}}', result.toString()
     }
 
+    @Test
     void testNamedArgumentHandling() {
         def builder = new JSONBuilder()
 
@@ -76,6 +86,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"categories":["a","b","c"],"rootprop":"something","test":{"subprop":10,"three":[1,2,3]}}', result.toString()
     }
 
+    @Test
     void testArrayOfClosures() {
         def builder = new JSONBuilder()
 
@@ -86,6 +97,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"foo":[{"bar":"hello"}]}', result.toString()
     }
 
+    @Test
     void testRootElementList() {
         def builder = new JSONBuilder()
 
@@ -106,6 +118,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '["one","two","three"]', result.toString()
     }
 
+    @Test
     void testExampleFromReferenceGuide() {
         def builder = new JSONBuilder()
 
@@ -138,6 +151,7 @@ class JSONBuilderTests extends GroovyTestCase {
         assertEquals '{"books":[{"title":"one"},{"title":"two"},{"title":"three"}]}', result.toString()
     }
 
+    @Test
     void testAppendToArray() {
         def builder = new JSONBuilder()
 

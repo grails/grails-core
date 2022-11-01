@@ -3,20 +3,24 @@ package grails.plugins;
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
 import org.grails.plugins.IncludingPluginFilter;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.GenericApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultGrailsPluginManagerTests extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+public class DefaultGrailsPluginManagerTests {
 
     private Class<?> first;
     private Class<?> second;
     private Class<?> third;
     private Class<?> fourth;
 
+    @Test
     @SuppressWarnings("rawtypes")
     public void testLoadPlugins() {
 
@@ -45,7 +49,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
 
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[]{first, second, third, fourth}, app);
         manager.setParentApplicationContext(parent);
-        manager.setPluginFilter(new IncludingPluginFilter(new String[]{"dataSource", "first", "third"}));
+        manager.setPluginFilter(new IncludingPluginFilter("dataSource", "first", "third"));
 
         manager.loadPlugins();
 
@@ -59,7 +63,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         //third depends on i18n
         assertNotNull(manager.getGrailsPlugin("third"));
 
-        assertEquals("Expected plugins not loaded. Expected " + 5 + " but got " + pluginList, 5, pluginList.size());
+        assertEquals(5, pluginList.size(), "Expected plugins not loaded. Expected " + 5 + " but got " + pluginList);
     }
 
     /**
@@ -71,6 +75,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
      *
      * ...and emailconfirmation is NOT loaded first.
      */
+    @Test
     @SuppressWarnings("rawtypes")
     public void testDependenciesWithDelayedLoadingWithVersionRangeStrings() {
         GroovyClassLoader gcl = new GroovyClassLoader();
@@ -96,7 +101,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
 
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[]{first, second, third}, app);
         manager.setParentApplicationContext(parent);
-        manager.setPluginFilter(new IncludingPluginFilter(new String[]{"dataSource", "first", "second", "third"}));
+        manager.setPluginFilter(new IncludingPluginFilter("dataSource", "first", "second", "third"));
 
         manager.loadPlugins();
 
@@ -109,9 +114,10 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         //third depends on i18n
         assertNotNull(manager.getGrailsPlugin("third"));
 
-        assertEquals("Expected plugins not loaded. Expected " + 5 + " but got " + pluginList, 5, pluginList.size());
+        assertEquals(5, pluginList.size(), "Expected plugins not loaded. Expected " + 5 + " but got " + pluginList);
     }
 
+    @Test
     public void testLoadingOrderGRAILS9426() {
         // GRAILS-9426
         DefaultGrailsPluginManager manager = loadPlugins("class FirstGrailsPlugin {\n" +
@@ -139,9 +145,9 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         expectedOrder.add(manager.getGrailsPlugin("second"));
         expectedOrder.add(manager.getGrailsPlugin("third"));
 
-        assertEquals("Expected plugin order", expectedOrder, pluginList);
+        assertEquals(expectedOrder, pluginList, "Expected plugin order");
 
-        assertEquals("Expected plugins not loaded. Expected " + 4 + " but got " + pluginList, 4, pluginList.size());
+        assertEquals(4, pluginList.size(), "Expected plugins not loaded. Expected " + 4 + " but got " + pluginList);
     }
 
     DefaultGrailsPluginManager loadPlugins(String firstClassString, String secondClassString, String thirdClassString, String fourthClassString) {
@@ -158,12 +164,13 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
 
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[]{first, second, third, fourth}, app);
         manager.setParentApplicationContext(parent);
-        manager.setPluginFilter(new IncludingPluginFilter(new String[]{"first", "second", "third", "fourth"}));
+        manager.setPluginFilter(new IncludingPluginFilter("first", "second", "third", "fourth"));
 
         manager.loadPlugins();
         return manager;
     }
 
+    @Test
     public void testLoadingOrderLoadBeforeAndLoadAfter() {
         DefaultGrailsPluginManager manager = loadPlugins("class FirstGrailsPlugin {\n" +
                     "def version = '1.0'\n" +
@@ -187,6 +194,6 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         expectedOrder.add(manager.getGrailsPlugin("second"));
         expectedOrder.add(manager.getGrailsPlugin("first"));
 
-        assertEquals("Expected plugin order", expectedOrder, pluginList);
+        assertEquals(expectedOrder, pluginList, "Expected plugin order");
     }
 }

@@ -15,24 +15,20 @@
  */
 package org.grails.commons;
 
-import org.grails.core.AbstractGrailsClass;
 import grails.core.GrailsClass;
 import groovy.lang.GroovyClassLoader;
-import junit.framework.TestCase;
+import org.grails.core.AbstractGrailsClass;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Steven Devijver
  */
-public class GrailsClassTests extends TestCase {
+public class GrailsClassTests {
 
-    public GrailsClassTests() {
-        super();
-    }
-
-    public GrailsClassTests(String name) {
-        super(name);
-    }
-
+    @Test
     public void testAbstractGrailsClassNoPackage() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("class TestService { }");
@@ -43,6 +39,7 @@ public class GrailsClassTests extends TestCase {
         assertNotNull(grailsClass.newInstance());
     }
 
+    @Test
     public void testAbstractGrailsClassPackage() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("package test.casey; class TestService { }");
@@ -53,6 +50,7 @@ public class GrailsClassTests extends TestCase {
         assertNotNull(grailsClass.newInstance());
     }
 
+    @Test
     public void testGrailsClassNonPublicConstructor() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("class ProtectedConstructor { protected ProtectedConstructor() {}}");

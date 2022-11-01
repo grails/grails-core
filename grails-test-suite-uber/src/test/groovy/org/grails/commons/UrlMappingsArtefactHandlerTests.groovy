@@ -1,7 +1,11 @@
 package org.grails.commons
 
 import org.grails.core.artefact.UrlMappingsArtefactHandler
+import org.junit.jupiter.api.Test
 import org.springframework.core.io.ByteArrayResource
+
+import static org.junit.jupiter.api.Assertions.assertNotNull
+import static org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * Tests for UrlMappingsArtefactHandler.
@@ -9,7 +13,7 @@ import org.springframework.core.io.ByteArrayResource
  * @author Graeme Rocher
  * @since 0.5
  */
-class UrlMappingsArtefactHandlerTests extends GroovyTestCase {
+class UrlMappingsArtefactHandlerTests {
 
     def mappingScript = '''
 mappings {
@@ -29,12 +33,13 @@ mappings {
 }
 '''
 
+    @Test
     void testUrlMappingsArtefactHandler() {
         def gcl = new GroovyClassLoader()
         Class mappings = gcl.parseClass(new ByteArrayResource(mappingScript.bytes).inputStream, "MyUrlMappings")
         def handler = new UrlMappingsArtefactHandler()
 
-        assert handler.isArtefactClass(mappings)
-        assert handler.newArtefactClass(mappings)
+        assertTrue handler.isArtefactClass(mappings)
+        assertNotNull handler.newArtefactClass(mappings)
     }
 }

@@ -1,24 +1,24 @@
-configurations.testCompile {
+configurations.testCompileClasspath {
     exclude module: "grails-plugin-testing"
 }
 
 dependencies {
 
-    compile project(':grails-test-suite-base'),
+    api project(':grails-test-suite-base'),
             project(':grails-plugin-interceptors'),        
             project(':grails-plugin-controllers')
 
-    compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
+    api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
-    testRuntime 'javax.servlet.jsp:jsp-api:2.1'
-    testRuntime 'jstl:jstl:1.2'
-    testRuntime 'javax.el:el-api:2.2'
-    testRuntime "com.h2database:h2:$h2Version"
-    testRuntime "org.springframework:spring-aspects:${springVersion}"
-    testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
+    testRuntimeOnly 'javax.servlet.jsp:jsp-api:2.2'
+    testRuntimeOnly 'jstl:jstl:1.2'
+    testRuntimeOnly 'javax.el:el-api:2.2'
+    testRuntimeOnly "com.h2database:h2:$h2Version"
+    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    testCompile project(':grails-plugin-codecs'),
+    testImplementation project(':grails-plugin-codecs'),
                 project(':grails-plugin-domain-class') ,
                 project(':grails-plugin-url-mappings') ,
                 project(":grails-plugin-datasource"),
@@ -28,7 +28,7 @@ dependencies {
                 project(":grails-plugin-databinding"),
                 project(':grails-spring')
 
-    testCompile "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.3.0", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -54,13 +54,13 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    testCompile "org.grails.plugins:async:$asyncVersion", {
+    testImplementation "org.grails.plugins:async:$asyncVersion", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testCompile "org.grails.plugins:gsp:$gspVersion", {
+    testImplementation "org.grails.plugins:gsp:$gspVersion", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
@@ -68,14 +68,14 @@ dependencies {
         exclude module:'grails-web-common'
         exclude module:'grails-encoder'
     }
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
         exclude module:'grails-core'
         exclude module:'async'
     }
-    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'
@@ -87,9 +87,9 @@ dependencies {
 }
 
 test {
-     maxParallelForks = isTravisBuild ? 2 : 4
-     forkEvery = isTravisBuild ? 25 : 100
-     if(!isTravisBuild) {
+     maxParallelForks = isCiBuild ? 2 : 4
+     forkEvery = isCiBuild ? 25 : 100
+     if(!isCiBuild) {
          maxHeapSize = '1024m'
      }
      excludes = [

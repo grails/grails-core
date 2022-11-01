@@ -2,24 +2,31 @@ package org.grails.web.util
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.support.MockApplicationContext
-import grails.web.mime.MimeType
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 
+import static org.junit.jupiter.api.Assertions.*
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class WebUtilsTests extends GroovyTestCase {
+class WebUtilsTests {
 
     def config
-    protected void setUp() {
+
+    @BeforeEach
+    void setUp() {
         RequestContextHolder.resetRequestAttributes()
         config = new ConfigSlurper().parse("""
 grails.mime.file.extensions=false
@@ -38,15 +45,17 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                     ]        """)
     }
 
-    protected void tearDown() {
+    @AfterEach
+    void tearDown() {
         RequestContextHolder.resetRequestAttributes()
     }
 
+    @Test
     void testAreFileExtensionsEnabled() {
         def ga = new DefaultGrailsApplication(config:new PropertySourcesConfig().merge(config))
         bindMockRequest(ga)
 
-        assert !WebUtils.areFileExtensionsEnabled()
+        assertFalse WebUtils.areFileExtensionsEnabled()
 
         config = new ConfigSlurper().parse("""
 grails.mime.file.extensions=true
@@ -54,7 +63,7 @@ grails.mime.file.extensions=true
 
         ga.config = new PropertySourcesConfig().merge(config)
 
-        assert WebUtils.areFileExtensionsEnabled()
+        assertTrue WebUtils.areFileExtensionsEnabled()
     }
 
     private def bindMockRequest(DefaultGrailsApplication ga) {
@@ -70,6 +79,7 @@ grails.mime.file.extensions=true
         RequestContextHolder.setRequestAttributes(webRequest)
     }
 
+    @Test
     void testGetFormatFromURI() {
         def ga = new DefaultGrailsApplication(config:new PropertySourcesConfig().merge(config))
         bindMockRequest(ga)
@@ -84,6 +94,7 @@ grails.mime.file.extensions=true
         assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.suff/bar.xml")
     }
 
+    @Test
     void testGetRequestURIForGrailsDispatchURI() {
         def request = new MockHttpServletRequest()
         request.contextPath = "/root"
@@ -96,13 +107,14 @@ grails.mime.file.extensions=true
         assertEquals "/example/index",WebUtils.getRequestURIForGrailsDispatchURI(request)
     }
 
+    @Test
     void testRetrieveGrailsWebRequest() {
         // Validate the initial conditions.
         assertNull RequestContextHolder.getRequestAttributes()
 
         // An exception should be thrown if no web request is attached
         // to the thread.
-        shouldFail(IllegalStateException) {
+        assertThrows(IllegalStateException) {
             WebUtils.retrieveGrailsWebRequest()
         }
 
@@ -116,6 +128,7 @@ grails.mime.file.extensions=true
         assertEquals mockWebRequest, WebUtils.retrieveGrailsWebRequest()
     }
 
+    @Test
     void testStoreGrailsWebRequest() {
         // Validate the initial conditions.
         assertNull RequestContextHolder.getRequestAttributes()
@@ -136,6 +149,7 @@ grails.mime.file.extensions=true
         assertEquals mockWebRequest, mockHttpRequest.getAttribute(GrailsApplicationAttributes.WEB_REQUEST)
     }
 
+    @Test
     void clearGrailsWebRequest() {
         // Create a mock web request and store it on the thread.
         def mockHttpRequest = new MockHttpServletRequest()

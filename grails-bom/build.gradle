@@ -86,14 +86,19 @@ publishing {
                             }
 
                             for (plugin in plugins) {
+                                String artifactId = plugin.key
+                                String version = "\${${plugin.key}.version}"
+                                if (artifactId.startsWith("gorm.")) {
+                                    artifactId = artifactId.replace("gorm.", "")
+                                }
                                 mkp.dependency {
                                     mkp.groupId 'org.grails.plugins'
-                                    mkp.artifactId plugin.key
-                                    String version = plugin.value
-                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                        throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$plugin.key] for a release!")
+                                    mkp.artifactId artifactId
+                                    String versionValue = plugin.value
+                                    if (!isBuildSnapshot && versionValue.endsWith("-SNAPSHOT")) {
+                                        throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$artifactId] for a release!")
                                     }
-                                    mkp.version "\${${plugin.key}.version}"
+                                    mkp.version version
                                 }
                             }
 

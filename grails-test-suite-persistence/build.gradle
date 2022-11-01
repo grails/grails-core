@@ -1,10 +1,10 @@
-configurations.testCompile {
+configurations.testCompileClasspath {
     exclude module: "grails-plugin-testing"
 }
 
 dependencies {
 
-    testCompile project(':grails-test-suite-base'),
+    testImplementation project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
                 project(':grails-plugin-datasource'),
                 project(':grails-plugin-i18n'),
@@ -15,8 +15,8 @@ dependencies {
                 project(':grails-bootstrap'),
                 project(':grails-spring')
 
-    testCompile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
-    testCompile "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
+    testImplementation "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.3.0", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -42,22 +42,22 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
+    api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
-    testRuntime "com.h2database:h2:$h2Version"
+    testRuntimeOnly "com.h2database:h2:$h2Version"
 
     //    // Required for AspectJ support
-    testRuntime "org.springframework:spring-aspects:${springVersion}"
-    testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
+    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    testCompile "org.grails.plugins:async:$asyncVersion", {
+    testImplementation "org.grails.plugins:async:$asyncVersion", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
@@ -67,8 +67,8 @@ dependencies {
 
 test {
     maxParallelForks = 2
-    forkEvery = isTravisBuild ? 25 : 100
-    if(!isTravisBuild) {
+    forkEvery = isCiBuild ? 25 : 100
+    if(!isCiBuild) {
         maxHeapSize = '2048m'
     }
     excludes = ['**/GrailsDomainBinderTests.class',

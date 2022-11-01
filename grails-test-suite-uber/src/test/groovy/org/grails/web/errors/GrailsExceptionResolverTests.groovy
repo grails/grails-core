@@ -14,6 +14,9 @@ import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.servlet.view.CompositeViewResolver
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -23,30 +26,33 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.View
 import org.springframework.web.servlet.ViewResolver
 import org.springframework.web.servlet.view.InternalResourceView
+
+import static org.junit.jupiter.api.Assertions.*
+
 /**
  * Test case for {@link org.grails.web.errors.GrailsExceptionResolver}.
  */
-class GrailsExceptionResolverTests extends GroovyTestCase {
+class GrailsExceptionResolverTests {
 
     private application = new DefaultGrailsApplication()
     private resolver = new GrailsExceptionResolver()
     private mockContext = new MockServletContext()
     private mockCtx = new MockApplicationContext()
 
-    @Override
-    protected void tearDown() {
+    @AfterEach
+    void tearDown() {
         RequestContextHolder.resetRequestAttributes()
     }
 
-    @Override
-    protected void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         mockCtx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
-        super.setUp();
         def mainContext = new MockApplicationContext();
         mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
         application.mainContext =  mainContext
     }
 
+    @Test
     void testGetRootCause() {
         def ex = new Exception()
         assertEquals ex, GrailsExceptionResolver.getRootCause(ex)
@@ -58,11 +64,12 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         ex = new IllegalStateException(ex)
         assertEquals root, GrailsExceptionResolver.getRootCause(ex)
 
-        shouldFail(NullPointerException) {
+        assertThrows(NullPointerException) {
             GrailsExceptionResolver.getRootCause(null)
         }
     }
 
+    @Test
     void testResolveExceptionToView() {
         def mappings = new DefaultUrlMappingEvaluator(mockCtx).evaluateMappings {
             "500"(view:"myView")
@@ -89,10 +96,11 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         def handler = new Object()
         def modelAndView = resolver.resolveException(request, response, handler, ex)
 
-        assertNotNull "should have returned a ModelAndView", modelAndView
+        assertNotNull modelAndView, "should have returned a ModelAndView"
         assertEquals "/myView", modelAndView.view.url
     }
 
+    @Test
     void testResolveExceptionToController() {
         def mappings = new DefaultUrlMappingEvaluator(mockCtx).evaluateMappings {
             "500"(controller:"foo", action:"bar")
@@ -117,12 +125,13 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         def handler = new Object()
         def modelAndView = resolver.resolveException(request, response, handler, ex)
 
-        assertNotNull "should have returned a ModelAndView", modelAndView
+        assertNotNull modelAndView, "should have returned a ModelAndView"
         assertTrue modelAndView.empty
 
         assertEquals "/foo/bar",response.getForwardedUrl()
     }
 
+    @Test
     void testResolveExceptionToControllerWhenResponseCommitted() {
         def mappings = new DefaultUrlMappingEvaluator(mockCtx).evaluateMappings {
             "500"(controller:"foo", action:"bar")
@@ -148,10 +157,11 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         response.setCommitted(true)
         def modelAndView = resolver.resolveException(request, response, handler, ex)
 
-        assertNotNull "should have returned a ModelAndView", modelAndView
+        assertNotNull modelAndView, "should have returned a ModelAndView"
         assertFalse modelAndView.empty
     }
 
+    @Test
     void testLogRequestWithException() {
         def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
@@ -175,6 +185,7 @@ bad things happened. Stacktrace follows:'''.replaceAll('[\n\r]', ''), msg.replac
 
     }
 
+    @Test
     void testLogRequest() {
         def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
@@ -197,6 +208,7 @@ jennysPhoneNumber: ***
 Stacktrace follows:'''.replaceAll('[\n\r]', ''), msg.replaceAll('[\n\r]', '')
     }
 
+    @Test
     void testDisablingRequestParameterLogging() {
 
         def oldEnvName = Environment.current.name

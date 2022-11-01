@@ -15,17 +15,20 @@
  */
 package org.grails.web.mapping;
 
+import grails.util.GrailsStringUtils;
 import grails.web.mapping.UrlMappingInfo;
 import groovy.lang.Closure;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.*;
-
-import grails.util.GrailsStringUtils;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.util.UriUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract super class providing pass functionality for configuring a UrlMappingInfo.
@@ -99,11 +102,12 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
         }
 
         String id = getId();
-        if (!GrailsStringUtils.isBlank(id)) try {
-            dispatchParams.put(GrailsWebRequest.ID_PARAMETER, URLDecoder.decode(id, encoding));
-        }
-        catch (UnsupportedEncodingException e) {
-            dispatchParams.put(GrailsWebRequest.ID_PARAMETER, id);
+        if (!GrailsStringUtils.isBlank(id)) {
+            try {
+                dispatchParams.put(GrailsWebRequest.ID_PARAMETER, UriUtils.decode(id, encoding));
+            } catch (IllegalArgumentException e) {
+                dispatchParams.put(GrailsWebRequest.ID_PARAMETER, id);
+            }
         }
     }
 

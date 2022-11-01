@@ -17,15 +17,15 @@ package org.grails.plugins.web.mime
 
 import grails.config.Config
 import grails.config.Settings
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
+import grails.core.GrailsApplication
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeProvider
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.springframework.beans.factory.FactoryBean
-import grails.core.GrailsApplication
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 
 /**
  * Creates the MimeType[] object that defines the configured mime types.
@@ -46,6 +46,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
     @Autowired(required = false)
     Collection<MimeTypeProvider> mimeTypeProviders = []
 
+    @Override
     MimeType[] getObject() {
         final grailsApplication = this.grailsApplication ?: applicationContext.getBean(GrailsApplication)
         def config = grailsApplication?.config
@@ -78,13 +79,15 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
 
     }
 
-    Class<?> getObjectType() { MimeType[] }
+    @Override
+    Class<?> getObjectType() { MimeType[].class }
 
+    @Override
     boolean isSingleton() { true }
 
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected Map<CharSequence, CharSequence> getMimeConfig(Config config) {
-        return config.getProperty(Settings.MIME_TYPES, Map)
+        return config.getProperty(Settings.MIME_TYPES, Map.class)
     }
 }

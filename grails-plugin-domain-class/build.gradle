@@ -1,13 +1,13 @@
 dependencies {
 
-    compile project(":grails-core"), project(":grails-spring")
-    compile project(":grails-plugin-validation")
+    api project(":grails-core"), project(":grails-spring")
+    api project(":grails-plugin-validation")
 
     // Datastore APIs
-    compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
+    api("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
         exclude group: 'org.grails', module:'grails-datastore-core'
     }
-    compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
+    api("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.grails', module:'grails-bootstrap'
@@ -20,7 +20,7 @@ dependencies {
         exclude group: 'org.slf4j', module:'slf4j-simple'
 
     }
-    compile("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
+    api("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
         transitive = false
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.grails', module:'grails-datastore-gorm'
@@ -34,7 +34,7 @@ dependencies {
         exclude group: 'org.slf4j', module:'slf4j-simple'
 
     }
-    compile("org.grails:grails-datastore-core:$datastoreVersion") {
+    api("org.grails:grails-datastore-core:$datastoreVersion") {
         exclude group: 'org.springframework', module:'spring-core'
         exclude group: 'org.springframework', module:'spring-context'
         exclude group: 'org.springframework', module:'spring-web'

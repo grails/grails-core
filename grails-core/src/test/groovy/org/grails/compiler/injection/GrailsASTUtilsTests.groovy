@@ -1,29 +1,34 @@
 package org.grails.compiler.injection
 
 import grails.artefact.Enhanced
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.builder.AstBuilder
 import org.grails.compiler.injection.GrailsASTUtils
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.builder.AstBuilder
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Burt Beckwith
  */
-class GrailsASTUtilsTests extends GroovyTestCase {
+class GrailsASTUtilsTests {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         System.setProperty("grails.version", "3.0.0")
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         System.setProperty("grails.version", "")
     }
 
+    @Test
     void testGetFurthestParent() {
         def fooNode = new ClassNode(Foo)
         def barNode = new ClassNode(Bar)
@@ -34,6 +39,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assertEquals Foo.name, GrailsASTUtils.getFurthestParent(bazNode).name
     }
 
+    @Test
     void testHasAnyAnnotations() {
         def widgetNode = new ClassNode(Widget)
         assert GrailsASTUtils.hasAnyAnnotations(widgetNode, FirstAnnotation, SecondAnnotation)
@@ -45,6 +51,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert !GrailsASTUtils.hasAnyAnnotations(widgetNode)
     }
 
+    @Test
     void testHasAnnotation() {
         def widgetNode = new ClassNode(Widget)
         assert GrailsASTUtils.hasAnnotation(widgetNode, FirstAnnotation)
@@ -53,6 +60,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert !GrailsASTUtils.hasAnnotation(widgetNode, FourthAnnotation)
     }
 
+    @Test
     void testConstraintMetadata() {
         def result = new AstBuilder().buildFromString('''
             return {
@@ -83,7 +91,8 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         def lastNameBindableExpression = lastNameMetaData['bindable']
         assert false == lastNameBindableExpression.value
     }
-    
+
+    @Test
     void testAddEnhanced() {
         def result = new AstBuilder().buildFromString('''
             class SomeArtefact {}
@@ -99,7 +108,8 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert enhancedAnnotation.getMember('enhancedFor').expressions.size() == 1
         assert enhancedAnnotation.getMember('enhancedFor').expressions[0].value == 'someFeature'
     }
-    
+
+    @Test
     void testAddEnhancedWithMultipleFeatures() {
         def result = new AstBuilder().buildFromString('''
             class SomeOtherArtefact {}
@@ -117,7 +127,8 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert 'someFeature' in featureNames
         assert 'someOtherFeature' in featureNames
     }
-    
+
+    @Test
     void testAddEnhancedToClassWhichAlreadyHasBeenEnhanced() {
         def result = new AstBuilder().buildFromString('''
             class YetAnotherArtefact {}
@@ -145,7 +156,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         
     }
     
-    
+    @Test
     void testAddEnhancedWithFeatureThatIsAlreadyPresent() {
         def result = new AstBuilder().buildFromString('''
             class SomeOtherArtefact {}

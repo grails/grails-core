@@ -1,8 +1,8 @@
 dependencies {
-    compile "org.springframework:spring-tx:${springVersion}"
-    compile "org.springframework:spring-web:${springVersion}"
-    compile "org.springframework:spring-context:${springVersion}"
-    compile project(":grails-bootstrap"), {
+    api "org.springframework:spring-tx:${springVersion}"
+    api "org.springframework:spring-web:${springVersion}"
+    api "org.springframework:spring-context:${springVersion}"
+    api project(":grails-bootstrap"), {
         exclude group:"org.fusesource.jansi", module:"jansi"
         exclude group:"jline", module:"jline"
         exclude group:"net.java.dev.jna", module:"jna"

@@ -4,14 +4,20 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import java.util.Map.Entry
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+/**
+ * @deprecated This class is deprecated to reduce complexity, improve performance, and increase maintainability. Use {@code config.getProperty(String key, Class<T> targetType)} instead.
+ */
+@Deprecated
 @EqualsAndHashCode
 @CompileStatic
 class NavigableMap implements Map<String, Object>, Cloneable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NavigableMap.class);
 
     private static final Pattern SPLIT_PATTERN = ~/\./
     private static final String SPRING_PROFILES = 'spring.profiles.active'
@@ -97,7 +103,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     @Override
-    void putAll(Map<? extends String, ?> m) {
+    void putAll(Map<? extends String, ? extends Object> m) {
         delegateMap.putAll m
     }
 
@@ -281,12 +287,18 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     public void setAt(Object key, Object value) {
         setProperty(String.valueOf(key), value)
     }
-    
+
     public Object getProperty(String name) {
         if (!containsKey(name)) {
             return new NullSafeNavigator(this, [name].asImmutable())
         }
-        return get(name)
+        Object result = get(name)
+        if (!(result instanceof NavigableMap)) {
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("Accessing config key '{}' through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.", name)
+            }
+        }
+        return result
     }
     
     public void setProperty(String name, Object value) {
@@ -357,19 +369,19 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         currentMap
     }
     
-    public Map<String, Object> toFlatConfig() {
-        Map<String,Object> flatConfig = [:]
+    Map<String, Object> toFlatConfig() {
+        Map<String, Object> flatConfig = [:]
         flattenKeys(flatConfig, this, [], false)
         flatConfig
     }
     
-    public Properties toProperties() {
+    Properties toProperties() {
         Properties properties = new Properties()
-        flattenKeys((Map<String, Object>)properties, this, [], true)
+        flattenKeys((Map<Object, Object>) properties, this, [], true)
         properties
     }
     
-    private void flattenKeys(Map<String, Object> flatConfig, Map currentMap, List<String> path, boolean forceStrings) {
+    private void flattenKeys(Map<? extends Object, Object> flatConfig, Map currentMap, List<String> path, boolean forceStrings) {
         currentMap.each { key, value ->
             String stringKey = String.valueOf(key)
             if(value != null) {
@@ -416,6 +428,10 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         return delegateMap.equals(obj)
     }
 
+    /**
+     * @deprecated This class will be removed in future. Use {@code config.getProperty(String key, Class<T> targetType)} instead of dot based navigation.
+     */
+    @Deprecated
     @CompileStatic
     static class NullSafeNavigator implements Map<String, Object>{
         final NavigableMap parent
@@ -424,6 +440,9 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         NullSafeNavigator(NavigableMap parent, List<String> path) {
             this.parent = parent
             this.path = path
+            if (LOG.isWarnEnabled()) {
+                LOG.warn("Accessing config key '{}' through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.", path)
+            }
         }
 
         Object getAt(Object key) {

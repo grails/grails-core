@@ -15,18 +15,24 @@
  */
 package org.grails.commons
 
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertNotNull
+import static org.junit.jupiter.api.Assertions.assertThrows
+
 /**
  * @author Steven Devijver
  */
-class MultipleClassesPerFileTests extends GroovyTestCase {
+class MultipleClassesPerFileTests {
 
+    @Test
     void testMultipleClassesPerFile() {
         GroovyClassLoader cl = new GroovyClassLoader()
         cl.parseClass(getClass().classLoader.getResourceAsStream('org/grails/commons/classes.groovy'), 'classes.groovy')
         assertNotNull cl.loadClass('TestClass1')
         assertNotNull cl.loadClass('TestClass2')
 
-        shouldFail(ClassNotFoundException) {
+        assertThrows(ClassNotFoundException) {
             cl.loadClass('TestClass3')
         }
     }

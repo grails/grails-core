@@ -1,19 +1,19 @@
 dependencies {
-    compile("org.springframework:spring-jdbc:${springVersion}") {
+    api("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    compile "org.codehaus.groovy:groovy-sql:$groovyVersion"
+    api "org.codehaus.groovy:groovy-sql:$groovyVersion"
 
-    compile("org.springframework:spring-context:${springVersion}") {
+    api("org.springframework:spring-context:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    compile "org.grails:grails-datastore-gorm:$datastoreVersion"
-    compile "org.grails:grails-datastore-core:$datastoreVersion"
+    api "org.grails:grails-datastore-gorm:$datastoreVersion"
+    api "org.grails:grails-datastore-core:$datastoreVersion"
 
     compileOnly "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
-    runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatLog4jVersion"
+    runtimeOnly "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatLog4jVersion"
 
-    compile project(":grails-core")
+    api project(":grails-core")
 }

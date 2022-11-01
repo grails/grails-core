@@ -1,13 +1,19 @@
 package org.grails.web.servlet.view
+
 import grails.util.GrailsWebMockUtil
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
 import org.grails.support.MockApplicationContext
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Test
 import org.springframework.web.context.request.RequestContextHolder
 
-@SuppressWarnings("unused")
-class GroovyPageViewTests extends GroovyTestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals
 
+@SuppressWarnings("unused")
+class GroovyPageViewTests {
+
+    @Test
     void testGroovyPageView() {
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
@@ -37,6 +43,7 @@ class GroovyPageViewTests extends GroovyTestCase {
         assertEquals "successbar", webRequest.currentResponse.contentAsString
     }
 
+    @AfterEach
     void tearDown() {
          RequestContextHolder.resetRequestAttributes()
     }

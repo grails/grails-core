@@ -16,59 +16,61 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['8', '11']
+        java: ['8', '11', '14']
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - uses: actions/checkout@v3
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: 'adopt'
           java-version: ${{ matrix.java }}
-      - name: Optional setup step
-        run: |
-          [ -f ./setup.sh ] && ./setup.sh || true
       - name: Run Tests
-        run: |
-          (set -x; ./gradlew clean classes --no-daemon)
-          (set -x; ./gradlew testClasses --no-daemon)
-          ./gradlew --stop
-          (set -x; ./gradlew grails-test-suite-persistence:test grails-test-suite-uber:test grails-test-suite-web:test --no-daemon)
-          ./gradlew --stop
-          (set -x; ./gradlew check -x grails-test-suite-persistence:test -x grails-test-suite-uber:test -x grails-test-suite-web:test --no-daemon)
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        id: tests
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: check
+        env:
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+      - name: Run Build
+        if: github.event_name == 'push'
+        id: build
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        with:
+          arguments: build
       - name: Publish Test Report
-        if: failure()
+        if: steps.build.outcome == 'failure' || steps.tests.outcome == 'failure'
         uses: scacap/action-surefire-report@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           report_paths: '**/build/test-results/test/TEST-*.xml'
-      - name: Run Assemble
-        if: success() && github.event_name == 'push' && matrix.java == '8'
-        run: ./gradlew assemble
       - name: Publish to repo.grails.org
-        if: success() && github.event_name == 'push' && matrix.java == '8'
+        id: publish
+        uses: gradle/gradle-build-action@v2
+        if: steps.build.outcome == 'success' && github.event_name == 'push' && matrix.java == '8'
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-        run: |
-          ./gradlew publish
+        with:
+          arguments: -Dorg.gradle.internal.publish.checksums.insecure=true publish
       - name: Extract branch name
-        if: success() && github.event_name == 'push' && matrix.java == '8'
+        if: steps.publish.outcome == 'success' && github.event_name == 'push' && matrix.java == '8'
         id: extract_branch
         run: echo ::set-output name=value::${GITHUB_REF:11}
       - name: Create Snapshot Message for the Workflow Dispatch
-        if: success() && github.event_name == 'push' && matrix.java == '8'
+        if: steps.publish.outcome == 'success' && github.event_name == 'push' && matrix.java == '8'
         id: dispatch_message
         run: echo ::set-output name=value::{\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}
       - name: Invoke the Java CI workflow in Grails Functional Tests
-        if: success() && github.event_name == 'push' && matrix.java == '8'
+        if: steps.publish.outcome == 'success' && github.event_name == 'push' && matrix.java == '8'
         uses: benc-uk/workflow-dispatch@v1.1
         with:
           workflow: Java CI

@@ -1,38 +1,27 @@
 dependencies {
 
-    compile "org.springframework:spring-tx:${springVersion}"
+    api "org.springframework:spring-tx:${springVersion}"
 
-    compile "org.springframework.boot:spring-boot-test:$springBootVersion"
+    api "org.springframework.boot:spring-boot-test:$springBootVersion"
     // Testing
-    compile "org.codehaus.groovy:groovy-test:$groovyVersion", {
-        transitive = false
-        exclude group:'junit', module: 'junit'
-        exclude group:'org.codehaus.groovy', module: 'groovy'
-        exclude group:'org.hamcrest', module: 'hamcrest-core'
-    }
-    compile "junit:junit:${junitVersion}", {
-        exclude group:'org.hamcrest', module: 'hamcrest-core'
-    }
+    api "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+    api("org.codehaus.groovy:groovy-test:$groovyVersion")
+    api("org.spockframework:spock-core:$spockVersion") { transitive = false }
+    api "org.junit.platform:junit-platform-runner:1.9.1"
 
 
-    compile("org.spockframework:spock-core:${spockVersion}") {
-        transitive = false
-        exclude group:'junit', module: 'junit-dep'
-        exclude group:'org.codehaus.groovy', module: 'groovy-all'
-    }
-
-    provided project(":grails-plugin-mimetypes")
-    provided project(":grails-web")
-    provided "org.grails.plugins:converters:$legacyConvertersVersion"
+    api project(":grails-plugin-mimetypes")
+    api project(":grails-web")
+    api "org.grails.plugins:converters:$legacyConvertersVersion"
 
     // command line requirements
-    provided  "jline:jline:$jlineVersion"
-    provided "org.fusesource.jansi:jansi:$jansiVersion"
+    api  "jline:jline:$jlineVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
 
     // Ant
-    provided "org.apache.ant:ant:${antVersion}"
-    provided "org.apache.ant:ant-junit:${antVersion}"
+    api "org.apache.ant:ant:${antVersion}"
+    api "org.apache.ant:ant-junit:${antVersion}"
 
     // needed for Spock
-    compile "org.objenesis:objenesis:${objenesisVersion}"
+    api "org.objenesis:objenesis:${objenesisVersion}"
 }

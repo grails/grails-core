@@ -50,7 +50,7 @@ import java.util.regex.PatternSyntaxException;
  * <p>A Grails URL pattern is not a regex, but is an extension to the form defined by Apache Ant and used by
  * Spring AntPathMatcher. Unlike regular Ant paths Grails URL patterns allow for capturing groups in the form:</p>
  * <p/>
- * <code>/blog/(*)/**</code>
+ * <code>/blog/(*)&#47;**</code>
  * <p/>
  * <p>The parenthesis define a capturing group. This implementation transforms regular Ant paths into regular expressions
  * that are able to use capturing groups</p>

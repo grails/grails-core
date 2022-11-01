@@ -1,6 +1,6 @@
 dependencies {
-    compile project(":grails-core")
+    api project(":grails-core")
     // HtmlUtils is used from spring-web
-    compile "org.codehaus.groovy:groovy-json:$groovyVersion"
-    compile "org.springframework:spring-web:${springVersion}"
+    api "org.codehaus.groovy:groovy-json:$groovyVersion"
+    api "org.springframework:spring-web:${springVersion}"
 }

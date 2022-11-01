@@ -1,16 +1,17 @@
 dependencies {
-    compile project(":grails-core"), {
+    api project(":grails-core"), {
         exclude group:'org.grails', module:'grails-spring'
     }
-    compile project(":grails-databinding")
-    compile project(":grails-encoder")
-    compile "org.grails:grails-gsp:$gspVersion", {
+    api project(":grails-databinding")
+    api project(":grails-encoder")
+    api "org.grails:grails-gsp:$gspVersion", {
         exclude group:'org.grails', module:'grails-core'
         exclude group:'org.grails', module:'grails-encoder'
     }
 
-    compile "org.codehaus.groovy:groovy-templates:$groovyVersion"
+    api "org.codehaus.groovy:groovy-templates:$groovyVersion"
 
-    compile "org.springframework:spring-webmvc:${springVersion}"
-    compile "org.springframework:spring-context-support:${springVersion}"
+    api "org.springframework:spring-webmvc:${springVersion}"
+    api "org.springframework:spring-context-support:${springVersion}"
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
 }

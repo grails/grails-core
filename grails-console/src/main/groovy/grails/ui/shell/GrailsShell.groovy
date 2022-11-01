@@ -19,6 +19,7 @@ import grails.ui.shell.support.GroovyshApplicationContext
 import grails.ui.shell.support.GroovyshWebApplicationContext
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
+import org.springframework.boot.ApplicationContextFactory
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.io.ResourceLoader
 import org.springframework.util.ClassUtils
@@ -43,11 +44,10 @@ class GrailsShell extends GrailsApp {
     }
 
     public configureApplicationContextClass() {
-        if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-            setApplicationContextClass(GroovyshWebApplicationContext)
-        }
-        else {
-            setApplicationContextClass(GroovyshApplicationContext)
+        if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
+            setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GroovyshWebApplicationContext))
+        } else {
+            setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GroovyshApplicationContext))
         }
     }
 

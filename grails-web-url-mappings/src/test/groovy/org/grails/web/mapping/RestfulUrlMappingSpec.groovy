@@ -31,8 +31,8 @@ class RestfulUrlMappingSpec extends Specification {
     @Issue('https://github.com/grails/grails-core/issues/10995')
     void 'test that the right link is generated for restful mapping'() {
         expect:
-        linkGenerator.link(resource: 'user', action: 'show', id: 1) == 'http://localhost/user/1'
-        linkGenerator.link(resource: 'user', action: 'show', id: 1, method: 'GET') == 'http://localhost/user/1'
+        linkGenerator.link(resource: 'user', action: 'show', id: 1, absolute: true) == 'http://localhost/user/1'
+        linkGenerator.link(resource: 'user', action: 'show', id: 1, method: 'GET', absolute: true) == 'http://localhost/user/1'
     }
 
     LinkGenerator getLinkGenerator() {

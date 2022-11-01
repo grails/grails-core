@@ -1,13 +1,16 @@
 package grails.spring
 
-import org.w3c.dom.Element
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class DynamicElementReaderTests extends GroovyTestCase {
+class DynamicElementReaderTests {
 
+    @Test
     void testReadMethodToElement() {
 
         def elementReader = new DynamicElementReader("jee", [jee:"http://www.springframework.org/schema/jee"])

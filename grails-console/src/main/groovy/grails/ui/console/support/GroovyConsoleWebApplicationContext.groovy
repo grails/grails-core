@@ -48,8 +48,8 @@ class GroovyConsoleWebApplicationContext extends DevelopmentWebApplicationContex
         binding.setVariable(GrailsApplication.APPLICATION_ID, getBean(GrailsApplication.class))
 
         final GroovyConsoleWebApplicationContext self = this
-        groovy.ui.Console groovyConsole = new groovy.ui.Console(binding) {
-
+        groovy.console.ui.Console groovyConsole = new groovy.console.ui.Console(binding) {
+            @Override
             boolean exit(EventObject evt) {
                 boolean exit = super.exit(evt)
                 self.close()

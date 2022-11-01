@@ -17,6 +17,7 @@ package org.grails.config;
 
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
+import groovy.util.ConfigObject;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.slf4j.Logger;
@@ -24,11 +25,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.util.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,10 +40,11 @@ import java.util.StringTokenizer;
 /**
  * A {@link Config} implementation that operates against a {@link org.grails.config.NavigableMap}
  *
+ * @deprecated This class behavior is related to {@link org.grails.config.NavigableMap} which will be removed in future. Use {@link grails.config.Config} instead.
  * @author Graeme Rocher
  * @since 3.0
  */
-
+@Deprecated
 public abstract class NavigableMapConfig implements Config {
     protected static final Logger LOG = LoggerFactory.getLogger(NavigableMapConfig.class);
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -269,14 +272,68 @@ public abstract class NavigableMapConfig implements Config {
         return System.getenv(name) != null;
     }
 
+    private Map<Object, Object> convertToMap(NavigableMap from, IdentityHashMap<NavigableMap, Map<Object, Object>> cache) {
+        if (cache.containsKey(from)) {
+            return cache.get(from);
+        }
+        final Map<Object, Object> to = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry: from.entrySet()) {
+            if (entry.getValue() instanceof NavigableMap) {
+                to.put(entry.getKey(), convertToMap((NavigableMap) entry.getValue(), cache));
+            } else if (entry.getValue() instanceof List) {
+                List<Object> newList = new ArrayList<>();
+                for (Object o: (List<?>) entry.getValue()) {
+                    if (o instanceof NavigableMap) {
+                        newList.add(convertToMap((NavigableMap) o, cache));
+                    } else {
+                        newList.add(o);
+                    }
+                }
+                to.put(entry.getKey(), newList);
+            } else {
+                to.put(entry.getKey(), entry.getValue());
+            }
+        }
+        cache.put(from, to);
+        return to;
+    }
+
+    private ConfigObject convertPropsToMap(ConfigObject config) {
+        for(Map.Entry<String, Object> entry: (Set<Map.Entry<String, Object>>) config.entrySet()) {
+            final IdentityHashMap<NavigableMap, Map<Object, Object>> cache = new IdentityHashMap<>();
+            if (entry.getValue() instanceof NavigableMap) {
+                config.setProperty(entry.getKey(), convertToMap((NavigableMap) entry.getValue(), cache));
+            } else if (entry.getValue() instanceof List) {
+                final List<Object> newList = new ArrayList<>();
+                for (Object o: (List<?>) entry.getValue()) {
+                    if (o instanceof NavigableMap) {
+                        newList.add(convertToMap((NavigableMap) o, cache));
+                    } else {
+                        newList.add(o);
+                    }
+                }
+                config.setProperty(entry.getKey(), newList);
+            }
+        }
+        return config;
+    }
+
     private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
         if (originalValue != null) {
             if (targetType.isInstance(originalValue)) {
-                return (T) originalValue;
+                if (originalValue instanceof NavigableMap && targetType.equals(Map.class)) {
+                    final IdentityHashMap<NavigableMap, Map<Object, Object>> cache = new IdentityHashMap<>();
+                    return (T) convertToMap((NavigableMap) originalValue, cache);
+                } else {
+                    return (T) originalValue;
+                }
             } else {
-                if (!(originalValue instanceof NavigableMap)) {
+                if (!(originalValue instanceof NavigableMap) || Map.class.isAssignableFrom(targetType)) {
                     try {
                         T value = conversionService.convert(originalValue, targetType);
+                        if (value instanceof ConfigObject) {
+                            convertPropsToMap((ConfigObject) value);
+                        }
                         return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
                     } catch (ConversionException e) {
                         if (targetType.isEnum()) {

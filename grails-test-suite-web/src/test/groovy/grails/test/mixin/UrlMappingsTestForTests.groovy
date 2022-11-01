@@ -2,7 +2,6 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.testing.web.UrlMappingsUnitTest
-import org.junit.Test
 import spock.lang.Specification
 
 class UrlMappingsTestForTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
@@ -11,8 +10,9 @@ class UrlMappingsTestForTests extends Specification implements UrlMappingsUnitTe
         [BookController]
     }
 
-    @Test
     void testUrlMappings() {
+
+        expect:
         assertUrlMapping "/book/list", controller:"book", action:"list"
     }
 }

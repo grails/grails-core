@@ -15,22 +15,20 @@
  */
 package org.grails.transaction;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-import static org.grails.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.*;
-import static org.grails.transaction.ChainedTransactionManagerTests.TransactionManagerMatcher.*;
-import static org.springframework.transaction.HeuristicCompletionException.*;
-
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
-import org.junit.Test;
-import org.springframework.transaction.HeuristicCompletionException;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.UnexpectedRollbackException;
+import org.junit.jupiter.api.Test;
+import org.springframework.transaction.*;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import static org.grails.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.createFailingTransactionManager;
+import static org.grails.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.createNonFailingTransactionManager;
+import static org.grails.transaction.ChainedTransactionManagerTests.TransactionManagerMatcher.isCommitted;
+import static org.grails.transaction.ChainedTransactionManagerTests.TransactionManagerMatcher.wasRolledback;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.transaction.HeuristicCompletionException.getStateString;
 
 /**
  * Integration tests for {@link ChainedTransactionManager}.
@@ -120,11 +118,13 @@ public class ChainedTransactionManagerTests {
 
 	}
 
-	@Test(expected = UnexpectedRollbackException.class)
+	@Test
 	public void shouldThrowExceptionOnFailingRollback() throws Exception {
-		PlatformTransactionManager first = createFailingTransactionManager("first");
-		setupTransactionManagers(first);
-		createAndRollbackTransaction();
+		assertThrows(UnexpectedRollbackException.class, () -> {
+			PlatformTransactionManager first = createFailingTransactionManager("first");
+			setupTransactionManagers(first);
+			createAndRollbackTransaction();
+		});
 	}
 
 	private void setupTransactionManagers(PlatformTransactionManager... transactionManagers) {

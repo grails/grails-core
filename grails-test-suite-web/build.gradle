@@ -4,16 +4,16 @@ configurations.all {
     }
 }
 
-configurations.testCompile {
+configurations.testCompileClasspath {
     exclude module: "grails-plugin-testing"
 }
 
 dependencies {
 
-    testCompile 'javax.servlet.jsp:jsp-api:2.1'
-    testCompile 'jstl:jstl:1.2'
-    testCompile 'javax.el:el-api:2.2'
-    testCompile project(':grails-test-suite-base'),
+    testImplementation 'javax.servlet.jsp:jsp-api:2.2'
+    testImplementation 'jstl:jstl:1.2'
+    testImplementation 'javax.el:el-api:2.2'
+    testImplementation project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
                 project(':grails-plugin-codecs'),
                 project(':grails-plugin-datasource'),
@@ -27,9 +27,9 @@ dependencies {
                 project(':grails-web'),
                 project(':grails-web-databinding'),
                 project(':grails-spring')
-    testCompile "org.grails.plugins:converters:$legacyConvertersVersion"
+    testImplementation "org.grails.plugins:converters:$legacyConvertersVersion"
 
-    testCompile "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:7.3.0", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -56,10 +56,10 @@ dependencies {
     }
 
     // Required for tag library support
-    testCompile 'taglibs:standard:1.1.2'
-    testCompile "javax.servlet:jstl:1.2"
+    testImplementation 'taglibs:standard:1.1.2'
+    testImplementation "javax.servlet:jstl:1.2"
 
-    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'
@@ -68,7 +68,7 @@ dependencies {
         exclude module:'async'
         exclude module:'gsp'
     }
-    testCompile "org.grails.plugins:gsp:$gspVersion", {
+    testImplementation "org.grails.plugins:gsp:$gspVersion", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
@@ -76,21 +76,21 @@ dependencies {
         exclude module:'grails-web-common'
         exclude module:'grails-encoder'
     }
-    testCompile "org.grails.plugins:async:$asyncVersion", {
+    testImplementation "org.grails.plugins:async:$asyncVersion", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion", {
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
         exclude module:'async'
     }
 
-    testRuntime "org.springframework:spring-aspects:${springVersion}"
-    testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
+    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
 }
@@ -98,7 +98,7 @@ dependencies {
 // javaee-web-api has a bad versions of classes we need to compile against
 // Just remove it fromt the compile classpath here
 configurations {
-    testCompile {
+    testCompileClasspath {
         exclude module: "javaee-web-api"
     }
 }
@@ -108,8 +108,8 @@ compileTestGroovy {
 }
 
 def defaultTestConfig = {
-    maxParallelForks = isTravisBuild ? 2 : 4
-    forkEvery = isTravisBuild ? 10 : 100
+    maxParallelForks = isCiBuild ? 2 : 4
+    forkEvery = isCiBuild ? 10 : 100
     excludes = ["**/*TestCase.class",
                 "**/*\$*.class"]
 }
