@@ -270,7 +270,7 @@ class ControllerActionTransformerSpec extends Specification {
         when:
         def cls = gcl.parseClass('''
             @grails.artefact.Artefact('Controller')
-            class TestMyCommandObjController {
+            class MyCommandObjTestController {
                 def action(MyCommand myCommand) {
                 }
                 
