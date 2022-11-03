@@ -8,8 +8,13 @@ on:
       target_branch:
         description: The Target Branch (e.g. 5.0.x)
         required: true
+permissions: {}
 jobs:
   release:
+    permissions:
+      contents: write  #  to create release
+      issues: read  #  to get closed issues
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
