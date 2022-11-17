@@ -5,7 +5,7 @@ dependencies {
     compile ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
     compile "org.yaml:snakeyaml:1.33"
     
-    compileOnly("io.methvin:directory-watcher:0.16.1")
+    compileOnly("io.methvin:directory-watcher:0.17.1")
     compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
     compileOnly("jline:jline:$jlineVersion")
     compileOnly("net.java.dev.jna:jna:$jnaVersion")
