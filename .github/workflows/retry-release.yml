@@ -8,8 +8,13 @@ on:
       target_branch:
         description: The Target Branch (e.g. 5.0.x)
         required: true
+permissions: {}
 jobs:
   release:
+    permissions:
+      contents: write  #  to create release
+      issues: read  #  to get closed issues
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -68,7 +73,7 @@ jobs:
       - name: Invoke grails-doc release workflow
         if: steps.assemble.outcome == 'success'
         id: grails_doc
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385 # tag=v1.2
         with:
           workflow: Release
           repo: grails/grails-doc
@@ -78,7 +83,7 @@ jobs:
       - name: Invoke grails-static-website release workflow
         if: steps.assemble.outcome == 'success'
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385 # tag=v1.2
         with:
           workflow: Release
           repo: grails/grails-static-website

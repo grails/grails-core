@@ -8,6 +8,10 @@ on:
       - '[4-9]+.[0-9]+.x'
       - '[3-9]+.[3-9]+.x'
   workflow_dispatch:
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
 jobs:
   release_notes:
     runs-on: ubuntu-latest
