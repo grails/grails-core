@@ -77,7 +77,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1.1
         with:
           workflow: Java CI
-          repo: grails/grails3-functional-tests
+          repo: grails/grails-functional-tests
           ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.dispatch_message.outputs.value }}
