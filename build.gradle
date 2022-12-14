@@ -6,7 +6,7 @@ buildscript {
     dependencies {
         classpath "commons-io:commons-io:2.11.0"
         classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
-        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:9.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
