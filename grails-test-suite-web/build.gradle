@@ -10,7 +10,7 @@ configurations.testCompile {
 
 dependencies {
 
-    testCompile 'javax.servlet.jsp:jsp-api:2.1'
+    testCompile 'javax.servlet.jsp:jsp-api:2.1.2'
     testCompile 'jstl:jstl:1.2'
     testCompile 'javax.el:el-api:2.2'
     testCompile project(':grails-test-suite-base'),
