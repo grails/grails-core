@@ -10,7 +10,7 @@ updates:
       - "type: dependency upgrade"
     ignore:
       - dependency-name: "*"      
-        update-types: ["version-update:semver-major"]      
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]      
   - package-ecosystem: gradle
     directory: "/"
     schedule:
