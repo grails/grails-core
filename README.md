@@ -12,7 +12,7 @@ Grails
 
 [Grails](https://grails.org/) is a framework used to build web applications with the [Groovy](https://groovy-lang.org/) programming language. The core framework is very extensible and there are numerous [plugins](https://plugins.grails.org/) available that provide easy integration of add-on features.
 
-Grails development is lead by the [Grails Foundation](https://grails.org/foundation/) and is sponsored by [Object Computing Inc.](https://objectcomputing.com/) in St. Louis Missouri.  Please contact <2gm@objectcomputing.com> for support inquiries.
+Grails development is led by the [Grails Foundation](https://grails.org/foundation/) and is sponsored by [Object Computing Inc.](https://objectcomputing.com/) in St. Louis Missouri.  Please contact <2gm@objectcomputing.com> for support inquiries.
 
 Getting Started
 ---
