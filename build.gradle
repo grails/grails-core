@@ -12,7 +12,6 @@ buildscript {
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
-        classpath "org.gradle:test-retry-gradle-plugin:1.5.0"
     }
 }
 
@@ -350,7 +349,6 @@ subprojects { project ->
     apply plugin: 'idea'
     apply plugin: 'project-report'
     apply plugin: 'nebula.optional-base'
-    apply plugin: "org.gradle.test-retry"
 
     if (!isTestSuite) {
 
