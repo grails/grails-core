@@ -349,7 +349,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    apply plugin: 'nebula.optional-base'
+    apply plugin: 'com.netflix.nebula.optional-base'
     apply plugin: "org.gradle.test-retry"
 
     if (!isTestSuite) {
