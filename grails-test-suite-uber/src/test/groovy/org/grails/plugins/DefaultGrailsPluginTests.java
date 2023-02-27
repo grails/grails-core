@@ -33,6 +33,8 @@ import java.io.File;
 public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 
     private Class<?> versioned;
+    private Class<?> versioned2;
+    private Class<?> versioned3;
     private Class<?> notVersion;
     private Class<?> notPluginClass;
     private Class<?> disabled;
@@ -54,6 +56,21 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
                         "assert event != null" +
                         "}" +
                         "}");
+        versioned2 = gcl.parseClass("class MyTwoGrailsPlugin extends grails.plugins.Plugin {\n" +
+                "def version = 1.1;" +
+                "Closure doWithSpring() { {->" +
+                "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
+                "}}\n" +
+                "}");
+        versioned3 = gcl.parseClass("class MyThreeGrailsPlugin extends grails.plugins.Plugin {\n" +
+                "def version = 1.1;" +
+                "Object invokeMethod(String name, Object args) {" +
+                "true" +
+                "}\n" +
+                "Closure doWithSpring() { {->" +
+                "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
+                "}}\n" +
+                "}");
         notVersion = gcl.parseClass("class AnotherGrailsPlugin {\n" +
                         "}");
         notPluginClass = gcl.parseClass("class SomeOtherPlugin {\n" +
@@ -135,6 +152,26 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         ApplicationContext ctx = springConfig.getApplicationContext();
 
         assertTrue(ctx.containsBean("classEditor"));
+
+        // Version 2
+        GrailsPlugin versionPlugin2 = new DefaultGrailsPlugin(versioned2, ga);
+
+        RuntimeSpringConfiguration springConfig2 = new DefaultRuntimeSpringConfiguration();
+        versionPlugin2.doWithRuntimeConfiguration(springConfig2);
+
+        ApplicationContext ctx2 = springConfig2.getApplicationContext();
+
+        assertTrue(ctx2.containsBean("classEditor"));
+
+        // Version 3
+        GrailsPlugin versionPlugin3 = new DefaultGrailsPlugin(versioned3, ga);
+
+        RuntimeSpringConfiguration springConfig3 = new DefaultRuntimeSpringConfiguration();
+        versionPlugin3.doWithRuntimeConfiguration(springConfig3);
+
+        ApplicationContext ctx3 = springConfig3.getApplicationContext();
+
+        assertTrue(ctx3.containsBean("classEditor"));
     }
 
     public void testGetName() {
