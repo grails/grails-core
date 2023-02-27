@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -540,6 +540,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             if(c != null) {
                 BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, grailsApplication.getClassLoader());
                 bb.setBinding(b);
+                c.setDelegate(bb);
+                c.setResolveStrategy(Closure.DELEGATE_FIRST);
                 bb.invokeMethod("beans", new Object[]{c});
             }
         }
@@ -557,6 +559,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, grailsApplication.getClassLoader());
             bb.setBinding(b);
             c.setDelegate(bb);
+            c.setResolveStrategy(Closure.DELEGATE_FIRST);
             bb.invokeMethod("beans", new Object[]{c});
         }
 
