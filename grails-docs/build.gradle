@@ -9,7 +9,7 @@ dependencies {
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
             'org.grails:grails-gdoc-engine:1.0.1',
-            'org.yaml:snakeyaml:1.33',
+            'org.yaml:snakeyaml:2.0',
             "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
     api 'org.asciidoctor:asciidoctorj:2.5.7'
