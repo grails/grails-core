@@ -15,7 +15,7 @@ buildscript {
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
-        classpath "org.gradle:test-retry-gradle-plugin:1.5.0"
+        classpath "org.gradle:test-retry-gradle-plugin:1.5.2"
     }
 }
 
