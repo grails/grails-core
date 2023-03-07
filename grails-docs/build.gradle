@@ -21,7 +21,7 @@ dependencies {
 
     runtime('com.lowagie:itext:2.0.8')
 
-    compile 'org.jsoup:jsoup:1.7.3'
+    compile 'org.jsoup:jsoup:1.15.4'
     testCompile "junit:junit:$junitVersion"
     testCompile("org.spockframework:spock-core:${spockVersion}") {
         transitive = false
