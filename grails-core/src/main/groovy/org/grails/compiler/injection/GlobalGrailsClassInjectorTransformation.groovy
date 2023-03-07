@@ -219,7 +219,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
     protected static void generatePluginXml(ClassNode pluginClassNode, String pluginVersion, Set<String> transformedClasses, File pluginXmlFile) {
         def pluginXmlExists = pluginXmlFile.exists()
-        Set pluginClasses = []
+        Set<String> pluginClasses = []
         pluginClasses.addAll(transformedClasses)
         pluginClasses.addAll(pendingPluginClasses)
 
