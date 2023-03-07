@@ -1,12 +1,47 @@
 package org.grails.core.cfg
 
+import grails.util.Environment
 import grails.util.Metadata
-import io.micronaut.context.exceptions.ConfigurationException
-import org.grails.config.NavigableMap
 import spock.lang.Specification
 
 @SuppressWarnings("GrMethodMayBeStatic")
-class MicronautGroovyPropertySourceLoaderSpec extends Specification {
+class MicronautGroovyPropertySourceLoaderSpec extends Specification implements EnvironmentAwareSpec{
+
+    void setup() {
+        resetEnvironment()
+    }
+
+    void "test read environment specific property" () {
+        setup:
+        final URL resource = getClass().getClassLoader().getResource("test-application.groovy")
+        final MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
+        environment = Environment.TEST
+
+        when:
+        final Map<String, Object> finalMap = groovyPropertySourceLoader.read("test-application.groovy", resource.openStream())
+
+        then:
+        finalMap.get("foo.bar") == "test"
+    }
+
+    void "test read environment specific property takes precedence"() {
+        setup:
+        final URL resource = getClass().getClassLoader().getResource("test-application.groovy")
+        final MicronautGroovyPropertySourceLoader groovyPropertySourceLoader = new MicronautGroovyPropertySourceLoader()
+
+        when:
+        final Map<String, Object> finalMap = groovyPropertySourceLoader.read("test-application.groovy", resource.openStream())
+
+        then:
+        finalMap.get("foo.bar") == "default"
+
+        when:
+        environment = Environment.TEST
+
+        then:
+        final Map<String, Object> finalMap2 = groovyPropertySourceLoader.read("test-application.groovy", resource.openStream())
+        finalMap2.get("foo.bar") == "test"
+    }
 
     void "test parsing configuration file with DSL"() {
 
