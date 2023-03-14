@@ -22,10 +22,8 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
-import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
-import org.yaml.snakeyaml.representer.Representer
 
 
 /**
@@ -156,7 +154,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
 
     @CompileDynamic // fails with CompileStatic!
     void loadYml(InputStream input) {
-        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()))
+        Yaml yaml = new Yaml(new SafeConstructor())
         for(Object yamlObject : yaml.loadAll(input)) {
             if(yamlObject instanceof Map) { // problem here with CompileStatic
                 mergeMap((Map)yamlObject)
