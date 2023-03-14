@@ -299,7 +299,7 @@ class ControllerActionTransformerSpec extends Specification {
         Method actionAsClosureMethodWithoutCommand = controller.getClass().getMethod('actionAsClos')
         actionAsClosureMethodWithoutCommand.isAnnotationPresent(Generated)
 
-        Method actionAsClosureMethodWitCommand = controller.getClass().getMethod('actionAsClos', myCommand.class)
+        Method actionAsClosureMethodWitCommand = controller.getClass().getMethod('actionAsClos', (Class) myCommand.class)
         actionAsClosureMethodWitCommand.isAnnotationPresent(Generated)
     }
 
