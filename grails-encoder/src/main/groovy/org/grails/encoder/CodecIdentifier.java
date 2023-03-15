@@ -34,8 +34,7 @@ public interface CodecIdentifier {
 
     /**
      * Gets the aliases for this codec. Aliases are used in registering
-     * "encodeAs*" and "decode*" metamethods in
-     * {@link org.grails.commons.DefaultGrailsCodecClass}
+     * "encodeAs*" and "decode*" metamethods in org.grails.commons.DefaultGrailsCodecClass
      *
      * @return the codec aliases
      */
