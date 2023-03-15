@@ -348,7 +348,6 @@ subprojects { project ->
     apply plugin: 'java-library'
     apply plugin: 'groovy'
     if(!isTestSuite) {
-        apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
     }
@@ -359,12 +358,9 @@ subprojects { project ->
 
     if (!isTestSuite) {
 
-        modifyPom {
-            delegate.project {
-                def updatePom = pomInfo.clone()
-                updatePom.delegate = delegate
-                updatePom()
-            }
+        java {
+            withJavadocJar()
+            withSourcesJar()
         }
 
         publishing {
@@ -388,18 +384,35 @@ subprojects { project ->
 
             publications {
                 maven(MavenPublication) {
+                    pom {
+                        name = 'Grails® framework'
+                        description = 'Grails Web Application Framework'
+                        url = 'https://grails.org/'
+
+                        licenses {
+                            license {
+                                name = 'The Apache Software License, Version 2.0'
+                                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                                distribution = 'repo'
+                            }
+                        }
+
+                        scm {
+                            url = 'scm:git@github.com:grails/grails-core.git'
+                            connection = 'scm:git@github.com:grails/grails-core.git'
+                            developerConnection = 'scm:git@github.com:grails/grails-core.git'
+                        }
+
+                        developers {
+                            developer {
+                                id = 'puneetbehl'
+                                name = 'Puneet Behl'
+                                email = 'behlp@objectcomputing.com'
+                            }
+                        }
+                    }
+
                     from components.java
-
-                    afterEvaluate {
-                        artifact source: sourcesJar, classifier: "sources"
-                        artifact source: javadocJar, classifier: "javadoc"
-                    }
-                    pom.withXml {
-                        def xml = asNode()
-
-                        xml.children().last() + pomInfo
-                    }
-
                 }
             }
         }
@@ -453,6 +466,9 @@ subprojects { project ->
             "Implementation-Vendor": 'grails.org')
     }
 
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
 
     configure([compileGroovy, compileTestGroovy]) {
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')

@@ -116,9 +116,8 @@ task fetchGrailsDocsSource {
 
 task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], group: 'documentation') {
     startParameter.setCurrentDir(new File("${buildDir}/grails-docs-src"));
-    startParameter.setSearchUpwards(false)
     startParameter.useEmptySettings()
-    buildFile = "${buildDir}/grails-docs-src/build.gradle"
+    dir = "${buildDir}/grails-docs-src/build.gradle"
     tasks = ["clean", "assemble"]
 
     doFirst {

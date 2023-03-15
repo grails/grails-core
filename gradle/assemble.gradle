@@ -127,8 +127,11 @@ task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) 
 // Can't use sync task here because this directory contains other things as well.
 task sourcesJars(type: Sync) {
     into homeSrcDir
-    from subprojects.findAll { !it.name.startsWith('grails-test-suite') && !it.name.startsWith('grails-dependencies') && !it.name.startsWith('grails-bom') }.sourcesJar*.outputs*.files
-
+    from subprojects
+            .findAll { subproject -> !subproject.name.startsWith('grails-test-suite') &&
+                    !subproject.name.startsWith('grails-dependencies') &&
+                    !subproject.name.startsWith('grails-bom')
+            }.sourcesJar*.outputs*.files
     // sourcesFor comes from GrailsBuildPlugin
     from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
 }
