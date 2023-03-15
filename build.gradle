@@ -5,14 +5,13 @@ buildscript {
     }
     dependencies {
         classpath "commons-io:commons-io:2.11.0"
-        classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
-        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0"
+        classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:9.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
-        classpath "org.gradle:test-retry-gradle-plugin:1.5.0"
     }
 }
 
@@ -304,6 +303,13 @@ subprojects { project ->
         documentation
     }
 
+    configurations {
+        all {
+            /*Spring framework {@link org.springframework.beans.factory.config.*/
+            resolutionStrategy.force 'org.yaml:snakeyaml:1.33'
+        }
+    }
+
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     ext.isCiBuild = project.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
     ext.pomInfo = {
@@ -342,24 +348,19 @@ subprojects { project ->
     apply plugin: 'java-library'
     apply plugin: 'groovy'
     if(!isTestSuite) {
-        apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
     }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    apply plugin: 'nebula.optional-base'
-    apply plugin: "org.gradle.test-retry"
+    apply plugin: 'com.netflix.nebula.optional-base'
 
     if (!isTestSuite) {
 
-        modifyPom {
-            delegate.project {
-                def updatePom = pomInfo.clone()
-                updatePom.delegate = delegate
-                updatePom()
-            }
+        java {
+            withJavadocJar()
+            withSourcesJar()
         }
 
         publishing {
@@ -383,18 +384,35 @@ subprojects { project ->
 
             publications {
                 maven(MavenPublication) {
+                    pom {
+                        name = 'Grails® framework'
+                        description = 'Grails Web Application Framework'
+                        url = 'https://grails.org/'
+
+                        licenses {
+                            license {
+                                name = 'The Apache Software License, Version 2.0'
+                                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                                distribution = 'repo'
+                            }
+                        }
+
+                        scm {
+                            url = 'scm:git@github.com:grails/grails-core.git'
+                            connection = 'scm:git@github.com:grails/grails-core.git'
+                            developerConnection = 'scm:git@github.com:grails/grails-core.git'
+                        }
+
+                        developers {
+                            developer {
+                                id = 'puneetbehl'
+                                name = 'Puneet Behl'
+                                email = 'behlp@objectcomputing.com'
+                            }
+                        }
+                    }
+
                     from components.java
-
-                    afterEvaluate {
-                        artifact source: sourcesJar, classifier: "sources"
-                        artifact source: javadocJar, classifier: "javadoc"
-                    }
-                    pom.withXml {
-                        def xml = asNode()
-
-                        xml.children().last() + pomInfo
-                    }
-
                 }
             }
         }
@@ -448,6 +466,9 @@ subprojects { project ->
             "Implementation-Vendor": 'grails.org')
     }
 
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
 
     configure([compileGroovy, compileTestGroovy]) {
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
@@ -487,9 +508,9 @@ subprojects { project ->
         api groovyDependency
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.1"
-        testImplementation "org.junit.platform:junit-platform-runner:1.9.1"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.1"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.2"
+        testImplementation "org.junit.platform:junit-platform-runner:1.9.2"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.2"
 
         if (project.name != "grails-docs") {
             // Logging

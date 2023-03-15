@@ -13,7 +13,6 @@ dependencies {
     api "org.grails:grails-datastore-core:$datastoreVersion"
 
     compileOnly "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
-    runtimeOnly "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatLog4jVersion"
 
     api project(":grails-core")
 }

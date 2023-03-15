@@ -46,14 +46,15 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     }
 
     CodeGenConfig(CodeGenConfig copyOf) {
-        this((Map<String, Object> )copyOf.configMap)
+        this(copyOf.getConfigMap())
     }
 
     CodeGenConfig(Map<String, Object> copyOf) {
         this()
         mergeMap(copyOf)
     }
-    
+
+    @Override
     CodeGenConfig clone() {
         new CodeGenConfig(this)
     }
