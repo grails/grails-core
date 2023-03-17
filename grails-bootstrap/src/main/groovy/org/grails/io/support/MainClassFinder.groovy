@@ -170,7 +170,7 @@ class MainClassFinder {
         boolean found = false
 
         MainMethodFinder() {
-            super(Opcodes.ASM7)
+            super(Opcodes.ASM9)
         }
 
         @Override
