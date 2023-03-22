@@ -8,7 +8,6 @@ buildscript {
         classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:9.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
-        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:$gradleSdkVendorVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
@@ -615,6 +614,7 @@ subprojects.each {
 
 apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
+    from 'gradle/sdjdocs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
 }
@@ -641,15 +641,4 @@ project.afterEvaluate {
             }
         }
     }
-}
-
-apply plugin: "io.sdkman.vendors"
-sdkman {
-    api = "https://vendors.sdkman.io"
-    consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
-    consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
-    candidate = "grails"
-    version = project.version
-    url = "https://github.com/grails/grails-core/releases/download/v${project.version}/grails-${project.version}.zip"
-    hashtag = "#grailsfw"
 }

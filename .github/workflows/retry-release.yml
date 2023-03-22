@@ -90,22 +90,6 @@ jobs:
           ref: master
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
-      - name: Grails SDK Minor Release
-        if: steps.upload_artifact.outcome == 'success' && contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC')
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: sdkMinorRelease
-        env:
-          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
-          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
-      - name: Grails SDK Major Release
-        if: steps.upload_artifact.outcome == 'success' && !contains(steps.release_version.outputs.release_version, 'M') && !contains(steps.release_version.outputs.release_version, 'RC')
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: sdkMajorRelease
-        env:
-          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
-          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
       - name: Run post-release
         if: steps.assemble.outcome == 'success'
         uses: ./.github/actions/post-release

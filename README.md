@@ -58,5 +58,4 @@ Dependencies
 
 **Gradle Plugins**
 
-* SDKMAN! Vendor Plugin [Github](https://github.com/sdkman/sdkman-vendor-gradle-plugin).
 * Gradle Nexus Staging Plugin [Github](https://github.com/Codearte/gradle-nexus-staging-plugin)
