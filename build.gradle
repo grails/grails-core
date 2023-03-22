@@ -614,7 +614,6 @@ subprojects.each {
 
 apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
-    from 'gradle/sdjdocs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
 }
