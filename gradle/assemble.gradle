@@ -122,6 +122,7 @@ task configurePopulateDependencies {
 task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) {
     into homeLibDir
     includeEmptyDirs = false
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 // Can't use sync task here because this directory contains other things as well.
@@ -138,7 +139,7 @@ task sourcesJars(type: Sync) {
 
 task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
     description = "Creates OS specific scripts to run grails-shell as a JVM application."
-    mainClassName = 'org.grails.cli.GrailsCli'
+    mainClass.set('org.grails.cli.GrailsCli')
     applicationName = 'grails'
     defaultJvmOpts = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
     outputDir = file('bin')
@@ -151,6 +152,8 @@ task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
 }
 
 class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateStartScripts {
+
+    @Input
     Collection<String> projectArtifacts=[]
 
     @org.gradle.api.tasks.TaskAction
