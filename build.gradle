@@ -294,6 +294,15 @@ allprojects {
 
 apply from: "gradle/idea.gradle"
 
+tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
+    configure {
+        access = GroovydocAccess.PRIVATE
+        includeAuthor = true
+        includeMainForScripts = false
+        processScripts = false
+    }
+}
+
 subprojects { project ->
     version = grailsVersion
     group = "org.grails"
