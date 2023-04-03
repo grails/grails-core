@@ -314,7 +314,7 @@ subprojects { project ->
     configurations {
         all {
             /*Spring framework {@link org.springframework.beans.factory.config.*/
-            resolutionStrategy.force 'org.yaml:snakeyaml:1.33'
+            resolutionStrategy.force 'org.yaml:snakeyaml:2.0'
         }
     }
 
