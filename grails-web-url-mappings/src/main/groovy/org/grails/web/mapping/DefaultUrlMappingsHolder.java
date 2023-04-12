@@ -545,7 +545,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 UrlMappingInfo current = mapping.match(uri);
                 if (current != null) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to posibilities");
+                        LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to possibilities");
                     }
 
                     String mappingHttpMethod = current.getHttpMethod();
@@ -586,7 +586,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 UrlMappingInfo current = mapping.match(uri);
                 if (current != null) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to posibilities");
+                        LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to possibilities");
                     }
 
                     String mappingHttpMethod = current.getHttpMethod();
