@@ -38,7 +38,7 @@ jobs:
       - name: Run Tests
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         id: tests
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
         with:
           arguments: check groovydoc
         env:
@@ -47,7 +47,7 @@ jobs:
       - name: Run Build
         if: github.event_name == 'push'
         id: build
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
@@ -62,7 +62,7 @@ jobs:
           report_paths: '**/build/test-results/test/TEST-*.xml'
       - name: Publish to repo.grails.org
         id: publish
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
         if: steps.build.outcome == 'success' && github.event_name == 'push' && matrix.java == '11'
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
