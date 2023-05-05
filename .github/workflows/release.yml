@@ -44,7 +44,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Assemble
         id: assemble
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
         with:
           arguments: assemble
       - name: Generate secring file
@@ -54,7 +54,7 @@ jobs:
       - name: Publish to Sonatype OSSRH
         id: publish
         if: steps.assemble.outcome == 'success'
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
