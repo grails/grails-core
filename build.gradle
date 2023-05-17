@@ -311,13 +311,6 @@ subprojects { project ->
         documentation
     }
 
-    configurations {
-        all {
-            /*Spring framework {@link org.springframework.beans.factory.config.*/
-            resolutionStrategy.force 'org.yaml:snakeyaml:1.33'
-        }
-    }
-
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     ext.isCiBuild = project.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
     ext.pomInfo = {
