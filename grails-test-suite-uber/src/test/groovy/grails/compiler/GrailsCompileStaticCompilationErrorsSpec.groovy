@@ -174,8 +174,6 @@ class SomeClass {
         def c = gcl.parseClass('''
 package grails.compiler
 
-import groovy.transform.TypeCheckingMode
-
 @GrailsCompileStatic
 class SomeClass implements grails.validation.Validateable {
     String name
@@ -196,8 +194,6 @@ class SomeClass implements grails.validation.Validateable {
         when:
         def c = gcl.parseClass('''
 package grails.compiler
-
-import groovy.transform.TypeCheckingMode
 
 @GrailsCompileStatic
 @grails.persistence.Entity
@@ -232,8 +228,6 @@ class SomeClass implements grails.validation.Validateable {
         when:
         def c = gcl.parseClass('''
 package grails.compiler
-
-import groovy.transform.TypeCheckingMode
 
 @GrailsCompileStatic
 class SomeClass implements grails.validation.Validateable {
@@ -340,8 +334,6 @@ class SomeSubClass extends SomeClass implements grails.validation.Validateable {
         when:
         def c = gcl.parseClass('''
 package grails.compiler
-
-import groovy.transform.TypeCheckingMode
 
 @GrailsCompileStatic
 class SomeClass {
