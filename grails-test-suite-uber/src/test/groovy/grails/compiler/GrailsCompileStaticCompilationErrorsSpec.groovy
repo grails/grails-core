@@ -170,7 +170,7 @@ class SomeClass {
         given:
         def gcl = new GroovyClassLoader()
 
-        when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
+        when:
         def c = gcl.parseClass('''
 package grails.compiler
 
@@ -193,7 +193,7 @@ class SomeClass implements grails.validation.Validateable {
         given:
         def gcl = new GroovyClassLoader()
 
-        when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
+        when:
         def c = gcl.parseClass('''
 package grails.compiler
 
@@ -229,7 +229,7 @@ class SomeClass implements grails.validation.Validateable {
         given:
         def gcl = new GroovyClassLoader()
 
-        when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
+        when:
         def c = gcl.parseClass('''
 package grails.compiler
 
