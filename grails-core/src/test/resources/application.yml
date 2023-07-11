@@ -15,33 +15,3 @@ spring:
     profiles: demo
 hello:
     message: Hello from DEMO profile!
----
-one: 1
-two: 2
-three.four: 34
-empty.value:
-dataSource: dataSource
-
----
-environments:
-    development:
-        one: 2
-        two: 3
-        three.four: 45
-        empty.value: development
-        dataSource: dataSource
-    test:
-        one: 3
-        two: 4
-        three.four: 56
-        empty.value: test
-        dataSource: dataSource
-        dataSources:
-            testDb:
-                url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
----
-dataSources:
-    testDb:
-        url: jdbc:h2:mem:testDbDefault;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
-environments:
-    development: bad

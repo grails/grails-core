@@ -48,10 +48,10 @@ jobs:
         run: env
 
       # Select correct Groovy branch for this build:
-      - name: Checkout Groovy 3_0_X (Grails 5 and later)
+      - name: Checkout Groovy 3_0_X (Grails 5)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
-        if: github.ref == 'refs/heads/6.0.x' || github.base_ref == '6.0.x' || github.ref == 'refs/heads/5.3.x' || github.base_ref == '5.3.x' || github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
-      - name: Checkout Groovy 2_5_X (Grails 4.0.x)
+        if: github.ref == 'refs/heads/5.3.x' || github.base_ref == '5.3.x' || github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
+      - name: Checkout Groovy 2_5_X (Grails 4)
         run: cd .. && git clone --depth 1 https://github.com/grails/grails-core.git -b GROOVY_2_5_X --single-branch
         if: github.ref == 'refs/heads/4.1.x' || github.base_ref == '4.1.x' || github.ref == 'refs/heads/4.0.x' || github.base_ref == '4.0.x'
       - name: Set CI_GROOVY_VERSION for Grails

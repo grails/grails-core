@@ -417,8 +417,8 @@ subprojects { project ->
     if(project.name == 'grails-dependencies') return
     if(project.name == 'grails-bom') return
 
-    sourceCompatibility = "1.11"
-    targetCompatibility = "1.11"
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
 
     if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
