@@ -44,6 +44,8 @@ class DomainMappingTypeCheckingExtension extends TypeCheckingDSL {
                         mappingClosureCode = mappingProperty.initialExpression.code
                     }
                     mappingProperty.initialExpression.code = new EmptyStatement()
+                } else {
+                    newScope()
                 }
             } else {
                 newScope()
@@ -56,8 +58,8 @@ class DomainMappingTypeCheckingExtension extends TypeCheckingDSL {
                 mappingProperty.initialExpression.code = currentScope.mappingClosureCode
                 currentScope.checkingMappingClosure = true
                 withTypeChecker { visitClosureExpression mappingProperty.initialExpression }
-                scopeExit()
             }
+            scopeExit()
         }
 
         methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->

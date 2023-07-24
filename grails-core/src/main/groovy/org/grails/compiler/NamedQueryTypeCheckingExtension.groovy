@@ -52,8 +52,8 @@ class NamedQueryTypeCheckingExtension extends TypeCheckingDSL {
                 def namedQueryProperty = classNode.getField('namedQueries')
                 namedQueryProperty.initialExpression.code = currentScope.namedQueryClosureCode
                 currentScope.checkingNamedQueryClosure = true
-                scopeExit()
             }
+            scopeExit()
         }
 
         methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
