@@ -52,8 +52,8 @@ class ValidateableTypeCheckingExtension extends TypeCheckingDSL {
                 constraintsProperty.initialExpression.code = currentScope.constraintsClosureCode
                 currentScope.checkingConstraintsClosure = true
                 withTypeChecker { visitClosureExpression constraintsProperty.initialExpression }
-                scopeExit()
             }
+            scopeExit()
         }
 
         methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
