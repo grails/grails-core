@@ -70,12 +70,13 @@ trait ResponseRenderer extends WebAttributes {
 
 
     private MimeUtility mimeUtility
-    private GroovyPageLayoutFinder groovyPageLayoutFinder
+    private def groovyPageLayoutFinder // GroovyPageLayoutFinder class is optional. Do not force static type.
     private GrailsPluginManager pluginManager
 
     @Generated
     @Autowired(required = false)
-    void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
+    @Qualifier("groovyPageLayoutFinder") // GroovyPageLayoutFinder class is optional. Do not force static type.
+    void setGroovyPageLayoutFinder(def groovyPageLayoutFinder) {
         this.groovyPageLayoutFinder = groovyPageLayoutFinder
     }
 
@@ -315,7 +316,7 @@ trait ResponseRenderer extends WebAttributes {
                 if(renderWithLayout && groovyPageLayoutFinder) {
                     applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
                     try {
-                        view = new GrailsLayoutView(groovyPageLayoutFinder, view)
+                        view = new GrailsLayoutView((GroovyPageLayoutFinder) groovyPageLayoutFinder, view)
                     } catch (NoSuchBeanDefinitionException e) {
                         // ignore
                     }
@@ -551,6 +552,9 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void applySiteMeshLayout(HttpServletRequest request, boolean renderView, String explicitSiteMeshLayout) {
+        if (groovyPageLayoutFinder == null) { // sitemesh not enabled.
+            return
+        }
         if(explicitSiteMeshLayout == null && request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE) != null) {
             // layout has been set already
             return
