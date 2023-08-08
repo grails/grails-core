@@ -16,7 +16,7 @@ jobs:
   release_notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
       - name: Check if it has release drafter config file
         id: check_release_drafter
         run: |
@@ -41,7 +41,7 @@ jobs:
         id: release_notes
         with:
           token: ${{ secrets.GH_TOKEN }}
-      - uses: ncipollo/release-action@v1
+      - uses: ncipollo/release-action@a2e71bdd4e7dab70ca26a852f29600c98b33153e # v1
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false' && steps.release_notes.outputs.generated_changelog == 'true'
         with:
           allowUpdates: true

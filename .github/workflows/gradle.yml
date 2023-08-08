@@ -29,9 +29,9 @@ jobs:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
@@ -56,7 +56,7 @@ jobs:
           arguments: build groovydoc
       - name: Publish Test Report
         if: steps.build.outcome == 'failure' || steps.tests.outcome == 'failure'
-        uses: scacap/action-surefire-report@v1
+        uses: scacap/action-surefire-report@6efd3d10b5c1996a0724dd4c4915a073f685fefa # v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           report_paths: '**/build/test-results/test/TEST-*.xml'
