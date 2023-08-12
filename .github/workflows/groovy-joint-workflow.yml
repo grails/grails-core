@@ -20,53 +20,97 @@ name: "Grails Joint Validation Build"
 on:
   push:
     branches:
-      - master
       - '[4-9]+.[0-9]+.x'
   pull_request:
     branches:
-      - master
       - '[4-9]+.[0-9]+.x'
 permissions:
   contents: read
-
+env:
+  CI_GROOVY_VERSION:
 jobs:
-  build:
+  build_groovy:
     strategy:
       fail-fast: true
-      matrix:
-        os: [ubuntu-18.04]
-        java: [11.0.6]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    outputs:
+      groovyVersion: ${{ steps.groovy-version.outputs.value }}
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: ${{ matrix.java }}
-      - name: env
-        run: env
-
-      # Select correct Groovy branch for this build:
+          java-version: '11.0.6'
+      - name: Cache local Maven repository & Groovy
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/groovy
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
-        if: github.ref == 'refs/heads/6.0.x' || github.base_ref == '6.0.x' || github.ref == 'refs/heads/5.3.x' || github.base_ref == '5.3.x' || github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
+        if: github.ref == 'refs/heads/6.1.x' || github.base_ref == '6.1.x'  || github.ref == 'refs/heads/6.0.x' || github.base_ref == '6.0.x' || github.ref == 'refs/heads/5.3.x' || github.base_ref == '5.3.x' || github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
       - name: Checkout Groovy 2_5_X (Grails 4.0.x)
         run: cd .. && git clone --depth 1 https://github.com/grails/grails-core.git -b GROOVY_2_5_X --single-branch
         if: github.ref == 'refs/heads/4.1.x' || github.base_ref == '4.1.x' || github.ref == 'refs/heads/4.0.x' || github.base_ref == '4.0.x'
       - name: Set CI_GROOVY_VERSION for Grails
+        id: groovy-version
         run: |
           cd ../groovy
-          echo 'CI_GROOVY_VERSION<<EOF' >> $GITHUB_ENV
-          echo "$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]' >> $GITHUB_ENV)" >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-      - name: echo CI_GROOVY_VERSION
-        run: echo $CI_GROOVY_VERSION
-
+          echo "CI_GROOVY_VERSION=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_ENV
+          echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
       - name: Build and install groovy (no docs)
-        run: cd ../groovy && ./gradlew clean install -x groovydoc -x javadoc -x javadocAll -x groovydocAll -x asciidoc -x docGDK --no-build-cache --no-scan --no-daemon
-        timeout-minutes: 60
-
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_SCANS_ACCEPT: yes
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        with:
+          build-root-directory: ../groovy
+          arguments: |
+            install
+            -x groovydoc
+            -x javadoc
+            -x javadocAll
+            -x groovydocAll
+            -x asciidoc
+            -x docGDK
+  build_grails:
+    needs: [build_groovy]
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '11.0.6'
+      - name: Cache local Maven repository & Groovy
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/groovy
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set CI_GROOVY_VERSION for Grails
+        run: |
+          echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
       - name: Build Grails
-        run: ./gradlew clean build test -x groovydoc --no-build-cache --no-scan --no-daemon
-        timeout-minutes: 60
+        id: build_grails
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        with:
+          arguments: | 
+            build 
+            -x groovydoc
