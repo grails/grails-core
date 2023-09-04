@@ -37,7 +37,6 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.servlet.view.GroovyPageView
-import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.sitemesh.GrailsLayoutView
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
@@ -306,7 +305,7 @@ trait ResponseRenderer extends WebAttributes {
                 }
 
 
-                boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE))
+                boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE))
                 // if automatic decoration occurred unwrap, since this is a partial
                 if(view instanceof GrailsLayoutView) {
                     view = ((GrailsLayoutView)view).getInnerView()
@@ -551,13 +550,13 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void applySiteMeshLayout(HttpServletRequest request, boolean renderView, String explicitSiteMeshLayout) {
-        if(explicitSiteMeshLayout == null && request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE) != null) {
+        if(explicitSiteMeshLayout == null && request.getAttribute(GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE) != null) {
             // layout has been set already
             return
         }
-        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : GrailsLayoutDecoratorMapper.NONE_LAYOUT)
+        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : GroovyPageLayoutFinder.NONE_LAYOUT)
         if(siteMeshLayout != null) {
-            request.setAttribute GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, siteMeshLayout
+            request.setAttribute GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE, siteMeshLayout
         }
     }
 
