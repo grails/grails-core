@@ -39,7 +39,6 @@ include (
         'grails-docs',
         'grails-encoder',
         'grails-logging',
-        'grails-shell',
         'grails-spring',
         'grails-test',
         'grails-web',
