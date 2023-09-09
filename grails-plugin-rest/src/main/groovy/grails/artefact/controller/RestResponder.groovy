@@ -25,7 +25,6 @@ import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
 import groovy.transform.Generated
 import org.grails.datastore.mapping.model.config.GormProperties
-import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
