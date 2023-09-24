@@ -1,5 +1,6 @@
 package org.grails.plugins
 
+import grails.boot.config.GrailsAutoConfiguration
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
@@ -12,9 +13,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 
+import java.nio.file.Files
+
 @CompileStatic
 @Configuration
-class GrailsPluginConfigurationClass {
+class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
 
     public static Boolean YAML_EXISTS = false
     public static Boolean GROOVY_EXISTS = true
@@ -52,17 +55,20 @@ class GrailsPluginConfigurationClass {
         }
 
         protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
-            String tempDir = System.getProperty("java.io.tmpdir")
+            File tempDir = Files.createTempDirectory("MockTestGrailsPlugin").toFile()
             if (YAML_EXISTS && path == PLUGIN_YML_PATH) {
                 File file = new File(tempDir, "plugin.yml")
                 file.write("bar: foo\n")
                 file.append("foo: one\n")
+                file.append("example:\n")
+                file.append("  bar: foo\n")
                 return new FileSystemResource(file)
             }
             if (GROOVY_EXISTS && path == PLUGIN_GROOVY_PATH) {
                 File file = new File(tempDir, "plugin.groovy")
                 file.write("bar = 'foo'\n")
                 file.append("foo = 'one'\n")
+                file.append("example.bar = 'foo'\n")
                 return new FileSystemResource(file)
             }
             return null
@@ -85,7 +91,7 @@ class GrailsPluginConfigurationClass {
         }
 
         protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
-            String tempDir = System.getProperty("java.io.tmpdir")
+            File tempDir = Files.createTempDirectory("MockTestTwoGrailsPlugin").toFile()
             if (YAML_EXISTS && path == PLUGIN_YML_PATH) {
                 File file = new File(tempDir, "plugin.yml")
                 file.write("bar: foo2\n")

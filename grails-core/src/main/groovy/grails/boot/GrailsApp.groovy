@@ -103,8 +103,6 @@ class GrailsApp extends SpringApplication {
         log.debug("Application directory discovered as: {}", IOUtils.findApplicationDirectory())
         log.debug("Current base directory is [{}]. Reloading base directory is [{}]", new File("."), BuildSettings.BASE_DIR)
 
-        loadPluginConfigurationsToMicronautContext(applicationContext)
-
         if(environment.isReloadEnabled()) {
             log.debug("Reloading status: {}", environment.isReloadEnabled())
             enableDevelopmentModeWatch(environment, applicationContext)
@@ -112,31 +110,6 @@ class GrailsApp extends SpringApplication {
         }
         printRunStatus(applicationContext)
         return applicationContext
-    }
-
-    @SuppressWarnings("GrMethodMayBeStatic")
-    private void loadPluginConfigurationsToMicronautContext(ConfigurableApplicationContext applicationContext) {
-        GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager)
-        ConfigurableApplicationContext parentApplicationContext = (ConfigurableApplicationContext) applicationContext.parent
-        ConfigurableEnvironment parentContextEnv = parentApplicationContext.getEnvironment()
-        if (parentContextEnv instanceof MicronautEnvironment) {
-            if (log.isDebugEnabled()) {
-                log.debug("Loading configurations from the plugins to the parent Micronaut context")
-            }
-            final io.micronaut.context.env.Environment micronautEnv = ((io.micronaut.context.env.Environment) parentContextEnv.getEnvironment())
-            final GrailsPlugin[] plugins = pluginManager.allPlugins
-            Integer priority = AbstractPropertySourceLoader.DEFAULT_POSITION
-            Arrays.stream(plugins)
-                    .filter({ GrailsPlugin plugin -> plugin.propertySource != null })
-                    .forEach({ GrailsPlugin plugin ->
-                        if (log.isDebugEnabled()) {
-                            log.debug("Loading configurations from {} plugin to the parent Micronaut context", plugin.name)
-                        }
-                        micronautEnv.addPropertySource(PropertySource.of("grails.plugins.$plugin.name", (Map) plugin.propertySource.source, --priority))
-                    })
-            micronautEnv.refresh()
-            applicationContext.setParent(parentApplicationContext)
-        }
     }
 
     @Override

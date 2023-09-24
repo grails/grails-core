@@ -46,4 +46,15 @@ class PluginYamlPropertySourceLoaderSpec extends Specification {
         environment.getProperty("bar", String.class) == 'foo'
         environment.getProperty("abc", String.class) == 'xyz'
     }
+
+    void "test that the configuration binding of plugin.yml using @ConfigurationProperties is working inside the micronaut context"() {
+
+        given:
+        GrailsApp app = new GrailsApp(GrailsPluginConfigurationClass.class, ConfigBindingExampleConfiguration.class)
+        ConfigurableApplicationContext context = app.run()
+        ConfigBindingExampleProperties properties = context.parent.getBean(ConfigBindingExampleProperties.class)
+
+        expect:
+        properties.bar == 'foo'
+    }
 }
