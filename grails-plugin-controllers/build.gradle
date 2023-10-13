@@ -6,8 +6,11 @@ dependencies {
             project(':grails-plugin-domain-class')
 
     api("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+    compileOnly "org.grails:grails-web-sitemesh:$gspVersion"
+
     runtimeOnly project(':grails-plugin-i18n')
 
     testRuntimeOnly "jline:jline:$jlineVersion"
     testRuntimeOnly "org.fusesource.jansi:jansi:$jansiVersion"
+    testImplementation "org.grails:grails-web-sitemesh:$gspVersion"
 }
