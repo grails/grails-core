@@ -3,6 +3,7 @@ dependencies {
 
     testImplementation project(":grails-plugin-controllers")
 
+    testImplementation "org.grails:grails-web-sitemesh:$gspVersion"
     testImplementation "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
     testRuntimeOnly "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatLog4jVersion"
     testRuntimeOnly project(":grails-plugin-i18n")

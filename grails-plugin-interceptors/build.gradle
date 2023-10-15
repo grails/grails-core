@@ -1,4 +1,6 @@
 dependencies {
     api project(":grails-plugin-controllers")
     api project(":grails-plugin-url-mappings")
+    compileOnly "org.grails:grails-web-sitemesh:$gspVersion"
+    testImplementation "org.grails:grails-web-sitemesh:$gspVersion"
 }
