@@ -7,10 +7,8 @@ dependencies {
             project(":grails-plugin-datasource")
 
     api "org.grails.plugins:converters:$legacyConvertersVersion"
-    compileOnly "org.grails:grails-web-sitemesh:$gspVersion"
 
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     testImplementation project(":grails-plugin-url-mappings"),
                 project(":grails-test-suite-base")
-    testImplementation "org.grails:grails-web-sitemesh:$gspVersion"
 }
