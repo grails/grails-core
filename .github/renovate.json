@@ -6,6 +6,10 @@
   "labels": ["type: dependency upgrade"],
   "packageRules": [
     {
+      "matchUpdateTypes": ["pin", "digest"],
+      "enabled": false
+    },,
+    {
       "matchPackagePatterns": ["*"],
       "allowedVersions": "!/SNAPSHOT$/"
     },
