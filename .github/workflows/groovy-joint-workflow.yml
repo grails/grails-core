@@ -105,7 +105,7 @@ jobs:
           # Add Gradle Enterprise set-up related configuration after line no 20 in settings.gradle
           echo "${{ steps.ge_conf.outputs.value}}" | sed -i -e "20r /dev/stdin" settings.gradle
       - name: Build and install groovy (no docs)
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2
         env:
           GRADLE_SCANS_ACCEPT: yes
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
@@ -147,7 +147,7 @@ jobs:
           echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
       - name: Build Grails
         id: build_grails
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
