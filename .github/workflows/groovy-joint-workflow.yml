@@ -62,6 +62,48 @@ jobs:
           cd ../groovy
           echo "CI_GROOVY_VERSION=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_ENV
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
+      - name: Prepare GE Set-up Configuration
+        id: ge_conf
+        run: |
+          echo "VALUE<<EOF" >> $GITHUB_OUTPUT
+          echo "plugins { " >> $GITHUB_OUTPUT
+          echo "    id 'com.gradle.enterprise' version '3.15.1'" >> $GITHUB_OUTPUT 
+          echo "    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.11.3'" >> $GITHUB_OUTPUT 
+          echo "}" >> $GITHUB_OUTPUT 
+          echo "" >> $GITHUB_OUTPUT 
+          echo "gradleEnterprise {" >> $GITHUB_OUTPUT 
+          echo "    server = 'https://ge.grails.org'" >> $GITHUB_OUTPUT 
+          echo "    buildScan {" >> $GITHUB_OUTPUT 
+          echo "        publishAlways()" >> $GITHUB_OUTPUT 
+          echo "        publishIfAuthenticated()" >> $GITHUB_OUTPUT 
+          echo "        uploadInBackground = System.getenv('CI') == null" >> $GITHUB_OUTPUT 
+          echo "        capture {" >> $GITHUB_OUTPUT 
+          echo "            taskInputFiles = true" >> $GITHUB_OUTPUT 
+          echo "        }" >> $GITHUB_OUTPUT 
+          echo "    }" >> $GITHUB_OUTPUT 
+          echo "}" >> $GITHUB_OUTPUT 
+          echo "" >> $GITHUB_OUTPUT
+          echo "buildCache {" >> $GITHUB_OUTPUT 
+          echo "    local { enabled = System.getenv('CI') != 'true' }" >> $GITHUB_OUTPUT 
+          echo "    remote(HttpBuildCache) {" >> $GITHUB_OUTPUT 
+          echo "        push = System.getenv('CI') == 'true'" >> $GITHUB_OUTPUT
+          echo "        enabled = true" >> $GITHUB_OUTPUT 
+          echo "        url = 'https://ge.grails.org/cache/'" >> $GITHUB_OUTPUT 
+          echo "        credentials {" >> $GITHUB_OUTPUT 
+          echo "            username = System.getenv('GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER')" >> $GITHUB_OUTPUT 
+          echo "            password = System.getenv('GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY')" >> $GITHUB_OUTPUT 
+          echo "        }" >> $GITHUB_OUTPUT 
+          echo "    }" >> $GITHUB_OUTPUT 
+          echo "}" >> $GITHUB_OUTPUT 
+          echo "" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Gradle Enterprise Set-up
+        run: |
+          cd ../groovy
+          # Delete exiting plugins and build-scan from settings.gradle file
+          sed -i '21,31d' settings.gradle
+          # Add Gradle Enterprise set-up related configuration after line no 20 in settings.gradle
+          echo "${{ steps.ge_conf.outputs.value}}" | sed -i -e "20r /dev/stdin" settings.gradle
       - name: Build and install groovy (no docs)
         uses: gradle/gradle-build-action@v2
         env:
