@@ -81,12 +81,12 @@ import org.grails.encoder.WriterEncodedAppender;
  *
  * <p>
  * StreamCharBuffer keeps the buffer in a linked list of "chunks". The main
- * difference compared to JDK in-memory buffers (StringBuffer, StringBuilder &
+ * difference compared to JDK in-memory buffers (StringBuffer, StringBuilder and
  * StringWriter) is that the buffer can be held in several smaller buffers
  * ("chunks" here). In JDK in-memory buffers, the buffer has to be expanded
  * whenever it gets filled up. The old buffer's data is copied to the new one
  * and the old one is discarded. In StreamCharBuffer, there are several ways to
- * prevent unnecessary allocation & copy operations. The StreamCharBuffer
+ * prevent unnecessary allocation and copy operations. The StreamCharBuffer
  * contains a linked list of different type of chunks: char arrays,
  * java.lang.String chunks and other StreamCharBuffers as sub chunks. A
  * StringChunk is appended to the linked list whenever a java.lang.String of a
@@ -101,13 +101,11 @@ import org.grails.encoder.WriterEncodedAppender;
  *
  * for example this line of code in a taglib would just append the buffer
  * returned from the body closure evaluation to the buffer of the taglib:<br>
- * <code>
- * out << body()
- * </code><br>
+ * <code>out &lt;&lt; body()</code>
+ * <br>
  * other example:<br>
- * <code>
- * out << g.render(template: '/some/template', model:[somebean: somebean])
- * </code><br>
+ * <code>out &lt;%lt g.render(template: '/some/template', model:[somebean: somebean])</code>
+ * <br>
  * There's no extra java.lang.String generation overhead.
  *
  * </p>
@@ -128,8 +126,8 @@ import org.grails.encoder.WriterEncodedAppender;
  *
  * <p>
  * There's also several other options for reading data:<br>
- * {@link #readAsCharArray()} reads the buffer to a char[] array<br>
- * {@link #readAsString()} reads the buffer and wraps the char[] data as a
+ * readAsCharArray()reads the buffer to a char[] array<br>
+ * readAsString() reads the buffer and wraps the char[] data as a
  * String<br>
  * {@link #writeTo(Writer)} writes the buffer to a java.io.Writer<br>
  * {@link #toCharArray()} returns the buffer as a char[] array, caches the
@@ -156,13 +154,13 @@ import org.grails.encoder.WriterEncodedAppender;
  * <p>
  * StreamCharBuffer keeps the buffer in a linked link of "chunks".<br>
  * The main difference compared to JDK in-memory buffers (StringBuffer,
- * StringBuilder & StringWriter) is that the buffer can be held in several
+ * StringBuilder and StringWriter) is that the buffer can be held in several
  * smaller buffers ("chunks" here).<br>
  * In JDK in-memory buffers, the buffer has to be expanded whenever it gets
  * filled up. The old buffer's data is copied to the new one and the old one is
  * discarded.<br>
  * In StreamCharBuffer, there are several ways to prevent unnecessary allocation
- * & copy operations.
+ * and copy operations.
  * </p>
  * <p>
  * There can be several different type of chunks: char arrays (

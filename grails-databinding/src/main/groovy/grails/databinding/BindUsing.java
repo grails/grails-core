@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  * When the annotation is applied to a field, the value assigned to the
  * annotation should be a Closure which accepts 2 parameters.  The first
  * parameter is the object that data binding is being applied to.  The second
- * parameter is a {@link org.grails.databinding.DataBindingSource} containing the values being bound to the object.
+ * parameter is a {@link grails.databinding.DataBindingSource} containing the values being bound to the object.
  * The value returned by the Closure will be bound to the field.  The
  * following code demonstrates using this technique to bind an upper
  * case version of the value in the DataBindingSource to the field.
@@ -36,7 +36,7 @@ import java.lang.annotation.RetentionPolicy;
 <pre>
 class SomeClass {
     &#064;BindUsing({
-        obj, source -> source['name']?.toUpperCase()
+        obj, source -&gt; source['name']?.toUpperCase()
     })
     String name
 }
