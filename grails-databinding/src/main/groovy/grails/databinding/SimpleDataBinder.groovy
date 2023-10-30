@@ -22,6 +22,7 @@ import grails.databinding.initializers.ValueInitializer
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
+import org.codehaus.groovy.reflection.CachedMethod
 import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.ClosureValueInitializer
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
@@ -81,7 +82,7 @@ class SimpleDataBinder implements DataBinder {
         Float,
         Double,
         Character
-    ]
+    ] as List<Class>
 
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
 
@@ -260,14 +261,14 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected boolean isOkToBind(String propName, List whiteList, List blackList) {
-        'class' != propName && 'classLoader' != propName && 'protectionDomain' != propName && 'metaClass' != propName && !blackList?.contains(propName) && (!whiteList || whiteList.contains(propName) || whiteList.find { it -> it?.toString()?.startsWith(propName + '.')})
+        'class' != propName && 'classLoader' != propName && 'protectionDomain' != propName && 'metaClass' != propName && 'metaPropertyValues' != propName && 'properties' != propName && !blackList?.contains(propName) && (!whiteList || whiteList.contains(propName) || whiteList.find { it -> it?.toString()?.startsWith(propName + '.')})
     }
 
     protected boolean isOkToBind(MetaProperty property, List whitelist, List blacklist) {
         isOkToBind(property.name, whitelist, blacklist) &&
                 (property.type != null) &&
                 !Modifier.isStatic(property.modifiers) &&
-                !(ClassLoader.class.isAssignableFrom(property.type) || ProtectionDomain.class.isAssignableFrom(property.type))
+                !(ClassLoader.class.isAssignableFrom(property.type) || ProtectionDomain.class.isAssignableFrom(property.type) || MetaProperty.class.isAssignableFrom(property.type) || CachedMethod.class.isAssignableFrom(property.type))
     }
 
     protected IndexedPropertyReferenceDescriptor getIndexedPropertyReferenceDescriptor(propName) {
@@ -498,7 +499,7 @@ class SimpleDataBinder implements DataBinder {
      * @see BindingFormat
      */
     protected ValueConverter getFormattedConverter(Field field, String formattingValue) {
-        def converter
+        ValueConverter converter
         def formattedConverter = formattedValueConversionHelpers[field.type]
         if (formattedConverter) {
             converter = { SimpleMapDataBindingSource source ->
@@ -517,7 +518,7 @@ class SimpleDataBinder implements DataBinder {
         Field field = null
         try {
             field = clazz.getDeclaredField(fieldName)
-        } catch (NoSuchFieldException nsfe) {
+        } catch (NoSuchFieldException ignored) {
             def superClass = clazz.getSuperclass()
             if(superClass != Object) {
                 field = getField(superClass, fieldName)
@@ -527,7 +528,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected ValueConverter getValueConverterForField(obj, String propName) {
-        def converter
+        ValueConverter converter
         try {
             def field = getField(obj.getClass(), propName)
             if (field) {
@@ -545,9 +546,9 @@ class SimpleDataBinder implements DataBinder {
                     }
                 }
             }
-        } catch (Exception e) {
+            return converter
+        } catch (Exception ignored) {
         }
-        converter
     }
     
     /**
@@ -556,11 +557,9 @@ class SimpleDataBinder implements DataBinder {
      */
     protected Class getValueOfBindUsing(Annotation annotation) {
         assert annotation instanceof BindUsing
-        def value
-        if(annotation instanceof BindUsing) {
-            value = ((BindUsing)annotation).value()
+        if (annotation instanceof BindUsing) {
+            return ((BindUsing) annotation).value()
         }
-        value
     }
     
     /**
@@ -569,21 +568,19 @@ class SimpleDataBinder implements DataBinder {
      */
     protected String getFormatString(Annotation annotation) {
         assert annotation instanceof BindingFormat
-        String formatString
-        if(annotation instanceof BindingFormat) {
-            formatString = ((BindingFormat)annotation).value()
+        if (annotation instanceof BindingFormat) {
+            return ((BindingFormat) annotation).value()
         }
-        formatString
     }
 
     protected ValueConverter getValueConverterForClass(obj, String propName) {
-        def converter
+        ValueConverter converter
         def objClass = obj.getClass()
         def annotation = objClass.getAnnotation(BindUsing)
         if (annotation) {
             def valueClass = getValueOfBindUsing(annotation)
             if (BindingHelper.isAssignableFrom(valueClass)) {
-                BindingHelper dataConverter = (BindingHelper)valueClass.newInstance()
+                BindingHelper dataConverter = (BindingHelper) valueClass.getDeclaredConstructor().newInstance()
                 converter = new ClosureValueConverter(converterClosure: { DataBindingSource it -> dataConverter.getPropertyValue(obj, propName, it) })
             }
         }
@@ -762,7 +759,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected ValueInitializer getValueInitializerForField(obj, String propName) {
-        def initializer
+        ValueInitializer initializer
         try {
             def field = getField(obj.getClass(), propName)
             if (field) {
@@ -819,7 +816,7 @@ class SimpleDataBinder implements DataBinder {
             bind obj, new SimpleMapDataBindingSource(value)
             return obj
         } else if (Enum.isAssignableFrom(typeToConvertTo) && value instanceof String) {
-            return convertStringToEnum(typeToConvertTo, value)
+            return convertStringToEnum((Class<? extends Enum>) typeToConvertTo, value)
         }
         typeToConvertTo.newInstance value
     }
