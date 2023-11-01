@@ -133,7 +133,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '11.0.6'
+          java-version: '11'
       - name: Cache local Maven repository & Groovy
         uses: actions/cache@v3
         with:
