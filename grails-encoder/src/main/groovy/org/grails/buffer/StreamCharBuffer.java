@@ -104,7 +104,7 @@ import org.grails.encoder.WriterEncodedAppender;
  * <code>out &lt;&lt; body()</code>
  * <br>
  * other example:<br>
- * <code>out &lt;%lt g.render(template: '/some/template', model:[somebean: somebean])</code>
+ * <code>out &lt;&lt; g.render(template: '/some/template', model:[somebean: somebean])</code>
  * <br>
  * There's no extra java.lang.String generation overhead.
  *

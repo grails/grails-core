@@ -796,7 +796,7 @@ public class JSONObject implements JSONElement, Map {
 
     /**
      * Produce a string in double quotes with backslash sequences in all the
-     * right places. A backslash will be inserted within $lt;/, allowing JSON
+     * right places. A backslash will be inserted within &lt;/, allowing JSON
      * text to be delivered in HTML. In JSON text, a string cannot contain a
      * control character or an unescaped quote or backslash.
      *
