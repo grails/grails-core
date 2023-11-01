@@ -36,7 +36,7 @@ class Contact{
 } 
 class User {
     &#064;BindInitializer({
-        obj -> new Contact(account:obj.account)
+        obj -&gt; new Contact(account:obj.account)
     })
     Contact contact
     Account account
