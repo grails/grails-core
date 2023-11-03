@@ -16,25 +16,20 @@ jobs:
       issues: read  #  to get closed issues
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['11']
     env:
       GIT_USER_NAME: puneetbehl
       GIT_USER_EMAIL: behlp@unityfoundation.io
-      GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: "v${{ github.event.inputs.release }}"
           token: ${{ secrets.GH_TOKEN }}
-      - uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: ${{ matrix.java }}
+          java-version: 11
       - name: Extract Target Branch
         id: extract_branch
         run: |
@@ -59,7 +54,7 @@ jobs:
       - name: Upload artifacts to the Github release
         id: upload_artifact
         if: steps.assemble.outcome == 'success'
-        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        uses: Roang-zero1/github-upload-release-artifacts-action@v3
         with:
           created_tag: v${{ github.event.inputs.release }}
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
