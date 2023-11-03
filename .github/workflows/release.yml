@@ -15,8 +15,7 @@ jobs:
         java: ['11']
     env:
       GIT_USER_NAME: puneetbehl
-      GIT_USER_EMAIL: behlp@objectcomputing.com
-      GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
+      GIT_USER_EMAIL: behlp@unityfoundation.io
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,16 +36,20 @@ jobs:
           echo ::set-output name=value::${TARGET_BRANCH}
       - name: Set the current release version
         id: release_version
-        run: echo ::set-output name=release_version::${GITHUB_REF:11}
+        run: echo "release_version=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
       - name: Run pre-release
         uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Assemble
         id: assemble
-        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: assemble
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
       - name: Generate secring file
         env:
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
@@ -54,8 +57,11 @@ jobs:
       - name: Publish to Sonatype OSSRH
         id: publish
         if: steps.assemble.outcome == 'success'
-        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # v2
+        uses: gradle/gradle-build-action@v2
         env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_NEXUS_URL: ${{ secrets.SONATYPE_NEXUS_URL }}
@@ -86,13 +92,13 @@ jobs:
         if: steps.publish.outcome == 'success'
         id: grails_docs_release_message
         run: |
-          echo ::set-output name=value::{\"grails_version\":\"$RELEASE_VERSION\"}
+          echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
         env:
           RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
       - name: Invoke grails-doc release workflow
         if: steps.publish.outcome == 'success'
         id: grails_doc
-        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385 # tag=v1.2
+        uses: benc-uk/workflow-dispatch@1.2
         with:
           workflow: Release
           repo: grails/grails-doc
@@ -102,7 +108,7 @@ jobs:
       - name: Invoke grails-static-website release workflow
         if: steps.publish.outcome == 'success'
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@798e70c97009500150087d30d9f11c5444830385 # tag=v1.2
+        uses: benc-uk/workflow-dispatch@1.2
         with:
           workflow: Release
           repo: grails/grails-static-website
