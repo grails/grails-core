@@ -10,7 +10,7 @@ if [ -n "$MICRONAUT_BUILD_EMAIL" ]; then
 fi
 
 if [ -z "$GIT_USER_NAME" ]; then
-   GIT_USER_NAME="micronaut-build"
+   GIT_USER_NAME="grails-build"
 fi
 
 echo "Configuring git"
@@ -33,7 +33,7 @@ cat gradle.properties
 echo "Pushing release version and recreating v${release_version} tag"
 git add gradle.properties
 git add grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
-git commit -m "Release v${release_version}"
+git commit -m "[skip ci] Release v${release_version}"
 git push origin :refs/tags/v${release_version}
 git tag -fa v${release_version} -m "Release v${release_version}"
 git push origin v${release_version}
