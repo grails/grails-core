@@ -75,7 +75,7 @@ jobs:
         run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
       - name: Create Snapshot Message for the Workflow Dispatch
         id: dispatch_message
-        run: echo "value::{\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}" >> $GITHUB_OUTPUT
+        run: echo "value={\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}" >> $GITHUB_OUTPUT
       - name: Invoke the Java CI workflow in Grails Functional Tests
         uses: benc-uk/workflow-dispatch@v1.2
         with:
