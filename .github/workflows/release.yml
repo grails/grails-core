@@ -108,7 +108,7 @@ jobs:
       - name: Invoke grails-static-website release workflow
         if: steps.publish.outcome == 'success'
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@1.2
+        uses: benc-uk/workflow-dispatch@v1.2
         with:
           workflow: Release
           repo: grails/grails-static-website
