@@ -38,15 +38,9 @@ class DataSourceGrailsPluginSpec extends Specification {
         when:"A query is executed"
         DataSource ds = ctx.getBean('dataSource', DataSource)
         Sql sql = new Sql(ds)
-        int result = sql.call('''
-CREATE TABLE user (
-    username VARCHAR(50),
-    password VARCHAR(50));
+        int result = sql.call('CREATE TABLE `user` (username VARCHAR(50), password VARCHAR(50)); select * from `user`')
 
-
-select * from user''')
-
-        then:""
+        then:
         result == 0
 
 
