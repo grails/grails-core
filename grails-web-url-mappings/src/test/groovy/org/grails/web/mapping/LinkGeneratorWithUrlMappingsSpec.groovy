@@ -64,6 +64,9 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
         when:
             context = null
 
+        and:
+            link.base = ''
+
         then:
             uri == "$baseUrl/$path"
     }
