@@ -21,12 +21,12 @@ jobs:
         id: check_release_drafter
         run: |
           has_release_drafter=$([ -f .github/release-drafter.yml ] && echo "true" || echo "false")
-          echo ::set-output name=has_release_drafter::${has_release_drafter}
+          echo "has_release_drafter=${has_release_drafter}" >> $GITHUB_OUTPUT
       - name: Extract branch name
         id: extract_branch
-        run: echo ::set-output name=value::${GITHUB_REF:11}
+        run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
       # If it has release drafter:
-      - uses: release-drafter/release-drafter@569eb7ee3a85817ab916c8f8ff03a5bd96c9c83e # v5.23.0
+      - uses: release-drafter/release-drafter@v5.23.0
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
