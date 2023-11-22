@@ -92,9 +92,9 @@ def isolatedTestPatterns = [
         'org.grails.web.util.WebUtilsTests'
     ],
     isolatedTestsTwo: [
-        'UrlMappingsTestMixinTests',
-        'SetupTeardownInvokeTests',
-        'TestMixinSetupTeardownInvokeTests'
+        'grails.test.mixin.UrlMappingsTestMixinTests',
+        'grails.test.mixin.SetupTeardownInvokeTests',
+        'grails.test.mixin.TestMixinSetupTeardownInvokeTests'
     ],
     isolatedRestRendererTests: [
         '*.rest.render.*Spec'
@@ -104,8 +104,8 @@ def isolatedTestPatterns = [
         'org.grails.validation.CascadingErrorCountSpec'
     ],
     isolatedRestfulControllerTests: [
-        'RestfulControllerSpec',
-        'ResourceAnnotationRestfulControllerSpec'
+        'grails.test.mixin.RestfulControllerSpec',
+        'grails.test.mixin.ResourceAnnotationRestfulControllerSpec'
     ]
 ]
 
