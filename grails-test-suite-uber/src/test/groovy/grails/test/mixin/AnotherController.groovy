@@ -67,8 +67,8 @@ class AnotherController  {
         render(view:"foo")
     }
 
-    def renderTemplate = {
-        render(template:"bar")
+    def renderTemplate(String template) {
+        render(template: template)
     }
 
     def renderXml = {

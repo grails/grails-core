@@ -145,10 +145,13 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
     }
 
-    void testRenderBasicTemplateNoTags() {        
+    void testRenderBasicTemplateNoTags() {
+        given:
+        def templateName = 'testRenderBasicTemplateNoTags'
+
         when:
-        groovyPages['/another/_bar.gsp'] = 'Hello <%= 10 %>'
-        controller.renderTemplate()
+        groovyPages["/another/_${templateName}.gsp" as String] = 'Hello <%= 10 %>'
+        controller.renderTemplate(templateName)
 
         then:
         response.contentAsString == "Hello 10"
@@ -156,19 +159,23 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
 
     void testRenderBasicTemplateWithTags() {
         given:
-        groovyPages['/another/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+        def templateName = 'testRenderBasicTemplateWithTags'
 
         when:
-        controller.renderTemplate()
+        groovyPages["/another/_${templateName}.gsp" as String] = 'Hello <g:message code="foo.bar" />'
+        controller.renderTemplate(templateName)
 
         then:
         response.contentAsString == "Hello World"
     }
 
-    void testRenderBasicTemplateWithLinkTag() {        
+    void testRenderBasicTemplateWithLinkTag() {
+        given:
+        def templateName = 'testRenderBasicTemplateWithLinkTag'
+
         when:
-        groovyPages['/another/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
-        controller.renderTemplate()
+        groovyPages["/another/_${templateName}.gsp" as String] = 'Hello <g:createLink controller="bar" />'
+        controller.renderTemplate(templateName)
 
         then:
         response.contentAsString == "Hello /bar"

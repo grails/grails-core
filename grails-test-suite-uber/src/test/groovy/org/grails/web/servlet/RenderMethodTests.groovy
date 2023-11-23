@@ -183,18 +183,24 @@ class RenderMethodTests extends Specification implements ControllerUnitTest<Rend
     }
 
     void testRenderTemplateWithCollectionUsingImplicitITVariable() {
+        given:
+        def templateName = 'testRenderTemplateWithCollectionUsingImplicitITVariable'
+
         when:
-        views['/render/_peopleTemplate.gsp'] = '${it.firstName} ${it.middleName}<br/>'
-        controller.renderTemplateWithCollection()
+        views["/render/_${templateName}.gsp" as String] = '${it.firstName} ${it.middleName}<br/>'
+        controller.renderTemplateWithCollection(templateName)
 
         then:
         response.contentAsString == 'Jacob Ray<br/>Zachary Scott<br/>'
     }
 
     void testRenderTemplateWithCollectionUsingExplicitVariableName() {
+        given:
+        def templateName = 'testRenderTemplateWithCollectionUsingExplicitVariableName'
+
         when:
-        views['/render/_peopleTemplate.gsp'] = '${person.firstName} ${person.middleName}<br/>'
-        controller.renderTemplateWithCollectionAndExplicitVarName()
+        views["/render/_${templateName}.gsp" as String] = '${person.firstName} ${person.middleName}<br/>'
+        controller.renderTemplateWithCollectionAndExplicitVarName(templateName)
 
         then:
         response.contentAsString == 'Jacob Ray<br/>Zachary Scott<br/>'
@@ -249,19 +255,19 @@ class RenderController {
     def renderTemplate() {
         render(template:"testTemplate", model:[hello:"world"])
     }
-    def renderTemplateWithCollection() {
+    def renderTemplateWithCollection(String template) {
         def people = [
             [firstName: 'Jacob', middleName: 'Ray'],
             [firstName: 'Zachary', middleName: 'Scott']
         ]
-        render(template:"peopleTemplate", collection: people)
+        render(template: template, collection: people)
     }
-    def renderTemplateWithCollectionAndExplicitVarName() {
+    def renderTemplateWithCollectionAndExplicitVarName(String template) {
         def people = [
             [firstName: 'Jacob', middleName: 'Ray'],
             [firstName: 'Zachary', middleName: 'Scott']
         ]
-        render(var: 'person', template:"peopleTemplate", collection: people)
+        render(var: 'person', template: template, collection: people)
     }
     def renderXmlTemplate() {
         render(template:"xmlTemplate",contentType:"text/xml")
