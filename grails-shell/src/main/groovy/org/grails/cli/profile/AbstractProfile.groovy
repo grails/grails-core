@@ -514,4 +514,9 @@ abstract class AbstractProfile implements Profile {
     List<String> getSkeletonExcludes() {
         this.skeletonExcludes
     }
+
+    @Override
+    String getName() {
+        name
+    }
 }

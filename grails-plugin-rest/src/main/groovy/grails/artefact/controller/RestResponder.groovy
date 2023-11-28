@@ -195,7 +195,7 @@ trait RestResponder {
 
                 final valueType = value.getClass()
                 if (registry.isContainerType(valueType)) {
-                    renderer = registry.findContainerRenderer(mimeType,valueType, value)
+                    renderer = registry.findContainerRenderer(mimeType, valueType, value)
                     if (renderer == null) {
                         renderer = registry.findRenderer(mimeType, value)
                     }

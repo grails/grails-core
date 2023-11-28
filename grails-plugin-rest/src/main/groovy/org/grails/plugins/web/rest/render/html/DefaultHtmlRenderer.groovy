@@ -55,7 +55,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     }
 
     @Override
-    void render(T object, RenderContext context) {
+    void render(Object object, RenderContext context) {
         final mimeType = context.acceptMimeType ?: MimeType.HTML
         if (!mimeType.equals(MimeType.ALL)) {
             context.setContentType(mimeType.name)
