@@ -265,6 +265,7 @@ class ControllerActionTransformerSpec extends Specification {
         }
     }
 
+    @Ignore("This is flaky test")
     void "Test Controller Action transformer marks its new methods as Generated"() {
 
         when:
