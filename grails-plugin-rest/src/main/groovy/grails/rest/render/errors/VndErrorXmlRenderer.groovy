@@ -44,12 +44,13 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
     MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_XML, MimeType.XML, MimeType.TEXT_XML] as MimeType[]
 
     @Override
-    void render(Errors object, RenderContext context) {
+    void render(Object object, RenderContext context) {
         if (object instanceof BeanPropertyBindingResult) {
+            def errors = object as BeanPropertyBindingResult
             context.setContentType(GrailsWebUtil.getContentType(MIME_TYPE.name, encoding))
             context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
             Locale locale = context.locale
-            final target = object.target
+            final target = errors.target
             final language = locale.language
 
             final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
@@ -57,7 +58,7 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
             w.startDocument(encoding, "1.0")
             w.startNode(ERRORS_TAG)
                 .attribute('xml:lang', language)
-            for (ObjectError oe in object.allErrors) {
+            for (ObjectError oe in errors.allErrors) {
                 def logref = resolveLogRef(target, oe)
                 w.startNode(ERROR_TAG)
                     .attribute(LOGREF_ATTRIBUTE, logref)

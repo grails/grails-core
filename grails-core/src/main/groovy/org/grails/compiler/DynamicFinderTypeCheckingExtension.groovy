@@ -15,6 +15,8 @@
  */
 package org.grails.compiler
 
+import java.lang.reflect.Modifier
+
 import static org.codehaus.groovy.ast.ClassHelper.CLASS_Type
 import static org.codehaus.groovy.ast.ClassHelper.Integer_TYPE
 import static org.codehaus.groovy.ast.ClassHelper.LIST_TYPE
@@ -32,9 +34,9 @@ import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport.Type
 class DynamicFinderTypeCheckingExtension extends TypeCheckingDSL {
 
     @Override
-    public Object run() {
+    Object run() {
         methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
-            def dynamicCall
+            def dynamicCall = null
             if(receiver == CLASS_Type) {
                 def genericsTypes = receiver.genericsTypes
                 if(genericsTypes) {
@@ -68,6 +70,7 @@ class DynamicFinderTypeCheckingExtension extends TypeCheckingDSL {
 
     protected makeDynamicGormCall(MethodCall call, ClassNode returnTypeNode, ClassNode domainClassTypeNode) {
         def dynamicCall = makeDynamic(call, returnTypeNode)
+        dynamicCall.modifiers = Modifier.STATIC
         dynamicCall.declaringClass = domainClassTypeNode
         dynamicCall
     }

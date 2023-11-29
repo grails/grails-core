@@ -28,7 +28,7 @@ class SimpleMapDataBindingSource implements DataBindingSource {
     }
 
     Set<String> getPropertyNames() {
-        map.keySet()
+        map.keySet() as Set<String>
     }
 
     Object getPropertyValue(String propertyName) {

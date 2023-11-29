@@ -38,5 +38,5 @@ interface Renderer<T> extends MimeTypeProvider {
      *
      * @return Optional return value, those to that directly write typically return null
      */
-    void render(T object, RenderContext context)
+    void render(Object object, RenderContext context)
 }
