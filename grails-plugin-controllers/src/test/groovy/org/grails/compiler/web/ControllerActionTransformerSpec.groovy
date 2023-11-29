@@ -7,6 +7,7 @@ import grails.web.Action
 import grails.web.servlet.context.GrailsWebApplicationContext
 import groovy.transform.Generated
 import org.codehaus.groovy.control.CompilationUnit
+import spock.lang.Ignore
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
