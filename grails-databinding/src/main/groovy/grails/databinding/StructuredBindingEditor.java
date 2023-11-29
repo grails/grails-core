@@ -21,14 +21,14 @@ package grails.databinding;
  * into an object.  Typically a structured editor will pull
  * several values out of the Map that are necessary to initialize
  * the state of the object.
-<pre>
+<code>
 class Address {
     String state
     String city
 }
 class StructuredAddressBindingEditor implements StructuredBindingEditor {
 
-    public Object getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
+    public Object getPropertyValue(Object obj, String propertyName, Map&lt;String, Object&gt; source) {
         def address = new Address()
 
         address.state = source[propertyName + '_someState']
@@ -58,7 +58,7 @@ assert resident.homeAddress.state == "Scott's Home State"
 assert resident.workAddress
 assert resident.workAddress.state == "Scott's Work State"
 assert resident.workAddress.city == null
-</pre>
+</code>
  *
  * @author Jeff Brown
  * @since 3.0

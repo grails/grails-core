@@ -80,9 +80,9 @@ public abstract class AbstractGrailsView extends AbstractUrlBasedView {
     /**
      * Renders a page with the specified TemplateEngine, mode and response.
      * @param model The model to use
-     * @param request The HttpServletRequest
-     * @param response The HttpServletResponse instance
-     * @param engine The TemplateEngine to use
+     * @param webRequest The {@link org.grails.web.servlet.mvc.GrailsWebRequest}
+     * @param request The {@link javax.servlet.http.HttpServletRequest}
+     * @param response The {@link javax.servlet.http.HttpServletResponse} instance
      *
      * @throws java.io.IOException Thrown when an error occurs writing the response
      */
