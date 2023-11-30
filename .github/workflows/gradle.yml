@@ -35,10 +35,15 @@ jobs:
   publish:
     permissions:
       contents: read  #  to fetch code (actions/checkout)
+      checks: write
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: ['build']
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
