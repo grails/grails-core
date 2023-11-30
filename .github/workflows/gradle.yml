@@ -47,7 +47,6 @@ jobs:
       - name: Publish to Artifactory (repo.grails.org)
         id: publish
         uses: gradle/gradle-build-action@v2
-        if: steps.build.outcome == 'success'
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
@@ -57,15 +56,15 @@ jobs:
         with:
           arguments: -Dorg.gradle.internal.publish.checksums.insecure=true publish
       - name: Extract branch name
-        if: steps.publish.outcome == 'success'
+        if: success()
         id: extract_branch
         run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
       - name: Create Snapshot Message for the Workflow Dispatch
-        if: steps.publish.outcome == 'success'
+        if: success()
         id: dispatch_message
         run: echo "value={\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}" >> $GITHUB_OUTPUT
       - name: Invoke the Java CI workflow in Grails Functional Tests
-        if: steps.publish.outcome == 'success'
+        if: success()
         uses: benc-uk/workflow-dispatch@v1.2
         with:
           workflow: Java CI
