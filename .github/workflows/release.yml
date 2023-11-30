@@ -110,7 +110,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
       - name: Grails SDK Minor Release
-        if: steps.upload_artifact.outcome == 'success' && (startsWith(steps.release_version.outputs.release_version, '3.3') || startsWith(steps.release_version.outputs.release_version, '4.1.') || startsWith(steps.release_version.outputs.release_version, '5.3.')
+        if: steps.upload_artifact.outcome == 'success' && (startsWith(steps.release_version.outputs.release_version, '3.3') || startsWith(steps.release_version.outputs.release_version, '4.1.') || startsWith(steps.release_version.outputs.release_version, '5.3.'))
         uses: gradle/gradle-build-action@v2
         with:
           arguments: sdkMinorRelease
