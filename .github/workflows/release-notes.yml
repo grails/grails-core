@@ -17,7 +17,7 @@ jobs:
         id: check_release_drafter
         run: |
           has_release_drafter=$([ -f .github/release-drafter.yml ] && echo "true" || echo "false")
-          echo ::set-output name=has_release_drafter::${has_release_drafter}
+          echo "has_release_drafter=${has_release_drafter}" >> $GITHUB_OUTPUT
 
       # If it has release drafter:
       - uses: release-drafter/release-drafter@v5.15.0
@@ -26,12 +26,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           prerelease: false
-          commitish: 4.0.x
-          filter-by-commitish: true
       # Otherwise:
-      - name: Export Gradle Properties
-        if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
-        uses: micronaut-projects/github-actions/export-gradle-properties@master
       - uses: micronaut-projects/github-actions/release-notes@master
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
         id: release_notes
