@@ -2,65 +2,86 @@ name: Release
 on:
   release:
     types: [published]
+permissions: {}
 jobs:
-  release:
+  publish:
+    permissions:
+      contents: write  #  to create release
+      issues: write  #  to modify milestones
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['8']
     env:
       GIT_USER_NAME: puneetbehl
-      GIT_USER_EMAIL: behlp@objectcomputing.com
-      GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
+      GIT_USER_EMAIL: behlp@unityfoundation.io
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
-      - uses: gradle/wrapper-validation-action@v1
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java }}
+          distribution: 'adopt'
+          java-version: '8'
       - name: Extract Target Branch
         id: extract_branch
         run: |
           echo "Determining Target Branch"
           TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
           echo $TARGET_BRANCH
-          echo ::set-output name=value::${TARGET_BRANCH}
+          echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
       - name: Set the current release version
         id: release_version
-        run: echo ::set-output name=release_version::${GITHUB_REF:11}
+        run: echo "release_version=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
       - name: Run pre-release
         uses: ./.github/actions/pre-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish to Sonatype OSSRH
+      - name: Run Assemble
+        if: success()
+        id: assemble
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assemble
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+      - name: Upload Distribution
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: grails-${{ steps.release_version.outputs.release_version }}.zip
+          path: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
+      - name: Upload artifacts to the Github release
+        if: success()
+        id: upload_artifact
+        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        with:
+          args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate secring file
         if: success()
         env:
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
+        run: echo $SECRING_FILE | base64 -d > ${{ github.workspace }}/secring.gpg
+      - name: Publish to Sonatype OSSRH
+        id: publish
+        if: success()
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_NEXUS_URL: ${{ secrets.SONATYPE_NEXUS_URL }}
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
-        run: |
-          echo $SECRING_FILE | base64 -d > secring.gpg
-          echo "Publishing Artifacts"
-          (set -x; ./gradlew -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg" publishToSonatype closeAndReleaseSonatypeStagingRepository --no-daemon)
-          (set -x; ./gradlew assemble --no-daemon)
-      - name: Export Gradle Properties
-        uses: micronaut-projects/github-actions/export-gradle-properties@master
+        with:
+          arguments: -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg publishToSonatype closeAndReleaseSonatypeStagingRepository
       - name: Run post-release
         if: success()
         uses: ./.github/actions/post-release
@@ -68,48 +89,69 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           SNAPSHOT_SUFFIX: -SNAPSHOT
-      - name: Upload artifacts to the Github release
-        uses: Roang-zero1/github-upload-release-artifacts-action@master
+  sdkman:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Message for the Grails Documentation Release
-        if: success()
-        id: grails_docs_release_message
-        run: |
-          echo ::set-output name=value::{\"grails_version\":\"$RELEASE_VERSION\"}
-        env:
-          RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
-      - name: Invoke grails-doc release workflow
-        if: success()
-        id: grails_doc
-        uses: benc-uk/workflow-dispatch@v1.1
-        with:
-          workflow: Release
-          repo: grails/grails-doc
-          ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
-          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
+          ref: v${{ needs.publish.inputs.release_version }}
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+      - name: Grails SDK Minor Release
+        if: success()
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: sdkMinorRelease
+        env:
+          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
+          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+  docs:
+    needs: publish
+    run-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Prepare Input
+        id: prep_inputs
+        run: |
+          echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
+        env:
+          RELEASE_VERSION: ${{ needs.publish.steps.release_version.outputs.release_version }}
+      - name: Invoke grails-doc release workflow
+        uses: benc-uk/workflow-dispatch@v1.2
+        with:
+         workflow: Release
+         repo: grails/grails-doc
+         ref: ${{ needs.publish.steps.extract_branch.outputs.value }}
+         token: ${{ secrets.GH_TOKEN }}
+         inputs: ${{ steps.prep_inputs.outputs.value }}
+  website:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Prepare Input
+        id: prep_inputs
+        run: |
+          echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
+        env:
+          RELEASE_VERSION: ${{ needs.publish.steps.release_version.outputs.release_version }}
       - name: Invoke grails-static-website release workflow
         if: success()
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@v1.2
         with:
           workflow: Release
           repo: grails/grails-static-website
           ref: master
           token: ${{ secrets.GH_TOKEN }}
-          inputs: ${{ steps.grails_docs_release_message.outputs.value }}
-      - name: Grails SDK Release
-        if: success()
-        run: |
-          if $MINOR ; then
-            (set -x; ./gradlew sdkMinorRelease)
-          else
-            ( set -x; ./gradlew sdkMajorRelease)
-          fi
-        env:
-          MINOR: ${{ startsWith(steps.release_version.outputs.release_version, '3.3') || startsWith(steps.release_version.outputs.release_version, '4.1.') || contains(steps.release_version.outputs.release_version, 'M') || contains(steps.release_version.outputs.release_version, 'RC') }}
-          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
-          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+          inputs: ${{ steps.prep_inputs.outputs.value }}
