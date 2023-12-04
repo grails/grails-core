@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 dependencies {
     compile ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
     compile ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
-    compile "org.yaml:snakeyaml:1.14"
+    compile "org.yaml:snakeyaml:$snakeyamlVersion"
     
     compileOnly("io.methvin:directory-watcher:0.3.0")
     compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
