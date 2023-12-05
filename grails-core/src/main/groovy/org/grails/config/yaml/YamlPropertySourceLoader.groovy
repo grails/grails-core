@@ -36,7 +36,7 @@ import org.springframework.util.ClassUtils
  */
 @CompileStatic
 @Order(Ordered.HIGHEST_PRECEDENCE)
-class YamlPropertySourceLoader extends PatchedYamlProcessor implements PropertySourceLoader {
+class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLoader {
     @Override
     String[] getFileExtensions() {
         ['yml', 'yaml'] as String[]
