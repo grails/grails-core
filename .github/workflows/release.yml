@@ -115,7 +115,7 @@ jobs:
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
   docs:
     needs: publish
-    run-on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
