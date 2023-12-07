@@ -40,7 +40,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                 mavenRepo("https://repo.grails.org/grails/core")
             }
             dependencies {
-                agent "org.springsource.springloaded:springloaded-core:1.1.1"
+                agent "org.springframework:springloaded:1.2.1"
             }
         }
 
