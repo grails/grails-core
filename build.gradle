@@ -2,12 +2,10 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
-        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
-        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.0'
     }
 }
 
@@ -448,15 +446,4 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
             classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
         }
     }
-}
-
-apply plugin: 'net.gvmtool.sdkvendor'
-gvm {
-    api = "https://gvm-vendor.herokuapp.com"
-    consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
-    consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
-    candidate = "grails"
-    version = project.version
-    url = "https://github.com/grails/grails-core/releases/download/v${project.version}/grails-${project.version}.zip"
-    hashtag = "#grailsfw"
 }
