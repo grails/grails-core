@@ -87,7 +87,7 @@ jobs:
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
         with:
-          arguments: -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg publishToSonatype closeAndReleaseSonatypeStagingRepository
+          arguments: -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg uploadArchives closeAndReleaseRepository
       - name: Run post-release
         if: success()
         uses: ./.github/actions/post-release
