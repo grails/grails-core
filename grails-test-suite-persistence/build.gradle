@@ -40,8 +40,8 @@ dependencies {
 
 test {
     maxParallelForks = 2
-    forkEvery = isTravisBuild ? 25 : 100
-    if(!isTravisBuild) {
+    forkEvery = isContinuousIntegrationBuild ? 25 : 100
+    if(!isContinuousIntegrationBuild) {
         maxHeapSize = '2048m'
         if(!isJava8Compatible) {
             jvmArgs '-XX:MaxPermSize=256m'

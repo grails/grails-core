@@ -14,7 +14,7 @@ apply plugin: 'idea'
 ext {
     grailsVersion = '2.5.7.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
-    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    isContinuousIntegrationBuild = System.getenv().get("CI") == 'true'
 
     antTraxVersion = "1.7.1"
     antVersion = "1.9.4"
@@ -245,7 +245,7 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
-        if (isTravisBuild) {
+        if (isContinuousIntegrationBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
             if(!isJava8Compatible) {

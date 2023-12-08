@@ -66,8 +66,8 @@ compileTestGroovy {
 }
 
 def defaultTestConfig = {
-    maxParallelForks = isTravisBuild ? 2 : 4
-    forkEvery = isTravisBuild ? 10 : 100
+    maxParallelForks = isContinuousIntegrationBuild ? 2 : 4
+    forkEvery = isContinuousIntegrationBuild ? 10 : 100
     excludes = ["**/*TestCase.class",
                 "**/*\$*.class"]
 }
