@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
-        jcenter()
+        maven { url "https://repo1.maven.org/maven2/" }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
@@ -83,6 +83,7 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://repo1.maven.org/maven2/" }
         mavenLocal()
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
