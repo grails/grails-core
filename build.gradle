@@ -351,16 +351,15 @@ subprojects { project ->
                     beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                     }
 
-                    if(project.hasProperty("sonatypeUsername")) {
-                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                        authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
-                                        password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+                    if(System.getenv('SONATYPE_USERNAME')) {
+                        repository(url: isBuildSnapshot ? "https://s01.oss.sonatype.org/content/repositories/snapshots/" :
+                                "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${System.env.SONATYPE_REPOSITORY_ID}/") {
+                            authentication(userName: System.env.SONATYPE_USERNAME, password: System.env.SONATYPE_PASSWORD)
+                        }
                     }
-                    }
-                    if(project.hasProperty("artifactoryPublishUsername")) {
+                    if(System.getenv('ARTIFACTORY_USERNAME')) {
                         snapshotRepository(url: "https://repo.grails.org/grails/libs-snapshots-local") {
-                        authentication(userName: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null,
-                            password: project.hasProperty("artifactoryPublishPassword") ?  project.artifactoryPublishPassword : null)
+                            authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
                         }
                     }
 

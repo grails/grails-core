@@ -1,0 +1,184 @@
+name: Release
+on:
+  release:
+    types: [published]
+permissions: {}
+jobs:
+  publish:
+    permissions:
+      contents: write  #  to create release
+      issues: write  #  to modify milestones
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.release_version.outputs.value }}
+      target_branch: ${{ steps.extract_branch.outputs.value }}
+      repository_id: ${{ steps.create_staging_repository.outputs.repository_id }}
+    env:
+      GIT_USER_NAME: puneetbehl
+      GIT_USER_EMAIL: behlp@unityfoundation.io
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+      - name: Extract Target Branch
+        id: extract_branch
+        run: |
+          echo "Determining Target Branch"
+          TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
+          echo $TARGET_BRANCH
+          echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
+      - name: Set the current release version
+        id: release_version
+        run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
+      - name: Run pre-release
+        uses: ./.github/actions/pre-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate secring file
+        if: success()
+        env:
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
+        run: echo $SECRING_FILE | base64 -d > ${{ github.workspace }}/secring.gpg
+      - name: Run Assemble
+        if: success()
+        id: assemble
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments:  -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg assemble -x :grails-dependencies:assemble -x :grails-dependencies:install
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+      - name: Upload Distribution
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: grails-${{ steps.release_version.outputs.value }}.zip
+          path: build/distributions/grails-${{ steps.release_version.outputs.value }}.zip
+      - name: Upload artifacts to the Github release
+        if: success()
+        id: upload_artifact
+        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        with:
+          args: build/distributions/grails-${{ steps.release_version.outputs.value }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create staging repository
+        id: create_staging_repository
+        if: success()
+        uses: nexus-actions/create-nexus-staging-repo@v1.3.0
+        with:
+          base_url: ${{ secrets.SONATYPE_NEXUS_URL }}
+          username: ${{ secrets.SONATYPE_USERNAME }}
+          password: ${{ secrets.SONATYPE_PASSWORD }}
+          staging_profile_id: ${{ secrets.SONATYPE_PROFILE_ID }}
+      - name: Publish to Sonatype OSSRH
+        id: publish
+        if: success()
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_NEXUS_URL: ${{ secrets.SONATYPE_NEXUS_URL }}
+          SONATYPE_REPOSITORY_ID: ${{ needs.publish.outputs.repository_id }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+          SECRING_FILE: ${{ secrets.SECRING_FILE }}
+        with:
+          arguments: -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg -Psigning.keyId=${{ env.SIGNING_KEY }} -Psigning.password=${{ env.SIGNING_PASSPHRASE }} upload -x :grails-dependencies:assemble -x :grails-dependencies:install -x :grails-dependencies:uploadPublished
+      - name: Release staging repository
+        id: release_staging_repository
+        if: success()
+        uses: nexus-actions/release-nexus-staging-repo@v1.3.0 
+        with:
+          base_url: ${{ secrets.SONATYPE_NEXUS_URL }}
+          username: ${{ secrets.SONATYPE_USERNAME }}
+          password: ${{ secrets.SONATYPE_PASSWORD }}
+          staging_repository_id: ${{ needs.publish.outputs.repository_id }}
+      - name: Run post-release
+        if: success()
+        uses: ./.github/actions/post-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          SNAPSHOT_SUFFIX: -SNAPSHOT
+  sdkman:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          ref: v${{ needs.publish.outputs.release_version }}
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+      - name: Grails SDK Minor Release
+        if: success()
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: sdkMinorRelease
+        env:
+          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
+          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+  docs:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Prepare Input
+        id: prep_inputs
+        run: |
+          echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.release_version }}
+      - name: Invoke grails-doc release workflow
+        uses: benc-uk/workflow-dispatch@v1.2
+        with:
+          workflow: Release
+          repo: grails/grails-doc
+          ref: ${{ needs.publish.outputs.target_branch }}
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.prep_inputs.outputs.value }}
+  website:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Prepare Input
+        id: prep_inputs
+        run: |
+          echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
+        env:
+          RELEASE_VERSION: ${{ needs.publish.outputs.release_version }}
+      - name: Invoke grails-static-website release workflow
+        if: success()
+        id: grails_static_website
+        uses: benc-uk/workflow-dispatch@v1.2
+        with:
+          workflow: Release
+          repo: grails/grails-static-website
+          ref: master
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: ${{ steps.prep_inputs.outputs.value }}
