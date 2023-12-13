@@ -19,6 +19,7 @@ dependencies {
     provided("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
+    compile ("org.yaml:snakeyaml:$snakeyamlVersion")
 
     // Used by Spring AOP
     runtime 'aopalliance:aopalliance:1.0',
