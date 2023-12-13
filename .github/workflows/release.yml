@@ -42,7 +42,7 @@ jobs:
       - name: Run Assemble
         if: success()
         id: assemble
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@8cbcb9948b5892387aed077daf6f90e1f0ba5b27 # v2
         with:
           arguments: assemble
         env:
@@ -71,7 +71,7 @@ jobs:
       - name: Publish to Sonatype OSSRH
         id: publish
         if: success() && false
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@8cbcb9948b5892387aed077daf6f90e1f0ba5b27 # v2
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
