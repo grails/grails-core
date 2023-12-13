@@ -1,7 +1,7 @@
 [![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.grails.org/scans)
 
 #### Build Status
-- [![Java CI](https://github.com/grails/grails-core/actions/workflows/gradle.yml/badge.svg)](https://github.com/grails/grails-core/actions/workflows/gradle.yml)
+- [![Java CI](https://github.com/grails/grails-core/actions/workflows/gradle.yml/badge.svg?event=push)](https://github.com/grails/grails-core/actions/workflows/gradle.yml)
 - ![Grails Joint Validation Build](https://github.com/grails/grails-core/workflows/Grails%20Joint%20Validation%20Build/badge.svg)
 
 #### Slack Signup
