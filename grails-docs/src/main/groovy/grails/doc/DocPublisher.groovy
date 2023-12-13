@@ -21,6 +21,7 @@ import groovy.text.Template
 
 import org.apache.commons.logging.LogFactory
 import org.radeox.engine.context.BaseInitialRenderContext
+import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 
 /**
@@ -232,7 +233,7 @@ class DocPublisher {
         def legacyLinks = [:]
         if (legacyLinksFile.exists()) {
             legacyLinksFile.withInputStream { input ->
-                legacyLinks = new Yaml().load(input)
+                legacyLinks = new Yaml(new LoaderOptions()).load(input)
             }
         }
 
