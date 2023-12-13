@@ -118,7 +118,7 @@ class CodecSpec extends Specification {
     }
 
     // opionated setting
-    void "tag output must not be automatically encoded."() {
+    void "tag output must not be automatically encoded"() {
         // TODO: problem with out << body() ?
     }
 
@@ -127,7 +127,7 @@ class CodecSpec extends Specification {
      * static encodeAsForTags = [someTag: 'html'] // default encodeAs for a single tag in this taglib class
      * the codec setting accepts a string or a map. (explained in https://github.com/grails/grails-core/blob/scb-encoding-support/grails-web/src/main/groovy/org/codehaus/groovy/grails/web/util/WithCodecHelper.groovy#L54)
      */
-    void "tag call as function call should use defaultEncodeAs / encodeAsForTags settings"() {
+    void "tag call as function call should use defaultEncodeAs - encodeAsForTags settings"() {
     }
 
     void "scriptlets should apply outCodec"() {
@@ -139,28 +139,28 @@ class CodecSpec extends Specification {
         // There is a risk of double-encoding of data when the developer is not aware of encodings already applied.
     }
 
-    void "Plugins cannot have their pages break because the app developer changes default codec setting."() {
+    void "Plugins cannot have their pages break because the app developer changes default codec setting"() {
     }
 
-    void "Ideally the user should never need to explicitly think about codecs or calling them except in rare situations."() {
+    void "Ideally the user should never need to explicitly think about codecs or calling them except in rare situations"() {
     }
 
-    void "Add a function/tag to switch the current default codec - effectively pushing and popping a default codec stack. This could take the form of a withCodec(name, Closure) method in tags."() {
+    void "Add a function-tag to switch the current default codec - effectively pushing and popping a default codec stack: This could take the form of a withCodec name, Closure method in tags"() {
     }
 
-    void "Use this function/tag in core tags like <g:javascript> and <r:script> to automatically set an appropriate codec"() {
+    void "Use this function-tag in core tags like g:javascript and r:script to automatically set an appropriate codec"() {
     }
 
-    void "<g:render> and similar tags would need to set default codec to HTML again when including another GSP, pushing whatever was default onto a stack"() {
+    void "g:render and similar tags would need to set default codec to HTML again when including another GSP, pushing whatever was default onto a stack"() {
     }
 
-    void "Add support for an optional encodeAs attribute to all tags automatically, such that the result will be encoded with that codec if specified i.e. var s = \${g.createLink(...., encodeAs:'JavaScript')}"() {
+    void "Add support for an optional encodeAs attribute to all tags automatically, such that the result will be encoded with that codec if specified ie var s = createLink encodeAs:'JavaScript'"() {
     }
 
-    void "All GSPs in app or plugins default to HTML codec unless developer does something to change that using directive/tag"() {
+    void "All GSPs in app or plugins default to HTML codec unless developer does something to change that using directive-tag"() {
     }
 
-    void "All outputs of expressions/inline code apply the current default codec"() {
+    void "All outputs of expressions-inline code apply the current default codec"() {
     }
 
     void "Tags are responsible for the correct encoding of their output, unless specified in encodeAs= attribute"() {

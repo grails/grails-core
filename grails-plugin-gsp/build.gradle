@@ -20,9 +20,9 @@ dependencies {
 }
 
 test {
-    maxParallelForks = isTravisBuild ? 2 : 4
+    maxParallelForks = isContinuousIntegrationBuild ? 2 : 4
     forkEvery = 100
-    if(!isTravisBuild) {
+    if(!isContinuousIntegrationBuild) {
       maxHeapSize = '1024m'
     }
 }

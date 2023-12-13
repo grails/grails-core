@@ -1,13 +1,11 @@
 buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
-        jcenter()
-        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+        maven { url "https://repo1.maven.org/maven2/" }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
-        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.0'
     }
 }
 
@@ -16,7 +14,7 @@ apply plugin: 'idea'
 ext {
     grailsVersion = '2.5.7.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
-    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    isContinuousIntegrationBuild = System.getenv().get("CI") == 'true'
 
     antTraxVersion = "1.7.1"
     antVersion = "1.9.4"
@@ -85,6 +83,7 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://repo1.maven.org/maven2/" }
         mavenLocal()
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
@@ -246,7 +245,7 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
-        if (isTravisBuild) {
+        if (isContinuousIntegrationBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
             if(!isJava8Compatible) {
@@ -352,16 +351,15 @@ subprojects { project ->
                     beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                     }
 
-                    if(project.hasProperty("sonatypeUsername")) {
-                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                        authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
-                                        password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+                    if(System.getenv('SONATYPE_USERNAME')) {
+                        repository(url: isBuildSnapshot ? "https://s01.oss.sonatype.org/content/repositories/snapshots/" :
+                                "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${System.env.SONATYPE_REPOSITORY_ID}/") {
+                            authentication(userName: System.env.SONATYPE_USERNAME, password: System.env.SONATYPE_PASSWORD)
+                        }
                     }
-                    }
-                    if(project.hasProperty("artifactoryPublishUsername")) {
+                    if(System.getenv('ARTIFACTORY_USERNAME')) {
                         snapshotRepository(url: "https://repo.grails.org/grails/libs-snapshots-local") {
-                        authentication(userName: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null,
-                            password: project.hasProperty("artifactoryPublishPassword") ?  project.artifactoryPublishPassword : null)
+                            authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
                         }
                     }
 
@@ -448,15 +446,4 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
             classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
         }
     }
-}
-
-apply plugin: 'net.gvmtool.sdkvendor'
-gvm {
-    api = "https://gvm-vendor.herokuapp.com"
-    consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
-    consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
-    candidate = "grails"
-    version = project.version
-    url = "https://github.com/grails/grails-core/releases/download/v${project.version}/grails-${project.version}.zip"
-    hashtag = "#grailsfw"
 }

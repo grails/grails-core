@@ -28,7 +28,7 @@ class IvyExcludeResolverSpec extends Specification{
             def dependencyManager = new IvyDependencyManager("foo", "1.0")
             dependencyManager.parseDependencies {
                 repositories {
-                    mavenCentral()
+                    mavenRepo("https://repo1.maven.org/maven2/")
                 }
                 dependencies {
                     compile "commons-validator:commons-validator:1.4.0"

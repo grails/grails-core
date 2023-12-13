@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/grails/grails-core.svg?branch=2.4.x)](https://travis-ci.org/grails/grails-core)
+[![Java CI](https://github.com/grails/grails-core/actions/workflows/gradle.yml/badge.svg?branch=2.5.x)](https://github.com/grails/grails-core/actions/workflows/gradle.yml)
 
 Grails
 ===
