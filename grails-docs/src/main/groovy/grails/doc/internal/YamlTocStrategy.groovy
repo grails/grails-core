@@ -1,12 +1,13 @@
 package grails.doc.internal
 
+import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 
 /**
  * Class representing a Grails user guide table of contents defined in YAML.
  */
 class YamlTocStrategy {
-    private final parser = new Yaml()
+    private final parser = new Yaml(new LoaderOptions())
     private resourceChecker
 
     YamlTocStrategy(resourceChecker) {
