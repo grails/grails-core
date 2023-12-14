@@ -51,7 +51,7 @@ jobs:
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
       - name: Upload Distribution
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4
         with:
           name: grails-${{ steps.release_version.outputs.value }}.zip
           path: build/distributions/grails-${{ steps.release_version.outputs.value }}.zip
