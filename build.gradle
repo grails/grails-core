@@ -353,14 +353,25 @@ subprojects { project ->
                     }
 
                     if(System.getenv('SONATYPE_USERNAME')) {
-                        repository(url: isBuildSnapshot ? "https://s01.oss.sonatype.org/content/repositories/snapshots/" :
-                                "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${System.env.SONATYPE_REPOSITORY_ID}/") {
-                            authentication(userName: System.env.SONATYPE_USERNAME, password: System.env.SONATYPE_PASSWORD)
+                        if (isBuildSnapshot) {
+                            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                                authentication(userName: System.env.SONATYPE_USERNAME, password: System.env.SONATYPE_PASSWORD)
+                            }
+                        } else {
+                            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${System.env.SONATYPE_REPOSITORY_ID}/") {
+                                authentication(userName: System.env.SONATYPE_USERNAME, password: System.env.SONATYPE_PASSWORD)
+                            }
                         }
                     }
                     if(System.getenv('ARTIFACTORY_USERNAME')) {
-                        snapshotRepository(url: "https://repo.grails.org/grails/libs-snapshots-local") {
-                            authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
+                        if (isBuildSnapshot) {
+                            snapshotRepository(url: "https://repo.grails.org/grails/libs-snapshots-local") {
+                                authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
+                            }
+                        } else {
+                            repository(url: "https://repo.grails.org/grails/libs-releases-local") {
+                                authentication(userName: System.env.ARTIFACTORY_USERNAME, password: System.env.ARTIFACTORY_PASSWORD)
+                            }
                         }
                     }
 
