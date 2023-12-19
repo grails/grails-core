@@ -1,0 +1,36 @@
+name: Release to SDKMan
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+jobs:
+  sdkman:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          ref: v${{ github.event.inputs.version }}
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+      - name: Grails SDK Minor Release
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: sdkMinorRelease
+        env:
+          GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
+          GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
+      - name: Set output
+        id: set_output
+        run: |
+          echo ::set-output name=release_version::$(cat $GITHUB_OUTPUT)
+        env:
+          GITHUB_OUTPUT: ${{ github.workspace }}/build/release_version

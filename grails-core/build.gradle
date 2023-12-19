@@ -66,6 +66,9 @@ dependencies {
 
     api "org.grails:grails-datastore-core:$datastoreVersion"
 
+    testAnnotationProcessor "io.micronaut:micronaut-runtime:$micronautVersion"
+    testAnnotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
+
     testImplementation("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }

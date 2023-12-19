@@ -28,7 +28,7 @@ echo $release_version
 echo -n "Determining next version: "
 next_version=`/increment_version.sh -p $release_version`
 echo $next_version
-echo ::set-output name=next_version::${next_version}
+echo "next_version=${next_version}" >> $GITHUB_OUTPUT
 
 echo "Configuring git"
 git config --global user.email "$GIT_USER_EMAIL"

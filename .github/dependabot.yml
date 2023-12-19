@@ -18,6 +18,9 @@ updates:
     labels:
       - "type: dependency upgrade"      
       - "relates-to: v4"
+    ignore:
+      - dependency-name: "*"
+        update-types: [ "version-update:semver-minor", "version-update:semver-major" ]
   - package-ecosystem: gradle
     directory: "/"
     schedule:
