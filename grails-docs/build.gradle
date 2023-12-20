@@ -12,7 +12,7 @@ dependencies {
             'org.yaml:snakeyaml:2.2',
             "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
-    api 'org.asciidoctor:asciidoctorj:2.5.7'
+    api 'org.asciidoctor:asciidoctorj:2.5.10'
     api('org.xhtmlrenderer:core-renderer:8.0') {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }
@@ -21,7 +21,7 @@ dependencies {
 
     runtimeOnly('com.lowagie:itext:2.0.8')
 
-    api 'org.jsoup:jsoup:1.15.4'
+    api 'org.jsoup:jsoup:1.17.1'
     testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
 }
 

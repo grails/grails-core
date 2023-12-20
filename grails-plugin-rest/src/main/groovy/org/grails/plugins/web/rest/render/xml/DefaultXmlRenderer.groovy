@@ -69,7 +69,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     @Override
-    void render(T object, RenderContext context) {
+    void render(Object object, RenderContext context) {
         final mimeType = context.acceptMimeType ?: MimeType.XML
         context.setContentType( GrailsWebUtil.getContentType(mimeType.name, encoding) )
 
@@ -97,7 +97,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      * @param object
      * @param context
      */
-    protected void renderXml(T object, RenderContext context) {
+    protected void renderXml(Object object, RenderContext context) {
         XML converter
 
         if(namedConfiguration) {

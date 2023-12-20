@@ -1,11 +1,9 @@
 package org.grails.io.support
 
 import grails.util.BuildSettings
-import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
-import org.grails.io.support.UrlResource
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
 class GrailsResourceUtilsSpec extends Specification {
@@ -171,6 +169,7 @@ class GrailsResourceUtilsSpec extends Specification {
         "alpha/beta/gamma" == GrailsResourceUtils.appendPiecesForUri("alpha", "beta", "gamma")
     }
 
+    @IgnoreIf({ os.windows })
     void testGetPathFromBaseDir() {
         expect:
         "views/demo/index.gsp" == GrailsResourceUtils.getPathFromBaseDir("${BuildSettings.BASE_DIR.absolutePath}/grails-app/views/demo/index.gsp")

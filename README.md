@@ -1,7 +1,7 @@
-[![Revved up by Gradle Enterprise](https://img.shields.io/badge/Revved%20up%20by-Gradle%20Enterprise-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.grails.org/scans)
+[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.grails.org/scans)
 
 #### Build Status
-- ![Java CI](https://github.com/grails/grails-core/workflows/Java%20CI/badge.svg)
+- [![Java CI](https://github.com/grails/grails-core/actions/workflows/gradle.yml/badge.svg?event=push)](https://github.com/grails/grails-core/actions/workflows/gradle.yml)
 - ![Grails Joint Validation Build](https://github.com/grails/grails-core/workflows/Grails%20Joint%20Validation%20Build/badge.svg)
 
 #### Slack Signup
@@ -58,5 +58,4 @@ Dependencies
 
 **Gradle Plugins**
 
-* SDKMAN! Vendor Plugin [Github](https://github.com/sdkman/sdkman-vendor-gradle-plugin).
 * Gradle Nexus Staging Plugin [Github](https://github.com/Codearte/gradle-nexus-staging-plugin)

@@ -120,7 +120,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                     final ClassReader classReader = new ClassReader(inputStream);
                     final String astTransformerClassName = AstTransformer.class.getSimpleName();
                     final ClassLoader finalClassLoader = classLoader;
-                    classReader.accept(new ClassVisitor(Opcodes.ASM4) {
+                    classReader.accept(new ClassVisitor(Opcodes.ASM9) {
                         @Override
                         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                             try {

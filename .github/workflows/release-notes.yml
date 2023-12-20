@@ -16,17 +16,17 @@ jobs:
   release_notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check if it has release drafter config file
         id: check_release_drafter
         run: |
           has_release_drafter=$([ -f .github/release-drafter.yml ] && echo "true" || echo "false")
-          echo "has_release_drafter=${has_release_drafter}" >> $GITHUB_OUTPUT
+          echo ::set-output name=has_release_drafter::${has_release_drafter}
       - name: Extract branch name
         id: extract_branch
-        run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
+        run: echo ::set-output name=value::${GITHUB_REF:11}
       # If it has release drafter:
-      - uses: release-drafter/release-drafter@v5.23.0
+      - uses: release-drafter/release-drafter@v5
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

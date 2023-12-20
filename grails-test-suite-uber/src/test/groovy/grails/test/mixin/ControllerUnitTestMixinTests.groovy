@@ -179,30 +179,37 @@ class ControllerUnitTestMixinTests extends Specification implements ControllerUn
     }
 
     void testRenderBasicTemplateNoTags() {
+        given:
+        def templateName = 'testRenderBasicTemplateNoTags'
+
         when:
-        groovyPages['/test/_bar.gsp'] = 'Hello <%= 10 %>'
-        controller.renderTemplate()
+        groovyPages["/test/_${templateName}.gsp" as String] = 'Hello <%= 10 %>'
+        controller.renderTemplate(templateName)
 
         then:
         response.contentAsString == "Hello 10"
     }
 
     void testRenderBasicTemplateWithTags() {
-        messageSource.addMessage("foo.bar", request.locale, "World")
+        given:
+        def templateName = 'testRenderBasicTemplateWithTags'
 
         when:
-        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
-        controller.renderTemplate()
+        messageSource.addMessage("foo.bar", request.locale, "World")
+        groovyPages["/test/_${templateName}.gsp" as String] = 'Hello <g:message code="foo.bar" />'
+        controller.renderTemplate(templateName)
 
         then:
         response.contentAsString == "Hello World"
     }
 
     void testRenderBasicTemplateWithLinkTag() {
-        
+        given:
+        def templateName = 'testRenderBasicTemplateWithLinkTag'
+
         when:
-        groovyPages['/test/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
-        controller.renderTemplate()
+        groovyPages["/test/_${templateName}.gsp" as String] = 'Hello <g:createLink controller="bar" />'
+        controller.renderTemplate(templateName)
 
         then:
         response.contentAsString == "Hello /bar"
@@ -595,8 +602,8 @@ class TestController  {
         render(view:"foo")
     }
 
-    def renderTemplate = {
-        render(template:"bar")
+    def renderTemplate(String template) {
+        render(template: template)
     }
 
     def renderXml = {

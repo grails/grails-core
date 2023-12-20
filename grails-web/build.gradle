@@ -11,7 +11,7 @@ dependencies {
         exclude group:'org.grails', module:'grails-encoder'
         exclude group:'org.grails', module:'grails-web-common'
     }
-    api "org.grails:grails-web-sitemesh:$gspVersion", {
+    compileOnly "org.grails:grails-web-sitemesh:$gspVersion", {
         exclude group:'org.grails', module:'grails-core'
         exclude group:'org.grails', module:'grails-encoder'
         exclude group:'org.grails', module:'grails-web-common'

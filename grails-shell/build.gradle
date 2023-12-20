@@ -7,7 +7,7 @@ repositories {
 }
 
 ext {
-    gradleToolingApiVersion = '6.9'
+    gradleToolingApiVersion = '7.3-20210825160000+0000'
 }
 
 dependencies {
@@ -24,18 +24,18 @@ dependencies {
     api "org.springframework.boot:spring-boot-cli:$springBootVersion", {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
-    implementation("org.apache.maven:maven-resolver-provider:3.8.3") {
+    implementation("org.apache.maven:maven-resolver-provider:3.9.6") {
         exclude group: "com.google.guava", module: "guava"
     }
 
-    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.16")
-    implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.5")
-    implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.9.5")
-    implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.14") {
+    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18")
+    implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.18")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.9.18")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.18") {
         exclude group: "org.slf4j", module:"jcl-over-slf4j"
         exclude group: "commons-codec", module:"commons-codec"
     }
-    implementation("commons-codec:commons-codec:1.15")
+    implementation("commons-codec:commons-codec:1.16.0")
 
     testImplementation "net.sf.expectit:expectit-core:0.9.0"
     testImplementation "com.github.jnr:jnr-posix:3.1.18"

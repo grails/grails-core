@@ -10,7 +10,7 @@ if [ -n "$MICRONAUT_BUILD_EMAIL" ]; then
 fi
 
 if [ -z "$GIT_USER_NAME" ]; then
-   GIT_USER_NAME="micronaut-build"
+   GIT_USER_NAME="grails-build"
 fi
 
 echo "Configuring git"

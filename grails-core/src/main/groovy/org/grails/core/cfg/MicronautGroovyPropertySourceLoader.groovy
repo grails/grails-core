@@ -1,10 +1,12 @@
 package org.grails.core.cfg
 
+import grails.plugins.GrailsPlugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import io.micronaut.context.env.AbstractPropertySourceLoader
+import io.micronaut.context.env.MapPropertySource
 import io.micronaut.context.exceptions.ConfigurationException
 import io.micronaut.core.io.ResourceLoader
 import org.grails.config.NavigableMap
@@ -22,7 +24,7 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
 
     @Override
     int getOrder() {
-        return DEFAULT_POSITION
+        return DEFAULT_POSITION + 1
     }
 
     @Override
@@ -37,9 +39,10 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
                 appVersion: Metadata.getCurrent().getApplicationVersion())
             try {
                 def configObject = configSlurper.parse(input.getText("UTF-8"))
-                def propertySource = new NavigableMap()
+                final Map<String, Object> propertySource = new NavigableMap()
                 propertySource.merge(configObject.flatten(), false)
                 finalMap.putAll(propertySource)
+                processEnvironmentSpecificProperties(finalMap, propertySource)
             } catch (Throwable e) {
                 throw new ConfigurationException("Exception occurred reading configuration [" + name + "]: " + e.getMessage(), e)
             }
@@ -66,6 +69,21 @@ class MicronautGroovyPropertySourceLoader extends AbstractPropertySourceLoader {
     @Override
     Set<String> getExtensions() {
         return Collections.singleton("groovy")
+    }
+
+    @Override
+    protected MapPropertySource createPropertySource(String name, Map<String, Object> map, int order) {
+        return super.createPropertySource("grails.$name", map, order)
+    }
+
+    void processEnvironmentSpecificProperties(finalMap, Map<String, Object> propertySource) {
+        final String environmentName = Environment.current.name
+        if (environmentName != null) {
+            final String environmentPrefix = GrailsPlugin.ENVIRONMENTS + '.' +  environmentName + '.'
+            propertySource.keySet().stream()
+                    .filter(k -> k.startsWith(environmentPrefix))
+                    .forEach(propertyName -> { finalMap[propertyName.substring(environmentPrefix.length())] = propertySource.get(propertyName) })
+        }
     }
 
 }

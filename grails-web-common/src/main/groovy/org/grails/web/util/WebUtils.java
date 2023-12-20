@@ -197,6 +197,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     /**
      * @deprecated Does not take into account the url converter
      */
+    @Deprecated
     public static String addViewPrefix(String viewName) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         return addViewPrefix(viewName, webRequest != null ? webRequest.getControllerName() : null);

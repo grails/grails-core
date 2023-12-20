@@ -39,7 +39,7 @@ class NavigableMapPropertySource extends MapPropertySource {
         super(name, source)
         this.propertyNames = source.keySet().findAll() { key ->
             !(source.get(key) instanceof NavigableMap)
-        }
+        } as String[]
         navigablePropertyNames =  StringUtils.toStringArray(source.keySet());
     }
 
