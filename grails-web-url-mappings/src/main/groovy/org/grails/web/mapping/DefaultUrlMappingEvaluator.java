@@ -1130,7 +1130,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             UrlMapping urlMapping;
             if (uri != null) {
                 try {
-                    urlMapping = new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, grailsApplication);
+                    urlMapping = isResponseCode ?
+                        new ResponseCodeUrlMapping(urlData, new URI(uri.toString()), constraints, grailsApplication) :
+                        new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, grailsApplication);
                 } catch (URISyntaxException e) {
                     throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
                 }
