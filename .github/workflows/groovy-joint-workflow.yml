@@ -38,7 +38,7 @@ jobs:
       groovyVersion: ${{ steps.groovy-version.outputs.value }}
     steps:
       - name: Set up JDK
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+        uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: '11.0.6'
@@ -52,11 +52,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
+        if: startsWith('refs/head/6.', github.ref) || startsWith('6.', github.base_ref) || startsWith('refs/head/5.', github.ref) || startsWith('5.', github.base_ref)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
-        if:  github.ref == 'refs/heads/6.2.x' || github.base_ref == '6.2.x' || github.ref == 'refs/heads/6.1.x' || github.base_ref == '6.1.x'  || github.ref == 'refs/heads/6.0.x' || github.base_ref == '6.0.x' || github.ref == 'refs/heads/5.3.x' || github.base_ref == '5.3.x' || github.ref == 'refs/heads/5.2.x' || github.base_ref == '5.2.x' || github.ref == 'refs/heads/5.1.x' || github.base_ref == '5.1.x' || github.ref == 'refs/heads/5.0.x' || github.base_ref == '5.0.x' || github.ref == 'refs/heads/master' || github.base_ref == 'master'
-      - name: Checkout Groovy 2_5_X (Grails 4.0.x)
-        run: cd .. && git clone --depth 1 https://github.com/grails/grails-core.git -b GROOVY_2_5_X --single-branch
-        if: github.ref == 'refs/heads/4.1.x' || github.base_ref == '4.1.x' || github.ref == 'refs/heads/4.0.x' || github.base_ref == '4.0.x'
       - name: Set CI_GROOVY_VERSION for Grails
         id: groovy-version
         run: |
@@ -130,7 +127,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+        uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
           java-version: '11'
