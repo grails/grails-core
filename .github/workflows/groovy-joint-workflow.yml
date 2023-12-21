@@ -55,7 +55,7 @@ jobs:
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
         if: startsWith('refs/head/6.', github.ref) || startsWith('6.', github.base_ref) || startsWith('refs/head/5.', github.ref) || startsWith('5.', github.base_ref)
       - name: Checkout Groovy 2_5_X (Grails 4.0.x)
-        run: cd .. && git clone --depth 1 https://github.com/grails/grails-core.git -b GROOVY_2_5_X --single-branch
+        run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_2_5_X --single-branch
         if: startsWith('refs/head/4.', github.ref) || startsWith('4.', github.base_ref)
       - name: Set CI_GROOVY_VERSION for Grails
         id: groovy-version
