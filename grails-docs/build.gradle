@@ -21,7 +21,7 @@ dependencies {
 
     runtimeOnly('com.lowagie:itext:2.0.8')
 
-    api 'org.jsoup:jsoup:1.15.4'
+    api 'org.jsoup:jsoup:1.17.2'
     testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
 }
 
