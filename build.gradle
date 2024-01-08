@@ -124,12 +124,6 @@ ext {
             names  : ['grails-async', 'grails-events'],
             modules: ['gpars', 'rxjava', 'rxjava2']
         ],
-        snakeyaml: [
-            version: snakeyamlVersion,
-            group  : 'org.yaml',
-            names: ['snakeyaml'],
-            modules: ['']
-        ],
         spock: [
             version: spockVersion,
             group  : 'org.spockframework',
