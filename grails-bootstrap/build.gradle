@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 dependencies {
     api ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
     api ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
-    api "org.yaml:snakeyaml"
+    api "org.yaml:snakeyaml:1.33"
     api "io.micronaut:micronaut-inject:$micronautVersion"
     
     compileOnly("io.methvin:directory-watcher:$methvinDirectoryWatcherVersion")
