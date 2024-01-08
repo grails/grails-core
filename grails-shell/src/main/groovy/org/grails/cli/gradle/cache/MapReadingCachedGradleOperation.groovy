@@ -20,10 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.gradle.tooling.ProjectConnection
 import org.yaml.snakeyaml.DumperOptions
-import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.SafeConstructor
-import org.yaml.snakeyaml.representer.Representer
 
 
 /**
@@ -38,7 +35,7 @@ abstract class MapReadingCachedGradleOperation <V> extends CachedGradleOperation
     @Override
     Map<String, V> readFromCached(File f) {
         def map = (Map<String, Object>) f.withReader { BufferedReader r ->
-            new Yaml(new SafeConstructor(new LoaderOptions())).load(r)
+            new Yaml().load(r)
         }
         Map<String, V> newMap = [:]
 
@@ -62,7 +59,7 @@ abstract class MapReadingCachedGradleOperation <V> extends CachedGradleOperation
                 return [(key):val.toString()]
             }
         }
-        new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(options), options).dump(toWrite, writer)
+        new Yaml(options).dump(toWrite, writer)
     }
 
 }
