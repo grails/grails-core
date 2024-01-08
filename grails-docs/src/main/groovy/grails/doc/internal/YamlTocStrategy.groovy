@@ -1,6 +1,5 @@
 package grails.doc.internal
 
-import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 
@@ -8,7 +7,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor
  * Class representing a Grails user guide table of contents defined in YAML.
  */
 class YamlTocStrategy {
-    private final parser = new Yaml(new SafeConstructor(new LoaderOptions()))
+    private final parser = new Yaml(new SafeConstructor())
     private resourceChecker
     private String ext = ".gdoc"
 
