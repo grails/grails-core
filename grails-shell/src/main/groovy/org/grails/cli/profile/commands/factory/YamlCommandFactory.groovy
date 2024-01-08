@@ -22,9 +22,7 @@ import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.DefaultMultiStepCommand
 import org.grails.io.support.Resource
-import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.SafeConstructor
 
 import java.util.regex.Pattern
 
@@ -37,7 +35,7 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
-    protected Yaml yamlParser=new Yaml(new SafeConstructor(new LoaderOptions()))
+    protected Yaml yamlParser=new Yaml()
     // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
     protected JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
 
