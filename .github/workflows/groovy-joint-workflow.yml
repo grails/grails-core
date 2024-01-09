@@ -52,7 +52,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
-        if: startsWith('refs/head/6.', github.ref) || startsWith('6.', github.base_ref) || startsWith('refs/head/5.', github.ref) || startsWith('5.', github.base_ref)
+        if: startsWith('refs/heads/6.', github.ref) || startsWith('6.', github.base_ref) || startsWith('refs/heads/5.', github.ref) || startsWith('5.', github.base_ref)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
       - name: Set CI_GROOVY_VERSION for Grails
         id: groovy-version
