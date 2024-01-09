@@ -51,12 +51,8 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Print GitHub environment variables
-        run: |
-          echo "GITHUB_REF: $GITHUB_REF"
-          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
-        if: startsWith('refs/heads/6.', github.ref) || startsWith('6.', github.base_ref) || startsWith('refs/heads/5.', github.ref) || startsWith('5.', github.base_ref)
+        if: startsWith(github.ref, 'refs/heads/6.') || startsWith(github.base_ref, '6.') || startsWith(github.ref, 'refs/heads/5.') || startsWith(github.base_ref, '5.')
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
       - name: Set CI_GROOVY_VERSION for Grails
         id: groovy-version
