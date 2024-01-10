@@ -48,9 +48,7 @@ jobs:
           path: |
             ~/groovy
             ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          key: cache-local-groovy-maven-${{ github.sha }}
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
         if: startsWith(github.ref, 'refs/heads/6.') || startsWith(github.base_ref, '6.') || startsWith(github.ref, 'refs/heads/5.') || startsWith(github.base_ref, '5.')
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
@@ -137,9 +135,7 @@ jobs:
           path: |
             ~/groovy
             ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          key: cache-local-groovy-maven-${{ github.sha }}
       - name: Set CI_GROOVY_VERSION for Grails
         run: |
           echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
