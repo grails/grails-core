@@ -44,7 +44,7 @@ jobs:
           VERSION: ${{ github.event.inputs.release }}
       - name: Run Assemble
         id: assemble
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@982da8e78c05368c70dac0351bb82647a9e9a5d2 # v2
         with:
           arguments: assemble
         env:
