@@ -119,6 +119,9 @@ jobs:
             -x groovydocAll
             -x asciidoc
             -x docGDK
+      - name: Print Entries in Maven Cache
+        run: |
+          ls -la ~/.m2/repository/org/codehaus/groovy/groovy-doc
   build_grails:
     needs: [build_groovy]
     strategy:
@@ -140,6 +143,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Print Entries in Maven Cache
+        run: |
+          ls -la ~/.m2/repository/org/codehaus/groovy/groovy-doc
       - name: Set CI_GROOVY_VERSION for Grails
         run: |
           echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
