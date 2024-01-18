@@ -17,10 +17,17 @@ import spock.lang.Specification
  */
 abstract class AbstractUrlMappingsSpec extends Specification{
 
+    static final String CONTEXT_PATH = 'app-context'
+
     def setup() {
         WebUtils.clearGrailsWebRequest()
     }
 
+    LinkGenerator getLinkGeneratorWithContextPath(Closure mappings) {
+        LinkGeneratorFactory linkGeneratorFactory = new LinkGeneratorFactory()
+        linkGeneratorFactory.contextPath = CONTEXT_PATH
+        linkGeneratorFactory.create(mappings)
+    }
     LinkGenerator getLinkGenerator(Closure mappings) {
         new LinkGeneratorFactory().create(mappings)
     }
