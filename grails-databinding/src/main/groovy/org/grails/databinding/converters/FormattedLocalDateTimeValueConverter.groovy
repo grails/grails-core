@@ -18,17 +18,17 @@ package org.grails.databinding.converters
 import grails.databinding.converters.FormattedValueConverter;
 import groovy.transform.CompileStatic
 
-import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 
 /**
- * @author Jeff Brown
- * @since 2.3
+ * @author Emma Richardson
+ * @since 6.1
  */
 @CompileStatic
-class FormattedDateValueConverter implements FormattedValueConverter {
+class FormattedLocalDateValueConverter implements FormattedValueConverter {
 
     def convert(value, String format) {
-        if(value instanceof Date) {
+        if(value instanceof LocalDateTime) {
             return value
         }
         else if(value instanceof CharSequence) {
@@ -37,15 +37,13 @@ class FormattedDateValueConverter implements FormattedValueConverter {
                 return null
             }
             else {
-                def fmt = new SimpleDateFormat(format)
-                fmt.lenient = false
-                fmt.parse((String) value)
+                LocalDateTime.parse((String) value)
             }
         }
     }
 
+    @Override
     Class<?> getTargetType() {
-        Date
+        return LocalDateTime
     }
-
 }
