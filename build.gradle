@@ -444,8 +444,8 @@ subprojects { project ->
     if(project.name == 'grails-dependencies') return
     if(project.name == 'grails-bom') return
 
-    sourceCompatibility = "1.11"
-    targetCompatibility = "1.11"
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
@@ -536,8 +536,9 @@ subprojects { project ->
     def debugArguments = ['-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
                           '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
 
-    tasks.withType(Test) {
+    tasks.withType(Test).configureEach {
         useJUnitPlatform()
+        jvmArgs = jvmArgs + ['--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.util=ALL-UNNAMED']
     }
 
     test {
@@ -566,14 +567,14 @@ subprojects { project ->
             maxHeapSize = '1024m'
         }
         if(System.getProperty("debug.tests")) {
-            jvmArgs debugArguments
+            jvmArgs = jvmArgs + debugArguments
         }
     }
 
     task singleTest(type: Test) {
         // task for running a single test with -DsingleTest.single=TestName singleTest
         if(System.getProperty("debug.tests")) {
-            jvmArgs debugArguments
+            jvmArgs = jvmArgs + debugArguments
         }
     }
 
