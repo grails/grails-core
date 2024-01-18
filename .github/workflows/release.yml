@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
       - name: Extract Target Branch
         id: extract_branch
         run: |
