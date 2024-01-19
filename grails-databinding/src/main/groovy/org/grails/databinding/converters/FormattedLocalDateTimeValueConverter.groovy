@@ -25,7 +25,7 @@ import java.time.LocalDateTime
  * @since 6.1
  */
 @CompileStatic
-class FormattedLocalDateValueConverter implements FormattedValueConverter {
+class FormattedLocalDateTimeValueConverter implements FormattedValueConverter {
 
     def convert(value, String format) {
         if(value instanceof LocalDateTime) {
