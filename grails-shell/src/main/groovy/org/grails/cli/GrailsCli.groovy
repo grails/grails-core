@@ -27,6 +27,7 @@ import groovy.transform.CompileStatic
 import jline.UnixTerminal
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
+import jline.console.completer.Completer
 import jline.internal.NonBlockingInputStream
 import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
@@ -417,7 +418,7 @@ class GrailsCli {
                 new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
         )
 
-        completers.addAll((profile.getCompleters(projectContext) ?: []) as Collection)
+        completers.addAll((profile.getCompleters(projectContext) ?: []) as Collection<Completer>)
         consoleReader.addCompleter(aggregateCompleter)
         return console
     }
