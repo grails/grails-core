@@ -20,6 +20,8 @@ import groovy.transform.CompileStatic
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.web.cors.CorsConfiguration
 
+import java.util.function.Consumer
+
 /**
  * A bean that stores config and converts it to the format expected by Spring
  *
@@ -47,18 +49,10 @@ class GrailsCorsConfiguration {
                     GrailsDefaultCorsConfiguration corsConfiguration = new GrailsDefaultCorsConfiguration(grailsCorsMapping)
                     if (value instanceof Map) {
                         TypeConvertingMap config = new TypeConvertingMap((Map)value)
-                        if (config.containsKey('allowedOrigins')) {
-                            corsConfiguration.allowedOrigins = config.list('allowedOrigins')
-                        }
-                        if (config.containsKey('allowedMethods')) {
-                            corsConfiguration.allowedMethods = config.list('allowedMethods')
-                        }
-                        if (config.containsKey('allowedHeaders')) {
-                            corsConfiguration.allowedHeaders = config.list('allowedHeaders')
-                        }
-                        if (config.containsKey('exposedHeaders')) {
-                            corsConfiguration.exposedHeaders = config.list('exposedHeaders')
-                        }
+                        parseConfigList(config, 'allowedOrigins', corsConfiguration::setAllowedOrigins)
+                        parseConfigList(config, 'allowedMethods', corsConfiguration::setAllowedMethods)
+                        parseConfigList(config, 'allowedHeaders', corsConfiguration::setAllowedHeaders)
+                        parseConfigList(config, 'exposedHeaders', corsConfiguration::setExposedHeaders)
                         if (config.containsKey('maxAge')) {
                             corsConfiguration.maxAge = config.long('maxAge')
                         }
@@ -74,5 +68,19 @@ class GrailsCorsConfiguration {
         }
 
         corsConfigurationMap
+    }
+
+    private List<String> parseConfigList(TypeConvertingMap config, String key, Consumer<List<String>> setter) {
+        // Most of the times the config is defined as a single entry: "key"
+        if (config.containsKey(key)) {
+            setter.accept(config.list(key))
+        } else {
+            // Some times the config is defined as multiples entries: "key[0]", "key[1]"...
+            List<String> list = []
+            for (int index = 0; config.containsKey(key + "[$index]"); index++) {
+                list << config.get(key + "[$index]").toString()
+            }
+            if (!list.empty) setter.accept(list)
+        }
     }
 }
