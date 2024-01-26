@@ -73,6 +73,6 @@ abstract class AbstractStructuredBindingEditor<T> implements TypedStructuredBind
                 valuesMap[propName] = bindingSource.getPropertyValue(key)
             }
         }
-        valuesMap
+        valuesMap as Map<String, Object>
     }
 }
