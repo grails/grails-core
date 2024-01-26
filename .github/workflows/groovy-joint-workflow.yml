@@ -43,7 +43,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11.0.6'
       - name: Cache local Maven repository & Groovy
-        uses: actions/cache@v3
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
         with:
           path: |
             ~/groovy
@@ -130,7 +130,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
       - name: Cache local Maven repository & Groovy
-        uses: actions/cache@v3
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
         with:
           path: |
             ~/groovy
