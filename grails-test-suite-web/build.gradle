@@ -29,7 +29,7 @@ dependencies {
                 project(':grails-spring')
     testImplementation "org.grails.plugins:converters:$legacyConvertersVersion"
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.0.2", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.0.3", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
