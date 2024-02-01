@@ -49,12 +49,12 @@ publishing {
                             delegate.artifactId "async"
                             delegate.version asyncVersion
                             delegate.scope "api"
-                            delegate.exclusions {
-                                delegate.exclusion {
-                                    delegate.groupId 'javax'
-                                    delegate.artifactId 'javaee-web-api'
-                                }
-                            }
+                        }
+                        delegate.dependency {
+                            delegate.groupId "org.grails.plugins"
+                            delegate.artifactId "events"
+                            delegate.version eventsVersion
+                            delegate.scope "api"
                         }
                         delegate.dependency {
                             delegate.groupId "org.grails.plugins"
