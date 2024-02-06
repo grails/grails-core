@@ -50,7 +50,7 @@ jobs:
             ~/.m2/repository
           key: cache-local-groovy-maven-${{ github.sha }}
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
-        if: startsWith(github.ref, 'refs/heads/6.') || startsWith(github.base_ref, '6.') || startsWith(github.ref, 'refs/heads/5.') || startsWith(github.base_ref, '5.')
+        if: startsWith(github.ref, 'refs/heads/7.') || startsWith(github.base_ref, '7.') || startsWith(github.ref, 'refs/heads/6.') || startsWith(github.base_ref, '6.') || startsWith(github.ref, 'refs/heads/5.') || startsWith(github.base_ref, '5.')
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
       - name: Set CI_GROOVY_VERSION for Grails
         id: groovy-version
@@ -128,7 +128,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
       - name: Cache local Maven repository & Groovy
         uses: actions/cache@v3
         with:
