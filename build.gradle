@@ -21,7 +21,6 @@ apply plugin: 'idea'
 ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
     grailsVersion = project.projectVersion
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
     isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
     isCiBuild = System.getenv().get("CI") as Boolean
@@ -232,14 +231,14 @@ if (isReleaseVersion) {
 
 allprojects {
     repositories {
-        mavenLocal()
+        mavenLocal() // Used by the Groovy Joint Validation Github workflow after building groovy locally in CI
         mavenCentral()
-        maven { url "https://repo.grails.org/grails/core" }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url = "https://repo.grails.org/grails/core" }
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" } // TODO: Is this still used?
         if(groovyVersion.endsWith('-SNAPSHOT')) {
-            maven {
-                name 'JFrog OSS snapshot repo'
-                url 'https://oss.jfrog.org/oss-snapshot-local/'
+            maven { // Used for testing with Groovy snapshots locally
+                name = 'Groovy Snapshot repository'
+                url = 'https://groovy.jfrog.io/artifactory/libs-snapshot-local/'
             }
         }
     }
