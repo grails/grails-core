@@ -15,23 +15,13 @@
  */
 package org.grails.plugins.testing
 
-import grails.converters.JSON
-import grails.converters.XML
-
-import javax.servlet.AsyncContext
-import javax.servlet.AsyncEvent
-import javax.servlet.AsyncListener
-import javax.servlet.DispatcherType
-import javax.servlet.ServletContext
-import javax.servlet.ServletInputStream
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.Part
 import grails.web.mime.MimeType
-import org.grails.web.util.GrailsApplicationAttributes
+import groovy.json.JsonSlurper
+import groovy.json.StreamingJsonBuilder
+import groovy.xml.MarkupBuilder
+import groovy.xml.XmlParser
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -41,6 +31,11 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
+
+import javax.servlet.*
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Part
 
 /**
  * A custom mock HTTP servlet request that provides the extra properties
@@ -107,12 +102,9 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         setFormat('json')
         if (sourceJson instanceof String) {
             setContent(sourceJson.getBytes("UTF-8"))
-        }
-        else if (sourceJson instanceof JSON) {
-            setContent(sourceJson.toString().getBytes("UTF-8"))
-        }
-        else {
-            setContent(new JSON(sourceJson).toString().getBytes("UTF-8"))
+        } else {
+            final String jsonString = toJSON(sourceJson)
+            setContent(jsonString.getBytes("UTF-8"))
         }
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
@@ -128,18 +120,60 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
 
         if (sourceXml instanceof String) {
             setContent(sourceXml.getBytes("UTF-8"))
+        } else {
+            def xmlString = toXmlString(sourceXml)
+            setContent(xmlString.getBytes("UTF-8"))
         }
-        else {
-            XML xml
-            if(sourceXml instanceof XML) {
-                xml = (XML)sourceXml
-            } else {
-                xml = new XML(sourceXml)
+        getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
+    }
+
+    private def toJSON(Object obj, StreamingJsonBuilder jsonBuilder = null, parentProp = null) {
+        def jsonWriter = new StringWriter()
+        jsonBuilder = jsonBuilder ?: new StreamingJsonBuilder(new StringWriter())
+
+        def buildClosure = {
+            obj.properties.each { prop, value ->
+                if (!prop.startsWith('$') && !prop.equals('class')) {
+                    if (value instanceof Map || value instanceof List || value instanceof Collection) {
+                        toJSON(value, jsonBuilder, prop)
+                    } else {
+                        "$prop" value
+                    }
+                }
             }
-            setContent(xml.toString().getBytes("UTF-8"))
         }
 
-        getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
+        if (parentProp == null) {
+            jsonBuilder(buildClosure)
+        } else {
+            jsonBuilder."$parentProp"(buildClosure)
+        }
+        return jsonWriter.toString()
+    }
+
+    private String toJsonString(Object sourceJson) {
+        def jsonWriter = new StringWriter()
+        def jsonBuilder = new StreamingJsonBuilder(jsonWriter)
+        jsonBuilder {
+            recursiveStreamingJsonBuilder(jsonBuilder, sourceJson, null)
+        }
+        return jsonWriter.toString()
+    }
+
+    private String toXmlString(Object sourceXml) {
+        def writer = new StringWriter()
+        def xmlBuilder = new MarkupBuilder(writer)
+
+        xmlBuilder.rootNode {
+            object {
+                sourceXml.properties.each { prop, value ->
+                    if (!prop.startsWith('$') && !prop.equals('class')) {
+                        "$prop"(value)
+                    }
+                }
+            }
+        }
+        writer.toString()
     }
 
     void setXML(Object sourceXml) {
@@ -229,7 +263,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     */
     def getXML() {
         if (!cachedXml) {
-            cachedXml = GrailsMockHttpServletRequest.classLoader.loadClass("grails.converters.XML").parse(this)
+            cachedXml = new XmlParser().parse(this.getInputStream())
         }
         return cachedXml
     }
@@ -241,7 +275,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      */
     def getJSON() {
         if (!cachedJson) {
-            cachedJson = GrailsMockHttpServletRequest.classLoader.loadClass("grails.converters.JSON").parse(this)
+            cachedJson = new JsonSlurper().parse(this.getInputStream())
         }
         return cachedJson
     }
@@ -566,6 +600,6 @@ class MockAsyncContext implements AsyncContext {
     }
 
     def <T extends AsyncListener> T createListener(Class<T> clazz) {
-        return clazz.newInstance()
+        return clazz.getDeclaredConstructor().newInstance()
     }
 }

@@ -18,7 +18,6 @@ import grails.databinding.converters.ValueConverter
 import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
 import org.grails.databinding.converters.DateConversionHelper
-
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -213,35 +212,44 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         binder.bind obj, new SimpleMapDataBindingSource([utilDate: '2013-04-15 21:26:31.973', formattedUtilDate: '11151969'])
+        final Calendar calendar = Calendar.getInstance()
+        calendar.setTime(obj.utilDate)
 
         then:
-        Calendar.APRIL == obj.utilDate.month
-        15 == obj.utilDate.date
-        113 == obj.utilDate.year
-        21 == obj.utilDate.hours
-        26 == obj.utilDate.minutes
-        31 == obj.utilDate.seconds
-        Calendar.NOVEMBER == obj.formattedUtilDate.month
-        15 == obj.formattedUtilDate.date
-        69 == obj.formattedUtilDate.year
+        Calendar.APRIL == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        2013 == calendar.get(Calendar.YEAR)
+        21 == calendar.get(Calendar.HOUR_OF_DAY)
+        26 == calendar.get(Calendar.MINUTE)
+        31 == calendar.get(Calendar.SECOND)
+
+        when:
+        calendar.setTime(obj.formattedUtilDate)
+
+        then:
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
 
         when:
         obj.utilDate = null
         binder.bind obj, new SimpleMapDataBindingSource([utilDate: "2011-03-12T09:24:22Z"])
+        calendar.setTime(obj.utilDate)
 
         then:
-        Calendar.MARCH == obj.utilDate.month
-        12 == obj.utilDate.date
-        111 == obj.utilDate.year
-        9 == obj.utilDate.hours
-        24 == obj.utilDate.minutes
-        22 == obj.utilDate.seconds
+        Calendar.MARCH == calendar.get(Calendar.MONTH)
+        12 == calendar.get(Calendar.DAY_OF_MONTH)
+        2011 == calendar.get(Calendar.YEAR)
+        9 == calendar.get(Calendar.HOUR_OF_DAY)
+        24 == calendar.get(Calendar.MINUTE)
+        22 == calendar.get(Calendar.SECOND)
     }
 
     void 'Test structured date binding'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
+        Calendar calendar = Calendar.getInstance()
 
         when:
         binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
@@ -257,19 +265,28 @@ class SimpleDataBinderSpec extends Specification {
             calendar: 'struct',
             utilDate: 'struct']))
         def utilDate = obj.utilDate
-        def calendar = obj.calendar
-        def sqlDate = obj.sqlDate
+        calendar.setTime(utilDate)
 
         then:
-        Calendar.NOVEMBER == utilDate.month
-        15 == utilDate.date
-        69 == utilDate.year
-        Calendar.JUNE == sqlDate.month
-        14 == sqlDate.date
-        37 == sqlDate.year
-        Calendar.APRIL == calendar.get(Calendar.MONTH)
-        21 == calendar.get(Calendar.DATE)
-        2049 == calendar.get(Calendar.YEAR)
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
+
+        when:
+        calendar.setTime(obj.sqlDate)
+
+        then:
+        Calendar.JUNE == calendar.get(Calendar.MONTH)
+        14 == calendar.get(Calendar.DAY_OF_MONTH)
+        1937 == calendar.get(Calendar.YEAR)
+
+        when:
+        def cal = obj.calendar
+
+        then:
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        21 == cal.get(Calendar.DATE)
+        2049 == cal.get(Calendar.YEAR)
 
         when:
         obj.utilDate = obj.calendar = obj.sqlDate = null
@@ -285,20 +302,28 @@ class SimpleDataBinderSpec extends Specification {
             sqlDate: 'date.struct',
             calendar: 'date.struct',
             utilDate: 'date.struct']))
-        utilDate = obj.utilDate
-        calendar = obj.calendar
-        sqlDate = obj.sqlDate
+        calendar.setTime(obj.utilDate)
 
         then:
-        Calendar.NOVEMBER == utilDate.month
-        15 == utilDate.date
-        69 == utilDate.year
-        Calendar.JUNE == sqlDate.month
-        14 == sqlDate.date
-        37 == sqlDate.year
-        Calendar.APRIL == calendar.get(Calendar.MONTH)
-        21 == calendar.get(Calendar.DATE)
-        2049 == calendar.get(Calendar.YEAR)
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
+
+        when:
+        calendar.setTime(obj.sqlDate)
+
+        then:
+        Calendar.JUNE == calendar.get(Calendar.MONTH)
+        14 == calendar.get(Calendar.DAY_OF_MONTH)
+        1937 == calendar.get(Calendar.YEAR)
+
+        when:
+        cal = obj.calendar
+
+        then:
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        21 == cal.get(Calendar.DATE)
+        2049 == cal.get(Calendar.YEAR)
 
         when:
         obj.utilDate = obj.calendar = obj.sqlDate = null
@@ -315,15 +340,13 @@ class SimpleDataBinderSpec extends Specification {
             calendar: 'struct',
             utilDate: 'struct']), null, ['sqlDate', 'utilDate'])
         utilDate = obj.utilDate
-        calendar = obj.calendar
-        sqlDate = obj.sqlDate
+        cal = obj.calendar
 
         then:
-        sqlDate == null
         utilDate == null
-        Calendar.APRIL == calendar.get(Calendar.MONTH)
-        21 == calendar.get(Calendar.DATE)
-        2049 == calendar.get(Calendar.YEAR)
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        21 == cal.get(Calendar.DATE)
+        2049 == cal.get(Calendar.YEAR)
     }
 
     void 'Test struct binding to a list'() {

@@ -42,7 +42,7 @@ class ExecuteStep extends AbstractStep {
         try {
             String className = parameters.get(CLASS_NAME)
             def cmd = className ? Class.forName(className, true, Thread.currentThread().contextClassLoader)
-                                  .newInstance() : null
+                                  .getDeclaredConstructor().newInstance() : null
             if(cmd instanceof Command) {
                 if(cmd instanceof ProfileCommand) {
                     ((ProfileCommand)cmd).profile = command.profile
