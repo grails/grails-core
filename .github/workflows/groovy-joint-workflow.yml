@@ -78,14 +78,9 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           echo "buildCache {" >> $GITHUB_OUTPUT 
           echo "    local { enabled = System.getenv('CI') != 'true' }" >> $GITHUB_OUTPUT 
-          echo "    remote(HttpBuildCache) {" >> $GITHUB_OUTPUT 
+          echo "    remote(gradleEnterprise.buildCache) {" >> $GITHUB_OUTPUT 
           echo "        push = System.getenv('CI') == 'true'" >> $GITHUB_OUTPUT
           echo "        enabled = true" >> $GITHUB_OUTPUT 
-          echo "        url = 'https://ge.grails.org/cache/'" >> $GITHUB_OUTPUT 
-          echo "        credentials {" >> $GITHUB_OUTPUT 
-          echo "            username = System.getenv('GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER')" >> $GITHUB_OUTPUT 
-          echo "            password = System.getenv('GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY')" >> $GITHUB_OUTPUT 
-          echo "        }" >> $GITHUB_OUTPUT 
           echo "    }" >> $GITHUB_OUTPUT 
           echo "}" >> $GITHUB_OUTPUT 
           echo "" >> $GITHUB_OUTPUT
@@ -102,8 +97,6 @@ jobs:
         env:
           GRADLE_SCANS_ACCEPT: yes
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
         with:
           build-root-directory: ../groovy
           arguments: |
@@ -139,8 +132,6 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_groovyVersion: ${{ needs.build_groovy.outputs.groovyVersion }}
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
         with:
           arguments: |
             build 
