@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import grails.web.mime.MimeUtility
 import groovy.json.StreamingJsonBuilder
 import groovy.transform.CompileStatic
 import groovy.transform.Generated
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.SpringIOUtils

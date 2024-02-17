@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,9 @@ import grails.converters.XML
 import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.hal.HalXmlRenderer
+import grails.web.mime.MimeType
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import grails.web.mime.MimeType
-import org.grails.web.xml.PrettyPrintXMLStreamWriter
-import org.grails.web.xml.StreamingMarkupWriter
-import org.grails.web.xml.XMLStreamWriter
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.http.HttpMethod
@@ -59,69 +56,68 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
     }
 
     @Override
-    void renderInternal(T object, RenderContext context) {
-        final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
-        XMLStreamWriter w = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
-        XML xml = new XML(w)
-
-        final entity = mappingContext.getPersistentEntity(object.class.name)
-        boolean isDomain = entity != null
+    void renderInternal(Object object, RenderContext renderContext) {
 
         Set writtenObjects = []
-        w.startDocument(encoding, "1.0")
+        def xml = startDocument(renderContext)
+        def entity = mappingContext.getPersistentEntity(object.class.name)
+        def isDomain = entity != null
 
         if (isDomain) {
-            writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
+            writeDomainWithEmbeddedAndLinks(entity, object, renderContext, xml, writtenObjects)
         } else if (object instanceof Collection) {
-            final locale = context.locale
-            String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute:true)
-            final title = getResourceTitle(context.resourcePath, locale)
-            XMLStreamWriter writer = xml.getWriter()
+            def locale = renderContext.locale
+            def resourceHref = linkGenerator.link(uri: renderContext.resourcePath, method: HttpMethod.GET, absolute: true)
+            def title = getResourceTitle(renderContext.resourcePath, locale)
+            def writer = xml.getWriter()
             writer
                 .startNode(FEED_TAG)
                 .attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
-                    .startNode(TITLE_ATTRIBUTE)
-                    .characters(title)
-                    .end()
-                    .startNode(ID_TAG)
-                    .characters(generateIdForURI(resourceHref))
-                    .end()
+                .startNode(TITLE_ATTRIBUTE)
+                .characters(title)
+                .end()
+                .startNode(ID_TAG)
+                .characters(generateIdForURI(resourceHref))
+                .end()
 
-            def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
-            linkSelf.title = title
-            linkSelf.contentType=mimeTypes[0].name
-            linkSelf.hreflang = locale
-            writeLink(linkSelf, locale, xml)
-            def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
-            linkAlt.title = title
-            linkAlt.hreflang = locale
-            writeLink(linkAlt, locale, xml)
+            writeRelationshipLinks(resourceHref, title, locale, xml)
 
-
-            for (o in ((Collection) object)) {
-                final currentEntity = mappingContext.getPersistentEntity(o.class.name)
+            for (o in (Collection) object) {
+                def currentEntity = mappingContext.getPersistentEntity(o.class.name)
                 if (currentEntity) {
-                    writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects, false)
+                    writeDomainWithEmbeddedAndLinks(currentEntity, o, renderContext, xml, writtenObjects, false)
                 } else {
                     throw new IllegalArgumentException("Cannot render object [$o] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
                 }
             }
             writer.end()
-            context.writer.flush()
+            renderContext.writer.flush()
         } else {
             throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
         }
-
     }
 
-    String generateIdForURI(String url, Date dateCreated = null, Object id = null) {
+    private void writeRelationshipLinks(String resourceHref, String title, Locale locale, XML xml) {
+        def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
+        linkSelf.title = title
+        linkSelf.contentType = mimeTypes[0].name
+        linkSelf.hreflang = locale
+        writeLink(linkSelf, locale, xml)
+
+        def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
+        linkAlt.title = title
+        linkAlt.hreflang = locale
+        writeLink(linkAlt, locale, xml)
+    }
+
+    static String generateIdForURI(String url, Date dateCreated = null, Object id = null) {
         if (url.startsWith('http')) {
             url = url.substring(url.indexOf('//')+2, url.length())
         }
         url = url.replace('#', '/')
-        final i = url.indexOf('/')
+        def i = url.indexOf('/')
         if (i > -1) {
-            String dateCreatedId = ""
+            String dateCreatedId = ''
             if (dateCreated) {
                 dateCreatedId = ",${ID_DATE_FORMAT.format(dateCreated)}"
             }
@@ -131,31 +127,59 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
         return "tag:$url"
     }
 
-    protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst = true) {
+    @Override
+    protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects) {
+        writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects, true)
+    }
+
+/*
+    protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst) {
+
         if (!entity.getPropertyByName('lastUpdated')) {
             throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
         }
-        final locale = context.locale
-        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute:true)
-        final title = getLinkTitle(entity, locale)
-        XMLStreamWriter writer = xml.getWriter()
+
+        def writer = xml.getWriter()
+
+*/
+/*
+        if (object instanceof Collection) {
+            def associations = entity.associations
+            def name = entity.associations.get(entity.associations.indexOf(object)).name
+            writer.startNode(name)
+            for (o in (Collection) object) {
+                writeDomainWithEmbeddedAndLinks(entity, o, context, xml, writtenObjects, false)
+            }
+            writer.end()
+            return
+        }
+*//*
+
+
+
+
+        def locale = context.locale
+        def resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: true)
+        def title = getLinkTitle(entity, locale)
+
         writer.startNode(isFirst ? FEED_TAG : ENTRY_TAG)
+
         if (isFirst) {
             writer.attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
         }
+
         if (!entity.getPropertyByName(TITLE_ATTRIBUTE)) {
             writer.startNode(TITLE_ATTRIBUTE)
                 .characters(object.toString())
                 .end()
         }
-        final dateCreated = formatDateCreated(object)
+        def dateCreated = formatDateCreated(object)
         if (dateCreated) {
-
             writer.startNode(PUBLISHED_TAG)
                 .characters(dateCreated)
                 .end()
         }
-        final lastUpdated = formatLastUpdated(object)
+        def lastUpdated = formatLastUpdated(object)
         if (lastUpdated) {
             writer.startNode(UPDATED_TAG)
                 .characters(lastUpdated)
@@ -167,79 +191,152 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
 
         def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
         linkSelf.title = title
-        linkSelf.contentType=mimeTypes[0].name
+        linkSelf.contentType = mimeTypes[0].name
         linkSelf.hreflang = locale
         writeLink(linkSelf, locale, xml)
+
         def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
         linkAlt.title = title
         linkAlt.hreflang = locale
+        writeLink(linkAlt, locale, xml)
 
-        writeLink(linkAlt,locale, xml)
-        final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        final associationMap = writeAssociationLinks(context,object, locale, xml, entity, metaClass)
+        def metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
+        def associationMap = writeAssociationLinks(context, object, locale, xml, entity, metaClass)
         writeDomain(context, metaClass, entity, object, xml)
 
         if (associationMap) {
-            for (entry in associationMap.entrySet()) {
-                final property = entry.key
-                final isSingleEnded = property instanceof ToOne
-                if (isSingleEnded) {
-                    Object value = entry.value
+            for (def entry in associationMap.entrySet()) {
+                def property = entry.key
+                if (!property instanceof ToOne) {
+                    def associatedEntity = property.associatedEntity
+                    if (associatedEntity) {
+                        writer.startNode(property.name)
+                        for (def obj in entry.value) {
+                            if (!writtenObjects.contains(obj)) {
+                                writtenObjects.add(obj)
+                                writeDomainWithEmbeddedAndLinks(associatedEntity, obj, context, xml, writtenObjects, false)
+                            }
+                        }
+                        writer.end()
+                    }
+                } else {
+                    def value = entry.value
+                    if (value && !writtenObjects.contains(value)) {
+                        def associatedEntity = property.associatedEntity
+                        if (associatedEntity) {
+                            writtenObjects.add(value)
+                            writeDomainWithEmbeddedAndLinks(associatedEntity, value, context, xml, writtenObjects, false)
+                        }
+                    }
+                }
+            }
+        }
+        writer.end()
+    }
+*/
+
+    protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst) {
+
+        if (!entity.getPropertyByName('lastUpdated')) {
+            throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
+        }
+
+        def locale = context.locale
+        def resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: true)
+        def title = getLinkTitle(entity, locale)
+
+        def writer = xml.getWriter()
+        writer.startNode(isFirst ? FEED_TAG : ENTRY_TAG)
+
+        if (isFirst) {
+            writer.attribute(XMLNS_ATTRIBUTE, ATOM_NAMESPACE)
+        }
+
+        if (!entity.getPropertyByName(TITLE_ATTRIBUTE)) {
+            writer.startNode(TITLE_ATTRIBUTE)
+                    .characters(object.toString())
+                    .end()
+        }
+
+        def dateCreated = formatDateCreated(object)
+        if (dateCreated) {
+            writer.startNode(PUBLISHED_TAG)
+                    .characters(dateCreated)
+                    .end()
+        }
+
+        def lastUpdated = formatLastUpdated(object)
+        if (lastUpdated) {
+            writer.startNode(UPDATED_TAG)
+                    .characters(lastUpdated)
+                    .end()
+        }
+
+        writer.startNode(ID_TAG)
+                .characters(getObjectId(entity, object))
+                .end()
+
+        writeRelationshipLinks(resourceHref, title, locale, xml)
+
+        def metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
+        def associationMap = writeAssociationLinks(context, object, locale, xml, entity, metaClass)
+        writeDomain(context, metaClass, entity, object, xml)
+
+        if (associationMap) {
+            for (def entry in associationMap.entrySet()) {
+                def property = entry.key
+                if (property instanceof ToOne) {
+                    def value = entry.value
                     if (writtenObjects.contains(value)) {
                         continue
                     }
 
                     if (value != null) {
-                        final associatedEntity = property.associatedEntity
+                        def associatedEntity = property.associatedEntity
                         if (associatedEntity) {
-                            writtenObjects << value
+                            writtenObjects.add(value)
                             writeDomainWithEmbeddedAndLinks(associatedEntity, value, context, xml, writtenObjects, false)
                         }
                     }
-                } else {
-                    final associatedEntity = property.associatedEntity
+                }
+                else {
+                    def associatedEntity = property.associatedEntity
                     if (associatedEntity) {
                         writer.startNode(property.name)
-                        for (obj in entry.value) {
-                            writtenObjects << obj
+                        for (def obj in entry.value) {
+                            writtenObjects.add(obj)
                             writeDomainWithEmbeddedAndLinks(associatedEntity, obj, context, xml, writtenObjects, false)
                         }
                         writer.end()
                     }
                 }
-
             }
         }
         writer.end()
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    String getObjectId(PersistentEntity entity, def object) {
-        final name = entity.identity.name
-        final objectId = object[name]
-        final dateCreated = object.dateCreated
-        final url = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: true)
-        return generateIdForURI(url, dateCreated, objectId)
+    String getObjectId(PersistentEntity entity, Object object) {
+        def name = entity.identity.name
+        def objectId = object[name]
+        def dateCreated = object.dateCreated
+        def url = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: true)
+        return generateIdForURI(url, dateCreated as Date, objectId)
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected String formatDateCreated(object) {
-        final dateCreated = object.dateCreated
-        if (dateCreated != null) {
-            return formatAtomDate(dateCreated)
+    protected static String formatDateCreated(Object object) {
+        return object.hasProperty('dateCreated') ? formatAtomDate(object.invokeMethod('getDateCreated', null) as Date) : null
+    }
+
+    protected static String formatLastUpdated(Object object) {
+        return object.hasProperty('lastUpdated') ? formatAtomDate(object.invokeMethod('getLastUpdated', null) as Date) : null
+    }
+
+    protected static String formatAtomDate(Date dateCreated) {
+        if (dateCreated) {
+            def dateFormat = ATOM_DATE_FORMAT.format(dateCreated)
+            return dateFormat.substring(0, 19) + dateFormat.substring(22, dateFormat.length())
         }
-    }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected String formatLastUpdated(object) {
-        final lastUpdated = object.lastUpdated
-        if (lastUpdated != null) {
-            return formatAtomDate(lastUpdated)
-        }
-    }
-
-    protected String formatAtomDate(Date dateCreated) {
-        def dateFormat = ATOM_DATE_FORMAT.format(dateCreated)
-        return dateFormat.substring(0, 19) + dateFormat.substring(22, dateFormat.length())
+        return null
     }
 }

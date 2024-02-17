@@ -39,7 +39,7 @@ dependencies {
     compileOnly("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
+    compileOnly("org.apache.groovy:groovy-templates:$groovyVersion")
 
 
     api project(":grails-bootstrap"), {
@@ -48,7 +48,7 @@ dependencies {
         exclude group:"net.java.dev.jna", module:"jna"
 
         // Ant
-        exclude group:"org.codehaus.groovy", module:"groovy-ant"
+        exclude group:"org.apache.groovy", module:"groovy-ant"
         exclude group:"org.apache.ant", module:"ant"
         exclude group:"org.apache.ant", module:"ant-launcher"
         exclude group:"org.apache.ivy", module:"ivy"

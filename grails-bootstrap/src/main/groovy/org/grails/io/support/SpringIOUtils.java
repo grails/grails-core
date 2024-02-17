@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2008 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package org.grails.io.support;
 
-import groovy.util.XmlSlurper;
+import groovy.xml.XmlSlurper;
 import groovy.xml.FactorySupport;
 import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;

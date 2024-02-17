@@ -9,7 +9,7 @@ dependencies {
         exclude group:'org.grails', module:'grails-encoder'
     }
 
-    api "org.codehaus.groovy:groovy-templates:$groovyVersion"
+    api "org.apache.groovy:groovy-templates:$groovyVersion"
 
     api "org.springframework:spring-webmvc:${springVersion}"
     api "org.springframework:spring-context-support:${springVersion}"

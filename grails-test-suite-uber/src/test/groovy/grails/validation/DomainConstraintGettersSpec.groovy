@@ -12,6 +12,7 @@ import grails.persistence.Entity
  *
  */
 @Issue(['grails/grails-core#9749', 'grails/grails-core#9754'])
+@Ignore('With Groovy 4, it is not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
 class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     Class[] getDomainClassesToMock() {
@@ -305,7 +306,7 @@ class SimplePropertiesDomain {
 /**
  * Domain with properties from super class only
  */
-@Entity
+//@Entity
 class InheritedPropertiesDomain extends SimplePropertiesDomain {}
 
 /**
@@ -369,7 +370,7 @@ class MethodPropertiesDomain {
 /**
  * Domain with method properties from super class
  */
-@Entity
+//@Entity
 class InheritedMethodPropertiesDomain extends MethodPropertiesDomain {}
 
 /**
@@ -539,7 +540,7 @@ trait BoolMethodPropertiesDomainTrait {
 /**
  * Domain with inherited bool method properties from super class
  */
-@Entity
+//@Entity
 class InheritedBoolMethodPropertiesDomain extends BoolMethodPropertiesDomain {}
 
 /**
@@ -558,17 +559,17 @@ class DomainWithTransients {
 
     void setMethodProperty(String value) {}
 
-    transient String getTransientMethodProperty() {}
+    String getTransientMethodProperty() {}
 
-    transient void setTransientMethodProperty(String value) {}
+    void setTransientMethodProperty(String value) {}
 
     Boolean isBoolMethodProperty() {}
 
     void setBoolMethodProperty(Boolean value) {}
 
-    transient Boolean isTransientBoolMethodProperty() {}
+    Boolean isTransientBoolMethodProperty() {}
 
-    transient void setTransientBoolMethodProperty(Boolean value) {}
+    void setTransientBoolMethodProperty(Boolean value) {}
 }
 
 trait TraitWithTransients {
@@ -593,7 +594,7 @@ trait TraitWithTransients {
     transient void setTransientBoolMethodProperty(Boolean value) {}
 }
 
-@Entity
+//@Entity
 class InheritedDomainWithTransients extends DomainWithTransients {}
 
 @Entity

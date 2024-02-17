@@ -1,4 +1,4 @@
-/* Copyright 2013 the original author or authors.
+/* Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,14 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
     GrailsWebDataBinder binder
 
     void setupSpec() {
-        mockDomains Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget
+        mockDomains(
+            Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child,
+            CollectionContainer, DataBindingBook, /*Fidget,*/ Parent, Publication, Publisher, Team, Widget
+        )
     }
 
     void setup() {
-        binder = grailsApplication.mainContext.getBean(DataBindingUtils.DATA_BINDER_BEAN_NAME)
+        binder = grailsApplication.mainContext.getBean(DataBindingUtils.DATA_BINDER_BEAN_NAME) as GrailsWebDataBinder
     }
     
     void cleanup() {
@@ -111,16 +114,16 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
             someDouble: '6.6'.replace('.', decimalSeparator)]))
 
         then:
-        obj.someBoolean == true
-        obj.someByte == 1
+        obj.someBoolean
+        obj.someByte == 1 as byte
         obj.someChar == ('a' as char)
-        obj.someShort == 2
+        obj.someShort == 2 as short
         obj.someInt == 3
         obj.someLong == 4
-        obj.someFloat == 5.5
-        obj.someDouble == 6.6
+        obj.someFloat == 5.5f
+        obj.someDouble == 6.6d
         where:
-        locale << [Locale.getInstance("fi", "FI", ""), Locale.getInstance("en", "US", "")]
+        locale << [new Locale("fi", "FI", ""), new Locale("en", "US", "")]
         decimalSeparator << [',', '.']
     }
     
@@ -138,7 +141,7 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
             someDouble: '6.6x'.replace('.', decimalSeparator)]))
 
         then:
-        obj.someShort == 0
+        obj.someShort == 0 as short
         obj.someInt == 0
         obj.someLong == 0
         obj.someFloat == 0
@@ -155,7 +158,7 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         obj.errors.getFieldError('someDouble').rejectedValue == '6' + decimalSeparator + '6x'
 
         where:
-        locale << [Locale.getInstance("fi", "FI", ""), Locale.getInstance("en", "US", "")]
+        locale << [new Locale("fi", "FI", ""), new Locale("en", "US", "")]
         decimalSeparator << [',', '.']
     }
 
@@ -1356,15 +1359,18 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
 
 @Entity
 class Team {
-    static hasMany = [members: Author, states: String]
+
     Map members
     Map states
+
+    @SuppressWarnings('unused')
+    static hasMany = [members: Author, states: String]
 }
 
 @Entity
 class Publisher {
+
     String name
-    static hasMany = [publications: Publication, authors: Author, widgets: Widget]
     List publications
     
     @BindUsing({ obj, source ->
@@ -1376,7 +1382,11 @@ class Publisher {
     List widgets = []
     
     Currency localCurrency
-    
+
+    @SuppressWarnings('unused')
+    static hasMany = [publications: Publication, authors: Author, widgets: Widget]
+
+    @SuppressWarnings('unused')
     static constraints = {
         localCurrency nullable: true
     }
@@ -1389,8 +1399,11 @@ class SomeNonDomainClass {
 
 @Entity
 class Publication {
+
     String title
     Author author
+
+    @SuppressWarnings('unused')
     static belongsTo = [publisher: Publisher]
 }
 
@@ -1415,6 +1428,7 @@ class Author {
     })
     Widget widget
 
+    @SuppressWarnings('unused')
     static constraints = {
         widget nullable: true
         stringWithSpecialBinding nullable: true
@@ -1423,9 +1437,11 @@ class Author {
 
 @Entity
 @Sortable(includes = ["isBindable", "isNotBindable"])
-class Widget  {
+class Widget {
+
     String isBindable
     String isNotBindable
+
     @BindUsing({ obj, source ->
         def cnt = source['listOfIntegers'] as int
         def result = []
@@ -1435,14 +1451,20 @@ class Widget  {
         result
     })
     List<Integer> listOfIntegers = []
+
     TimeZone timeZone
 
+    @SuppressWarnings('unused')
     static constraints = {
         isNotBindable bindable: false
         timeZone nullable: true
     }
 }
-@Entity
+
+/**
+ * With Groovy 4, domain classes cannot be subclassed
+ */
+//@Entity
 class Fidget extends Widget {
     String name
 }
@@ -1454,32 +1476,42 @@ class Parent {
 
 @Entity
 class Child {
+
     @BindingFormat(code='my.date.format')
     Date birthDate
+
+    @SuppressWarnings('unused')
     static hasMany = [someOtherIds: Integer]
 }
 
 @Entity
 class DataBindingBook {
+
     String title
     List importantPageNumbers
     List topics
+
     @BindingFormat("MMddyyyy")
     Date datePublished
+
+    @SuppressWarnings('unused')
     static hasMany = [topics: String, importantPageNumbers: Integer]
 }
 
 @Entity
 class CollectionContainer {
-    static hasMany = [listOfWidgets: Widget,
-                      setOfWidgets: Widget,
-                      collectionOfWidgets: Widget,
-                      sortedSetOfWidgets: Widget]
+
     List listOfWidgets
     SortedSet sortedSetOfWidgets
     Collection collectionOfWidgets
     List<String> listOfStrings
     List<Long> listOfLong
+
+    @SuppressWarnings('unused')
+    static hasMany = [listOfWidgets: Widget,
+                      setOfWidgets: Widget,
+                      collectionOfWidgets: Widget,
+                      sortedSetOfWidgets: Widget]
 }
 
 class DocumentHolder {
@@ -1516,45 +1548,58 @@ class AssociationBindingPage {
 
 @Entity
 class AssociationBindingBook {
+
     String title
     List pages
+
+    @SuppressWarnings('unused')
     static belongsTo = [author: AssociationBindingAuthor]
-    static hasMany = [pages:AssociationBindingPage]
+
+    @SuppressWarnings('unused')
+    static hasMany = [pages: AssociationBindingPage]
 }
 
 @Entity
 class AssociationBindingAuthor {
+
     String name
-    static hasMany = [books: AssociationBindingBook]
     List books
+
+    @SuppressWarnings('unused')
+    static hasMany = [books: AssociationBindingBook]
 }
 
 @Entity
 class Foo {
+
     Boolean activeMonday
-
-    static constraints = {
-        activeDays bindable:true
-    }
-
-    static transients = ['activeDays']
-    
     Collection<Integer> numbers
 
+    private Set<String> _names
+
+    private transient Collection<String> _airports
+    private transient Set<Integer> _workdays
+
+    @SuppressWarnings('unused')
+    static constraints = {
+        activeDays bindable: true
+    }
+
+    @SuppressWarnings('unused')
+    static transients = ['activeDays']
+    
     List getActiveDays() {
         def activeDays = []
-        if( activeMonday )
-            activeDays << 'mon'
+        if (activeMonday) activeDays << 'mon'
         activeDays
     }
 
     void setActiveDays(List activeDays) {
-        if( activeDays.contains("mon") )
+        if (activeDays.contains('mon')) {
             activeMonday = true
+        }
     }
     
-    private transient Set<Integer> _workdays
-  
     void setWorkdays(Collection<Integer> workdays) {
         _workdays = new HashSet<Integer>(workdays)
     }
@@ -1563,17 +1608,13 @@ class Foo {
         _workdays
     }
     
-    private Set<String> _names
-    
     void setNames(Set<String> names) {
         _names = names
     }
     
     Set<String> getNames() {
-        Collections.unmodifiableSet(_names ?: [] as Set)
+        Collections.unmodifiableSet(_names ?: [] as Set) as Set<String>
     }
-    
-    private transient Collection<String> _airports
     
     void setAirports(Collection<String> airports) {
         _airports = airports

@@ -2,8 +2,7 @@ package grails.test.mixin.unique
 
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
-import groovy.transform.NotYetImplemented
-import spock.lang.Ignore
+import groovy.test.NotYetImplemented
 import spock.lang.Specification
 
 /*

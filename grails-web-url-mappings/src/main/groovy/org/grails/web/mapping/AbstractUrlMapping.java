@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import grails.core.GrailsApplication;
 import grails.gorm.validation.Constrained;
 import grails.gorm.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
-import org.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -47,8 +46,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Object redirectInfo;
     protected ServletContext servletContext;
     protected GrailsApplication grailsApplication;
-    @SuppressWarnings("rawtypes")
-    protected Map parameterValues = Collections.emptyMap();
+    protected Map<String,Object> parameterValues = Collections.emptyMap();
     protected boolean parseRequest;
     protected String mappingName;
     protected String httpMethod = ANY_HTTP_METHOD;
@@ -145,8 +143,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         return viewName;
     }
 
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public void setParameterValues(Map parameterValues) {
+    public void setParameterValues(Map<String,Object> parameterValues) {
         this.parameterValues = Collections.unmodifiableMap(parameterValues);
     }
 
