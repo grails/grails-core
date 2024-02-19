@@ -114,9 +114,9 @@ class GrailsConfigSpec extends Specification{
         CodeGenConfig config = new CodeGenConfig([a: [b: [c: [d: 1, e: 2]]]])
         when:
         config.a.b = null
-        config.a.b.c = 1
+        config.a.b = [c: 1]
         then:
-        config.configMap == [a: [b: [c: 1]], 'a.b.c':1]
+        config.configMap == [a: [b: [c: 1]], 'a.b.c':1, 'a.b': [c: 1]]
     }
     
     def "should support casting to Map"() {

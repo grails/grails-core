@@ -14,7 +14,7 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
     }}
 
     Closure doWithConfig() {{ config ->
-        config.grails.gorm.default.constraints = {
+        config['grails.gorm.default.constraints'] = {
             isProg inList: ['Emerson', 'Lake', 'Palmer']
         }
     }}
