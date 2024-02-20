@@ -1,13 +1,10 @@
 package org.grails.plugins
 
 import grails.boot.config.GrailsAutoConfiguration
-import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import groovy.transform.CompileStatic
-import org.grails.plugins.DefaultGrailsPlugin
-import org.grails.plugins.MockGrailsPluginManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.FileSystemResource
@@ -24,17 +21,17 @@ class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
 
     @Bean(name = "grailsPluginManager")
     GrailsPluginManager getGrailsPluginManager() {
-        String tempDir = System.getProperty("java.io.tmpdir")
-        GrailsApplication grailsApplication = new DefaultGrailsApplication()
-        final MockGrailsPluginManager pluginManager = new MockGrailsPluginManager(grailsApplication)
-        final List<DefaultGrailsPlugin> plugins = createGrailsPlugins(grailsApplication)
-        plugins.forEach({ plugin -> pluginManager.registerMockPlugin((GrailsPlugin) plugin)})
-        return pluginManager
+        MockGrailsPluginManager pluginManager = new MockGrailsPluginManager()
+        createGrailsPlugins(pluginManager.application).each {
+            pluginManager.registerMockPlugin(it)
+        }
+        pluginManager
     }
 
-    private List<DefaultGrailsPlugin> createGrailsPlugins(DefaultGrailsApplication grailsApplication) {
+    private List<GrailsPlugin> createGrailsPlugins(GrailsApplication grailsApplication) {
         final String grailsVersion = '4.0.1'
         def gcl = new GroovyClassLoader()
+
         GrailsPlugin plugin = new MockTestGrailsPlugin(gcl.parseClass("""class TestGrailsPlugin {
         def version = '1.0.0'
         def grailsVersion = '$grailsVersion'
@@ -45,7 +42,8 @@ class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
         def version = '1.0.0'
         def grailsVersion = '$grailsVersion'
 }"""), grailsApplication)
-        [plugin, plugin2]
+
+        List<GrailsPlugin>.of(plugin, plugin2)
     }
 
     class MockTestGrailsPlugin extends DefaultGrailsPlugin {
@@ -81,10 +79,6 @@ class GrailsPluginConfigurationClass extends GrailsAutoConfiguration {
     }
 
     class MockTestTwoGrailsPlugin extends DefaultGrailsPlugin {
-
-        MockTestTwoGrailsPlugin(Class<?> pluginClass, Resource resource, GrailsApplication application) {
-            super(pluginClass, resource, application)
-        }
 
         MockTestTwoGrailsPlugin(Class<?> pluginClass, GrailsApplication application) {
             super(pluginClass, application)
