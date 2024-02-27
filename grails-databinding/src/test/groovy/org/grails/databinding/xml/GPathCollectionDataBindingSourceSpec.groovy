@@ -1,6 +1,7 @@
 package org.grails.databinding.xml
 
-import grails.databinding.DataBindingSource;
+import grails.databinding.DataBindingSource
+import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class GPathCollectionDataBindingSourceSpec extends Specification {

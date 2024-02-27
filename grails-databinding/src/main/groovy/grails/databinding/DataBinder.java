@@ -16,7 +16,7 @@
 package grails.databinding;
 
 import grails.databinding.events.DataBindingListener;
-import groovy.util.slurpersupport.GPathResult;
+import groovy.xml.slurpersupport.GPathResult;
 
 import java.util.List;
 

@@ -1,14 +1,10 @@
 package org.grails.core.io
 
 import grails.core.DefaultGrailsApplication
-import org.grails.plugins.BinaryGrailsPlugin
-import org.grails.plugins.BinaryGrailsPluginDescriptor
-import org.grails.plugins.MockBinaryPluginResource
-import org.grails.plugins.MockGrailsPluginManager
-import org.grails.plugins.TestBinaryGrailsPlugin
+import groovy.xml.XmlSlurper
+import org.grails.plugins.*
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ResourceLoader
-
 import spock.lang.Specification
 
 class ResourceLocatorSpec extends Specification {

@@ -118,12 +118,13 @@ class GrailsWebDataBinderConfigurationSpec extends Specification implements Data
         }
         binder.messageSource = messageSource
         binder.bind child, [birthDate: '11151969'] as SimpleMapDataBindingSource
-        def birthDate = child.birthDate
+        final Calendar calendar = Calendar.getInstance()
+        calendar.setTime(child.birthDate)
 
         then:
-        Calendar.NOVEMBER == birthDate.month
-        15 == birthDate.date
-        69 == birthDate.year
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
 
         when:
         binder = new GrailsWebDataBinder(grailsApplication) {
@@ -134,11 +135,11 @@ class GrailsWebDataBinderConfigurationSpec extends Specification implements Data
         binder.messageSource = messageSource
         child.birthDate = null
         binder.bind child, [birthDate: '15111969'] as SimpleMapDataBindingSource
-        birthDate = child.birthDate
+        calendar.setTime(child.birthDate)
 
         then:
-        Calendar.NOVEMBER == birthDate.month
-        15 == birthDate.date
-        69 == birthDate.year
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
     }
 }

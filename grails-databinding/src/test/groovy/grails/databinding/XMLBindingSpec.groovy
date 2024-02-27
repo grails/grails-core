@@ -14,7 +14,8 @@
  */
 package grails.databinding
 
-import grails.databinding.SimpleDataBinder;
+
+import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class XMLBindingSpec extends Specification {

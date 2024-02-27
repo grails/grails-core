@@ -28,7 +28,7 @@ class FooController {
            filterer.setCutOffPackage("org.spockframework.util")
            Throwable exception
            try {
-               cls.newInstance().show()
+               cls.getDeclaredConstructor().newInstance().show()
            } catch (e) {
                filterer.filter(e)
                exception = e
@@ -77,7 +77,7 @@ class FooService {
            filterer.setCutOffPackage("org.spockframework.util")
            Throwable exception
            try {
-               cls.newInstance().show()
+               cls.getDeclaredConstructor().newInstance().show()
            } catch (e) {
                filterer.filter(e, true)
                println getExceptionContents(e)
