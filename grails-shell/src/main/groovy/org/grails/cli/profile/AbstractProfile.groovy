@@ -166,8 +166,8 @@ abstract class AbstractProfile implements Profile {
                 }
             }
 
-            defaultFeaturesNames.addAll(defaultFeatures)
-            requiredFeatureNames.addAll(requiredFeatures)
+            defaultFeaturesNames.addAll((List<String>) defaultFeatures)
+            requiredFeatureNames.addAll((List<String>) requiredFeatures)
         }
 
 
