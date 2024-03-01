@@ -147,10 +147,10 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         binder.registerConverter(new LocalDateTimeConverter())
-        binder.bind(obj, new SimpleMapDataBindingSource([localDateTime: "2013-04-15T21:26:31.973"]))
+        binder.bind(obj, new SimpleMapDataBindingSource([localDateTime: "2013-04-15T21:26:31.974"]))
 
         then:
-        obj.localDateTime != null
+        obj.localDateTime == LocalDateTime.parse("2013-04-15T21:26:31.974", DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     }
     
     @Issue('GRAILS-10925')
