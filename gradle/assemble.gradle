@@ -6,7 +6,7 @@ def libsConfigurations = []
 subprojects { subproject ->
     if(subproject.name == 'grails-dependencies') return
     if(subproject.name == 'grails-bom') return
-    if(subproject.name == 'grails-shell' || subproject.name == 'grails-core') {
+    if(subproject.name == 'grails-core') {
 
         configurations {
             libsConfigurations << libs {
@@ -137,57 +137,13 @@ task sourcesJars(type: Sync) {
     from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
 }
 
-task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
-    description = "Creates OS specific scripts to run grails-shell as a JVM application."
-    mainClass.set('org.grails.cli.GrailsCli')
-    applicationName = 'grails'
-    defaultJvmOpts = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
-    outputDir = file('bin')
-    classpath = rootProject.childProjects['grails-shell'].configurations.runtimeClasspath
-    projectArtifacts = rootProject.childProjects['grails-shell'].tasks['jar'].outputs.files.collect { "dist/${it.name}" }
-    doLast {
-        ant.replace(file: file('bin/grails'), token: 'media/gradle.icns', value: 'media/icons/grails.icns')
-        ant.chmod(file: file('bin/grails'), perm: 'ugo+rx')
-    }
-}
-
-class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateStartScripts {
-
-    @Input
-    Collection<String> projectArtifacts=[]
-
-    @org.gradle.api.tasks.TaskAction
-    void generate() {
-        def generator = new org.gradle.api.internal.plugins.StartScriptGenerator()
-        generator.unixStartScriptGenerator.template = project.rootProject.childProjects['grails-shell'].resources.text.fromFile('src/main/resources/unixStartScript.txt')
-        generator.applicationName = getApplicationName()
-        generator.mainClassName = getMainClassName()
-        generator.defaultJvmOpts = getDefaultJvmOpts()
-        generator.optsEnvironmentVar = getOptsEnvironmentVar()
-        generator.exitEnvironmentVar = getExitEnvironmentVar()
-        generator.classpath = projectArtifacts + getClasspath().resolvedConfiguration.resolvedArtifacts.collect { artifact ->
-            def dependency = artifact.moduleVersion.id
-            String installedFile = "lib/$dependency.group/$dependency.name/jars/$artifact.file.name"
-            if(dependency.group=='org.grails' && !project.file(installedFile).exists()) {
-                installedFile = "dist/$artifact.file.name"
-            }
-            installedFile
-        }
-        generator.scriptRelPath = "bin/${getUnixScript().name}"
-        generator.generateUnixScript(getUnixScript())
-        generator.generateWindowsScript(getWindowsScript())
-    }
-}
-
-task install(dependsOn: [populateDependencies, grailsCreateStartScripts]) { task ->
+task install(dependsOn: [populateDependencies]) { task ->
     subprojects { Project project ->
         if(!project.name.startsWith('grails-test-suite')) {
             task.dependsOn("$project.name:publishToMavenLocal")
         }
     }
 }
-//task install(dependsOn: [populateDependencies, grailsCreateStartScripts] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }
-//                                                                                                        *.collect { Project p -> p.tasks.withType(PublishToMavenLocal)})
 
 task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
     destinationDir = "${buildDir}/distributions" as File
