@@ -28,7 +28,7 @@ dependencies {
                 project(":grails-plugin-databinding"),
                 project(':grails-spring')
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.0.2", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
