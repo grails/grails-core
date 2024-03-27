@@ -1,24 +1,117 @@
 name-template: $RESOLVED_VERSION
 tag-template: v$RESOLVED_VERSION
+pull-request:
+  title-templates:
+    fix: '🐛 $TITLE (#$NUMBER)'
+    feat: '🚀 $TITLE (#$NUMBER)'
+    default: '$TITLE (#$NUMBER)'
+autolabeler:
+  - label: 'bug'
+    branch:
+      - '/fix\/.+/'
+    title:
+      - '/fix/i'
+  - label: 'improvement'
+    branch:
+      - '/improv\/.+/'
+    title:
+      - '/improv/i'
+  - label: 'feature'
+    branch:
+      - '/feature\/.+/'
+    title:
+      - '/feat/i'
+  - label: 'documentation'
+    branch:
+      - '/docs\/.+/'
+    title:
+      - '/docs/i'
+  - label: 'maintenance'
+    branch:
+      - '/(chore|refactor|style|test|ci|perf|build)\/.+/'
+    title:
+      - '/(chore|refactor|style|test|ci|perf|build)/i'
+  - label: 'chore'
+    branch:
+      - '/chore\/.+/'
+    title:
+      - '/chore/i'
+  - label: 'refactor'
+    branch:
+      - '/refactor\/.+/'
+    title:
+      - '/refactor/i'
+  - label: 'style'
+    branch:
+      - '/style\/.+/'
+    title:
+      - '/style/i'
+  - label: 'test'
+    branch:
+      - '/test\/.+/'
+    title:
+      - '/test/i'
+  - label: 'ci'
+    branch:
+      - '/ci\/.+/'
+    title:
+      - '/ci/i'
+  - label: 'perf'
+    branch:
+      - '/perf\/.+/'
+    title:
+      - '/perf/i'
+  - label: 'build'
+    branch:
+      - '/build\/.+/'
+    title:
+      - '/build/i'
+  - label: 'deps'
+    branch:
+      - '/deps\/.+/'
+    title:
+      - '/deps/i'
+  - label: 'revert'
+    branch:
+      - '/revert\/.+/'
+    title:
+      - '/revert/i'
 categories:
-  - title: ✨ Features
+  - title: '🚀 Features'
     labels:
+      - 'feature'
       - "type: enhancement"
       - "type: new feature"
       - "type: major"
-  - title: 🐛 Bug Fixes/Improvements
-    labels:
-      - "type: improvement"
-      - "type: bug"
       - "type: minor"
-  - title: 🛠 Dependency upgrades
+  - title: '💡 Improvements'
     labels:
-      - "type: dependency upgrade"
-      - "dependencies"
-  - title: ⚙️ Build/CI
+      - 'improvement'
+      - "type: improvement"
+
+  - title: '🐛 Bug Fixes'
     labels:
+      - 'fix'
+      - 'bug'
+      - "type: bug"
+  - title: '📚 Documentation'
+    labels:
+      - 'docs'
+  - title: '🔧 Maintenance'
+    labels:
+      - 'maintenance'
+      - 'chore'
+      - 'refactor'
+      - 'style'
+      - 'test'
+      - 'ci'
+      - 'perf'
+      - 'build'
       - "type: ci"
       - "type: build"
+  - title: '⏪ Reverts'
+    labels:
+      - 'revert'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 version-resolver:
   major:
