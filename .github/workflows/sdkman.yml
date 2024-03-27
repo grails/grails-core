@@ -22,7 +22,7 @@ jobs:
           distribution: 'adopt'
           java-version: '8'
       - name: Grails SDK Minor Release
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
         with:
           arguments: sdkMinorRelease
         env:
