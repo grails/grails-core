@@ -18,12 +18,14 @@ import grails.databinding.converters.ValueConverter
 import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
 import org.grails.databinding.converters.DateConversionHelper
-
+import org.grails.databinding.converters.LocalDateTimeConverter
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class SimpleDataBinderSpec extends Specification {
 
@@ -131,15 +133,24 @@ class SimpleDataBinderSpec extends Specification {
         def obj = new DateContainer()
         def nowUtilDate = new Date()
         def nowSqlDate = new java.sql.Date(nowUtilDate.time)
+        def localDateTime = "2013-04-15T21:26:31.973"
         def nowCalendar = Calendar.instance
 
         when:
-        binder.bind(obj, new SimpleMapDataBindingSource([utilDate: nowUtilDate, sqlDate: nowSqlDate, calendar: nowCalendar]))
+        binder.bind(obj, new SimpleMapDataBindingSource([utilDate: nowUtilDate, sqlDate: nowSqlDate, calendar: nowCalendar, localDateTime: localDateTime]))
 
         then:
         obj.utilDate == nowUtilDate
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
+        obj.localDateTime == null
+
+        when:
+        binder.registerConverter(new LocalDateTimeConverter())
+        binder.bind(obj, new SimpleMapDataBindingSource([localDateTime: "2013-04-15T21:26:31.974"]))
+
+        then:
+        obj.localDateTime == LocalDateTime.parse("2013-04-15T21:26:31.974", DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     }
     
     @Issue('GRAILS-10925')
@@ -711,6 +722,7 @@ class Fidget {
 }
 
 class DateContainer {
+    LocalDateTime localDateTime
     Date utilDate
     java.sql.Date sqlDate
     Calendar calendar
