@@ -21,7 +21,7 @@ jobs:
       GIT_USER_EMAIL: behlp@unityfoundation.io
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
           ref: "v${{ github.event.inputs.release }}"
           token: ${{ secrets.GH_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
       - name: Upload artifacts to the Github release
         id: upload_artifact
         if: steps.assemble.outcome == 'success'
-        uses: Roang-zero1/github-upload-release-artifacts-action@v3
+        uses: Roang-zero1/github-upload-release-artifacts-action@87271b3f8dca9feb9e9d44381fddd2db7f09d6e1 # v3
         with:
           created_tag: v${{ github.event.inputs.release }}
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
@@ -70,7 +70,7 @@ jobs:
       - name: Invoke grails-doc release workflow
         if: steps.assemble.outcome == 'success'
         id: grails_doc
-        uses: benc-uk/workflow-dispatch@v1.2
+        uses: benc-uk/workflow-dispatch@25b02cc069be46d637e8fe2f1e8484008e9e9609 # v1.2
         with:
           workflow: Release
           repo: grails/grails-doc
@@ -80,7 +80,7 @@ jobs:
       - name: Invoke grails-static-website release workflow
         if: steps.assemble.outcome == 'success'
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@v1.2
+        uses: benc-uk/workflow-dispatch@25b02cc069be46d637e8fe2f1e8484008e9e9609 # v1.2
         with:
           workflow: Release
           repo: grails/grails-static-website
