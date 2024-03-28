@@ -361,7 +361,6 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    apply plugin: 'com.netflix.nebula.optional-base'
 
     if (!isTestSuite) {
 
