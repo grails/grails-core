@@ -6,8 +6,8 @@ import spock.lang.Specification
 
 class DomainClassWithDefaultConstraintsUnitTestMixinTests extends Specification implements DomainUnitTest<DomainWithDefaultConstraints> {
 
-    Closure doWithConfig() {{ c ->
-        c.grails.gorm.default.constraints = {
+    Closure doWithConfig() {{ config ->
+        config['grails.gorm.default.constraints'] = {
             '*'(nullable:true)
         }
     }}

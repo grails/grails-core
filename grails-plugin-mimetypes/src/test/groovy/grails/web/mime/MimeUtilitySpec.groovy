@@ -13,7 +13,7 @@ class MimeUtilitySpec extends Specification {
 
     MimeUtility getMimeUtility() {
         def ga = new DefaultGrailsApplication()
-        ga.config.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+        ga.config['grails.mime.types'] = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
                       js: 'text/javascript',

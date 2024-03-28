@@ -17,8 +17,6 @@ package grails.util
 
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
-import org.grails.config.NavigableMap
-import org.yaml.snakeyaml.Yaml
 
 import java.util.regex.Pattern
 

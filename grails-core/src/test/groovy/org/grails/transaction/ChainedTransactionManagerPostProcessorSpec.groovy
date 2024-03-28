@@ -66,8 +66,8 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
         given:
         def bb = new BeanBuilder()
         def config = new PropertySourcesConfig()
-        config.dataSources.ds1.transactional = false
-        config.dataSources.ds2.transactional = false
+        config['dataSources.ds1.transactional'] = false
+        config['dataSources.ds2.transactional'] = false
         bb.beans {
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config)
             transactionManager(ChainedTransactionManagerTests.TestPlatformTransactionManager, "transactionManager")
@@ -86,8 +86,8 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
         given:
         def bb = new BeanBuilder()
         def config = new PropertySourcesConfig()
-        config.dataSources.ds1.transactional = false
-        config.dataSources.ds2.transactional = true
+        config['dataSources.ds1.transactional'] = false
+        config['dataSources.ds2.transactional'] = true
         bb.beans {
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config)
             transactionManager(ChainedTransactionManagerTests.TestPlatformTransactionManager, "transactionManager")

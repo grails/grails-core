@@ -13,8 +13,8 @@ import spock.lang.Unroll
 class ContentNegotiationSpec extends Specification implements ControllerUnitTest<ContentNegotiationController> {
 
     Closure doWithConfig() {{ config ->
-        config.grails.mime.use.accept.header=true
-        config.grails.mime.types = [ // the first one is the default format
+        config['grails.mime.use.accept.header'] = true
+        config['grails.mime.types'] = [ // the first one is the default format
                                      html:          ['text/html','application/xhtml+xml'],
                                      all:           '*/*',
                                      atom:          'application/atom+xml',

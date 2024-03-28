@@ -11,7 +11,7 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
     Closure doWithConfig() {{ config ->
         // unit tests in real applications will not need to do 
         // this because the real Config.groovy will be loaded
-        config.grails.mime.types = [(MimeType.ALL.extension): MimeType.ALL.name,
+        config['grails.mime.types'] = [(MimeType.ALL.extension): MimeType.ALL.name,
                                     (MimeType.FORM.extension): MimeType.FORM.name,
                                     (MimeType.MULTIPART_FORM.extension): MimeType.MULTIPART_FORM.name,
                                     (MimeType.JSON.extension): MimeType.JSON.name]

@@ -32,7 +32,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
     Closure doWithConfig() {{ config ->
         // unit tests in real applications will not need to do
         // this because the real Config.groovy will be loaded
-        config.grails.mime.types = [html         : ['text/html', 'application/xhtml+xml'],
+        config['grails.mime.types'] = [html      : ['text/html', 'application/xhtml+xml'],
                                     xml          : ['text/xml', 'application/xml'],
                                     text         : 'text/plain',
                                     js           : 'text/javascript',
