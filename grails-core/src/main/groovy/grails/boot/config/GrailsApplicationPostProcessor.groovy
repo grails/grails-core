@@ -17,7 +17,6 @@ import groovy.util.logging.Slf4j
 import io.micronaut.context.env.AbstractPropertySourceLoader
 import io.micronaut.context.env.PropertySource
 import io.micronaut.spring.context.env.MicronautEnvironment
-import org.grails.config.NavigableMap
 import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
@@ -126,18 +125,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                     @Override
                     public Resource convert(String source) {
                         return applicationContext.getResource(source);
-                    }
-                });
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
-                    @Override
-                    public String convert(NavigableMap.NullSafeNavigator source) {
-                        return null;
-                    }
-                });
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
-                    @Override
-                    public Object convert(NavigableMap.NullSafeNavigator source) {
-                        return null;
                     }
                 });
             }

@@ -18,7 +18,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
     void "Test that property placeholder configuration works for simple properties"() {
         when:"A bean is defined with a placeholder"
             def application = new DefaultGrailsApplication()
-            application.config.foo.bar="test"
+            application.config.foo = [bar: "test"]
             def bb = new BeanBuilder()
             bb.beans {
                 addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer('${', application.config.toProperties()))
@@ -37,8 +37,8 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
     void "Test that property placeholder configuration doesn't throw an error if invalid placeholders are configured"() {
         when:"A bean is defined with a placeholder"
         def application = new DefaultGrailsApplication()
-        application.config.bar.foo="test"
-        application.config.more.stuff='another ${place.holder}'
+        application.config.bar = [foo: "test"]
+        application.config.more = [stuff: 'another ${place.holder}']
         def bb = new BeanBuilder()
         bb.beans {
             addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer('${', application.config.toProperties()))
@@ -56,8 +56,8 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
     void "Test that property placeholder configuration works for simple properties with a custom placeholder prefix"() {
         when:"A bean is defined with a placeholder"
         def application = new DefaultGrailsApplication()
-        application.config.foo.bar="test"
-        application.config.grails.spring.placeholder.prefix='£{'
+        application.config.foo = [bar: "test"]
+        application.config['grails.spring.placeholder.prefix']='£{'
         application.setConfig(application.config)
         def bb = new BeanBuilder()
         bb.beans {
