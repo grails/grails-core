@@ -198,7 +198,9 @@ public class GrailsConsole implements ConsoleLogger {
 
     protected void bindSystemOutAndErr(PrintStream systemOut, PrintStream systemErr) {
         originalSystemOut = unwrapPrintStream(systemOut);
+        out = originalSystemOut;
         originalSystemErr = unwrapPrintStream(systemErr);
+        err = originalSystemErr;
     }
 
     private PrintStream unwrapPrintStream(PrintStream printStream) {
@@ -327,7 +329,6 @@ public class GrailsConsole implements ConsoleLogger {
     }
 
     public void beforeShutdown() {
-        AnsiConsole.systemUninstall();
         persistHistory();
         restoreTerminal();
     }
