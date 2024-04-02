@@ -195,6 +195,11 @@ public class DefaultConvertersConfiguration {
         return converter;
     }
 
+    @Bean("defaultLocalDateTimeConverter")
+    protected LocalDateTimeConverter defaultLocalDateTimeConverter() {
+        return new LocalDateTimeConverter();
+    }
+
     @Bean("timeZoneConverter")
     protected TimeZoneConverter defaultTimeZoneConverter() {
         return new TimeZoneConverter();

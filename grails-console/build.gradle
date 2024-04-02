@@ -10,7 +10,7 @@ dependencies {
     api("org.springframework.boot:spring-boot:$springBootVersion")
     api "org.springframework:spring-test:${springVersion}"
 
-    api "org.springframework:spring-web:${springVersion}", optional
+    api "org.springframework:spring-web:${springVersion}"
 
-    api "javax.servlet:javax.servlet-api:$servletApiVersion", optional
+    api "javax.servlet:javax.servlet-api:$servletApiVersion"
 }
