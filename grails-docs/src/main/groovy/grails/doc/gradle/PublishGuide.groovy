@@ -31,7 +31,7 @@ class PublishGuide extends DefaultTask {
     @Optional @Input List propertiesFiles = []
 
     @InputDirectory File sourceDir = new File(project.projectDir, "src")
-    @Optional @InputDirectory File workDir = project.layout.buildDirectory.dir("tmp").get().asFile
+    @Optional @InputDirectory File workDir = project.layout.buildDirectory.get().asFile
     @Optional @InputDirectory File resourcesDir = new File(project.projectDir, "resources")
 
     @Nested Collection macros = []
