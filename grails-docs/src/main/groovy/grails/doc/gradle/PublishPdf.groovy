@@ -14,10 +14,12 @@
  */
 package grails.doc.gradle
 
-import grails.doc.PdfBuilder
+
 import grails.doc.PdfPublisher
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 
 /**
  * Gradle task for generating a gdoc-based PDF user guide. Assumes the
@@ -27,7 +29,7 @@ import org.gradle.api.tasks.*
 class PublishPdf extends DefaultTask {
     @Input String pdfName = "single.pdf"
     @Input String language = ""
-    @OutputDirectory File outputDirectory = project.outputDir as File
+    @OutputDirectory File outputDirectory = project.layout.buildDirectory.get().asFile
 
     @TaskAction
     def publish() {
