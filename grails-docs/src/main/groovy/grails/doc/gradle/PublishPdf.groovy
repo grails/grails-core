@@ -27,7 +27,7 @@ import org.gradle.api.tasks.*
 class PublishPdf extends DefaultTask {
     @Input String pdfName = "single.pdf"
     @Input String language = ""
-    @OutputDirectory File outputDirectory = project.outputDir as File
+    @OutputDirectory File outputDirectory = project.layout.buildDirectory.get().asFile
 
     @TaskAction
     def publish() {
