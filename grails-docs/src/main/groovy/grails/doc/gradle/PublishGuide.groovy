@@ -16,7 +16,6 @@ package grails.doc.gradle
 
 import grails.doc.DocPublisher
 import grails.doc.macros.HiddenMacro
-
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
 
