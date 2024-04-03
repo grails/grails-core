@@ -108,7 +108,7 @@ ext {
                                         names  : ['springloaded'],
                                         modules: ['']
             ],
-            'async'                  : [version: asyncVersion,
+            async                    : [version: asyncVersion,
                                         group  : 'org.grails.plugins',
                                         names  : ['async', 'events'],
                                         modules: ['']
