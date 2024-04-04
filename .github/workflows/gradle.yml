@@ -42,8 +42,6 @@ jobs:
       contents: read  #  to fetch code (actions/checkout)
       checks: write
     runs-on: ubuntu-latest
-    outputs:
-      target_branch: ${{ steps.extract_branch.outputs.value }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,13 +52,6 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: 11
-      - name: Extract Target Branch
-        id: extract_branch
-        run: |
-          echo "Determining Target Branch"
-          TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
-          echo $TARGET_BRANCH
-          echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
       - name: Publish Artifacts (repo.grails.org)
         id: publish
         uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
@@ -79,12 +70,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Extract Target Branch
+        id: extract_branch
+        run: |
+          echo "Determining Target Branch"
+          TARGET_BRANCH=${GITHUB_REF#refs/heads/}
+          echo $TARGET_BRANCH
+          echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
       - name: Invoke grails-doc release workflow
         uses: benc-uk/workflow-dispatch@v1.2
         with:
           workflow: Java CI
           repo: grails/grails-doc
-          ref: ${{ needs.publish.outputs.target_branch }}
+          ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
   invoke-third-party-workflows:
     if: github.event_name == 'push'
