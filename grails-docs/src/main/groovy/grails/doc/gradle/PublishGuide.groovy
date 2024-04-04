@@ -36,7 +36,7 @@ class PublishGuide extends DefaultTask {
 
     @Nested Collection macros = []
 
-    @OutputDirectory File targetDir = project.layout.buildDirectory.dir("doc").get().asFile
+    @OutputDirectory File targetDir = project.layout.buildDirectory.dir("docs").get().asFile
 
     @TaskAction
     def publishGuide() {
