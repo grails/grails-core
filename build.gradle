@@ -67,6 +67,11 @@ ext {
                                         names  : ['mongodb-driver'],
                                         modules: ['core', 'sync']
             ],
+            'mongodb.bson'           : [version: mongodbJavaDriverVersion,
+                                        group  : 'org.mongodb',
+                                        names  : ['bson'],
+                                        modules: ['', 'record-codec']
+            ],
             'gorm'                   : [version: datastoreVersion,
                                         group  : 'org.grails',
                                         names  : ['grails-datastore'],
