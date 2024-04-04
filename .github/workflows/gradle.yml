@@ -73,6 +73,7 @@ jobs:
         with:
           arguments: -Dorg.gradle.internal.publish.checksums.insecure=true publish
   docs:
+    if: github.event_name == 'push'
     needs: publish
     runs-on: ubuntu-latest
     permissions:
