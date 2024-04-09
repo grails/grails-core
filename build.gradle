@@ -26,6 +26,9 @@ ext {
     isReleaseVersion = !isBuildSnapshot
     isCiBuild = System.getenv().get("CI") as Boolean
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
+
+    // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
+    // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = [
             'fieldsPlugin'           : [version: feildsPluginVersion,
                                         group  : 'io.github.gpc',
