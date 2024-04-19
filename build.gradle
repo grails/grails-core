@@ -124,12 +124,6 @@ ext {
             names  : ['grails-async', 'grails-events'],
             modules: ['gpars', 'rxjava', 'rxjava2']
         ],
-        snakeyaml: [
-            version: snakeyamlVersion,
-            group  : 'org.yaml',
-            names: ['snakeyaml'],
-            modules: ['']
-        ],
         spock: [
             version: spockVersion,
             group  : 'org.spockframework',
@@ -239,8 +233,8 @@ allprojects {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         if(groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
-                name 'JFrog OSS snapshot repo'
-                url 'https://oss.jfrog.org/oss-snapshot-local/'
+                name 'Groovy artifactory snapshots repository'
+                url 'https://groovy.jfrog.io/artifactory/libs-snapshot-local/'
             }
         }
     }

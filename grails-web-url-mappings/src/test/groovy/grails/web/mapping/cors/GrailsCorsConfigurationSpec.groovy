@@ -172,6 +172,51 @@ class GrailsCorsConfigurationSpec extends Specification {
         config["/foo"].maxAge == 3600L
     }
 
+    void "test multiple mappings"() {
+        given:
+        Map<String, CorsConfiguration> config
 
+        when:
+        config = buildConfig([
+                "[/a/**]": [
+                        "allowedOrigins": [
+                                "https://a.example.com",
+                                "https://a.example.org"
+                        ]
+                ],
+                "[/b/**]": [
+                        "allowedOrigins[0]": "https://b.example.com",
+                        "allowedOrigins[1]": "https://b.example.org"
+                ],
+                "[/c/**]": [
+                        "allowedMethods[0]": "GET",
+                        "allowedHeaders[0]": "Foo",
+                        "allowedHeaders[1]": "Bar",
+                        "exposedHeaders": "Foo",
+                        "allowCredentials": "true",
+                        "maxAge": "1234",
+                ]
+        ])
 
+        then: //The global mapping is not created. Provided values override defaults
+        config.size() == 3
+        config["[/a/**]"].allowedOrigins == ["https://a.example.com", "https://a.example.org"]
+        config["[/a/**]"].allowedMethods == DEFAULT_METHODS
+        config["[/a/**]"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config["[/a/**]"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config["[/a/**]"].allowCredentials == null
+        config["[/a/**]"].maxAge == DEFAULT_MAX_AGE
+        config["[/b/**]"].allowedOrigins == ["https://b.example.com", "https://b.example.org"]
+        config["[/b/**]"].allowedMethods == DEFAULT_METHODS
+        config["[/b/**]"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
+        config["[/b/**]"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
+        config["[/b/**]"].allowCredentials == null
+        config["[/b/**]"].maxAge == DEFAULT_MAX_AGE
+        config["[/c/**]"].allowedOrigins == DEFAULT_ORIGINS
+        config["[/c/**]"].allowedMethods == ["GET"]
+        config["[/c/**]"].allowedHeaders == ["Foo", "Bar"]
+        config["[/c/**]"].exposedHeaders == ["Foo"]
+        config["[/c/**]"].allowCredentials == true
+        config["[/c/**]"].maxAge == 1234
+    }
 }
