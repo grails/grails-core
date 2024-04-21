@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer
 
 class PdfBuilder {
 
-    private static final String LIVE_DOC_SITE = 'http://grails.org'
+    private static final String LIVE_DOC_SITE = 'https://grails.org'
 
     static void build(String baseDir, String styleDir = null) {
         build basedir: baseDir
@@ -127,8 +127,8 @@ class PdfBuilder {
     static Document createDocument(String xml) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance()
         dbf.validating = false
-        dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
-        dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false
+        dbf.setFeature "https://apache.org/xml/features/nonvalidating/load-external-dtd", false
+        dbf.setFeature "https://apache.org/xml/features/nonvalidating/load-dtd-grammar", false
 
         DocumentBuilder builder = dbf.newDocumentBuilder()
         builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")))
