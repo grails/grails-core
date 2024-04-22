@@ -78,18 +78,18 @@ import org.springframework.util.Assert;
  *
  * BeanBuilder builder = new BeanBuilder()
  * builder.beans {
- *   dataSource(DataSource) {                  // <--- invokeMethod
+ *   dataSource(DataSource) {                      // invokeMethod
  *      driverClassName = "org.h2.Driver"
  *      url = "jdbc:h2:mem:grailsDB"
- *      username = "sa"                            // <-- setProperty
+ *      username = "sa"                            // setProperty
  *      password = ""
  *      settings = [mynew:"setting"]
  *  }
  *  sessionFactory(SessionFactory) {
- *         dataSource = dataSource                 // <-- getProperty for retrieving refs
+ *         dataSource = dataSource                 // getProperty for retrieving refs
  *  }
  *  myService(MyService) {
- *      nestedBean = { AnotherBean bean->          // <-- setProperty with closure for nested bean
+ *      nestedBean = { AnotherBean bean->          // setProperty with closure for nested bean
  *              dataSource = dataSource
  *      }
  *  }
