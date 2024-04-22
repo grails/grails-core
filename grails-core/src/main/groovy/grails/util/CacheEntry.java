@@ -55,8 +55,7 @@ public class CacheEntry<V> {
     
     /**
      * Gets a value from cache. If the key doesn't exist, it will create the value using the updater callback
-     * Prevents cache storms with a lock 
-     * 
+     * Prevents cache storms with a lock.
      * The key is always added to the cache. Null return values will also be cached.
      * You can use this together with ConcurrentLinkedHashMap to create a bounded LRU cache
      *
@@ -64,13 +63,18 @@ public class CacheEntry<V> {
      * @param key the key to look up
      * @param timeoutMillis cache entry timeout
      * @param updater callback to create/update value
-     * @param cacheEntryClass CacheEntry implementation class to use
+     * @param cacheEntryFactory callback to create cache entry, not used in default implementation
      * @param returnExpiredWhileUpdating when true, return expired value while updating new value
      * @param cacheRequestObject context object that gets passed to hasExpired, shouldUpdate and updateValue methods, not used in default implementation
-     * @return
+     * @return the value
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater, Callable<? extends CacheEntry> cacheEntryFactory, boolean returnExpiredWhileUpdating, Object cacheRequestObject) {
+    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map,
+                                    K key,
+                                    long timeoutMillis,
+                                    Callable<V> updater, Callable<? extends CacheEntry> cacheEntryFactory,
+                                    boolean returnExpiredWhileUpdating,
+                                    Object cacheRequestObject) {
         CacheEntry<V> cacheEntry = map.get(key);
         if(cacheEntry==null) {
             try {
