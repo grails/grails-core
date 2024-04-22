@@ -1,3 +1,5 @@
+import org.grails.gradle.FetchGrailsDocSourceTask
+
 buildscript {
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
@@ -17,6 +19,8 @@ configurations {
 dependencies {
     documentation "org.codehaus.groovy:groovy-groovydoc:$groovyVersion"
 }
+
+ext.grailsDocSrc = project.findProperty('grails-doc.home') ?: project.buildDir.absolutePath + "/checkout/grails-docs-src"
 
 task stubs {
     ext.destinationDir = "$buildDir/docs/stubs"
@@ -54,8 +58,9 @@ task stubs {
     }
 }
 
-task docs(group: 'documentation') {
-    ext.destinationDir = file("${projectDir}/doc")
+tasks.register('docs') {
+    group = 'documentation'
+    outputs.dir(project.layout.buildDirectory.dir('docs'))
 }
 
 task javadoc(type:Javadoc, group: 'documentation') {
@@ -63,7 +68,7 @@ task javadoc(type:Javadoc, group: 'documentation') {
     classpath = files(subs.configurations.compileClasspath)
     dependsOn stubs
     maxMemory = '256M'
-    destinationDir = file("${project.tasks.findByName('docs').destinationDir}/javadoc")
+    destinationDir = project.tasks.findByName('docs/javadoc')
     source subs.sourceSets.main.groovy.srcDirs + stubs.destinationDir
     include "org/codehaus/groovy/grails/**", "grails/**"
     exclude "**/**.groovy"
@@ -91,7 +96,7 @@ tasks.register('groovydoc', Groovydoc) {
     groovydocClasspath -= groovydocClasspath.filter { it.name == 'javaee-web-api-6.0.jar' }
     classpath = groovydocClasspath
     groovyClasspath = groovydocClasspath
-    destinationDir = file("${project.tasks.findByName('docs').destinationDir}/api")
+    destinationDir = project.layout.buildDirectory.dir('docs/api').get().asFile
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
     source subProjects.sourceSets.main.groovy.srcDirs
@@ -104,20 +109,14 @@ tasks.register('groovydoc', Groovydoc) {
     }
 }
 
-task fetchGrailsDocsSource {
-    doLast {
-        ant.mkdir dir: buildDir
-        ant.get src:"https://github.com/grails/grails-doc/archive/refs/heads/master.zip", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
-        ant.unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
-            mapper(type: 'regexp', from:/(grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/)
-        }
-    }
+tasks.register("fetchGrailsDocsSource", FetchGrailsDocSourceTask) {
+    checkoutDir = project.layout.buildDirectory.dir("checkout")
+    grailsDocBranch = "7.0.x"
 }
 
 task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], group: 'documentation') {
-    startParameter.setCurrentDir(new File("${buildDir}/grails-docs-src"));
     startParameter.useEmptySettings()
-    dir = "${buildDir}/grails-docs-src/build.gradle"
+    dir = grailsDocSrc
     tasks = ["clean", "assemble"]
 
     doFirst {
@@ -133,13 +132,13 @@ task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], 
 
         ant.mkdir dir: "${projectDir}/dist"
         copy {
-            from "${buildDir}/grails-docs-src/build/distributions"
+            from "${grailsDocSrc}/build/distributions"
             into "${projectDir}/dist"
         }
 
         copy {
             from file("${buildDir}/grails-docs-src/build/docs")
-            into project.tasks.findByName("docs").destinationDir
+            into project.layout.buildDirectory.dir("docs/api")
         }
     }
 }

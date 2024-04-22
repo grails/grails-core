@@ -14,8 +14,6 @@ buildscript {
     }
 }
 
-import static groovyx.net.http.ContentType.*
-
 apply plugin: 'idea'
 
 ext {
@@ -173,12 +171,12 @@ group = "org.grails"
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
 ext {
-    distInstallDir = file("$buildDir/dist-tmp")
-    homeDistDir = file("dist")
-    homeBinDir = file("bin")
-    homeConfDir = file("conf")
-    homeLibDir = file("lib")
-    homeSrcDir = file("src")
+    distInstallDir = new File(project.buildDir, "dist-tmp")
+    homeDistDir = new File(project.buildDir, "install/dist")
+    homeBinDir = new File(project.buildDir, "install/bin")
+    homeConfDir = project.layout.buildDirectory.dir("install/conf")
+    homeLibDir = project.layout.buildDirectory.dir("install/lib")
+    homeSrcDir = project.layout.buildDirectory.dir("install/src")
 }
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
@@ -266,7 +264,7 @@ allprojects {
     [Javadoc, Groovydoc].each {
         tasks.withType(it).all {
             // exclude problematic jar file from javadoc classpath
-            // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+            // https://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
             if (classpath) {
                 classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
             }
@@ -299,15 +297,6 @@ allprojects {
 }
 
 apply from: "gradle/idea.gradle"
-
-tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
-    configure {
-        access = GroovydocAccess.PRIVATE
-        includeAuthor = true
-        includeMainForScripts = false
-        processScripts = false
-    }
-}
 
 subprojects { project ->
     version = grailsVersion
@@ -354,15 +343,14 @@ subprojects { project ->
 
     apply plugin: 'java-library'
     apply plugin: 'groovy'
-    if(!isTestSuite) {
-        apply plugin: 'maven-publish'
-        apply plugin: 'signing'
-    }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
 
     if (!isTestSuite) {
+
+        apply plugin: 'maven-publish'
+        apply plugin: 'signing'
 
         java {
             withJavadocJar()
@@ -413,7 +401,7 @@ subprojects { project ->
                             developer {
                                 id = 'puneetbehl'
                                 name = 'Puneet Behl'
-                                email = 'behlp@objectcomputing.com'
+                                email = 'behlp@unityfoundation.io'
                             }
                         }
                     }
@@ -437,6 +425,22 @@ subprojects { project ->
         //do not generate extra load on Nexus with new staging repository if signing fails
         tasks.withType(io.github.gradlenexus.publishplugin.InitializeNexusStagingRepository).configureEach {
             shouldRunAfter(tasks.withType(Sign))
+        }
+
+        tasks.register("installToHomeDist", Upload) {
+            configuration = configurations.archives
+            repositories {
+                flatDir name: 'libs', dirs: distInstallDir
+            }
+        }
+
+        tasks.withType(PublishToMavenLocal).configureEach {
+            dependsOn installToHomeDist
+            doLast {
+                ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
+                    fileset dir: distInstallDir
+                }
+            }
         }
     }
 
@@ -463,7 +467,7 @@ subprojects { project ->
         }
     }
 
-    jar{
+    jar {
         manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
             "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
@@ -505,11 +509,11 @@ subprojects { project ->
     }
 
     dependencies {
-        documentation("org.fusesource.jansi:jansi:$jansiVersion")
-        documentation("jline:jline:$jlineVersion")
+        documentation "org.fusesource.jansi:jansi:$jansiVersion"
+        documentation "jline:jline:$jlineVersion"
         documentation "org.codehaus.groovy:groovy-ant:$groovyVersion"
         documentation "org.codehaus.groovy:groovy-cli-picocli:$groovyVersion"
-        documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
+        documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
 
         api groovyDependency
 
@@ -540,6 +544,7 @@ subprojects { project ->
             '--add-opens=java.base/java.lang=ALL-UNNAMED',
             '--add-opens=java.base/java.util=ALL-UNNAMED'
     ]
+
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
         jvmArgs += java17moduleReflectionCompatibilityArguments
@@ -587,25 +592,6 @@ subprojects { project ->
         published.extendsFrom archives, meta
         all*.exclude group:'commons-logging', module: 'commons-logging'
     }
-
-    if(!isTestSuite) {
-
-        task installToHomeDist(type: Upload) {
-            configuration = configurations.archives
-            repositories {
-                flatDir name: 'libs', dirs: distInstallDir
-            }
-        }
-
-        project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
-            t.dependsOn installToHomeDist
-            t.doLast {
-                ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
-                    fileset dir: distInstallDir
-                }
-            }
-        }
-    }
 }
 
 task clean(type: Delete, group: 'build') {
@@ -638,7 +624,7 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
 [Javadoc, Groovydoc].each {
     tasks.withType(it).all {
         // exclude problematic jar file from javadoc classpath
-        // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+        // https://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
         if (classpath) {
             classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
         }
