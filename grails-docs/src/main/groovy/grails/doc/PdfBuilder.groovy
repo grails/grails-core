@@ -127,8 +127,8 @@ class PdfBuilder {
     static Document createDocument(String xml) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance()
         dbf.validating = false
-        dbf.setFeature "https://apache.org/xml/features/nonvalidating/load-external-dtd", false
-        dbf.setFeature "https://apache.org/xml/features/nonvalidating/load-dtd-grammar", false
+        dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
+        dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false
 
         DocumentBuilder builder = dbf.newDocumentBuilder()
         builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")))
