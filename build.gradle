@@ -53,8 +53,7 @@ ext {
                                         names  : ['micronaut-cache'],
                                         modules: ['core']
             ],
-        ],
-        'micronautRuntimeGroovy' : [version: micronautRuntimeGroovyVersion,
+            'micronautRuntimeGroovy' : [version: micronautRuntimeGroovyVersion,
                                         group  : 'io.micronaut.groovy',
                                         names  : ['micronaut'],
                                         modules: ['runtime-groovy']
@@ -109,7 +108,7 @@ ext {
                                         names  : ['springloaded'],
                                         modules: ['']
             ],
-            'async'                    : [version: asyncVersion,
+            'async'                  : [version: asyncVersion,
                                         group  : 'org.grails.plugins',
                                         names  : ['async', 'events'],
                                         modules: ['']
