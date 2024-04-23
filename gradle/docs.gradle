@@ -22,7 +22,7 @@ dependencies {
 
 ext.grailsDocSrc = project.findProperty('grails-doc.home') ?: project.buildDir.absolutePath + "/checkout/grails-docs-src"
 
-task stubs {
+tasks.register("stubs") {
     ext.destinationDir = "$buildDir/docs/stubs"
     doFirst {
         def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
