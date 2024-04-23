@@ -542,15 +542,14 @@ subprojects { project ->
         processScripts = false
     }
 
-    tasks.withType(Javadoc).configureEach {
+    configure(javadoc) {
         onlyIf { !isTestSuite }
         classpath += configurations.documentation
-        options {
-            encoding = "UTF-8"
-            docEncoding = "UTF-8"
-            charSet = "UTF-8"
-            jFlags = ["-Xms64M", "-Xmx512M"]
-        }
+        // Using options.jFlags instead of closure otherwise it fails with MinimalJavadocOptions
+        options.encoding "UTF-8"
+        options.docEncoding "UTF-8"
+        options.charSet "UTF-8"
+        options.jFlags "-Xms64M", "-Xmx512M"
     }
 
     // task for running a single test with -DsingleTest.single=TestName singleTest
@@ -610,10 +609,6 @@ apply {
 
 // Add a task to list the buildscript dependencies
 tasks.register('buildscriptDependencies', org.gradle.api.tasks.diagnostics.DependencyReportTask) {
-    configurations = project.buildscript.configurations
-}
-
-task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
     configurations = project.buildscript.configurations
 }
 
