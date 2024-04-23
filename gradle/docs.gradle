@@ -99,6 +99,11 @@ tasks.register('groovydoc', Groovydoc) {
     destinationDir = project.layout.buildDirectory.dir('docs/api').get().asFile
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
+    access = GroovydocAccess.PRIVATE
+    includeAuthor = true
+    includeMainForScripts = false
+    processScripts = false
+
     source subProjects.sourceSets.main.groovy.srcDirs
 // Can't make these link methods to work
 //    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")

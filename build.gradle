@@ -25,138 +25,138 @@ ext {
     isCiBuild = System.getenv().get("CI") as Boolean
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     dependencyVersions = [
-        'javax.annotation-api': [
-                version: javaxAnnotationApiVersion,
-                group:'javax.annotation',
-                names:['javax.annotation'],
-                modules:['api']
-        ],
-        'jakarta-annotation': [
-                version: jakartaAnnotationApiVersion,
-                group:'jakarta.annotation',
-                names:['jakarta.annotation-api'],
-                modules:['']
-        ],
-        'micronaut': [
-                version: micronautVersion,
-                group:'io.micronaut',
-                names:['micronaut'],
-                modules:['aop', 'bom', 'inject','runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
-        ],
-        'micronaut.cache': [
-                version: micronautCacheVersion,
-                group: 'io.micronaut.cache',
-                names:['micronaut-cache'],
-                modules:['core']
-        ],
-        'micronaut.micronaut-runtime-groovy': [
-                version: micronautRuntimeGroovyVersion,
-                group:'io.micronaut.groovy',
-                names:['micronaut'],
-                modules:['runtime-groovy']
-        ],
-        'micronaut.spring': [
-                version: micronautSpringVersion,
-                group:'io.micronaut.spring',
-                names:['micronaut-spring'],
-                modules:['spring', 'context','boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
-        ],
-        'mongodb': [
-                version: mongodbJavaDriverVersion,
-                group: 'org.mongodb',
-                names: ['mongodb-driver'],
-                modules: ['core', 'sync']
-        ],
-        gorm: [
-            version: datastoreVersion,
-            group  : 'org.grails',
-            names  : ['grails-datastore'],
-            modules: ['async','core', 'web', 'gorm','gorm-async','gorm-support', 'gorm-rx', 'gorm-test', 'gorm-validation']
-        ],
-        'gorm.hibernate': [
-            version: hibernateDatastoreVersion,
-            group  : 'org.grails',
-            names  : ['grails-datastore-gorm-hibernate5'],
-            modules: ['']
-        ],
-        'scaffolding-core': [
-                version: scaffoldingCoreVersion,
-                group  : 'org.grails',
-                names  : ['scaffolding'],
-                modules: ['core']
-        ],
-        groovy: [
-            version: groovyVersion,
-            group  : 'org.codehaus.groovy',
-            names  : ['groovy'],
-            modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio', 'dateutil', 'macro']
-        ],
-        spring: [
-            version: springVersion,
-            group  : 'org.springframework',
-            names  : ['spring'],
-            modules: ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc', 'jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket']
-        ],
-        directoryWatcher: [
-            version: directoryWatcherVersion,
-            group  : 'io.methvin',
-            names  : ['directory-watcher'],
-            modules: ['']
-        ],
-        springLoaded: [
-            version: springLoadedVersion,
-            group  : 'org.springframework',
-            names  : ['springloaded'],
-            modules: ['']
-        ],
-        async: [
-            version: asyncVersion,
-            group  : 'org.grails.plugins',
-            names  : ['async', 'events'],
-            modules: ['']
-        ],
-        asyncImpls: [
-            version: asyncVersion,
-            group  : 'org.grails',
-            names  : ['grails-async', 'grails-events'],
-            modules: ['gpars', 'rxjava', 'rxjava2']
-        ],
-        snakeyaml: [
-            version: snakeyamlVersion,
-            group  : 'org.yaml',
-            names: ['snakeyaml'],
-            modules: ['']
-        ],
-        spock: [
-            version: spockVersion,
-            group  : 'org.spockframework',
-            names  : ['spock-core', 'spock-spring'],
-            modules: ['']
-        ],
-        gsp: [
-            version: gspVersion,
-            group  : 'org.grails.plugins',
-            names  : ['gsp'],
-            modules: ['']
-        ],
-        testingSupport: [
-            version: testingSupportVersion,
-            group  : 'org.grails',
-            names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
-            modules: ['']
-        ],
-        'views-json-testing-support': [
-            version: viewsVersion,
-            group  : 'org.grails',
-            names  : ['views-json-testing-support'],
-            modules: ['']
-        ],
-        h2: [
-            version: h2Version,
-            group  : 'com.h2database',
-            names  : ['h2'],
-            modules: ['']
-        ],
+            'javax.annotation-api'              : [
+                    version: javaxAnnotationApiVersion,
+                    group  : 'javax.annotation',
+                    names  : ['javax.annotation'],
+                    modules: ['api']
+            ],
+            'jakarta-annotation'                : [
+                    version: jakartaAnnotationApiVersion,
+                    group  : 'jakarta.annotation',
+                    names  : ['jakarta.annotation-api'],
+                    modules: ['']
+            ],
+            'micronaut'                         : [
+                    version: micronautVersion,
+                    group  : 'io.micronaut',
+                    names  : ['micronaut'],
+                    modules: ['aop', 'bom', 'inject', 'runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
+            ],
+            'micronaut.cache'                   : [
+                    version: micronautCacheVersion,
+                    group  : 'io.micronaut.cache',
+                    names  : ['micronaut-cache'],
+                    modules: ['core']
+            ],
+            'micronaut.micronaut-runtime-groovy': [
+                    version: micronautRuntimeGroovyVersion,
+                    group  : 'io.micronaut.groovy',
+                    names  : ['micronaut'],
+                    modules: ['runtime-groovy']
+            ],
+            'micronaut.spring'                  : [
+                    version: micronautSpringVersion,
+                    group  : 'io.micronaut.spring',
+                    names  : ['micronaut-spring'],
+                    modules: ['spring', 'context', 'boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+            ],
+            'mongodb'                           : [
+                    version: mongodbJavaDriverVersion,
+                    group  : 'org.mongodb',
+                    names  : ['mongodb-driver'],
+                    modules: ['core', 'sync']
+            ],
+            gorm                                : [
+                    version: datastoreVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-datastore'],
+                    modules: ['async', 'core', 'web', 'gorm', 'gorm-async', 'gorm-support', 'gorm-rx', 'gorm-test', 'gorm-validation']
+            ],
+            'gorm.hibernate'                    : [
+                    version: hibernateDatastoreVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-datastore-gorm-hibernate5'],
+                    modules: ['']
+            ],
+            'scaffolding-core'                  : [
+                    version: scaffoldingCoreVersion,
+                    group  : 'org.grails',
+                    names  : ['scaffolding'],
+                    modules: ['core']
+            ],
+            groovy                              : [
+                    version: groovyVersion,
+                    group  : 'org.codehaus.groovy',
+                    names  : ['groovy'],
+                    modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio', 'dateutil', 'macro']
+            ],
+            spring                              : [
+                    version: springVersion,
+                    group  : 'org.springframework',
+                    names  : ['spring'],
+                    modules: ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc', 'jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket']
+            ],
+            directoryWatcher                    : [
+                    version: directoryWatcherVersion,
+                    group  : 'io.methvin',
+                    names  : ['directory-watcher'],
+                    modules: ['']
+            ],
+            springLoaded                        : [
+                    version: springLoadedVersion,
+                    group  : 'org.springframework',
+                    names  : ['springloaded'],
+                    modules: ['']
+            ],
+            async                               : [
+                    version: asyncVersion,
+                    group  : 'org.grails.plugins',
+                    names  : ['async', 'events'],
+                    modules: ['']
+            ],
+            asyncImpls                          : [
+                    version: asyncVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-async', 'grails-events'],
+                    modules: ['gpars', 'rxjava', 'rxjava2']
+            ],
+            snakeyaml                           : [
+                    version: snakeyamlVersion,
+                    group  : 'org.yaml',
+                    names  : ['snakeyaml'],
+                    modules: ['']
+            ],
+            spock                               : [
+                    version: spockVersion,
+                    group  : 'org.spockframework',
+                    names  : ['spock-core', 'spock-spring'],
+                    modules: ['']
+            ],
+            gsp                                 : [
+                    version: gspVersion,
+                    group  : 'org.grails.plugins',
+                    names  : ['gsp'],
+                    modules: ['']
+            ],
+            testingSupport                      : [
+                    version: testingSupportVersion,
+                    group  : 'org.grails',
+                    names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
+                    modules: ['']
+            ],
+            'views-json-testing-support'        : [
+                    version: viewsVersion,
+                    group  : 'org.grails',
+                    names  : ['views-json-testing-support'],
+                    modules: ['']
+            ],
+            h2                                  : [
+                    version: h2Version,
+                    group  : 'com.h2database',
+                    names  : ['h2'],
+                    modules: ['']
+            ],
     ]
 
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
@@ -199,8 +199,8 @@ if (jointBuildGroovyJarProperty) {
     }
 } else {
     groovyDependency = dependencies.create("org.codehaus.groovy:groovy:${groovyVersion}") {
-        exclude module:"commons-cli"
-        exclude module:"ant"
+        exclude module: "commons-cli"
+        exclude module: "ant"
     }
 }
 
@@ -234,7 +234,7 @@ allprojects {
         mavenCentral()
         maven { url "https://repo.grails.org/grails/core" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        if(groovyVersion.endsWith('-SNAPSHOT')) {
+        if (groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
                 name 'JFrog OSS snapshot repo'
                 url 'https://oss.jfrog.org/oss-snapshot-local/'
@@ -366,8 +366,8 @@ subprojects { project ->
                 }
             }
 
-            if(project.name == 'grails-dependencies') return
-            if(project.name == 'grails-bom') return
+            if (project.name == 'grails-dependencies') return
+            if (project.name == 'grails-bom') return
 
             publications {
                 maven(MavenPublication) {
@@ -437,23 +437,23 @@ subprojects { project ->
         }
     }
 
-    if(project.name == 'grails-dependencies') return
-    if(project.name == 'grails-bom') return
+    if (project.name == 'grails-dependencies') return
+    if (project.name == 'grails-bom') return
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 
-    if(project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
+    if (project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
             api "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
             api("org.springframework:spring-test:${springVersion}") {
-                exclude group: 'commons-logging', module:'commons-logging'
+                exclude group: 'commons-logging', module: 'commons-logging'
             }
         }
     }
 
-    if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
+    if (project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
             testImplementation 'hsqldb:hsqldb:1.8.1.1'
             testImplementation "com.h2database:h2:$h2Version"
@@ -462,11 +462,11 @@ subprojects { project ->
 
     jar {
         manifest.mainAttributes(
-            "Built-By": System.properties['user.name'],
-            "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
-            "Implementation-Title": "Grails",
-            "Implementation-Version": grailsVersion,
-            "Implementation-Vendor": 'grails.org')
+                "Built-By": System.properties['user.name'],
+                "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+                "Implementation-Title": "Grails",
+                "Implementation-Version": grailsVersion,
+                "Implementation-Vendor": 'grails.org')
     }
 
     configurations {
@@ -533,15 +533,23 @@ subprojects { project ->
         options.encoding = "UTF-8"
     }
 
-    // Using configure instead of tasks.withType(Groovydoc) because
-    // it fails with property 'access' doesn't have a configured value.
-    configure(groovydoc) {
+    tasks.withType(Groovydoc).configureEach {
         onlyIf { !isTestSuite }
         classpath += configurations.documentation
         access = GroovydocAccess.PRIVATE
         includeAuthor = true
         includeMainForScripts = false
         processScripts = false
+    }
+
+    tasks.withType(Javadoc).configureEach {
+        onlyIf { !isTestSuite }
+        classpath += configurations.documentation
+        // Using options.jFlags instead of closure otherwise it fails with MinimalJavadocOptions
+        options.encoding "UTF-8"
+        options.docEncoding "UTF-8"
+        options.charSet "UTF-8"
+        options.jFlags "-Xms64M", "-Xmx512M"
     }
 
     configure(javadoc) {
@@ -556,7 +564,7 @@ subprojects { project ->
 
     // task for running a single test with -DsingleTest.single=TestName singleTest
     tasks.register("singleTest", Test) {
-        if(System.getProperty("debug.tests")) {
+        if (System.getProperty("debug.tests")) {
             jvmArgs += debugArguments
         }
     }
@@ -589,7 +597,7 @@ subprojects { project ->
             maxHeapSize = '1024m'
         }
 
-        if(System.getProperty("debug.tests")) {
+        if (System.getProperty("debug.tests")) {
             jvmArgs += debugArguments
         }
     }
