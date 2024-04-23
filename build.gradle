@@ -533,7 +533,9 @@ subprojects { project ->
         options.encoding = "UTF-8"
     }
 
-    tasks.withType(Groovydoc).configureEach {
+    // Using configure instead of tasks.withType(Groovydoc) because
+    // it fails with property 'access' doesn't have a configured value.
+    configure(groovydoc) {
         onlyIf { !isTestSuite }
         classpath += configurations.documentation
         access = GroovydocAccess.PRIVATE
