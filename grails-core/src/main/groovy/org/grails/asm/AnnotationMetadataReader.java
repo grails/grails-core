@@ -19,12 +19,11 @@ package org.grails.asm;
 import org.springframework.asm.AnnotationVisitor;
 import org.springframework.asm.SpringAsmInfo;
 import org.springframework.asm.Type;
-import org.springframework.core.NestedIOException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
-import org.springframework.core.type.classreading.AnnotationMetadataReadingVisitor;
 import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.lang.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class AnnotationMetadataReader implements MetadataReader {
      * @param classLoader The classloader
      * @throws IOException
      */
-    public AnnotationMetadataReader(Resource resource, ClassLoader classLoader) throws IOException {
+    public AnnotationMetadataReader(Resource resource, @Nullable ClassLoader classLoader) throws IOException {
         this(resource, classLoader, false);
     }
     /**
@@ -61,19 +60,7 @@ public class AnnotationMetadataReader implements MetadataReader {
      * @throws IOException
      */
     public AnnotationMetadataReader(Resource resource, ClassLoader classLoader, boolean readAttributeValues) throws IOException {
-        InputStream is = new BufferedInputStream(resource.getInputStream());
-        ClassReader classReader;
-        try {
-            classReader = new ClassReader(is);
-        }
-        catch (IllegalArgumentException ex) {
-            throw new NestedIOException("ASM ClassReader failed to parse class file - " +
-                    "probably due to a new Java class file version that isn't supported yet: " + resource, ex);
-        }
-        finally {
-            is.close();
-        }
-
+        final ClassReader classReader = getClassReader(resource);
 
         AnnotationMetadataReadingVisitor visitor;
 
@@ -96,6 +83,17 @@ public class AnnotationMetadataReader implements MetadataReader {
         // (since AnnotationMetadataReadingVisitor extends ClassMetadataReadingVisitor)
         this.classMetadata = visitor;
         this.resource = resource;
+    }
+
+    private static ClassReader getClassReader(Resource resource) throws IOException {
+        try (InputStream is = new BufferedInputStream(resource.getInputStream())) {
+            try {
+                return new ClassReader(is);
+            } catch (IllegalArgumentException ex) {
+                throw new IOException("ASM ClassReader failed to parse class file - " +
+                        "probably due to a new Java class file version that isn't supported yet: " + resource, ex);
+            }
+        }
     }
 
 
