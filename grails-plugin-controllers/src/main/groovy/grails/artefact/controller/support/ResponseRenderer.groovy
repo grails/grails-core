@@ -37,10 +37,8 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.servlet.view.GroovyPageView
-import org.grails.web.sitemesh.GrailsLayoutView
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
-import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
@@ -69,14 +67,7 @@ trait ResponseRenderer extends WebAttributes {
 
 
     private MimeUtility mimeUtility
-    private GroovyPageLayoutFinder groovyPageLayoutFinder
     private GrailsPluginManager pluginManager
-
-    @Generated
-    @Autowired(required = false)
-    void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
-        this.groovyPageLayoutFinder = groovyPageLayoutFinder
-    }
 
     @Generated
     @Autowired(required = false)
@@ -307,17 +298,9 @@ trait ResponseRenderer extends WebAttributes {
 
                 boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE))
                 // if automatic decoration occurred unwrap, since this is a partial
-                if(view instanceof GrailsLayoutView) {
-                    view = ((GrailsLayoutView)view).getInnerView()
-                }
 
-                if(renderWithLayout && groovyPageLayoutFinder) {
+                if (renderWithLayout) {
                     applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
-                    try {
-                        view = new GrailsLayoutView(groovyPageLayoutFinder, view)
-                    } catch (NoSuchBeanDefinitionException e) {
-                        // ignore
-                    }
                 }
 
 

@@ -32,9 +32,6 @@ grails.converters.encoding="UTF-8"
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
 
-// enable GSP preprocessing: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
-grails.views.gsp.sitemesh.preprocess = true
-
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {
@@ -60,7 +57,6 @@ log4j = {
 
     error  'org.codehaus.groovy.grails.web.servlet',  //  controllers
 	       'org.codehaus.groovy.grails.web.pages', //  GSP
-	       'org.codehaus.groovy.grails.web.sitemesh', //  layouts
 	       'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
 	       'org.codehaus.groovy.grails.web.mapping', // URL mapping
 	       'org.codehaus.groovy.grails.commons', // core / classloading
