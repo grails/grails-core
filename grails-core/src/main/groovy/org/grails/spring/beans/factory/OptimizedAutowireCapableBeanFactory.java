@@ -26,7 +26,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.StandardReflectionParameterNameDiscoverer;
 import org.springframework.util.ClassUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -95,7 +95,7 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
             });
         }
 
-        setParameterNameDiscoverer(new LocalVariableTableParameterNameDiscoverer());
+        setParameterNameDiscoverer(new StandardReflectionParameterNameDiscoverer());
         setAutowireCandidateResolver(new QualifierAnnotationAutowireCandidateResolver());
         ignoreDependencyType(Closure.class);
     }

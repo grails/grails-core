@@ -22,7 +22,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware, PriorityOrdered {
+public class TransactionManagerPostProcessor implements SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware, PriorityOrdered {
     private ConfigurableListableBeanFactory beanFactory;
     private PlatformTransactionManager transactionManager;
     private int order = Ordered.LOWEST_PRECEDENCE;
