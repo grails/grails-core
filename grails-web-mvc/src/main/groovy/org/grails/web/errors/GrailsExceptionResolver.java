@@ -43,7 +43,6 @@ import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.exceptions.GrailsMVCException;
-import org.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.springframework.beans.BeanUtils;
@@ -192,10 +191,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             else if (info != null && info.getControllerName() != null) {
                 String uri = determineUri(request);
                 if (!response.isCommitted()) {
-                    if(response instanceof GrailsContentBufferingResponse) {
-                        // clear the output from sitemesh before rendering error page
-                        ((GrailsContentBufferingResponse)response).deactivateSitemesh();
-                    }
                     forwardRequest(info, request, response, mv, uri);
                     // return an empty ModelAndView since the error handler has been processed
                     return new ModelAndView();
