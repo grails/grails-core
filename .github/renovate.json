@@ -65,6 +65,13 @@
         "^org\\.apache\\.maven\\.resolver"
       ],
       "groupName": "apache-maven-resolver monorepo"
+    },
+    {
+      "matchPackagePatterns": [
+        "^org\\.springframework\\:",
+        "^org\\.springframework\\.boot\\:"
+      ],
+      "groupName": "spring-framework"
     }
   ]
 }
