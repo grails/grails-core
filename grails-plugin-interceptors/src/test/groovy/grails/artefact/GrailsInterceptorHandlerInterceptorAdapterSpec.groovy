@@ -1,16 +1,5 @@
-package grails.artefact
-
-import grails.interceptors.Matcher
-import grails.util.GrailsWebMockUtil
-import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
-import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.servlet.ModelAndView
-import spock.lang.Issue
-import spock.lang.Specification
-
 /*
- * Copyright 2014 original authors
+ * Copyright 2024 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +13,16 @@ import spock.lang.Specification
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.artefact
+
+import grails.interceptors.Matcher
+import grails.util.GrailsWebMockUtil
+import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
+import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.ModelAndView
+import spock.lang.Issue
+import spock.lang.Specification
 
 /**
  * @author graemerocher

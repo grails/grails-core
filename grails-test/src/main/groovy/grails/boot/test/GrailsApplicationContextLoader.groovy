@@ -1,11 +1,5 @@
-package grails.boot.test
-
-import grails.boot.GrailsApp
-import org.springframework.boot.SpringApplication
-import org.springframework.boot.test.context.SpringBootContextLoader
-
 /*
- * Copyright 2014 original authors
+ * Copyright 2024 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +13,11 @@ import org.springframework.boot.test.context.SpringBootContextLoader
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.boot.test
+
+import grails.boot.GrailsApp
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.test.context.SpringBootContextLoader
 
 /**
  * Extends Spring Boot's {@link SpringBootContextLoader} with a version for Grails
