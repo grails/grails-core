@@ -1,12 +1,5 @@
-package grails.ui.console.support
-
-import grails.core.GrailsApplication
-import groovy.transform.CompileStatic
-import groovy.transform.InheritConstructors
-import org.springframework.context.support.GenericApplicationContext
-
 /*
- * Copyright 2014 original authors
+ * Copyright 2024 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +13,12 @@ import org.springframework.context.support.GenericApplicationContext
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.ui.console.support
+
+import grails.core.GrailsApplication
+import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
+import org.springframework.context.support.GenericApplicationContext
 
 /**
  * An {@link org.springframework.context.ApplicationContext} that loads the GroovyConsole and makes the ApplicationContext and Grails environment available to the console

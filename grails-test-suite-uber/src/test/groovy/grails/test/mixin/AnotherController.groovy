@@ -1,15 +1,5 @@
-package grails.test.mixin
-
-import grails.artefact.Controller
-import grails.converters.JSON
-import grails.converters.XML
-import grails.web.mime.MimeUtility
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.MessageSource
-import org.springframework.web.multipart.MultipartFile
-
 /*
- * Copyright 2014 original authors
+ * Copyright 2024 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +13,15 @@ import org.springframework.web.multipart.MultipartFile
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.test.mixin
+
+import grails.artefact.Controller
+import grails.converters.JSON
+import grails.converters.XML
+import grails.web.mime.MimeUtility
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
+import org.springframework.web.multipart.MultipartFile
 
 /**
  * @author graemerocher
