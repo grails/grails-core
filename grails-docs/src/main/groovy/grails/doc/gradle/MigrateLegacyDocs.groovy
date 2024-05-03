@@ -23,9 +23,9 @@ import org.gradle.api.tasks.*
  * a YAML-based table of contents.
  */
 class MigrateLegacyDocs extends DefaultTask {
-    @InputDirectory File guideDir = new File(project.projectDir, "src/guide")
-    @InputDirectory File resourcesDir = new File(project.projectDir, "resources")
-    @OutputDirectory File outputDir = new File(project.projectDir, "src/guide.migrated")
+    @Optional @InputDirectory File guideDir = new File(project.projectDir, "src/guide")
+    @Optional @InputDirectory File resourcesDir = new File(project.projectDir, "resources")
+    @Optional @OutputDirectory File outputDir = new File(project.projectDir, "src/guide.migrated")
 
     @TaskAction
     def migrate() {
