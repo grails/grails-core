@@ -14,7 +14,6 @@
  */
 package grails.doc.gradle
 
-import grails.doc.PdfBuilder
 import grails.doc.PdfPublisher
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
@@ -25,15 +24,20 @@ import org.gradle.api.tasks.*
  * location.
  */
 class PublishPdf extends DefaultTask {
-    @Input String pdfName = "single.pdf"
-    @Input String language = ""
-    @OutputDirectory @Input File outputDirectory = project.outputDir as File
 
+    @Optional @Input String language = ""
+    @Optional @Input String pdfName = "single.pdf"
+    @Optional @InputDirectory File docsDir = new File(project.buildDir, "/manual")
+    @Optional @OutputDirectory File outputDirectory = new File(project.buildDir, "/manual-pdf")
+
+    /**
+     * Publishes the PDF user guide.
+     */
     @TaskAction
     def publish() {
         File outputDir = new File(outputDirectory, language ?: "")
         try {
-            PdfPublisher.publishPdfFromHtml(outputDir, "guide/single.html", pdfName)
+            PdfPublisher.publishPdfFromHtml(docsDir, outputDir, "guide/single.html", pdfName)
         }
         catch (Exception ex) {
             ex.printStackTrace()

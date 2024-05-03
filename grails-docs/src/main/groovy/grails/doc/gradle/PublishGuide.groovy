@@ -24,16 +24,17 @@ import org.gradle.api.tasks.*
  * Gradle task for generating a gdoc-based HTML user guide.
  */
 class PublishGuide extends DefaultTask {
-    @InputDirectory File sourceDir = new File(project.projectDir, "src")
-    @OutputDirectory File targetDir = new File(project.buildDir, "docs")
-    @InputDirectory @Optional File resourcesDir = new File(project.projectDir, "resources")
-    @Input @Optional List propertiesFiles = []
-    @Input @Optional String language = ""
-    @Input @Optional Boolean asciidoc = false
-    @Input @Optional String sourceRepo
-    @Input @Optional Properties properties = new Properties()
-    @Input @Nested Collection macros = []
-    @OutputDirectory File workDir = project.buildDir as File
+    @Optional @InputDirectory File sourceDir = new File(project.projectDir, "src")
+    @Optional @InputDirectory File resourcesDir = new File(project.projectDir, "resources")
+    @Optional @Input List propertiesFiles = []
+    @Optional @Input String language = ""
+    @Optional @Input Boolean asciidoc = false
+    @Optional @Input String sourceRepo
+    @Optional @Input Properties properties = new Properties()
+    @Optional @Nested Collection macros = []
+
+    @Optional @OutputDirectory File workDir = project.buildDir
+    @Optional @OutputDirectory File targetDir = new File(project.buildDir, "docs")
 
     @TaskAction
     def publishGuide() {
