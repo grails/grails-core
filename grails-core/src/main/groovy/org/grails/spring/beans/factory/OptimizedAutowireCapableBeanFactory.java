@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+import org.springframework.core.StandardReflectionParameterNameDiscoverer;
 import org.springframework.util.ClassUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -35,17 +35,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 /**
- *
  * Applies autowiring performance optimizations to Spring
  *
  * @author Graeme Rocher
@@ -56,8 +52,8 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
 
     public static boolean DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS = Boolean.getBoolean("grails.disable.optimization.autowirebyname");
 
-    ConcurrentMap<Class<?>, Map<String,PropertyDescriptor>> autowireableBeanPropsCacheForClass =
-            new ConcurrentHashMap<Class<?>, Map<String,PropertyDescriptor>>();
+    ConcurrentMap<Class<?>, Map<String, PropertyDescriptor>> autowireableBeanPropsCacheForClass =
+            new ConcurrentHashMap<Class<?>, Map<String, PropertyDescriptor>>();
     private boolean reloadEnabled;
 
     /**
@@ -95,11 +91,10 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
             });
         }
 
-        setParameterNameDiscoverer(new LocalVariableTableParameterNameDiscoverer());
+        setParameterNameDiscoverer(new StandardReflectionParameterNameDiscoverer());
         setAutowireCandidateResolver(new QualifierAnnotationAutowireCandidateResolver());
         ignoreDependencyType(Closure.class);
     }
-
 
 
     @Override
@@ -139,11 +134,7 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
     @Override
     protected void autowireByName(String beanName, AbstractBeanDefinition mbd, final BeanWrapper bw, MutablePropertyValues pvs) {
         if (!DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS && mbd.isPrototype()) {
-            Map<String, PropertyDescriptor> autowireableBeanProps = resolveAutowireablePropertyDescriptorsForClass(bw.getWrappedClass(), new Callable<BeanWrapper>() {
-                public BeanWrapper call() throws Exception {
-                    return bw;
-                }
-            });
+            Map<String, PropertyDescriptor> autowireableBeanProps = resolveAutowireablePropertyDescriptorsForClass(bw.getWrappedClass(), () -> bw);
             for (Map.Entry<String, PropertyDescriptor> entry : autowireableBeanProps.entrySet()) {
                 final PropertyDescriptor pd = entry.getValue();
                 final String propertyName = pd.getName();
@@ -177,34 +168,16 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
             final String beanName = entry.getKey();
             final Object value = getBean(beanName);
             try {
-                if (System.getSecurityManager() != null) {
-                    try {
-                        AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
-                            public Object run() throws Exception {
-                                writeMethod.invoke(existingBean, value);
-                                return null;
-                            }
-                        }, getAccessControlContext());
-                    }
-                    catch (PrivilegedActionException ex) {
-                        throw ex.getException();
-                    }
-                }
-                else {
-                    writeMethod.invoke(existingBean, value);
-                }
-            }
-            catch (TypeMismatchException ex) {
+                writeMethod.invoke(existingBean, value);
+            } catch (TypeMismatchException ex) {
                 throw ex;
-            }
-            catch (InvocationTargetException ex) {
+            } catch (InvocationTargetException ex) {
                 PropertyChangeEvent propertyChangeEvent = new PropertyChangeEvent(existingBean, beanName, null, value);
                 if (ex.getTargetException() instanceof ClassCastException) {
                     throw new TypeMismatchException(propertyChangeEvent, pd.getPropertyType(), ex.getTargetException());
                 }
                 throw new MethodInvocationException(propertyChangeEvent, ex.getTargetException());
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 PropertyChangeEvent pce = new PropertyChangeEvent(existingBean, beanName, null, value);
                 throw new MethodInvocationException(pce, ex);
             }
@@ -212,18 +185,16 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
     }
 
     protected Map<String, PropertyDescriptor> resolveAutowireablePropertyDescriptors(final Object existingBean) {
-        return resolveAutowireablePropertyDescriptorsForClass(existingBean.getClass(), new Callable<BeanWrapper>() {
-            public BeanWrapper call() throws Exception {
-                BeanWrapperImpl bw = new BeanWrapperImpl(false);
-                Class userClass = ClassUtils.getUserClass(existingBean.getClass());
-                if(userClass != existingBean.getClass()) {
-                    bw.setWrappedInstance(BeanUtils.instantiate(userClass));
-                } else {
-                    bw.setWrappedInstance(existingBean);
-                }
-                bw.setConversionService(getConversionService());
-                return bw;
+        return resolveAutowireablePropertyDescriptorsForClass(existingBean.getClass(), () -> {
+            BeanWrapperImpl bw = new BeanWrapperImpl(false);
+            Class userClass = ClassUtils.getUserClass(existingBean.getClass());
+            if (userClass != existingBean.getClass()) {
+                bw.setWrappedInstance(BeanUtils.instantiate(userClass));
+            } else {
+                bw.setWrappedInstance(existingBean);
             }
+            bw.setConversionService(getConversionService());
+            return bw;
         });
     }
 
@@ -232,11 +203,10 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
         Map<String, PropertyDescriptor> autowireableBeanProps = autowireableBeanPropsCacheForClass.get(beanClass);
         if (autowireableBeanProps == null) {
             autowireableBeanProps = new HashMap<String, PropertyDescriptor>();
-            BeanWrapper bw=null;
+            BeanWrapper bw = null;
             try {
                 bw = beanWrapperCallback.call();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
             PropertyDescriptor[] pds = bw.getPropertyDescriptors();
@@ -245,17 +215,7 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
                         && !BeanUtils.isSimpleProperty(pd.getPropertyType())) {
                     final Method writeMethod = pd.getWriteMethod();
                     if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers()) && !writeMethod.isAccessible()) {
-                        if (System.getSecurityManager() != null) {
-                            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                                public Object run() {
-                                    writeMethod.setAccessible(true);
-                                    return null;
-                                }
-                            });
-                        }
-                        else {
-                            writeMethod.setAccessible(true);
-                        }
+                        writeMethod.setAccessible(true);
                     }
                     autowireableBeanProps.put(pd.getName(), pd);
                 }
