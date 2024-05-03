@@ -20,7 +20,7 @@ import junit.framework.TestCase;
 import org.junit.jupiter.api.Test;
 import spock.lang.Issue;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;

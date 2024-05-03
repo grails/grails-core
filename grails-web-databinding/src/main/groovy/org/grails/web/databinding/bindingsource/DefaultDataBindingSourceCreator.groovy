@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
 import grails.databinding.DataBindingSource
 import grails.web.databinding.DataBindingUtils
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 import grails.web.mime.MimeType
 import grails.web.servlet.mvc.GrailsParameterMap

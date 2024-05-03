@@ -22,7 +22,7 @@ import javax.inject.Singleton
 import java.text.NumberFormat
 import java.text.ParsePosition
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired

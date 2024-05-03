@@ -25,7 +25,7 @@ import org.grails.web.servlet.boostrap.BootstrapArtefactHandler;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * A common class where shared configurational methods can reside.

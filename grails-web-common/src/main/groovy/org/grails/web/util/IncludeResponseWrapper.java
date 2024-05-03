@@ -1,11 +1,11 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,10 @@
  */
 package org.grails.web.util;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.grails.buffer.GrailsPrintWriterAdapter;
 import org.grails.buffer.StreamByteBuffer;
 import org.grails.buffer.StreamCharBuffer;
@@ -24,11 +28,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.CharacterCodingException;
 import java.util.Locale;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * Response wrapper used to capture the content of a response (such as within in an include).
@@ -196,12 +195,7 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
 
     @Override
     public void setContentLength(int len) {
-       // do nothing
-    }
-    
-    @Override
-    public void setStatus(int sc, String sm) {
-       setStatus(sc);
+        // do nothing
     }
     
     @Override

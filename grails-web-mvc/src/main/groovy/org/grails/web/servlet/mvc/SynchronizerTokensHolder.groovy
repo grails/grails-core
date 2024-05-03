@@ -17,7 +17,7 @@ package org.grails.web.servlet.mvc
 
 import java.util.concurrent.CopyOnWriteArraySet
 
-import javax.servlet.http.HttpSession
+import jakarta.servlet.http.HttpSession
 
 /**
  * A token used to handle double-submits.

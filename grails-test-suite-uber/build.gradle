@@ -5,114 +5,114 @@ configurations.testCompileClasspath {
 dependencies {
 
     api project(':grails-test-suite-base'),
-            project(':grails-plugin-interceptors'),        
+            project(':grails-plugin-interceptors'),
             project(':grails-plugin-controllers')
 
     api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
-    testRuntimeOnly 'javax.servlet.jsp:jsp-api:2.2'
+    testRuntimeOnly "jakarta.servlet.jsp:jakarta.servlet.jsp-api:$jakartaServletJspApiVersion"
     testRuntimeOnly 'jstl:jstl:1.2'
-    testRuntimeOnly 'javax.el:el-api:2.2'
+    testRuntimeOnly "jakarta.el:jakarta.el-api:$jakartaElVersion"
     testRuntimeOnly "com.h2database:h2:$h2Version"
     testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
     testImplementation project(':grails-plugin-codecs'),
-                project(':grails-plugin-domain-class') ,
-                project(':grails-plugin-url-mappings') ,
-                project(":grails-plugin-datasource"),
-                project(":grails-plugin-services"),
-                project(":grails-plugin-rest"),
-                project(":grails-plugin-i18n"),
-                project(":grails-plugin-databinding"),
-                project(':grails-spring')
+            project(':grails-plugin-domain-class'),
+            project(':grails-plugin-url-mappings'),
+            project(":grails-plugin-datasource"),
+            project(":grails-plugin-services"),
+            project(":grails-plugin-rest"),
+            project(":grails-plugin-i18n"),
+            project(":grails-plugin-databinding"),
+            project(':grails-spring')
 
     testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
-        exclude group: 'org.grails', module:'grails-datastore-gorm'
-        exclude group: 'org.grails', module:'grails-datastore-core'
-        exclude group: 'org.springframework', module:'spring-core'
-        exclude group: 'org.springframework', module:'spring-context'
-        exclude group: 'org.springframework', module:'spring-web'
-        exclude group: 'org.springframework', module:'spring-beans'
-        exclude group: 'org.springframework', module:'spring-tx'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jul-to-slf4j'
-        exclude group: 'org.slf4j', module:'slf4j-api'
-        exclude group: 'org.slf4j', module:'slf4j-simple'
-        exclude group: 'org.grails', module:'grails-bootstrap'
-        exclude group: 'org.grails', module:'grails-plugin-domain-class'
-        exclude group: 'org.grails', module:'grails-core'
-        exclude group: 'org.grails', module:'grails-web'
-        exclude group: 'org.grails', module:'grails-test'
-        exclude group: 'org.grails', module:'grails-async'
-        exclude group: 'org.grails', module:'grails-spring'
-        exclude group: 'commons-collections', module:'commons-collections'
-        exclude group: 'commons-lang', module:'commons-lang'
-        exclude group: 'javassit', module:'javassist'
-        exclude group: 'java-persistence', module:'persistence-api'
+        exclude group: 'org.grails', module: 'grails-datastore-gorm'
+        exclude group: 'org.grails', module: 'grails-datastore-core'
+        exclude group: 'org.springframework', module: 'spring-core'
+        exclude group: 'org.springframework', module: 'spring-context'
+        exclude group: 'org.springframework', module: 'spring-web'
+        exclude group: 'org.springframework', module: 'spring-beans'
+        exclude group: 'org.springframework', module: 'spring-tx'
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module: 'jul-to-slf4j'
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+        exclude group: 'org.grails', module: 'grails-bootstrap'
+        exclude group: 'org.grails', module: 'grails-plugin-domain-class'
+        exclude group: 'org.grails', module: 'grails-core'
+        exclude group: 'org.grails', module: 'grails-web'
+        exclude group: 'org.grails', module: 'grails-test'
+        exclude group: 'org.grails', module: 'grails-async'
+        exclude group: 'org.grails', module: 'grails-spring'
+        exclude group: 'commons-collections', module: 'commons-collections'
+        exclude group: 'commons-lang', module: 'commons-lang'
+        exclude group: 'javassit', module: 'javassist'
+        exclude group: 'java-persistence', module: 'persistence-api'
         exclude group: 'javassist', module: 'javassist'
     }
 
     testImplementation "org.grails.plugins:async:$asyncVersion", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-controllers'
-        exclude module:'grails-core'
-        exclude module:'grails-plugin-domain-class'
+        exclude module: 'grails-plugin-codecs'
+        exclude module: 'grails-plugin-controllers'
+        exclude module: 'grails-core'
+        exclude module: 'grails-plugin-domain-class'
     }
     testImplementation "org.grails.plugins:gsp:$gspVersion", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-controllers'
-        exclude module:'grails-core'
-        exclude module:'grails-plugin-domain-class'
-        exclude module:'grails-web-common'
-        exclude module:'grails-encoder'
+        exclude module: 'grails-plugin-codecs'
+        exclude module: 'grails-plugin-controllers'
+        exclude module: 'grails-core'
+        exclude module: 'grails-plugin-domain-class'
+        exclude module: 'grails-web-common'
+        exclude module: 'grails-encoder'
     }
     testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-domain-class'
-        exclude module:'grails-test'
-        exclude module:'grails-core'
-        exclude module:'async'
+        exclude module: 'grails-plugin-codecs'
+        exclude module: 'grails-plugin-domain-class'
+        exclude module: 'grails-test'
+        exclude module: 'grails-core'
+        exclude module: 'async'
     }
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-rest'
-        exclude module:'grails-plugin-interceptors'
-        exclude module:'grails-test'
-        exclude module:'grails-core'
-        exclude module:'async'
-        exclude module:'gsp'
+        exclude module: 'grails-plugin-codecs'
+        exclude module: 'grails-plugin-rest'
+        exclude module: 'grails-plugin-interceptors'
+        exclude module: 'grails-test'
+        exclude module: 'grails-core'
+        exclude module: 'async'
+        exclude module: 'gsp'
     }
 }
 
 def isolatedTestPatterns = [
-    isolatedTestsOne: [
-        'org.grails.core.DefaultGrailsControllerClassSpec',
-        'org.grails.web.util.WebUtilsTests'
-    ],
-    isolatedTestsTwo: [
-        'grails.test.mixin.UrlMappingsTestMixinTests',
-        'grails.test.mixin.SetupTeardownInvokeTests',
-        'grails.test.mixin.TestMixinSetupTeardownInvokeTests'
-    ],
-    isolatedRestRendererTests: [
-        '*.rest.render.*Spec'
-    ],
-    isolatedPersonTests: [
-        'org.grails.validation.TestingValidationSpec',
-        'org.grails.validation.CascadingErrorCountSpec'
-    ],
-    isolatedRestfulControllerTests: [
-        'grails.test.mixin.RestfulControllerSpec',
-        'grails.test.mixin.ResourceAnnotationRestfulControllerSpec'
-    ]
+        isolatedTestsOne              : [
+                'org.grails.core.DefaultGrailsControllerClassSpec',
+                'org.grails.web.util.WebUtilsTests'
+        ],
+        isolatedTestsTwo              : [
+                'grails.test.mixin.UrlMappingsTestMixinTests',
+                'grails.test.mixin.SetupTeardownInvokeTests',
+                'grails.test.mixin.TestMixinSetupTeardownInvokeTests'
+        ],
+        isolatedRestRendererTests     : [
+                '*.rest.render.*Spec'
+        ],
+        isolatedPersonTests           : [
+                'org.grails.validation.TestingValidationSpec',
+                'org.grails.validation.CascadingErrorCountSpec'
+        ],
+        isolatedRestfulControllerTests: [
+                'grails.test.mixin.RestfulControllerSpec',
+                'grails.test.mixin.ResourceAnnotationRestfulControllerSpec'
+        ]
 ]
 
 tasks.withType(Test).configureEach {
     maxParallelForks = isCiBuild ? 2 : 4
     forkEvery = isCiBuild ? 25 : 100
-    if(!isCiBuild) {
+    if (!isCiBuild) {
         maxHeapSize = '1024m'
     }
 }

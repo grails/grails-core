@@ -18,7 +18,7 @@ package grails.util
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.ParameterCreationListener

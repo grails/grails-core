@@ -37,8 +37,8 @@ import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.regex.Pattern
 

@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet
 
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * 

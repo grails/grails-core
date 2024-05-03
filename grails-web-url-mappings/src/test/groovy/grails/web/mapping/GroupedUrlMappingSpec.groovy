@@ -5,8 +5,8 @@ import grails.web.http.HttpHeaders
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 /*
  * Copyright 2014 original authors

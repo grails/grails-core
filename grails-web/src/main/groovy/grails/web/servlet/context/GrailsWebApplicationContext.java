@@ -17,8 +17,8 @@ package grails.web.servlet.context;
 
 import grails.spring.BeanBuilder;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 
 import grails.core.GrailsApplication;
 import grails.web.servlet.context.support.GrailsEnvironment;

@@ -38,9 +38,9 @@ import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapt
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -248,7 +248,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
-     * Expose the current request URI and paths as {@link javax.servlet.http.HttpServletRequest}
+     * Expose the current request URI and paths as {@link jakarta.servlet.http.HttpServletRequest}
      * attributes under the keys defined in the Servlet 2.4 specification,
      * for containers that implement 2.3 or an earlier version of the Servlet API:
      * <code>javax.servlet.forward.request_uri</code>,

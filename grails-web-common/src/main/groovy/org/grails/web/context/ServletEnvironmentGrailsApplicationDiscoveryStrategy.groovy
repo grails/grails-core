@@ -23,7 +23,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.support.WebApplicationContextUtils
 
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 
 /**
  * Strategy for discovering the GrailsApplication and ApplicationContext instances in the Servlet environment

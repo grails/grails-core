@@ -29,7 +29,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
-import groovy.transform.NotYetImplemented
+import groovy.test.NotYetImplemented
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
@@ -57,7 +57,7 @@ import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-import javax.xml.bind.DatatypeConverter
+import jakarta.xml.bind.DatatypeConverter
 
 /**
  */

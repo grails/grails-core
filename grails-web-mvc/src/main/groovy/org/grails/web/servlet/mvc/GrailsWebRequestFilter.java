@@ -18,10 +18,10 @@ package org.grails.web.servlet.mvc;
 import java.io.IOException;
 import java.util.Collection;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import grails.web.mvc.FlashScope;
 import org.grails.web.util.WebUtils;
@@ -43,7 +43,7 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter implements Appl
 
     /* (non-Javadoc)
      * @see org.springframework.web.filter.OncePerRequestFilter#doFilterInternal(
-     *     javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
+     *     jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

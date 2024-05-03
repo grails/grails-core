@@ -49,7 +49,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         "org.springframework.boot.devtools.",
         "org.springsource.loaded.",
         "com.opensymphony.",
-        "javax.servlet."
+        "jakarta.servlet."
     };
 
     private List<String> packagesToFilter = new ArrayList<String>();

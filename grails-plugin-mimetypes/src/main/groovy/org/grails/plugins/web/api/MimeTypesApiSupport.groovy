@@ -19,9 +19,9 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import grails.web.mime.MimeType
 
-import javax.servlet.ServletRequest
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.ServletRequest
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 import org.grails.plugins.web.mime.FormatInterceptor
 import org.grails.web.util.GrailsApplicationAttributes

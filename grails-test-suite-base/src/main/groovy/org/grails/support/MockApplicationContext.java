@@ -15,8 +15,9 @@
  */
 package org.grails.support;
 
-import groovy.lang.GroovyObjectSupport;
 import grails.util.GrailsStringUtils;
+import groovy.lang.GroovyObjectSupport;
+import jakarta.servlet.ServletContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
@@ -36,7 +37,6 @@ import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StandardServletEnvironment;
 
-import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +58,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     /**
      * Registers a mock resource. Path separator: "/"
+     *
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void registerMockResource(String location) {
@@ -66,6 +67,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     /**
      * Registers a mock resource. Path separator: "/"
+     *
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void registerMockResource(String location, String contents) {
@@ -74,10 +76,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     /**
      * Unregisters a mock resource. Path separator: "/"
+     *
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void unregisterMockResource(String location) {
-        for (Iterator<Resource> it = resources.iterator(); it.hasNext();) {
+        for (Iterator<Resource> it = resources.iterator(); it.hasNext(); ) {
             MockResource mockResource = (MockResource) it.next();
             if (mockResource.location.equals(location)) {
                 it.remove();
@@ -87,6 +90,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     /**
      * Registers a resource that should not be found on the classpath. Path separator: "/"
+     *
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void registerIgnoredClassPathLocation(String location) {
@@ -95,6 +99,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     /**
      * Unregisters a resource that should not be found on the classpath. Path separator: "/"
+     *
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void unregisterIgnoredClassPathLocation(String location) {
@@ -162,7 +167,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return new String[0];
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public String[] getBeanNamesForType(Class type) {
         List<String> beanNames = new ArrayList<String>();
         for (String beanName : beans.keySet()) {
@@ -184,7 +189,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         Map<String, T> newMap = new HashMap<String, T>();
         for (int i = 0; i < beanNames.length; i++) {
             String beanName = beanNames[i];
-            newMap.put(beanName, (T)getBean(beanName));
+            newMap.put(beanName, (T) getBean(beanName));
         }
         return newMap;
     }
@@ -206,6 +211,18 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return findAnnotationOnBean(beanName, annotationType);
     }
 
+    @Override
+    public <A extends Annotation> Set<A> findAllAnnotationsOnBean(String beanName,
+                                                                  Class<A> annotationType,
+                                                                  boolean allowFactoryBeanInit)
+            throws NoSuchBeanDefinitionException {
+        Object bean = getBean(beanName);
+        if (bean != null) {
+            return Set.of(bean.getClass().getAnnotationsByType(annotationType));
+        }
+        return null;
+    }
+
     public Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) throws BeansException {
         Map<String, Object> submap = new HashMap<String, Object>();
         for (Object beanName : beans.keySet()) {
@@ -216,10 +233,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
         return submap;
     }
-    
+
     /**
      * Find all names of beans whose {@code Class} has the supplied {@link Annotation}
      * type, without creating any bean instances yet.
+     *
      * @param annotationType the type of annotation to look for
      * @return the names of all matching beans
      * @since 2.4
@@ -253,13 +271,13 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
             throw new NoSuchBeanDefinitionException(name);
         }
 
-        return (T)beans.get(name);
+        return (T) beans.get(name);
     }
 
     public <T> T getBean(Class<T> tClass) throws BeansException {
         final Map<String, T> map = getBeansOfType(tClass);
         if (map.isEmpty()) {
-            throw new NoSuchBeanDefinitionException(tClass, "No bean found for type: "  + tClass.getName());
+            throw new NoSuchBeanDefinitionException(tClass, "No bean found for type: " + tClass.getName());
         }
         return map.values().iterator().next();
     }
@@ -299,7 +317,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return aClass.isInstance(getBean(name));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Class getType(String name) throws NoSuchBeanDefinitionException {
         if (!beans.containsKey(name)) {
             throw new NoSuchBeanDefinitionException(name);
@@ -322,7 +340,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public String getMessage(String code, Object[] args, String defaultMessage, Locale locale) {
-        MessageSource messageSource = (MessageSource)getBean("messageSource");
+        MessageSource messageSource = (MessageSource) getBean("messageSource");
         if (messageSource == null) {
             throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
         }
@@ -330,7 +348,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public String getMessage(String code, Object[] args, Locale locale) throws NoSuchMessageException {
-        MessageSource messageSource = (MessageSource)getBean("messageSource");
+        MessageSource messageSource = (MessageSource) getBean("messageSource");
         if (messageSource == null) {
             throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
         }
@@ -338,7 +356,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public String getMessage(MessageSourceResolvable resolvable, Locale locale) throws NoSuchMessageException {
-        MessageSource messageSource = (MessageSource)getBean("messageSource");
+        MessageSource messageSource = (MessageSource) getBean("messageSource");
         if (messageSource == null) {
             throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
         }
@@ -386,6 +404,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     public AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException {
         return new DefaultListableBeanFactory();
     }
+
     public ClassLoader getClassLoader() {
         return getClass().getClassLoader();
     }

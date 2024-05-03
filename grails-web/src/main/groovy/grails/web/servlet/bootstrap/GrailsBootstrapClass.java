@@ -15,7 +15,7 @@
  */
 package grails.web.servlet.bootstrap;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import groovy.lang.Closure;
 import grails.core.GrailsClass;

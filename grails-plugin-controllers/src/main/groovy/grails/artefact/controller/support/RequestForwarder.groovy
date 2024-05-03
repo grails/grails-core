@@ -29,9 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.filter.OncePerRequestFilter
 
-import javax.servlet.RequestDispatcher
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.RequestDispatcher
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * A Trait for classes that forward the request

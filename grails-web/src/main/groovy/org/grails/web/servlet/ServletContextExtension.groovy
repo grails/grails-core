@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet
 
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 
 /**
  * An extension that adds methods to the {@link ServletContext} interface

@@ -17,7 +17,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 
 /**
  * Created by Jim on 8/22/2016.

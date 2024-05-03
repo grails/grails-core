@@ -34,7 +34,7 @@ import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
 import javax.annotation.PostConstruct
-import javax.xml.bind.DatatypeConverter
+import jakarta.xml.bind.DatatypeConverter
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
  *

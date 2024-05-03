@@ -17,15 +17,12 @@ package org.grails.web.databinding.bindingsource
 
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
-import groovy.transform.CompileStatic
-import org.springframework.http.HttpMethod
-
-import javax.servlet.http.HttpServletRequest
-
-import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
-
 import grails.web.mime.MimeType
 import grails.web.servlet.mvc.GrailsParameterMap
+import groovy.transform.CompileStatic
+import jakarta.servlet.http.HttpServletRequest
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException
+import org.springframework.http.HttpMethod
 
 @CompileStatic
 abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBindingSourceCreator {
@@ -41,8 +38,8 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException {
         try {
             if(bindingSource instanceof HttpServletRequest) {
-                def req = (HttpServletRequest)bindingSource
-                HttpMethod method = HttpMethod.resolve(req.method)
+                def req = (HttpServletRequest) bindingSource
+                HttpMethod method = HttpMethod.valueOf(req.method)
                 if (req.contentLength != 0 && !ignoredRequestBodyMethods.contains(method)) {
                     def is = req.getInputStream()
                     return createBindingSource(is, req.getCharacterEncoding())

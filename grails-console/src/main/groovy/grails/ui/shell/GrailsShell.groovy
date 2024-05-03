@@ -44,7 +44,7 @@ class GrailsShell extends GrailsApp {
     }
 
     public configureApplicationContextClass() {
-        if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
+        if (ClassUtils.isPresent("jakarta.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
             setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GroovyshWebApplicationContext))
         } else {
             setApplicationContextFactory(ApplicationContextFactory.ofContextClass(GroovyshApplicationContext))
