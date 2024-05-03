@@ -25,7 +25,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.MethodMetadata;
-import org.springframework.core.type.classreading.MethodMetadataReadingVisitor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -187,6 +186,15 @@ public class AnnotationMetadataReadingVisitor extends ClassMetadataReadingVisito
             }
         }
         return annotatedMethods;
+    }
+
+    @Override
+    public Set<MethodMetadata> getDeclaredMethods() {
+        Set<MethodMetadata> declaredMethods = new LinkedHashSet<>(4);
+        for (MethodMetadata methodMetadata : this.methodMetadataSet) {
+            declaredMethods.add(methodMetadata);
+        }
+        return declaredMethods;
     }
 
 }
