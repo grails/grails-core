@@ -255,9 +255,9 @@ public final class JSONParser implements JsonParserConstants {
             // See if the number fits in an integer, or long
             // Use BigInteger only if it is big enough.
             if (intpart.length() < 10) {
-                n = new Integer(intpart);
+                n = Integer.parseInt(intpart);
             } else if (intpart.length() < 19) {
-                n = new Long(intpart);
+                n = Long.parseLong(intpart);
             } else {
                 n = new java.math.BigInteger(intpart);
             }

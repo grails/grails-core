@@ -1,11 +1,11 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -67,7 +67,7 @@ public class GrailsConsole implements ConsoleLogger {
     public static final String HISTORYFILE = ".grails_history";
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
-    public static final Character SECURE_MASK_CHAR = new Character('*');
+    public static final Character SECURE_MASK_CHAR = Character.valueOf('*');
     private PrintStream originalSystemOut;
     private PrintStream originalSystemErr;
     private StringBuilder maxIndicatorString;
