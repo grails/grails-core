@@ -20,7 +20,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     private static final Logger LOG = LoggerFactory.getLogger(NavigableMap.class);
 
     private static final Pattern SPLIT_PATTERN = ~/\./
-    private static final String SPRING_PROFILES = 'spring.profiles.active'
+    private static final String SPRING_PROFILES = 'spring.config.activate.on-profile'
     private static final String SPRING = 'spring'
     private static final String PROFILES = 'profiles'
     private static final String SUBSCRIPT_REGEX = /((.*)\[(\d+)\]).*/

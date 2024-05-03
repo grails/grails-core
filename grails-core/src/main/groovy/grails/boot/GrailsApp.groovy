@@ -57,7 +57,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class GrailsApp extends SpringApplication {
 
     private static final String GRAILS_BANNER = 'grails-banner.txt'
-    private static final String SPRING_PROFILES = 'spring.profiles.active'
+    private static final String SPRING_PROFILES = 'spring.config.activate.on-profile'
 
     private static boolean developmentModeActive = false
     private static DirectoryWatcher directoryWatcher

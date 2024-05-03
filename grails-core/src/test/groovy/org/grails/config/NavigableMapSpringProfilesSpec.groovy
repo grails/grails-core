@@ -20,7 +20,7 @@ class NavigableMapSpringProfilesSpec extends Specification {
 
     void 'test spring profiles configuration for "sample" profile'() {
         given:
-        System.setProperty('spring.profiles.active', 'sample')
+        System.setProperty('spring.config.activate.on-profile', 'sample')
 
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())
@@ -33,7 +33,7 @@ class NavigableMapSpringProfilesSpec extends Specification {
 
     void 'test spring profiles configuration for "demo" profile'() {
         given:
-        System.setProperty('spring.profiles.active', 'demo')
+        System.setProperty('spring.config.activate.on-profile', 'demo')
 
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())

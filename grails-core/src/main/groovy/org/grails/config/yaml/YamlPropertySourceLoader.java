@@ -53,8 +53,8 @@ public class YamlPropertySourceLoader extends YamlProcessor implements PropertyS
     public List<PropertySource<?>> load(String name, Resource resource, List<String> filteredKeys) throws IOException {
         setResources(resource);
         setDocumentMatchers((DocumentMatcher) properties -> {
-            final String profile = properties.getProperty("spring.profiles");
-            return profile == null || profile.equalsIgnoreCase(System.getProperty("spring.profiles.active")) ? MatchStatus.FOUND : MatchStatus.NOT_FOUND;
+            final String profile = properties.getProperty("spring.config.activate.on-profile");
+            return profile == null || profile.equalsIgnoreCase(System.getProperty("spring.config.activate.on-profile")) ? MatchStatus.FOUND : MatchStatus.NOT_FOUND;
         });
         List<Map<String, Object>> loaded = load();
         if (loaded.isEmpty()) {

@@ -73,7 +73,7 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void checkForChanges() {
-        Assert.isTrue(checkForChangesExpected);
+        Assert.isTrue(checkForChangesExpected, "checkForChanges() called but not expected");
         checkForChangesExpected = false;
     }
 
@@ -100,12 +100,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void expectCheckForChanges() {
-        Assert.state(!checkForChangesExpected);
+        Assert.state(!checkForChangesExpected, "Expected checkForChanges() already called");
         checkForChangesExpected = true;
     }
 
     public void verify() {
-        Assert.state(!checkForChangesExpected);
+        Assert.state(!checkForChangesExpected, "Expected checkForChanges() not called");
     }
 
 }
