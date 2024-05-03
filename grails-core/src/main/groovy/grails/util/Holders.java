@@ -1,11 +1,11 @@
 /*
- * Copyright 2011 SpringSource.
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.util.Assert;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +34,8 @@ import java.util.Map;
 /**
  * Allows looking up key classes in a static context
  *
- *
  * @author Burt Beckwith
  * @author Graeme Rocher
- *
  * @since 2.0
  */
 public class Holders {
@@ -49,6 +48,7 @@ public class Holders {
 
     private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy.class, Holders.class.getClassLoader());
     private static Holder servletContexts;
+
     static {
 
         createServletContextsHolder();
@@ -77,7 +77,9 @@ public class Holders {
     }
 
     public static void setServletContext(final Object servletContext) {
-        servletContexts.set(servletContext);
+        if (servletContexts != null) {
+            servletContexts.set(servletContext);
+        }
     }
 
     public static Object getServletContext() {
@@ -85,11 +87,11 @@ public class Holders {
     }
 
     public static ApplicationContext getApplicationContext() {
-        for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+        for (GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
             ApplicationContext applicationContext = strategy.findApplicationContext();
-            if(applicationContext != null ) {
+            if (applicationContext != null) {
                 boolean running = ((Lifecycle) applicationContext).isRunning();
-                if(running) {
+                if (running) {
                     return applicationContext;
                 }
             }
@@ -98,26 +100,25 @@ public class Holders {
     }
 
     /**
-     *
      * @return The ApplicationContext or null if it doesn't exist
      */
     public static ApplicationContext findApplicationContext() {
-        for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+        for (GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
             ApplicationContext applicationContext = strategy.findApplicationContext();
-            if(applicationContext != null) {
+            if (applicationContext != null) {
                 return applicationContext;
             }
         }
         return null;
     }
+
     /**
-     *
      * @return The ApplicationContext or null if it doesn't exist
      */
     public static GrailsApplication findApplication() {
-        for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+        for (GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
             GrailsApplication grailsApplication = strategy.findGrailsApplication();
-            if(grailsApplication != null) {
+            if (grailsApplication != null) {
                 return grailsApplication;
             }
         }
@@ -177,8 +178,7 @@ public class Holders {
 
             try {
                 Thread.sleep(100);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 break;
             }
         }
@@ -210,20 +210,12 @@ public class Holders {
     }
 
     @SuppressWarnings("unchecked")
-    private static void createServletContextsHolder() {
+    private static <T> void createServletContextsHolder() {
         try {
             Class<?> clazz = Holders.class.getClassLoader().loadClass("grails.web.context.WebRequestServletHolder");
-            servletContexts = (Holder)clazz.newInstance();
-        }
-        catch (ClassNotFoundException e) {
-            // shouldn't happen
-            LOG.debug("Error initializing servlet context holder, not running in Servlet environment: " + e.getMessage(), e);
-        }
-        catch (InstantiationException e) {
-            // shouldn't happen
-            LOG.debug("Error initializing servlet context holder, not running in Servlet environment: " + e.getMessage(), e);
-        }
-        catch (IllegalAccessException e) {
+            servletContexts = (Holder<T>) clazz.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalArgumentException | NoSuchMethodException | IllegalAccessException |
+                 InvocationTargetException e) {
             // shouldn't happen
             LOG.debug("Error initializing servlet context holder, not running in Servlet environment: " + e.getMessage(), e);
         }
