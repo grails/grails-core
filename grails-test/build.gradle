@@ -7,7 +7,7 @@ dependencies {
     api "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
     api("org.codehaus.groovy:groovy-test:$groovyVersion")
     api("org.spockframework:spock-core:$spockVersion") { transitive = false }
-    api "org.junit.platform:junit-platform-runner:1.10.2"
+    api "org.junit.platform:junit-platform-runner:1.10.3"
 
 
     api project(":grails-plugin-mimetypes")
