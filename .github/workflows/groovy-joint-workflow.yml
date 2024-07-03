@@ -57,8 +57,8 @@ jobs:
           cd ../groovy
           echo "CI_GROOVY_VERSION=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_ENV
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
-      - name: Prepare GE Set-up Configuration
-        id: ge_conf
+      - name: Prepare Develocity Setup 1
+        id: develocity_conf_1
         run: |
           echo "VALUE<<EOF" >> $GITHUB_OUTPUT
           echo "plugins { " >> $GITHUB_OUTPUT
@@ -66,6 +66,11 @@ jobs:
           echo "    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.11.3'" >> $GITHUB_OUTPUT 
           echo "}" >> $GITHUB_OUTPUT 
           echo "" >> $GITHUB_OUTPUT 
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Prepare Develocity Setup 2
+        id: develocity_conf_2
+        run: |
+          echo "VALUE<<EOF" >> $GITHUB_OUTPUT
           echo "gradleEnterprise {" >> $GITHUB_OUTPUT 
           echo "    server = 'https://ge.grails.org'" >> $GITHUB_OUTPUT 
           echo "    buildScan {" >> $GITHUB_OUTPUT 
@@ -92,13 +97,17 @@ jobs:
           echo "}" >> $GITHUB_OUTPUT 
           echo "" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Gradle Enterprise Set-up
+      - name: Develocity Set-up
         run: |
           cd ../groovy
-          # Delete exiting plugins and build-scan from settings.gradle file
-          sed -i '21,31d' settings.gradle
-          # Add Gradle Enterprise set-up related configuration after line no 20 in settings.gradle
-          echo "${{ steps.ge_conf.outputs.value}}" | sed -i -e "20r /dev/stdin" settings.gradle
+          # Delete existing plugins from settings.gradle file
+          sed -i '32,37d' settings.gradle
+          # Add Gradle Enterprise set-up related configuration after line no 31 in settings.gradle
+          echo "${{ steps.develocity_conf_1.outputs.value }}" | sed -i -e "31r /dev/stdin" settings.gradle
+          # Delete existing buildCache configuration from gradle/build-scans.gradle file
+          sed -i '23,46d' gradle/build-scans.gradle
+          # Add Gradle Enterprise set-up related configuration after line no 22 in gradle/build-scans.gradle
+          echo "${{ steps.develocity_conf_2.outputs.value }}" | sed -i -e "22r /dev/stdin" gradle/build-scans.gradle
       - name: Build and install groovy (no docs)
         uses: gradle/gradle-build-action@v3
         env:
