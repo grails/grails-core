@@ -3,7 +3,6 @@ package grails.compiler
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.validation.Validateable
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -24,7 +23,6 @@ class DomainClassWithInnerClassUsingStaticCompilationSpec extends Specification 
     }
 
     @Issue('https://github.com/grails/grails-core/issues/12461')
-    @Ignore('This test fails with Groovy 4, but namedQueries are deprecated anyway')
     void 'a domain class marked with @GrailsCompileStatic containing an inner class and a "namedQueries" block'() {
         setup:
             SomeClass.getNamedQuery('test')
