@@ -17,9 +17,9 @@ class InheritanceWithValidationTests extends Specification implements DataTest {
     @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void testNewStringValue () {
         when:
-        CustomProperty property = new CustomProperty ()
+        CustomProperty property = new CustomProperty()
 
-        AbstractCustomPropertyValue propertyValue = property.newValue ("testValue")
+        AbstractCustomPropertyValue propertyValue = property.newValue('testValue')
 
         then:
         propertyValue.valid
@@ -49,8 +49,8 @@ class AbstractCustomPropertyValue {
 
 @Entity
 class CustomProperty {
-    AbstractCustomPropertyValue newValue (String value) {
-        return new StringPropertyValue (value)
+    AbstractCustomPropertyValue newValue(String value) {
+        return new StringPropertyValue(value)
     }
 }
 

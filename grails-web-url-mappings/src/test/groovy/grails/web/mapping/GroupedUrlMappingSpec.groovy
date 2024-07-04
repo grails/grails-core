@@ -1,13 +1,3 @@
-package grails.web.mapping
-
-import grails.util.GrailsWebMockUtil
-import grails.web.http.HttpHeaders
-import org.springframework.web.context.request.RequestContextHolder
-import spock.lang.Issue
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 /*
  * Copyright 2014-2024 the original author or authors.
  *
@@ -23,6 +13,15 @@ import javax.servlet.http.HttpServletResponse
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.web.mapping
+
+import grails.util.GrailsWebMockUtil
+import grails.web.http.HttpHeaders
+import org.springframework.web.context.request.RequestContextHolder
+import spock.lang.Issue
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 /**
  * @author graemerocher
