@@ -3,6 +3,7 @@ package grails.validation
 import grails.testing.gorm.DataTest
 import spock.lang.Ignore
 import spock.lang.Issue
+import spock.lang.PendingFeature
 import spock.lang.Specification
 import grails.persistence.Entity
 
@@ -12,7 +13,6 @@ import grails.persistence.Entity
  *
  */
 @Issue(['grails/grails-core#9749', 'grails/grails-core#9754'])
-@Ignore('With Groovy 4, it is not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
 class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     Class[] getDomainClassesToMock() {
@@ -68,6 +68,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     // DOMAIN WITH SUPER CLASS
 
+    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void 'ensure all inherited public properties are by default constraint properties'() {
         InheritedPropertiesDomain domain = new InheritedPropertiesDomain()
 
@@ -81,6 +82,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 2
     }
 
+    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void 'ensure inherited constrained properties are only public ones'() {
         when: 'constrained properties map is get on child class'
         Map constrainedProperties = InheritedPropertiesDomain.getConstrainedProperties()
@@ -91,6 +93,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         constrainedProperties.containsKey('pages')
     }
 
+    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void 'ensure only public non-static inherited properties with getter and setter are constrained properties'() {
         InheritedMethodPropertiesDomain domain = new InheritedMethodPropertiesDomain()
         when: 'empty domain with method properties is validated'
@@ -102,6 +105,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 1
     }
 
+    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void 'ensure constrained inherited method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedMethodPropertiesDomain.getConstrainedProperties()
@@ -229,7 +233,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
     }
 
     // DOMAIN WITH TRANSIENTS
-
+    @PendingFeature(reason = 'With Groovy 4, transient properties and methods are currently not excluded from validation')
     void 'ensure transient properties and methods are not validated'() {
         DomainWithTransients domain = new DomainWithTransients()
         when: 'domain with transient methods and properties is validated'
@@ -239,6 +243,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 0
     }
 
+    @PendingFeature(reason = 'With Groovy 4, transient methods and properties are currently constrained')
     void 'ensure transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
@@ -248,9 +253,12 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
     }
 
     // DOMAIN WITH SUPER CLASS WITH TRANSIENTS
-
+    @Ignore('''
+        With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+        Can't use @PendingFeature as the test currently passes as the domain class cannot currently be extended.
+    ''')
     void 'ensure inherited transient properties and methods are not validated'() {
-        DomainWithTransients domain = new DomainWithTransients()
+        def domain = new InheritedDomainWithTransients()
         when: 'domain with superclass properties and methods is validated'
         domain.validate()
 
@@ -258,9 +266,13 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 0
     }
 
+    @Ignore('''
+        With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+        Can't use @PendingFeature as the test currently passes as the domain class cannot currently be extended.
+    ''')
     void 'ensure inherited transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
-        Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
+        Map constrainedProperties = InheritedDomainWithTransients.getConstrainedProperties()
 
         then: 'nothing is constrained'
         constrainedProperties.size() == 0
@@ -306,8 +318,10 @@ class SimplePropertiesDomain {
 /**
  * Domain with properties from super class only
  */
-//@Entity
-class InheritedPropertiesDomain extends SimplePropertiesDomain {}
+// With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+@Entity
+class InheritedPropertiesDomain // extends SimplePropertiesDomain
+{}
 
 /**
  * Domain with getter/setter methods
@@ -370,8 +384,10 @@ class MethodPropertiesDomain {
 /**
  * Domain with method properties from super class
  */
-//@Entity
-class InheritedMethodPropertiesDomain extends MethodPropertiesDomain {}
+// With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+@Entity
+class InheritedMethodPropertiesDomain // extends MethodPropertiesDomain
+{}
 
 /**
  * Trait with properties only
@@ -540,8 +556,10 @@ trait BoolMethodPropertiesDomainTrait {
 /**
  * Domain with inherited bool method properties from super class
  */
-//@Entity
-class InheritedBoolMethodPropertiesDomain extends BoolMethodPropertiesDomain {}
+//With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+@Entity
+class InheritedBoolMethodPropertiesDomain // extends BoolMethodPropertiesDomain
+{}
 
 /**
  * Domain with inherited bool method properties from trait
@@ -594,8 +612,10 @@ trait TraitWithTransients {
     transient void setTransientBoolMethodProperty(Boolean value) {}
 }
 
-//@Entity
-class InheritedDomainWithTransients extends DomainWithTransients {}
+// With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+@Entity
+class InheritedDomainWithTransients // extends DomainWithTransients
+{}
 
 @Entity
 class TraitDomainWithTransients implements TraitWithTransients {}

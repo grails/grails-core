@@ -2,19 +2,19 @@ package grails.test.mixin
 
 import grails.persistence.Entity
 import grails.testing.gorm.DataTest
-import spock.lang.Ignore
+import spock.lang.PendingFeature
 import spock.lang.Specification
 
 /**
  * Test for GRAILS-9010
  */
-@Ignore('With Groovy 4, it is not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
 class InheritanceWithValidationTests extends Specification implements DataTest {
 
     void setupSpec() {
-        mockDomains AbstractCustomPropertyValue, CustomProperty, StringPropertyValue
+        mockDomains AbstractCustomPropertyValue, CustomProperty/*, StringPropertyValue*/
     }
 
+    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void testNewStringValue () {
         when:
         CustomProperty property = new CustomProperty ()
