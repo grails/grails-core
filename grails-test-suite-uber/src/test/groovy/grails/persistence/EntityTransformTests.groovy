@@ -1,6 +1,5 @@
 package grails.persistence
 
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 /**
@@ -11,12 +10,14 @@ class EntityTransformTests extends Specification {
 
     // test for http://jira.codehaus.org/browse/GRAILS-5238
     void testGRAILS_5238() {
+
         given:
         def p = new GroovyShell().evaluate('''
             import grails.persistence.*
             
             @Entity
             class Permission {
+            
                 String permission
             
                 static belongsTo = [ user: User ]
@@ -24,7 +25,6 @@ class EntityTransformTests extends Specification {
                 void setOwner(User owner) {
                     this.user = owner
                 }
-            
                 User getOwner() {
                     return user
                 }
@@ -42,11 +42,11 @@ class EntityTransformTests extends Specification {
         ''')
 
         expect:
-        'User' == p.user.class.name
+        'User' == p['user'].class.name
         'User' == p.class.methods.find { it.name == 'getUser' }.returnType.name
     }
 
-    void testDefaultConstructorBehaviourNotOverriden() {
+    void testDefaultConstructorBehaviourNotOverridden() {
         given:
         def entity = new GroovyShell().evaluate('''
             import grails.persistence.*
@@ -56,6 +56,7 @@ class EntityTransformTests extends Specification {
     
                   boolean enabled
                   int cash
+                  
                   EntityTransformTest() {
                       enabled = true
                       cash = 30
@@ -67,11 +68,11 @@ class EntityTransformTests extends Specification {
 
         expect:
         entity != null
-        entity.enabled
-        entity.cash == 30
+        entity['enabled']
+        entity['cash'] == 30
     }
 
-    void testConstructorBehaviourNotOverriden() {
+    void testConstructorBehaviourNotOverridden() {
         given:
         def entity = new GroovyShell().evaluate('''
             import grails.persistence.*
@@ -81,6 +82,7 @@ class EntityTransformTests extends Specification {
 
                 boolean enabled
                 int cash
+                
                 EntityTransformTest2() {
                     enabled = true
                     cash = 30
@@ -91,8 +93,8 @@ class EntityTransformTests extends Specification {
 
         expect:
         entity != null
-        entity.enabled
-        entity.cash == 42
+        entity['enabled']
+        entity['cash'] == 42
     }
 
     void testAnnotatedEntity() {
@@ -114,20 +116,20 @@ class EntityTransformTests extends Specification {
         ''')
 
         expect:
-        entity.id == null
-        entity.version == null
+        entity['id'] == null
+        entity['version'] == null
 
         when:
-        entity.many = new HashSet()
+        entity['many'] = new HashSet()
 
         then:
-        0 == (int) entity.many.size()
+        0 == (entity['many'] as HashSet).size()
 
         when:
-        entity.one = entity.class.getDeclaredConstructor().newInstance()
+        entity['one'] = entity.class.getDeclaredConstructor().newInstance()
 
         then:
-        entity.one != null
+        entity['one'] != null
     }
 
     void testToStringOverrideTests() {
@@ -147,7 +149,7 @@ class EntityTransformTests extends Specification {
             class Approver extends Personnel {}
             
             return [new Approver(firstName: 'joe', lastName: 'bloggs'), new Personnel(firstName: 'jack', lastName: 'dee') ]
-        ''')
+        ''') as List
 
         expect:
         'joe, bloggs' == entities[0].toString()
