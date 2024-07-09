@@ -1,7 +1,6 @@
 package grails.validation
 
 import grails.testing.gorm.DataTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.PendingFeature
 import spock.lang.Specification
@@ -162,7 +161,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     // BOOL METHODS DOMAIN OBJECT
 
-    @Ignore
+    @PendingFeature
     void 'ensure only public non-static bool properties with getter and setter are constrained properties'() {
         BoolMethodPropertiesDomain domain = new BoolMethodPropertiesDomain()
         when: 'empty domain with method properties is validated'
@@ -174,7 +173,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 1
     }
 
-    @Ignore
+    @PendingFeature
     void 'ensure constrained bool method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = BoolMethodPropertiesDomain.getConstrainedProperties()
@@ -186,7 +185,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     // BOOL DOMAIN OBJECT WITH SUPER CLASS
 
-    @Ignore
+    @PendingFeature
     void 'ensure only public non-static inherited bool properties with getter and setter are constrained properties'() {
         InheritedBoolMethodPropertiesDomain domain = new InheritedBoolMethodPropertiesDomain()
         when: 'empty domain with method properties is validated'
@@ -198,7 +197,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 1
     }
 
-    @Ignore
+    @PendingFeature
     void 'ensure constrained inherited bool method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedBoolMethodPropertiesDomain.getConstrainedProperties()
@@ -210,7 +209,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     // BOOL DOMAIN OBJECT WITH TRAIT
 
-    @Ignore
+    @PendingFeature
     void 'ensure only public non-static bool properties from trait with getter and setter are constrained properties'() {
         TraitBoolMethodPropertiesDomain domain = new TraitBoolMethodPropertiesDomain()
         when: 'empty domain with simple properties is validated'
@@ -222,7 +221,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 1
     }
 
-    @Ignore
+    @PendingFeature
     void 'ensure constrained bool method properties from trait are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitBoolMethodPropertiesDomain.getConstrainedProperties()
@@ -253,10 +252,8 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
     }
 
     // DOMAIN WITH SUPER CLASS WITH TRANSIENTS
-    @Ignore('''
-        With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
-        Can't use @PendingFeature as the test currently passes as the domain class cannot currently be extended.
-    ''')
+
+    @PendingFeature(reason = 'With Groovy 4, transient properties and methods are currently not excluded from validation')
     void 'ensure inherited transient properties and methods are not validated'() {
         def domain = new InheritedDomainWithTransients()
         when: 'domain with superclass properties and methods is validated'
@@ -266,10 +263,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 0
     }
 
-    @Ignore('''
-        With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
-        Can't use @PendingFeature as the test currently passes as the domain class cannot currently be extended.
-    ''')
+    @PendingFeature(reason = 'With Groovy 4, transient properties and methods are currently not excluded from validation')
     void 'ensure inherited transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = InheritedDomainWithTransients.getConstrainedProperties()
@@ -280,7 +274,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
 
     // DOMAIN WITH TRAIT WITH TRANSIENTS
 
-    @Ignore
+    @PendingFeature
     void 'ensure trait transient properties and methods are not validated'() {
         TraitDomainWithTransients domain = new TraitDomainWithTransients()
         when: 'domain with trait transient properties and methods'
@@ -290,7 +284,7 @@ class DomainConstraintGettersSpec extends Specification implements DataTest {
         domain.errors.getErrorCount() == 0
     }
 
-    @Ignore
+    @PendingFeature
     void 'ensure trait transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitDomainWithTransients.getConstrainedProperties()
