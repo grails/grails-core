@@ -130,14 +130,13 @@ class EntityTransformTests extends Specification {
         entity.one != null
     }
 
-    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void testToStringOverrideTests() {
         given:
         def entities = new GroovyShell().evaluate('''
 
             import grails.persistence.*
     
-            @Entity
+            // Since Groovy 4 parent domain classes cannot be annotated with @Entity: https://issues.apache.org/jira/browse/GROOVY-5106
             class Personnel {
                 String lastName
                 String firstName

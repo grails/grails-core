@@ -38,8 +38,8 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
 
     void setupSpec() {
         mockDomains(
-            Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child,
-            CollectionContainer, DataBindingBook, /*Fidget,*/ Parent, Publication, Publisher, Team, Widget
+            AssociationBindingAuthor, AssociationBindingBook, AssociationBindingPage, Author, Child,
+            CollectionContainer, DataBindingBook, Fidget, Foo, Parent, Publication, Publisher, Team, Widget
         )
     }
 
@@ -1426,7 +1426,7 @@ class Author {
 
         new Fidget(source['widget'])
     })
-    Widget widget
+    ParentWidget widget
 
     @SuppressWarnings('unused')
     static constraints = {
@@ -1461,11 +1461,32 @@ class Widget {
     }
 }
 
-/**
- * With Groovy 4, domain classes cannot be subclassed
- */
-//@Entity
-class Fidget extends Widget {
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
+@Sortable(includes = ['isBindable', 'isNotBindable'])
+@SuppressWarnings('unused')
+class ParentWidget implements Validateable {
+
+    String isBindable
+    String isNotBindable
+
+    @BindUsing({ Object obj, DataBindingSource source ->
+        def cnt = source['listOfIntegers'] as int
+        def result = []
+        cnt.times { result << it }
+        result
+    })
+    List<Integer> listOfIntegers = []
+
+    TimeZone timeZone
+
+    static constraints = {
+        isNotBindable(bindable: false)
+        timeZone(nullable: true)
+    }
+}
+
+@Entity
+class Fidget extends ParentWidget {
     String name
 }
 

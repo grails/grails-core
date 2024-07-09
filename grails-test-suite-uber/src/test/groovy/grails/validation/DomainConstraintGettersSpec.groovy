@@ -315,13 +315,25 @@ class SimplePropertiesDomain {
     protected static String bar
 }
 
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
+@SuppressWarnings('unused')
+class ParentSimplePropertiesDomain {
+
+    String string
+    Integer pages
+
+    private String firstName
+    protected String secondName
+    static String finalName
+    private static String foo
+    protected static String bar
+}
+
 /**
  * Domain with properties from super class only
  */
-// With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
 @Entity
-class InheritedPropertiesDomain // extends SimplePropertiesDomain
-{}
+class InheritedPropertiesDomain extends ParentSimplePropertiesDomain {}
 
 /**
  * Domain with getter/setter methods
@@ -381,13 +393,61 @@ class MethodPropertiesDomain {
     static private void setStaticPrivateSetterOnly(String value) {}
 }
 
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
+@SuppressWarnings(['unused', 'GrMethodMayBeStatic'])
+class ParentMethodPropertiesDomain {
+
+    /**
+     * publicProperty should be constrained because those getter and setter
+     */
+    String getPublicProperty() { null }
+    void setPublicProperty(String value) {}
+
+    protected String getProtectedProperty() { null }
+    protected void setProtectedProperty(String value) {}
+
+    private String getPrivateProperty() { null }
+    private void setPrivateProperty(String value) {}
+
+    static String getStaticPublicProperty() { null }
+    static void setStaticPublicProperty(String value) {}
+
+    static protected String getStaticProtectedProperty() { null }
+    static protected void setStaticProtectedProperty(String value) {}
+
+    static private String getStaticPrivateProperty() { null }
+    static private void setStaticPrivateProperty(String value) {}
+
+    String getGetterOnly() { null }
+
+    protected String getProtectedGetterOnly() { null }
+
+    private String getPrivateGetterOnly() { null }
+
+    static String getStaticGetterOnly() { null }
+
+    static protected String getStaticProtectedGetterOnly() { null }
+
+    static private String getStaticPrivateGetterOnly() { null }
+
+    void setSetterOnly(String value) {}
+
+    protected void setProtectedSetterOnly(String value) {}
+
+    private void setPrivateSetterOnly(String value) {}
+
+    static void setStaticSetterOnly(String value) {}
+
+    static protected void setStaticProtectedSetterOnly(String value) {}
+
+    static private void setStaticPrivateSetterOnly(String value) {}
+}
+
 /**
  * Domain with method properties from super class
  */
-// With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
 @Entity
-class InheritedMethodPropertiesDomain // extends MethodPropertiesDomain
-{}
+class InheritedMethodPropertiesDomain extends ParentMethodPropertiesDomain {}
 
 /**
  * Trait with properties only
@@ -512,6 +572,56 @@ class BoolMethodPropertiesDomain {
     static private void setStaticPrivateSetterOnly(Boolean value) {}
 }
 
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
+@SuppressWarnings(['unused', 'GrMethodMayBeStatic'])
+class ParentBoolMethodPropertiesDomain {
+
+    /**
+     * publicProperty should be constrained because those getter and setter
+     */
+    Boolean isPublicProperty() { null }
+    void setPublicProperty(Boolean value) {}
+
+    protected Boolean isProtectedProperty() { null }
+    protected void setProtectedProperty(Boolean value) {}
+
+    private Boolean isPrivateProperty() { null }
+    private void setPrivateProperty(Boolean value) {}
+
+    static Boolean isStaticPublicProperty() { null }
+    static void setStaticPublicProperty(Boolean value) {}
+
+    static protected Boolean isStaticProtectedProperty() { null }
+    static protected void setStaticProtectedProperty(Boolean value) {}
+
+    static private Boolean isStaticPrivateProperty() { null }
+    static private void setStaticPrivateProperty(Boolean value) {}
+
+    Boolean isGetterOnly() { null }
+
+    protected Boolean isProtectedGetterOnly() { null }
+
+    private Boolean isPrivateGetterOnly() { null }
+
+    static Boolean isStaticGetterOnly() { null }
+
+    static protected Boolean isStaticProtectedGetterOnly() { null }
+
+    static private Boolean isStaticPrivateGetterOnly() { null }
+
+    void setSetterOnly(Boolean value) {}
+
+    protected void setProtectedSetterOnly(Boolean value) {}
+
+    private void setPrivateSetterOnly(Boolean value) {}
+
+    static void setStaticSetterOnly(Boolean value) {}
+
+    static protected void setStaticProtectedSetterOnly(Boolean value) {}
+
+    static private void setStaticPrivateSetterOnly(Boolean value) {}
+}
+
 /**
  * Trait with getter/setter methods
  */
@@ -556,10 +666,8 @@ trait BoolMethodPropertiesDomainTrait {
 /**
  * Domain with inherited bool method properties from super class
  */
-//With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
 @Entity
-class InheritedBoolMethodPropertiesDomain // extends BoolMethodPropertiesDomain
-{}
+class InheritedBoolMethodPropertiesDomain extends ParentBoolMethodPropertiesDomain {}
 
 /**
  * Domain with inherited bool method properties from trait
@@ -590,6 +698,27 @@ class DomainWithTransients {
     void setTransientBoolMethodProperty(Boolean value) {}
 }
 
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
+@SuppressWarnings(['unused', 'GrMethodMayBeStatic'])
+class ParentDomainWithTransients {
+
+    static transients = ['simpleProperty', 'methodProperty', 'boolMethodProperty']
+
+    String simpleProperty
+
+    String getMethodProperty() { null }
+    void setMethodProperty(String value) {}
+
+    String getTransientMethodProperty() { null }
+    void setTransientMethodProperty(String value) {}
+
+    Boolean isBoolMethodProperty() { null }
+    void setBoolMethodProperty(Boolean value) {}
+
+    Boolean isTransientBoolMethodProperty() { null }
+    void setTransientBoolMethodProperty(Boolean value) {}
+}
+
 trait TraitWithTransients {
     static transients = ['simpleProperty', 'methodProperty', 'boolMethodProperty']
 
@@ -612,10 +741,9 @@ trait TraitWithTransients {
     transient void setTransientBoolMethodProperty(Boolean value) {}
 }
 
-// With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106
+
 @Entity
-class InheritedDomainWithTransients // extends DomainWithTransients
-{}
+class InheritedDomainWithTransients extends ParentDomainWithTransients {}
 
 @Entity
 class TraitDomainWithTransients implements TraitWithTransients {}

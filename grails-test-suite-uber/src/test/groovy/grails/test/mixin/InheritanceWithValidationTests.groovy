@@ -11,10 +11,9 @@ import spock.lang.Specification
 class InheritanceWithValidationTests extends Specification implements DataTest {
 
     void setupSpec() {
-        mockDomains AbstractCustomPropertyValue, CustomProperty/*, StringPropertyValue*/
+        mockDomains(CustomProperty, StringPropertyValue)
     }
 
-    @PendingFeature(reason = 'With Groovy 4, it is currently not possible to extend domain classes: https://issues.apache.org/jira/browse/GROOVY-5106')
     void testNewStringValue () {
         when:
         CustomProperty property = new CustomProperty()
@@ -27,8 +26,8 @@ class InheritanceWithValidationTests extends Specification implements DataTest {
     }
 }
 
-@Entity
 class AbstractCustomPropertyValue {
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
 
     boolean valid = false
 
