@@ -1,7 +1,6 @@
 dependencies {
     api project(":grails-web-common")
     api project(":grails-web-databinding")
-    api project(":grails-web-fileupload")
     api project(":grails-web-url-mappings")
     api project(":grails-web-mvc")
 
