@@ -7,7 +7,7 @@ import grails.plugins.GrailsPlugin
 import org.springframework.boot.web.servlet.ServletContextInitializer
 import org.springframework.core.io.Resource
 
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 
 /**
  * @author Graeme Rocher

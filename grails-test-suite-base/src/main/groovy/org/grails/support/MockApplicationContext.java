@@ -36,7 +36,7 @@ import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StandardServletEnvironment;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

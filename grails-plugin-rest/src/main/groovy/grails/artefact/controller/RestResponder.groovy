@@ -29,7 +29,7 @@ import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletResponse
 
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext

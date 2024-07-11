@@ -21,6 +21,9 @@ import grails.util.GrailsStringUtils;
 import grails.util.GrailsWebUtil;
 import grails.web.mime.MimeType;
 import grails.web.servlet.mvc.GrailsParameterMap;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.CompositeViewResolver;
 import org.springframework.context.ApplicationContext;
@@ -38,9 +41,6 @@ import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapt
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -72,7 +72,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
     public static final String GRAILS_SERVLET_PATH = "/grails";
     public static final String EXCEPTION_ATTRIBUTE = "exception";
-    public static final String ASYNC_REQUEST_URI_ATTRIBUTE = "javax.servlet.async.request_uri";
+    public static final String ASYNC_REQUEST_URI_ATTRIBUTE = "jakarta.servlet.async.request_uri";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils

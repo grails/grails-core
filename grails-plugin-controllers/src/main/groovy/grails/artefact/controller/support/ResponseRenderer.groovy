@@ -47,8 +47,8 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.View
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*
 /**

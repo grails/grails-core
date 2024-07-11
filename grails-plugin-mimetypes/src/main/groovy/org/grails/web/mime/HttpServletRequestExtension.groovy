@@ -23,7 +23,7 @@ import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 import org.grails.plugins.web.api.MimeTypesApiSupport
 

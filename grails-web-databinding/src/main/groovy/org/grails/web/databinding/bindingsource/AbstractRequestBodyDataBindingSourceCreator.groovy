@@ -20,7 +20,7 @@ import grails.databinding.DataBindingSource
 import groovy.transform.CompileStatic
 import org.springframework.http.HttpMethod
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
 

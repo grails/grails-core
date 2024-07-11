@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
@@ -103,7 +103,7 @@ public class GrailsWebUtil {
      * @return The String URI
      */
     public static String getUriFromRequest(HttpServletRequest request) {
-        Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
+        Object includeUri = request.getAttribute("jakarta.servlet.include.request_uri");
         return includeUri == null ? request.getRequestURI() : (String)includeUri;
     }
 

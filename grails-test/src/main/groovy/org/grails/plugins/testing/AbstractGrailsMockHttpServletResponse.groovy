@@ -18,7 +18,7 @@ package org.grails.plugins.testing
 import grails.converters.JSON
 import groovy.xml.slurpersupport.GPathResult
 
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 import org.grails.web.json.JSONElement
 import org.grails.web.util.GrailsApplicationAttributes

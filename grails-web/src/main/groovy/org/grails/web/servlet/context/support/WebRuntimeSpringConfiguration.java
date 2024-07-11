@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet.context.support;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import grails.web.servlet.context.GrailsWebApplicationContext;
 import grails.core.GrailsApplication;

@@ -14,7 +14,7 @@ import org.springframework.beans.propertyeditors.CustomNumberEditor
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 
-import javax.servlet.ServletContext
+import jakarta.servlet.ServletContext
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 

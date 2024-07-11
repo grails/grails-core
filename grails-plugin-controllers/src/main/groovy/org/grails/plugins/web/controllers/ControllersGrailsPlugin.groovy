@@ -43,8 +43,8 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
-import javax.servlet.DispatcherType
-import javax.servlet.MultipartConfigElement
+import jakarta.servlet.DispatcherType
+import jakarta.servlet.MultipartConfigElement
 
 /**
  * Handles the configuration of controllers for Grails.

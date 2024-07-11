@@ -40,7 +40,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;

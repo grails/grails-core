@@ -25,8 +25,8 @@ import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.util.Assert
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 /**
  * Encapsulates the logic for issuing a redirect based on a Map of arguments
  *

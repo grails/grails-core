@@ -21,7 +21,7 @@ import org.grails.core.AbstractGrailsClass;
 import grails.web.servlet.bootstrap.GrailsBootstrapClass;
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 @SuppressWarnings("serial")
 public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements GrailsBootstrapClass {

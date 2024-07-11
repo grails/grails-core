@@ -29,7 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletRequest;
 
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;

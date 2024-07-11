@@ -35,7 +35,7 @@ class HttpServletRequestTypeCheckingExtension extends GroovyTypeCheckingExtensio
                 def propertyName = property.value
                 if(propertyName in dynamicPropertyNames) {
                     def referenceType = getType(expression.objectExpression)
-                    if(referenceType.name == 'javax.servlet.http.HttpServletRequest') {
+                    if(referenceType.name == 'jakarta.servlet.http.HttpServletRequest') {
                         return makeDynamic(expression)
                     }
                 }

@@ -26,7 +26,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * Abstract UrlMapping implementation that provides common basic functionality.
