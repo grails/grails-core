@@ -1,6 +1,5 @@
 package grails.compiler
 
-import grails.compiler.GrailsCompileStatic
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.validation.Validateable

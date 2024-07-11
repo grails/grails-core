@@ -17,7 +17,7 @@ configurations {
 }
 
 dependencies {
-    documentation "org.codehaus.groovy:groovy-groovydoc:$groovyVersion"
+    documentation "org.apache.groovy:groovy-groovydoc:$groovyVersion"
 }
 
 ext.grailsDocSrc = project.findProperty('grails-doc.home') ?: project.buildDir.absolutePath + "/checkout/grails-docs-src"

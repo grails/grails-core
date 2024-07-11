@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
     UrlMappingData getUrlData();
 
     /**
-     * <p>The constraints the apply to this UrlMapping. Each constraint maps to a GString token in a
+     * <p>The constraints that apply to this UrlMapping. Each constraint maps to a GString token in a
      * URL mapping in order. For example consider the URL:
      *
      * <pre>
@@ -199,7 +199,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * Sets any parameter values that should be populated into the request
      * @param parameterValues The parameter values to set
      */
-    void setParameterValues(Map parameterValues);
+    void setParameterValues(Map<String,Object> parameterValues);
 
     /**
      * Sets whether this UrlMapping should parse the request

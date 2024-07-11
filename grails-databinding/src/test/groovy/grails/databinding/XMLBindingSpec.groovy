@@ -1,4 +1,4 @@
-/* Copyright 2013 the original author or authors.
+/* Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package grails.databinding
 
-import grails.databinding.SimpleDataBinder;
+import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class XMLBindingSpec extends Specification {
