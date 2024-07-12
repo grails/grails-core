@@ -42,7 +42,7 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
         try {
             if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
-                HttpMethod method = HttpMethod.resolve(req.method)
+                HttpMethod method = HttpMethod.valueOf(req.method)
                 if (req.contentLength != 0 && !ignoredRequestBodyMethods.contains(method)) {
                     def is = req.getInputStream()
                     return createBindingSource(is, req.getCharacterEncoding())
