@@ -6,12 +6,14 @@ import grails.testing.web.GrailsWebUnitTest
 import org.grails.buffer.StreamCharBuffer
 import org.grails.plugins.codecs.JSONCodec
 import org.grails.plugins.codecs.XMLCodec
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
 /**
  * Tests the behavior of the include tag
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class CodecSpec extends Specification implements GrailsWebUnitTest {
     // TODO: separate tag codec from scriplet codec to it's own setting
     // TODO: applyCodec should have an option to make everything safe at the end

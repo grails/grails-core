@@ -2,6 +2,7 @@ package org.grails.web.converters
 
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import grails.artefact.Artefact
@@ -18,6 +19,7 @@ import org.grails.buffer.StreamCharBuffer
  * @author Graeme Rocher
  * @since 0.4
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class JSONConverterTests extends Specification implements ControllerUnitTest<JSONConverterController>, DomainUnitTest<Book> {
 
     void testNullJSONValues() {

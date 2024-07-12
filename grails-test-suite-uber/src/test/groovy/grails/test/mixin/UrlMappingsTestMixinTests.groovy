@@ -6,6 +6,7 @@ import grails.testing.web.GrailsWebUnitTest
 import grails.testing.web.UrlMappingsUnitTest
 import junit.framework.ComparisonFailure
 import org.springframework.web.context.WebApplicationContext
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -107,6 +108,7 @@ class AnotherUrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class AnotherUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<AnotherUrlMappings> {
 
     Class[] getControllersToMock() {
@@ -155,6 +157,7 @@ class MyUrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class MyUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<MyUrlMappings> {
 
     Class[] getControllersToMock() {
@@ -186,6 +189,7 @@ class GRAILS5222UrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class GRAILS5222UrlMappingsSpec extends Specification implements UrlMappingsUnitTest<GRAILS5222UrlMappings> {
 
     Class[] getControllersToMock() {
@@ -210,6 +214,7 @@ class GRAILS9863UrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class GRAILS9863UrlMappingsSpec extends Specification implements UrlMappingsUnitTest<GRAILS9863UrlMappings> {
 
     @Issue("https://github.com/grails/grails-core/issues/9863")
@@ -236,6 +241,7 @@ class GRAILS9110UrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class GRAILS9110UrlMappingsSpec extends Specification implements UrlMappingsUnitTest<GRAILS9110UrlMappings> {
 
     Class[] getControllersToMock() {
@@ -273,6 +279,7 @@ class MethodTestUrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class MethodTestUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<MethodTestUrlMappings> {
 
     Class[] getControllersToMock() {
@@ -306,6 +313,7 @@ class ResourceTestUrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ResourceTestUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<ResourceTestUrlMappings> {
 
     Class[] getControllersToMock() {
@@ -363,6 +371,7 @@ class ExceptionTestUrlMappings {
     }
 }
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ExceptionTestUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<ExceptionTestUrlMappings> {
 
     Class[] getControllersToMock() {

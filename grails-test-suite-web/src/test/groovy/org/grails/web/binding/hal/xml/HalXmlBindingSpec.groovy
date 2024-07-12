@@ -4,8 +4,10 @@ import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class HalXmlBindingSpec extends Specification implements ControllerUnitTest<BindingController>, DataTest {
 
     Class<?>[] getDomainClassesToMock() {

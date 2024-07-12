@@ -7,9 +7,10 @@ import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.MockRequestDataValueProcessor
 
 import org.grails.web.servlet.GrailsFlashScope
-
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ChainMethodWithRequestDataValueProcessorSpec extends Specification implements ControllerUnitTest<TestChainController>, DomainUnitTest<TestChainBook> {
 
     Closure doWithSpring() {{ ->

@@ -5,10 +5,11 @@ import grails.artefact.Enhanced
 import grails.testing.web.controllers.ControllerUnitTest
 
 import jakarta.servlet.http.HttpServletResponse
-
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerActionTransformerAllowedMethodsSpec extends Specification implements ControllerUnitTest<SomeAllowedMethodsController> {
 
     @Issue('GRAILS-8426')

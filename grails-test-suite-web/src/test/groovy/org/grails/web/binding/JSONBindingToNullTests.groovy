@@ -7,8 +7,10 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.JSONBuilder
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class JSONBindingToNullTests extends Specification implements ControllerUnitTest<UserController>, DomainUnitTest<User> {
 
     Closure doWithConfig() {{ config ->

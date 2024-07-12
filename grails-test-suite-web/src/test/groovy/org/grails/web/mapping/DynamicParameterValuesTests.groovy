@@ -2,12 +2,14 @@ package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
 import org.springframework.core.io.ByteArrayResource
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class DynamicParameterValuesTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testImplicitNamedAction() {

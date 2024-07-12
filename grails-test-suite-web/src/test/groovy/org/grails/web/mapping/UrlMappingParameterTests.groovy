@@ -3,12 +3,14 @@ package org.grails.web.mapping
 import grails.testing.web.UrlMappingsUnitTest
 import org.grails.web.util.WebUtils
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class UrlMappingParameterTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testDontUseDispatchActionIfExceptionPresent() {

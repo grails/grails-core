@@ -4,12 +4,14 @@ import grails.testing.web.UrlMappingsUnitTest
 import grails.util.GrailsWebMockUtil
 
 import org.springframework.core.io.ByteArrayResource
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class OverlappingUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
 

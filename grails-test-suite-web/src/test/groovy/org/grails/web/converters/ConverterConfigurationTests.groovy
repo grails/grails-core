@@ -8,6 +8,7 @@ import grails.testing.web.GrailsWebUnitTest
 import org.grails.web.converters.marshaller.json.DomainClassMarshaller as JsonClassMarshaller
 import org.grails.web.converters.marshaller.xml.DomainClassMarshaller as XmlClassMarshaller
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import static org.junit.Assert.assertEquals
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertEquals
  *
  * @author Siegfried Puchbauer
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ConverterConfigurationTests extends Specification implements DomainUnitTest<ConverterBook>, GrailsWebUnitTest {
 
     void testCustomClosureMarshallerRegistration() {

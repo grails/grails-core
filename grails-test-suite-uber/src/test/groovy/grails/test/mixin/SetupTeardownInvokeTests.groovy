@@ -19,10 +19,12 @@ package grails.test.mixin
 import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.FixMethodOrder
 import org.junit.runners.MethodSorters
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class SetupTeardownInvokeTests extends Specification implements ControllerUnitTest<SetupTeardownController> {
     static int counter=1

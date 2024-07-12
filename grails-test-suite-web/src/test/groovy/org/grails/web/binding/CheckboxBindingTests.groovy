@@ -5,12 +5,14 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Rob Fletcher
  * @since 1.3.0
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class CheckboxBindingTests extends Specification implements ControllerUnitTest<CheckboxBindingController>, DomainUnitTest<Pizza> {
 
     void testBindingCheckedValuesToObject() {

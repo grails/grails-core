@@ -24,9 +24,11 @@ import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RespondMethodSpec extends Specification implements ControllerUnitTest<BookController>, DomainUnitTest<Book> {
 
     Closure doWithConfig() {{ config ->
@@ -181,7 +183,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
         modelAndView.model == [book: book, extra: true]
         modelAndView.viewName == 'showWithModel'
     }
-    
+
     void "Test that proxyHandler is used for unwrapping wrapped model"() {
         given:"A book instance"
         def book = new Book(title: "")
@@ -198,7 +200,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
         modelAndView.model == [book: book, extra: true]
         modelAndView.viewName == 'showWithModel'
     }
-    
+
     void "Test that proxyHandler is used for unwrapping proxy collections"() {
         given:"A book instance"
         def book = new Book(title: "")
