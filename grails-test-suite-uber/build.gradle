@@ -81,6 +81,8 @@ dependencies {
         exclude module:'async'
         exclude module:'gsp'
     }
+
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }
 
 def isolatedTestPatterns = [
