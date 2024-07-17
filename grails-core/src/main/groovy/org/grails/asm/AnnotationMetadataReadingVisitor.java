@@ -41,6 +41,9 @@ import org.springframework.util.MultiValueMap;
  * well as for the annotations defined on the class, exposing them through
  * the {@link org.springframework.core.type.AnnotationMetadata} interface.
  *
+ * <p>Note: This class was ported to Grails 7 from Spring Framework 5.3 as it was
+ * removed in Spring 6 without a public replacement.
+ *
  * @author Juergen Hoeller
  * @author Mark Fisher
  * @author Costin Leau

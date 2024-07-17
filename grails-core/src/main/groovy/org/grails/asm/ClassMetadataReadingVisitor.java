@@ -35,6 +35,9 @@ import org.springframework.util.StringUtils;
  * exposing them through the {@link org.springframework.core.type.ClassMetadata}
  * interface.
  *
+ * <p>Note: This class was ported to Grails 7 from Spring Framework 5.3 as it was
+ * removed in Spring 6 without a public replacement.
+ *
  * @author Rod Johnson
  * @author Costin Leau
  * @author Mark Fisher

@@ -35,6 +35,9 @@ import org.springframework.util.ObjectUtils;
  * <p>This visitor is fully recursive, taking into account any nested
  * annotations or nested annotation arrays.
  *
+ * <p>Note: This class was ported to Grails 7 from Spring Framework 5.3 as it was
+ * removed in Spring 6 without a public replacement.
+ *
  * @author Juergen Hoeller
  * @author Chris Beams
  * @author Phillip Webb

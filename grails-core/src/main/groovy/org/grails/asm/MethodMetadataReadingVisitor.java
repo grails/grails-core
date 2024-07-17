@@ -37,6 +37,9 @@ import org.springframework.util.MultiValueMap;
  * exposing them through the {@link org.springframework.core.type.MethodMetadata}
  * interface.
  *
+ * <p>Note: This class was ported to Grails 7 from Spring Framework 5.3 as it was
+ * removed in Spring 6 without a public replacement.
+ *
  * @author Juergen Hoeller
  * @author Mark Pollack
  * @author Costin Leau

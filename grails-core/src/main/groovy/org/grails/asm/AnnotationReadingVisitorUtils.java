@@ -34,6 +34,9 @@ import org.springframework.util.ObjectUtils;
 /**
  * Internal utility class used when reading annotations via ASM.
  *
+ * <p>Note: This class was ported to Grails 7 from Spring Framework 5.3 as it was
+ * removed in Spring 6 without a public replacement.
+ *
  * @author Juergen Hoeller
  * @author Mark Fisher
  * @author Costin Leau

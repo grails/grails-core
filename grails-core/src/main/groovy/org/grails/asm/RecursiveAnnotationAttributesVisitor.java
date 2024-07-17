@@ -23,6 +23,9 @@ import org.springframework.lang.Nullable;
 /**
  * {@link AnnotationVisitor} to recursively visit annotation attributes.
  *
+ * <p>Note: This class was ported to Grails 7 from Spring Framework 5.3 as it was
+ * removed in Spring 6 without a public replacement.
+ *
  * @author Chris Beams
  * @author Juergen Hoeller
  * @since 3.1.1
