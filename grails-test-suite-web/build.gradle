@@ -52,10 +52,6 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    // Required for tag library support
-    //testImplementation 'taglibs:standard:1.1.2'
-    //testImplementation "javax.servlet:jstl:1.2"
-
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
