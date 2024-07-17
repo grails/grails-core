@@ -18,52 +18,9 @@ buildscript {
 import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
-apply plugin: 'com.github.hierynomus.license-report'
 
-List<String> licenseExclusions = [
-        "org.grails.grails-bom",
-        "org.grails:grails-bootstrap",
-        "org.grails:grails-codecs",
-        "org.grails:grails-console",
-        "org.grails:grails-core",
-        "org.grails:grails-databinding",
-        "org.grails:grails-dependencies",
-        "org.grails:grails-docs",
-        "org.grails:grails-encoder",
-        "org.grails:grails-gradle-model",
-        "org.grails:grails-logging",
-        "org.grails:grails-plugin-codecs",
-        "org.grails:grails-plugin-controllers",
-        "org.grails:grails-plugin-databinding",
-        "org.grails:grails-plugin-datasource",
-        "org.grails:grails-plugin-domain-class",
-        "org.grails:grails-plugin-i18n",
-        "org.grails:grails-plugin-interceptors",
-        "org.grails:grails-plugin-mimetypes",
-        "org.grails:grails-plugin-rest",
-        "org.grails:grails-plugin-services",
-        "org.grails:grails-plugin-url-mappings",
-        "org.grails:grails-plugin-validation",
-        "org.grails:grails-spring",
-        "org.grails:grails-test",
-        "org.grails:grails-test-suite-base",
-        "org.grails:grails-test-suite-persistence",
-        "org.grails:grails-test-suite-uber",
-        "org.grails:grails-test-suite-web",
-        "org.grails:grails-web",
-        "org.grails:grails-web-boot",
-        "org.grails:grails-web-common",
-        "org.grails:grails-web-databinding",
-        "org.grails:grails-web-fileupload",
-        "org.grails:grails-web-mvc",
-        "org.grails:grails-web-url-mappings",
-].collect { "${it}:${project.projectVersion}" as String}
 
-downloadLicenses {
-    includeProjectDependencies = true
-    dependencyConfiguration = 'runtimeClasspath'
-    excludeDependencies = licenseExclusions
-}
+
 
 ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
@@ -337,6 +294,7 @@ allprojects {
 }
 
 apply from: "gradle/idea.gradle"
+apply from: "gradle/dependency-licenses.gradle"
 
 tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
     configure {
@@ -400,11 +358,6 @@ subprojects { project ->
     apply plugin: 'idea'
     apply plugin: 'project-report'
     apply plugin: 'com.github.hierynomus.license-report'
-    downloadLicenses {
-        includeProjectDependencies = true
-        dependencyConfiguration = 'runtimeClasspath'
-        excludeDependencies = licenseExclusions
-    }
 
     if (!isTestSuite) {
 
@@ -667,6 +620,7 @@ apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
+    from 'gradle/dependency-licenses.gradle'
 }
 
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
