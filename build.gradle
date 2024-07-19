@@ -354,7 +354,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    apply plugin: 'com.github.hierynomus.license-report'
+    apply from: "../gradle/dependency-licenses.gradle"
 
     if (!isTestSuite) {
 
@@ -617,7 +617,6 @@ apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
-    from 'gradle/dependency-licenses.gradle'
 }
 
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
