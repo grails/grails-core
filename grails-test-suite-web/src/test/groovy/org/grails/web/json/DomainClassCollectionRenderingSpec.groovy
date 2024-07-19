@@ -9,10 +9,12 @@ import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Shared
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class DomainClassCollectionRenderingSpec extends Specification implements GrailsWebUnitTest, DataTest {
 
     Class[] getDomainClassesToMock() {

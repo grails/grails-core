@@ -4,8 +4,10 @@ import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class BindingRequestMethodSpec extends Specification implements ControllerUnitTest<BindingController>, DomainUnitTest<Employee> {
 
     void 'Test binding to a domain class command object'() {

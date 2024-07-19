@@ -12,5 +12,5 @@ dependencies {
 
     api "org.springframework:spring-web:${springVersion}"
 
-    api "javax.servlet:javax.servlet-api:$servletApiVersion"
+    api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
 }

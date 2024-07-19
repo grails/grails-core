@@ -7,12 +7,16 @@ hello:
     message: Default hello!
 ---
 spring:
-    profiles: sample
+    config:
+        activate:
+            on-profile: sample
 hello:
     message: Hello from SAMPLE profile!
 ---
 spring:
-    profiles: demo
+    config:
+        activate:
+            on-profile: demo
 hello:
     message: Hello from DEMO profile!
 ---

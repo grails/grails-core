@@ -1,11 +1,11 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,9 +20,9 @@ import groovy.text.Template;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
@@ -42,7 +42,7 @@ public abstract class AbstractGrailsView extends AbstractUrlBasedView {
     /**
      * Delegates to renderMergedOutputModel(..)
      *
-     * @see #renderMergedOutputModel(java.util.Map, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     * @see #renderMergedOutputModel(java.util.Map, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse)
      *
      * @param model The view model
      * @param request The HttpServletRequest
@@ -81,8 +81,8 @@ public abstract class AbstractGrailsView extends AbstractUrlBasedView {
      * Renders a page with the specified TemplateEngine, mode and response.
      * @param model The model to use
      * @param webRequest The {@link org.grails.web.servlet.mvc.GrailsWebRequest}
-     * @param request The {@link javax.servlet.http.HttpServletRequest}
-     * @param response The {@link javax.servlet.http.HttpServletResponse} instance
+     * @param request The {@link jakarta.servlet.http.HttpServletRequest}
+     * @param response The {@link jakarta.servlet.http.HttpServletResponse} instance
      *
      * @throws java.io.IOException Thrown when an error occurs writing the response
      */

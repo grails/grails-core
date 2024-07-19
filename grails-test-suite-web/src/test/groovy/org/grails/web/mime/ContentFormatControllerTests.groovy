@@ -6,12 +6,14 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ContentFormatControllerTests extends Specification implements ControllerUnitTest<ContentController>, DomainUnitTest<Gizmo> {
     
     Closure doWithConfig() {{ c ->
@@ -28,7 +30,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
                                json: 'application/json'
         ]
     }}
-    
+
     void testFormatWithRenderAsXML() {
         when:
         request.setParameter "format", "xml"
@@ -37,7 +39,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         then:
         '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''' == response.contentAsString
     }
-    
+
     void testFormatWithRenderAsJSON() {
         when:
         request.setParameter "format", "json"
@@ -46,7 +48,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         then:
         """{"name":"iPod"}""".toString() == response.contentAsString
     }
-    
+
     void testAllFormat() {
         when:
         request.addHeader "Accept", "*/*"

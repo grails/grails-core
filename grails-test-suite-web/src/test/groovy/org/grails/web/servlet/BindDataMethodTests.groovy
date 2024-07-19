@@ -17,12 +17,14 @@ package org.grails.web.servlet
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * Tests for the bindData method
  *
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class BindDataMethodTests extends Specification implements ControllerUnitTest<BindingController> {
 
     void 'Test bindData with Map'() {

@@ -5,8 +5,10 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.web.servlet.support.RequestContextUtils
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerTestForTests extends Specification implements ControllerUnitTest<SimpleController>, DomainUnitTest<Simple> {
 
     void testIndex() {

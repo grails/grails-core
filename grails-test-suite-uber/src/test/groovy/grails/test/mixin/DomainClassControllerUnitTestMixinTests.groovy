@@ -5,11 +5,13 @@ import grails.converters.XML
 import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * A Junit 4 test that tests a scaffolded controllers logic using the new mixins
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class DomainClassControllerUnitTestMixinTests extends Specification implements ControllerUnitTest<BookController>, DataTest {
 
     void setupSpec() {

@@ -10,9 +10,6 @@ configurations.testCompileClasspath {
 
 dependencies {
 
-    testImplementation 'javax.servlet.jsp:jsp-api:2.2'
-    testImplementation 'jstl:jstl:1.2'
-    testImplementation 'javax.el:el-api:2.2'
     testImplementation project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
                 project(':grails-plugin-codecs'),
@@ -55,10 +52,6 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    // Required for tag library support
-    testImplementation 'taglibs:standard:1.1.2'
-    testImplementation "javax.servlet:jstl:1.2"
-
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
@@ -88,6 +81,8 @@ dependencies {
         exclude module:'grails-test'
         exclude module:'async'
     }
+
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",

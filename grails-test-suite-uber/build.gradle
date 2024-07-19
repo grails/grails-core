@@ -10,9 +10,6 @@ dependencies {
 
     api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
-    testRuntimeOnly 'javax.servlet.jsp:jsp-api:2.2'
-    testRuntimeOnly 'jstl:jstl:1.2'
-    testRuntimeOnly 'javax.el:el-api:2.2'
     testRuntimeOnly "com.h2database:h2:$h2Version"
     testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
@@ -84,6 +81,8 @@ dependencies {
         exclude module:'async'
         exclude module:'gsp'
     }
+
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }
 
 def isolatedTestPatterns = [
