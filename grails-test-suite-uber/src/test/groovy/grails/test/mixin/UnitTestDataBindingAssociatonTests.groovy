@@ -4,10 +4,12 @@ import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.persistence.Entity
 import grails.artefact.Artefact
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class UnitTestDataBindingAssociatonTests extends Specification implements ControllerUnitTest<ShipController>, DataTest {
 
     void setupSpec() {

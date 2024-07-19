@@ -6,9 +6,11 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.Validateable
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class BindCommandObjectsSpec extends Specification implements ControllerUnitTest<BindCommandController>, DomainUnitTest<MyAuthor>  {
     static final String NAME = 'My name is...'
 

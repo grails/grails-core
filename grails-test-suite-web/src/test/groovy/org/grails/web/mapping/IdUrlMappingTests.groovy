@@ -1,12 +1,14 @@
 package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class IdUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
 

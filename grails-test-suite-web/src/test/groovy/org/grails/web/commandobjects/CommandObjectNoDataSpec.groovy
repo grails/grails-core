@@ -1,8 +1,10 @@
 package org.grails.web.commandobjects
 
 import grails.testing.web.GrailsWebUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class CommandObjectNoDataSpec extends Specification implements GrailsWebUnitTest {
 
     Closure doWithConfig() {{ config ->

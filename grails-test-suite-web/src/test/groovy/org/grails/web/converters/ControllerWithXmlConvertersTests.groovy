@@ -3,8 +3,10 @@ package org.grails.web.converters
 import grails.artefact.Artefact
 import grails.converters.XML
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerWithXmlConvertersTests extends Specification implements ControllerUnitTest<XmlController> {
 
     void testConvertArrayWithNullEments() {

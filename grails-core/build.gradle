@@ -76,6 +76,7 @@ dependencies {
     testImplementation "org.hamcrest:hamcrest-core:1.3"
 
     testRuntimeOnly "com.h2database:h2:$h2Version"
+    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     // These dependencies are not required, but due to a Groovy compiler bug they are loaded by Groovy and hence
     // have to be on the path for compilation even though they shouldn't be

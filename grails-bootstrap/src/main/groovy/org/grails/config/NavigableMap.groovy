@@ -1,9 +1,23 @@
+/*
+ * Copyright 2014-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.config
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -22,6 +36,9 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     private static final Pattern SPLIT_PATTERN = ~/\./
     private static final String SPRING_PROFILES = 'spring.profiles.active'
     private static final String SPRING = 'spring'
+    private static final String CONFIG = 'config'
+    private static final String ACTIVATE = 'activate'
+    private static final String ON_PROFILE = 'on-profile'
     private static final String PROFILES = 'profiles'
     private static final String SUBSCRIPT_REGEX = /((.*)\[(\d+)\]).*/
 
@@ -136,6 +153,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                            NavigableMap targetMap,
                            Map sourceMap,
                            boolean parseFlatKeys) {
+
+        if(springProfileExclude(sourceMap, path)) {
+            return
+        }
+
         for (Entry entry in sourceMap) {
             Object sourceKeyObject = entry.key
             Object sourceValue = entry.value
@@ -157,13 +179,52 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
     }
 
-    private boolean shouldSkipBlock(Map sourceMap, String path) {
-        Object springProfileDefined = System.properties.getProperty(SPRING_PROFILES)
-        boolean hasSpringProfiles =
-            sourceMap.get(SPRING) instanceof Map && ((Map)sourceMap.get(SPRING)).get(PROFILES) ||
-            path == SPRING && sourceMap.get(PROFILES)
+    private static boolean springProfileExclude(Map sourceMap, String path) {
 
-        return !springProfileDefined && hasSpringProfiles
+        // Is there an active Spring profile?
+        def activeSpringProfile = System.getProperty(SPRING_PROFILES)
+
+        // Is there a 'spring.config.activate.on-profile' property defined in the source map?
+        def sourceMapProfile1 = ((Map)((Map)((Map)sourceMap?.get(SPRING))?.get(CONFIG))?.get(ACTIVATE))?.get(ON_PROFILE)
+        if (!sourceMapProfile1 && path == "$SPRING.$CONFIG.$ACTIVATE") {
+            sourceMapProfile1 = sourceMap?.get(ON_PROFILE)
+        }
+        if (!sourceMapProfile1) {
+            sourceMapProfile1 = sourceMap.get("$SPRING.$CONFIG.$ACTIVATE.$ON_PROFILE" as String)
+        }
+        if (sourceMapProfile1 && !activeSpringProfile) {
+            // There is a spring.config.activate.on-profile property defined in this sourceMap, but there is no active spring profile
+            return true
+        }
+        if (sourceMapProfile1 == activeSpringProfile) {
+            // The active spring profile matches the spring.config.activate.on-profile property in this sourceMap
+            return false
+        }
+
+        // Is there a 'spring.profiles' property defined in the source map? (Old way of Spring profiles activation)
+        def sourceMapProfile2 = ((Map)sourceMap?.get(SPRING))?.get(PROFILES)
+        if (!sourceMapProfile2 && path == SPRING) {
+            sourceMapProfile2 = sourceMap?.get(PROFILES)
+        }
+        if (!sourceMapProfile2) {
+            sourceMapProfile2 = sourceMap.get("$SPRING.$PROFILES" as String)
+        }
+        if (sourceMapProfile1 && !activeSpringProfile) {
+            // There is a spring.config.activate.on-profile property defined in this sourceMap, but there is no active spring profile
+            return true
+        }
+        if (sourceMapProfile2 == activeSpringProfile) {
+            // The active spring profile matches the spring.profiles property in this sourceMap
+            return false
+        }
+
+        if (activeSpringProfile && !sourceMapProfile1 && !sourceMapProfile2) {
+            // There is no spring profile defined in this sourceMap, it should always be included
+            return false
+        }
+
+        // We can skip this sourceMap as it defines a spring profile that is not active
+        return true
     }
 
     protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {

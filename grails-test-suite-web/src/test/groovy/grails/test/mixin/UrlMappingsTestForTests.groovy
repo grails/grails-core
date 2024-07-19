@@ -2,8 +2,10 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.testing.web.UrlMappingsUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class UrlMappingsTestForTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     Class[] getControllersToMock() {

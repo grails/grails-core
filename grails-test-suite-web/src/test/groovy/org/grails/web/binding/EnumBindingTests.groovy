@@ -2,6 +2,7 @@ package org.grails.web.binding
 
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Ignore
 import spock.lang.Specification
 import grails.artefact.Artefact
 import grails.persistence.Entity
@@ -10,6 +11,7 @@ import grails.persistence.Entity
  * @author Graeme Rocher
  * @since 1.1
  */
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class EnumBindingTests extends Specification implements ControllerUnitTest<StatusController>, DomainUnitTest<StatusTransition> {
 
     void testBindEnumInConstructor() {

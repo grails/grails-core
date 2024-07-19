@@ -11,8 +11,10 @@ import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstrai
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.*
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RegexUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
 
