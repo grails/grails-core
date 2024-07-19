@@ -13,26 +13,26 @@ import spock.lang.Specification
 /**
  * @author Graeme Rocher
  */
-class AnsiConsoleUrlMappingsRendererSpec extends Specification{
+class AnsiConsoleUrlMappingsRendererSpec extends Specification {
 
     void "Test render URL mappings for 3 level resource"() {
-        given:"A URL mappings renderer"
-            def sw = new ByteArrayOutputStream()
-            def ps = new PrintStream(sw)
-            def renderer = new AnsiConsoleUrlMappingsRenderer(ps)
-            renderer.isAnsiEnabled = false
-            def urlMappingsHolder = getUrlMappingsHolder {
-                "/books"(resources:'book') {
-                    '/authors'(resources:'author') {
-                        '/publisher'(resource:'publisher')
-                    }
+        given: "A URL mappings renderer"
+        def sw = new ByteArrayOutputStream()
+        def ps = new PrintStream(sw)
+        def renderer = new AnsiConsoleUrlMappingsRenderer(ps)
+        renderer.isAnsiEnabled = false
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/books"(resources: 'book') {
+                '/authors'(resources: 'author') {
+                    '/publisher'(resource: 'publisher')
                 }
             }
-        when:"The URL mappings are rendered"
-            renderer.render(urlMappingsHolder.urlMappings.toList())
-            println sw.toString()
-        then:"The output is correct"
-            sw.toString() == '''Controller: author
+        }
+        when: "The URL mappings are rendered"
+        renderer.render(urlMappingsHolder.urlMappings.toList())
+        println sw.toString()
+        then: "The output is correct"
+        sw.toString() == '''Controller: author
  |   GET    | /books/${bookId}/authors/create                            | Action: create           |
  |   GET    | /books/${bookId}/authors/${id}/edit                        | Action: edit             |
  |   POST   | /books/${bookId}/authors                                   | Action: save             |
@@ -65,25 +65,25 @@ Controller: publisher
     }
 
     void "Test render URL mappings to target stream"() {
-        given:"A URL mappings renderer"
-            def sw = new ByteArrayOutputStream()
-            def ps = new PrintStream(sw)
-            def renderer = new AnsiConsoleUrlMappingsRenderer(ps)
-            renderer.isAnsiEnabled = false
-            def urlMappingsHolder = getUrlMappingsHolder {
-                "/$controller/$action?/$id?(.$format)?"()
-                "/images/$name**.jpg"(controller:"image")
-                "/foo"(resources:"foo")
-                "500"(controller:"errors")
-                "/"(view:"/index")
+        given: "A URL mappings renderer"
+        def sw = new ByteArrayOutputStream()
+        def ps = new PrintStream(sw)
+        def renderer = new AnsiConsoleUrlMappingsRenderer(ps)
+        renderer.isAnsiEnabled = false
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/$controller/$action?/$id?(.$format)?"()
+            "/images/$name**.jpg"(controller: "image")
+            "/foo"(resources: "foo")
+            "500"(controller: "errors")
+            "/"(view: "/index")
 
-            }
+        }
 
-        when:"The URL mappings are rendered"
-            renderer.render(urlMappingsHolder.urlMappings.toList())
-            println sw.toString()
-        then:"The output is correct"
-            sw.toString() == '''Dynamic Mappings
+        when: "The URL mappings are rendered"
+        renderer.render(urlMappingsHolder.urlMappings.toList())
+        println sw.toString()
+        then: "The output is correct"
+        sw.toString() == '''Dynamic Mappings
  |    *     | /                                                 | View:   /index           |
  |    *     | /${controller}/${action}?/${id}?(.${format)?      | Action: (default action) |
 
@@ -105,6 +105,7 @@ Controller: image
 
 '''.denormalize()
     }
+
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,11 +15,10 @@
  */
 package grails.build.logging;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 import jline.Terminal;
 import jline.UnsupportedTerminal;
+
+import java.io.IOException;
 
 /**
  * This class is meant to keep changes made in support of Eclipse separate from
@@ -52,22 +51,6 @@ public class GrailsEclipseConsole extends GrailsConsole {
      */
     public GrailsEclipseConsole() throws IOException {
         super();
-    }
-
-    @Override
-    protected OutputStream ansiWrap(OutputStream out) {
-        if (DEBUG) {
-            try {
-                out.write(("<<<"+ECLIPSE_SUPPORTS_ANSI_PROP+":"+eclipseSupportsAnsi()+">>>\n").getBytes("UTF-8"));
-            } catch (IOException e) {
-            }
-        }
-        //This method is called from the super constructor so eclipseSupportsAnsi field
-        //must be lazy initialised (it can't be initialised before we get called!)
-        if (eclipseSupportsAnsi()) {
-            return out; // expose unfiltered output to eclipse
-        }
-        return super.ansiWrap(out);
     }
 
     private boolean eclipseSupportsAnsi() {

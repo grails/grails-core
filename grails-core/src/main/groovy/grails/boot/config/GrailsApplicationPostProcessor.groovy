@@ -17,7 +17,6 @@ import groovy.util.logging.Slf4j
 import io.micronaut.context.env.AbstractPropertySourceLoader
 import io.micronaut.context.env.PropertySource
 import io.micronaut.spring.context.env.MicronautEnvironment
-import org.grails.config.NavigableMap
 import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
@@ -32,6 +31,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationListener
@@ -128,18 +128,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                         return applicationContext.getResource(source);
                     }
                 });
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
-                    @Override
-                    public String convert(NavigableMap.NullSafeNavigator source) {
-                        return null;
-                    }
-                });
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
-                    @Override
-                    public Object convert(NavigableMap.NullSafeNavigator source) {
-                        return null;
-                    }
-                });
             }
             def propertySources = environment.getPropertySources()
             def plugins = pluginManager.allPlugins
@@ -169,8 +157,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     @Override
     void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         def springConfig = new DefaultRuntimeSpringConfiguration()
-
-
         def application = grailsApplication
         Holders.setGrailsApplication(application)
 
@@ -290,16 +276,23 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         }
     }
 
-    @SuppressWarnings("GrMethodMayBeStatic")
     private void loadPluginConfigurationsToMicronautContext(ConfigurableApplicationContext applicationContext) {
         String[] beanNames = applicationContext.getBeanNamesForType(GrailsPluginManager)
-        if (beanNames.length == 0) {
-            // do not continue if PluginManager is not available
+        GrailsPluginManager pluginManagerFromContext = beanNames.length ?
+                applicationContext.getBean(GrailsPluginManager) :
+                null
+
+        if (!pluginManagerFromContext && !pluginManager) {
+            // No plugin managers to search for plugin configurations
             return
         }
 
-        GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager)
         ConfigurableApplicationContext parentApplicationContext = (ConfigurableApplicationContext) applicationContext.parent
+        if (!parentApplicationContext) {
+            // No Micronaut parent context to load configurations to
+            return
+        }
+
         ConfigurableEnvironment parentContextEnv = parentApplicationContext.getEnvironment()
         if (parentContextEnv instanceof MicronautEnvironment) {
             if (log.isDebugEnabled()) {
@@ -307,15 +300,18 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             }
             final io.micronaut.context.env.Environment micronautEnv = ((io.micronaut.context.env.Environment) parentContextEnv.getEnvironment())
             final GrailsPlugin[] plugins = pluginManager.allPlugins
+            final GrailsPlugin[] pluginsFromContext = pluginManagerFromContext ? pluginManagerFromContext.allPlugins : new GrailsPlugin[] {}
             Integer priority = AbstractPropertySourceLoader.DEFAULT_POSITION
-            Arrays.stream(plugins)
-                    .filter({ GrailsPlugin plugin -> plugin.propertySource != null })
-                    .forEach({ GrailsPlugin plugin ->
-                        if (log.isDebugEnabled()) {
-                            log.debug("Loading configurations from {} plugin to the parent Micronaut context", plugin.name)
-                        }
-                        micronautEnv.addPropertySource(PropertySource.of("grails.plugins.$plugin.name", (Map) plugin.propertySource.source, --priority))
-                    })
+            [plugins, pluginsFromContext].each { GrailsPlugin[] pluginsToProcess ->
+                Arrays.stream(pluginsToProcess)
+                        .filter({ GrailsPlugin plugin -> plugin.propertySource != null })
+                        .forEach({ GrailsPlugin plugin ->
+                            if (log.isDebugEnabled()) {
+                                log.debug("Loading configurations from {} plugin to the parent Micronaut context", plugin.name)
+                            }
+                            micronautEnv.addPropertySource(PropertySource.of("grails.plugins.$plugin.name", (Map) plugin.propertySource.source, --priority))
+                        })
+            }
             micronautEnv.refresh()
             applicationContext.setParent(parentApplicationContext)
         }

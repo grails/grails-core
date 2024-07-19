@@ -9,7 +9,7 @@ class GroovyPageUnitTestMixinWithCustomViewDirSpec extends Specification impleme
 
     Closure doWithConfig() {{ c ->
         def customViewDir = new File('.', 'src/test/resources/customviews')
-        c.grails.gsp.view.dir = customViewDir.absolutePath
+        c['grails.gsp.view.dir'] = customViewDir.absolutePath
     }}
     
     @Issue('GRAILS=11543')

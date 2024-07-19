@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 original authors
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.grails.core.cfg
 
 import groovy.transform.Internal
 import io.micronaut.context.env.yaml.ConstructIsoTimestampString
+import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.MappingNode
 import org.yaml.snakeyaml.nodes.SequenceNode
@@ -31,7 +32,9 @@ import org.yaml.snakeyaml.nodes.Tag
  */
 @Internal
 class CustomSafeConstructor extends SafeConstructor {
+
     CustomSafeConstructor() {
+        super(new LoaderOptions())
         yamlConstructors.put(Tag.TIMESTAMP, new ConstructIsoTimestampString())
     }
 

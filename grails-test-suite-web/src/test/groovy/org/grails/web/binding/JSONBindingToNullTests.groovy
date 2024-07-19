@@ -12,7 +12,7 @@ import spock.lang.Specification
 class JSONBindingToNullTests extends Specification implements ControllerUnitTest<UserController>, DomainUnitTest<User> {
 
     Closure doWithConfig() {{ config ->
-        config.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+        config['grails.mime.types'] = [ html: ['text/html','application/xhtml+xml'],
                                      xml: ['text/xml', 'application/xml'],
                                      text: 'text/plain',
                                      js: 'text/javascript',

@@ -1022,9 +1022,9 @@ public class GrailsASTUtils {
     }
 
     /**
-     * Evaluates a constraints closure and returns metadata about the constraints configured in the closure.  The
-     * Map returned has property names as keys and the value associated with each of those property names is
-     * a Map<String, Expression> which has constraint names as keys and the Expression associated with that constraint
+     * Evaluates a constraints closure and returns metadata about the constraints configured in the closure. The
+     * {@link Map} returned has {@link String} property names as keys and the value associated with each of those property names is
+     * a {@link Map} which has {@link String} constraint names as keys and the {@link Expression} associated with that constraint
      * as values.
      *
      * @param closureExpression the closure expression to evaluate

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import javax.xml.bind.DatatypeConverter
  */
 @CompileStatic
 class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
+
     public static final MimeType MIME_TYPE = MimeType.HAL_JSON
     public static final String LINKS_ATTRIBUTE = "_links"
     public static final String EMBEDDED_ATTRIBUTE = "_embedded"

@@ -5,7 +5,7 @@
 # (the "License"); you may not use this file except in compliance with
 # the License.  You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,26 +40,25 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: '11.0.6'
+          distribution: temurin
+          java-version: 17
       - name: Cache local Maven repository & Groovy
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache@v4
         with:
           path: |
             ~/groovy
             ~/.m2/repository
           key: cache-local-groovy-maven-${{ github.sha }}
-      - name: Checkout Groovy 3_0_X (Grails 5 and later)
-        if: startsWith(github.ref, 'refs/heads/6.') || startsWith(github.base_ref, '6.') || startsWith(github.ref, 'refs/heads/5.') || startsWith(github.base_ref, '5.')
-        run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
+      - name: Checkout Groovy 4_0_X (Grails 7 and later)
+        run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
       - name: Set CI_GROOVY_VERSION for Grails
         id: groovy-version
         run: |
           cd ../groovy
           echo "CI_GROOVY_VERSION=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_ENV
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
-      - name: Prepare GE Set-up Configuration
-        id: ge_conf
+      - name: Prepare Develocity Setup 1
+        id: develocity_conf_1
         run: |
           echo "VALUE<<EOF" >> $GITHUB_OUTPUT
           echo "plugins { " >> $GITHUB_OUTPUT
@@ -67,6 +66,11 @@ jobs:
           echo "    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.11.3'" >> $GITHUB_OUTPUT 
           echo "}" >> $GITHUB_OUTPUT 
           echo "" >> $GITHUB_OUTPUT 
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Prepare Develocity Setup 2
+        id: develocity_conf_2
+        run: |
+          echo "VALUE<<EOF" >> $GITHUB_OUTPUT
           echo "gradleEnterprise {" >> $GITHUB_OUTPUT 
           echo "    server = 'https://ge.grails.org'" >> $GITHUB_OUTPUT 
           echo "    buildScan {" >> $GITHUB_OUTPUT 
@@ -93,15 +97,19 @@ jobs:
           echo "}" >> $GITHUB_OUTPUT 
           echo "" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Gradle Enterprise Set-up
+      - name: Develocity Set-up
         run: |
           cd ../groovy
-          # Delete exiting plugins and build-scan from settings.gradle file
-          sed -i '21,31d' settings.gradle
-          # Add Gradle Enterprise set-up related configuration after line no 20 in settings.gradle
-          echo "${{ steps.ge_conf.outputs.value}}" | sed -i -e "20r /dev/stdin" settings.gradle
+          # Delete existing plugins from settings.gradle file
+          sed -i '32,37d' settings.gradle
+          # Add Gradle Enterprise set-up related configuration after line no 31 in settings.gradle
+          echo "${{ steps.develocity_conf_1.outputs.value }}" | sed -i -e "31r /dev/stdin" settings.gradle
+          # Delete existing buildCache configuration from gradle/build-scans.gradle file
+          sed -i '23,46d' gradle/build-scans.gradle
+          # Add Gradle Enterprise set-up related configuration after line no 22 in gradle/build-scans.gradle
+          echo "${{ steps.develocity_conf_2.outputs.value }}" | sed -i -e "22r /dev/stdin" gradle/build-scans.gradle
       - name: Build and install groovy (no docs)
-        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+        uses: gradle/gradle-build-action@v3
         env:
           GRADLE_SCANS_ACCEPT: yes
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
@@ -127,10 +135,10 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: '11'
+          distribution: temurin
+          java-version: 17
       - name: Cache local Maven repository & Groovy
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache@v4
         with:
           path: |
             ~/groovy
@@ -141,7 +149,7 @@ jobs:
           echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
       - name: Build Grails
         id: build_grails
-        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+        uses: gradle/gradle-build-action@v3
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}

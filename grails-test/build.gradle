@@ -4,8 +4,8 @@ dependencies {
 
     api "org.springframework.boot:spring-boot-test:$springBootVersion"
     // Testing
-    api "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
-    api("org.codehaus.groovy:groovy-test:$groovyVersion")
+    api "org.apache.groovy:groovy-test-junit5:$groovyVersion"
+    api("org.apache.groovy:groovy-test:$groovyVersion")
     api("org.spockframework:spock-core:$spockVersion") { transitive = false }
     api "org.junit.platform:junit-platform-runner:1.10.2"
 

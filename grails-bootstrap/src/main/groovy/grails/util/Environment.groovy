@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,10 @@ enum Environment {
     /** A custom environment */
     CUSTOM
 
+    /**
+     * Initialize the Logger lazily because:
+     * https://github.com/grails/grails-core/issues/11476
+     */
     private static final Supplier<Logger> LOG = SupplierUtil.memoized(() -> LoggerFactory.getLogger(Environment.class))
 
     /**
@@ -120,9 +124,9 @@ enum Environment {
 
     @SuppressWarnings("unchecked")
     private static Map<String, String> envNameMappings = CollectionUtils.<String, String> newMap(
-            DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
-            PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
-            TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName())
+            DEVELOPMENT_ENVIRONMENT_SHORT_NAME, DEVELOPMENT.getName(),
+            PRODUCTION_ENV_SHORT_NAME, PRODUCTION.getName(),
+            TEST_ENVIRONMENT_SHORT_NAME, TEST.getName())
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<>("Environment")
     private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT
     private static Boolean RELOADING_AGENT_ENABLED = null
@@ -295,14 +299,14 @@ enum Environment {
         Environment env = getEnvironment(envName)
         if (env == null) {
             try {
-                env = Environment.valueOf(envName.toUpperCase())
+                env = valueOf(envName.toUpperCase())
             }
             catch (IllegalArgumentException e) {
                 // ignore
             }
         }
         if (env == null) {
-            env = Environment.CUSTOM
+            env = CUSTOM
             env.setName(envName)
         }
         return env
@@ -355,7 +359,7 @@ enum Environment {
      * @return True if the development sources are present
      */
     static boolean isDevelopmentRun() {
-        Environment env = Environment.getCurrent()
+        Environment env = getCurrent()
         return isDevelopmentEnvironmentAvailable() && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT)
     }
 
@@ -368,7 +372,7 @@ enum Environment {
         LOG.get().debug("Looking for pid file at: {}", pidFile)
         boolean isDevToolsRestart = false
         try {
-            if (Environment.isDevelopmentMode()) {
+            if (isDevelopmentMode()) {
                 String pid = ManagementFactory.getRuntimeMXBean().getName()
                 if (pidFile.exists()) {
                     if (pid.equals(Files.readAllLines(pidFile.toPath()).get(0))) {
@@ -479,10 +483,10 @@ enum Environment {
     static Environment getEnvironment(String shortName) {
         final String envName = envNameMappings.get(shortName)
         if (envName != null) {
-            return Environment.valueOf(envName.toUpperCase())
+            return valueOf(envName.toUpperCase())
         } else {
             try {
-                return Environment.valueOf(shortName.toUpperCase())
+                return valueOf(shortName.toUpperCase())
             } catch (IllegalArgumentException ise) {
                 return null
             }
@@ -646,7 +650,7 @@ enum Environment {
         }
         try {
             Class.forName("org.springframework.boot.devtools.RemoteSpringApplication")
-            RELOADING_AGENT_ENABLED = Environment.getCurrent().isReloadEnabled()
+            RELOADING_AGENT_ENABLED = getCurrent().isReloadEnabled()
             LOG.get().debug("Found spring-dev-tools on the class path")
         }
         catch (ClassNotFoundException e) {
@@ -655,7 +659,7 @@ enum Environment {
                 Class.forName("org.springsource.loaded.TypeRegistry")
                 String jvmVersion = System.getProperty("java.specification.version")
                 LOG.get().debug("Found spring-loaded on the class path")
-                RELOADING_AGENT_ENABLED = Environment.getCurrent().isReloadEnabled()
+                RELOADING_AGENT_ENABLED = getCurrent().isReloadEnabled()
             }
             catch (ClassNotFoundException e1) {
                 RELOADING_AGENT_ENABLED = false
@@ -712,8 +716,8 @@ enum Environment {
     }
 
     private static String getEnvironmentInternal() {
-        String envName = System.getProperty(Environment.KEY)
-        return isBlank(envName) ? System.getenv(Environment.ENV_KEY) : envName
+        String envName = System.getProperty(KEY)
+        return isBlank(envName) ? System.getenv(ENV_KEY) : envName
     }
 
 }
