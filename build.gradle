@@ -19,9 +19,6 @@ import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
 
-
-
-
 ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
     grailsVersion = project.projectVersion
