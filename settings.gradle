@@ -72,7 +72,4 @@ include (
         'grails-test-suite-persistence',
         'grails-test-suite-uber',
         'grails-test-suite-web',
-
-        // Gradle Plugin
-        'grails-gradle-model'
 )
