@@ -488,7 +488,11 @@ subprojects { project ->
         documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
-        api groovyDependency
+        if (project.name =~ /^(grails-bootstrap)/ || project.name =~ /^(grails-gradle-model)/) {
+            compileOnly groovyDependency
+        } else {
+            api groovyDependency
+        }
 
         testImplementation "org.apache.groovy:groovy-test-junit5:${groovyVersion}"
         testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
