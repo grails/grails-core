@@ -9,13 +9,19 @@ on:
       - '[3-9]+.[3-9]+.x'
   pull_request:
     types: [opened, reopened, synchronize, labeled]
-  pull_request_target:
-    types: [opened, reopened, synchronize, labeled]
+#  pull_request_target:
+#    types: [opened, reopened, synchronize, labeled]
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  release_notes:
+  update_release_draft:
     permissions:
-      contents: read
+      # write permission is required to create a github release
+      contents: write
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +37,7 @@ jobs:
       - uses: release-drafter/release-drafter@v6
         if: steps.check_release_drafter.outputs.has_release_drafter == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Otherwise:
       - name: Export Gradle Properties
         if: steps.check_release_drafter.outputs.has_release_drafter == 'false'
