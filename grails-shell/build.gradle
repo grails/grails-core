@@ -1,0 +1,66 @@
+apply plugin:'application'
+
+mainClassName = "org.grails.cli.GrailsCli"
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    gradleToolingApiVersion = '7.3-20210825160000+0000'
+}
+
+dependencies {
+    api project(":grails-bootstrap")
+    api project(":grails-gradle-model")
+    api "org.apache.ant:ant:$antVersion"
+    api "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    api "org.codehaus.groovy:groovy-json:$groovyVersion"
+    api "org.codehaus.groovy:groovy-jmx:$groovyVersion"
+    api "org.fusesource.jansi:jansi:$jansiVersion"
+    api "jline:jline:$jlineVersion"
+    api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
+
+    api "org.springframework.boot:spring-boot-cli:$springBootVersion", {
+        exclude group: "org.codehaus.groovy", module: "groovy"
+    }
+    implementation("org.apache.maven:maven-resolver-provider:3.9.6") {
+        exclude group: "com.google.guava", module: "guava"
+    }
+
+    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18")
+    implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.18")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.9.18")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.18") {
+        exclude group: "org.slf4j", module:"jcl-over-slf4j"
+        exclude group: "commons-codec", module:"commons-codec"
+    }
+    implementation("commons-codec:commons-codec:1.16.0")
+
+    testImplementation "net.sf.expectit:expectit-core:0.9.0"
+    testImplementation "com.github.jnr:jnr-posix:3.1.18"
+
+    runtimeOnly "org.slf4j:slf4j-simple:$slf4jVersion"
+    runtimeOnly "org.codehaus.plexus:plexus-component-api:1.0-alpha-33"
+
+}
+
+eclipse {
+    classpath {
+       file {
+           whenMerged { classpath ->
+                classpath.entries.find { entry -> entry.kind == 'src' && entry.path == "src/test/resources" }?.excludes=["profiles-repository/**", "gradle-sample/**"]
+           }
+       }
+    }
+}
+
+apply from: "../gradle/integration-test.gradle"
+
+integrationTest {
+    // jline doesn't use jline.terminal system property when TERM is dumb so use different TERM value for tests
+    // https://github.com/jline/jline2/blob/6a1b6bf/src/main/java/jline/TerminalFactory.java#L54-L57
+    environment 'TERM', 'xterm'
+    // execute in single thread
+    maxParallelForks = 1
+}
