@@ -24,6 +24,12 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
       - uses: release-drafter/release-drafter@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commitish: ${{ steps.extract_branch.outputs.value }}
