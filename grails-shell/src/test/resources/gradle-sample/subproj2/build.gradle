@@ -1,0 +1,3 @@
+apply plugin:'java'
+
+task hello3 << {println "Third hello world!"}
