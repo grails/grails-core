@@ -20,12 +20,29 @@ dependencies {
     api "org.fusesource.jansi:jansi:$jansiVersion"
     api "jline:jline:$jlineVersion"
     api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
+    compileOnly "org.apache.groovy:groovy-templates:$groovyVersion"
+    compileOnly "org.apache.groovy:groovy-xml:$groovyVersion"
 
+    compileOnly "org.springframework.boot:spring-boot:$springBootVersion"
+    compileOnly "org.springframework.boot:spring-boot-loader-tools:$springBootVersion"
+    compileOnly "org.springframework:spring-web:$springVersion"
     api "org.springframework.boot:spring-boot-cli:$springBootVersion", {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
+    compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
     implementation("org.apache.maven:maven-resolver-provider:3.9.6") {
         exclude group: "com.google.guava", module: "guava"
+    }
+    compileOnly "net.sf.jopt-simple:jopt-simple:5.0.4"
+
+    implementation("org.apache.maven:maven-settings-builder:3.6.3") {
+        exclude group: "javax.inject", module: "javax.inject"
+    }
+
+    implementation("org.sonatype.plexus:plexus-sec-dispatcher:1.4")
+    implementation("org.sonatype.sisu:sisu-inject-plexus:2.6.0") {
+        exclude group: "javax.enterprise", module: "cdi-api"
+        exclude group: "org.sonatype.sisu", module: "sisu-inject-bean"
     }
 
     implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18")
