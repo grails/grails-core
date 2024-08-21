@@ -47,7 +47,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
     ]
     """.stripIndent()
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetXML() {
 
         given:
@@ -62,7 +61,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         verifyXmlResult(request.XML)
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetXMLMultipleCalls() {
 
         given:
@@ -81,7 +79,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         verifyXmlResult request.XML
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetXMLNoContent() {
 
         given:
@@ -98,7 +95,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         e.message == 'Error parsing XML'
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetXMLContentNotXml() {
 
         given:
@@ -121,7 +117,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         e.message == 'Error parsing XML'
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetJSON() {
 
         given:
@@ -135,7 +130,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         verifyJsonResult(request.JSON)
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetJSONMultipleCalls() {
 
         given:
@@ -153,7 +147,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         verifyJsonResult(request.JSON)
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetJSONNoContent() {
 
         given:
@@ -163,7 +156,6 @@ class GrailsMockHttpServletRequestTests extends Specification {
         0 == (Integer) request.JSON.size()
     }
 
-    @PendingFeature(reason = 'converters is not on jakarta.servlet yet')
     void testGetJSONContentNotJson() {
 
         given:
