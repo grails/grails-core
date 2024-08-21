@@ -10,7 +10,6 @@ buildscript {
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbApiVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbImplVersion"
-        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
         classpath("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1")
     }
 }
