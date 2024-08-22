@@ -1,10 +1,8 @@
 package grails.test.mixin
 
 import grails.testing.web.GrailsWebUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerMockWithMultipleControllersSpec extends Specification implements GrailsWebUnitTest {
 
     void "Test that both mocked controllers are valid"() {

@@ -1,11 +1,8 @@
 package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
-import org.springframework.core.io.*
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class UrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testReverseTopLevelMapping() {

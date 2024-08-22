@@ -3,10 +3,8 @@ package org.grails.web.binding.json
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class JsonBindingWithExceptionHandlerSpec extends Specification implements ControllerUnitTest<BindingWithExceptionHandlerMethodController> {
 
     void 'test binding malformed JSON'() {

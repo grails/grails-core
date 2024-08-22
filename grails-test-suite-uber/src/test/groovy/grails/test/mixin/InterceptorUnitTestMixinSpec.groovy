@@ -2,13 +2,11 @@ package grails.test.mixin
 
 import grails.artefact.Interceptor
 import grails.testing.web.interceptor.InterceptorUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * Created by graemerocher on 02/09/15.
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class InterceptorUnitTestMixinSpec extends Specification implements InterceptorUnitTest<TestInterceptor> {
 
     void "Test interceptor matching"() {

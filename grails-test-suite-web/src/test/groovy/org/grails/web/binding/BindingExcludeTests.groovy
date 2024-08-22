@@ -3,10 +3,8 @@ package org.grails.web.binding
 import grails.artefact.Artefact
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class BindingExcludeTests extends Specification implements ControllerUnitTest<ExcludingController>, DataTest {
 
     Class[] getDomainClassesToMock() {

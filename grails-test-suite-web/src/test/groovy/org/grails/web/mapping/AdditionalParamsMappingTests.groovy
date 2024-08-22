@@ -2,8 +2,6 @@ package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
 import grails.web.mapping.UrlCreator
-import org.springframework.core.io.ByteArrayResource
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -11,7 +9,6 @@ import spock.lang.Specification
  * @author Graeme Rocher
  * @since 1.0
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class AdditionalParamsMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void testMapping() {

@@ -6,12 +6,10 @@ import grails.converters.XML
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ContentNegotiationSpec extends Specification implements ControllerUnitTest<ContentNegotiationController> {
 
     Closure doWithConfig() {{ config ->

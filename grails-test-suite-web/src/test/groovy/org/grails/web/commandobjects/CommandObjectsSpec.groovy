@@ -4,11 +4,9 @@ import grails.artefact.Artefact
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.Validateable
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class CommandObjectsSpec extends Specification implements ControllerUnitTest<TestController>, DataTest {
 
     Closure doWithSpring() {{ ->
