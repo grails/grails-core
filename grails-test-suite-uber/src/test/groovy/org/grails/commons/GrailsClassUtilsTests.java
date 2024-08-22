@@ -377,21 +377,21 @@ public class GrailsClassUtilsTests {
 
     @Test
     public void testIsPropertyGetter() throws Exception {
-        assertTrue(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getName", null)));
-        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("setName", null)));
-        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getSurname", null)));
-        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getNewYear", null)));
+        assertTrue(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getName")));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("setName")));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getSurname")));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getNewYear")));
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getFilename", String.class)));
-        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getTitle", null)));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getTitle")));
     }
 
     @Test
     @Issue("https://github.com/grails/grails-core/issues/10343")
     public void testPropertiesBeginningWithSingleLowerCaseLetter() throws Exception {
-        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getaString", null)));
-        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isaBoolean", null)));
-        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getS", null)));
-        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isB", null)));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getaString")));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isaBoolean")));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getS")));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isB")));
     }
 }
 
