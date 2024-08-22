@@ -67,7 +67,7 @@ public class GrailsConsole implements ConsoleLogger {
     public static final String HISTORYFILE = ".grails_history";
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
-    public static final Character SECURE_MASK_CHAR = new Character('*');
+    public static final Character SECURE_MASK_CHAR = Character.valueOf('*');
     private PrintStream originalSystemOut;
     private PrintStream originalSystemErr;
     private StringBuilder maxIndicatorString;

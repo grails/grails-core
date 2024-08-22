@@ -168,7 +168,7 @@ public class GrailsHttpSession implements HttpSession {
 */
 
     /**
-     * @see jakarta.servlet.http.HttpSession#removeValue(java.lang.String)
+     * @see jakarta.servlet.http.HttpSession
      * @deprecated
      */
 /*
@@ -184,6 +184,7 @@ public class GrailsHttpSession implements HttpSession {
     /* (non-Javadoc)
      * @see jakarta.servlet.http.HttpSession#invalidate()
      */
+    @Deprecated
     public void invalidate() {
         createSessionIfNecessary();
         synchronized (this) {

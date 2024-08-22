@@ -500,6 +500,8 @@ subprojects { project ->
         testImplementation "org.junit.platform:junit-platform-runner:1.10.2"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
 
+        compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.6'
+
         if (project.name != "grails-docs") {
             // Logging
             api "org.slf4j:slf4j-api:$slf4jVersion"
