@@ -2,11 +2,9 @@ package org.grails.web.commandobjects
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class CommandObjectNullabilitySpec extends Specification implements ControllerUnitTest<CommandController> {
 
     @Issue('GRAILS-9686')

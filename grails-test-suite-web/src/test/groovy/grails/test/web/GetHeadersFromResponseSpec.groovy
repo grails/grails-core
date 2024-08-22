@@ -2,14 +2,12 @@ package grails.test.web
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
 import java.text.SimpleDateFormat
 
 @Issue('GRAILS-9196')
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class GetHeadersFromResponseSpec extends Specification implements ControllerUnitTest<YourController> {
     def "Test inspection of response headers"() {
 

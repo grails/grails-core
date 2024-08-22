@@ -1,12 +1,9 @@
 package grails.test.mixin
 
 import grails.testing.web.GrailsWebUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class GroovyPageUnitTestMixinWithCustomViewDirSpec extends Specification implements GrailsWebUnitTest {
 
     Closure doWithConfig() {{ c ->

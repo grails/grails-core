@@ -2,11 +2,9 @@ package org.grails.web.binding.json
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class JsonBindingSpec extends Specification implements ControllerUnitTest<BindingController> {
 
     void 'Test binding JSON body'() {

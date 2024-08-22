@@ -1,11 +1,9 @@
 package org.grails.web.mapping
 
 import grails.testing.web.GrailsWebUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 import org.springframework.core.io.*
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class UrlMappingEvaluatorTests extends Specification implements GrailsWebUnitTest {
 
     def mappingScript = '''

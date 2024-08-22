@@ -4,17 +4,12 @@ import grails.core.DefaultGrailsApplication
 import grails.gorm.validation.ConstrainedProperty
 import grails.gorm.validation.DefaultConstrainedProperty
 import grails.testing.web.UrlMappingsUnitTest
-import grails.util.GrailsWebMockUtil
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.exceptions.UrlMappingException
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
-import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
 import org.springframework.context.support.StaticMessageSource
-import org.springframework.core.io.*
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RegexUrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
 

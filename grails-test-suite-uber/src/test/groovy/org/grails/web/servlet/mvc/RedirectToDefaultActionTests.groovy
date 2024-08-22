@@ -1,7 +1,6 @@
 package org.grails.web.servlet.mvc
 
 import grails.testing.web.GrailsWebUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 import grails.artefact.Artefact
 
@@ -9,7 +8,6 @@ import grails.artefact.Artefact
  * @author Graeme Rocher
  * @since 1.1
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RedirectToDefaultActionTests extends Specification implements GrailsWebUnitTest {
 
     void setup() {

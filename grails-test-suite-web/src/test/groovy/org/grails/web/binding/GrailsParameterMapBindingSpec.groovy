@@ -4,11 +4,9 @@ import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class GrailsParameterMapBindingSpec extends Specification implements ControllerUnitTest<MyController>, DomainUnitTest<MyDomain> {
     
     void 'Test binding body to command object'() {

@@ -3,16 +3,12 @@ package org.grails.web.mapping
 import grails.testing.web.GrailsWebUnitTest
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
-import org.junit.Test
-import spock.lang.Ignore
 import spock.lang.Specification
-import static org.junit.Assert.*
 import org.springframework.core.io.ByteArrayResource
 
 /**
  * @author mike
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ViewUrlMappingTests extends Specification implements GrailsWebUnitTest {
 
     def topLevelMapping = '''

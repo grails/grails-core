@@ -3,10 +3,8 @@ package org.grails.web.servlet.mvc
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.MockRequestDataValueProcessor
 import grails.web.http.HttpHeaders
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RedirectMethodWithRequestDataValueProcessorSpec extends Specification implements ControllerUnitTest<RedirectController> {
 
     Closure doWithSpring() {{ ->

@@ -2,10 +2,8 @@ package org.grails.web.metaclass
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class CollectionBindDataMethodSpec extends Specification implements ControllerUnitTest<DemoController> {
 
     void 'Test bindData with a CollectionDataBindingSource argument using XML'() {

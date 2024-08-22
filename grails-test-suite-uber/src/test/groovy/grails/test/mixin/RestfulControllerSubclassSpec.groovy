@@ -5,11 +5,9 @@ import grails.persistence.Entity
 import grails.rest.RestfulController
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RestfulControllerSubclassSpec extends Specification implements ControllerUnitTest<ArtistController>, DomainUnitTest<Album> {
 
     void 'Test that save populates the newly created instance with values from the request body'() {

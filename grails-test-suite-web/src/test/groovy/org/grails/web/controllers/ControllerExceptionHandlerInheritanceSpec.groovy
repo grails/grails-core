@@ -2,13 +2,11 @@ package org.grails.web.controllers
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import java.sql.BatchUpdateException
 import java.sql.SQLException
 import org.grails.compiler.web.ControllerActionTransformer
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerExceptionHandlerInheritanceSpec extends Specification implements ControllerUnitTest<SomeControllerSubClassController> {
 
     void 'Test action in subclass throws exception handled by super class'() {

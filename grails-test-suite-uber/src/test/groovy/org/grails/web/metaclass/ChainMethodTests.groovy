@@ -2,7 +2,6 @@ package org.grails.web.metaclass
 
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import grails.artefact.Artefact
@@ -14,7 +13,6 @@ import org.grails.web.servlet.GrailsFlashScope
  * @author Graeme Rocher
  * @since 1.0
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ChainMethodTests extends Specification implements ControllerUnitTest<TestChainController>, DomainUnitTest<TestChainBook> {
 
     void testChainMethodWithModel() {

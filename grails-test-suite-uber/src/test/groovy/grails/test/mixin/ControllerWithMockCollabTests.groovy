@@ -2,14 +2,11 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import org.junit.Test
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * Tests a controller with a mock collaborator
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerWithMockCollabTests extends Specification implements ControllerUnitTest<ControllerWithCollabController> {
 
     void testFirstCall() {

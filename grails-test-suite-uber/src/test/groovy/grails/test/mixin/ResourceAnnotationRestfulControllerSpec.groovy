@@ -9,14 +9,12 @@ import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 
 import org.codehaus.groovy.control.CompilerConfiguration
-import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 /**
  * @author Graeme Rocher
  */
 //TODO: Replace ControllerUnitTest<Object> with ControllerUnitTest once update to Groovy 3.0.7
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ResourceAnnotationRestfulControllerSpec extends Specification implements DataTest, ControllerUnitTest<Object> {
 
     @Shared Class domainClass

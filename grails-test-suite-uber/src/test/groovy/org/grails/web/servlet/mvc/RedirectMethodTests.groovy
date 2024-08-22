@@ -1,14 +1,11 @@
 package org.grails.web.servlet.mvc
 
-import grails.testing.web.GrailsWebUnitTest
 import grails.testing.web.UrlMappingsUnitTest
 import org.grails.web.servlet.mvc.alpha.NamespacedController
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.grails.web.util.GrailsApplicationAttributes
-import org.springframework.beans.MutablePropertyValues
 import grails.artefact.Artefact
 import grails.web.mapping.mvc.RedirectEventListener
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -17,7 +14,6 @@ import spock.lang.Specification
  * @author Graeme Rocher
  * @since 1.0
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RedirectMethodTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     void "test redirect with namespaced controllers"() {

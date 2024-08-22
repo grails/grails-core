@@ -2,12 +2,10 @@ package org.grails.web.servlet.mvc
 
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
-import spock.lang.Ignore
 import spock.lang.Specification
 import grails.artefact.Artefact
 import org.grails.buffer.FastStringWriter
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class RenderDynamicMethodTests extends Specification implements ControllerUnitTest<RenderDynamicMethodTestController>  {
 
     void testRenderTextWithLayout() {

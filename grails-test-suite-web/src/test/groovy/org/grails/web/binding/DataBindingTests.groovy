@@ -6,7 +6,6 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockMultipartFile
-import spock.lang.Ignore
 import spock.lang.Specification
 
  /**
@@ -15,7 +14,6 @@ import spock.lang.Specification
  * @author Graeme Rocher
  * @since 1.0
  */
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class DataBindingTests extends Specification implements ControllerUnitTest<TestController>, DomainUnitTest<MyBean> {
 
     void testBindingPogoToDomainClass() {

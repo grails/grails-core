@@ -3,10 +3,8 @@ package grails.test.mixin
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import grails.testing.web.taglib.TagLibUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class TagLibraryInvokeBodySpec extends Specification implements TagLibUnitTest<SimpleTagLib> {
 
     void "Test that a tag can be invoked with a custom body"() {

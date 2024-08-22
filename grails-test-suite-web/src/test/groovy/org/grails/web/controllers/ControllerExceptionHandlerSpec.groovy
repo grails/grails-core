@@ -3,14 +3,12 @@ package org.grails.web.controllers
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
-import spock.lang.Ignore
 
 import java.sql.BatchUpdateException
 import java.sql.SQLException
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore('grails-gsp is not on jakarta.servlet yet')
 class ControllerExceptionHandlerSpec extends Specification implements ControllerUnitTest<ErrorHandlersController> {
 
     @Issue('GRAILS-11453')
