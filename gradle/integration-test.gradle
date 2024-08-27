@@ -9,12 +9,15 @@ sourceSets {
   }
 }
 
+configurations {
+  integrationTestImplementation.extendsFrom configurations.testCompileClasspath
+  integrationTestRuntimeOnly.extendsFrom configurations.testRuntimeClasspath
+}
+
 // Setup dependencies for integration testing
 dependencies {
   integrationTestImplementation sourceSets.main.output
   integrationTestImplementation sourceSets.test.output
-  integrationTestImplementation configurations.testCompileClasspath
-  integrationTestRuntimeOnly configurations.testRuntimeClasspath
 }
 
 // Define integration test task
