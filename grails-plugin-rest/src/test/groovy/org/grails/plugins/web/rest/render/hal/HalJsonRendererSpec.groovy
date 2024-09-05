@@ -62,7 +62,7 @@ import spock.lang.Issue
 import spock.lang.Shared
 import spock.lang.Specification
 
-import javax.xml.bind.DatatypeConverter
+import jakarta.xml.bind.DatatypeConverter
 
 /**
  */

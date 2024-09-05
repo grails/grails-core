@@ -770,7 +770,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             boolean argumentIsValidateable = GrailsASTUtils.hasAnyAnnotations(
                     commandObjectNode,
                     grails.persistence.Entity.class,
-                    javax.persistence.Entity.class) ||
+                    jakarta.persistence.Entity.class) ||
                     commandObjectNode.implementsInterface(ClassHelper.make(Validateable.class));
 
             if (!argumentIsValidateable && commandObjectNode.isPrimaryClassNode()) {

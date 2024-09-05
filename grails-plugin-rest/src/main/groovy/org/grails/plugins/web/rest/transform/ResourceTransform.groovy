@@ -34,7 +34,7 @@ import groovy.transform.CompileStatic
 
 import java.lang.reflect.Modifier
 
-import javax.annotation.PostConstruct
+import jakarta.annotation.PostConstruct
 
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
