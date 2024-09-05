@@ -30,7 +30,7 @@ import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
 
-import javax.annotation.PostConstruct
+import jakarta.annotation.PostConstruct
 
 /**
  * An XML renderer that allows including / excluding properties

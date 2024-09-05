@@ -21,7 +21,7 @@ import grails.web.mime.MimeType
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 
-import javax.annotation.PostConstruct
+import jakarta.annotation.PostConstruct
 
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.grails.web.util.ClassAndMimeTypeRegistry

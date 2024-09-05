@@ -722,7 +722,7 @@ public class GrailsASTUtils {
         @SuppressWarnings("unchecked")
         boolean isDomainClass = GrailsASTUtils.hasAnyAnnotations(classNode,
                 grails.persistence.Entity.class,
-                javax.persistence.Entity.class);
+                jakarta.persistence.Entity.class);
 
         if (!isDomainClass && sourceNode != null) {
             final String sourcePath = sourceNode.getName();
