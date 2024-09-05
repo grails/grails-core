@@ -8,7 +8,7 @@ buildscript {
         classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:10.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
-        classpath "javax.xml.bind:jaxb-api:$jaxbApiVersion"
+        classpath "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbImplVersion"
         classpath("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1")
     }
@@ -32,11 +32,6 @@ ext {
                                         group  : 'io.github.gpc',
                                         names  : ['fields'],
                                         modules: ['']
-            ],
-            'javax.annotation-api'   : [version: javaxAnnotationApiVersion,
-                                        group  : 'javax.annotation',
-                                        names  : ['javax.annotation'],
-                                        modules: ['api']
             ],
             'jakarta-annotation'     : [version: jakartaAnnotationApiVersion,
                                         group  : 'jakarta.annotation',

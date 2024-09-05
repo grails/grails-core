@@ -7,7 +7,7 @@ import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-import javax.persistence.FlushModeType
+import jakarta.persistence.FlushModeType
 
 /*
  * Copyright 2014 original authors

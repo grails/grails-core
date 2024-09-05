@@ -1,6 +1,6 @@
 dependencies {
 
-    api 'javax.xml.bind:jaxb-api:2.3.1'
+    api "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
 
     api project(":grails-web"),
             project(":grails-plugin-controllers"),

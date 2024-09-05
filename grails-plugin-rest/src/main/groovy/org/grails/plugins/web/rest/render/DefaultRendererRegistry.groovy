@@ -25,7 +25,7 @@ import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
 
-import javax.annotation.PostConstruct
+import jakarta.annotation.PostConstruct
 
 import grails.util.GrailsClassUtils
 import grails.core.support.proxy.ProxyHandler

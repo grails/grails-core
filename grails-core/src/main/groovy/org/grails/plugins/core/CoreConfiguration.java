@@ -21,14 +21,9 @@ import grails.core.GrailsApplication;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.context.event.ShutdownEvent;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * Core beans.
