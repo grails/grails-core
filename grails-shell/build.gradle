@@ -30,7 +30,7 @@ dependencies {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
     compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
-    implementation("org.apache.maven:maven-resolver-provider:3.9.6") {
+    implementation("org.apache.maven:maven-resolver-provider:3.9.9") {
         exclude group: "com.google.guava", module: "guava"
     }
     compileOnly "net.sf.jopt-simple:jopt-simple:5.0.4"
