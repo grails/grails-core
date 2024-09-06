@@ -21,14 +21,13 @@ import groovy.io.FileType
 import groovy.text.Template
 
 import org.apache.commons.logging.LogFactory
-import org.gradle.api.internal.project.ant.BasicAntBuilder
 import org.radeox.api.engine.WikiRenderEngine
 import org.radeox.engine.context.BaseInitialRenderContext
 import org.radeox.engine.context.BaseRenderContext
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
-import org.gradle.api.AntBuilder
+import groovy.ant.AntBuilder
 
 /**
  * Coordinated the DocEngine the produce documentation based on the gdoc format.
@@ -517,7 +516,7 @@ class DocPublisher {
             apiDir = target
         }
         if (!ant) {
-            ant = new BasicAntBuilder()
+            ant = new AntBuilder()
         }
         def metaProps = DocPublisher.metaClass.properties
         Properties props
