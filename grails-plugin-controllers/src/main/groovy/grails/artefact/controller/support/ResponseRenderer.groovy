@@ -37,8 +37,8 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.servlet.view.GroovyPageView
-import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 import org.grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
@@ -296,7 +296,7 @@ trait ResponseRenderer extends WebAttributes {
                 }
 
 
-                boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(ControllersGrailsPlugin.LAYOUT_ATTRIBUTE))
+                boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(WebUtils.LAYOUT_ATTRIBUTE))
                 // if automatic decoration occurred unwrap, since this is a partial
 
                 if (renderWithLayout) {
@@ -533,13 +533,13 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void applySiteMeshLayout(HttpServletRequest request, boolean renderView, String explicitSiteMeshLayout) {
-        if(explicitSiteMeshLayout == null && request.getAttribute(ControllersGrailsPlugin.LAYOUT_ATTRIBUTE) != null) {
+        if(explicitSiteMeshLayout == null && request.getAttribute(WebUtils.LAYOUT_ATTRIBUTE) != null) {
             // layout has been set already
             return
         }
-        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : ControllersGrailsPlugin.NONE_LAYOUT)
+        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : WebUtils.NONE_LAYOUT)
         if(siteMeshLayout != null) {
-            request.setAttribute ControllersGrailsPlugin.LAYOUT_ATTRIBUTE, siteMeshLayout
+            request.setAttribute WebUtils.LAYOUT_ATTRIBUTE, siteMeshLayout
         }
     }
 
