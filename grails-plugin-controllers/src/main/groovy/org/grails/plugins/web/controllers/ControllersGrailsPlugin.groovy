@@ -61,10 +61,6 @@ class ControllersGrailsPlugin extends Plugin {
     def observe = ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
 
-    // Although they are specific to Sitemesh, these properties need
-    // a new home that is not coupled to any sitemesh dependency
-    static final String SITEMESH_LAYOUT_ATTRIBUTE = "org.grails.layout.name";
-
     @Override
     Closure doWithSpring(){ { ->
         def application = grailsApplication
