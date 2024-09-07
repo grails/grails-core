@@ -189,7 +189,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                         }
                     }
                     List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
-                    controller = tokens[-1]
+                    controller = controllerAttribute?:tokens[-1]
                     if (tokens.size()>1) {
                         for(t in tokens[0..-2]) {
                             final key = "${t}Id".toString()
