@@ -291,6 +291,17 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected String getResourceId(resourceAttribute) {
+        try {
+            // Alternative is to check instanceof GormEntity, but that would require coupling
+            // web-common to grails-datastore-gorm
+            def ident = resourceAttribute.ident().toString()
+            if (ident) {
+                return ident.toString()
+            }
+        } catch (MissingMethodException | IllegalStateException e) {
+            // An IllegalStateException occurs if GORM is not initialized.
+        }
+
         final id = resourceAttribute.id
         if (id) {
             return id.toString()
