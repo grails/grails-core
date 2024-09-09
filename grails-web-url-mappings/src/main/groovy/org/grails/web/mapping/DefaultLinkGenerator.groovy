@@ -295,7 +295,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             // Three options for using indent():
             // 1. Check instanceof GormEntity, but that would require coupling web-common to grails-datastore-gorm
             // 2. GrailsMetaClassUtils.invokeMethodIfExists(o, "ident", new Object[0]); Slow?
-            // 3. Just assuming resource is a GormEntity and catching an exception if it is not.
+            // 3. Just assuming resource is a GormEntity or has ident() implemented and catching an exception if it is not.
             def ident = resourceAttribute.ident()
             if (ident) {
                 return ident.toString()
