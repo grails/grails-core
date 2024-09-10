@@ -22,8 +22,8 @@ import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import grails.web.mapping.LinkGenerator
-import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
@@ -47,16 +47,9 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
     boolean absoluteLinks = true
     boolean prettyPrint = Environment.isDevelopmentMode()
 
-    MessageSource messageSource
-
     @Autowired
-    void setMessageSource(PluginAwareResourceBundleMessageSource messageSource) {
-        this.messageSource = messageSource
-    }
-
-    void setMessageSource(MessageSource messageSource) {
-        this.messageSource = messageSource
-    }
+    @Qualifier("pluginAwareResourceBundleMessageSource")
+    MessageSource messageSource
 
     @Autowired
     LinkGenerator linkGenerator

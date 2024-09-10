@@ -8,14 +8,11 @@ import grails.databinding.events.DataBindingListener;
 import grails.web.databinding.GrailsWebDataBinder;
 import io.micronaut.core.util.ArrayUtils;
 import org.grails.databinding.bindingsource.DataBindingSourceCreator;
-import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource;
 import org.grails.web.databinding.bindingsource.*;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 @Configuration
@@ -55,12 +52,7 @@ public class DataBindingConfiguration {
         final DataBindingListener[] mainContextDataBindingListeners = mainContext
                 .getBeansOfType(DataBindingListener.class).values().toArray(new DataBindingListener[0]);
         dataBinder.setDataBindingListeners(ArrayUtils.concat(dataBindingListeners,mainContextDataBindingListeners));
-        try{
-            dataBinder.setMessageSource(mainContext.getBean("messageSource", StaticMessageSource.class));
-        } catch(Exception e) {
-            dataBinder.setMessageSource(mainContext.getBean("messageSource", PluginAwareResourceBundleMessageSource.class));
-        }
-
+        dataBinder.setMessageSource(mainContext.getBean("messageSource", MessageSource.class));
         return dataBinder;
     }
 

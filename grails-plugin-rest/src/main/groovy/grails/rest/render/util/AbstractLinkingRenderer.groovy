@@ -36,7 +36,6 @@ import org.grails.datastore.mapping.model.types.Basic
 import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
-import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -62,16 +61,9 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     public static final String TEMPLATED_ATTRIBUTE = 'templated'
     public static final String DEPRECATED_ATTRIBUTE = 'deprecated'
 
-    MessageSource messageSource
-
     @Autowired
-    void setMessageSource(PluginAwareResourceBundleMessageSource messageSource) {
-        this.messageSource = messageSource
-    }
-
-    void setMessageSource(MessageSource messageSource) {
-        this.messageSource = messageSource
-    }
+    @Qualifier("pluginAwareResourceBundleMessageSource")
+    MessageSource messageSource
 
     @Autowired
     LinkGenerator linkGenerator

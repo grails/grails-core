@@ -24,7 +24,6 @@ import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
-import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.validation.ConstraintEvalUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
@@ -244,11 +243,8 @@ trait Validateable {
     private MessageSource findMessageSource() {
         try {
             ApplicationContext ctx = Holders.findApplicationContext()
-            try{
-                return ctx.getBean("messageSource", StaticMessageSource.class);
-            } catch(Exception e1) {
-                return ctx.getBean("messageSource", PluginAwareResourceBundleMessageSource.class);
-            }
+            MessageSource messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource', MessageSource) : null
+            return messageSource
         } catch (Throwable ignored) {
             return null
         }
