@@ -417,15 +417,7 @@ subprojects { project ->
             shouldRunAfter(tasks.withType(Sign))
         }
 
-        tasks.register("installToHomeDist", Upload) {
-            configuration = configurations.archives
-            repositories {
-                flatDir name: 'libs', dirs: distInstallDir
-            }
-        }
-
         tasks.withType(PublishToMavenLocal).configureEach {
-            dependsOn installToHomeDist
             doLast {
                 ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
                     fileset dir: distInstallDir
