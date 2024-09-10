@@ -52,6 +52,7 @@ import org.grails.web.databinding.SpringConversionServiceAdapter
 import org.grails.web.databinding.converters.ByteArrayMultipartFileValueConverter
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.MessageSource
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.BindingResult
@@ -645,6 +646,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Autowired
+    @Qualifier("pluginAwareResourceBundleMessageSource")
     void setMessageSource(MessageSource messageSource) {
         this.messageSource = messageSource
     }

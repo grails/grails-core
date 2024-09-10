@@ -62,6 +62,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     public static final String DEPRECATED_ATTRIBUTE = 'deprecated'
 
     @Autowired
+    @Qualifier("pluginAwareResourceBundleMessageSource")
     MessageSource messageSource
 
     @Autowired

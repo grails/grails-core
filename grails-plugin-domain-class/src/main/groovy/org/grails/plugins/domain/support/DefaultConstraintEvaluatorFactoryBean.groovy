@@ -15,6 +15,7 @@ import org.springframework.context.MessageSource
 class DefaultConstraintEvaluatorFactoryBean implements FactoryBean<ConstraintsEvaluator> {
 
     @Autowired
+    @Qualifier("pluginAwareResourceBundleMessageSource")
     MessageSource messageSource
 
     @Autowired
