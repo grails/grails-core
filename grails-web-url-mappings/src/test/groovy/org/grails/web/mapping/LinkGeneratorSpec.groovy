@@ -301,7 +301,7 @@ class LinkGeneratorSpec extends Specification {
         linkParams.resource = new Widget(id: 1, name: 'Some Widget')
 
         then:
-        link == "/bar/widget/1/show"
+        link == "/bar/widget/show/1"
 
         then:
         linkParams.resource.identCalled
@@ -310,7 +310,7 @@ class LinkGeneratorSpec extends Specification {
         linkParams.controller = 'widgetAdmin'
 
         then:
-        link == "/bar/widgetAdmin/1/show"
+        link == "/bar/widgetAdmin/show/1"
     }
 
     def 'link should take into affect namespace'() {
@@ -366,7 +366,7 @@ class LinkGeneratorSpec extends Specification {
         final callable = { String controller, String action, String namespace, String pluginName, String httpMethod, Map params ->
             [createRelativeURL: { String c, String a, String n, String p, Map parameterValues, String encoding, String fragment ->
 
-                "${namespace ? '/' + namespace : ''}/$controller${parameterValues.id? '/'+parameterValues.id:''}/$action".toString()
+                "${namespace ? '/' + namespace : ''}/$controller/$action${parameterValues.id? '/'+parameterValues.id:''}".toString()
             }] as UrlCreator
         }
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
