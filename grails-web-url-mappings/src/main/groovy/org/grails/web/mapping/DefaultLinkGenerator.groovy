@@ -300,7 +300,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             if (ident) {
                 return ident.toString()
             }
-        } catch (MissingMethodException | IllegalStateException e) {
+        } catch (MissingMethodException | IllegalStateException ignored) {
             // An IllegalStateException occurs if GORM is not initialized.
             // A MissingMethodException if it is not a GormEntity
         }
