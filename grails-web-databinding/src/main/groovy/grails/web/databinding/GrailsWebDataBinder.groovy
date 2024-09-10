@@ -20,7 +20,6 @@ import grails.databinding.*
 import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
 import grails.databinding.events.DataBindingListener
-import grails.util.Environment
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.util.GrailsNameUtils
@@ -45,8 +44,8 @@ import org.grails.datastore.mapping.model.types.ManyToOne
 import org.grails.datastore.mapping.model.types.OneToMany
 import org.grails.datastore.mapping.model.types.OneToOne
 import org.grails.datastore.mapping.model.types.Simple
+import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.web.databinding.DataBindingEventMulticastListener
-import org.grails.web.databinding.DefaultASTDatabindingHelper
 import org.grails.web.databinding.GrailsWebDataBindingListener
 import org.grails.web.databinding.SpringConversionServiceAdapter
 import org.grails.web.databinding.converters.ByteArrayMultipartFileValueConverter
@@ -59,8 +58,6 @@ import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
 
 import java.lang.annotation.Annotation
-import java.lang.reflect.Modifier
-import java.util.concurrent.ConcurrentHashMap
 
 import static grails.web.databinding.DataBindingUtils.*
 
@@ -645,6 +642,10 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Autowired
+    void setMessageSource(PluginAwareResourceBundleMessageSource messageSource) {
+        this.messageSource = messageSource
+    }
+
     void setMessageSource(MessageSource messageSource) {
         this.messageSource = messageSource
     }

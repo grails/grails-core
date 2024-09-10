@@ -15,8 +15,10 @@
  */
 package org.grails.support;
 
-import groovy.lang.GroovyObjectSupport;
 import grails.util.GrailsStringUtils;
+import groovy.lang.GroovyObjectSupport;
+import jakarta.servlet.ServletContext;
+import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.*;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.AbstractResource;
@@ -37,12 +40,12 @@ import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StandardServletEnvironment;
 
-import jakarta.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.nio.charset.StandardCharsets;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
@@ -329,27 +332,15 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public String getMessage(String code, Object[] args, String defaultMessage, Locale locale) {
-        MessageSource messageSource = (MessageSource)getBean("messageSource");
-        if (messageSource == null) {
-            throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
-        }
-        return messageSource.getMessage(code, args, defaultMessage, locale);
+        return getMessageSource().getMessage(code, args, defaultMessage, locale);
     }
 
     public String getMessage(String code, Object[] args, Locale locale) throws NoSuchMessageException {
-        MessageSource messageSource = (MessageSource)getBean("messageSource");
-        if (messageSource == null) {
-            throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
-        }
-        return messageSource.getMessage(code, args, locale);
+        return getMessageSource().getMessage(code, args, locale);
     }
 
     public String getMessage(MessageSourceResolvable resolvable, Locale locale) throws NoSuchMessageException {
-        MessageSource messageSource = (MessageSource)getBean("messageSource");
-        if (messageSource == null) {
-            throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
-        }
-        return messageSource.getMessage(resolvable, locale);
+        return getMessageSource().getMessage(resolvable, locale);
     }
 
     public Resource[] getResources(String locationPattern) throws IOException {
@@ -409,10 +400,23 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return new StandardServletEnvironment();
     }
 
+    private MessageSource getMessageSource() {
+        try {
+            return getBean("messageSource", StaticMessageSource.class);
+        } catch (Exception e) {
+            try {
+                return getBean("messageSource", PluginAwareResourceBundleMessageSource.class);
+            } catch (Exception ignored) {
+            }
+        }
+
+        throw new BeanCreationException("No bean [messageSource] found in MockApplicationContext");
+    }
+
     public class MockResource extends AbstractResource {
 
         private String contents = "";
-        private String location;
+        private final String location;
 
         public MockResource(String location) {
             this.location = location;
@@ -433,7 +437,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
 
         public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(contents.getBytes("UTF-8"));
+            return new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
         }
     }
 
