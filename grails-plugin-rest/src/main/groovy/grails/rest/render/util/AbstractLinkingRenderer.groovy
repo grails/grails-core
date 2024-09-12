@@ -23,7 +23,7 @@ import grails.rest.render.AbstractIncludeExcludeRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.RendererRegistry
 import grails.util.Environment
-import grails.util.GrailsMessageSource
+import grails.util.GrailsMessageSourceUtils
 import grails.util.GrailsWebUtil
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeType
@@ -66,7 +66,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
 
     @Autowired
     setMessageSource(List<MessageSource> messageSources) {
-        setMessageSource(GrailsMessageSource.getMessageSource(messageSources))
+        setMessageSource(GrailsMessageSourceUtils.findPreferredMessageSource(messageSources))
     }
 
     void setMessageSource(MessageSource messageSource) {

@@ -30,8 +30,8 @@ import org.springframework.context.MessageSource
  */
 
 @CompileStatic
-class GrailsMessageSource {
-    static MessageSource getMessageSource(List<MessageSource> messageSources){
+class GrailsMessageSourceUtils {
+    static MessageSource findPreferredMessageSource(List<MessageSource> messageSources){
         if(!messageSources) {
             return null
         }

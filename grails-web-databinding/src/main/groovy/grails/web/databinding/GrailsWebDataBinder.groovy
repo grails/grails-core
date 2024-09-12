@@ -21,7 +21,7 @@ import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
 import grails.databinding.events.DataBindingListener
 import grails.util.GrailsClassUtils
-import grails.util.GrailsMessageSource
+import grails.util.GrailsMessageSourceUtils
 import grails.util.GrailsMetaClassUtils
 import grails.util.GrailsNameUtils
 import grails.validation.DeferredBindingActions
@@ -643,7 +643,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
     @Autowired
     setMessageSource(List<MessageSource> messageSources) {
-        setMessageSource(GrailsMessageSource.getMessageSource(messageSources))
+        setMessageSource(GrailsMessageSourceUtils.findPreferredMessageSource(messageSources))
     }
 
     void setMessageSource(MessageSource messageSource) {

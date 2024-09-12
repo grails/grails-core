@@ -17,14 +17,13 @@ package grails.rest.render.errors
 
 import grails.rest.render.ContainerRenderer
 import grails.util.Environment
-import grails.util.GrailsMessageSource
+import grails.util.GrailsMessageSourceUtils
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import grails.web.mapping.LinkGenerator
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
@@ -52,7 +51,7 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
 
     @Autowired
     setMessageSource(List<MessageSource> messageSources) {
-        setMessageSource(GrailsMessageSource.getMessageSource(messageSources))
+        setMessageSource(GrailsMessageSourceUtils.findPreferredMessageSource(messageSources))
     }
 
     void setMessageSource(MessageSource messageSource) {
