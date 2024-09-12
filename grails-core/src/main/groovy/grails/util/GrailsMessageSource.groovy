@@ -42,7 +42,7 @@ class GrailsMessageSource {
 
         MessageSource firstGrailsSpring = messageSources.find {messageSource ->
             String className = messageSource.class.name
-            // use the first Grails or Spring mMessageSource
+            // use the first Grails or Spring MessageSource
             className.startsWith("org.grails") || className.startsWith("grails") || className.startsWith("org.springframework")
         }
 
