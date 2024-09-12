@@ -23,6 +23,7 @@ import grails.rest.render.AbstractIncludeExcludeRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.RendererRegistry
 import grails.util.Environment
+import grails.util.GrailsMessageSource
 import grails.util.GrailsWebUtil
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeType
@@ -61,9 +62,16 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     public static final String TEMPLATED_ATTRIBUTE = 'templated'
     public static final String DEPRECATED_ATTRIBUTE = 'deprecated'
 
-    @Autowired
-    @Qualifier("pluginAwareResourceBundleMessageSource")
     MessageSource messageSource
+
+    @Autowired
+    setMessageSource(List<MessageSource> messageSources) {
+        messageSource = GrailsMessageSource.getMessageSource(messageSources)
+    }
+
+    void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource
+    }
 
     @Autowired
     LinkGenerator linkGenerator
