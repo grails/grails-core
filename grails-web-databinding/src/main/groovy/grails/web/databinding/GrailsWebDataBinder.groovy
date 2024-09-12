@@ -643,7 +643,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
     @Autowired
     setMessageSource(List<MessageSource> messageSources) {
-        messageSource = GrailsMessageSource.getMessageSource(messageSources)
+        setMessageSource(GrailsMessageSource.getMessageSource(messageSources))
     }
 
     void setMessageSource(MessageSource messageSource) {

@@ -66,7 +66,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
 
     @Autowired
     setMessageSource(List<MessageSource> messageSources) {
-        messageSource = GrailsMessageSource.getMessageSource(messageSources)
+        setMessageSource(GrailsMessageSource.getMessageSource(messageSources))
     }
 
     void setMessageSource(MessageSource messageSource) {

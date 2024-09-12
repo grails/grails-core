@@ -19,7 +19,7 @@ class DefaultConstraintEvaluatorFactoryBean implements FactoryBean<ConstraintsEv
 
     @Autowired
     setMessageSource(List<MessageSource> messageSources) {
-        messageSource = GrailsMessageSource.getMessageSource(messageSources)
+        setMessageSource(GrailsMessageSource.getMessageSource(messageSources))
     }
 
     void setMessageSource(MessageSource messageSource) {
