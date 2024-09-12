@@ -1,7 +1,35 @@
+/*
+ * Copyright 2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package grails.util
 
+import groovy.transform.CompileStatic
 import org.springframework.context.MessageSource
 
+
+/**
+ * A simple class that selects a single {@link  org.springframework.context.MessageSource  MessageSource}
+ * when two or more are present in the ApplicationContext.
+ * It defaults to the Grails or Spring Message Source, if present.
+ *
+ * @author James Fredley
+ * @since 7.0
+ */
+
+@CompileStatic
 class GrailsMessageSource {
     static MessageSource getMessageSource(List<MessageSource> messageSources){
         if(!messageSources) {
@@ -12,16 +40,18 @@ class GrailsMessageSource {
             return messageSources.get(0)
         }
 
-        messageSources.each { messageSource ->
+        MessageSource firstGrailsSpring = messageSources.find {messageSource ->
             String className = messageSource.class.name
-            // use the grails or spring message source
-            if(className.startsWith("org.grails") || className.startsWith("grails")
-                    || className.startsWith("org.springframework")) {
-                return messageSource
-            }
+            // use the first Grails or Spring mMessageSource
+            className.startsWith("org.grails") || className.startsWith("grails") || className.startsWith("org.springframework")
         }
 
-        //return the first message source
+        // return the first Grails or Spring MessageSource
+        if(firstGrailsSpring) {
+            return firstGrailsSpring
+        }
+
+        // return the first MessageSource from the list
         return messageSources.get(0)
     }
 }
