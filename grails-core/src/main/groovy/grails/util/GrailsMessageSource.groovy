@@ -23,7 +23,7 @@ import org.springframework.context.MessageSource
 /**
  * A simple class that selects a single {@link  org.springframework.context.MessageSource  MessageSource}
  * when two or more are present in the ApplicationContext.
- * It defaults to the Grails or Spring Message Source, if present.
+ * It defaults to the Grails or Spring {@link  org.springframework.context.MessageSource  MessageSource}, if present.
  *
  * @author James Fredley
  * @since 7.0
