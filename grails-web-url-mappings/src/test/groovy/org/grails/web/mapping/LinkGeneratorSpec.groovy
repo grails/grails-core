@@ -1,5 +1,6 @@
 package org.grails.web.mapping
 
+import grails.artefact.Artefact
 import grails.core.DefaultGrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
 import grails.util.GrailsWebMockUtil
@@ -289,6 +290,29 @@ class LinkGeneratorSpec extends Specification {
             cacheKey == "somePrefix[resource:org.grails.web.mapping.Widget->2]"
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/13627')
+    def 'resource links should use ident and allow controller override'() {
+        given:
+        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        MockHttpServletRequest request = webRequest.currentRequest
+        linkParams.method = 'GET'
+
+        when: 'a resource is specified, ident() is used for id'
+        linkParams.resource = new Widget(id: 1, name: 'Some Widget')
+
+        then:
+        link == "/bar/widget/show/1"
+
+        then:
+        linkParams.resource.identCalled
+
+        when: "A controller is specified"
+        linkParams.controller = 'widgetAdmin'
+
+        then:
+        link == "/bar/widgetAdmin/show/1"
+    }
+
     def 'link should take into affect namespace'() {
         given:
         final webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -341,7 +365,8 @@ class LinkGeneratorSpec extends Specification {
         def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
         final callable = { String controller, String action, String namespace, String pluginName, String httpMethod, Map params ->
             [createRelativeURL: { String c, String a, String n, String p, Map parameterValues, String encoding, String fragment ->
-                "${namespace ? '/' + namespace : ''}/$controller/$action".toString()
+
+                "${namespace ? '/' + namespace : ''}/$controller/$action${parameterValues.id? '/'+parameterValues.id:''}".toString()
             }] as UrlCreator
         }
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
@@ -381,11 +406,14 @@ class LinkGeneratorSpec extends Specification {
     }
 }
 
+@Artefact('Domain')
 class Widget {
     Long id
     String name
+    boolean identCalled = false
     
     Long ident() {
+        identCalled = true
         id
     }
     
