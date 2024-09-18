@@ -178,3 +178,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
 }
 
 task assemble(dependsOn: zipDist)
+
+project.tasks.withType(AbstractArchiveTask).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
