@@ -157,12 +157,12 @@ group = "org.grails"
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
 ext {
-    distInstallDir = new File(project.buildDir, "dist-tmp")
-    homeDistDir = new File(project.buildDir, "install/dist")
-    homeBinDir = new File(project.buildDir, "install/bin")
-    homeConfDir = new File(project.buildDir, "install/conf")
-    homeLibDir = new File(project.buildDir, "install/lib")
-    homeSrcDir = new File(project.buildDir, "install/src")
+    distInstallDir = layout.buildDirectory.dir("dist-tmp").get()
+    homeDistDir = layout.buildDirectory.dir("install/dist").get()
+    homeBinDir = layout.buildDirectory.dir("install/bin").get()
+    homeConfDir = layout.buildDirectory.dir("install/conf").get()
+    homeLibDir = layout.buildDirectory.dir("install/lib").get()
+    homeSrcDir = layout.buildDirectory.dir("install/src").get()
 }
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
@@ -417,7 +417,14 @@ subprojects { project ->
             shouldRunAfter(tasks.withType(Sign))
         }
 
+        tasks.register("installToHomeDist", Copy) {
+            dependsOn sourcesJar, javadocJar, jar
+            from layout.buildDirectory.dir("libs").get()
+            into distInstallDir
+        }
+
         tasks.withType(PublishToMavenLocal).configureEach {
+            dependsOn installToHomeDist
             doLast {
                 ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
                     fileset dir: distInstallDir
