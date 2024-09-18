@@ -29,6 +29,7 @@ import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
 import groovy.lang.Closure;
 import groovy.transform.CompilationUnitAware;
+import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.apache.groovy.ast.tools.ClassNodeUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -97,7 +98,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
 import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
@@ -843,11 +843,16 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
             final ClassNode commandObjectNode, final String paramName, SourceUnit source) {
-        final ArgumentListExpression initializeCommandObjectArguments = args(classX(commandObjectNode), constX(paramName));
-        final MethodCallExpression initializeCommandObjectMethodCall = callThisX("initializeCommandObject", initializeCommandObjectArguments);
+
+        final ArgumentListExpression initializeCommandObjectArguments = new ArgumentListExpression();
+        initializeCommandObjectArguments.addExpression(new ClassExpression(commandObjectNode));
+        initializeCommandObjectArguments.addExpression(new ConstantExpression(paramName));
+        final MethodCallExpression initializeCommandObjectMethodCall = new MethodCallExpression(new VariableExpression("this"), "initializeCommandObject", initializeCommandObjectArguments);
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
-        final Expression assignCommandObjectToParameter = declX(localVarX(paramName), initializeCommandObjectMethodCall);
-        wrapper.addStatement(stmt(assignCommandObjectToParameter));
+        
+        final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
+        
+        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
     }
 
     /**
