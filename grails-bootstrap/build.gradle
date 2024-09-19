@@ -1,8 +1,15 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    compileOnly ( "org.apache.groovy:groovy-xml:$groovyVersion" )
-    compileOnly ( "org.apache.groovy:groovy-templates:$groovyVersion" )
+    // compile grails-bootstap with the Groovy version provided by Gradle
+    // to ensure build compatibility with Gradle, currently Groovy 3.0.x
+    // when used by grails-gradle-plugin
+    // see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
+    compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-ant:$GroovySystem.version"
+
     api "org.yaml:snakeyaml:$snakeyamlVersion"
     api "io.micronaut:micronaut-inject:$micronautVersion"
     
@@ -12,7 +19,6 @@ dependencies {
     compileOnly("net.java.dev.jna:jna:$jnaVersion")
 
     // Ant
-    compileOnly "org.apache.groovy:groovy-ant:$groovyVersion"
     testImplementation ( "org.apache.groovy:groovy-xml:$groovyVersion" )
     testImplementation ( "org.apache.groovy:groovy-templates:$groovyVersion" )
     testImplementation("org.fusesource.jansi:jansi:$jansiVersion")
