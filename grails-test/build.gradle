@@ -1,13 +1,13 @@
 dependencies {
 
-    api "org.springframework:spring-tx:${springVersion}"
+    api "org.springframework:spring-tx:$springVersion"
 
     api "org.springframework.boot:spring-boot-test:$springBootVersion"
     // Testing
     api "org.apache.groovy:groovy-test-junit5:$groovyVersion"
     api("org.apache.groovy:groovy-test:$groovyVersion")
     api("org.spockframework:spock-core:$spockVersion") { transitive = false }
-    api "org.junit.platform:junit-platform-runner:1.10.2"
+    api "org.junit.platform:junit-platform-runner:$junitPlatformRunnerVersion"
 
 
     api project(":grails-plugin-mimetypes")
@@ -19,9 +19,9 @@ dependencies {
     api "org.fusesource.jansi:jansi:$jansiVersion"
 
     // Ant
-    api "org.apache.ant:ant:${antVersion}"
-    api "org.apache.ant:ant-junit:${antVersion}"
+    api "org.apache.ant:ant:$antVersion"
+    api "org.apache.ant:ant-junit:$antVersion"
 
     // needed for Spock
-    api "org.objenesis:objenesis:${objenesisVersion}"
+    api "org.objenesis:objenesis:$objenesisVersion"
 }

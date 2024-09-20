@@ -30,35 +30,35 @@ dependencies {
         exclude group: "org.codehaus.groovy", module: "groovy"
     }
     compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
-    implementation("org.apache.maven:maven-resolver-provider:3.9.9") {
+    implementation("org.apache.maven:maven-resolver-provider:$apacheMavenVersion") {
         exclude group: "com.google.guava", module: "guava"
     }
-    compileOnly "net.sf.jopt-simple:jopt-simple:5.0.4"
+    compileOnly "net.sf.jopt-simple:jopt-simple:$joptSimpleVersion"
 
-    implementation("org.apache.maven:maven-settings-builder:3.6.3") {
+    implementation("org.apache.maven:maven-settings-builder:$apacheMavenVersion") {
         exclude group: "javax.inject", module: "javax.inject"
     }
 
-    implementation("org.sonatype.plexus:plexus-sec-dispatcher:1.4")
-    implementation("org.sonatype.sisu:sisu-inject-plexus:2.6.0") {
+    implementation "org.sonatype.plexus:plexus-sec-dispatcher:$plexusSecDispatcherVersion"
+    implementation("org.sonatype.sisu:sisu-inject-plexus:$plexusSisuInjectVersion") {
         exclude group: "javax.enterprise", module: "cdi-api"
         exclude group: "org.sonatype.sisu", module: "sisu-inject-bean"
     }
 
-    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.22")
-    implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.22")
-    implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.9.22")
-    implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.22") {
+    implementation("org.apache.maven.resolver:maven-resolver-connector-basic:$apacheMavenResolverVersion")
+    implementation("org.apache.maven.resolver:maven-resolver-impl:$apacheMavenResolverVersion")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-file:$apacheMavenResolverVersion")
+    implementation("org.apache.maven.resolver:maven-resolver-transport-http:$apacheMavenResolverVersion") {
         exclude group: "org.slf4j", module:"jcl-over-slf4j"
         exclude group: "commons-codec", module:"commons-codec"
     }
-    implementation("commons-codec:commons-codec:1.17.1")
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
 
-    testImplementation "net.sf.expectit:expectit-core:0.9.0"
-    testImplementation "com.github.jnr:jnr-posix:3.1.19"
+    testImplementation "net.sf.expectit:expectit-core:$expectitCoreVersion"
+    testImplementation "com.github.jnr:jnr-posix:$jnrPosixVersion"
 
     runtimeOnly "org.slf4j:slf4j-simple:$slf4jVersion"
-    runtimeOnly "org.codehaus.plexus:plexus-component-api:1.0-alpha-33"
+    runtimeOnly "org.codehaus.plexus:plexus-component-api:$plexusComponentApiVersion"
 
 }
 

@@ -6,7 +6,7 @@ dependencies {
     api "org.yaml:snakeyaml:$snakeyamlVersion"
     api "io.micronaut:micronaut-inject:$micronautVersion"
     
-    compileOnly("io.methvin:directory-watcher:$methvinDirectoryWatcherVersion")
+    compileOnly("io.methvin:directory-watcher:$directoryWatcherVersion")
     compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
     compileOnly("jline:jline:$jlineVersion")
     compileOnly("net.java.dev.jna:jna:$jnaVersion")
