@@ -18,13 +18,13 @@ dependencies {
     compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
 
+    runtimeOnly "org.apache.groovy:groovy-ant:$groovyVersion"
+    runtimeOnly "org.apache.groovy:groovy-json:$groovyVersion"
+    runtimeOnly "org.apache.groovy:groovy-jmx:$groovyVersion"
+    runtimeOnly "org.apache.groovy:groovy-xml:$groovyVersion"
     api project(":grails-bootstrap")
     api project(":grails-gradle-model")
     api "org.apache.ant:ant:$antVersion"
-    api "org.apache.groovy:groovy-ant:$groovyVersion"
-    api "org.apache.groovy:groovy-json:$groovyVersion"
-    api "org.apache.groovy:groovy-jmx:$groovyVersion"
-    api "org.apache.groovy:groovy-xml:$groovyVersion"
     api "org.fusesource.jansi:jansi:$jansiVersion"
     api "jline:jline:$jlineVersion"
     api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
