@@ -13,17 +13,15 @@ dependencies {
     api "org.yaml:snakeyaml:$snakeyamlVersion"
     api "io.micronaut:micronaut-inject:$micronautVersion"
     
-    compileOnly("io.methvin:directory-watcher:$directoryWatcherVersion")
-    compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
-    compileOnly("jline:jline:$jlineVersion")
-    compileOnly("net.java.dev.jna:jna:$jnaVersion")
+    compileOnly "io.methvin:directory-watcher:$directoryWatcherVersion"
+    compileOnly "org.fusesource.jansi:jansi:$jansiVersion"
+    compileOnly "jline:jline:$jlineVersion"
+    compileOnly "net.java.dev.jna:jna:$jnaVersion"
 
-    // Ant
-    testImplementation ( "org.apache.groovy:groovy-xml:$groovyVersion" )
-    testImplementation ( "org.apache.groovy:groovy-templates:$groovyVersion" )
-    testImplementation("org.fusesource.jansi:jansi:$jansiVersion")
-    testImplementation("jline:jline:$jlineVersion")
-
+    testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
+    testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
+    testImplementation "org.fusesource.jansi:jansi:$jansiVersion"
+    testImplementation "jline:jline:$jlineVersion"
 }
 
 processResources {
