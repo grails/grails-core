@@ -30,6 +30,7 @@ public class StringEscapeCategory {
     }
 
     public static String encodeAsHtml(String str) {
+        // StringEscapeUtils.escapeHtml() has become escapeHtml4() in org.apache.commons.lang3
         return StringEscapeUtils.escapeHtml4(str);
     }
 }
