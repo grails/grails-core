@@ -26,7 +26,7 @@ dependencies {
                 project(':grails-spring')
     testImplementation "org.grails.plugins:converters:$legacyConvertersVersion"
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -84,7 +84,7 @@ dependencies {
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 

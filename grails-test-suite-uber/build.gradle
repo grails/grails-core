@@ -11,7 +11,7 @@ dependencies {
     api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntimeOnly "com.h2database:h2:$h2Version"
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
@@ -25,7 +25,7 @@ dependencies {
                 project(":grails-plugin-databinding"),
                 project(':grails-spring')
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
