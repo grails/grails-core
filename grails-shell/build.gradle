@@ -17,11 +17,15 @@ dependencies {
     // see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
     compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
+    compileOnly "org.apache.groovy:groovy-ant:$GroovySystem.version"
+    compileOnly "org.apache.groovy:groovy-json:$GroovySystem.version"
 
     runtimeOnly "org.apache.groovy:groovy-ant:$groovyVersion"
     runtimeOnly "org.apache.groovy:groovy-json:$groovyVersion"
     runtimeOnly "org.apache.groovy:groovy-jmx:$groovyVersion"
     runtimeOnly "org.apache.groovy:groovy-xml:$groovyVersion"
+
     api project(":grails-bootstrap")
     api project(":grails-gradle-model")
     api "org.apache.ant:ant:$antVersion"
@@ -62,6 +66,10 @@ dependencies {
 
     testImplementation "net.sf.expectit:expectit-core:$expectitCoreVersion"
     testImplementation "com.github.jnr:jnr-posix:$jnrPosixVersion"
+    testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
+    testImplementation "org.apache.groovy:groovy-json:$groovyVersion"
+    testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
+    testImplementation "org.apache.groovy:groovy-ant:$groovyVersion"
 
     runtimeOnly "org.slf4j:slf4j-simple:$slf4jVersion"
     runtimeOnly "org.codehaus.plexus:plexus-component-api:$plexusComponentApiVersion"
