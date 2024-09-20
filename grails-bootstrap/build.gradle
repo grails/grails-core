@@ -10,13 +10,13 @@ dependencies {
     compileOnly "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-ant:$GroovySystem.version"
 
-    api "org.yaml:snakeyaml:$snakeyamlVersion"
-    api "io.micronaut:micronaut-inject:$micronautVersion"
-    
     compileOnly "io.methvin:directory-watcher:$directoryWatcherVersion"
     compileOnly "org.fusesource.jansi:jansi:$jansiVersion"
     compileOnly "jline:jline:$jlineVersion"
     compileOnly "net.java.dev.jna:jna:$jnaVersion"
+
+    api "org.yaml:snakeyaml:$snakeyamlVersion"
+    api "io.micronaut:micronaut-inject:$micronautVersion"
 
     testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
     testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
