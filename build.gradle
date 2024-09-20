@@ -505,7 +505,7 @@ subprojects { project ->
             testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
             testImplementation("org.spockframework:spock-core:$spockVersion") { transitive = false }
             // Required by Spock's Mocking
-            testImplementation "cglib:cglib-nodep:$cglibVersion"
+            testRuntimeOnly "net.bytebuddy:byte-buddy:$bytebuddyVersion"
             testImplementation "org.objenesis:objenesis:$objenesisVersion"
         }
     }
