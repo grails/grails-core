@@ -16,12 +16,12 @@ dependencies {
     compileOnly "net.java.dev.jna:jna:$jnaVersion"
 
     api "org.yaml:snakeyaml:$snakeyamlVersion"
-    api "io.micronaut:micronaut-inject:$micronautVersion"
+    api "io.micronaut:micronaut-inject:$micronautVersion", {
+        exclude group: 'org.apache.groovy'
+    }
 
-    testRuntimeOnly "org.apache.groovy:groovy-xml:$groovyVersion"
-    testCompileOnly "org.apache.groovy:groovy-xml:$groovyVersion"
-    testRuntimeOnly "org.apache.groovy:groovy-templates:$groovyVersion"
-    testCompileOnly "org.apache.groovy:groovy-templates:$groovyVersion"
+    testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
+    testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
     testImplementation "org.fusesource.jansi:jansi:$jansiVersion"
     testImplementation "jline:jline:$jlineVersion"
 }
