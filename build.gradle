@@ -214,16 +214,6 @@ if (isReleaseVersion) {
 }
 
 allprojects {
-
-    // FORCE UPGRADE OF GROOVY IN DEPENDENCIES TO GROOVY 4
-    configurations.configureEach {
-        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.codehaus.groovy' && details.requested.name != 'groovy-bom') {
-                details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: groovyVersion)
-            }
-        }
-    }
-
     repositories {
         mavenLocal()
         mavenCentral()
