@@ -84,7 +84,7 @@ dependencies {
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 

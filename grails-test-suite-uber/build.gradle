@@ -11,7 +11,7 @@ dependencies {
     api "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntimeOnly "com.h2database:h2:$h2Version"
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 

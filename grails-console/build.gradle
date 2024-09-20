@@ -8,9 +8,9 @@ dependencies {
             "net.java.dev.jna:jna:$jnaVersion"
 
     api("org.springframework.boot:spring-boot:$springBootVersion")
-    api "org.springframework:spring-test:${springVersion}"
+    api "org.springframework:spring-test:$springVersion"
 
-    api "org.springframework:spring-web:${springVersion}"
+    api "org.springframework:spring-web:$springVersion"
 
     api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
 }

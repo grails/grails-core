@@ -47,7 +47,7 @@ dependencies {
     testRuntimeOnly "com.h2database:h2:$h2Version"
 
     //    // Required for AspectJ support
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 

@@ -12,8 +12,8 @@ dependencies {
     api "org.apache.groovy:groovy-templates:$groovyVersion"
     api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
 
-    api "org.springframework:spring-webmvc:${springVersion}"
-    api "org.springframework:spring-context-support:${springVersion}"
+    api "org.springframework:spring-webmvc:$springVersion"
+    api "org.springframework:spring-context-support:$springVersion"
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    compileOnly "com.github.spotbugs:spotbugs-annotations:$jsr305Version"
 }
