@@ -9,7 +9,6 @@ buildscript {
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:$gradleExtraConfigurationsPluginVersion"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
-        classpath "org.glassfish.jaxb:jaxb-runtime:$jaxbImplVersion"
         classpath "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$gradleLicensePluginVersion"
     }
 }
