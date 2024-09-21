@@ -14,18 +14,21 @@ jobs:
     permissions:
       contents: read  #  to fetch code (actions/checkout)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['17']
     env:
       WORKSPACE: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
       - name: Run Build
         id: build
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
