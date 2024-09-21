@@ -26,15 +26,6 @@ dependencies {
     testImplementation "jline:jline:$jlineVersion"
 }
 
-configurations.configureEach {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group == 'org.codehaus.groovy' && details.requested.name != 'groovy-bom') {
-            details.useTarget(group: 'org.codehaus.groovy', name: details.requested.name, version: GroovySystem.version)
-        }
-    }
-}
-
-
 processResources {
     inputs.property "version", version
     filter(ReplaceTokens, tokens:[version:version])
