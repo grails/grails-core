@@ -213,18 +213,6 @@ if (isReleaseVersion) {
     }
 }
 
-// FORCE UPGRADE OF GROOVY IN DEPENDENCIES TO GROOVY 4
-// except in projects that will be run by Gradle during the build
-configure(allprojects - project(':grails-shell') - project(':grails-bootstrap') - project(':grails-gradle-model')){
-    configurations.configureEach {
-        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.codehaus.groovy' && details.requested.name != 'groovy-bom') {
-                details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: groovyVersion)
-            }
-        }
-    }
-}
-
 allprojects {
     repositories {
         mavenLocal()
