@@ -183,10 +183,10 @@ if (jointBuildGroovyJarProperty) {
         throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
     }
 } else {
-    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
-        exclude module:"commons-cli"
-        exclude module:"ant"
-    }
+//    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
+//        exclude module:"commons-cli"
+//        exclude module:"ant"
+//    }
 }
 
 if (isReleaseVersion) {
