@@ -18,8 +18,8 @@ dependencies {
     compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
-    compileOnly "org.apache.groovy:groovy-ant:$GroovySystem.version"
-    compileOnly "org.apache.groovy:groovy-json:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-ant:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-json:$GroovySystem.version"
 
     runtimeOnly "org.apache.groovy:groovy-ant:$groovyVersion"
     runtimeOnly "org.apache.groovy:groovy-json:$groovyVersion"
