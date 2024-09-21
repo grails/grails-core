@@ -21,7 +21,7 @@ dependencies {
     }
 
     testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
-    testImplementation "org.apache.groovy:groovy-templates:$groovyVersion "
+    testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
     testImplementation "org.fusesource.jansi:jansi:$jansiVersion"
     testImplementation "jline:jline:$jlineVersion"
 }
