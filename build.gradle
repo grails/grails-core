@@ -183,10 +183,10 @@ if (jointBuildGroovyJarProperty) {
         throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
     }
 } else {
-//    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
-//        exclude module:"commons-cli"
-//        exclude module:"ant"
-//    }
+    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
+        exclude module:"commons-cli"
+        exclude module:"ant"
+    }
 }
 
 if (isReleaseVersion) {
@@ -472,8 +472,8 @@ subprojects { project ->
         documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
-        if (project.name =~ /^(grails-bootstrap)/ || project.name =~ /^(grails-gradle-model)/) {
-            compileOnly groovyDependency
+        if (project.name =~ /^(grails-bootstrap)/ || project.name =~ /^(grails-gradle-model)/ || project.name =~ /^(grails-shell)/) {
+            // do nothing
         } else {
             api groovyDependency
         }
