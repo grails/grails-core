@@ -20,8 +20,8 @@ dependencies {
         exclude group: 'org.apache.groovy'
     }
 
-    testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
-    testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
+    testImplementation "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
+    testImplementation "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
     testImplementation "org.fusesource.jansi:jansi:$jansiVersion"
     testImplementation "jline:jline:$jlineVersion"
 }
