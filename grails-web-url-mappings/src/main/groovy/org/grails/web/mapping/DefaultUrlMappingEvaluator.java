@@ -147,10 +147,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     @Override
     public List<UrlMapping> evaluateMappings(Class<?> mappingsClass) {
-        var obj = (GroovyObject) BeanUtils.instantiateClass(mappingsClass);
-        if (obj instanceof Script script) {
-            var binding = new Binding();
-            var closure = new MappingCapturingClosure(script);
+        GroovyObject obj = (GroovyObject) BeanUtils.instantiateClass(mappingsClass);
+        if (obj instanceof Script) {
+            Script script = (Script) obj;
+            Binding binding = new Binding();
+            MappingCapturingClosure closure = new MappingCapturingClosure(script);
             binding.setVariable("mappings", closure);
             script.setBinding(binding);
             script.run();
@@ -596,8 +597,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             urlDefiningMode = false;
                         }
                         args = args != null && args.length > 0 ? args : new Object[] {Collections.emptyMap()};
-                        if (args[0] instanceof Closure<?> callable) {
-                            var urlData = createUrlMappingData(mappedURI, isResponseCode);
+                        if (args[0] instanceof Closure<?>) {
+                            UrlMappingData urlData = createUrlMappingData(mappedURI, isResponseCode);
+
+                            Closure<?> callable = (Closure<?>) args[0];
 
                             if (delegate != null) {
                                 callable.setDelegate(delegate);
@@ -638,7 +641,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             return urlMapping;
                         }
 
-                        if (args[0] instanceof Map<?,?> namedArguments) {
+                        if (args[0] instanceof Map) {
+                            Map<?,?> namedArguments = (Map<?,?>) args[0];
                             String version = null;
 
                             if (namedArguments.containsKey(UrlMapping.VERSION)) {
@@ -704,7 +708,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         }
                     }
                 } else if ((!urlDefiningMode || (!parentResources.isEmpty() && parentResources.peek().isGroup)) && CONSTRAINTS.equals(mappedURI)) {
-                    if (args.length > 0 && (args[0] instanceof Closure<?> callable)) {
+                    if (args.length > 0 && (args[0] instanceof Closure<?>)) {
+                        Closure<?> callable = (Closure<?>) args[0];
                         var builder = constraintsEvaluator.newConstrainedPropertyBuilder(UrlMapping.class);
                         for (var constrainedProperty : currentConstraints) {
                             builder.getConstrainedProperties().put(constrainedProperty.getPropertyName(), constrainedProperty);
@@ -729,7 +734,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
             Object excludesObject = namedArguments.get("excludes");
             if (excludesObject != null) {
-                if (excludesObject instanceof List<?> excludeList) {
+                if (excludesObject instanceof List<?>) {
+                    List<?> excludeList = (List<?>) excludesObject;
                     for (Object exc : excludeList) {
                         if (exc != null) {
                             includes.remove(exc.toString().toLowerCase());
@@ -741,7 +747,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
             Object includesObject = namedArguments.get("includes");
             if (includesObject != null) {
-                if (includesObject instanceof List<?> includeList) {
+                if (includesObject instanceof List<?>) {
+                    List<?> includeList = (List<?>) includesObject;
                     includes.clear();
                     for (Object inc : includeList) {
                         if (inc != null) {
@@ -1079,7 +1086,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             var exceptionArg = getException(namedArguments, bindingVariables);
 
             if (isResponseCode && exceptionArg != null) {
-                if (exceptionArg instanceof Class<?> exClass) {
+                if (exceptionArg instanceof Class<?>) {
+                    Class<?> exClass = (Class<?>) exceptionArg;
                     if (Throwable.class.isAssignableFrom(exClass)) {
                         ((ResponseCodeUrlMapping) urlMapping).setExceptionType(exClass);
                     } else {

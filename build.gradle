@@ -216,10 +216,13 @@ if (isReleaseVersion) {
 allprojects {
 
     // FORCE UPGRADE OF GROOVY IN DEPENDENCIES TO GROOVY 4
-    configurations.configureEach {
-        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.codehaus.groovy' && details.requested.name != 'groovy-bom') {
-                details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: groovyVersion)
+    // except in projects that will be run by Gradle during the build
+    if (!compiledByGradleGroovyVersion(project)) {
+        configurations.configureEach {
+            resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                if (details.requested.group == 'org.codehaus.groovy' && details.requested.name != 'groovy-bom') {
+                    details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: groovyVersion)
+                }
             }
         }
     }
@@ -435,9 +438,6 @@ subprojects { project ->
     if (project.name == 'grails-dependencies') return
     if (project.name == 'grails-bom') return
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-
     if (project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
             api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
@@ -478,14 +478,17 @@ subprojects { project ->
     dependencies {
         documentation("org.fusesource.jansi:jansi:$jansiVersion")
         documentation("jline:jline:$jlineVersion")
-        documentation "org.apache.groovy:groovy-ant:$groovyVersion"
-        documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
-        if (project.name =~ /^(grails-bootstrap)/ || project.name =~ /^(grails-gradle-model)/) {
-            compileOnly groovyDependency
+        if (compiledByGradleGroovyVersion(project)) {
+            documentation "org.codehaus.groovy:groovy:$GroovySystem.version"
+            documentation "org.codehaus.groovy:groovy-ant:$GroovySystem.version"
+            documentation "org.codehaus.groovy:groovy-cli-picocli:$GroovySystem.version"
         } else {
             api groovyDependency
+            documentation "org.apache.groovy:groovy:$groovyVersion"
+            documentation "org.apache.groovy:groovy-ant:$groovyVersion"
+            documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
         }
 
         testImplementation "org.apache.groovy:groovy-test-junit5:$groovyVersion"
@@ -602,6 +605,12 @@ subprojects { project ->
             jvmArgs += debugArguments
         }
     }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 }
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
@@ -642,4 +651,12 @@ project.afterEvaluate {
             }
         }
     }
+}
+
+// compile with the Groovy version provided by Gradle
+// to ensure build compatibility with Gradle, currently Groovy 3.0.x
+// when used by grails-gradle-plugin
+// see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
+boolean compiledByGradleGroovyVersion(Project currentProject) {
+    currentProject.name in ['grails-bootstrap', 'grails-gradle-model', 'grails-shell']
 }
