@@ -64,7 +64,7 @@ tasks.register("stubs") {
 
 tasks.register('docs') {
     group = 'documentation'
-    outputs.dir(project.layout.buildDirectory.dir('docs'))
+    outputs.dir(project.layout.buildDirectory.dir('docs').get())
 }
 
 task javadoc(type:Javadoc, group: 'documentation') {
@@ -118,14 +118,14 @@ tasks.register('groovydoc', Groovydoc) {
 }
 
 tasks.register("fetchGrailsDocsSource", FetchGrailsDocSourceTask) {
-    checkoutDir = project.layout.buildDirectory.dir("checkout")
+    checkoutDir = project.layout.buildDirectory.dir("checkout").get()
     grailsDocBranch = "7.0.x"
 }
 
 task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], group: 'documentation') {
     startParameter.useEmptySettings()
     dir = grailsDocSrc
-    tasks = ["clean", "assemble"]
+    tasks = []
 
     doFirst {
         ext.oldGrailsHome = System.getProperty("grails.home")
@@ -145,8 +145,8 @@ task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], 
         }
 
         copy {
-            from file("${buildDir}/grails-docs-src/build/docs")
-            into project.layout.buildDirectory.dir("docs/api")
+            from layout.buildDirectory.dir("grails-docs-src/build/docs").get()
+            into layout.buildDirectory.dir("docs/api").get()
         }
     }
 }
