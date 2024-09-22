@@ -43,14 +43,17 @@ public class EntityASTTransformation implements ASTTransformation, CompilationUn
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
 
-        if (!(astNodes[0] instanceof AnnotationNode node) || !(astNodes[1] instanceof AnnotatedNode parent)) {
+        if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
             throw new RuntimeException("Internal error: wrong types: $node.class / $parent.class");
         }
 
-        if (!MY_TYPE.equals(node.getClassNode()) || !(parent instanceof ClassNode cNode)) {
+        AnnotatedNode parent = (AnnotatedNode) astNodes[1];
+        AnnotationNode node = (AnnotationNode) astNodes[0];
+        if (!MY_TYPE.equals(node.getClassNode()) || !(parent instanceof ClassNode)) {
             return;
         }
 
+        ClassNode cNode = (ClassNode) parent;
         String cName = cNode.getName();
         if (cNode.isInterface()) {
             throw new RuntimeException("Error processing interface '" + cName + "'. " +
