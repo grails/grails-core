@@ -28,7 +28,7 @@ ext {
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = [
             'fieldsPlugin'           : [version: fieldsPluginVersion,
-                                        group  : 'io.github.gpc',
+                                        group  : 'org.grails.plugins',
                                         names  : ['fields'],
                                         modules: ['']
             ],
