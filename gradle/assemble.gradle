@@ -4,7 +4,7 @@ def libsConfigurations = []
 subprojects { subproject ->
     if(subproject.name == 'grails-dependencies') return
     if(subproject.name == 'grails-bom') return
-    if(subproject.name == 'grails-shell' || subproject.name == 'grails-core') {
+    if(subproject.name == 'grails-core') {
 
         configurations {
             libsConfigurations << libs {
