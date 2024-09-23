@@ -147,6 +147,9 @@ jobs:
       - name: Set CI_GROOVY_VERSION for Grails
         run: |
           echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
+      - name: Add mavenLocal (to load Groovy from)
+        run: |
+          sed -i 's|// mavenLocal() // Keep|mavenLocal() // Keep|' build.gradle
       - name: Build Grails
         id: build_grails
         uses: gradle/gradle-build-action@v3
