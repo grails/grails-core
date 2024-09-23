@@ -27,7 +27,7 @@ ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = [
-            'fieldsPlugin'           : [version: feildsPluginVersion,
+            'fieldsPlugin'           : [version: fieldsPluginVersion,
                                         group  : 'org.grails.plugins',
                                         names  : ['fields'],
                                         modules: ['']
