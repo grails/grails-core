@@ -115,7 +115,7 @@ jobs:
         with:
           build-root-directory: ../groovy
           arguments: |
-            install
+            publishToMavenLocal
             -x groovydoc
             -x javadoc
             -x javadocAll
