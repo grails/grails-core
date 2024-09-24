@@ -25,80 +25,25 @@ jobs:
         with:
           path: ~/.m2/repository
           key: cache-local-maven-${{ github.sha }}
-      - name: "📥 Checkout project to fetch some versions it uses"
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout-cone-mode: false
-          sparse-checkout: settings.gradle
-      - name: "📝 Store the Gradle Plugin versions used"
-        id: gradle-plugin-versions
-        run: |
-          DEVELOCITY_PLUGIN_VERSION=$(grep -m 1 'id\s*\(\"com.gradle.develocity\"\|'"'com.gradle.develocity'"'\)\s*version' settings.gradle | sed -E "s/.*version[[:space:]]*['\"]?([0-9]+\.[0-9]+(\.[0-9]+)?)['\"]?.*/\1/" | tr -d [:space:])
-          COMMON_CUSTOM_USER_DATA_PLUGIN_VERSION=$(grep -m 1 'id\s*\(\"com.gradle.common-custom-user-data-gradle-plugin\"\|'"'com.gradle.common-custom-user-data-gradle-plugin'"'\)\s*version' settings.gradle | sed -E "s/.*version[[:space:]]*['\"]?([0-9]+\.[0-9]+(\.[0-9]+)?)['\"]?.*/\1/" | tr -d [:space:])
-          echo "Project uses Develocity Plugin version: $DEVELOCITY_PLUGIN_VERSION"
-          echo "Project uses Common Custom User Data Plugin version: $COMMON_CUSTOM_USER_DATA_PLUGIN_VERSION"
-          echo "develocity_plugin_version=$DEVELOCITY_PLUGIN_VERSION" >> $GITHUB_OUTPUT
-          echo "common_custom_user_data_plugin_version=$COMMON_CUSTOM_USER_DATA_PLUGIN_VERSION" >> $GITHUB_OUTPUT
-          rm settings.gradle
       - name: "📥 Checkout Groovy 4_0_X (Grails 7 and later)"
-        run: |
-          cd ..
-          git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
+        run: git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "📝 Store Groovy version to use when building Grails"
         id: groovy-version
         run: |
-          cd ../groovy
+          cd groovy
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
-      - name: "🐘 Configure Gradle Plugins (Step 1/3)"
-        id: develocity-conf-1
-        run: |
-          echo "VALUE<<EOF" >> $GITHUB_OUTPUT
-          echo "plugins { " >> $GITHUB_OUTPUT
-          echo "    id 'com.gradle.develocity' version '${{ steps.gradle-plugin-versions.outputs.develocity_plugin_version }}'" >> $GITHUB_OUTPUT 
-          echo "    id 'com.gradle.common-custom-user-data-gradle-plugin' version '${{ steps.gradle-plugin-versions.outputs.common_custom_user_data_plugin_version }}'" >> $GITHUB_OUTPUT 
-          echo "}" >> $GITHUB_OUTPUT 
-          echo "" >> $GITHUB_OUTPUT 
-          echo "EOF" >> $GITHUB_OUTPUT
-      - name: "🐘 Configure Gradle Plugins (Step 2/3)"
-        id: develocity-conf-2
-        run: |
-          echo "VALUE<<EOF" >> $GITHUB_OUTPUT
-          echo "def isAuthenticated = System.getenv('DEVELOCITY_ACCESS_KEY') != null" >> $GITHUB_OUTPUT
-          echo "develocity {" >> $GITHUB_OUTPUT
-          echo "    server = 'https://ge.grails.org'" >> $GITHUB_OUTPUT
-          echo "    buildScan {" >> $GITHUB_OUTPUT
-          echo "        publishing.onlyIf { isAuthenticated }" >> $GITHUB_OUTPUT
-          echo "        uploadInBackground = false" >> $GITHUB_OUTPUT
-          echo "    }" >> $GITHUB_OUTPUT
-          echo "}" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "buildCache {" >> $GITHUB_OUTPUT
-          echo "    local { enabled = false }" >> $GITHUB_OUTPUT
-          echo "    remote(develocity.buildCache) {" >> $GITHUB_OUTPUT
-          echo "        push = isAuthenticated" >> $GITHUB_OUTPUT
-          echo "        enabled = true" >> $GITHUB_OUTPUT
-          echo "    }" >> $GITHUB_OUTPUT
-          echo "}" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-      - name: "🐘 Configure Gradle Plugins (step 3/3)"
-        run: |
-          cd ../groovy
-          # Delete existing plugins from settings.gradle file
-          sed -i '32,37d' settings.gradle
-          # Add Develocity setup related configuration after line no 31 in settings.gradle
-          echo "${{ steps.develocity-conf-1.outputs.value }}" | sed -i -e "31r /dev/stdin" settings.gradle
-          # Delete existing buildCache configuration from gradle/build-scans.gradle file
-          sed -i '23,46d' gradle/build-scans.gradle
-          # Add Develocity setup related configuration after line no 22 in gradle/build-scans.gradle
-          echo "${{ steps.develocity-conf-2.outputs.value }}" | sed -i -e "22r /dev/stdin" gradle/build-scans.gradle
       - name: "🔨 Publish Groovy to local maven repository (no docs)"
         env:
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          DEVELOCITY_INJECTION_ENABLED: true
+          DEVELOCITY_URL: 'https://ge.grails.org'
+          DEVELOCITY_PLUGIN_VERSION: '3.18.1'
+          DEVELOCITY_CCUD_PLUGIN_VERSION: '2.0.2'
         run: |
-          cd ../groovy
+          cd groovy
           ./gradlew pTML -x groovydoc -x javadoc -x javadocAll -x groovydocAll -x asciidoc -x docGDK
 
   build_grails:
@@ -107,13 +52,15 @@ jobs:
     steps:
       - name: "📥 Checkout project"
         uses: actions/checkout@v4
-      - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
       - name: "☕️ Setup JDK"
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "🗄️Restore local Maven repository from cache"
         uses: actions/cache@v4
         with:
@@ -123,7 +70,10 @@ jobs:
         run: sed -i 's|// mavenLocal() // Keep|mavenLocal() // Keep|' build.gradle
       - name: "🔨 Build and test Grails using the locally built Groovy snapshot"
         env:
-          DEVELOCITY_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+          DEVELOCITY_INJECTION_ENABLED: true
+          DEVELOCITY_URL: 'https://ge.grails.org'
+          DEVELOCITY_PLUGIN_VERSION: '3.18.1'
+          DEVELOCITY_CCUD_PLUGIN_VERSION: '2.0.2'
         run: >
           ./gradlew build
           -PgroovyVersion=${{needs.build_groovy.outputs.groovyVersion}}
