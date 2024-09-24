@@ -27,8 +27,6 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-env:
-  CI_GROOVY_VERSION:
 jobs:
   build_groovy:
     strategy:
@@ -51,11 +49,10 @@ jobs:
           key: cache-local-groovy-maven-${{ github.sha }}
       - name: Checkout Groovy 4_0_X (Grails 7 and later)
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
-      - name: Set CI_GROOVY_VERSION for Grails
+      - name: Store Groovy version to use when building Grails
         id: groovy-version
         run: |
           cd ../groovy
-          echo "CI_GROOVY_VERSION=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_ENV
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
       - name: Prepare Develocity Setup 1
         id: develocity_conf_1
@@ -118,7 +115,7 @@ jobs:
         with:
           build-root-directory: ../groovy
           arguments: |
-            install
+            publishToMavenLocal
             -x groovydoc
             -x javadoc
             -x javadocAll
@@ -144,9 +141,9 @@ jobs:
             ~/groovy
             ~/.m2/repository
           key: cache-local-groovy-maven-${{ github.sha }}
-      - name: Set CI_GROOVY_VERSION for Grails
+      - name: Add mavenLocal (to load Groovy from)
         run: |
-          echo "CI_GROOVY_VERSION=${{needs.build_groovy.outputs.groovyVersion}}" >> $GITHUB_ENV
+          sed -i 's|// mavenLocal() // Keep|mavenLocal() // Keep|' build.gradle
       - name: Build Grails
         id: build_grails
         uses: gradle/gradle-build-action@v3
@@ -157,4 +154,5 @@ jobs:
         with:
           arguments: |
             build 
+            -PgroovyVersion=${{needs.build_groovy.outputs.groovyVersion}}
             -x groovydoc
