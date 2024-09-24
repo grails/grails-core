@@ -20,8 +20,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
       - name: "🗄️Cache local Maven repository"
         uses: actions/cache@v4
         with:
@@ -46,6 +44,8 @@ jobs:
         run: |
           cd ..
           git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
       - name: "📝 Store Groovy version to use when building Grails"
         id: groovy-version
         run: |
@@ -107,13 +107,13 @@ jobs:
     steps:
       - name: "📥 Checkout project"
         uses: actions/checkout@v4
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
       - name: "☕️ Setup JDK"
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-      - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
       - name: "🗄️Restore local Maven repository from cache"
         uses: actions/cache@v4
         with:
