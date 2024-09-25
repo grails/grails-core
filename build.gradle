@@ -141,11 +141,6 @@ ext {
                                         names  : ['h2'],
                                         modules: ['']
             ],
-            'gebPlugin'              : [version: gebPluginVersion,
-                                        group  : 'org.grails.plugins',
-                                        names  : ['geb'],
-                                        modules: ['']
-            ],
     ]
 
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
