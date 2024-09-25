@@ -47,7 +47,12 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
         res == null ? te.className : res.getFilename()
     }
 
-    String prettyPrintCodeSnippet(Throwable exception, Map attrs = [:]) {
+    @Deprecated
+    String prettyPrintCodeSnippet(Throwable exception) {
+        prettyPrintCodeSnippet(exception, [:])
+    }
+
+    String prettyPrintCodeSnippet(Throwable exception, Map attrs) {
         if (exception == null) {
             return ''
         }
@@ -198,18 +203,32 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
         ""
     }
 
-    String formatCodeSnippetStart(Resource resource, int lineNumber, Map attrs = [:]) {
-        """Around line $lineNumber of $resource.filename
-"""
-
+    @Deprecated
+    String formatCodeSnippetStart(Resource resource, int lineNumber) {
+        formatCodeSnippetStart(resource, lineNumber, [:])
     }
 
-    protected String formatCodeSnippetLine(int currentLineNumber, currentLine, Map attrs = [:]) {
+    String formatCodeSnippetStart(Resource resource, int lineNumber, Map attrs) {
+        """Around line $lineNumber of $resource.filename
+"""
+    }
+
+    @Deprecated
+    protected String formatCodeSnippetLine(int currentLineNumber, currentLine) {
+        formatCodeSnippetLine(currentLineNumber, currentLine, [:])
+    }
+
+    protected String formatCodeSnippetLine(int currentLineNumber, currentLine, Map attrs) {
         """${currentLineNumber}: ${currentLine}
 """
     }
 
-    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine, Map attrs = [:]) {
+    @Deprecated
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine) {
+        formatCodeSnippetErrorLine(currentLineNumber, currentLine, [:])
+    }
+
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine, Map attrs) {
         """${currentLineNumber}: ${currentLine}
 """
     }

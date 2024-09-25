@@ -38,7 +38,7 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    String prettyPrint(Throwable t, Map attrs = [:]) {
+    String prettyPrint(Throwable t, Map attrs) {
         if (t instanceof GrailsWrappedRuntimeException) {
             t = t.cause
         }
@@ -46,7 +46,7 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    String prettyPrintCodeSnippet(Throwable t, Map attrs = [:]) {
+    String prettyPrintCodeSnippet(Throwable t, Map attrs) {
         if (t instanceof GrailsWrappedRuntimeException) {
             t = t.cause
         }
@@ -54,7 +54,7 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    String formatCodeSnippetStart(Resource resource, int lineNumber, Map attrs = [:]) {
+    String formatCodeSnippetStart(Resource resource, int lineNumber, Map attrs) {
         String path = resource.filename
         // try calc better path
         try {
@@ -77,12 +77,12 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine, Map attrs = [:]) {
+    protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine, Map attrs) {
         """<code class="${attrs['lineClass'] ?: 'line'}"><span class="${attrs['lineNumberClass'] ?: 'lineNumber'}">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
     @Override
-    protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine, Map attrs = [:]) {
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine, Map attrs) {
         """<code class="${attrs['lineErrorClass'] ?: 'line error'}"><span class="${attrs['lineNumberClass'] ?: 'lineNumber'}">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
