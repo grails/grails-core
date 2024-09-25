@@ -30,6 +30,10 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@v4
         with:
+          develocity-injection-enabled: true
+          develocity-url: https://ge.grails.org
+          develocity-plugin-version: 3.18.1
+          develocity-ccud-plugin-version: 2.0.2
           develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "📝 Store Groovy version to use when building Grails"
         id: groovy-version
@@ -37,11 +41,6 @@ jobs:
           cd groovy
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
       - name: "🔨 Publish Groovy to local maven repository (no docs)"
-        env:
-          DEVELOCITY_INJECTION_ENABLED: true
-          DEVELOCITY_URL: 'https://ge.grails.org'
-          DEVELOCITY_PLUGIN_VERSION: '3.18.1'
-          DEVELOCITY_CCUD_PLUGIN_VERSION: '2.0.2'
         run: |
           cd groovy
           ./gradlew pTML -x groovydoc -x javadoc -x javadocAll -x groovydocAll -x asciidoc -x docGDK
@@ -60,6 +59,10 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@v4
         with:
+          develocity-injection-enabled: true
+          develocity-url: https://ge.grails.org
+          develocity-plugin-version: 3.18.1
+          develocity-ccud-plugin-version: 2.0.2
           develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "🗄️Restore local Maven repository from cache"
         uses: actions/cache@v4
@@ -69,11 +72,6 @@ jobs:
       - name: "🪶 Add mavenLocal repository to build"
         run: sed -i 's|// mavenLocal() // Keep|mavenLocal() // Keep|' build.gradle
       - name: "🔨 Build and test Grails using the locally built Groovy snapshot"
-        env:
-          DEVELOCITY_INJECTION_ENABLED: true
-          DEVELOCITY_URL: 'https://ge.grails.org'
-          DEVELOCITY_PLUGIN_VERSION: '3.18.1'
-          DEVELOCITY_CCUD_PLUGIN_VERSION: '2.0.2'
         run: >
           ./gradlew build
           -PgroovyVersion=${{needs.build_groovy.outputs.groovyVersion}}
