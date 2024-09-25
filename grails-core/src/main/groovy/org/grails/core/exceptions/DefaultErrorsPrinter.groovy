@@ -47,7 +47,7 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
         res == null ? te.className : res.getFilename()
     }
 
-    String prettyPrintCodeSnippet(Throwable exception) {
+    String prettyPrintCodeSnippet(Throwable exception, Map attrs = [:]) {
         if (exception == null) {
             return ''
         }
@@ -86,7 +86,7 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
                     if (lineNumbersShown[res.filename].contains(lineNumber)) continue // don't repeat the same lines twice
 
                     lineNumbersShown[res.filename] << lineNumber
-                    pw.print formatCodeSnippetStart(res, lineNumber)
+                    pw.print formatCodeSnippetStart(res, lineNumber, attrs)
                     def input = null
                     try {
                         input = res.inputStream
@@ -101,10 +101,10 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
                                 if (currentLineNumber in range) {
                                     boolean isErrorLine = currentLineNumber == lineNumber
                                     if (isErrorLine) {
-                                        pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine)
+                                        pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine, attrs)
                                     }
                                     else {
-                                        pw.print formatCodeSnippetLine(currentLineNumber, currentLine)
+                                        pw.print formatCodeSnippetLine(currentLineNumber, currentLine, attrs)
                                     }
                                 }
                                 else if (currentLineNumber > last) {
@@ -198,18 +198,18 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
         ""
     }
 
-    String formatCodeSnippetStart(Resource resource, int lineNumber) {
+    String formatCodeSnippetStart(Resource resource, int lineNumber, Map attrs = [:]) {
         """Around line $lineNumber of $resource.filename
 """
 
     }
 
-    protected String formatCodeSnippetLine(int currentLineNumber, currentLine) {
+    protected String formatCodeSnippetLine(int currentLineNumber, currentLine, Map attrs = [:]) {
         """${currentLineNumber}: ${currentLine}
 """
     }
 
-    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine) {
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine, Map attrs = [:]) {
         """${currentLineNumber}: ${currentLine}
 """
     }

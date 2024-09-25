@@ -38,23 +38,23 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    String prettyPrint(Throwable t) {
+    String prettyPrint(Throwable t, Map attrs = [:]) {
         if (t instanceof GrailsWrappedRuntimeException) {
             t = t.cause
         }
-        return super.prettyPrint(t)
+        return super.prettyPrint(t, attrs)
     }
 
     @Override
-    String prettyPrintCodeSnippet(Throwable t) {
+    String prettyPrintCodeSnippet(Throwable t, Map attrs = [:]) {
         if (t instanceof GrailsWrappedRuntimeException) {
             t = t.cause
         }
-        return super.prettyPrintCodeSnippet(t)
+        return super.prettyPrintCodeSnippet(t, attrs)
     }
 
     @Override
-    String formatCodeSnippetStart(Resource resource, int lineNumber) {
+    String formatCodeSnippetStart(Resource resource, int lineNumber, Map attrs = [:]) {
         String path = resource.filename
         // try calc better path
         try {
@@ -67,8 +67,8 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
             path = resource.filename
         }
         """\
-<h2>Around line ${lineNumber} of <span class="filename">${path}</span></h2>
-<pre class="snippet">"""
+<h2>Around line ${lineNumber} of <span class="${attrs['filenameClass'] ?: 'filename'}">${path}</span></h2>
+<pre class="${attrs['snippetClass'] ?: 'snippet'}">"""
     }
 
     @Override
@@ -77,13 +77,13 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine) {
-        """<code class="line"><span class="lineNumber">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
+    protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine, Map attrs = [:]) {
+        """<code class="${attrs['lineClass'] ?: 'line'}"><span class="${attrs['lineNumberClass'] ?: 'lineNumber'}">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
     @Override
-    protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine) {
-        """<code class="line error"><span class="lineNumber">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine, Map attrs = [:]) {
+        """<code class="${attrs['lineErrorClass'] ?: 'line error'}"><span class="${attrs['lineNumberClass'] ?: 'lineNumber'}">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
     @Override
