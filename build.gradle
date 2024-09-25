@@ -36,26 +36,6 @@ ext {
                                         names  : ['jakarta.annotation-api'],
                                         modules: ['']
             ],
-            'micronaut'              : [version: micronautVersion,
-                                        group  : 'io.micronaut',
-                                        names  : ['micronaut'],
-                                        modules: ['aop', 'bom', 'inject', 'runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
-            ],
-            'micronautCache'         : [version: micronautCacheVersion,
-                                        group  : 'io.micronaut.cache',
-                                        names  : ['micronaut-cache'],
-                                        modules: ['core']
-            ],
-            'micronautRuntimeGroovy' : [version: micronautRuntimeGroovyVersion,
-                                        group  : 'io.micronaut.groovy',
-                                        names  : ['micronaut'],
-                                        modules: ['runtime-groovy']
-            ],
-            'micronautSpring'        : [version: micronautSpringVersion,
-                                        group  : 'io.micronaut.spring',
-                                        names  : ['micronaut-spring'],
-                                        modules: ['spring', 'context', 'boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
-            ],
             'mongodb'                : [version: mongodbJavaDriverVersion,
                                         group  : 'org.mongodb',
                                         names  : ['mongodb-driver'],

@@ -16,12 +16,13 @@
 package org.grails.core.cfg
 
 import groovy.transform.Internal
-import io.micronaut.context.env.yaml.ConstructIsoTimestampString
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.MappingNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
+import org.yaml.snakeyaml.constructor.Construct
+import org.yaml.snakeyaml.nodes.Node
 
 /**
  * Yaml constructor to create containers with sensible
@@ -35,6 +36,8 @@ class CustomSafeConstructor extends SafeConstructor {
 
     CustomSafeConstructor() {
         super(new LoaderOptions())
+
+        // Use a custom construct for treating ISO timestamps as strings
         yamlConstructors.put(Tag.TIMESTAMP, new ConstructIsoTimestampString())
     }
 
@@ -47,5 +50,15 @@ class CustomSafeConstructor extends SafeConstructor {
     protected List<Object> newList(SequenceNode node) {
         return createDefaultList(node.getValue().size())
     }
-}
 
+    static class ConstructIsoTimestampString implements Construct {
+
+        @Override
+        Object construct(Node node) {
+            return SafeConstructor.constructScalar(node) as String
+        }
+
+        @Override
+        void construct2ndStep(Node node, Object data) {}
+    }
+}

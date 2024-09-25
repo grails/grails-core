@@ -1,23 +1,7 @@
 dependencies {
-    compileOnly "io.micronaut:micronaut-inject-java:$micronautVersion"
-    compileOnly "io.micronaut:micronaut-inject-groovy:$micronautVersion"
-    compileOnly "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
-    compileOnly "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
-    compileOnly "io.micronaut:micronaut-runtime:$micronautVersion"
     compileOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
-    annotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
-    annotationProcessor "io.micronaut.spring:micronaut-spring-annotation:$micronautSpringVersion"
-    annotationProcessor "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion"
-    api "io.micronaut:micronaut-inject:$micronautVersion"
     api "jakarta.inject:jakarta.inject-api:$jakartaInjectVersion"
-    api "io.micronaut.spring:micronaut-spring-context:$micronautSpringVersion", {
-        exclude group:"org.slf4j", module: "slf4j-simple"
-    }
-    api "io.micronaut.cache:micronaut-cache-core:$micronautCacheVersion", {
-        exclude group:"org.slf4j", module: "slf4j-simple"
-    }
-    api "io.micronaut:micronaut-runtime:$micronautVersion"
     api "jakarta.persistence:jakarta.persistence-api:$jakartaPersistenceVersion"
     api "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
 
@@ -65,9 +49,6 @@ dependencies {
     }
 
     api "org.grails:grails-datastore-core:$datastoreVersion"
-
-    testAnnotationProcessor "io.micronaut:micronaut-runtime:$micronautVersion"
-    testAnnotationProcessor "io.micronaut:micronaut-inject-java:$micronautVersion"
 
     testImplementation("org.springframework:spring-jdbc:$springVersion") {
         exclude group: 'commons-logging', module:'commons-logging'

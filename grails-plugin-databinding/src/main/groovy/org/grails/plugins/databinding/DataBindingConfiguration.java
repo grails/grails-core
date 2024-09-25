@@ -5,8 +5,8 @@ import grails.databinding.TypedStructuredBindingEditor;
 import grails.databinding.converters.FormattedValueConverter;
 import grails.databinding.converters.ValueConverter;
 import grails.databinding.events.DataBindingListener;
+import grails.util.GrailsArrayUtils;
 import grails.web.databinding.GrailsWebDataBinder;
-import io.micronaut.core.util.ArrayUtils;
 import org.grails.databinding.bindingsource.DataBindingSourceCreator;
 import org.grails.web.databinding.bindingsource.*;
 import org.springframework.context.ApplicationContext;
@@ -39,19 +39,19 @@ public class DataBindingConfiguration {
         final ApplicationContext mainContext = grailsApplication.getMainContext();
         final ValueConverter[] mainContextConverters = mainContext
                 .getBeansOfType(ValueConverter.class).values().toArray(new ValueConverter[0]);
-        final ValueConverter[] allValueConverters = ArrayUtils.concat(valueConverters, mainContextConverters);
+        final ValueConverter[] allValueConverters = GrailsArrayUtils.concat(valueConverters, mainContextConverters);
         AnnotationAwareOrderComparator.sort(allValueConverters);
         dataBinder.setValueConverters(allValueConverters);
 
         final FormattedValueConverter[] mainContextFormattedValueConverters = mainContext
                 .getBeansOfType(FormattedValueConverter.class).values().toArray(new FormattedValueConverter[0]);
-        dataBinder.setFormattedValueConverters(ArrayUtils.concat(formattedValueConverters, mainContextFormattedValueConverters));
+        dataBinder.setFormattedValueConverters(GrailsArrayUtils.concat(formattedValueConverters, mainContextFormattedValueConverters));
         final TypedStructuredBindingEditor[] mainContextStructuredBindingEditors = mainContext
                 .getBeansOfType(TypedStructuredBindingEditor.class).values().toArray(new TypedStructuredBindingEditor[0]);
-        dataBinder.setStructuredBindingEditors(ArrayUtils.concat(structuredBindingEditors, mainContextStructuredBindingEditors));
+        dataBinder.setStructuredBindingEditors(GrailsArrayUtils.concat(structuredBindingEditors, mainContextStructuredBindingEditors));
         final DataBindingListener[] mainContextDataBindingListeners = mainContext
                 .getBeansOfType(DataBindingListener.class).values().toArray(new DataBindingListener[0]);
-        dataBinder.setDataBindingListeners(ArrayUtils.concat(dataBindingListeners,mainContextDataBindingListeners));
+        dataBinder.setDataBindingListeners(GrailsArrayUtils.concat(dataBindingListeners,mainContextDataBindingListeners));
         dataBinder.setMessageSource(mainContext.getBean("messageSource", MessageSource.class));
         return dataBinder;
     }

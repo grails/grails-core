@@ -5,6 +5,10 @@ dependencies {
     // to ensure build compatibility with Gradle, currently Groovy 3.0.x
     // when used by grails-gradle-plugin
     // see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
+    implementation "org.springframework:spring-context:$springVersion"
+    implementation "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+
+
     compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
     compileOnly "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
@@ -16,9 +20,6 @@ dependencies {
     compileOnly "net.java.dev.jna:jna:$jnaVersion"
 
     api "org.yaml:snakeyaml:$snakeyamlVersion"
-    api "io.micronaut:micronaut-inject:$micronautVersion", {
-        exclude group: 'org.apache.groovy'
-    }
 
     testImplementation "org.apache.groovy:groovy-xml:$groovyVersion"
     testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
