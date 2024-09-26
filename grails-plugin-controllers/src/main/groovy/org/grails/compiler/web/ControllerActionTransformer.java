@@ -846,7 +846,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final ArgumentListExpression initializeCommandObjectArguments = args(classX(commandObjectNode), constX(paramName));
         final MethodCallExpression initializeCommandObjectMethodCall = callThisX("initializeCommandObject", initializeCommandObjectArguments);
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
-        final Expression assignCommandObjectToParameter = declX(localVarX(paramName), initializeCommandObjectMethodCall);
+        final Expression assignCommandObjectToParameter = assignX(varX(paramName, commandObjectNode), initializeCommandObjectMethodCall);
         wrapper.addStatement(stmt(assignCommandObjectToParameter));
     }
 
