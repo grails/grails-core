@@ -8,14 +8,21 @@ import grails.databinding.events.DataBindingListener;
 import grails.util.GrailsArrayUtils;
 import grails.web.databinding.GrailsWebDataBinder;
 import org.grails.databinding.bindingsource.DataBindingSourceCreator;
+import org.grails.databinding.converters.DefaultConvertersConfiguration;
 import org.grails.web.databinding.bindingsource.*;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
-@Configuration
+@AutoConfiguration
+@AutoConfigureOrder
+@EnableConfigurationProperties(DataBindingConfigurationProperties.class)
+@ImportAutoConfiguration(DefaultConvertersConfiguration.class)
 public class DataBindingConfiguration {
 
     private final DataBindingConfigurationProperties configurationProperties;
