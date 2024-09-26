@@ -52,17 +52,16 @@ dependencies {
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 
     testImplementation "org.grails.plugins:async:$asyncVersion", {
-        exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
     testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
-        exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
         exclude module:'async'
     }
+    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }
 
 test {
