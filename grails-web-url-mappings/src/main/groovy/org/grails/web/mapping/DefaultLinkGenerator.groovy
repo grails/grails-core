@@ -26,7 +26,7 @@ import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.util.StringUtils
 
-import jakarta.annotation.PostConstruct
+import javax.annotation.PostConstruct
 import java.util.regex.Pattern
 
 import grails.util.Environment

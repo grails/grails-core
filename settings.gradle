@@ -47,6 +47,7 @@ include (
         'grails-web-common',
         'grails-web-boot',
         'grails-web-databinding',
+        'grails-web-fileupload',
         'grails-web-mvc',
         'grails-web-url-mappings',
 

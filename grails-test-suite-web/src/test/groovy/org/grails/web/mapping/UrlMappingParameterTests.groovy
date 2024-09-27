@@ -2,6 +2,7 @@ package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
 import org.grails.web.util.WebUtils
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import spock.lang.Specification
 
 /**

@@ -18,15 +18,14 @@ package org.grails.cli.profile.repository
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.xml.XmlSlurper
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.graph.Dependency
 import org.grails.cli.boot.GrailsDependencyVersions
 import org.grails.cli.profile.Profile
-import org.grails.cli.compiler.grape.AetherGrapeEngine
-import org.grails.cli.compiler.grape.DependencyResolutionContext
-import org.grails.cli.compiler.grape.DependencyResolutionFailedException
+import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionFailedException
 
 /**
  *  Resolves profiles from a configured list of repositories using Aether

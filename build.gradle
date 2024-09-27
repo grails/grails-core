@@ -4,20 +4,24 @@ buildscript {
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
-        classpath "commons-io:commons-io:$commonsIOVersion"
-        classpath "io.github.gradle-nexus:publish-plugin:$gradleNexusPublishPluginVersion"
-        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:$gradleExtraConfigurationsPluginVersion"
+        classpath "commons-io:commons-io:2.15.1"
+        classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:10.0.0"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
-        classpath "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
-        classpath "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$gradleLicensePluginVersion"
+        classpath "javax.xml.bind:jaxb-api:$jaxbApiVersion"
+        classpath "com.sun.xml.bind:jaxb-impl:$jaxbImplVersion"
+        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
     }
 }
+
+import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
 
 ext {
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
     grailsVersion = project.projectVersion
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
     isBuildSnapshot = grailsVersion.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
     isCiBuild = System.getenv().get("CI") as Boolean
@@ -26,15 +30,40 @@ ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = [
-            'fieldsPlugin'           : [version: fieldsPluginVersion,
+            'fieldsPlugin'           : [version: feildsPluginVersion,
                                         group  : 'org.grails.plugins',
                                         names  : ['fields'],
                                         modules: ['']
+            ],
+            'javax.annotation-api'   : [version: javaxAnnotationApiVersion,
+                                        group  : 'javax.annotation',
+                                        names  : ['javax.annotation'],
+                                        modules: ['api']
             ],
             'jakarta-annotation'     : [version: jakartaAnnotationApiVersion,
                                         group  : 'jakarta.annotation',
                                         names  : ['jakarta.annotation-api'],
                                         modules: ['']
+            ],
+            'micronaut'              : [version: micronautVersion,
+                                        group  : 'io.micronaut',
+                                        names  : ['micronaut'],
+                                        modules: ['aop', 'bom', 'inject', 'runtime', 'inject-groovy', 'inject-java', 'core', 'http-client', 'http', 'buffer-netty', 'http-netty']
+            ],
+            'micronautCache'         : [version: micronautCacheVersion,
+                                        group  : 'io.micronaut.cache',
+                                        names  : ['micronaut-cache'],
+                                        modules: ['core']
+            ],
+            'micronautRuntimeGroovy' : [version: micronautRuntimeGroovyVersion,
+                                        group  : 'io.micronaut.groovy',
+                                        names  : ['micronaut'],
+                                        modules: ['runtime-groovy']
+            ],
+            'micronautSpring'        : [version: micronautSpringVersion,
+                                        group  : 'io.micronaut.spring',
+                                        names  : ['micronaut-spring'],
+                                        modules: ['spring', 'context', 'boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
             ],
             'mongodb'                : [version: mongodbJavaDriverVersion,
                                         group  : 'org.mongodb',
@@ -57,7 +86,7 @@ ext {
                                         modules: ['']
             ],
             'groovy'                 : [version: groovyVersion,
-                                        group  : 'org.apache.groovy',
+                                        group  : 'org.codehaus.groovy',
                                         names  : ['groovy'],
                                         modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio', 'dateutil', 'macro']
             ],
@@ -81,7 +110,7 @@ ext {
                                         names  : ['springloaded'],
                                         modules: ['']
             ],
-            'async'                  : [version: asyncVersion,
+            async                    : [version: asyncVersion,
                                         group  : 'org.grails.plugins',
                                         names  : ['async', 'events'],
                                         modules: ['']
@@ -135,12 +164,12 @@ group = "org.grails"
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
 ext {
-    distInstallDir = layout.buildDirectory.dir("dist-tmp").get()
-    homeDistDir = layout.buildDirectory.dir("install/dist").get()
-    homeBinDir = layout.buildDirectory.dir("install/bin").get()
-    homeConfDir = layout.buildDirectory.dir("install/conf").get()
-    homeLibDir = layout.buildDirectory.dir("install/lib").get()
-    homeSrcDir = layout.buildDirectory.dir("install/src").get()
+    distInstallDir = file("$buildDir/dist-tmp")
+    homeDistDir = file("dist")
+    homeBinDir = file("bin")
+    homeConfDir = file("conf")
+    homeLibDir = file("lib")
+    homeSrcDir = file("src")
 }
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
@@ -162,9 +191,9 @@ if (jointBuildGroovyJarProperty) {
         throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
     }
 } else {
-    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
-        exclude module:"commons-cli"
-        exclude module:"ant"
+    groovyDependency = dependencies.create("org.codehaus.groovy:groovy:${groovyVersion}") {
+        exclude module: "commons-cli"
+        exclude module: "ant"
     }
 }
 
@@ -193,28 +222,15 @@ if (isReleaseVersion) {
 }
 
 allprojects {
-
-    // FORCE UPGRADE OF GROOVY IN DEPENDENCIES TO GROOVY 4
-    // except in projects that will be run by Gradle during the build
-    if (!compiledByGradleGroovyVersion(project)) {
-        configurations.configureEach {
-            resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-                if (details.requested.group == 'org.codehaus.groovy' && details.requested.name != 'groovy-bom') {
-                    details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: groovyVersion)
-                }
-            }
-        }
-    }
-
     repositories {
+        mavenLocal()
         mavenCentral()
-        maven { url = 'https://repo.grails.org/grails/core' }
-        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
-        // mavenLocal() // Keep, this will be uncommented and used by CI (groovy-joint-workflow)
-        if(groovyVersion.endsWith('-SNAPSHOT')) {
+        maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        if (groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
-                name = 'ASF Snapshot repo'
-                url = 'https://repository.apache.org/content/repositories/snapshots'
+                name 'JFrog OSS snapshot repo'
+                url 'https://oss.jfrog.org/oss-snapshot-local/'
             }
         }
     }
@@ -227,8 +243,8 @@ allprojects {
                 cacheChangingModulesFor cacheHours, 'hours'
                 eachDependency { DependencyResolveDetails details ->
                     //specifying a fixed version for all libraries with 'org.gradle' group
-                    if (details.requested.group == 'org.apache.groovy') {
-                        details.useVersion(groovyVersion)
+                    if (details.requested.group == 'org.codehaus.groovy') {
+                        details.useVersion groovyVersion
                     }
                     if (details.requested.group == "org.spockframework") {
                         details.useVersion(spockVersion)
@@ -241,7 +257,7 @@ allprojects {
     [Javadoc, Groovydoc].each {
         tasks.withType(it).all {
             // exclude problematic jar file from javadoc classpath
-            // https://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+            // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
             if (classpath) {
                 classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
             }
@@ -271,15 +287,26 @@ allprojects {
             }
         }
     }
-    apply from: rootProject.layout.projectDirectory.file('gradle/dependency-licenses.gradle')
 }
 
 apply from: "gradle/idea.gradle"
 
-subprojects { project ->
+tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
+    configure {
+        access = GroovydocAccess.PRIVATE
+        includeAuthor = true
+        includeMainForScripts = false
+        processScripts = false
+    }
+}
 
+subprojects { project ->
     version = grailsVersion
     group = "org.grails"
+
+    configurations {
+        documentation
+    }
 
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     ext.isCiBuild = project.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
@@ -312,16 +339,21 @@ subprojects { project ->
 
     }
 
+    if (!project.hasProperty("artifactoryPublishPassword") && System.getenv("ARTIFACTORY_PASSWORD")) {
+        project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
+    }
+
     apply plugin: 'java-library'
     apply plugin: 'groovy'
+    if (!isTestSuite) {
+        apply plugin: 'maven-publish'
+        apply plugin: 'signing'
+    }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
 
     if (!isTestSuite) {
-
-        apply plugin: 'maven-publish'
-        apply plugin: 'signing'
 
         java {
             withJavadocJar()
@@ -334,8 +366,8 @@ subprojects { project ->
                 repositories {
                     maven {
                         credentials {
-                            def u = project.hasProperty("artifactoryPublishUsername") ? project.getProperty('artifactoryPublishUsername') : System.getenv("ARTIFACTORY_USERNAME")
-                            def p = project.hasProperty("artifactoryPublishPassword") ? project.getProperty('artifactoryPublishPassword') : System.getenv("ARTIFACTORY_PASSWORD")
+                            def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                            def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
                             username = u
                             password = p
                         }
@@ -372,7 +404,7 @@ subprojects { project ->
                             developer {
                                 id = 'puneetbehl'
                                 name = 'Puneet Behl'
-                                email = 'behlp@unityfoundation.io'
+                                email = 'behlp@objectcomputing.com'
                             }
                         }
                     }
@@ -397,31 +429,19 @@ subprojects { project ->
         tasks.withType(io.github.gradlenexus.publishplugin.InitializeNexusStagingRepository).configureEach {
             shouldRunAfter(tasks.withType(Sign))
         }
-
-        tasks.register("installToHomeDist", Copy) {
-            dependsOn sourcesJar, javadocJar, jar
-            from layout.buildDirectory.dir("libs").get()
-            into distInstallDir
-        }
-
-        tasks.withType(PublishToMavenLocal).configureEach {
-            dependsOn installToHomeDist
-            doLast {
-                ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
-                    fileset dir: distInstallDir
-                }
-            }
-        }
     }
 
     if (project.name == 'grails-dependencies') return
     if (project.name == 'grails-bom') return
 
+    sourceCompatibility = "1.11"
+    targetCompatibility = "1.11"
+
     if (project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
-            api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+            api "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
-            api("org.springframework:spring-test:$springVersion") {
+            api("org.springframework:spring-test:${springVersion}") {
                 exclude group: 'commons-logging', module: 'commons-logging'
             }
         }
@@ -429,7 +449,7 @@ subprojects { project ->
 
     if (project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            testImplementation "hsqldb:hsqldb:$hsqldbVesion"
+            testImplementation 'hsqldb:hsqldb:1.8.1.1'
             testImplementation "com.h2database:h2:$h2Version"
         }
     }
@@ -443,39 +463,51 @@ subprojects { project ->
                 "Implementation-Vendor": 'grails.org')
     }
 
-    configurations {
-        documentation
-        meta
-        published.extendsFrom archives, meta
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 
-    // common-logging is a problematic dependency that is often included in the classpath
-    configurations {
-        all*.exclude(group: 'commons-logging', module: 'commons-logging')
+    configure([compileGroovy, compileTestGroovy]) {
+        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
+        groovyOptions.encoding = "UTF-8"
+        options.encoding = "UTF-8"
+    }
+
+    configure([compileJava, compileTestJava]) {
+        options.deprecation = true
+        options.debug = true
+    }
+
+    configure([groovydoc]) {
+        onlyIf({
+            !isTestSuite
+        })
+        classpath += configurations.documentation
+    }
+
+    configure([javadoc]) {
+        onlyIf {
+            !isTestSuite
+        }
+        options.encoding "UTF-8"
+        options.docEncoding "UTF-8"
+        options.charSet "UTF-8"
+        options.jFlags "-Xms64M", "-Xmx512M"
     }
 
     dependencies {
         documentation("org.fusesource.jansi:jansi:$jansiVersion")
         documentation("jline:jline:$jlineVersion")
-        documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
+        documentation "org.codehaus.groovy:groovy-ant:$groovyVersion"
+        documentation "org.codehaus.groovy:groovy-cli-picocli:$groovyVersion"
+        documentation("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
-        if (compiledByGradleGroovyVersion(project)) {
-            documentation "org.codehaus.groovy:groovy:$GroovySystem.version"
-            documentation "org.codehaus.groovy:groovy-ant:$GroovySystem.version"
-            documentation "org.codehaus.groovy:groovy-cli-picocli:$GroovySystem.version"
-        } else {
-            api groovyDependency
-            documentation "org.apache.groovy:groovy:$groovyVersion"
-            documentation "org.apache.groovy:groovy-ant:$groovyVersion"
-            documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
-        }
+        api groovyDependency
 
-        testImplementation "org.apache.groovy:groovy-test-junit5:$groovyVersion"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
-        testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunnerVersion"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
-
-        compileOnly "com.github.spotbugs:spotbugs-annotations:$jsr305Version"
+        testImplementation "org.codehaus.groovy:groovy-test-junit5:${groovyVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
+        testImplementation "org.junit.platform:junit-platform-runner:1.10.2"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
 
         if (project.name != "grails-docs") {
             // Logging
@@ -484,72 +516,18 @@ subprojects { project ->
 
             // Testing
             testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
-            testImplementation("org.spockframework:spock-core:$spockVersion") { transitive = false }
+            testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
             // Required by Spock's Mocking
-            testRuntimeOnly "net.bytebuddy:byte-buddy:$bytebuddyVersion"
-            testImplementation "org.objenesis:objenesis:$objenesisVersion"
+            testImplementation "cglib:cglib-nodep:${cglibVersion}"
+            testImplementation "org.objenesis:objenesis:${objenesisVersion}"
         }
     }
 
-    def debugArguments = [
-            '-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
-            '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
-    ]
-    def java17moduleReflectionCompatibilityArguments = [
-            '--add-opens=java.base/java.lang=ALL-UNNAMED',
-            '--add-opens=java.base/java.util=ALL-UNNAMED'
-    ]
+    def debugArguments = ['-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
+                          '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
 
-    tasks.withType(Test).configureEach {
+    tasks.withType(Test) {
         useJUnitPlatform()
-        jvmArgs += java17moduleReflectionCompatibilityArguments
-    }
-
-    tasks.withType(Jar) {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    }
-
-    // Add the Groovy compiler options
-    tasks.withType(GroovyCompile).configureEach {
-        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
-        groovyOptions.encoding = "UTF-8"
-        options.encoding = "UTF-8"
-    }
-
-    tasks.withType(Groovydoc).configureEach {
-        onlyIf { !isTestSuite }
-        classpath += configurations.documentation
-        access = GroovydocAccess.PRIVATE
-        includeAuthor = true
-        includeMainForScripts = false
-        processScripts = false
-    }
-
-    tasks.withType(Javadoc).configureEach {
-        onlyIf { !isTestSuite }
-        classpath += configurations.documentation
-        // Using options.jFlags instead of closure otherwise it fails with MinimalJavadocOptions
-        options.encoding "UTF-8"
-        options.docEncoding "UTF-8"
-        options.charSet "UTF-8"
-        options.jFlags "-Xms64M", "-Xmx512M"
-    }
-
-    configure(javadoc) {
-        onlyIf { !isTestSuite }
-        classpath += configurations.documentation
-        // Using options.jFlags instead of closure otherwise it fails with MinimalJavadocOptions
-        options.encoding "UTF-8"
-        options.docEncoding "UTF-8"
-        options.charSet "UTF-8"
-        options.jFlags "-Xms64M", "-Xmx512M"
-    }
-
-    // task for running a single test with -DsingleTest.single=TestName singleTest
-    tasks.register("singleTest", Test) {
-        if (System.getProperty("debug.tests")) {
-            jvmArgs += debugArguments
-        }
     }
 
     test {
@@ -558,7 +536,6 @@ subprojects { project ->
             maxFailures = 20
             failOnPassedAfterRetry = true
         }
-
         testLogging {
             events "passed", "skipped", "failed"
 
@@ -568,7 +545,6 @@ subprojects { project ->
             showStackTraces true
         }
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
-
         if (isCiBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
@@ -579,17 +555,51 @@ subprojects { project ->
         } else {
             maxHeapSize = '1024m'
         }
-
         if (System.getProperty("debug.tests")) {
-            jvmArgs += debugArguments
+            jvmArgs debugArguments
         }
     }
 
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+    task singleTest(type: Test) {
+        // task for running a single test with -DsingleTest.single=TestName singleTest
+        if (System.getProperty("debug.tests")) {
+            jvmArgs debugArguments
         }
     }
+
+    configurations {
+        meta
+        published.extendsFrom archives, meta
+        all*.exclude group: 'commons-logging', module: 'commons-logging'
+    }
+
+    if (!isTestSuite) {
+
+        task installToHomeDist(type: Upload) {
+            configuration = configurations.archives
+            repositories {
+                flatDir name: 'libs', dirs: distInstallDir
+            }
+        }
+
+        project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
+            t.dependsOn installToHomeDist
+            t.doLast {
+                ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
+                    fileset dir: distInstallDir
+                }
+            }
+        }
+    }
+}
+
+task clean(type: Delete, group: 'build') {
+    delete buildDir,
+            homeBinDir,
+            homeConfDir,
+            homeDistDir,
+            homeLibDir,
+            homeSrcDir
 }
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
@@ -606,22 +616,20 @@ apply {
     from 'gradle/findbugs.gradle'
 }
 
-// Add a task to list the buildscript dependencies
-tasks.register('buildscriptDependencies', org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
     configurations = project.buildscript.configurations
 }
 
 [Javadoc, Groovydoc].each {
     tasks.withType(it).all {
         // exclude problematic jar file from javadoc classpath
-        // https://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+        // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
         if (classpath) {
             classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
         }
     }
 }
 
-// Ensure that no insecure HTTP-based Maven repositories are defined
 project.afterEvaluate {
     allprojects.repositories.each { handler ->
         handler.each {
@@ -630,12 +638,4 @@ project.afterEvaluate {
             }
         }
     }
-}
-
-// compile with the Groovy version provided by Gradle
-// to ensure build compatibility with Gradle, currently Groovy 3.0.x
-// when used by grails-gradle-plugin
-// see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
-boolean compiledByGradleGroovyVersion(Project currentProject) {
-    currentProject.name in ['grails-bootstrap', 'grails-gradle-model', 'grails-shell']
 }

@@ -41,7 +41,7 @@ import java.lang.annotation.Annotation
 @Slf4j
 @CompileStatic
 class ClassPathScanner {
-    private static final List DEFAULT_IGNORED_ROOT_PACKAGES = ['com', 'org', 'net', 'co', 'java', 'javax', 'jakarta', 'groovy']
+    private static final List DEFAULT_IGNORED_ROOT_PACKAGES = ['com', 'org', 'net', 'co', 'java', 'javax', 'groovy']
 
 
     /**

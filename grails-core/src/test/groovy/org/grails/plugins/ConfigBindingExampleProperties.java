@@ -1,10 +1,8 @@
 package org.grails.plugins;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import io.micronaut.context.annotation.ConfigurationProperties;
 
-@Component
-@ConfigurationProperties(prefix = "example")
+@ConfigurationProperties("example")
 class ConfigBindingExampleProperties {
 
     private String bar = "default";

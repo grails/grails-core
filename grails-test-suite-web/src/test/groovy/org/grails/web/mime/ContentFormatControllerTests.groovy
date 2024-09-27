@@ -15,8 +15,8 @@ import spock.lang.Specification
 class ContentFormatControllerTests extends Specification implements ControllerUnitTest<ContentController>, DomainUnitTest<Gizmo> {
     
     Closure doWithConfig() {{ c ->
-        c['grails.mime.use.accept.header'] = true
-        c['grails.mime.types'] = [html: ['text/html', 'application/xhtml+xml'],
+        c.grails.mime.use.accept.header = true
+        c.grails.mime.types = [html: ['text/html', 'application/xhtml+xml'],
                                xml : ['text/xml', 'application/xml'],
                                text: 'text/plain',
                                js  : 'text/javascript',
@@ -28,7 +28,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
                                json: 'application/json'
         ]
     }}
-
+    
     void testFormatWithRenderAsXML() {
         when:
         request.setParameter "format", "xml"
@@ -37,7 +37,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         then:
         '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''' == response.contentAsString
     }
-
+    
     void testFormatWithRenderAsJSON() {
         when:
         request.setParameter "format", "json"
@@ -46,7 +46,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         then:
         """{"name":"iPod"}""".toString() == response.contentAsString
     }
-
+    
     void testAllFormat() {
         when:
         request.addHeader "Accept", "*/*"

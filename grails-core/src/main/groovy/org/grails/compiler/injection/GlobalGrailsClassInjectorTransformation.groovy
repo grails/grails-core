@@ -9,8 +9,7 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.xml.slurpersupport.GPathResult
-import groovy.xml.XmlSlurper
+import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import groovy.xml.StreamingMarkupBuilder
 import org.codehaus.groovy.ast.*

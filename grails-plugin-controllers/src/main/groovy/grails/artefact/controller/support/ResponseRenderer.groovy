@@ -1,11 +1,11 @@
 /*
- * Copyright 2014-2024 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@ import grails.web.mime.MimeUtility
 import groovy.json.StreamingJsonBuilder
 import groovy.transform.CompileStatic
 import groovy.transform.Generated
-import groovy.xml.slurpersupport.GPathResult
+import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.SpringIOUtils
@@ -37,8 +37,10 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.servlet.view.GroovyPageView
+import org.grails.web.sitemesh.GrailsLayoutView
+import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
-import org.grails.web.util.WebUtils
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
@@ -47,8 +49,8 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.View
 
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*
 /**
@@ -67,7 +69,14 @@ trait ResponseRenderer extends WebAttributes {
 
 
     private MimeUtility mimeUtility
+    private GroovyPageLayoutFinder groovyPageLayoutFinder
     private GrailsPluginManager pluginManager
+
+    @Generated
+    @Autowired(required = false)
+    void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
+        this.groovyPageLayoutFinder = groovyPageLayoutFinder
+    }
 
     @Generated
     @Autowired(required = false)
@@ -296,11 +305,19 @@ trait ResponseRenderer extends WebAttributes {
                 }
 
 
-                boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(WebUtils.LAYOUT_ATTRIBUTE))
+                boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE))
                 // if automatic decoration occurred unwrap, since this is a partial
+                if(view instanceof GrailsLayoutView) {
+                    view = ((GrailsLayoutView)view).getInnerView()
+                }
 
-                if (renderWithLayout) {
+                if(renderWithLayout && groovyPageLayoutFinder) {
                     applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
+                    try {
+                        view = new GrailsLayoutView(groovyPageLayoutFinder, view)
+                    } catch (NoSuchBeanDefinitionException e) {
+                        // ignore
+                    }
                 }
 
 
@@ -533,13 +550,13 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void applySiteMeshLayout(HttpServletRequest request, boolean renderView, String explicitSiteMeshLayout) {
-        if(explicitSiteMeshLayout == null && request.getAttribute(WebUtils.LAYOUT_ATTRIBUTE) != null) {
+        if(explicitSiteMeshLayout == null && request.getAttribute(GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE) != null) {
             // layout has been set already
             return
         }
-        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : WebUtils.NONE_LAYOUT)
+        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : GroovyPageLayoutFinder.NONE_LAYOUT)
         if(siteMeshLayout != null) {
-            request.setAttribute WebUtils.LAYOUT_ATTRIBUTE, siteMeshLayout
+            request.setAttribute GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE, siteMeshLayout
         }
     }
 

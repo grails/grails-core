@@ -161,25 +161,11 @@ abstract class GrailsArrayUtils {
         }
     }
 
-    static boolean contains(Object[] array, Object elementToSearchFor) {
+    public static boolean contains(Object[] array, Object elementToSearchFor) {
         boolean found = false
         if(array) {
             found = DefaultGroovyMethods.contains(array, elementToSearchFor)
         }
         found
-    }
-
-    static <T> T[] concat(T[] first, T[] second) {
-        if (first == null) {
-            return second;
-        }
-        if (second == null) {
-            return first;
-        }
-
-        T[] result = (T[]) java.lang.reflect.Array.newInstance(first.getClass().getComponentType(), first.length + second.length);
-        System.arraycopy(first, 0, result, 0, first.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
     }
 }

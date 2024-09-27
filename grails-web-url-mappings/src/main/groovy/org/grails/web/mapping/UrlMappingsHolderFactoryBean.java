@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2024 the original author or authors.
+ * Copyright 2004-2005 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import grails.core.GrailsControllerClass;
 import grails.core.GrailsUrlMappingsClass;
 import grails.core.events.ArtefactAdditionEvent;
 import grails.core.support.GrailsApplicationAware;
+import grails.plugins.GrailsPluginManager;
+import grails.plugins.PluginManagerAware;
 import grails.web.UrlConverter;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappings;
@@ -48,11 +50,12 @@ import java.util.List;
  * @since 0.5
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, InitializingBean, ApplicationContextAware, GrailsApplicationAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, InitializingBean, ApplicationContextAware, GrailsApplicationAware, PluginManagerAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappings urlMappingsHolder;
+    private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
 
     public UrlMappings getObject() throws Exception {
@@ -61,6 +64,10 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
 
     public Class<UrlMappings> getObjectType() {
         return UrlMappings.class;
+    }
+
+    public boolean isSingleton() {
+        return true;
     }
 
     public void afterPropertiesSet() throws Exception {
@@ -73,6 +80,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
 
         final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator(applicationContext);
+        mappingEvaluator.setPluginManager(pluginManager);
 
         if (mappings.length == 0) {
             urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
@@ -89,9 +97,9 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
                     grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getMappingsClosure());
                 }
 
-                if (StringUtils.hasLength(mapping.getPluginName())) {
-                    for (UrlMapping grailsClassMapping : grailsClassMappings) {
-                        grailsClassMapping.setPluginIndex(i);
+                if (!StringUtils.isEmpty(mapping.getPluginName())) {
+                    for (int j = 0; j < grailsClassMappings.size(); j++) {
+                        grailsClassMappings.get(j).setPluginIndex(i);
                     }
                 }
 
@@ -117,17 +125,26 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         defaultUrlMappingsHolder.initialize();
         UrlConverter urlConverter = applicationContext.containsBean(UrlConverter.BEAN_NAME) ? applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class) : null;
         final GrailsControllerUrlMappings grailsControllerUrlMappings = new GrailsControllerUrlMappings(grailsApplication, defaultUrlMappingsHolder, urlConverter);
-        ((ConfigurableApplicationContext) applicationContext).addApplicationListener((ApplicationListener<ArtefactAdditionEvent>) event -> {
-            GrailsClass artefact = event.getArtefact();
-            if (artefact instanceof GrailsControllerClass) {
-                grailsControllerUrlMappings.registerController((GrailsControllerClass) artefact);
+        ((ConfigurableApplicationContext)applicationContext).addApplicationListener(new ApplicationListener<ArtefactAdditionEvent>() {
+            @Override
+            public void onApplicationEvent(ArtefactAdditionEvent event) {
+                GrailsClass artefact = event.getArtefact();
+                if (artefact instanceof GrailsControllerClass) {
+                    grailsControllerUrlMappings.registerController((GrailsControllerClass) artefact);
+                }
             }
         });
-        urlMappingsHolder = grailsControllerUrlMappings;
+        urlMappingsHolder= grailsControllerUrlMappings;
     }
+
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+
+    public void setPluginManager(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
     }
 
     /**
@@ -149,5 +166,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         setGrailsApplication(applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
+        setPluginManager( applicationContext.containsBean(GrailsPluginManager.BEAN_NAME) ? applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null);
     }
 }

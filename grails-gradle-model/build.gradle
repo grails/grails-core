@@ -1,7 +1,0 @@
-dependencies {
-    // compile grails-gradle-model with the Groovy version provided by Gradle
-    // to ensure build compatibility with Gradle, currently Groovy 3.0.x
-    // when used by grails-gradle-plugin
-    // see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
-    compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
-}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 the original author or authors.
+ * Copyright 2017-2020 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 package org.grails.core.cfg
 
 import groovy.transform.Internal
-import org.yaml.snakeyaml.LoaderOptions
+import io.micronaut.context.env.yaml.ConstructIsoTimestampString
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import org.yaml.snakeyaml.nodes.MappingNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
-import org.yaml.snakeyaml.constructor.Construct
-import org.yaml.snakeyaml.nodes.Node
 
 /**
  * Yaml constructor to create containers with sensible
@@ -33,11 +31,7 @@ import org.yaml.snakeyaml.nodes.Node
  */
 @Internal
 class CustomSafeConstructor extends SafeConstructor {
-
     CustomSafeConstructor() {
-        super(new LoaderOptions())
-
-        // Use a custom construct for treating ISO timestamps as strings
         yamlConstructors.put(Tag.TIMESTAMP, new ConstructIsoTimestampString())
     }
 
@@ -50,15 +44,5 @@ class CustomSafeConstructor extends SafeConstructor {
     protected List<Object> newList(SequenceNode node) {
         return createDefaultList(node.getValue().size())
     }
-
-    static class ConstructIsoTimestampString implements Construct {
-
-        @Override
-        Object construct(Node node) {
-            return SafeConstructor.constructScalar(node) as String
-        }
-
-        @Override
-        void construct2ndStep(Node node, Object data) {}
-    }
 }
+

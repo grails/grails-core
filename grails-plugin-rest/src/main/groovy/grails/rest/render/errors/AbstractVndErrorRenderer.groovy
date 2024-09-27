@@ -17,7 +17,6 @@ package grails.rest.render.errors
 
 import grails.rest.render.ContainerRenderer
 import grails.util.Environment
-import grails.util.GrailsMessageSourceUtils
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
@@ -47,16 +46,8 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
     boolean absoluteLinks = true
     boolean prettyPrint = Environment.isDevelopmentMode()
 
-    MessageSource messageSource
-
     @Autowired
-    setMessageSource(List<MessageSource> messageSources) {
-        setMessageSource(GrailsMessageSourceUtils.findPreferredMessageSource(messageSources))
-    }
-
-    void setMessageSource(MessageSource messageSource) {
-        this.messageSource = messageSource
-    }
+    MessageSource messageSource
 
     @Autowired
     LinkGenerator linkGenerator

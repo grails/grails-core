@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2024 the original author or authors.
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ class MultipleClassesPerFileTests {
     @Test
     void testMultipleClassesPerFile() {
         GroovyClassLoader cl = new GroovyClassLoader()
-        cl.parseClass(new InputStreamReader(getClass().classLoader.getResourceAsStream('org/grails/commons/classes.groovy')), 'classes.groovy')
+        cl.parseClass(getClass().classLoader.getResourceAsStream('org/grails/commons/classes.groovy'), 'classes.groovy')
         assertNotNull cl.loadClass('TestClass1')
         assertNotNull cl.loadClass('TestClass2')
 

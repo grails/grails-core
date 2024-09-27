@@ -6,6 +6,8 @@ import grails.persistence.Entity
 import grails.artefact.Artefact
 import spock.lang.Specification
 
+/**
+ */
 class UnitTestDataBindingAssociatonTests extends Specification implements ControllerUnitTest<ShipController>, DataTest {
 
     void setupSpec() {

@@ -31,7 +31,7 @@ publishing {
                                     delegate.artifactId 'jna'
                                 }
                                 delegate.exclusion {
-                                    delegate.groupId 'org.apache.groovy'
+                                    delegate.groupId 'org.codehaus.groovy'
                                     delegate.artifactId 'groovy-ant'
                                 }
                             }

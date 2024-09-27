@@ -15,22 +15,21 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when: 'a class marked with @GrailsCompileStatic invokes valid dynamic finders'
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass {
-            
-                def someMethod() {
-                    List<Person> people = Person.findAllByName('William')
-                    people = Person.listOrderByName('William')
-                    int number = Person.countByName('William')
-                    Person person = Person.findByName('William')
-                    person = Person.findOrCreateByName('William')
-                    person = Person.findOrSaveByName('William')
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass {
+
+    def someMethod() {
+        List<Person> people = Person.findAllByName('William')
+        people = Person.listOrderByName('William')
+        int number = Person.countByName('William')
+        Person person = Person.findByName('William')
+        person = Person.findOrCreateByName('William')
+        person = Person.findOrSaveByName('William')
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -42,18 +41,18 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when: 'a class marked with @GrailsCompileStatic invokes a where query'
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeOtherNewClass {
-               def someMethod() {
-                  Person.where {
-                       name == 'Guido'
-                  }
-               }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeOtherNewClass {
+   def someMethod() {
+      Person.where {
+           name == 'Guido'
+      }
+   }
+
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -64,20 +63,19 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when: 'a class marked with @GrailsCompileStatic invokes a where query which refers to an invalid property'
-        gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeOtherNewClass {
-               def someMethod() {
-                  Person.where {
-                       town == 'Brooklyn'
-                  }
-               }
-            
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeOtherNewClass {
+   def someMethod() {
+      Person.where {
+           town == 'Brooklyn'
+      }
+   }
+
+}
+''')
         then: 'an error is thrown'
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot query on property "town"'
@@ -85,26 +83,24 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
     @Ignore
     @Issue(['GRAILS-11056', 'GRAILS-11057'])
-    void 'Test compiling a dynamic finder call with the wrong number of arguments'() {
+    void 'Test comping a dynmaic finder call with the wrong number of arguments'() {
         given:
         def gcl = new GroovyClassLoader()
 
         when: 'a class marked with @GrailsCompileStatic invokes a dynamic finder with the wrong number of arguments'
         gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass {
-                def someMethod() {
-                    Person.findAllByName('Hugh', 'Howey')
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
+
+@GrailsCompileStatic
+class SomeClass {
+    def someMethod() {
+        Person.findAllByName('Hugh', 'Howey')
+    }
+}''')
 
         then: 'an error is thrown'
         MultipleCompilationErrorsException e = thrown()
-        e.message.contains 'Cannot find matching method'
-        e.message.contains 'grails.compiler.Person#findAllByName'
+        e.message.contains 'Cannot find matching method grails.compiler.Person#findAllByName'
 
     }
 
@@ -114,32 +110,30 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class'
-        gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass {
-            
-                def someMethod() {
-                    List<SomeClass> people = SomeClass.findAllByName('William')
-                    people = SomeClass.listOrderByName('William')
-                    int number = SomeClass.countByName('William')
-                    SomeClass person = SomeClass.findByName('William')
-                    person = SomeClass.findOrCreateByName('William')
-                    person = SomeClass.findOrSaveByName('William')
-                }
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass {
+
+    def someMethod() {
+        List<SomeClass> people = SomeClass.findAllByName('William')
+        people = SomeClass.listOrderByName('William')
+        int number = SomeClass.countByName('William')
+        SomeClass person = SomeClass.findByName('William')
+        person = SomeClass.findOrCreateByName('William')
+        person = SomeClass.findOrSaveByName('William')
+    }
+}
+''')
         then: 'errors are thrown'
         MultipleCompilationErrorsException e = thrown()
-        e.message.contains 'Cannot find matching method'
-        e.message.contains 'grails.compiler.SomeClass#findAllByName'
-        e.message.contains 'grails.compiler.SomeClass#listOrderByName'
-        e.message.contains 'grails.compiler.SomeClass#countByName'
-        e.message.contains 'grails.compiler.SomeClass#findByName'
-        e.message.contains 'grails.compiler.SomeClass#findOrCreateByName'
-        e.message.contains 'grails.compiler.SomeClass#findOrSaveByName'
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#findAllByName'
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#listOrderByName'
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#countByName'
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#findByName'
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#findOrCreateByName'
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#findOrSaveByName'
     }
 
     @Issue('GRAILS-11056')
@@ -149,25 +143,24 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            import groovy.transform.TypeCheckingMode
-            
-            @GrailsCompileStatic
-            class SomeClass {
-            
-                @GrailsCompileStatic(TypeCheckingMode.SKIP)
-                def someMethod() {
-                    List<SomeClass> people = SomeClass.findAllByName('William')
-                    people = SomeClass.listOrderByName('William')
-                    int number = SomeClass.countByName('William')
-                    SomeClass person = SomeClass.findByName('William')
-                    person = SomeClass.findOrCreateByName('William')
-                    person = SomeClass.findOrSaveByName('William')
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+import groovy.transform.TypeCheckingMode
+
+@GrailsCompileStatic
+class SomeClass {
+
+    @GrailsCompileStatic(TypeCheckingMode.SKIP)
+    def someMethod() {
+        List<SomeClass> people = SomeClass.findAllByName('William')
+        people = SomeClass.listOrderByName('William')
+        int number = SomeClass.countByName('William')
+        SomeClass person = SomeClass.findByName('William')
+        person = SomeClass.findOrCreateByName('William')
+        person = SomeClass.findOrSaveByName('William')
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -179,17 +172,16 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass implements grails.validation.Validateable {
-                String name
-                static constraints = {
-                    name matches: /[A-Z].*/
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass implements grails.validation.Validateable {
+    String name
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -201,30 +193,29 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            @grails.persistence.Entity
-            class SomeClass implements grails.validation.Validateable {
-            
-                enum TestKind {
-                    BIG,
-                    SMALL
-                }
-                
-                String name
-                TestKind testKind
-                
-                static constraints = {
-                    name matches: /[A-Z].*/
-                }
-                
-                static mapping = {
-                    testKind(enumType: "string", defaultValue: TestKind.SMALL)
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass implements grails.validation.Validateable {
+
+    enum TestKind {
+        BIG,
+        SMALL
+    }
+    
+    String name
+    TestKind testKind
+    
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+    
+    static mapping = {
+        testKind(enumType: "string", defaultValue: TestKind.SMALL)
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -236,23 +227,22 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass implements grails.validation.Validateable {
-            
-                enum TestKind {
-                    BIG,
-                    SMALL
-                }
-                
-                String name
-                static constraints = {
-                    name matches: /[A-Z].*/
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass implements grails.validation.Validateable {
+
+    enum TestKind {
+        BIG,
+        SMALL
+    }
+    
+    String name
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -263,23 +253,22 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when:
-        gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass implements grails.validation.Validateable {
-                String name
-            
-                def someMethod() {
-                    someDynamicMethod()
-                }
-            
-                static constraints = {
-                    name matches: /[A-Z].*/
-                }
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass implements grails.validation.Validateable {
+    String name
+
+    def someMethod() {
+        someDynamicMethod()
+    }
+
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
         then: 'errors are thrown'
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot find matching method grails.compiler.SomeClass#someDynamicMethod'
@@ -292,20 +281,19 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when:
-        gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass implements grails.validation.Validateable {
-                String name
-            
-                static constraints = {
-                    name matches: /[A-Z].*/
-                    age range: 1..99
-                }
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass implements grails.validation.Validateable {
+    String name
+
+    static constraints = {
+        name matches: /[A-Z].*/
+        age range: 1..99
+    }
+}
+''')
         then: 'errors are thrown'
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot find matching method grails.compiler.SomeClass#age'
@@ -320,21 +308,20 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass implements grails.validation.Validateable {
-                String name
-            }
-            
-            @GrailsCompileStatic
-            class SomeSubClass extends SomeClass implements grails.validation.Validateable {
-                static constraints = {
-                    name matches: /[A-Z].*/
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass implements grails.validation.Validateable {
+    String name
+}
+
+@GrailsCompileStatic
+class SomeSubClass extends SomeClass implements grails.validation.Validateable {
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -346,49 +333,49 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass {
-            
-                def someMethod() {
-                    Person.withCriteria {
-                        cache true
-                        eq 'name', 'Anakin'
-                    }
-                 
-                    def crit = Person.createCriteria()
-            
-                    def listResults = crit.list {
-                        cache true
-                        eq 'name', 'Anakin'
-                    }
-            
-                    def paginatedListResults = crit.list(max: 4, offset: 2) {
-                        cache true
-                        eq 'name', 'Anakin'
-                    }
-            
-                    def listDistinctResults = crit.listDistinct {
-                        cache true
-                        eq 'name', 'Anakin'
-                    }
-            
-                    def scrollResults = crit.scroll {
-                        cache true
-                        eq 'name', 'Anakin'
-                    }
-            
-                    def getResults = crit.get {
-                        cache true
-                        eq 'name', 'Anakin'
-                    }
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass {
+
+    def someMethod() {
+        Person.withCriteria {
+            cache true
+            eq 'name', 'Anakin'
+        }
+     
+        def crit = Person.createCriteria()
+
+        def listResults = crit.list {
+            cache true
+            eq 'name', 'Anakin'
+        }
+
+        def paginatedListResults = crit.list(max: 4, offset: 2) {
+            cache true
+            eq 'name', 'Anakin'
+        }
+
+        def listDistinctResults = crit.listDistinct {
+            cache true
+            eq 'name', 'Anakin'
+        }
+
+        def scrollResults = crit.scroll {
+            cache true
+            eq 'name', 'Anakin'
+        }
+
+        def getResults = crit.get {
+            cache true
+            eq 'name', 'Anakin'
+        }
+    }
+}
+''')
         then: 'no errors are thrown'
         c
+        
     }
     
     void 'Test compiling a domain class with a mapping block'() {
@@ -397,19 +384,18 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when: 'a domain class marked with @GrailsCompileStatic contains a mapping block'
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            @grails.persistence.Entity
-            class SomeClass {
-            
-                String name
-                static mapping = {
-                    table 'name'
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+    static mapping = {
+        table 'name'
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -420,22 +406,21 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when: 'a domain class marked with @GrailsCompileStatic contains a namedQueries block'
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            @grails.persistence.Entity
-            class SomeClass {
-            
-                String name
-            
-                static namedQueries = {
-                    findByFirstName { String name ->
-                        eq('name', name)
-                    }
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+
+    static namedQueries = {
+        findByFirstName { String name ->
+            eq('name', name)
+        }
+    }
+}
+''')
         then: 'no errors are thrown'
         c
     }
@@ -447,24 +432,24 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            @grails.web.Controller
-            class SomeController {
-            
-                void someAction() {
-                    if(request.post || request.get || request.xhr) {
-                        render 'yep'
-                    } else {
-                        render 'nope'
-                    }
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+@grails.web.Controller
+class SomeController {
+
+    void someAction() {
+        if(request.post || request.get || request.xhr) {
+            render 'yep'
+        } else {
+            render 'nope'
+        }
+    }
+}
+''')
         then:
         c
+
     }
 
     
@@ -473,23 +458,23 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when: 'a domain class marked with @GrailsCompileStatic contains a mapping block and unrelated dynamic code'
-        gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            @grails.persistence.Entity
-            class SomeClass {
-            
-                String name
-                static mapping = {
-                    table 'name'
-                }
-            
-                def someMethod() {
-                   someDynamicMethodCall()
-                }
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+    static mapping = {
+        table 'name'
+    }
+
+    def someMethod() {
+       someDynamicMethodCall()
+    }
+}
+''')
 
         then: 'errors are thrown'
         MultipleCompilationErrorsException e = thrown()
@@ -503,20 +488,20 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         def c = gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass {
-                def someMethod() {
-                    def p = new Person()
-                    p.addToTowns('STL')
-                    p.removeFromTowns('ORD')
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+@GrailsCompileStatic
+class SomeClass {
+    def someMethod() {
+        def p = new Person()
+        p.addToTowns('STL')
+        p.removeFromTowns('ORD')
+    }
+}
+''')
         then: 'no errors are thrown'
         c
+
     }
     
     @Issue('GRAILS-11571')
@@ -525,17 +510,17 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when:
-        gcl.parseClass('''
-            package grails.compiler
-            
-            @GrailsCompileStatic
-            class SomeClass {
-                def someMethod() {
-                    def p = new Person()
-                    p.addToCodes('STL')
-                }
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+class SomeClass {
+    def someMethod() {
+        def p = new Person()
+        p.addToCodes('STL')
+    }
+}
+''')
         
         then: 'errors are thrown'
         MultipleCompilationErrorsException e = thrown()
@@ -548,20 +533,21 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when:
         gcl.parseClass('''
-            package demo
-            
-            @grails.gorm.transactions.Transactional
-            class SomeService {
-                @grails.compiler.GrailsCompileStatic
-                def someMethod() {
-                    int x = 'Jeff'.lastName()
-                }
-            }
-        '''.stripIndent())
+package demo
+
+@grails.gorm.transactions.Transactional
+class SomeService {
+    @grails.compiler.GrailsCompileStatic
+    def someMethod() {
+        int x = 'Jeff'.lastName()
+    }
+}
+''')
 
         then: 'an error is thrown'
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot find matching method java.lang.String#lastName()'
+
     }
 
     @Issue('grails/grails-core#10157')
@@ -571,20 +557,19 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
         when: 'a class marked with @GrailsCompileStatic imports constraints from a non-existent class'
         gcl.parseClass('''
-            package grails.compiler
-            
-            import grails.validation.Validateable
-            
-            @GrailsCompileStatic
-            class SomeValidateableClassWithInvalidImport implements Validateable {
-                String name
-            
-                static constraints = {
-                    importFrom SomeNonExistentClass
-                }
-            }
-        '''.stripIndent())
+package grails.compiler
 
+import grails.validation.Validateable
+
+@GrailsCompileStatic
+class SomeValidateableClassWithInvalidImport implements Validateable {
+    String name
+
+    static constraints = {
+        importFrom SomeNonExistentClass
+    }
+}
+''')
         then: 'an error is thrown'
         thrown(MultipleCompilationErrorsException)
     }
@@ -595,27 +580,27 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         def gcl = new GroovyClassLoader()
 
         when: 'a class marked with @GrailsCompileStatic imports constraints from a non-existent class'
-        gcl.parseClass('''
-            package grails.compiler
-            
-            import grails.validation.Validateable
-            
-            @GrailsCompileStatic
-            class SomeValidateableClassWithValidImport implements Validateable {
-                String name
-            
-                static constraints = {
-                    importFrom SomeOtherValidateableClass
-                }
-            }
-            
-            class SomeOtherValidateableClass implements Validateable {
-                String name
-                static constraints = {
-                    name size: 3..15
-                }
-            }
-        '''.stripIndent())
+        def c = gcl.parseClass('''
+package grails.compiler
+
+import grails.validation.Validateable
+
+@GrailsCompileStatic
+class SomeValidateableClassWithValidImport implements Validateable {
+    String name
+
+    static constraints = {
+        importFrom SomeOtherValidateableClass
+    }
+}
+
+class SomeOtherValidateableClass implements Validateable {
+    String name
+    static constraints = {
+        name size: 3..15
+    }
+}
+''')
 
         then: 'the constraints were properly imported'
         gcl.loadClass('grails.compiler.SomeValidateableClassWithValidImport').constraintsMap['name'].getAppliedConstraint('size').range == 3..15
@@ -623,7 +608,6 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 }
 
 @Entity
-@SuppressWarnings('unused')
 class Person {
     String name
     static hasMany = [towns: String]

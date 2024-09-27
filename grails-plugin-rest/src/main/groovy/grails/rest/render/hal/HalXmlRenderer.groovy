@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.springframework.http.HttpMethod
  */
 @CompileStatic
 class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
-
     public static final MimeType MIME_TYPE = MimeType.HAL_XML
     public static final String RESOURCE_TAG = "resource"
     public static final String LINK_TAG = "link"
@@ -57,45 +56,43 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
         super(targetType, mimeTypes)
     }
 
-    protected XML startDocument(RenderContext renderContext) {
-        def streamingWriter = new StreamingMarkupWriter(renderContext.writer, encoding)
-        def xmlWriter = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
-        xmlWriter.startDocument(encoding, '1.0')
-        return new XML(xmlWriter)
-    }
-
     @Override
-    void renderInternal(Object object, RenderContext renderContext) {
+    void renderInternal(T object, RenderContext context) {
+        final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
+        XMLStreamWriter w = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
+        XML xml = new XML(w)
+
+
+        final entity = mappingContext.getPersistentEntity(object.class.name)
+        boolean isDomain = entity != null
 
         Set writtenObjects = []
-        def xml = startDocument(renderContext)
-        def entity = mappingContext.getPersistentEntity(object.class.name)
-        def isDomain = entity != null
+        w.startDocument(encoding, "1.0")
 
         if (isDomain) {
-            writeDomainWithEmbeddedAndLinks(entity, object, renderContext, xml, writtenObjects)
+            writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
         }
         else if (object instanceof Collection) {
-            def writer = xml.getWriter()
-            startResourceTagForCurrentPath(renderContext, writer)
-            for (o in (Collection) object) {
-                def currentEntity = mappingContext.getPersistentEntity(o.class.name)
+            XMLStreamWriter writer = xml.getWriter()
+            startResourceTagForCurrentPath(context, writer)
+            for(o in ((Collection)object)) {
+                final currentEntity = mappingContext.getPersistentEntity(o.class.name)
                 if (currentEntity) {
-                    writeDomainWithEmbeddedAndLinks(currentEntity, o, renderContext, xml, writtenObjects)
+                    writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects)
                 }
             }
             writer.end()
         }
         else {
-            def writer = xml.getWriter()
-            startResourceTagForCurrentPath(renderContext, writer)
-            writeExtraLinks(object, renderContext.locale, xml)
-            def bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
-            def propertyDescriptors = bean.propertyDescriptors
-            for (pd in propertyDescriptors) {
-                def propertyName = pd.name
+            XMLStreamWriter writer = xml.getWriter()
+            startResourceTagForCurrentPath(context, writer)
+            writeExtraLinks(object, context.locale, xml)
+            final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
+            final propertyDescriptors = bean.propertyDescriptors
+            for(pd in propertyDescriptors) {
+                final propertyName = pd.name
                 if (DEFAULT_EXCLUDES.contains(propertyName)) continue
-                if (shouldIncludeProperty(renderContext, object, propertyName)) {
+                if (shouldIncludeProperty(context, object, propertyName)) {
                     if (pd.readMethod && pd.writeMethod) {
                         writer.startNode(propertyName)
                         xml.convertAnother(bean.getPropertyValue(propertyName))
@@ -104,7 +101,10 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
                 }
             }
             writer.end()
+
         }
+
+
     }
 
     protected void startResourceTagForCurrentPath(RenderContext context, XMLStreamWriter writer) {
@@ -115,40 +115,42 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
     }
 
     protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, object, RenderContext context, XML xml, Set writtenObjects) {
-
-        def locale = context.locale
-        def resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: absoluteLinks)
-        def title = getLinkTitle(entity, locale)
-        def writer = xml.getWriter()
+        final locale = context.locale
+        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: absoluteLinks)
+        final title = getLinkTitle(entity, locale)
+        XMLStreamWriter writer = xml.getWriter()
         startResourceTag(writer, resourceHref, locale, title)
-
-        def metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        def associationMap = writeAssociationLinks(context, object, locale, xml, entity, metaClass)
+        final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
+        final associationMap = writeAssociationLinks(context,object, locale, xml, entity, metaClass)
         writeDomain(context, metaClass, entity, object, xml)
 
         if (associationMap) {
-            for (def entry in associationMap.entrySet()) {
-                def property = entry.key
-                if (property instanceof ToOne) {
-                    def value = entry.value
-                    if (value && !writtenObjects.contains(value)) {
-                        def associatedEntity = property.associatedEntity
+            for (entry in associationMap.entrySet()) {
+                final property = entry.key
+                final isSingleEnded = property instanceof ToOne
+                if (isSingleEnded) {
+                    Object value = entry.value
+                    if (writtenObjects.contains(value)) {
+                        continue
+                    }
+
+                    if (value != null) {
+                        final associatedEntity = property.associatedEntity
                         if (associatedEntity) {
-                            writtenObjects.add(value)
+                            writtenObjects << value
                             writeDomainWithEmbeddedAndLinks(associatedEntity, value, context, xml, writtenObjects)
                         }
                     }
                 } else {
-                    def associatedEntity = property.associatedEntity
+                    final associatedEntity = property.associatedEntity
                     if (associatedEntity) {
-                        for (def obj in entry.value) {
-                            if (!writtenObjects.contains(obj)) {
-                                writtenObjects.add(obj)
-                                writeDomainWithEmbeddedAndLinks(associatedEntity, obj, context, xml, writtenObjects)
-                            }
+                        for (obj in entry.value) {
+                            writtenObjects << obj
+                            writeDomainWithEmbeddedAndLinks(associatedEntity, obj, context, xml, writtenObjects)
                         }
                     }
                 }
+
             }
         }
         writer.end()

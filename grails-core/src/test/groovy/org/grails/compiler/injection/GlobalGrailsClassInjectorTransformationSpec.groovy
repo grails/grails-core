@@ -1,7 +1,6 @@
 package org.grails.compiler.injection
 
 import groovy.xml.MarkupBuilder
-import groovy.xml.XmlSlurper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.CompilationFailedException

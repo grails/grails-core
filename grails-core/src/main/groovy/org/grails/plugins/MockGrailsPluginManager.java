@@ -1,11 +1,11 @@
 /*
- * Copyright 2004-2024 the original author or authors.
+ * Copyright 2004-2006 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -73,7 +73,7 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void checkForChanges() {
-        Assert.isTrue(checkForChangesExpected, "checkForChanges() called in an unexpected state");
+        Assert.isTrue(checkForChangesExpected);
         checkForChangesExpected = false;
     }
 
@@ -100,12 +100,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void expectCheckForChanges() {
-        Assert.state(!checkForChangesExpected, "expectCheckForChanges() called in an unexpected state");
+        Assert.state(!checkForChangesExpected);
         checkForChangesExpected = true;
     }
 
     public void verify() {
-        Assert.state(!checkForChangesExpected, "verify() in an unexpected state");
+        Assert.state(!checkForChangesExpected);
     }
 
 }

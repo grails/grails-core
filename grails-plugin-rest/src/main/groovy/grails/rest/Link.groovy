@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 
 /**
- * Represents a Link in a RESTful resource. See https://tools.ietf.org/html/draft-kelly-json-hal-05#section-5
+ * Represents a Link in a RESTful resource. See http://tools.ietf.org/html/draft-kelly-json-hal-05#section-5
  *
  * @author Graeme Rocher
  * @since 2.3

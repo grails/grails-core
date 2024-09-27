@@ -1,5 +1,3 @@
-import org.grails.gradle.FetchGrailsDocSourceTask
-
 buildscript {
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
@@ -17,16 +15,10 @@ configurations {
 }
 
 dependencies {
-    if (compiledByGradleGroovyVersion(project)) {
-        documentation "org.codehaus.groovy:groovy-groovydoc:$GroovySystem.version"
-    } else {
-        documentation "org.apache.groovy:groovy-groovydoc:$groovyVersion"
-    }
+    documentation "org.codehaus.groovy:groovy-groovydoc:$groovyVersion"
 }
 
-ext.grailsDocSrc = project.findProperty('grails-doc.home') ?: project.buildDir.absolutePath + "/checkout/grails-docs-src"
-
-tasks.register("stubs") {
+task stubs {
     ext.destinationDir = "$buildDir/docs/stubs"
     doFirst {
         def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
@@ -62,9 +54,8 @@ tasks.register("stubs") {
     }
 }
 
-tasks.register('docs') {
-    group = 'documentation'
-    outputs.dir(project.layout.buildDirectory.dir('docs').get())
+task docs(group: 'documentation') {
+    ext.destinationDir = file("${projectDir}/doc")
 }
 
 task javadoc(type:Javadoc, group: 'documentation') {
@@ -72,7 +63,7 @@ task javadoc(type:Javadoc, group: 'documentation') {
     classpath = files(subs.configurations.compileClasspath)
     dependsOn stubs
     maxMemory = '256M'
-    destinationDir = project.tasks.findByName('docs/javadoc')
+    destinationDir = file("${project.tasks.findByName('docs').destinationDir}/javadoc")
     source subs.sourceSets.main.groovy.srcDirs + stubs.destinationDir
     include "org/codehaus/groovy/grails/**", "grails/**"
     exclude "**/**.groovy"
@@ -93,39 +84,41 @@ task javadoc(type:Javadoc, group: 'documentation') {
 
 tasks.register('groovydoc', Groovydoc) {
     final Set<Project> subProjects = subprojects.findAll {
-        !(it.name in ['grails-dependencies', 'grails-bom', 'grails-bootstrap', 'grails-gradle-model', 'grails-shell'])
-        && !it.name.startsWith("grails-test-suite") }
+        it.name != 'grails-dependencies' && it.name != 'grails-bom' && !it.name.startsWith("grails-test-suite") }
     def groovydocClasspath = files(configurations.documentation  + subProjects.configurations.compileClasspath)
     // exclude problematic jar file from javadoc classpath
     // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
     groovydocClasspath -= groovydocClasspath.filter { it.name == 'javaee-web-api-6.0.jar' }
     classpath = groovydocClasspath
     groovyClasspath = groovydocClasspath
-    destinationDir = project.layout.buildDirectory.dir('docs/api').get().asFile
+    destinationDir = file("${project.tasks.findByName('docs').destinationDir}/api")
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
-    access = GroovydocAccess.PRIVATE
-    includeAuthor = true
-    includeMainForScripts = false
-    processScripts = false
-
     source subProjects.sourceSets.main.groovy.srcDirs
 // Can't make these link methods to work
 //    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")
+//    link("http://download.oracle.com/javase/1.5.0/docs/api", "java." , "javax.")
+//    link("http://download.oracle.com/javaee/5/api", "javax.")
     doLast {
         delete("${buildDir}/tmp")
     }
 }
 
-tasks.register("fetchGrailsDocsSource", FetchGrailsDocSourceTask) {
-    checkoutDir = project.layout.buildDirectory.dir("checkout").get()
-    grailsDocBranch = "7.0.x"
+task fetchGrailsDocsSource {
+    doLast {
+        ant.mkdir dir: buildDir
+        ant.get src:"https://github.com/grails/grails-doc/archive/refs/heads/master.zip", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
+        ant.unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
+            mapper(type: 'regexp', from:/(grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/)
+        }
+    }
 }
 
 task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], group: 'documentation') {
+    startParameter.setCurrentDir(new File("${buildDir}/grails-docs-src"));
     startParameter.useEmptySettings()
-    dir = grailsDocSrc
-    tasks = []
+    dir = "${buildDir}/grails-docs-src/build.gradle"
+    tasks = ["clean", "assemble"]
 
     doFirst {
         ext.oldGrailsHome = System.getProperty("grails.home")
@@ -140,13 +133,13 @@ task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"], 
 
         ant.mkdir dir: "${projectDir}/dist"
         copy {
-            from "${grailsDocSrc}/build/distributions"
+            from "${buildDir}/grails-docs-src/build/distributions"
             into "${projectDir}/dist"
         }
 
         copy {
-            from layout.buildDirectory.dir("grails-docs-src/build/docs").get()
-            into layout.buildDirectory.dir("docs/api").get()
+            from file("${buildDir}/grails-docs-src/build/docs")
+            into project.tasks.findByName("docs").destinationDir
         }
     }
 }

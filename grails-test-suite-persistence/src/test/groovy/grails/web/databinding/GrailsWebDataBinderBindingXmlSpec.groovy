@@ -1,6 +1,5 @@
 package grails.web.databinding
 
-import groovy.xml.XmlSlurper
 import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.validation.Validateable

@@ -15,10 +15,10 @@ import org.eclipse.aether.spi.locator.ServiceLocator
 import org.eclipse.aether.transport.file.FileTransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
 import org.eclipse.aether.util.repository.AuthenticationBuilder
-import org.grails.cli.compiler.grape.AetherGrapeEngine
-import org.grails.cli.compiler.grape.DefaultRepositorySystemSessionAutoConfiguration
-import org.grails.cli.compiler.grape.DependencyResolutionContext
-import org.grails.cli.compiler.grape.RepositorySystemSessionAutoConfiguration
+import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
+import org.springframework.boot.cli.compiler.grape.DefaultRepositorySystemSessionAutoConfiguration
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext
+import org.springframework.boot.cli.compiler.grape.RepositorySystemSessionAutoConfiguration
 
 /**
  *  Creates aether engine to resolve profiles. Mostly copied from {@link AetherGrapeEngine}.

@@ -6,6 +6,5 @@ org.grails.cli.profile.commands.HelpCommand
 org.grails.cli.profile.commands.ListProfilesCommand
 org.grails.cli.profile.commands.ProfileInfoCommand
 org.grails.cli.gradle.commands.GradleCommand
-org.grails.cli.command.run.RunCommand
 
 

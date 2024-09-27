@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2024 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
     MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_JSON, MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
     @Override
-    void render(Errors object, RenderContext context) {
+    void render(Object object, RenderContext context) {
         if (messageSource == null) throw new IllegalStateException("messageSource property null")
         if (object instanceof BeanPropertyBindingResult) {
 

@@ -6,7 +6,7 @@ import spock.lang.Specification
 class CommandObjectNoDataSpec extends Specification implements GrailsWebUnitTest {
 
     Closure doWithConfig() {{ config ->
-        config['grails.gorm.default.constraints'] = {
+        config.grails.gorm.default.constraints = {
             isProg inList: ['Emerson', 'Lake', 'Palmer']
         }
     }}

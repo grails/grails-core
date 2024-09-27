@@ -1,4 +1,4 @@
 dependencies {
     api project(":grails-web"), project(":grails-plugin-controllers")
-    api "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    api "junit:junit:${junitVersion}"
 }

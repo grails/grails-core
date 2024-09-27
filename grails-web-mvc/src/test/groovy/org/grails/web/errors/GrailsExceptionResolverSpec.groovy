@@ -5,7 +5,7 @@ import grails.web.mapping.exceptions.UrlMappingException
 import org.springframework.mock.web.MockHttpServletRequest
 import spock.lang.Specification
 
-import jakarta.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletRequest
 
 class GrailsExceptionResolverSpec extends Specification {
 

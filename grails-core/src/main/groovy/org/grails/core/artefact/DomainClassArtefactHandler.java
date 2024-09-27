@@ -21,6 +21,7 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import grails.core.GrailsDomainClass;
 import grails.core.support.GrailsApplicationAware;
+import grails.util.Environment;
 import groovy.lang.Closure;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
@@ -47,7 +48,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public static final String PLUGIN_NAME = "domainClass";
     private  static final String ENTITY_ANN_NAME = "Entity";
     private static final String GRAILS_PACKAGE_PREFIX = "grails.";
-    private static final String JAKARTA_PERSISTENCE = "jakarta.persistence";
+    private static final String JAVAX_PERSISTENCE = "javax.persistence";
 
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
@@ -148,7 +149,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
                 String annName = annType.getSimpleName();
 
                 String pkgName = annType.getPackage().getName();
-                if(ENTITY_ANN_NAME.equals(annName) && pkgName.startsWith(GRAILS_PACKAGE_PREFIX) || pkgName.startsWith(JAKARTA_PERSISTENCE)) {
+                if(ENTITY_ANN_NAME.equals(annName) && pkgName.startsWith(GRAILS_PACKAGE_PREFIX) || pkgName.startsWith(JAVAX_PERSISTENCE)) {
                     return true;
                 }
             }

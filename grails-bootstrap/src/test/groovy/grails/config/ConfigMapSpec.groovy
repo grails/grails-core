@@ -62,7 +62,8 @@ test.another = true
         given:
         NavigableMap configMap = new NavigableMap()
         when:
-        configMap.a = [b: [c: 1, d: 2]]
+        configMap.a.b.c = 1
+        configMap.a.b.d = 2
         then:
         configMap.toFlatConfig() == ['a.b.c': 1, 'a.b.d': 2]
     }
@@ -72,7 +73,8 @@ test.another = true
         given:
         NavigableMap configMap = new NavigableMap()
         when:
-        configMap.a = [b: [c: 1, d: 2]]
+        configMap.a.b.c = 1
+        configMap.a.b.d = 2
         then:"hasCode() doesn't cause a Stack Overflow error"
         configMap.hashCode() == configMap.hashCode()
     }
@@ -81,7 +83,8 @@ test.another = true
         given:
         NavigableMap configMap = new NavigableMap()
         when:
-        configMap.a = [b: [c: [1, 2, 3], d: 2]]
+        configMap.a.b.c = [1, 2, 3]
+        configMap.a.b.d = 2
         then:
         configMap.toFlatConfig() ==
                 ['a.b.c': [1, 2, 3],
@@ -95,7 +98,8 @@ test.another = true
         given:
         NavigableMap configMap = new NavigableMap()
         when:
-        configMap.a = [b: [c: [1, 2, 3], d: 2]]
+        configMap.a.b.c = [1, 2, 3]
+        configMap.a.b.d = 2
         then:
         configMap.toProperties() ==
                 ['a.b.c': '1,2,3',
@@ -108,7 +112,8 @@ test.another = true
     def "should support cloning"() {
         given:
         NavigableMap configMap = new NavigableMap()
-        configMap.a = [b: [c: [1, 2, 3], d: 2]]
+        configMap.a.b.c = [1, 2, 3]
+        configMap.a.b.d = 2
         when: 
         NavigableMap cloned = configMap.clone()
         then:

@@ -11,8 +11,8 @@ import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpSession
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession
 
 import static org.grails.web.util.GrailsApplicationAttributes.FLASH_SCOPE
 import static org.junit.jupiter.api.Assertions.*

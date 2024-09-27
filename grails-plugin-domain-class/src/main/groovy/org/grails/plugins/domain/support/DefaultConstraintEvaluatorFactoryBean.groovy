@@ -1,7 +1,6 @@
 package org.grails.plugins.domain.support
 
 import grails.core.GrailsApplication
-import grails.util.GrailsMessageSourceUtils
 import org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.datastore.gorm.validation.constraints.registry.ConstraintRegistry
@@ -15,16 +14,8 @@ import org.springframework.context.MessageSource
 
 class DefaultConstraintEvaluatorFactoryBean implements FactoryBean<ConstraintsEvaluator> {
 
-    MessageSource messageSource
-
     @Autowired
-    setMessageSource(List<MessageSource> messageSources) {
-        setMessageSource(GrailsMessageSourceUtils.findPreferredMessageSource(messageSources))
-    }
-
-    void setMessageSource(MessageSource messageSource) {
-        this.messageSource = messageSource
-    }
+    MessageSource messageSource
 
     @Autowired
     @Qualifier('grailsDomainClassMappingContext')

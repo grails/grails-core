@@ -7,7 +7,7 @@ import org.grails.plugins.databinding.DataBindingConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-import jakarta.inject.Inject
+import javax.inject.Inject
 import java.time.*
 import java.time.format.DateTimeFormatter
 

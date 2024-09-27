@@ -3,7 +3,9 @@ package org.grails.web.mapping
 import grails.testing.web.GrailsWebUnitTest
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
+import org.junit.Test
 import spock.lang.Specification
+import static org.junit.Assert.*
 import org.springframework.core.io.ByteArrayResource
 
 /**

@@ -9,11 +9,10 @@ dependencies {
         exclude group:'org.grails', module:'grails-encoder'
     }
 
-    api "org.apache.groovy:groovy-templates:$groovyVersion"
-    api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+    api "org.codehaus.groovy:groovy-templates:$groovyVersion"
 
-    api "org.springframework:spring-webmvc:$springVersion"
-    api "org.springframework:spring-context-support:$springVersion"
+    api "org.springframework:spring-webmvc:${springVersion}"
+    api "org.springframework:spring-context-support:${springVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
-    compileOnly "com.github.spotbugs:spotbugs-annotations:$jsr305Version"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 }

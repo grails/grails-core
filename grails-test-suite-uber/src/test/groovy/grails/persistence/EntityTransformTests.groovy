@@ -1,158 +1,152 @@
 package grails.persistence
 
-import spock.lang.Specification
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.*
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class EntityTransformTests extends Specification {
+class EntityTransformTests {
+
+    @Delegate protected GroovyShell shell
+
+    @BeforeEach
+    void setup() {
+        shell = createNewShell()
+    }
+
+
+    protected GroovyShell createNewShell() {
+        return new GroovyShell()
+    }
+
 
     // test for http://jira.codehaus.org/browse/GRAILS-5238
     void testGRAILS_5238() {
+        def p = evaluate('''
+import grails.persistence.*
 
-        given:
-        def p = new GroovyShell().evaluate('''
-            import grails.persistence.*
-            
-            @Entity
-            class Permission {
-            
-                String permission
-            
-                static belongsTo = [ user: User ]
-            
-                void setOwner(User owner) {
-                    this.user = owner
-                }
-                User getOwner() {
-                    return user
-                }
-            }
-            
-            @Entity
-            class User {
-                String username
-            }
-            
-            u = new User(username: 'bob')
-            p = new Permission(user: u, permission: 'uber')
+@Entity
+class Permission {
+    String permission
 
-            return p
-        ''')
+    static belongsTo = [ user: User ]
 
-        expect:
-        'User' == p['user'].class.name
-        'User' == p.class.methods.find { it.name == 'getUser' }.returnType.name
+    void setOwner(User owner) {
+        this.user = owner
     }
 
-    void testDefaultConstructorBehaviourNotOverridden() {
-        given:
-        def entity = new GroovyShell().evaluate('''
-            import grails.persistence.*
-            
-            @Entity
-            class EntityTransformTest {
-    
-                  boolean enabled
-                  int cash
-                  
-                  EntityTransformTest() {
-                      enabled = true
-                      cash = 30
-                  }
-            }
-            
-            return new EntityTransformTest()
-        ''')
+    User getOwner() {
+        return user
+    }
+}
 
-        expect:
-        entity != null
-        entity['enabled']
-        entity['cash'] == 30
+@Entity
+class User {
+    String username
+}
+
+u = new User(username:"bob")
+p = new Permission(user:u, permission:"uber")
+''')
+
+        assertEquals "User", p.user.class.name
+        assertEquals "User", p.class.methods.find { it.name == 'getUser' }.returnType.name
     }
 
-    void testConstructorBehaviourNotOverridden() {
-        given:
-        def entity = new GroovyShell().evaluate('''
-            import grails.persistence.*
-            
-            @Entity
-            class EntityTransformTest2 {
+    void testDefaultConstructorBehaviourNotOverriden() {
+        def entity = evaluate("""
+          import grails.persistence.*
+          @Entity
+          class EntityTransformTest {
 
                 boolean enabled
                 int cash
-                
+                EntityTransformTest() {
+                    enabled = true
+                    cash = 30
+                }
+          }
+          new EntityTransformTest()
+        """)
+
+        assert entity != null
+        assert entity.enabled
+        assert entity.cash == 30
+
+    }
+
+    void testConstructorBehaviourNotOverriden() {
+        def entity = evaluate("""
+          import grails.persistence.*
+          @Entity
+          class EntityTransformTest2 {
+
+                boolean enabled
+                int cash
                 EntityTransformTest2() {
                     enabled = true
                     cash = 30
                 }
-            }
-            return new EntityTransformTest2(cash: 42)
-        ''')
+          }
+          new EntityTransformTest2(cash: 42)
+        """)
 
-        expect:
-        entity != null
-        entity['enabled']
-        entity['cash'] == 42
+        assert entity != null
+        assert entity.enabled
+        assert entity.cash == 42
     }
 
     void testAnnotatedEntity() {
-        given:
-        def entity = new GroovyShell().evaluate('''
-            import grails.persistence.*
-          
-            @Entity
-            class EntityTransformTest3 {
+        def entity = evaluate("""
+          import grails.persistence.*
+          @Entity
+          class EntityTransformTest3 {
 
-               static belongsTo = [one: EntityTransformTest3]
-               static hasMany = [many: EntityTransformTest3]
+               static belongsTo = [one:EntityTransformTest3]
+               static hasMany = [many:EntityTransformTest3]
 
                static constraints = {
-                   id bindable: true
+                    id bindable:true
                }
-            }
-            return new EntityTransformTest3()
-        ''')
+          }
+          new EntityTransformTest3()
+        """)
 
-        expect:
-        entity['id'] == null
-        entity['version'] == null
+        assertNull entity.id
+        assertNull entity.version
 
-        when:
-        entity['many'] = new HashSet()
+        entity.many = new HashSet()
+        assertEquals 0, (int) entity.many.size()
 
-        then:
-        0 == (entity['many'] as HashSet).size()
+        entity.one = entity.class.newInstance()
 
-        when:
-        entity['one'] = entity.class.getDeclaredConstructor().newInstance()
-
-        then:
-        entity['one'] != null
+        assertNotNull entity.one
     }
 
+    @Test
     void testToStringOverrideTests() {
-        given:
-        def entities = new GroovyShell().evaluate('''
+        def entities = evaluate('''
 
-            import grails.persistence.*
-    
-            // Since Groovy 4 parent domain classes cannot be annotated with @Entity: https://issues.apache.org/jira/browse/GROOVY-5106
-            class Personnel {
-                String lastName
-                String firstName
-                String toString() {"${firstName}, ${lastName}"}
-            }
-    
-            @Entity
-            class Approver extends Personnel {}
-            
-            return [new Approver(firstName: 'joe', lastName: 'bloggs'), new Personnel(firstName: 'jack', lastName: 'dee') ]
-        ''') as List
+        import grails.persistence.*
+        @Entity
+        class Personnel {
+            String lastName
+            String firstName
+            String toString() {"${firstName}, ${lastName}"}
+        }
 
-        expect:
-        'joe, bloggs' == entities[0].toString()
-        'jack, dee' == entities[1].toString()
+        @Entity
+        class Approver extends Personnel {
+
+        }
+        [new Approver(firstName:"joe", lastName:"bloggs"), new Personnel(firstName:"jack", lastName:"dee") ]
+        ''')
+
+        assertEquals "joe, bloggs", entities[0].toString()
+        assertEquals "jack, dee", entities[1].toString()
     }
 }

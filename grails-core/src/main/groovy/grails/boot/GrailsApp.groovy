@@ -10,6 +10,14 @@ import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import io.micronaut.context.ApplicationContext
+import io.micronaut.context.ApplicationContextBuilder
+import io.micronaut.context.ApplicationContextConfiguration
+import io.micronaut.context.env.AbstractPropertySourceLoader
+import io.micronaut.context.env.PropertySource
+import io.micronaut.core.util.StringUtils
+import io.micronaut.spring.context.env.MicronautEnvironment
+import io.micronaut.spring.context.factory.MicronautBeanFactoryConfiguration
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -26,8 +34,12 @@ import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.event.ApplicationPreparedEvent
 import org.springframework.boot.web.context.WebServerApplicationContext
+import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.event.ContextStoppedEvent
+import org.springframework.core.convert.ConversionService
 import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.env.PropertyResolver
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
 
@@ -105,6 +117,51 @@ class GrailsApp extends SpringApplication {
         setAllowBeanDefinitionOverriding(true)
         setAllowCircularReferences(true)
         ConfigurableApplicationContext applicationContext = super.createApplicationContext()
+        def now = System.currentTimeMillis()
+
+        ClassLoader applicationClassLoader = this.classLoader
+        ApplicationContextConfiguration micronautConfiguration = new ApplicationContextConfiguration() {
+            @Override
+            List<String> getEnvironments() {
+                if (configuredEnvironment != null) {
+                    return configuredEnvironment.getActiveProfiles().toList()
+                } else {
+                    return Collections.emptyList()
+                }
+            }
+
+            @Override
+            Optional<Boolean> getDeduceEnvironments() {
+                return Optional.of(false)
+            }
+
+            @Override
+            ClassLoader getClassLoader() {
+                return applicationClassLoader
+            }
+        }
+
+        List beanExcludes = []
+        beanExcludes.add(ConversionService.class)
+        beanExcludes.add(org.springframework.core.env.Environment.class)
+        beanExcludes.add(PropertyResolver.class)
+        beanExcludes.add(ConfigurableEnvironment.class)
+        def objectMapper = io.micronaut.core.reflect.ClassUtils.forName("com.fasterxml.jackson.databind.ObjectMapper", classLoader).orElse(null)
+        if (objectMapper != null) {
+            beanExcludes.add(objectMapper)
+        }
+        def micronautContext = new io.micronaut.context.DefaultApplicationContext(micronautConfiguration);
+        micronautContext
+                .environment
+                .addPropertySource("grails-config", [(MicronautBeanFactoryConfiguration.PREFIX + ".bean-excludes"): (Object)beanExcludes])
+        micronautContext.start()
+        ConfigurableApplicationContext parentContext = micronautContext.getBean(ConfigurableApplicationContext)
+        applicationContext.setParent(
+                parentContext
+        )
+        applicationContext.addApplicationListener(new MicronautShutdownListener(micronautContext))
+        log.info("Started Micronaut Parent Application Context in ${System.currentTimeMillis()-now}ms")
+
 
         if(enableBeanCreationProfiler) {
             def processor = new BeanCreationProfilingPostProcessor()
@@ -112,6 +169,10 @@ class GrailsApp extends SpringApplication {
             applicationContext.addApplicationListener(processor)
         }
         return applicationContext
+    }
+
+    protected ApplicationContextBuilder newMicronautContextBuilder() {
+        return ApplicationContext.builder()
     }
 
     @Override
@@ -356,6 +417,11 @@ class GrailsApp extends SpringApplication {
         try {
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
             String protocol = app.config.getProperty('server.ssl.key-store') ? 'https' : 'http'
+            applicationContext.publishEvent(
+                    new ApplicationPreparedEvent(
+                            this,
+                            StringUtils.EMPTY_STRING_ARRAY, (ConfigurableApplicationContext)applicationContext.getParent())
+            )
             String contextPath = app.config.getProperty('server.servlet.context-path', '')
             String hostName = app.config.getProperty('server.address', 'localhost')
             int port
@@ -390,5 +456,19 @@ class GrailsApp extends SpringApplication {
         GrailsApp grailsApp = new GrailsApp(sources)
         grailsApp.banner = new ResourceBanner(new ClassPathResource(GRAILS_BANNER))
         return grailsApp.run(args)
+    }
+
+    @CompileStatic
+    static class MicronautShutdownListener implements ApplicationListener<ContextStoppedEvent> {
+        final ApplicationContext micronautApplicationContext
+
+        MicronautShutdownListener(ApplicationContext micronautApplicationContext) {
+            this.micronautApplicationContext = micronautApplicationContext
+        }
+
+        @Override
+        void onApplicationEvent(ContextStoppedEvent event) {
+            this.micronautApplicationContext.stop()
+        }
     }
 }

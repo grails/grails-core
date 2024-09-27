@@ -1,6 +1,6 @@
 package grails.artefact.controller.support
 
-import jakarta.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletRequest
 
 import org.springframework.http.HttpMethod
 

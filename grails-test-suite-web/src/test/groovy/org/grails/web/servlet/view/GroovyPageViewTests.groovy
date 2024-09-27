@@ -5,14 +5,12 @@ import org.grails.core.io.MockStringResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
 import org.grails.support.MockApplicationContext
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.web.context.request.RequestContextHolder
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 @SuppressWarnings("unused")
-@Disabled("grails-gsp is not on jakarta.servlet yet")
 class GroovyPageViewTests {
 
     @Test

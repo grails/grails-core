@@ -1,16 +1,16 @@
 dependencies {
     api project(":grails-core")
-    api "org.apache.groovy:groovy-console:$groovyVersion"
-    api "org.apache.groovy:groovy-swing:$groovyVersion"
-    api "org.apache.groovy:groovy-groovysh:$groovyVersion"
+    api "org.codehaus.groovy:groovy-console:$groovyVersion"
+    api "org.codehaus.groovy:groovy-swing:$groovyVersion"
+    api "org.codehaus.groovy:groovy-groovysh:$groovyVersion"
     implementation "org.fusesource.jansi:jansi:$jansiVersion",
             "jline:jline:$jlineVersion",
             "net.java.dev.jna:jna:$jnaVersion"
 
     api("org.springframework.boot:spring-boot:$springBootVersion")
-    api "org.springframework:spring-test:$springVersion"
+    api "org.springframework:spring-test:${springVersion}"
 
-    api "org.springframework:spring-web:$springVersion"
+    api "org.springframework:spring-web:${springVersion}"
 
-    api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+    api "javax.servlet:javax.servlet-api:$servletApiVersion"
 }

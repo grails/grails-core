@@ -7,7 +7,7 @@ import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
-import jakarta.persistence.FlushModeType
+import javax.persistence.FlushModeType
 
 /*
  * Copyright 2014 original authors
@@ -16,7 +16,7 @@ import jakarta.persistence.FlushModeType
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,7 +41,7 @@ class PropertySourcesConfigSpec extends Specification {
             config.one == 1
             config.two == 2
             config.three.four == 34
-            !config?.four?.five
+            !config.four.five
             config.getProperty('one', String) == '1'
             config.getProperty('three.four', String) == '34'
             config.getProperty('three', String) == null

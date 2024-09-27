@@ -13,8 +13,8 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 class RedirectWithParamsSpec extends AbstractUrlMappingsSpec {
 

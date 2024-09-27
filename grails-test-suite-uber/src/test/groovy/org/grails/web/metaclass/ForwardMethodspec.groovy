@@ -4,10 +4,10 @@ import grails.artefact.Controller
 import grails.web.mapping.LinkGenerator
 import org.springframework.web.context.request.RequestContextHolder
 
-import jakarta.servlet.RequestDispatcher
-import jakarta.servlet.ServletContext
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
+import javax.servlet.RequestDispatcher
+import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
  
 import grails.web.UrlConverter
  

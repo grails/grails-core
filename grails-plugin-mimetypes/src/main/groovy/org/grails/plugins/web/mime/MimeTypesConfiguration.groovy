@@ -25,11 +25,11 @@ import grails.web.mime.MimeTypeResolver
 import grails.web.mime.MimeUtility
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import io.micronaut.context.annotation.Factory
 import org.grails.web.mime.DefaultMimeTypeResolver
 import org.grails.web.mime.DefaultMimeUtility
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 
 /**
@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Primary
  * @author graemerocher
  * @since 4.0
  */
-@Configuration
+@Factory
 @CompileStatic
 class MimeTypesConfiguration {
 

@@ -13,9 +13,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Specification
 
-import jakarta.servlet.RequestDispatcher
-import jakarta.servlet.ServletRequest
-import jakarta.servlet.ServletResponse
+import javax.servlet.RequestDispatcher
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
 
 /**
  * Created by graemerocher on 21/02/2017.

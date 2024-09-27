@@ -5,8 +5,7 @@ import grails.converters.JSON
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-
-import jakarta.annotation.PostConstruct
+import javax.annotation.PostConstruct
 import spock.lang.Specification
 
 class MarshallerRegistrarSpec extends Specification implements ControllerUnitTest<JsonMarshallerController>, DomainUnitTest<Post> {

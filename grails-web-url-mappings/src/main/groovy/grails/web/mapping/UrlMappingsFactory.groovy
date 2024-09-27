@@ -13,17 +13,17 @@ import org.springframework.context.ApplicationContextAware
      * @since 3.1
  */
 @CompileStatic
-class UrlMappingsFactory implements ApplicationContextAware {
+class UrlMappingsFactory implements ApplicationContextAware{
 
     ApplicationContext applicationContext
 
-    UrlMappings create(Closure mappingsClosure) {
+    UrlMappings create(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
-        return new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappingsClosure))
+        return new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappings))
     }
 
-    UrlMappings create(Class mappingsClass) {
+    UrlMappings create(Class mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
-        return new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappingsClass))
+        return new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappings))
     }
 }

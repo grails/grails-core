@@ -4,7 +4,7 @@ import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
-import jakarta.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpServletResponse
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll

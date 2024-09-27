@@ -117,7 +117,7 @@ class LazyBeanMap implements Map<String,Object>{
     Collection<Object> values() {
         if(!cpf) return []
         else {
-            keySet().collect() { String property -> ((ClassPropertyFetcher) /*Cast needed after upgrade to Groovy 4.0.22*/ cpf).getPropertyValue(property) }
+            keySet().collect() { String property -> cpf.getPropertyValue(property) }
         }
     }
 
@@ -126,7 +126,7 @@ class LazyBeanMap implements Map<String,Object>{
         if(!cpf) return [] as Set<Map.Entry<String, Object>>
         else {
             return new HashSet<Map.Entry<String, Object>>(
-                    keySet().collect() { String property -> new AbstractMap.SimpleEntry<String, Object>(property, ((ClassPropertyFetcher) /*Cast needed after upgrade to Groovy 4.0.22*/ cpf).getPropertyValue(property)) }
+                    keySet().collect() { String property -> new AbstractMap.SimpleEntry<String, Object>(property, cpf.getPropertyValue(property)) }
             )
         }
     }

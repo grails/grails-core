@@ -1,11 +1,11 @@
 /*
- * Copyright 2016-2024 the original author or authors.
+ * Copyright 2016 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,9 +19,11 @@ package org.grails.asm;
 import org.springframework.asm.AnnotationVisitor;
 import org.springframework.asm.SpringAsmInfo;
 import org.springframework.asm.Type;
+import org.springframework.core.NestedIOException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
+import org.springframework.core.type.classreading.AnnotationMetadataReadingVisitor;
 import org.springframework.core.type.classreading.MetadataReader;
 
 import java.io.BufferedInputStream;
@@ -65,7 +67,7 @@ public class AnnotationMetadataReader implements MetadataReader {
             classReader = new ClassReader(is);
         }
         catch (IllegalArgumentException ex) {
-            throw new IOException("ASM ClassReader failed to parse class file - " +
+            throw new NestedIOException("ASM ClassReader failed to parse class file - " +
                     "probably due to a new Java class file version that isn't supported yet: " + resource, ex);
         }
         finally {

@@ -29,21 +29,21 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.grails.cli.compiler.AstUtils;
-import org.grails.cli.compiler.CompilerAutoConfiguration;
-import org.grails.cli.compiler.DependencyCustomizer;
-import org.grails.cli.compiler.GroovyCompilerConfiguration;
-import org.grails.cli.compiler.autoconfigure.SpringMvcCompilerAutoConfiguration;
-import org.grails.cli.compiler.dependencies.Dependency;
-import org.grails.cli.compiler.dependencies.DependencyManagement;
-import org.grails.cli.compiler.grape.DependencyResolutionContext;
+import org.springframework.boot.cli.compiler.AstUtils;
+import org.springframework.boot.cli.compiler.CompilerAutoConfiguration;
+import org.springframework.boot.cli.compiler.DependencyCustomizer;
+import org.springframework.boot.cli.compiler.GroovyCompilerConfiguration;
+import org.springframework.boot.cli.compiler.autoconfigure.SpringMvcCompilerAutoConfiguration;
+import org.springframework.boot.cli.compiler.dependencies.Dependency;
+import org.springframework.boot.cli.compiler.dependencies.DependencyManagement;
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
 
 
 /**
- * A {@link CompilerAutoConfiguration} for Grails Micro Service applications
+ * A {@link org.springframework.boot.cli.compiler.CompilerAutoConfiguration} for Grails Micro Service applications
  *
  * @author Graeme Rocher
  * @since 3.0

@@ -12,9 +12,9 @@ class IOUtilsSpec extends Specification{
         IOUtils.findClassResource(BuildSettings).path.contains('grails-bootstrap')
     }
 
-    void "Test findJarResource finds a JAR resource"() {
+    void "Test findJarResource finds a the JAR resource"() {
         expect:
         IOUtils.findJarResource(Specification)
-        IOUtils.findJarResource(Specification).path.endsWith('spock-core-2.3-groovy-4.0.jar!/')
+        IOUtils.findJarResource(Specification).path.endsWith('spock-core-2.1-groovy-3.0.jar!/')
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package grails.validation
 
-import grails.gorm.validation.ConstrainedProperty
 import grails.util.Holders
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -81,11 +80,10 @@ trait Validateable {
      * @return The map of applied constraints
      */
     @Generated
-    @CompileDynamic
     static Map<String, Constrained> getConstraintsMap() {
         if (constraintsMapInternal == null) {
             org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator evaluator = findConstraintsEvaluator()
-            Map<String, ConstrainedProperty> evaluatedConstraints = evaluator.evaluate(this, this.defaultNullable())
+            Map<String, grails.gorm.validation.ConstrainedProperty> evaluatedConstraints = evaluator.evaluate(this, defaultNullable())
 
             Map<String, Constrained> finalConstraints = [:]
             for(entry in evaluatedConstraints) {
@@ -173,14 +171,13 @@ trait Validateable {
      * @return True if it is valid
      */
     @Generated
-    @CompileDynamic
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
         boolean shouldInherit = Boolean.valueOf(params?.inherit?.toString() ?: 'true')
         org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator evaluator = findConstraintsEvaluator()
 
-        Map<String, ConstrainedProperty> constraints = evaluator.evaluate(this.class, this.defaultNullable(), !shouldInherit, adHocConstraintsClosures)
+        Map<String, grails.gorm.validation.ConstrainedProperty> constraints = evaluator.evaluate(this.class, defaultNullable(), !shouldInherit, adHocConstraintsClosures)
 
         ValidationErrors localErrors = doValidate(constraints, fieldsToValidate)
 
@@ -193,7 +190,7 @@ trait Validateable {
         return !errors.hasErrors()
     }
 
-    private ValidationErrors doValidate(Map<String, ConstrainedProperty> constraints, List fieldsToValidate) {
+    private ValidationErrors doValidate(Map<String, grails.gorm.validation.ConstrainedProperty> constraints, List fieldsToValidate) {
         ValidationErrors localErrors = new ValidationErrors(this, this.class.name)
         if (constraints) {
             Errors originalErrors = getErrors()
@@ -220,15 +217,17 @@ trait Validateable {
     }
 
     @CompileDynamic
-    private Object getPropertyValue(ConstrainedProperty prop) {
-        this[prop.propertyName]
+    private Object getPropertyValue(grails.gorm.validation.ConstrainedProperty prop) {
+        this.getProperty(prop.propertyName)
     }
 
+    @CompileStatic
     private static org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator findConstraintsEvaluator() {
         try {
             ApplicationContext ctx = Holders.applicationContext
-            return ctx.getBean(org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator)
-        } catch (Throwable ignored) {
+            org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator evaluator = ctx.getBean(org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator)
+            return evaluator
+        } catch (Throwable e) {
             MessageSource messageSource = Holders.findApplicationContext() ?: new StaticMessageSource()
             Map<String, Object> defaultConstraints = Holders.findApplication() ?
                     ConstraintEvalUtils.getDefaultConstraints(Holders.grailsApplication.config) : Collections.<String, Object>emptyMap()
@@ -245,7 +244,7 @@ trait Validateable {
             ApplicationContext ctx = Holders.findApplicationContext()
             MessageSource messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource', MessageSource) : null
             return messageSource
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
             return null
         }
     }
