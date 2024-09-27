@@ -29,7 +29,6 @@ import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
 import groovy.lang.Closure;
 import groovy.transform.CompilationUnitAware;
-import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.apache.groovy.ast.tools.ClassNodeUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -98,6 +97,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
 import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
@@ -753,9 +753,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final ClassNode controllerNode, final ClassNode commandObjectNode,
             final ASTNode actionNode, final String actionName, final String paramName,
             final SourceUnit source, final GeneratorContext context) {
-        final DeclarationExpression declareCoExpression = new DeclarationExpression(
-                new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
-        wrapper.addStatement(new ExpressionStatement(declareCoExpression));
+        final DeclarationExpression declareCoExpression = declX(localVarX(paramName, commandObjectNode), new EmptyExpression());
+        wrapper.addStatement(stmt(declareCoExpression));
 
         if(commandObjectNode.isInterface() || Modifier.isAbstract(commandObjectNode.getModifiers())) {
             final String warningMessage = "The [" + actionName + "] action in [" +
@@ -843,16 +842,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
             final ClassNode commandObjectNode, final String paramName, SourceUnit source) {
-
-        final ArgumentListExpression initializeCommandObjectArguments = new ArgumentListExpression();
-        initializeCommandObjectArguments.addExpression(new ClassExpression(commandObjectNode));
-        initializeCommandObjectArguments.addExpression(new ConstantExpression(paramName));
-        final MethodCallExpression initializeCommandObjectMethodCall = new MethodCallExpression(new VariableExpression("this"), "initializeCommandObject", initializeCommandObjectArguments);
+        final ArgumentListExpression initializeCommandObjectArguments = args(classX(commandObjectNode), constX(paramName));
+        final MethodCallExpression initializeCommandObjectMethodCall = callThisX("initializeCommandObject", initializeCommandObjectArguments);
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
-        
-        final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
-        
-        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
+        final Expression assignCommandObjectToParameter = assignX(varX(paramName), initializeCommandObjectMethodCall);
+        wrapper.addStatement(stmt(assignCommandObjectToParameter));
     }
 
     /**
