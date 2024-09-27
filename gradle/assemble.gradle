@@ -1,12 +1,10 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 apply plugin: org.grails.gradle.GrailsBuildPlugin
 
 def libsConfigurations = []
 subprojects { subproject ->
     if(subproject.name == 'grails-dependencies') return
     if(subproject.name == 'grails-bom') return
-    if(subproject.name == 'grails-shell' || subproject.name == 'grails-core') {
+    if(subproject.name == 'grails-core') {
 
         configurations {
             libsConfigurations << libs {
@@ -14,41 +12,6 @@ subprojects { subproject ->
                 ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
             }
         }
-    }
-}
-
-task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency',
-                                dependsOn: libsConfigurations) {
-    doLast {
-/*
-    def moduleToVersionsMap = [:]
-    libsConfigurations.each { configuration ->
-        configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-            def dependency = artifact.resolvedDependency
-
-            def key = "${dependency.moduleGroup}/${dependency.moduleName}".toString()
-            def value = dependency.moduleVersion
-
-            def versions = moduleToVersionsMap[key]
-            if (!versions) {
-                versions = [] as Set
-                moduleToVersionsMap[key] = versions
-            }
-            versions << value
-        }
-    }
-    def dups = moduleToVersionsMap.findAll { k, v ->
-        v.size() > 1
-    }
-    if (dups) {
-        def msg = 'Multiple versions of some dependencies have been identified in the dependency graph'
-        println msg
-        dups.each { k, v ->
-            println "Dependency: ${k}, Versions: $v"
-        }
-        throw new GradleException(msg)
-    }
-*/
     }
 }
 
@@ -190,18 +153,18 @@ task install(dependsOn: [populateDependencies, grailsCreateStartScripts]) { task
 //                                                                                                        *.collect { Project p -> p.tasks.withType(PublishToMavenLocal)})
 
 task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
-    destinationDir = "${buildDir}/distributions" as File
-    baseName = 'grails'
-    appendix = grailsVersion
+    destinationDirectory = project.layout.buildDirectory.dir("distributions")
+    archiveBaseName = 'grails'
+    archiveAppendix = grailsVersion
 
     exclude "**/CVS/**"
 
     into("grails-$grailsVersion") {
         from(projectDir) {
-            include 'bin/grails', 'bin/grails.bat', 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/"
+            include 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/"
             exclude 'ant/bin', 'src/grails', 'src/war'
         }
-        from(docs.destinationDir) {
+        from(project.layout.buildDirectory.dir("docs").get().asFile) {
             into "doc"
         }
         from("conf") {
@@ -213,10 +176,5 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         }
     }
 }
-
-/*task zipDoc(type: Zip) {
-    appendix = 'docs'
-    from docs.destinationDir
-}*/
 
 task assemble(dependsOn: zipDist)

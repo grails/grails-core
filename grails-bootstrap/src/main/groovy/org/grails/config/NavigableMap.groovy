@@ -1,9 +1,23 @@
+/*
+ * Copyright 2014-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.config
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -22,6 +36,9 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     private static final Pattern SPLIT_PATTERN = ~/\./
     private static final String SPRING_PROFILES = 'spring.profiles.active'
     private static final String SPRING = 'spring'
+    private static final String CONFIG = 'config'
+    private static final String ACTIVATE = 'activate'
+    private static final String ON_PROFILE = 'on-profile'
     private static final String PROFILES = 'profiles'
     private static final String SUBSCRIPT_REGEX = /((.*)\[(\d+)\]).*/
 
@@ -136,6 +153,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                            NavigableMap targetMap,
                            Map sourceMap,
                            boolean parseFlatKeys) {
+
+        if(springProfileExclude(sourceMap, path)) {
+            return
+        }
+
         for (Entry entry in sourceMap) {
             Object sourceKeyObject = entry.key
             Object sourceValue = entry.value
@@ -157,13 +179,52 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
     }
 
-    private boolean shouldSkipBlock(Map sourceMap, String path) {
-        Object springProfileDefined = System.properties.getProperty(SPRING_PROFILES)
-        boolean hasSpringProfiles =
-            sourceMap.get(SPRING) instanceof Map && ((Map)sourceMap.get(SPRING)).get(PROFILES) ||
-            path == SPRING && sourceMap.get(PROFILES)
+    private static boolean springProfileExclude(Map sourceMap, String path) {
 
-        return !springProfileDefined && hasSpringProfiles
+        // Is there an active Spring profile?
+        def activeSpringProfile = System.getProperty(SPRING_PROFILES)
+
+        // Is there a 'spring.config.activate.on-profile' property defined in the source map?
+        def sourceMapProfile1 = ((Map)((Map)((Map)sourceMap?.get(SPRING))?.get(CONFIG))?.get(ACTIVATE))?.get(ON_PROFILE)
+        if (!sourceMapProfile1 && path == "$SPRING.$CONFIG.$ACTIVATE") {
+            sourceMapProfile1 = sourceMap?.get(ON_PROFILE)
+        }
+        if (!sourceMapProfile1) {
+            sourceMapProfile1 = sourceMap.get("$SPRING.$CONFIG.$ACTIVATE.$ON_PROFILE" as String)
+        }
+        if (sourceMapProfile1 && !activeSpringProfile) {
+            // There is a spring.config.activate.on-profile property defined in this sourceMap, but there is no active spring profile
+            return true
+        }
+        if (sourceMapProfile1 == activeSpringProfile) {
+            // The active spring profile matches the spring.config.activate.on-profile property in this sourceMap
+            return false
+        }
+
+        // Is there a 'spring.profiles' property defined in the source map? (Old way of Spring profiles activation)
+        def sourceMapProfile2 = ((Map)sourceMap?.get(SPRING))?.get(PROFILES)
+        if (!sourceMapProfile2 && path == SPRING) {
+            sourceMapProfile2 = sourceMap?.get(PROFILES)
+        }
+        if (!sourceMapProfile2) {
+            sourceMapProfile2 = sourceMap.get("$SPRING.$PROFILES" as String)
+        }
+        if (sourceMapProfile1 && !activeSpringProfile) {
+            // There is a spring.config.activate.on-profile property defined in this sourceMap, but there is no active spring profile
+            return true
+        }
+        if (sourceMapProfile2 == activeSpringProfile) {
+            // The active spring profile matches the spring.profiles property in this sourceMap
+            return false
+        }
+
+        if (activeSpringProfile && !sourceMapProfile1 && !sourceMapProfile2) {
+            // There is no spring profile defined in this sourceMap, it should always be included
+            return false
+        }
+
+        // We can skip this sourceMap as it defines a spring profile that is not active
+        return true
     }
 
     protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
@@ -290,7 +351,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 
     public Object getProperty(String name) {
         if (!containsKey(name)) {
-            return new NullSafeNavigator(this, [name].asImmutable())
+            return null
         }
         Object result = get(name)
         if (!(result instanceof NavigableMap)) {
@@ -427,173 +488,4 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     boolean equals(Object obj) {
         return delegateMap.equals(obj)
     }
-
-    /**
-     * @deprecated This class will be removed in future. Use {@code config.getProperty(String key, Class<T> targetType)} instead of dot based navigation.
-     */
-    @Deprecated
-    @CompileStatic
-    static class NullSafeNavigator implements Map<String, Object>{
-        final NavigableMap parent
-        final List<String> path
-        
-        NullSafeNavigator(NavigableMap parent, List<String> path) {
-            this.parent = parent
-            this.path = path
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Accessing config key '{}' through dot notation is deprecated, and it will be removed in a future release. Use 'config.getProperty(key, targetClass)' instead.", path)
-            }
-        }
-
-        Object getAt(Object key) {
-            getProperty(String.valueOf(key))
-        }
-        
-        void setAt(Object key, Object value) {
-            setProperty(String.valueOf(key), value)
-        }
-
-        @Override
-        int size() {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap != null) {
-                return parentMap.size()
-            }
-            return 0
-        }
-
-        @Override
-        boolean isEmpty() {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap != null) {
-                return parentMap.isEmpty()
-            }
-            return true
-        }
-
-        boolean containsKey(Object key) {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap == null) return false
-            else {
-                return parentMap.containsKey(key)
-            }
-        }
-
-        @Override
-        boolean containsValue(Object value) {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap != null) {
-                return parentMap.containsValue(value)
-            }
-            return false
-        }
-
-        @Override
-        Object get(Object key) {
-            return getAt(key)
-        }
-
-        @Override
-        Object put(String key, Object value) {
-            throw new UnsupportedOperationException("Configuration cannot be modified");
-        }
-
-        @Override
-        Object remove(Object key) {
-            throw new UnsupportedOperationException("Configuration cannot be modified");
-        }
-
-        @Override
-        void putAll(Map<? extends String, ?> m) {
-            throw new UnsupportedOperationException("Configuration cannot be modified");
-        }
-
-        @Override
-        void clear() {
-            throw new UnsupportedOperationException("Configuration cannot be modified");
-        }
-
-        @Override
-        Set<String> keySet() {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap != null) {
-                return parentMap.keySet()
-            }
-            return Collections.emptySet()
-        }
-
-        @Override
-        Collection<Object> values() {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap != null) {
-                return parentMap.values()
-            }
-            return Collections.emptySet()
-        }
-
-        @Override
-        Set<Map.Entry<String, Object>> entrySet() {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap != null) {
-                return parentMap.entrySet()
-            }
-            return Collections.emptySet()
-        }
-
-        Object getProperty(String name) {
-            NavigableMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap == null) {
-                return new NullSafeNavigator(parent, ((path + [name]) as List<String>).asImmutable())
-            } else {
-                return parentMap.get(name)
-            }
-        }
-        
-        public void setProperty(String name, Object value) {
-            NavigableMap parentMap = parent.navigateSubMap(path, true)
-            parentMap.setProperty(name, value)
-        }
-        
-        public boolean asBoolean() {
-            false
-        }
-        
-        public Object invokeMethod(String name, Object args) {
-            throw new NullPointerException("Cannot invoke method " + name + "() on NullSafeNavigator");
-        }
-    
-        public boolean equals(Object to) {
-            return to == null || DefaultGroovyMethods.is(this, to)
-        }
-    
-        public Iterator iterator() {
-            return Collections.EMPTY_LIST.iterator()
-        }
-    
-        public Object plus(String s) {
-            return toString() + s
-        }
-    
-        public Object plus(Object o) {
-            throw new NullPointerException("Cannot invoke method plus on NullSafeNavigator")
-        }
-    
-        public boolean is(Object other) {
-            return other == null || DefaultGroovyMethods.is(this, other)
-        }
-    
-        public Object asType(Class c) {
-            if(c==Boolean || c==boolean) return false
-            return null
-        }
-    
-        public String toString() {
-            return null
-        }
-    
-//        public int hashCode() {
-//            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
-//        }
-    }
-
 }

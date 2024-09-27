@@ -3,7 +3,7 @@ package grails.doc.internal;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class StringEscapeCategory {
     private StringEscapeCategory() {
@@ -30,6 +30,7 @@ public class StringEscapeCategory {
     }
 
     public static String encodeAsHtml(String str) {
-        return StringEscapeUtils.escapeHtml(str);
+        // StringEscapeUtils.escapeHtml() has become escapeHtml4() in org.apache.commons.lang3
+        return StringEscapeUtils.escapeHtml4(str);
     }
 }

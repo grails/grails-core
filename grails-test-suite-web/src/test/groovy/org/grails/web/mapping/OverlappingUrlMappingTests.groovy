@@ -1,9 +1,6 @@
 package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
-import grails.util.GrailsWebMockUtil
-
-import org.springframework.core.io.ByteArrayResource
 import spock.lang.Specification
 
 /**

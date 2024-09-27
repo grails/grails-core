@@ -1,11 +1,11 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package grails.rest.web
 
 import grails.artefact.Artefact
@@ -32,7 +31,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
     Closure doWithConfig() {{ config ->
         // unit tests in real applications will not need to do
         // this because the real Config.groovy will be loaded
-        config.grails.mime.types = [html         : ['text/html', 'application/xhtml+xml'],
+        config['grails.mime.types'] = [html      : ['text/html', 'application/xhtml+xml'],
                                     xml          : ['text/xml', 'application/xml'],
                                     text         : 'text/plain',
                                     js           : 'text/javascript',
@@ -181,7 +180,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
         modelAndView.model == [book: book, extra: true]
         modelAndView.viewName == 'showWithModel'
     }
-    
+
     void "Test that proxyHandler is used for unwrapping wrapped model"() {
         given:"A book instance"
         def book = new Book(title: "")
@@ -198,7 +197,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
         modelAndView.model == [book: book, extra: true]
         modelAndView.viewName == 'showWithModel'
     }
-    
+
     void "Test that proxyHandler is used for unwrapping proxy collections"() {
         given:"A book instance"
         def book = new Book(title: "")

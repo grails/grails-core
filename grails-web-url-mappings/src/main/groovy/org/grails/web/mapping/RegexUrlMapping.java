@@ -719,25 +719,21 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     }
 
     /**
-     * Compares this UrlMapping instance with the specified UrlMapping instance and deals with URL mapping precedence rules.
+     * Compares this {@link UrlMapping} instance with the specified {@link UrlMapping} instance and deals with URL mapping precedence rules.
+     * <p> URL Mapping Precedence Order </p>
+     * <ol> Less wildcard tokens.
+     * <li> /foo          &lt;- match
+     * <li> /foo/(*) </li>
+     * <li> /foo/(*)/bar/  &lt;- match
+     * <li> /foo/(*)/(*) </li>
+     * </ol>
+     * <ol> More static tokens.
+     * <li> /foo/(*)/bar   &lt;- match
+     * <li> /foo/(*) </li>
+     * </ol>
      *
-     *  URL Mapping Precedence Order
-     *
-     *   1. Less wildcard tokens.
-     *
-     *       /foo          <- match
-     *       /foo/(*)
-     *
-     *      /foo/(*)/bar/  <- match
-     *      /foo/(*)/(*)
-     *
-     *    2. More static tokens.
-     *
-     *      /foo/(*)/bar   <- match
-     *      /foo/(*)
-     *
-     * @param o An instance of the UrlMapping interface
-     * @return greater than 0 if this UrlMapping should match before the specified UrlMapping. 0 if they are equal or less than 0 if this UrlMapping should match after the given UrlMapping
+     * @param o the {@link UrlMapping} object to be compared.
+     * @return a negative integer, zero, or a positive integer as this {@link UrlMapping} is less than, equal to, or greater than the specified {@link UrlMapping}.
      */
     public int compareTo(Object o) {
         if (!(o instanceof UrlMapping)) {

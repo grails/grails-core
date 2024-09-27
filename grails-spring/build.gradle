@@ -1,7 +1,7 @@
 dependencies {
-    api "org.springframework:spring-tx:${springVersion}"
-    api "org.springframework:spring-web:${springVersion}"
-    api "org.springframework:spring-context:${springVersion}"
+    api "org.springframework:spring-tx:$springVersion"
+    api "org.springframework:spring-web:$springVersion"
+    api "org.springframework:spring-context:$springVersion"
     api project(":grails-bootstrap"), {
         exclude group:"org.fusesource.jansi", module:"jansi"
         exclude group:"jline", module:"jline"
@@ -16,4 +16,5 @@ dependencies {
 
         exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
     }
+    api ( "org.apache.groovy:groovy-xml:$groovyVersion" )
 }

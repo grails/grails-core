@@ -10,9 +10,6 @@ configurations.testCompileClasspath {
 
 dependencies {
 
-    testImplementation 'javax.servlet.jsp:jsp-api:2.2'
-    testImplementation 'jstl:jstl:1.2'
-    testImplementation 'javax.el:el-api:2.2'
     testImplementation project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
                 project(':grails-plugin-codecs'),
@@ -29,7 +26,7 @@ dependencies {
                 project(':grails-spring')
     testImplementation "org.grails.plugins:converters:$legacyConvertersVersion"
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -54,10 +51,6 @@ dependencies {
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
     }
-
-    // Required for tag library support
-    testImplementation 'taglibs:standard:1.1.2'
-    testImplementation "javax.servlet:jstl:1.2"
 
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
         exclude module:'grails-plugin-codecs'
@@ -89,7 +82,9 @@ dependencies {
         exclude module:'async'
     }
 
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 

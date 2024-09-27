@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
 
     private final ResponseCodeMappingData urlData;
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    private Map parameterValues = Collections.emptyMap();
     private Class<?> exceptionType;
 
     public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
@@ -66,26 +65,6 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
     @Override
     public ConstrainedProperty[] getConstraints() {
         return constraints;
-    }
-
-    @Override
-    public Object getControllerName() {
-        return controllerName;
-    }
-
-    @Override
-    public Object getActionName() {
-        return actionName;
-    }
-
-    @Override
-    public Object getViewName() {
-        return viewName;
-    }
-
-    @Override
-    public void setParameterValues(Map parameterValues) {
-        this.parameterValues = parameterValues;
     }
 
     public int compareTo(Object o) {

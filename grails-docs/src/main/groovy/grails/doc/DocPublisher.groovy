@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,8 +27,7 @@ import org.radeox.engine.context.BaseRenderContext
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
-
-import java.util.regex.Pattern
+import groovy.ant.AntBuilder
 
 /**
  * Coordinated the DocEngine the produce documentation based on the gdoc format.
@@ -313,7 +312,7 @@ class DocPublisher {
             // pass attributes to asciidoc
             ((AsciiDocEngine)engine).attributes.putAll(
                     version: version,
-                    apiDocs: "http://docs.grails.org/${version}/api/",
+                    apiDocs: "https://docs.grails.org/${version}/api/",
                     sourceRepo: sourceRepo
             )
             ((AsciiDocEngine)engine).attributes.putAll(

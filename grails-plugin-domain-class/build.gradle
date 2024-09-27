@@ -51,7 +51,7 @@ dependencies {
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassist', module:'javassist'
         exclude group: 'org.javassist', module: 'javassist'
-        exclude group: "javax.persistence", module:"persistence-api"
+        exclude group: "jakarta.persistence", module:"persistence-api"
         exclude group: 'java-persistence', module:'persistence-api'
     }
 

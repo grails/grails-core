@@ -2,7 +2,6 @@ package org.grails.web.metaclass
 
 import grails.artefact.Artefact
 import grails.testing.web.GrailsWebUnitTest
-
 import spock.lang.Specification
 
 /**

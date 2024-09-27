@@ -14,7 +14,7 @@ import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
 import spock.lang.Specification
 
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * Specification for the behavior of the ControllerUnitTestMixin

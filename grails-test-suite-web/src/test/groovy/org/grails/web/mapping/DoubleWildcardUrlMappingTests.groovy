@@ -2,7 +2,6 @@ package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
 import grails.web.mapping.UrlMappingInfo
-import org.springframework.core.io.ByteArrayResource
 import spock.lang.Specification
 
 /**

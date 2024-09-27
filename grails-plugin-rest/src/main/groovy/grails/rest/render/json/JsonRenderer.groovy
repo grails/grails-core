@@ -31,7 +31,7 @@ import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.springframework.beans.factory.annotation.Autowired
 
-import javax.annotation.PostConstruct
+import jakarta.annotation.PostConstruct
 
 /**
  *

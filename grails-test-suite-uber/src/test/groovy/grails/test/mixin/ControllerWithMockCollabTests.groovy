@@ -2,7 +2,6 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
-import org.junit.Test
 import spock.lang.Specification
 
 /**

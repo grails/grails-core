@@ -877,6 +877,7 @@ public class GrailsClassUtils {
      * @return true if it is a javabean property getter
      * @deprecated use {@link #isGetter(String, Class, Class[])} instead because this method has a defect for "is.." method with Boolean return types.
      */
+    @Deprecated
     public static boolean isGetter(String name, Class<?>[] args) {
         return GrailsNameUtils.isGetter(name, boolean.class, args);
     }
@@ -902,6 +903,7 @@ public class GrailsClassUtils {
      * @return The property name equivalent
      * @deprecated Use {@link #getPropertyForGetter(String, Class)} instead because this method has a defect for "is.." method with Boolean return types.
      */
+    @Deprecated
     public static String getPropertyForGetter(String getterName) {
         return GrailsNameUtils.getPropertyForGetter(getterName);
     }

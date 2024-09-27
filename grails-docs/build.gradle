@@ -5,24 +5,24 @@ configurations {
 
 dependencies {
     gradleConf gradleApi()
-    api "commons-lang:commons-lang:$commonsLangVersion",
+    api "org.apache.commons:commons-lang3:$commonsLangVersion",
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
-            'org.grails:grails-gdoc-engine:1.0.1',
-            'org.yaml:snakeyaml:2.2',
-            "org.codehaus.groovy:groovy-ant:$groovyVersion"
+            "org.grails:grails-gdoc-engine:$gdocEngineVersion",
+            "org.yaml:snakeyaml:$snakeyamlVersion",
+            "org.apache.groovy:groovy-ant:$groovyVersion"
 
-    api 'org.asciidoctor:asciidoctorj:2.5.12'
-    api('org.xhtmlrenderer:core-renderer:8.0') {
+    api "org.asciidoctor:asciidoctorj:$asciidoctorjVersion"
+    api("org.xhtmlrenderer:core-renderer:$xhtmlRendererVersion") {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }
 
     runtimeOnly "org.slf4j:slf4j-api:$slf4jVersion"
 
-    runtimeOnly('com.lowagie:itext:2.0.8')
+    runtimeOnly "com.lowagie:itext:$itextVersion"
 
-    api 'org.jsoup:jsoup:1.17.2'
-    testImplementation("org.spockframework:spock-core:${spockVersion}") { transitive = false }
+    api "org.jsoup:jsoup:$jsoupVersion"
+    testImplementation("org.spockframework:spock-core:$spockVersion") { transitive = false }
 }
 
 sourceSets {
