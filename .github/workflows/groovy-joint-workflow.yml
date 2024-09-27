@@ -20,7 +20,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: "🗄️Cache local Maven repository"
+      - name: "🗄️ Cache local Maven repository"
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -116,7 +116,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-      - name: "🗄️Restore local Maven repository from cache"
+      - name: "🗄️ Restore local Maven repository from cache"
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository

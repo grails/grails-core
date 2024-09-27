@@ -1,9 +1,9 @@
-name: Release to SDKMan
+name: "Release to SDKMan"
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release'
+        description: Version to release
         required: true
 jobs:
   sdkman:
@@ -11,24 +11,26 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
           ref: v${{ github.event.inputs.version }}
-      - name: Set up JDK
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+      - name: "☕️ Setup JDK"
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: '8'
-      - name: Grails SDK Minor Release
-        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
+          distribution: temurin
+          java-version: 17
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
         with:
-          arguments: sdkMinorRelease
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+      - name: "🏆 Grails SDK Minor Release"
         env:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
-      - name: Set output
+        run: ./gradlew sdkMinorRelease
+      - name: "Set output"
         id: set_output
         run: |
           echo ::set-output name=release_version::$(cat $GITHUB_OUTPUT)
