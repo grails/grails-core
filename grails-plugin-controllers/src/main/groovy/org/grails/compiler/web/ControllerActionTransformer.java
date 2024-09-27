@@ -753,9 +753,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final ClassNode controllerNode, final ClassNode commandObjectNode,
             final ASTNode actionNode, final String actionName, final String paramName,
             final SourceUnit source, final GeneratorContext context) {
-        final DeclarationExpression declareCoExpression = new DeclarationExpression(
-                new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
-        wrapper.addStatement(new ExpressionStatement(declareCoExpression));
+        final DeclarationExpression declareCoExpression = declX(localVarX(paramName, commandObjectNode), new EmptyExpression());
+        wrapper.addStatement(stmt(declareCoExpression));
 
         if(commandObjectNode.isInterface() || Modifier.isAbstract(commandObjectNode.getModifiers())) {
             final String warningMessage = "The [" + actionName + "] action in [" +
@@ -846,7 +845,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final ArgumentListExpression initializeCommandObjectArguments = args(classX(commandObjectNode), constX(paramName));
         final MethodCallExpression initializeCommandObjectMethodCall = callThisX("initializeCommandObject", initializeCommandObjectArguments);
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
-        final Expression assignCommandObjectToParameter = assignX(varX(paramName, commandObjectNode), initializeCommandObjectMethodCall);
+        final Expression assignCommandObjectToParameter = assignX(varX(paramName), initializeCommandObjectMethodCall);
         wrapper.addStatement(stmt(assignCommandObjectToParameter));
     }
 
