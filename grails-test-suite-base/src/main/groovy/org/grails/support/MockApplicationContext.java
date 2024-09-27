@@ -1,11 +1,11 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,13 +30,14 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.lang.NonNull;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.StandardServletEnvironment;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -216,7 +217,13 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
         return submap;
     }
-    
+
+    @NonNull
+    @Override
+    public <A extends Annotation> Set<A> findAllAnnotationsOnBean(@NonNull String beanName, @NonNull Class<A> annotationType, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException {
+        throw new UnsupportedOperationException("This method was added in Spring 6 API but has not yet been implemented in Grails MockApplicationContext");
+    }
+
     /**
      * Find all names of beans whose {@code Class} has the supplied {@link Annotation}
      * type, without creating any bean instances yet.

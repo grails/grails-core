@@ -9,7 +9,6 @@ import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 
 import org.codehaus.groovy.control.CompilerConfiguration
-
 import spock.lang.Shared
 import spock.lang.Specification
 /**

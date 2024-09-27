@@ -1,21 +1,11 @@
-package grails.web.mapping
-
-import grails.util.GrailsWebMockUtil
-import grails.web.http.HttpHeaders
-import org.springframework.web.context.request.RequestContextHolder
-import spock.lang.Issue
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 /*
- * Copyright 2014 original authors
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +13,15 @@ import javax.servlet.http.HttpServletResponse
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.web.mapping
+
+import grails.util.GrailsWebMockUtil
+import grails.web.http.HttpHeaders
+import org.springframework.web.context.request.RequestContextHolder
+import spock.lang.Issue
+
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * @author graemerocher
@@ -30,17 +29,17 @@ import javax.servlet.http.HttpServletResponse
 class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
 
     @Issue('#10308')
-    void "Test mapping with group and nested collection"() {
+    void 'Test mapping with group and nested collection'() {
         given:
         def linkGenerator = getLinkGenerator {
-            "/foos"(resources: 'foo') {
+            '/foos'(resources: 'foo') {
                 collection {
                     '/baz'(controller: 'foo', action: 'baz')
                 }
             }
 
-            group "/g", {
-                "/bars"(resources: 'bar') {
+            group('/g') {
+                '/bars'(resources: 'bar') {
                     collection {
                         '/baz'(controller: 'bar', action: 'baz')
                     }
@@ -49,7 +48,15 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         }
 
         expect:
-        linkGenerator.link(controller:'bar', action:'baz', params:[barId:1]) == 'http://localhost/g/bars/1/baz'
+        linkGenerator.link(controller: 'foo', action: 'baz', params: [fooId: 1]) == 'http://localhost/foos/baz?fooId=1'
+        linkGenerator.link(controller: 'bar', action: 'baz', params: [barId: 1]) == 'http://localhost/g/bars/baz?barId=1'
+
+        /*
+        This was the original assertion pre Grails 7, but according to the issue discussion (#10308) it is wrong.
+        The assertion also started failing when upgrading to Groovy 4 where the `this` reference is not the same in
+        DefaultUrlMappingEvaluator.UrlMappingBuilder#collection for Groovy 3 and Groovy 4.
+        */
+        // linkGenerator.link(controller: 'bar', action: 'baz', params: [barId: 1]) == 'http://localhost/g/bars/1/baz'
     }
 
     @Issue('#9417')
@@ -83,7 +90,7 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
                 "/domains"(resources: 'domain')
             }
         }
-        def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
+        def responseRedirector = new ResponseRedirector(linkGenerator)
         HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> GrailsWebMockUtil.bindMockWebRequest() }
         HttpServletResponse response = Mock(HttpServletResponse)
 

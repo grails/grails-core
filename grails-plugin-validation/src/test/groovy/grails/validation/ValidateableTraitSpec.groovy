@@ -336,10 +336,12 @@ class MyValidateable implements Validateable {
 }
 
 class MyNullableValidateable implements Validateable {
+
     Integer age
     String town
     String country
 
+    @SuppressWarnings('GrMethodMayBeStatic')
     String getName() {
         throw new UnsupportedOperationException('getName() should not have been called during validation')
     }

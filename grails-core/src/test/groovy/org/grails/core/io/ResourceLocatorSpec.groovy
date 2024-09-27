@@ -1,5 +1,6 @@
 package org.grails.core.io
 
+import groovy.xml.XmlSlurper
 import grails.core.DefaultGrailsApplication
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.BinaryGrailsPluginDescriptor

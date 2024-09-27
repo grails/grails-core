@@ -1,6 +1,6 @@
 dependencies {
 
-    api 'javax.xml.bind:jaxb-api:2.3.1'
+    api "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
 
     api project(":grails-web"),
             project(":grails-plugin-controllers"),
@@ -11,4 +11,6 @@ dependencies {
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     testImplementation project(":grails-plugin-url-mappings"),
                 project(":grails-test-suite-base")
+
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }

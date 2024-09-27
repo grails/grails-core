@@ -16,7 +16,7 @@ dependencies {
                 project(':grails-spring')
 
     testImplementation "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5:$hibernateDatastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
@@ -47,22 +47,21 @@ dependencies {
     testRuntimeOnly "com.h2database:h2:$h2Version"
 
     //    // Required for AspectJ support
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
+    testRuntimeOnly "org.springframework:spring-aspects:$springVersion"
     testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 
     testImplementation "org.grails.plugins:async:$asyncVersion", {
-        exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
     testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
-        exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
         exclude module:'async'
     }
+    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }
 
 test {

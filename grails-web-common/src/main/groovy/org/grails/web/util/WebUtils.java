@@ -1,11 +1,11 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,9 @@ import grails.util.GrailsStringUtils;
 import grails.util.GrailsWebUtil;
 import grails.web.mime.MimeType;
 import grails.web.servlet.mvc.GrailsParameterMap;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.CompositeViewResolver;
 import org.springframework.context.ApplicationContext;
@@ -38,21 +41,10 @@ import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapt
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Utility methods to access commons objects and perform common
@@ -68,11 +60,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String DISPATCH_ACTION_PARAMETER = "_action_";
     public static final String SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD = "grails.http.invalid.method.allow.header";
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
+    public static final String NONE_LAYOUT = "_none_";
     public static final String RENDERING_VIEW = "org.grails.rendering.view";
     public static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
     public static final String GRAILS_SERVLET_PATH = "/grails";
     public static final String EXCEPTION_ATTRIBUTE = "exception";
-    public static final String ASYNC_REQUEST_URI_ATTRIBUTE = "javax.servlet.async.request_uri";
+    public static final String ASYNC_REQUEST_URI_ATTRIBUTE = "jakarta.servlet.async.request_uri";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
@@ -248,14 +241,14 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
-     * Expose the current request URI and paths as {@link javax.servlet.http.HttpServletRequest}
+     * Expose the current request URI and paths as {@link jakarta.servlet.http.HttpServletRequest}
      * attributes under the keys defined in the Servlet 2.4 specification,
      * for containers that implement 2.3 or an earlier version of the Servlet API:
-     * <code>javax.servlet.forward.request_uri</code>,
-     * <code>javax.servlet.forward.context_path</code>,
-     * <code>javax.servlet.forward.servlet_path</code>,
-     * <code>javax.servlet.forward.path_info</code>,
-     * <code>javax.servlet.forward.query_string</code>.
+     * <code>jakarta.servlet.forward.request_uri</code>,
+     * <code>jakarta.servlet.forward.context_path</code>,
+     * <code>jakarta.servlet.forward.servlet_path</code>,
+     * <code>jakarta.servlet.forward.path_info</code>,
+     * <code>jakarta.servlet.forward.query_string</code>.
      * <p>Does not override values if already present, to not cause conflicts
      * with the attributes exposed by Servlet 2.4+ containers themselves.
      * @param request current servlet request

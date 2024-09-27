@@ -6,7 +6,6 @@ import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
-
 /**
  * @author Graeme Rocher
  * @since 1.1

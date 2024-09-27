@@ -1,9 +1,9 @@
 package org.grails.web.servlet.mvc
 
 import grails.testing.web.controllers.ControllerUnitTest
+import org.grails.web.util.WebUtils
 import spock.lang.Specification
 import grails.artefact.Artefact
-import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.buffer.FastStringWriter
 
 class RenderDynamicMethodTests extends Specification implements ControllerUnitTest<RenderDynamicMethodTestController>  {
@@ -15,7 +15,7 @@ class RenderDynamicMethodTests extends Specification implements ControllerUnitTe
         then:
         response.contentType == response.contentType
         response.contentAsString == response.contentAsString
-        request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE) == "bar"
+        request.getAttribute(WebUtils.LAYOUT_ATTRIBUTE) == "bar"
     }
 
     void testRenderView() {

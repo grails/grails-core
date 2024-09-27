@@ -10,8 +10,6 @@ import org.grails.web.converters.marshaller.xml.DomainClassMarshaller as XmlClas
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller
 import spock.lang.Specification
 
-import static org.junit.Assert.assertEquals
-
 /**
  * Tests for the customizable Converter Configuration.
  *

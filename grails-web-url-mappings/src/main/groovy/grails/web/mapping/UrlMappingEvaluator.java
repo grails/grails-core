@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,24 +38,21 @@ public interface UrlMappingEvaluator {
      *
      * @return A list of UrlMapping instances
      */
-    @SuppressWarnings("rawtypes")
     List<UrlMapping> evaluateMappings(Resource resource);
 
     /**
      * Evaluates mapping from the given class if possible
      *
-     * @param theClass The class to evaluate mapping from
+     * @param mappingsClass The class to evaluate mapping from
      * @return A list of UrlMapping instances
      */
-    @SuppressWarnings("rawtypes")
-    List<UrlMapping> evaluateMappings(Class theClass);
+    List<UrlMapping> evaluateMappings(Class<?> mappingsClass);
 
     /**
      * Evaluates mapping from the given closure if possible
      *
-     * @param closure The closure to evaluate mapping from
+     * @param mappingsClosure The closure to evaluate mapping from
      * @return A list of UrlMapping instances
      */
-    @SuppressWarnings("rawtypes")
-    List<UrlMapping> evaluateMappings(Closure closure);
+    List<UrlMapping> evaluateMappings(Closure<?> mappingsClosure);
 }

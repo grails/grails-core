@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package org.grails.databinding.xml
 
-import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.Node
-import groovy.util.slurpersupport.NodeChild
+import groovy.xml.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.Node
+import groovy.xml.slurpersupport.NodeChild
 
 /**
  * @author Jeff Brown

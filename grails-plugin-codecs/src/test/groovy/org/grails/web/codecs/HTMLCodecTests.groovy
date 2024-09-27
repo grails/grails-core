@@ -11,7 +11,7 @@ class HTMLCodecTests {
     def getEncoderXml() {
         def htmlCodec = new HTMLCodec()
         def grailsApplication = new DefaultGrailsApplication()
-        grailsApplication.config.grails.views.gsp.htmlcodec = 'xml'
+        grailsApplication.config['grails.views.gsp.htmlcodec'] = 'xml'
         grailsApplication.configChanged()
         htmlCodec.setGrailsApplication(grailsApplication)
         htmlCodec.afterPropertiesSet()
@@ -21,7 +21,7 @@ class HTMLCodecTests {
     def getEncoderHtml() {
         def htmlCodec = new HTMLCodec()
         def grailsApplication = new DefaultGrailsApplication()
-        grailsApplication.config.grails.views.gsp.htmlcodec = 'html'
+        grailsApplication.config['grails.views.gsp.htmlcodec'] = 'html'
         grailsApplication.configChanged()
         htmlCodec.setGrailsApplication(grailsApplication)
         htmlCodec.afterPropertiesSet()

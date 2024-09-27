@@ -2,6 +2,7 @@ package grails.test.mixin
 
 import grails.persistence.Entity
 import grails.testing.gorm.DataTest
+import grails.validation.Validateable
 import spock.lang.Specification
 
 /**
@@ -10,14 +11,16 @@ import spock.lang.Specification
 class InheritanceWithValidationTests extends Specification implements DataTest {
 
     void setupSpec() {
-        mockDomains AbstractCustomPropertyValue, CustomProperty, StringPropertyValue
+        mockDomains(CustomProperty, StringPropertyValue)
     }
 
     void testNewStringValue () {
-        when:
-        CustomProperty property = new CustomProperty ()
 
-        AbstractCustomPropertyValue propertyValue = property.newValue ("testValue")
+        given:
+        def property = new CustomProperty()
+
+        when:
+        def propertyValue = property.newValue('testValue')
 
         then:
         propertyValue.valid
@@ -25,18 +28,19 @@ class InheritanceWithValidationTests extends Specification implements DataTest {
     }
 }
 
-@Entity
-class AbstractCustomPropertyValue {
+// Since Groovy 4, parent domain classes cannot be annotated with @Entity (https://issues.apache.org/jira/browse/GROOVY-5106)
+@SuppressWarnings('unused')
+class AbstractCustomPropertyValue implements Validateable {
 
     boolean valid = false
 
     static constraints = {
-        valid (validator: AbstractCustomPropertyValue.validator)
+        valid (validator: validator)
     }
 
     static transients = ['valid']
 
-    protected static validator = { value, instance ->
+    protected static validator = { boolean value, AbstractCustomPropertyValue instance ->
         if (!instance.valid) {
             return 'invalid.value.for.type'
         }
@@ -46,22 +50,24 @@ class AbstractCustomPropertyValue {
 }
 
 @Entity
+@SuppressWarnings('GrMethodMayBeStatic')
 class CustomProperty {
-    AbstractCustomPropertyValue newValue (String value) {
-        return new StringPropertyValue (value)
+    AbstractCustomPropertyValue newValue(String value) {
+        return new StringPropertyValue(value)
     }
 }
 
 @Entity
+@SuppressWarnings('unused')
 class StringPropertyValue extends AbstractCustomPropertyValue {
 
     String stringValue
 
     static constraints = {
-        stringValue (nullable: true)
+        stringValue(nullable: true)
     }
 
-    StringPropertyValue (String value) {
+    StringPropertyValue(String value) {
         this.stringValue = value
         this.valid = true
     }

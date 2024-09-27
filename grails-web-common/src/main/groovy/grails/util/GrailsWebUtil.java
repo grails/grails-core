@@ -1,11 +1,11 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.WebApplicationContext;
@@ -103,7 +103,7 @@ public class GrailsWebUtil {
      * @return The String URI
      */
     public static String getUriFromRequest(HttpServletRequest request) {
-        Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
+        Object includeUri = request.getAttribute("jakarta.servlet.include.request_uri");
         return includeUri == null ? request.getRequestURI() : (String)includeUri;
     }
 

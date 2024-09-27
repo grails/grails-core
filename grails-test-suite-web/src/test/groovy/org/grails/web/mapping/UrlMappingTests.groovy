@@ -1,7 +1,6 @@
 package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
-import org.springframework.core.io.*
 import spock.lang.Specification
 
 class UrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {

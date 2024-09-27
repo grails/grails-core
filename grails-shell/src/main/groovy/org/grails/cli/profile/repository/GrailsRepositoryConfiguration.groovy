@@ -1,9 +1,9 @@
 package org.grails.cli.profile.repository
 
-import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
+import org.grails.cli.compiler.grape.RepositoryConfiguration
 
 /**
- *  The configuration of a repository. See {@link org.springframework.boot.cli.compiler.grape.RepositoryConfiguration}
+ *  The configuration of a repository. See {@link RepositoryConfiguration}
  *  Created to support configuration with authentication
  *
  * @author James Kleeh

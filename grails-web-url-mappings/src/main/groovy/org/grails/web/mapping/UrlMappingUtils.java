@@ -1,11 +1,11 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2014-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,11 +38,11 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
@@ -189,7 +189,7 @@ public class UrlMappingUtils {
     }
 
     /**
-     * @see #forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, grails.web.mapping.UrlMappingInfo, java.util.Map)
+     * @see #forwardRequestForUrlMappingInfo(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, grails.web.mapping.UrlMappingInfo, java.util.Map)
      */
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
@@ -197,7 +197,7 @@ public class UrlMappingUtils {
     }
 
     /**
-     * @see #forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, grails.web.mapping.UrlMappingInfo, java.util.Map, boolean)
+     * @see #forwardRequestForUrlMappingInfo(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, grails.web.mapping.UrlMappingInfo, java.util.Map, boolean)
      */
     @SuppressWarnings("rawtypes")
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
@@ -215,7 +215,7 @@ public class UrlMappingUtils {
      * @param includeParams Whether to include any request parameters
      * @return The URI forwarded too
      *
-     * @throws javax.servlet.ServletException Thrown when an error occurs executing the forward
+     * @throws jakarta.servlet.ServletException Thrown when an error occurs executing the forward
      * @throws java.io.IOException Thrown when an error occurs executing the forward
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
