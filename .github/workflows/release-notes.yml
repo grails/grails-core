@@ -12,16 +12,13 @@ on:
   pull_request_target:
     types: [opened, reopened, synchronize, labeled]
   workflow_dispatch:
-permissions:
-  contents: read # limit to read access
 jobs:
   update_release_draft:
     permissions:
       contents: read # limit to read access
-      pull-requests: write # write permission is required for auto labeler
     runs-on: ubuntu-latest
     steps:
       - name: "📝 Update Release Draft"
         uses: release-drafter/release-drafter@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
