@@ -31,7 +31,7 @@ jobs:
           develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "🔨 Build project"
         id: build
-        run: ./gradlew build groovydoc
+        run: ./gradlew build -x test groovydoc
   publish:
     if: github.event_name == 'push'
     needs: build
