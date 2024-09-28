@@ -61,11 +61,6 @@ ext {
                                         names  : ['groovy'],
                                         modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio', 'dateutil', 'macro']
             ],
-            'scaffoldingCore'        : [version: scaffoldingCoreVersion,
-                                        group  : 'org.grails',
-                                        names  : ['scaffolding'],
-                                        modules: ['core']
-            ],
             'spring'                 : [version: springVersion,
                                         group  : 'org.springframework',
                                         names  : ['spring'],
