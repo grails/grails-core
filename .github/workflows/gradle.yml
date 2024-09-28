@@ -89,6 +89,7 @@ jobs:
     steps:
       - name: "📝 Store the target branch"
         id: extract_branch
+        run: |
           echo "Determining Target Branch"
           TARGET_BRANCH=${GITHUB_REF#refs/heads/}
           echo $TARGET_BRANCH
