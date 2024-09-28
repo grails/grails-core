@@ -72,7 +72,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'text/xml;charset=UTF-8'
+            response.contentType == 'application/xml;charset=UTF-8'
             response.xml.title.text() == 'The Stand'
     }
 
@@ -86,7 +86,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'text/xml;charset=UTF-8'
+            response.contentType == 'application/xml;charset=UTF-8'
     }
 
     void "Test that the respond method produces errors XML for a domain instance that has errors and a content type of XML"() {
@@ -101,7 +101,7 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'text/xml;charset=UTF-8'
+            response.contentType == 'application/xml;charset=UTF-8'
             response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
     }
 
