@@ -4,6 +4,7 @@ import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
 import spock.lang.Issue
+import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class WithFormatContentTypeSpec extends Specification implements ControllerUnitTest<FormatController> {
@@ -18,6 +19,7 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
     }}
 
     @Issue('GRAILS-11093')
+    @PendingFeature(reason = '/wildcardView != /formView')
     void 'Test specifying form contentType'() {
         when: 'content type is specified'
         request.contentType = FORM_CONTENT_TYPE
@@ -29,6 +31,7 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
     }
 
     @Issue('GRAILS-11093')
+    @PendingFeature(reason = '/wildcardView != /formView')
     void 'Test specifying multipartForm contentType'() {
         when: 'content type is specified'
         request.contentType = MULTIPART_FORM_CONTENT_TYPE

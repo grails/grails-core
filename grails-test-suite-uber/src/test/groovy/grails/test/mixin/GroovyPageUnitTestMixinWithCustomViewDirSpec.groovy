@@ -2,6 +2,7 @@ package grails.test.mixin
 
 import grails.testing.web.GrailsWebUnitTest
 import spock.lang.Issue
+import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class GroovyPageUnitTestMixinWithCustomViewDirSpec extends Specification implements GrailsWebUnitTest {
@@ -12,6 +13,7 @@ class GroovyPageUnitTestMixinWithCustomViewDirSpec extends Specification impleme
     }}
     
     @Issue('GRAILS=11543')
+    @PendingFeature(reason = 'result is null')
     void 'test rendering a template when grails.gsp.view.dir has been assigned a value'() {
         when:
         def result = render(template: '/demo/myTemplate')

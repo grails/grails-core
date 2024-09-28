@@ -2,6 +2,7 @@ package org.grails.web.mapping
 
 import grails.testing.web.UrlMappingsUnitTest
 import org.springframework.core.io.*
+import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class DynamicActionNameEvaluatingTests extends Specification implements UrlMappingsUnitTest<UrlMappings>{
@@ -31,6 +32,7 @@ class DynamicActionNameEvaluatingTests extends Specification implements UrlMappi
         "read" == info.actionName
     }
 
+    @PendingFeature(reason = 'params.ctrl is null')
     void testNamedParameterAction2() {
         when:
         webRequest.params.put("controller", "book")

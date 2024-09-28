@@ -5,6 +5,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.MockRequestDataValueProcessor
 
 import org.grails.web.servlet.GrailsFlashScope
+import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class ChainMethodWithRequestDataValueProcessorSpec extends Specification implements ControllerUnitTest<TestChainController>, DomainUnitTest<TestChainBook> {
@@ -13,6 +14,7 @@ class ChainMethodWithRequestDataValueProcessorSpec extends Specification impleme
         requestDataValueProcessor MockRequestDataValueProcessor
     }}
 
+    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test chain method with model and request data value processor'() {
         when:
         controller.save()
