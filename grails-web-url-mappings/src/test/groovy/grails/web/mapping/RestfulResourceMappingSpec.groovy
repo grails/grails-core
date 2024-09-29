@@ -169,7 +169,6 @@ class RestfulResourceMappingSpec extends Specification{
     }
     
     @Issue('GRAILS-11680')
-    @Ignore
     void 'Test mapping ordering problem'() {
         given:
         def urlMappingsHolder = getUrlMappingsHolder {
