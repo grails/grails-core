@@ -19,8 +19,8 @@ import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.LocalDateTimeConverter
-import spock.lang.Ignore
 import spock.lang.Issue
+import spock.lang.PendingFeature
 import spock.lang.Specification
 
 import java.text.SimpleDateFormat
@@ -56,7 +56,7 @@ class SimpleDataBinderSpec extends Specification {
         g.gamma == 3
     }
 
-    @Ignore
+    @PendingFeature(reason = 'gadget is null')
     void 'Test binding to nested properties with dotted path syntax'() {
         given:
         def binder = new SimpleDataBinder()

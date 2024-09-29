@@ -14,7 +14,6 @@
  */
 package org.grails.plugins.testing
 
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 /**

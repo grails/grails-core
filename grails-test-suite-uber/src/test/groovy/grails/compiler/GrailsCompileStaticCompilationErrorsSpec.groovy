@@ -83,7 +83,7 @@ class GrailsCompileStaticCompilationErrorsSpec extends Specification {
         e.message.contains 'Cannot query on property "town"'
     }
 
-    @Ignore
+    @Ignore("Expected exception of type 'org.codehaus.groovy.control.MultipleCompilationErrorsException', but no exception was thrown")
     @Issue(['GRAILS-11056', 'GRAILS-11057'])
     void 'Test compiling a dynamic finder call with the wrong number of arguments'() {
         given:
