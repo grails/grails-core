@@ -100,7 +100,7 @@ class PropertySourcesConfigSpec extends Specification {
       test pass.
 
      */
-    @Ignore
+    @Ignore("Cannot set property 'bar' on null object")
     @Issue('grails/grails-core#10188')
     void 'test replacing nested property values'() {
         given: 'a PropertySourcesConfig'
