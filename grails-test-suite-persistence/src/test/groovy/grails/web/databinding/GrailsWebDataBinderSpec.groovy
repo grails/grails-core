@@ -26,7 +26,6 @@ import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
 import groovy.transform.Sortable
 import org.springframework.context.support.StaticMessageSource
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll

@@ -25,7 +25,6 @@ class UrlMappingParameterTests extends Specification implements UrlMappingsUnitT
         info.actionName == 'list'
 
     }
-
     void testUseDispatchAction() {
         when:
         webRequest.params.controller = 'foo'
