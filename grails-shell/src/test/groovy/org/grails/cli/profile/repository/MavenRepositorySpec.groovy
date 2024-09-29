@@ -23,7 +23,7 @@ class MavenRepositorySpec extends Specification {
         profile.name == 'web'
     }
 
-    @Ignore("The following artifacts could not be resolved: org.grails:grails-bom:pom: (absent): Could not find artifact org.grails:grails-bom:pom: in grailsCentral (https://repo.grails.org/grails/core)")
+    @Ignore("Could not find artifact org.grails:grails-bom:pom: in grailsCentral (https://repo.grails.org/grails/core)")
     void "Test list all profiles"() {
         given:"A maven profile repository"
         def repo = new MavenProfileRepository()
