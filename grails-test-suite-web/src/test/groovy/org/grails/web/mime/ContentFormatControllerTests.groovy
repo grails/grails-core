@@ -48,7 +48,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         """{"name":"iPod"}""".toString() == response.contentAsString
     }
 
-    @PendingFeature(reason = 'html != all')
     void testAllFormat() {
         when:
         request.addHeader "Accept", "*/*"
@@ -58,7 +57,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "all" == response.contentAsString
     }
 
-    @PendingFeature(reason = 'html != all')
     void testWithFormatAndAll() {
         when:
         request.addHeader "Accept", "*/*"
@@ -74,7 +72,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "html" == response.format
     }
 
-    @PendingFeature(reason = 'html != all')
     void testWithFormatAndAll2() {
         when:
         request.addHeader "Accept", "*/*"
@@ -90,7 +87,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "js" == response.format
     }
 
-    @PendingFeature(reason = 'html != all')
     void testDefaultFormat() {
         when:
         controller.testFormat()
@@ -99,7 +95,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "all" == response.contentAsString
     }
 
-    @PendingFeature(reason = 'js != all')
     void testWithContentTypeAndAcceptHeader() {
         when:
         // should favour content type header
@@ -140,7 +135,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "html" == request.format
     }
 
-    @PendingFeature(reason = 'js != all')
     void testPrototypeFormat() {
         when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
@@ -179,7 +173,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "<html></html>" == response.contentAsString
     }
 
-    @PendingFeature(reason = '<html></html> !=  alert(\'hello\')')
     void testPrototypeWithFormat() {
         when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
@@ -189,7 +182,6 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         "alert('hello')" == response.contentAsString
     }
 
-    @PendingFeature(reason = '<html></html> !=  alert(\'hello\')')
     void testWithFormatParameterOverride() {
         when:
         request.setParameter "format", "js"

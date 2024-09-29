@@ -60,7 +60,6 @@ class ResponseCodeUrlMappingTests extends Specification implements UrlMappingsUn
         !info
     }
 
-    @PendingFeature(reason = "delegate is instance of org.grails.web.mapping.RegexUrlMapping")
     void testNoReverseMappingOccures() {
         when:
         def creator = urlMappingsHolder.getReverseMapping("errors", "error404", null)

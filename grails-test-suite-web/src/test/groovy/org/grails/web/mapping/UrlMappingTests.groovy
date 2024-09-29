@@ -6,7 +6,6 @@ import spock.lang.Specification
 
 class UrlMappingTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
-    @PendingFeature(reason="grails.web.mapping.exceptions.UrlMappingException: Unable to create URL for mapping [/(*)/(*)?/(*)?(.(*))?] and parameters [{id=tsandcs}]. Parameter [controller] is required, but was not specified!")
     void testReverseTopLevelMapping() {
 
         when:

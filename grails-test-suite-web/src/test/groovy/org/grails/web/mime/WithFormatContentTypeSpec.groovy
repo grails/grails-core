@@ -19,7 +19,6 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
     }}
 
     @Issue('GRAILS-11093')
-    @PendingFeature(reason = '/wildcardView != /formView')
     void 'Test specifying form contentType'() {
         when: 'content type is specified'
         request.contentType = FORM_CONTENT_TYPE
@@ -31,7 +30,6 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
     }
 
     @Issue('GRAILS-11093')
-    @PendingFeature(reason = '/wildcardView != /formView')
     void 'Test specifying multipartForm contentType'() {
         when: 'content type is specified'
         request.contentType = MULTIPART_FORM_CONTENT_TYPE

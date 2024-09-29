@@ -32,7 +32,6 @@ class DynamicActionNameEvaluatingTests extends Specification implements UrlMappi
         "read" == info.actionName
     }
 
-    @PendingFeature(reason = 'params.ctrl is null')
     void testNamedParameterAction2() {
         when:
         webRequest.params.put("controller", "book")

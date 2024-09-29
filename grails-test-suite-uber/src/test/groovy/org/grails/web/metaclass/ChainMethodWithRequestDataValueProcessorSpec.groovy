@@ -14,7 +14,6 @@ class ChainMethodWithRequestDataValueProcessorSpec extends Specification impleme
         requestDataValueProcessor MockRequestDataValueProcessor
     }}
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test chain method with model and request data value processor'() {
         when:
         controller.save()

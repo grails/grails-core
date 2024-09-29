@@ -160,7 +160,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         /[A-Z]+/ == matchesProperty
     }
 
-    @PendingFeature(reason='theAnswer is null')
     void "Test command object gets autowired"() {
         when:
         def model = controller.methodAction()
@@ -170,7 +169,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
 
     }
 
-    @PendingFeature(reason='person has errors')
     void 'Test bindable command object constraint'() {
         when:
         controller.params.name = 'JFK'
@@ -185,7 +183,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.person.city == null
     }
 
-    @PendingFeature(reason='person has errors')
     void "Test validation"() {
         when:
         controller.params.name = 'JFK'

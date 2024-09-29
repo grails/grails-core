@@ -27,7 +27,6 @@ class UrlMappingParameterTests extends Specification implements UrlMappingsUnitT
 
     }
 
-    @PendingFeature(reason='lang is null')
     void testUseDispatchAction() {
         when:
         webRequest.params.controller = 'foo'

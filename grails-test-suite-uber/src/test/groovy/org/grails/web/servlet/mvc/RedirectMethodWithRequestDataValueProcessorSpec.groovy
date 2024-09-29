@@ -12,7 +12,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         requestDataValueProcessor MockRequestDataValueProcessor
     }}
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect in controller with all upper class class name'() {
         when:
         controller.index()
@@ -21,7 +20,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/redirect/list?requestDataValueProcessorParamName=paramValue" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test permanent redirect'() {
         when:
         controller.toActionPermanent()
@@ -31,7 +29,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         301 == response.status
     }
 
-    @PendingFeature(reason = '&requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect to controller with duplicate params'() {
         when:
         controller.toControllerWithDuplicateParams()
@@ -40,7 +37,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/test/foo?one=two&one=three&requestDataValueProcessorParamName=paramValue" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect with fragment'() {
         when:
         controller.toControllerAndActionWithFragment()
@@ -49,7 +45,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/test/foo?requestDataValueProcessorParamName=paramValue#frag" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect to default action of another controller'() {
         when:
         controller.redirectToDefaultAction()
@@ -58,7 +53,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/redirect/toAction?requestDataValueProcessorParamName=paramValue" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect to action'() {
         when:
         controller.toAction()
@@ -67,7 +61,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/redirect/foo?requestDataValueProcessorParamName=paramValue" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '?requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect to controller'() {
         when:
         controller.toController()
@@ -76,7 +69,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/test?requestDataValueProcessorParamName=paramValue" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '&requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect to controller with params'() {
         when:
         controller.toControllerWithParams()
@@ -85,7 +77,6 @@ class RedirectMethodWithRequestDataValueProcessorSpec extends Specification impl
         "/test/foo?one=two&two=three&requestDataValueProcessorParamName=paramValue" == response.redirectedUrl
     }
 
-    @PendingFeature(reason = '&requestDataValueProcessorParamName=paramValue is missing from URL')
     void 'test redirect to controller with duplicate array params'() {
         when:
         controller.toControllerWithDuplicateArrayParams()

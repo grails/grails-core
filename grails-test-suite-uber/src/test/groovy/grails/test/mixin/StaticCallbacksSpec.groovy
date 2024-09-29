@@ -29,7 +29,6 @@ class StaticCallbacksSpec extends Specification implements GrailsUnitTest {
         grailsApplication.mainContext.getBean('myService') != null
     }
 
-    @PendingFeature(reason="myConfigValue is null")
     def "doWithConfig callback is executed"(){
         expect:
         config.myConfigValue == 'Hello'

@@ -13,7 +13,6 @@ class DomainClassWithDefaultConstraintsUnitTestMixinTests extends Specification 
         }
     }}
 
-    @PendingFeature(reason = 'it is null')
     void testCreateDomainSingleLineWithConfigHavingNullableTrueForAllProperties() {
         expect:
         new DomainWithDefaultConstraints(name:"My test").save(flush:true) != null
