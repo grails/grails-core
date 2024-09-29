@@ -3,7 +3,6 @@ package org.grails.web.servlet.mvc
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.MockRequestDataValueProcessor
 import grails.web.http.HttpHeaders
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class RedirectMethodWithRequestDataValueProcessorSpec extends Specification implements ControllerUnitTest<RedirectController> {

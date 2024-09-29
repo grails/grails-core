@@ -24,7 +24,6 @@ import grails.web.mime.MimeType
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Issue
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class RespondMethodSpec extends Specification implements ControllerUnitTest<BookController>, DomainUnitTest<Book> {

@@ -4,7 +4,6 @@ import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
 import spock.lang.Issue
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class WithFormatContentTypeSpec extends Specification implements ControllerUnitTest<FormatController> {

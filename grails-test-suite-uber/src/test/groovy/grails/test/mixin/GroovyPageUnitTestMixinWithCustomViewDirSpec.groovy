@@ -2,7 +2,6 @@ package grails.test.mixin
 
 import grails.testing.web.GrailsWebUnitTest
 import spock.lang.Issue
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class GroovyPageUnitTestMixinWithCustomViewDirSpec extends Specification implements GrailsWebUnitTest {

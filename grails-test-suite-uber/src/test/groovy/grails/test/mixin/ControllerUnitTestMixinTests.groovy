@@ -12,8 +12,6 @@ import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
-import spock.lang.Ignore
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 import jakarta.servlet.http.HttpServletResponse

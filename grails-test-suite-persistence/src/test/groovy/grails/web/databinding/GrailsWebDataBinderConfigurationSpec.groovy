@@ -2,7 +2,6 @@ package grails.web.databinding
 
 import grails.databinding.SimpleMapDataBindingSource;
 import grails.testing.gorm.DataTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
 

@@ -2,7 +2,6 @@ package grails.test.mixin
 
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class DomainClassWithDefaultConstraintsUnitTestMixinTests extends Specification implements DomainUnitTest<DomainWithDefaultConstraints> {

@@ -6,7 +6,6 @@ import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 /**
@@ -14,19 +13,19 @@ import spock.lang.Specification
  * @since 1.0
  */
 class ContentFormatControllerTests extends Specification implements ControllerUnitTest<ContentController>, DomainUnitTest<Gizmo> {
-    
+
     Closure doWithConfig() {{ c ->
         c['grails.mime.use.accept.header'] = true
         c['grails.mime.types'] = [html: ['text/html', 'application/xhtml+xml'],
-                               xml : ['text/xml', 'application/xml'],
-                               text: 'text/plain',
-                               js  : 'text/javascript',
-                               rss : 'application/rss+xml',
-                               atom: 'application/atom+xml',
-                               css : 'text/css',
-                               cvs : 'text/csv',
-                               all : '*/*',
-                               json: 'application/json'
+                                  xml : ['text/xml', 'application/xml'],
+                                  text: 'text/plain',
+                                  js  : 'text/javascript',
+                                  rss : 'application/rss+xml',
+                                  atom: 'application/atom+xml',
+                                  css : 'text/css',
+                                  cvs : 'text/csv',
+                                  all : '*/*',
+                                  json: 'application/json'
         ]
     }}
 
@@ -34,7 +33,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         when:
         request.setParameter "format", "xml"
         controller.testWithFormatRenderAs()
-        
+
         then:
         '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''' == response.contentAsString
     }
@@ -43,7 +42,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         when:
         request.setParameter "format", "json"
         controller.testWithFormatRenderAs()
-        
+
         then:
         """{"name":"iPod"}""".toString() == response.contentAsString
     }
@@ -52,7 +51,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         when:
         request.addHeader "Accept", "*/*"
         controller.testFormat()
-        
+
         then:
         "all" == response.contentAsString
     }
@@ -60,13 +59,13 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
     void testWithFormatAndAll() {
         when:
         request.addHeader "Accept", "*/*"
-        
+
         then:
         "all" == response.format
-        
+
         when:
         controller.testWithFormat()
-        
+
         then:
         "<html></html>" == response.contentAsString
         "html" == response.format
@@ -94,6 +93,7 @@ class ContentFormatControllerTests extends Specification implements ControllerUn
         then:
         "all" == response.contentAsString
     }
+
 
     void testWithContentTypeAndAcceptHeader() {
         when:

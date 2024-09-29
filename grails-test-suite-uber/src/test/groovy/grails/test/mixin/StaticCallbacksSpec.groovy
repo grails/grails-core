@@ -2,7 +2,6 @@ package grails.test.mixin
 
 import org.grails.testing.GrailsUnitTest
 import spock.lang.Ignore
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 /**

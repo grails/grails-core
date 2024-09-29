@@ -3,7 +3,6 @@ package grails.test.mixin
 import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockMultipartFile
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
