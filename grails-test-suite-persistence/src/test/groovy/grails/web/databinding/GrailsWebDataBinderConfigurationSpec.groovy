@@ -105,7 +105,6 @@ class GrailsWebDataBinderConfigurationSpec extends Specification implements Data
         author.stringWithSpecialBinding == 'Jeff Scott Brown'
     }
     
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void 'Test binding format code'() {
         given:
         messageSource.addMessage 'my.date.format', Locale.US, 'MMddyyyy'

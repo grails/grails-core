@@ -15,7 +15,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         messageSource.addMessage("foo.bar", request.locale, "World")
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderText() {
         when:
         controller.renderText()
@@ -24,7 +23,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         response.contentAsString == "good"
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testSimpleControllerRedirect() {
         when:
         controller.redirectToController()
@@ -33,7 +31,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         response.redirectedUrl == '/bar'
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderView() {        
         when:
         controller.renderView()
@@ -42,7 +39,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         "/another/foo" == controller.modelAndView.viewName
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderXml() {        
         when:
         controller.renderXml()
@@ -52,7 +48,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         "Great" == controller.response.xml.@title.text()
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderJson() {
         
         when:
@@ -63,7 +58,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         "Great" == controller.response.json.book
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderAsJson() {
         
         when:
@@ -74,7 +68,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         "bar" == controller.response.json.foo
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderState() {
         when:
         params.foo = "bar"
@@ -87,7 +80,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testInjectedProperties() {
         expect:
         request != null
@@ -99,7 +91,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         webRequest != null
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testControllerAutowiring() {
         when:
         controller.renderMessage()
@@ -108,7 +99,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         'World' == controller.response.contentAsString
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderWithFormatXml() {        
         when:
         response.format = 'xml'
@@ -118,7 +108,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderWithFormatHtml() {        
         when:
         response.format = 'html'
@@ -128,7 +117,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         model?.foo == 'bar'
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testWithFormTokenSynchronization() {
         when:
         controller.renderWithForm()
@@ -148,7 +136,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         "Good" == response.contentAsString
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testFileUpload() {        
         when:
         final file = new GrailsMockMultipartFile("myFile", "foo".bytes)
@@ -159,7 +146,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderBasicTemplateNoTags() {
         given:
         def templateName = 'testRenderBasicTemplateNoTags'
@@ -172,7 +158,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         response.contentAsString == "Hello 10"
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderBasicTemplateWithTags() {
         given:
         def templateName = 'testRenderBasicTemplateWithTags'
@@ -185,7 +170,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         response.contentAsString == "Hello World"
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testRenderBasicTemplateWithLinkTag() {
         given:
         def templateName = 'testRenderBasicTemplateWithLinkTag'
@@ -198,7 +182,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         response.contentAsString == "Hello /bar"
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testInvokeTagLibraryMethod() {
         when:
         controller.renderTemplateContents()
@@ -207,7 +190,6 @@ class AstEnhancedControllerUnitTestMixinTests extends Specification implements C
         response.contentAsString == "/foo"
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void testInvokeTagLibraryMethodViaNamespace() {
         when:
         groovyPages['/another/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'

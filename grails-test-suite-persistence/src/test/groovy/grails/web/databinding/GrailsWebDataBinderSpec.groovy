@@ -1642,7 +1642,6 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         !book.hasErrors()
     }
 
-    @Ignore("PluginAwareResourceBundleMessageSource instead of StaticMessageSource which supports .addMessage()")
     void 'test binding an Date to code in @BindingFormat'() {
         given:
         Locale.setDefault(new Locale('en', 'US', ''))
