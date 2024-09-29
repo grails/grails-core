@@ -208,7 +208,6 @@ class CommandLineParserSpec extends Specification {
             cl.systemProperties['myProp'] == 'value with whitespace'
     }
 
-    @Ignore
     void "Test help message with declared options"() {
         when:
             def parser = new CommandLineParser()
