@@ -4,7 +4,6 @@ import grails.databinding.SimpleMapDataBindingSource
 import grails.databinding.converters.ValueConverter
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.testing.GrailsUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -18,7 +17,6 @@ class SpyBeanSpec extends Specification implements GrailsUnitTest {
         myAddressValueConverter(InstanceFactoryBean, myAddressValueConverterMock, MyAddressValueConverter)
     }}
 
-    @Ignore("Too few invocations")
     def "it's possible to use Spy instances as beans as well"() {
         given:
         def binder=grailsApplication.mainContext.getBean("grailsWebDataBinder")

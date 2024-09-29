@@ -1,7 +1,6 @@
 package org.grails.web.commandobjects
 
 import grails.testing.web.GrailsWebUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class CommandObjectNoDataSpec extends Specification implements GrailsWebUnitTest {
@@ -12,7 +11,6 @@ class CommandObjectNoDataSpec extends Specification implements GrailsWebUnitTest
         }
     }}
 
-    @Ignore("grails.gorm.validation.exceptions.ValidationConfigurationException at CommandObjectNoDataSpec.groovy:19")
     void "test shared constraint"() {
         when:
         Artist artist = new Artist(name: "X")

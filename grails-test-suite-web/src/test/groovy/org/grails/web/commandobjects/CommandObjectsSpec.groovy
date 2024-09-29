@@ -4,9 +4,7 @@ import grails.artefact.Artefact
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.Validateable
-import spock.lang.Ignore
 import spock.lang.Issue
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 class CommandObjectsSpec extends Specification implements ControllerUnitTest<TestController>, DataTest {
@@ -90,7 +88,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.commandObject.someValue == 'My Value'
     }
 
-    @Ignore("Property [org.grails.web.commandobjects.Artist.name] references shared constraint [isProg:null], which doesn't exist!")
     void "Test binding to multiple command objects"() {
         when:
         controller.params.name = 'Emerson'
@@ -105,7 +102,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
     }
 
     @Issue('GRAILS-11218')
-    @Ignore("Property [org.grails.web.commandobjects.Artist.name] references shared constraint [isProg:null], which doesn't exist!")
     void "Test binding to multiple command objects with param name prefixes"() {
         when:
         controller.params.person = [name: 'Emerson']
@@ -120,7 +116,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
 
     }
 
-    @Ignore("Property [org.grails.web.commandobjects.Artist.name] references shared constraint [isProg:null], which doesn't exist!")
     void "Test clearErrors"() {
         when:
         def model = controller.methodActionWithArtist()
@@ -201,7 +196,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.person.name == 'Maynard'
     }
 
-    @Ignore("Property [org.grails.web.commandobjects.ArtistSubclass.name] references shared constraint [isProg:null], which doesn't exist!")
     void "Test validation with inherited constraints"() {
 
         when:
@@ -225,7 +219,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.artist.errors.errorCount == 2
     }
 
-    @Ignore("Property [org.grails.web.commandobjects.Artist.name] references shared constraint [isProg:null], which doesn't exist!")
     void "Test validation with shared constraints"() {
 
         when:

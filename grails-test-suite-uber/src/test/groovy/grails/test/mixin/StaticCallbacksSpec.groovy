@@ -1,7 +1,6 @@
 package grails.test.mixin
 
 import org.grails.testing.GrailsUnitTest
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -22,7 +21,6 @@ class StaticCallbacksSpec extends Specification implements GrailsUnitTest {
         grailsApplication != null
     }
     
-    @Ignore("org.springframework.beans.factory.NoSuchBeanDefinitionException: No bean named 'myService' available")
     def "doWithSpring callback is executed"() {
         expect:
         grailsApplication.mainContext.getBean('myService') != null
