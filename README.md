@@ -1,21 +1,18 @@
+# Grails
 [![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.grails.org/scans)
+[![Java CI](https://github.com/grails/grails-core/actions/workflows/gradle.yml/badge.svg?event=push)](https://github.com/grails/grails-core/actions/workflows/gradle.yml)
+[![Groovy Joint Validation Build](https://github.com/grails/grails-core/actions/workflows/groovy-joint-workflow.yml/badge.svg?event=push)](https://github.com/grails/grails-core/actions/workflows/groovy-joint-workflow.yml)
 
-#### Build Status
-- [![Java CI](https://github.com/grails/grails-core/actions/workflows/gradle.yml/badge.svg?event=push)](https://github.com/grails/grails-core/actions/workflows/gradle.yml)
-- ![Grails Joint Validation Build](https://github.com/grails/grails-core/workflows/Grails%20Joint%20Validation%20Build/badge.svg)
+### Getting help
+Join the discussions on [Slack](https://slack.grails.org/)  
+Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/grails)
 
-#### Slack Signup
-- [Slack Signup](https://slack.grails.org/)
-
-Grails
-===
-
+## What is Grails?
 [Grails](https://grails.org/) is a framework used to build web applications with the [Groovy](https://groovy-lang.org/) programming language. The core framework is very extensible and there are numerous [plugins](https://plugins.grails.org/) available that provide easy integration of add-on features.
 
 Grails development is led by the [Grails Foundation](https://grails.org/foundation/) and is sponsored by [Object Computing Inc.](https://objectcomputing.com/) in St. Louis Missouri.  Please contact <2gm@objectcomputing.com> for support inquiries.
 
-Getting Started
----
+## Getting Started
 
 You need a Java Development Kit (JDK) installed, but it is not necessary to install Groovy because it's bundled with the Grails distribution.
 
@@ -35,13 +32,11 @@ If you encounter out of memory errors when trying to run the install target, try
 
     export GRADLE_OPTS="-Xmx2G -Xms2G -XX:NewSize=512m -XX:MaxNewSize=512m"
 
-Performing a Release
----
+## Performing a Release
 
 See [RELEASE.md](RELEASE.md).
 
-License
----
+## License
 
 Grails and Groovy are licensed under the terms of the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.html).
 
@@ -53,8 +48,7 @@ Java and .NET applications. Take a look at YourKit's leading software products:
 [YourKit Java Profiler](https://www.yourkit.com/java/profiler/features/) and
 [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/features/).
 
-Dependencies
----
+## Dependencies
 
 **Gradle Plugins**
 
