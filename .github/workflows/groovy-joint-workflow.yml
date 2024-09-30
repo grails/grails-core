@@ -68,6 +68,10 @@ jobs:
         run: |
           echo "VALUE<<EOF" >> $GITHUB_OUTPUT
           echo "def isAuthenticated = System.getenv('DEVELOCITY_ACCESS_KEY') != null" >> $GITHUB_OUTPUT
+          echo "def isBuildCacheAuthenticated =" >> $GITHUB_OUTPUT
+          echo "        System.getenv('DEVELOCITY_BUILD_CACHE_NODE_USER') != null &&" >> $GITHUB_OUTPUT
+          echo "        System.getenv('DEVELOCITY_BUILD_CACHE_NODE_KEY') != null" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
           echo "develocity {" >> $GITHUB_OUTPUT
           echo "    server = 'https://ge.grails.org'" >> $GITHUB_OUTPUT
           echo "    buildScan {" >> $GITHUB_OUTPUT
@@ -79,8 +83,12 @@ jobs:
           echo "buildCache {" >> $GITHUB_OUTPUT
           echo "    local { enabled = false }" >> $GITHUB_OUTPUT
           echo "    remote(develocity.buildCache) {" >> $GITHUB_OUTPUT
-          echo "        push = isAuthenticated" >> $GITHUB_OUTPUT
+          echo "        push = isBuildCacheAuthenticated" >> $GITHUB_OUTPUT
           echo "        enabled = true" >> $GITHUB_OUTPUT
+          echo "        usernameAndPassword(" >> $GITHUB_OUTPUT
+          echo "            System.getenv('DEVELOCITY_BUILD_CACHE_NODE_USER') ?: ''," >> $GITHUB_OUTPUT
+          echo "            System.getenv('DEVELOCITY_BUILD_CACHE_NODE_KEY') ?: ''" >> $GITHUB_OUTPUT
+          echo "        )" >> $GITHUB_OUTPUT
           echo "    }" >> $GITHUB_OUTPUT
           echo "}" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
