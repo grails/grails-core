@@ -1,4 +1,4 @@
-name: Retry Release
+name: "Retry Release"
 on:
   workflow_dispatch:
     inputs:
@@ -14,85 +14,84 @@ jobs:
     permissions:
       contents: write  #  to create release
       issues: read  #  to get closed issues
-
     runs-on: ubuntu-latest
     env:
-      GIT_USER_NAME: puneetbehl
-      GIT_USER_EMAIL: behlp@unityfoundation.io
+      GIT_USER_NAME: 'grails-build'
+      GIT_USER_EMAIL: 'grails-build@users.noreply.github.com'
     steps:
-      - name: Checkout repository
+      - name: "📥 Checkout repository"
         uses: actions/checkout@v4
         with:
           ref: "v${{ github.event.inputs.release }}"
           token: ${{ secrets.GH_TOKEN }}
-      - name: Set up JDK
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+      - name: "☕️ Setup JDK"
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
+          distribution: temurin
           java-version: 17
-      - name: Extract Target Branch
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+      - name: "📝 Store the target branch"
         id: extract_branch
         run: |
           echo $TARGET_BRANCH
           echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
         env:
           TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
-      - name: Set the current release version
+      - name: "📝 Store the current release version"
         id: release_version
         run: echo "release_version=${VERSION}" >> $GITHUB_OUTPUT
         env:
           VERSION: ${{ github.event.inputs.release }}
-      - name: Run Assemble
+      - name: "🧩 Run Assemble"
         id: assemble
-        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
-        with:
-          arguments: assemble
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
-      - name: Upload artifacts to the Github release
+          DEVELOCITY_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          DEVELOCITY_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        run: ./gradlew assemble
+      - name: "📤 Upload artifacts to the Github release"
         id: upload_artifact
         if: steps.assemble.outcome == 'success'
-        uses: Roang-zero1/github-upload-release-artifacts-action@v3
+        uses: Roang-zero1/github-upload-release-artifacts-action@c15e0b65ce2ae1c8d52bfbc75d017d21e1da77d7 # v3.0.0 (Use commit sha as this is a 3rd party action)
         with:
           created_tag: v${{ github.event.inputs.release }}
           args: build/distributions/grails-${{ steps.release_version.outputs.release_version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Message for the Grails Documentation Release
+      - name: "📝 Create Message for the Grails Documentation Release"
         if: steps.assemble.outcome == 'success'
         id: grails_docs_release_message
         run: |
           echo "value::{\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
         env:
           RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
-      - name: Invoke grails-doc release workflow
+      - name: "📡 Invoke grails-doc release workflow"
         if: steps.assemble.outcome == 'success'
         id: grails_doc
-        uses: benc-uk/workflow-dispatch@v1.2
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4 (Use commit sha as this is a 3rd party action)
         with:
           workflow: Release
           repo: grails/grails-doc
           ref: ${{ steps.extract_branch.outputs.value }}
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
-      - name: Invoke grails-static-website release workflow
+      - name: "📡 Invoke grails-static-website release workflow"
         if: steps.assemble.outcome == 'success'
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@v1.2
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4 (Use commit sha as this is a 3rd party action)
         with:
           workflow: Release
           repo: grails/grails-static-website
           ref: master
           token: ${{ secrets.GH_TOKEN }}
           inputs: ${{ steps.grails_docs_release_message.outputs.value }}
-      - name: Run post-release
+      - name: "⚙️ Run post-release"
         if: steps.assemble.outcome == 'success'
         uses: ./.github/actions/post-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          SNAPSHOT_SUFFIX: -SNAPSHOT
           TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
           RELEASE_VERSION: ${{ github.event.inputs.release }}

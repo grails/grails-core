@@ -1,4 +1,4 @@
-name: Release
+name: "Release"
 on:
   release:
     types: [published]
@@ -13,70 +13,64 @@ jobs:
       release_version: ${{ steps.release_version.outputs.value }}
       target_branch: ${{ steps.extract_branch.outputs.value }}
     env:
-      GIT_USER_NAME: puneetbehl
-      GIT_USER_EMAIL: behlp@unityfoundation.io
+      GIT_USER_NAME: 'grails-build'
+      GIT_USER_EMAIL: 'grails-build@users.noreply.github.com'
     steps:
-      - name: Checkout repository
+      - name: "📥 Checkout repository"
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-      - uses: gradle/wrapper-validation-action@v2
-      - name: Set up JDK
+      - name: "☕️ Setup JDK"
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: '17'
-      - name: Extract Target Branch
+          distribution: temurin
+          java-version: 17
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+      - name: "📝 Store the target branch"
         id: extract_branch
         run: |
           echo "Determining Target Branch"
           TARGET_BRANCH=`cat $GITHUB_EVENT_PATH | jq '.release.target_commitish' | sed -e 's/^"\(.*\)"$/\1/g'`
           echo $TARGET_BRANCH
           echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
-      - name: Set the current release version
+      - name: "📝 Store the current release version"
         id: release_version
         run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
-      - name: Run pre-release
+      - name: "⚙️ Run pre-release"
         uses: ./.github/actions/pre-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run Assemble
+      - name: "🧩 Run Assemble"
         if: success()
         id: assemble
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: assemble
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
-      - name: Upload Distribution
+          DEVELOCITY_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          DEVELOCITY_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        run: ./gradlew assemble
+      - name: "📤 Upload Distribution"
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: grails-${{ steps.release_version.outputs.value }}.zip
           path: build/distributions/grails-${{ steps.release_version.outputs.value }}.zip
-      - name: Upload artifacts to the Github release
+      - name: "📤 Upload artifacts to the Github release"
         if: success()
         id: upload_artifact
-        uses: Roang-zero1/github-upload-release-artifacts-action@master
+        uses: Roang-zero1/github-upload-release-artifacts-action@c15e0b65ce2ae1c8d52bfbc75d017d21e1da77d7 # v3.0.0 (Use commit sha as this is a 3rd party action)
         with:
           args: build/distributions/grails-${{ steps.release_version.outputs.value }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Generate secring file
+      - name: "🔐 Generate secring file"
         if: success()
         env:
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
         run: echo $SECRING_FILE | base64 -d > ${{ github.workspace }}/secring.gpg
-      - name: Publish to Sonatype OSSRH
+      - name: "📤 Publish to Sonatype OSSRH"
         id: publish
         if: success()
-        uses: gradle/actions/setup-gradle@v3
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+          DEVELOCITY_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          DEVELOCITY_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_NEXUS_URL: ${{ secrets.SONATYPE_NEXUS_URL }}
@@ -84,58 +78,60 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
-        with:
-          arguments: |
-            -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg 
-            publishToSonatype 
-            closeSonatypeStagingRepository
+        run: >
+          ./gradlew
+          -Psigning.secretKeyRingFile=${{ github.workspace }}/secring.gpg 
+          publishToSonatype 
+          closeSonatypeStagingRepository
   release:
     needs: publish
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # limit to read access
     steps:
-      - name: Checkout repository
+      - name: "📥 Checkout repository"
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
           ref: v${{ needs.publish.outputs.release_version }}
-      - uses: gradle/wrapper-validation-action@v2
-      - name: Nexus Staging Close And Release
-        uses: gradle/actions/setup-gradle@v3
+      - name: "☕️ Setup JDK"
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+      - name: "🚪 Nexus Staging Close And Release"
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+          DEVELOCITY_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          DEVELOCITY_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_NEXUS_URL: ${{ secrets.SONATYPE_NEXUS_URL }}
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
-        with:
-          arguments: |
-            findSonatypeStagingRepository 
-            releaseSonatypeStagingRepository
-      - name: Run post-release
+        run: >
+          ./gradlew
+          findSonatypeStagingRepository 
+          releaseSonatypeStagingRepository
+      - name: "⚙️ Run post-release"
         if: success()
         uses: ./.github/actions/post-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          SNAPSHOT_SUFFIX: -SNAPSHOT
   docs:
     needs: publish
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # limit to read access
     steps:
-      - name: Prepare Input
+      - name: "⚙️ Prepare Input"
         id: prep_inputs
         run: |
           echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
         env:
           RELEASE_VERSION: ${{ needs.publish.outputs.release_version }}
-      - name: Invoke grails-doc release workflow
-        uses: benc-uk/workflow-dispatch@v1.2
+      - name: "📡 Invoke grails-doc release workflow"
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4 (Use commit sha as this is a 3rd party action)
         with:
           workflow: Release
           repo: grails/grails-doc
@@ -146,18 +142,18 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # limit to read access
     steps:
-      - name: Prepare Input
+      - name: "⚙️ Prepare Input"
         id: prep_inputs
         run: |
           echo "value={\"grails_version\":\"$RELEASE_VERSION\"}" >> $GITHUB_OUTPUT
         env:
           RELEASE_VERSION: ${{ needs.publish.outputs.release_version }}
-      - name: Invoke grails-static-website release workflow
+      - name: "📡 Invoke grails-static-website release workflow"
         if: success()
         id: grails_static_website
-        uses: benc-uk/workflow-dispatch@v1.2
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4 (Use commit sha as this is a 3rd party action)
         with:
           workflow: Release
           repo: grails/grails-static-website

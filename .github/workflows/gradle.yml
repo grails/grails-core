@@ -1,4 +1,4 @@
-name: Java CI
+name: "Java CI"
 on:
   push:
     branches:
@@ -16,67 +16,70 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['17']
-    env:
-      WORKSPACE: ${{ github.workspace }}
+        java: [17]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v4
+      - name: "☕️ Setup JDK"
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
+          distribution: temurin
           java-version: ${{ matrix.java }}
-      - name: Run Build
-        id: build
-        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
         with:
-          arguments: build groovydoc
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+      - name: "🔨 Build project"
+        id: build
+        env:
+          DEVELOCITY_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          DEVELOCITY_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        run: ./gradlew build groovydoc
   publish:
     if: github.event_name == 'push'
-    needs: ["build"]
+    needs: build
     permissions:
-      contents: read  #  to fetch code (actions/checkout)
-      checks: write
+      contents: read # limit to read access
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: "📥 Checkout repository"
         uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
+      - name: "☕️ Setup JDK"
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
+          distribution: temurin
           java-version: 17
-      - name: Publish Artifacts (repo.grails.org)
+      - name: "🐘 Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
+      - name: "📤 Publish Snapshot Artifacts to Artifactory (repo.grails.org/libs-snapshot-local)"
         id: publish
-        uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
         env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-        with:
-          arguments: -Dorg.gradle.internal.publish.checksums.insecure=true publish
+          DEVELOCITY_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
+          DEVELOCITY_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
+        run: >
+          ./gradlew
+          -Dorg.gradle.internal.publish.checksums.insecure=true
+          publish
   docs:
     if: github.event_name == 'push'
     needs: publish
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # limit to read access
     steps:
-      - name: Extract Target Branch
+      - name: "📝 Store the target branch"
         id: extract_branch
         run: |
           echo "Determining Target Branch"
           TARGET_BRANCH=${GITHUB_REF#refs/heads/}
           echo $TARGET_BRANCH
           echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
-      - name: Invoke grails-doc release workflow
-        uses: benc-uk/workflow-dispatch@v1.2
+      - name: "📡 Invoke the grails-doc release workflow"
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4 (Use commit sha as this is a 3rd party action)
         with:
           workflow: Java CI
           repo: grails/grails-doc
@@ -84,19 +87,23 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
   invoke-third-party-workflows:
     if: github.event_name == 'push'
-    needs: ["build", "publish"]
+    needs: [build, publish]
     permissions:
-      contents: read  #  to fetch code (actions/checkout)
+      contents: read # limit to read access
     runs-on: ubuntu-latest
     steps:
-      - name: Extract branch name
+      - name: "📝 Store the target branch"
         id: extract_branch
-        run: echo "value=${GITHUB_REF:11}" >> $GITHUB_OUTPUT
-      - name: Create Snapshot Message for the Workflow Dispatch
+        run: |
+          echo "Determining Target Branch"
+          TARGET_BRANCH=${GITHUB_REF#refs/heads/}
+          echo $TARGET_BRANCH
+          echo "value=${TARGET_BRANCH}" >> $GITHUB_OUTPUT
+      - name: "📝 Create Snapshot Message for the Workflow Dispatch"
         id: dispatch_message
         run: echo "value={\"message\":\"New Core Snapshot $(date) - $GITHUB_SHA\"}" >> $GITHUB_OUTPUT
-      - name: Invoke the Java CI workflow in Grails Functional Tests
-        uses: benc-uk/workflow-dispatch@v1.2
+      - name: "📡 Invoke the Java CI workflow in Grails Functional Tests"
+        uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1.2.4 (Use commit sha as this is a 3rd party action)
         with:
           workflow: Java CI
           repo: grails/grails-functional-tests
