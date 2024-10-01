@@ -24,6 +24,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
@@ -68,6 +69,8 @@ public abstract class AbstractGrailsView extends AbstractUrlBasedView {
             } else {
                 webRequest = (GrailsWebRequest)requestAttributes;
             }
+            // Update response holder to latest response. Necessary for sitemesh to trigger buffering.
+            WrappedResponseHolder.setWrappedResponse(response);
             renderTemplate(model, webRequest, request, response);
         } finally {
             if(attributesChanged) {
