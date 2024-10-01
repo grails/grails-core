@@ -68,15 +68,10 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
-        if(lifeCycle instanceof GrailsApplicationClass) {
-            this.applicationClass = (GrailsApplicationClass)lifeCycle
-        }
-        else {
-            this.applicationClass = null
-        }
-        this.classes = classes != null ? classes : [] as Class[]
-        grailsApplication = applicationClass != null ? new DefaultGrailsApplication(applicationClass) : new DefaultGrailsApplication()
-        pluginManager = new DefaultGrailsPluginManager(grailsApplication)
+        this.applicationClass = lifeCycle instanceof GrailsApplicationClass ? (GrailsApplicationClass) lifeCycle : null
+        this.classes = classes ?: [] as Class[]
+        this.grailsApplication = applicationClass ? new DefaultGrailsApplication(applicationClass) : new DefaultGrailsApplication()
+        this.pluginManager = applicationContext?.getBeanNamesForType(GrailsPluginManager) ? applicationContext.getBean(GrailsPluginManager) : new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
             setApplicationContext(applicationContext)
         }
@@ -290,30 +285,22 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         }
     }
 
-    @SuppressWarnings("GrMethodMayBeStatic")
     private void loadPluginConfigurationsToMicronautContext(ConfigurableApplicationContext applicationContext) {
-        String[] beanNames = applicationContext.getBeanNamesForType(GrailsPluginManager)
-        if (beanNames.length == 0) {
-            // do not continue if PluginManager is not available
+        ConfigurableApplicationContext parentApplicationContext = (ConfigurableApplicationContext) applicationContext.parent
+        if (!parentApplicationContext) {
+            // No Micronaut parent context, return early
             return
         }
-
-        GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager)
-        ConfigurableApplicationContext parentApplicationContext = (ConfigurableApplicationContext) applicationContext.parent
         ConfigurableEnvironment parentContextEnv = parentApplicationContext.getEnvironment()
         if (parentContextEnv instanceof MicronautEnvironment) {
-            if (log.isDebugEnabled()) {
-                log.debug("Loading configurations from the plugins to the parent Micronaut context")
-            }
+            log.debug('Loading configurations from the plugins to the parent Micronaut context')
             final io.micronaut.context.env.Environment micronautEnv = ((io.micronaut.context.env.Environment) parentContextEnv.getEnvironment())
             final GrailsPlugin[] plugins = pluginManager.allPlugins
             Integer priority = AbstractPropertySourceLoader.DEFAULT_POSITION
             Arrays.stream(plugins)
                     .filter({ GrailsPlugin plugin -> plugin.propertySource != null })
                     .forEach({ GrailsPlugin plugin ->
-                        if (log.isDebugEnabled()) {
-                            log.debug("Loading configurations from {} plugin to the parent Micronaut context", plugin.name)
-                        }
+                        log.debug('Loading configurations from {} plugin to the parent Micronaut context', plugin.name)
                         micronautEnv.addPropertySource(PropertySource.of("grails.plugins.$plugin.name", (Map) plugin.propertySource.source, --priority))
                     })
             micronautEnv.refresh()

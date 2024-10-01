@@ -1,8 +1,6 @@
 package org.grails.web.databinding.bindingsource
 
-import org.grails.databinding.xml.GPathResultMap
-import org.grails.web.databinding.bindingsource.HalGPathResultMap;
-
+import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class HalGPathResultMapSpec extends Specification {

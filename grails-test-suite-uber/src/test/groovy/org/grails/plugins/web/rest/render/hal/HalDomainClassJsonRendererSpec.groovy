@@ -7,6 +7,7 @@ import grails.persistence.Entity
 import grails.rest.Linkable
 import grails.rest.Resource
 import grails.rest.render.hal.HalJsonRenderer
+import grails.spring.BeanBuilder
 import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
@@ -16,7 +17,7 @@ import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
@@ -24,6 +25,8 @@ import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.context.ApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
@@ -32,7 +35,6 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
 import org.springframework.web.util.WebUtils
-
 import spock.lang.Specification
 
 /**
@@ -199,10 +201,18 @@ grails.mime.types = [
     }
 
     private MimeType[] buildMimeTypes(application) {
-        def mimeTypesFactory = new MimeTypesFactoryBean()
-        mimeTypesFactory.grailsApplication = application
-        def mimeTypes = mimeTypesFactory.getObject()
-        mimeTypes
+        final def mainContext = new GenericApplicationContext()
+        mainContext.refresh()
+        application.setApplicationContext(mainContext)
+
+        def bb = new BeanBuilder()
+        bb.beans {
+            grailsApplication = application
+            mimeConfiguration(MimeTypesConfiguration, application, [])
+        }
+        final ApplicationContext context = bb.createApplicationContext()
+        final MimeTypesConfiguration mimeTypesConfiguration = context.getBean(MimeTypesConfiguration)
+        mimeTypesConfiguration.mimeTypes()
     }
 }
 

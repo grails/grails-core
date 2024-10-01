@@ -23,20 +23,21 @@ import grails.persistence.Entity
 import grails.rest.render.Renderer
 import grails.rest.render.hal.HalJsonCollectionRenderer
 import grails.rest.render.hal.HalJsonRenderer
+import grails.spring.BeanBuilder
 import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
-import groovy.transform.NotYetImplemented
+import groovy.test.NotYetImplemented
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.AbstractPersistentProperty
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PropertyMapping
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
@@ -45,6 +46,8 @@ import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.MockHibernateProxyHandler
+import org.springframework.context.ApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.env.MapPropertySource
@@ -688,7 +691,9 @@ class HalJsonRendererSpec extends Specification{
         webRequest.request.addHeader("ACCEPT", "application/hal+json")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
-        def event = new Event(name: "Lollapalooza", date: new Date(113, 10, 8, 13, 12, 30), state: Event.State.OPEN)
+        Calendar calendar = Calendar.getInstance()
+        calendar.set(2013, 10, 8, 13, 12, 30)
+        def event = new Event(name: "Lollapalooza", date: calendar.getTime(), state: Event.State.OPEN)
 
         renderer.render(event, renderContext)
 
@@ -954,10 +959,18 @@ grails.mime.types = [
     }
 
     private MimeType[] buildMimeTypes(application) {
-        def mimeTypesFactory = new MimeTypesFactoryBean()
-        mimeTypesFactory.grailsApplication = application
-        def mimeTypes = mimeTypesFactory.getObject()
-        mimeTypes
+        final def mainContext = new GenericApplicationContext()
+        mainContext.refresh()
+        application.setApplicationContext(mainContext)
+
+        def bb = new BeanBuilder()
+        bb.beans {
+            grailsApplication = application
+            mimeConfiguration(MimeTypesConfiguration, application, [])
+        }
+        final ApplicationContext context = bb.createApplicationContext()
+        final MimeTypesConfiguration mimeTypesConfiguration = context.getBean(MimeTypesConfiguration)
+        mimeTypesConfiguration.mimeTypes()
     }
 }
 

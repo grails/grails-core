@@ -30,7 +30,7 @@ ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = [
-            'fieldsPlugin'           : [version: feildsPluginVersion,
+            'fieldsPlugin'           : [version: fieldsPluginVersion,
                                         group  : 'org.grails.plugins',
                                         names  : ['fields'],
                                         modules: ['']
@@ -223,14 +223,14 @@ if (isReleaseVersion) {
 
 allprojects {
     repositories {
-        mavenLocal()
+        mavenLocal() // Used by the Groovy Joint Validation Github workflow after building groovy locally in CI
         mavenCentral()
-        maven { url "https://repo.grails.org/grails/core" }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url = "https://repo.grails.org/grails/core" }
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
         if (groovyVersion.endsWith('-SNAPSHOT')) {
-            maven {
-                name 'JFrog OSS snapshot repo'
-                url 'https://oss.jfrog.org/oss-snapshot-local/'
+            maven { // Used for testing with Groovy snapshots locally
+                name = 'Groovy Snapshot repository'
+                url = 'https://groovy.jfrog.io/artifactory/libs-snapshot-local/'
             }
         }
     }

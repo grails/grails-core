@@ -16,16 +16,15 @@
 package org.grails.plugins.testing
 
 import grails.converters.JSON
-import groovy.util.slurpersupport.GPathResult
-
-import javax.servlet.http.HttpServletRequest
-
+import groovy.xml.slurpersupport.GPathResult
+import org.grails.io.support.SpringIOUtils
 import org.grails.web.json.JSONElement
-import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.util.ReflectionUtils
-import org.grails.io.support.SpringIOUtils
+
+import javax.servlet.http.HttpServletRequest
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
