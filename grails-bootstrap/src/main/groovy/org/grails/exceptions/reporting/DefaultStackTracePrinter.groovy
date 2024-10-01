@@ -23,7 +23,13 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
  */
 class DefaultStackTracePrinter implements StackTracePrinter {
 
+    @Deprecated
     String prettyPrint(Throwable t) {
+        prettyPrint(t, [:])
+    }
+
+    @Override
+    String prettyPrint(Throwable t, Map attrs) {
         if (t == null) return ''
         if (!t.stackTrace) return 'No stack trace available'
         final sw = new StringWriter()

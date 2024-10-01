@@ -27,7 +27,11 @@ interface CodeSnippetPrinter {
      * Attempts to present a preview code snippet of the code that went wrong
      *
      * @param exception The exception
+     * @param optional attributes for formatting
      * @return The code snippet or nothing if it can't be previewed
      */
+    String prettyPrintCodeSnippet(Throwable exception, Map attrs)
+
+    @Deprecated
     String prettyPrintCodeSnippet(Throwable exception)
 }
