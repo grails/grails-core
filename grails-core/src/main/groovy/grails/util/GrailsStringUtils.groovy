@@ -165,7 +165,7 @@ abstract class GrailsStringUtils extends StringUtils{
      * Same as {@link StringUtils#isEmpty(java.lang.Object)} but trims the string for surrounding whitespace
      */
     static boolean isBlank(String str) {
-        !hasText(str?.trim())
+        isEmpty(str?.trim())
     }
 
     /**
@@ -179,7 +179,7 @@ abstract class GrailsStringUtils extends StringUtils{
      * Opposite of {@link GrailsStringUtils#isEmpty(java.lang.Object)}
      */
     static boolean isNotEmpty(String str) {
-        hasText(str)
+        !isEmpty(str)
     }
 
     /**

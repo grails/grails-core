@@ -14,7 +14,6 @@
  */
 package org.grails.databinding.xml
 
-import groovy.xml.XmlSlurper
 import spock.lang.Specification
 
 class GPathResultMapSpec extends Specification {

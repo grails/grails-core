@@ -44,6 +44,7 @@ class JSONRequestToResponseRenderingSpec extends Specification implements Contro
 class ArrayController {
     def list() {
         def json = request.JSON
+
         render json
     }
 }

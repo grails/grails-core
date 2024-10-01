@@ -25,7 +25,7 @@ class LinkableTransformSpec extends Specification {
 
         when:"A link is added"
             def domain = gcl.loadClass("Book")
-            def book = domain.getDeclaredConstructor().newInstance()
+            def book = domain.newInstance()
             book.link(rel:'foos', href:"/foo")
             def links = book.links()
 

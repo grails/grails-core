@@ -104,7 +104,7 @@ class CommandDescription {
      * @return The description instance
      */
     CommandDescription completer(Class<Completer> completer) {
-        this.completer = completer.getDeclaredConstructor().newInstance()
+        this.completer = completer.newInstance()
         return this
     }
 

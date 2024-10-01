@@ -15,7 +15,7 @@
  */
 package org.grails.io.support;
 
-import groovy.xml.XmlSlurper;
+import groovy.util.XmlSlurper;
 import groovy.xml.FactorySupport;
 import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;

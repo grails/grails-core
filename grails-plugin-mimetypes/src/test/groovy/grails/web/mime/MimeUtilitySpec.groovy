@@ -1,11 +1,9 @@
 package grails.web.mime
 
+import grails.web.mime.MimeUtility
 import grails.core.DefaultGrailsApplication
-import grails.spring.BeanBuilder
-import org.grails.plugins.web.mime.MimeTypesConfiguration
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.mime.DefaultMimeUtility
-import org.springframework.context.ApplicationContext
-import org.springframework.context.support.GenericApplicationContext
 import spock.lang.Specification
 
 /**
@@ -14,8 +12,8 @@ import spock.lang.Specification
 class MimeUtilitySpec extends Specification {
 
     MimeUtility getMimeUtility() {
-        def application = new DefaultGrailsApplication()
-        application.config.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+        def ga = new DefaultGrailsApplication()
+        ga.config.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
                       js: 'text/javascript',
@@ -29,18 +27,10 @@ class MimeUtilitySpec extends Specification {
                       multipartForm: 'multipart/form-data'
                     ]
 
-        final def mainContext = new GenericApplicationContext()
-        mainContext.refresh()
-        application.setApplicationContext(mainContext)
+        final factory = new MimeTypesFactoryBean(grailsApplication: ga)
 
-        def bb = new BeanBuilder()
-        bb.beans {
-            grailsApplication = application
-            mimeConfiguration(MimeTypesConfiguration, application, [])
-        }
-        final ApplicationContext context = bb.createApplicationContext()
-        final MimeTypesConfiguration mimeTypesConfiguration = context.getBean(MimeTypesConfiguration)
-        return new DefaultMimeUtility(mimeTypesConfiguration.mimeTypes())
+        def mimeTypes = factory.getObject()
+        return new DefaultMimeUtility(mimeTypes)
     }
 
     void "Test get mime by extension method"() {

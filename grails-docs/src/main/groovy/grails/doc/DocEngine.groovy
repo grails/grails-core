@@ -167,7 +167,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                            EscapeFilter]
 
             for (f in filters) {
-                RegexFilter filter = f.getDeclaredConstructor().newInstance()
+                RegexFilter filter = f.newInstance()
                 fp.addFilter(filter)
 
                 if (filter instanceof MacroFilter) {

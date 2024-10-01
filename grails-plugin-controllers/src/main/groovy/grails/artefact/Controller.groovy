@@ -410,7 +410,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
                     }
                 }
             } else if (requestMethod == HttpMethod.POST || !isDomainClass) {
-                commandObjectInstance = type.getDeclaredConstructor().newInstance()
+                commandObjectInstance = type.newInstance()
             }
 
             if (commandObjectInstance != null
@@ -440,7 +440,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
             if(exceptionHandlerMethodFor != null) {
                 throw e
             }
-            commandObjectInstance = type.getDeclaredConstructor().newInstance()
+            commandObjectInstance = type.newInstance()
             final o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
             if(o instanceof BindingResult) {
                 final BindingResult errors = (BindingResult)o

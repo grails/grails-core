@@ -36,7 +36,7 @@ mappings {
     @Test
     void testUrlMappingsArtefactHandler() {
         def gcl = new GroovyClassLoader()
-        Class mappings = gcl.parseClass(new BufferedReader(new InputStreamReader(new ByteArrayResource(mappingScript.bytes).inputStream)), "MyUrlMappings")
+        Class mappings = gcl.parseClass(new ByteArrayResource(mappingScript.bytes).inputStream, "MyUrlMappings")
         def handler = new UrlMappingsArtefactHandler()
 
         assertTrue handler.isArtefactClass(mappings)

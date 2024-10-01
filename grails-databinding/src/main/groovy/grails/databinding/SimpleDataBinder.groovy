@@ -21,7 +21,7 @@ import grails.databinding.events.DataBindingListener
 import grails.databinding.initializers.ValueInitializer
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import groovy.xml.slurpersupport.GPathResult
+import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.reflection.CachedMethod
 import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.ClosureValueInitializer
@@ -344,11 +344,11 @@ class SimpleDataBinder implements DataBinder {
                     } else if (isBasicType(genericType)) {
                         addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
                     } else if (val instanceof Map){
-                        indexedInstance = genericType.getDeclaredConstructor().newInstance()
+                        indexedInstance = genericType.newInstance()
                         bind indexedInstance, new SimpleMapDataBindingSource(val), listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
                     } else if (val instanceof DataBindingSource) {
-                        indexedInstance = genericType.getDeclaredConstructor().newInstance()
+                        indexedInstance = genericType.newInstance()
                         bind indexedInstance, val, listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
                     } else if(genericType.isEnum() && val instanceof CharSequence) {
@@ -752,7 +752,7 @@ class SimpleDataBinder implements DataBinder {
             obj[propName] = initializer.initialize()
         }
         else{
-            obj[propName] = propertyType.getDeclaredConstructor().newInstance()
+            obj[propName] = propertyType.newInstance()
         }        
     }
     
@@ -815,7 +815,7 @@ class SimpleDataBinder implements DataBinder {
         } else if (typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
             return value
         } else if (value instanceof Map) {
-            def obj = typeToConvertTo.getDeclaredConstructor().newInstance()
+            def obj = typeToConvertTo.newInstance()
             bind obj, new SimpleMapDataBindingSource(value)
             return obj
         } else if (Enum.isAssignableFrom(typeToConvertTo) && value instanceof String) {

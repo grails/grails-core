@@ -27,7 +27,7 @@ class EnhancesSpec extends Specification{
     void "Test that the enhances trait transform works as expected"() {
 
         when:"The generated transformer is loaded"
-            def traitInjector = getClass().classLoader.loadClass("grails.artefact.FooTraitInjector").getDeclaredConstructor().newInstance()
+            def traitInjector = getClass().classLoader.loadClass("grails.artefact.FooTraitInjector").newInstance()
 
         then:"It is a valid trait injector"
             traitInjector instanceof TraitInjector

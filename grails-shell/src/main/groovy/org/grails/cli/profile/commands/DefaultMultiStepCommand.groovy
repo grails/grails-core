@@ -55,7 +55,7 @@ class DefaultMultiStepCommand extends MultiStepCommand {
                                 def completerClass = map.get('completer')
                                 if(completerClass) {
                                     try {
-                                        this.description.completer = (Completer)Thread.currentThread().contextClassLoader.loadClass(completerClass.toString()).getDeclaredConstructor().newInstance()
+                                        this.description.completer = (Completer)Thread.currentThread().contextClassLoader.loadClass(completerClass.toString()).newInstance()
                                     } catch (e) {
                                         // ignore
                                     }

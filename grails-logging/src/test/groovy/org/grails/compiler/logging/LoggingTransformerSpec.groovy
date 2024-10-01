@@ -30,7 +30,7 @@ class LoggingController extends BaseController{
     }
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
-        def controller = cls.getDeclaredConstructor().newInstance()
+        def controller = cls.newInstance()
         Logger log = controller.index()
 
         then:
@@ -56,7 +56,7 @@ class LoggingController extends BaseController{
     }
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
-            def controller = cls.getDeclaredConstructor().newInstance()
+            def controller = cls.newInstance()
             Logger log = controller.index()
 
         then:
@@ -77,7 +77,7 @@ class LoggingController {
     }
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
-            def controller = cls.getDeclaredConstructor().newInstance()
+            def controller = cls.newInstance()
             Logger log = controller.index()
 
         then:
@@ -98,7 +98,7 @@ class LoggingController {
     }
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
-            def controller = cls.getDeclaredConstructor().newInstance()
+            def controller = cls.newInstance()
             Logger log = controller.index()
 
         then:
@@ -117,7 +117,7 @@ class LoggingController extends grails.boot.config.GrailsAutoConfiguration {
     }
 }
 ''', "foo/src/main/groovy/LoggingController.groovy")
-        def controller = cls.getDeclaredConstructor().newInstance()
+        def controller = cls.newInstance()
         controller.index()
 
         then:

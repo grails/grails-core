@@ -45,7 +45,7 @@ description("example script") {
 
 
 println "Hello!"
-''', "MyScript").getDeclaredConstructor().newInstance())
+''', "MyScript").newInstance())
 
         then:"The scripts description is correctly populated"
             script.description.name == 'my-script'

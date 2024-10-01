@@ -15,6 +15,7 @@
  */
 package grails.util;
 
+import grails.util.GrailsStringUtils;
 import groovy.lang.GroovyObjectSupport;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.util.HashCodeHelper;

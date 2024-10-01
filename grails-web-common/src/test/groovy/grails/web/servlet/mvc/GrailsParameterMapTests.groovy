@@ -337,11 +337,9 @@ class GrailsParameterMapTests {
         mockRequest.addParameter("foo_month", "07")
 
         theMap = new GrailsParameterMap(mockRequest)
-        final Calendar calendar = Calendar.getInstance()
         assert theMap.getDate("foo").getClass() == java.util.Date
-        calendar.setTime(theMap.getDate("foo"))
-        assert calendar.get(Calendar.YEAR) == 2007
-        assert calendar.get(Calendar.MONTH) == Calendar.JULY
+        assert theMap.getDate("foo").year == 107
+        assert theMap.getDate("foo").month == Calendar.JULY
     }
 
     @Test

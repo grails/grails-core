@@ -14,7 +14,7 @@
  */
 package org.grails.plugins.testing
 
-
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.*

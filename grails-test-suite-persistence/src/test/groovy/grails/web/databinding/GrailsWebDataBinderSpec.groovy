@@ -1294,11 +1294,9 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         then: 'the date is initialized'
         !book.hasErrors()
         book.datePublished
-        final Calendar calendar = Calendar.getInstance()
-        calendar.setTime(book.datePublished)
-        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
-        15 == calendar.get(Calendar.DAY_OF_MONTH)
-        1969 == calendar.get(Calendar.YEAR)
+        Calendar.NOVEMBER == book.datePublished.month
+        15 == book.datePublished.date
+        69 == book.datePublished.year
         
         when: 'an empty string is bound'
         binder.bind book, [datePublished: ''] as SimpleMapDataBindingSource
@@ -1320,11 +1318,9 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
         then: 'the date is initialized'
         !child.hasErrors()
         child.birthDate
-        final Calendar calendar = Calendar.getInstance()
-        calendar.setTime(child.birthDate)
-        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
-        15 == calendar.get(Calendar.DAY_OF_MONTH)
-        1969 == calendar.get(Calendar.YEAR)
+        Calendar.NOVEMBER == child.birthDate.month
+        15 == child.birthDate.date
+        69 == child.birthDate.year
     }
     
     void 'Test binding String to currency in a domain class'() {

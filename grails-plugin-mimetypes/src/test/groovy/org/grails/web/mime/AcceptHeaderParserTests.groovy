@@ -1,15 +1,15 @@
 package org.grails.web.mime
 
 import grails.core.DefaultGrailsApplication
-import grails.spring.BeanBuilder
 import grails.util.Holders
 import org.grails.config.PropertySourcesConfig
-import org.grails.plugins.web.mime.MimeTypesConfiguration
-import org.springframework.context.ApplicationContext
-import org.springframework.context.support.GenericApplicationContext
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.web.mime.DefaultAcceptHeaderParser
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
-import spock.lang.Specification
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 
@@ -17,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals
  * @author Graeme Rocher
  * @since 1.0
  */
-class AcceptHeaderParserSpec extends Specification {
+class AcceptHeaderParserTests {
 
     def config
 
-    void setup() {
-        def configObject = new ConfigSlurper()
-                .parse("""
+    @BeforeEach
+    protected void setUp() {
+        def configObject = new ConfigSlurper().parse("""
 grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
                       js: 'text/javascript',
@@ -41,160 +41,140 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         def ps = new MutablePropertySources()
         ps.addLast(new MapPropertySource("grails", configObject))
         config = new PropertySourcesConfig(ps)
+
     }
 
-    void cleanup() {
+    @AfterEach
+    protected void tearDown() {
         config = null
         Holders.setConfig null
     }
 
+    @Test
     void testXmlContentTypeWithCharset() {
 
-        when:
         DefaultAcceptHeaderParser parser = getAcceptHeaderParser()
         def mimes = parser.parse("text/xml; charset=UTF-8")
 
-        then:
-        1 == mimes.size()
-        "application/xml" == mimes[0].name
-        "xml" == mimes[0].extension
-        'UTF-8' == mimes[0].parameters.charset
-        '1.0' == mimes[0].parameters.q
-        '1.0' == mimes[0].quality
+        assertEquals 1, mimes.size()
+        assertEquals "application/xml", mimes[0].name
+        assertEquals "xml", mimes[0].extension
+        assertEquals('UTF-8', mimes[0].parameters.charset)
+        assertEquals('1.0', mimes[0].parameters.q)
+        assertEquals('1.0', mimes[0].quality)
     }
 
     protected DefaultAcceptHeaderParser getAcceptHeaderParser() {
-        final application = new DefaultGrailsApplication()
-        application.setConfig(config)
-        final def mainContext = new GenericApplicationContext()
-        mainContext.refresh()
-        application.setApplicationContext(mainContext)
-
-        def bb = new BeanBuilder()
-        bb.beans {
-            grailsApplication = application
-            mimeConfiguration(MimeTypesConfiguration, application, [])
-        }
-        final ApplicationContext context = bb.createApplicationContext()
-        final MimeTypesConfiguration mimeTypesConfiguration = context.getBean(MimeTypesConfiguration)
-        final parser = new DefaultAcceptHeaderParser(mimeTypesConfiguration.mimeTypes())
+        final application = new DefaultGrailsApplication(config: config)
+        final factoryBean = new MimeTypesFactoryBean(grailsApplication: application)
+        final parser = new DefaultAcceptHeaderParser(factoryBean.getObject())
         parser
     }
-    
-    void testXmlContentTypeWithCharsetAndVersion() {
 
-        when:
+    @Test
+    void testXmlContentTypeWithCharsetAndVersion() {
         def mimes = getAcceptHeaderParser().parse("text/xml; charset=UTF-8; v=1.1")
 
-        then:
-        1 == mimes.size()
-        "application/xml" == mimes[0].name
-        "xml" == mimes[0].extension
-        'UTF-8' == mimes[0].parameters.charset
-        '1.0' == mimes[0].parameters.q
-        '1.0' == mimes[0].quality
-        '1.1' == mimes[0].version
+        assertEquals 1, mimes.size()
+        assertEquals "application/xml", mimes[0].name
+        assertEquals "xml", mimes[0].extension
+        assertEquals('UTF-8', mimes[0].parameters.charset)
+        assertEquals('1.0', mimes[0].parameters.q)
+        assertEquals('1.0', mimes[0].quality)
+        assertEquals('1.1', mimes[0].version)
     }
 
+    @Test
     void testGRAILS10678() {
-
-        when:
         def mimes = getAcceptHeaderParser().parse("application/json;")
 
-        then:
-        1 == mimes.size()
-        "application/json" == mimes[0].name
-        "json" == mimes[0].extension
+        assertEquals 1, mimes.size()
+        assertEquals "application/json", mimes[0].name
+        assertEquals "json", mimes[0].extension
     }
 
+    @Test
     void testFirefox2AcceptHeaderOrdering() {
 
-        when:
         def mimes = getAcceptHeaderParser().parse("text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5")
 
-        then:
         assertEquals 5, mimes.size()
 
-        ['application/xhtml+xml','application/xml', 'text/html', 'text/plain', '*/*'] == mimes.name
-        ['html', 'xml', 'html', 'text', 'all'] == mimes.extension
+        assertEquals(['application/xhtml+xml','application/xml', 'text/html', 'text/plain', '*/*'], mimes.name)
+        assertEquals(['html', 'xml', 'html', 'text', 'all'], mimes.extension)
     }
 
+    @Test
     void testFirefox3AcceptHeaderOrdering() {
 
-        when:
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 
-        then:
-        4 == mimes.size()
-        ['html','html','xml', 'all'] == mimes.extension
+        assertEquals 4, mimes.size()
+
+        assertEquals(['html','html','xml', 'all'], mimes.extension)
     }
 
+    @Test
     void testParseAcceptHeaderWithNonNumericQualityValue() {
 
-        when:
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=blah,*/*;q=0.8")
 
-        then:
-        4 ==  mimes.size()
-        ['html','html','xml', 'all'] == mimes.extension
+        assertEquals 4, mimes.size()
+
+        assertEquals(['html','html','xml', 'all'], mimes.extension)
     }
 
+    @Test
     void testAcceptHeaderWithQNumberOrdering() {
-
-        when:
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=1.1,*/*;q=0.8")
 
-        then:
-        4 == mimes.size()
-        ['xml','html','html', 'all'] == mimes.extension
+        assertEquals 4, mimes.size()
+
+        assertEquals(['xml','html','html', 'all'], mimes.extension)
     }
 
+    @Test
     void testPrototypeHeaderOrdering() {
-        when:
         def mimes = getAcceptHeaderParser().parse("text/javascript, text/html, application/xml, text/xml, */*")
 
-        then:
-        4 ==  mimes.size()
-        ["js",'html', 'xml', 'all'] == mimes.extension
-        ["text/javascript",'text/html', 'application/xml', '*/*'] == mimes.name
+        assertEquals 4, mimes.size()
+
+        assertEquals(["js",'html', 'xml', 'all'], mimes.extension)
+        assertEquals(["text/javascript",'text/html', 'application/xml', '*/*'], mimes.name)
     }
 
+    @Test
     void testOldBrowserHeader() {
-        when:
         def mimes = getAcceptHeaderParser().parse("*/*")
 
-        then:
-        1 == mimes.size()
-        ['all'] == mimes.extension
+        assertEquals 1, mimes.size()
+        assertEquals(['all'], mimes.extension)
     }
 
+    @Test
     // test for GRAILS-3389
     void testAcceptExtensionWithTokenNoValue() {
-        when:
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;token,*/*;q=0.8")
 
-        then:
-        4 ==  mimes.size()
-        ['html','html', 'xml','all'] == mimes.extension
+        assertEquals 4, mimes.size()
+
+        assertEquals(['html','html', 'xml','all'], mimes.extension)
     }
 
+    @Test
     // test for GRAILS-3493
     void testAcceptHeaderWithNoQValue() {
-        when:
         def mimes = getAcceptHeaderParser().parse("application/xml; charset=UTF-8")
 
-        then:
-        1 == mimes.size()
+        assertEquals 1, mimes.size()
     }
 
+    @Test
     void testAcceptExtensionWithCustomVndTypeAndVersion() {
-
-        when:
         def mimesV1 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=1.0; charset=UTF-8")
         def mimesV2 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=2.0; charset=UTF-8")
 
-        then:
-        ['foov1'] == mimesV1.extension
-        ['foov2'] == mimesV2.extension
+        assertEquals(['foov1'], mimesV1.extension)
+        assertEquals(['foov2'], mimesV2.extension)
     }
 }

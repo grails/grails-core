@@ -44,7 +44,7 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
     MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_XML, MimeType.XML, MimeType.TEXT_XML] as MimeType[]
 
     @Override
-    void render(Errors object, RenderContext context) {
+    void render(Object object, RenderContext context) {
         if (object instanceof BeanPropertyBindingResult) {
             def errors = object as BeanPropertyBindingResult
             context.setContentType(GrailsWebUtil.getContentType(MIME_TYPE.name, encoding))

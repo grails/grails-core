@@ -69,7 +69,7 @@ class Book {
             ctrl.getSuperclass() == superClazz
 
         when:"A link is added"
-            def book = domain.getDeclaredConstructor().newInstance()
+            def book = domain.newInstance()
             book.link(rel:'foos', href:"/foo")
             def links = book.links()
 
@@ -152,7 +152,7 @@ class Book {
             ctrl.getSuperclass() == superClazz
 
         when:"A link is added"
-            def book = domain.getDeclaredConstructor().newInstance()
+            def book = domain.newInstance()
             book.link(rel:'foos', href:"/foo")
             def links = book.links()
 

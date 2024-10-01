@@ -20,6 +20,7 @@ import grails.databinding.*
 import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
 import grails.databinding.events.DataBindingListener
+import grails.util.Environment
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.util.GrailsNameUtils
@@ -27,7 +28,7 @@ import grails.validation.DeferredBindingActions
 import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import groovy.xml.slurpersupport.GPathResult
+import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
@@ -38,8 +39,14 @@ import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.xml.GPathResultMap
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
-import org.grails.datastore.mapping.model.types.*
+import org.grails.datastore.mapping.model.types.Association
+import org.grails.datastore.mapping.model.types.Basic
+import org.grails.datastore.mapping.model.types.ManyToOne
+import org.grails.datastore.mapping.model.types.OneToMany
+import org.grails.datastore.mapping.model.types.OneToOne
+import org.grails.datastore.mapping.model.types.Simple
 import org.grails.web.databinding.DataBindingEventMulticastListener
+import org.grails.web.databinding.DefaultASTDatabindingHelper
 import org.grails.web.databinding.GrailsWebDataBindingListener
 import org.grails.web.databinding.SpringConversionServiceAdapter
 import org.grails.web.databinding.converters.ByteArrayMultipartFileValueConverter
@@ -52,8 +59,10 @@ import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
 
 import java.lang.annotation.Annotation
+import java.lang.reflect.Modifier
+import java.util.concurrent.ConcurrentHashMap
 
-import static grails.web.databinding.DataBindingUtils.getBindingIncludeList
+import static grails.web.databinding.DataBindingUtils.*
 
 @CompileStatic
 class GrailsWebDataBinder extends SimpleDataBinder {

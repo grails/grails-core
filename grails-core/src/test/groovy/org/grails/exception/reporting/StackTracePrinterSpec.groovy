@@ -15,8 +15,8 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print simple stack trace"() {
         given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(toBufferedReader(getServiceResource().inputStream), serviceResource.filename)
-            def controller = gcl.parseClass(new BufferedReader(new InputStreamReader(getControllerResource().inputStream)), getControllerResource().filename).getDeclaredConstructor().newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultErrorsPrinter()
             def result = null
@@ -36,8 +36,8 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print nested stack trace"() {
       given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(toBufferedReader(getServiceResource().inputStream), serviceResource.filename)
-            def controller = gcl.parseClass(toBufferedReader(getControllerResource().inputStream), getControllerResource().filename).getDeclaredConstructor().newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultErrorsPrinter()
             def result = null
@@ -58,8 +58,8 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print nested stack trace for JDK 11"() {
         given: "a controller that throws an exception"
         final gcl = new GroovyClassLoader()
-        gcl.parseClass(toBufferedReader(getServiceResource().inputStream), serviceResource.filename)
-        def controller = gcl.parseClass(toBufferedReader(getControllerResource().inputStream), getControllerResource().filename).getDeclaredConstructor().newInstance()
+        gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+        def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
         def printer = new DefaultErrorsPrinter()
         def result = null
@@ -79,8 +79,8 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print code snippet"() {
         given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(toBufferedReader(getServiceResource().inputStream), serviceResource.filename)
-            def controller = gcl.parseClass(toBufferedReader(getControllerResource().inputStream), getControllerResource().filename).getDeclaredConstructor().newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(getControllerResource().inputStream, getControllerResource().filename).newInstance()
 
         when: "A code snippet is pretty printed"
             final locator = new StaticResourceLocator()
@@ -118,8 +118,8 @@ Around line 5 of FooController.groovy
     void "Test pretty print nested exception code snippet"() {
         given:"a service that throws an exception that is caught and rethrown"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(toBufferedReader(getServiceResource().inputStream), serviceResource.filename)
-            def controller = gcl.parseClass(toBufferedReader(getControllerResource().inputStream), getControllerResource().filename).getDeclaredConstructor().newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(controllerResource.inputStream, controllerResource.filename).newInstance()
             final locator = new StaticResourceLocator()
             locator.addClassResource("test.FooController", controllerResource)
             locator.addClassResource("test.FooService", serviceResource)
@@ -197,9 +197,5 @@ class FooService {
                 return "FooService.groovy"
             }
         }
-    }
-
-    private BufferedReader toBufferedReader(InputStream inputStream) {
-        new BufferedReader(new InputStreamReader(inputStream))
     }
 }

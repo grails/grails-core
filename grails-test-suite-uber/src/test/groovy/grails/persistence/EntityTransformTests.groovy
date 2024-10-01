@@ -122,7 +122,7 @@ p = new Permission(user:u, permission:"uber")
         entity.many = new HashSet()
         assertEquals 0, (int) entity.many.size()
 
-        entity.one = entity.class.getDeclaredConstructor().newInstance()
+        entity.one = entity.class.newInstance()
 
         assertNotNull entity.one
     }
