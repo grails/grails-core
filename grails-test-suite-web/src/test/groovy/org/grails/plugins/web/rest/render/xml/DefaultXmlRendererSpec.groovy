@@ -7,7 +7,7 @@ import grails.testing.gorm.DomainUnitTest
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
 import grails.web.mime.MimeType
-
+import groovy.xml.XmlSlurper
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -16,7 +16,6 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
-
 import spock.lang.Specification
 
 /**

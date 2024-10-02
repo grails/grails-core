@@ -19,7 +19,7 @@ import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
-import groovy.util.slurpersupport.GPathResult
+import groovy.xml.slurpersupport.GPathResult
 
 @CompileStatic
 class GPathResultCollectionDataBindingSource implements CollectionDataBindingSource {

@@ -186,18 +186,18 @@ class ErrorHandlersController extends SomeAbstractController implements Database
 
     def testAction() {
         def exceptionClass = Class.forName(params.exceptionToThrow)
-        throw exceptionClass.newInstance()
+        throw exceptionClass.getDeclaredConstructor().newInstance()
     }
 
     def testActionWithCommandObject(MyCommand co) {
         def exceptionClass = Class.forName(co.exceptionToThrow)
-        throw exceptionClass.newInstance()
+        throw exceptionClass.getDeclaredConstructor().newInstance()
     }
 
 
     def testActionWithNonCommandObjectParameter(String exceptionToThrow) {
         def exceptionClass = Class.forName(exceptionToThrow)
-        throw exceptionClass.newInstance()
+        throw exceptionClass.getDeclaredConstructor().newInstance()
     }
 
     def handleNumberFormatException(NumberFormatException nfe) {

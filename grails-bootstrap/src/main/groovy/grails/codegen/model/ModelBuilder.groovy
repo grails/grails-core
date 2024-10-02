@@ -17,7 +17,7 @@ package grails.codegen.model
 
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.runtime.MetaClassHelper
+import org.apache.groovy.util.BeanUtils
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.Resource
@@ -89,7 +89,7 @@ trait ModelBuilder {
         final String packagePath
 
         ModelImpl(String className) {
-            this.className = MetaClassHelper.capitalize(GrailsNameUtils.getShortName(className))
+            this.className = BeanUtils.capitalize(GrailsNameUtils.getShortName(className))
             this.fullName = className
             this.propertyName = GrailsNameUtils.getPropertyName(className)
             this.packageName = GrailsNameUtils.getPackageName(className)
@@ -111,7 +111,14 @@ trait ModelBuilder {
 
         @Override
         Map<String, Object> asMap() {
-            (Map<String,Object>) [ className: className, fullName: fullName, propertyName: propertyName, modelName: propertyName, packageName: packageName, packagePath: packagePath, simpleName: simpleName, lowerCaseName: lowerCaseName]
+            [className: className,
+             fullName: fullName,
+             propertyName: propertyName,
+             modelName: propertyName,
+             packageName: packageName,
+             packagePath: packagePath,
+             simpleName: simpleName,
+             lowerCaseName: lowerCaseName] as Map<String, Object>
         }
     }
 
