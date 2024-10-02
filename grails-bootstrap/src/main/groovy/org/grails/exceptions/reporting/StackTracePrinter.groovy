@@ -29,5 +29,16 @@ interface StackTracePrinter {
      * @param throwable The throwable
      * @return The result
      */
+    @Deprecated
     String prettyPrint(Throwable throwable)
+
+    /**
+     * Pretty print the given stack trace and return the result
+     *
+     * @param throwable The throwable
+     * @param optional attributes for formatting
+     * @return The result
+     */
+    String prettyPrint(Throwable throwable, Map attrs)
+
 }

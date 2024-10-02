@@ -10,11 +10,8 @@ buildscript {
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
         classpath "javax.xml.bind:jaxb-api:$jaxbApiVersion"
         classpath "com.sun.xml.bind:jaxb-impl:$jaxbImplVersion"
-        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
     }
 }
-
-import static groovyx.net.http.ContentType.*
 
 apply plugin: 'idea'
 
