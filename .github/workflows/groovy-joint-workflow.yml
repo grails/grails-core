@@ -52,11 +52,10 @@ jobs:
       - name: Checkout Groovy 3_0_X (Grails 5 and later)
         if: startsWith(github.ref, 'refs/heads/6.') || startsWith(github.base_ref, '6.') || startsWith(github.ref, 'refs/heads/5.') || startsWith(github.base_ref, '5.')
         run: cd .. && git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_3_0_X --single-branch
-      - name: Set CI_GROOVY_VERSION for Grails
+      - name: Get Groovy version for Grails
         id: groovy-version
         run: |
           cd ../groovy
-          echo "CI_GROOVY_VERSION=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_ENV
           echo "value=$(cat gradle.properties | grep groovyVersion | cut -d\= -f2 |  tr -d '[:space:]')" >> $GITHUB_OUTPUT
       - name: Prepare GE Set-up Configuration
         id: ge_conf
@@ -130,7 +129,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
       - name: Cache local Maven repository & Groovy
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4
         with:
           path: |
             ~/groovy
@@ -143,6 +142,7 @@ jobs:
         id: build_grails
         uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3
         env:
+          ORG_GRADLE_PROJECT_groovyVersion: ${{ needs.build_groovy.outputs.groovyVersion }}
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
