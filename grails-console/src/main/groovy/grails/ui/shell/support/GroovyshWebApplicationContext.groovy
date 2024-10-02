@@ -22,7 +22,6 @@ import groovy.transform.InheritConstructors
 import org.apache.groovy.groovysh.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 
-
 /**
  * @author Graeme Rocher
  * @since 3.0

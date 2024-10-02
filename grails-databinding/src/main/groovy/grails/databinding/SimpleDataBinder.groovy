@@ -344,11 +344,11 @@ class SimpleDataBinder implements DataBinder {
                     } else if (isBasicType(genericType)) {
                         addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
                     } else if (val instanceof Map){
-                        indexedInstance = genericType.newInstance()
+                        indexedInstance = genericType.getDeclaredConstructor().newInstance()
                         bind indexedInstance, new SimpleMapDataBindingSource(val), listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
                     } else if (val instanceof DataBindingSource) {
-                        indexedInstance = genericType.newInstance()
+                        indexedInstance = genericType.getDeclaredConstructor().newInstance()
                         bind indexedInstance, val, listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
                     } else if(genericType.isEnum() && val instanceof CharSequence) {
@@ -752,7 +752,7 @@ class SimpleDataBinder implements DataBinder {
             obj[propName] = initializer.initialize()
         }
         else{
-            obj[propName] = propertyType.newInstance()
+            obj[propName] = propertyType.getDeclaredConstructor().newInstance()
         }        
     }
     
@@ -815,7 +815,7 @@ class SimpleDataBinder implements DataBinder {
         } else if (typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
             return value
         } else if (value instanceof Map) {
-            def obj = typeToConvertTo.newInstance()
+            def obj = typeToConvertTo.getDeclaredConstructor().newInstance()
             bind obj, new SimpleMapDataBindingSource(value)
             return obj
         } else if (Enum.isAssignableFrom(typeToConvertTo) && value instanceof String) {

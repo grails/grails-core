@@ -1,6 +1,5 @@
 package grails.web.mime
 
-import grails.web.mime.MimeUtility
 import grails.core.DefaultGrailsApplication
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.mime.DefaultMimeUtility

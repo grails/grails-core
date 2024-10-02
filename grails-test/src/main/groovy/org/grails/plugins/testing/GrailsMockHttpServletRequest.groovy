@@ -82,15 +82,15 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     void setFormat(String format) {
         setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
     }
-    
+
     @Override
     void setContentType(String newContentType) {
         super.setContentType(newContentType)
         def webRequest = getAttribute(GrailsApplicationAttributes.WEB_REQUEST)
         def mimeType = MimeType.configuredMimeTypes?.find { mt ->
             mt?.name == newContentType
-        } 
-        
+        }
+
         if(!mimeType) {
             mimeType = new MimeType(newContentType)
         }
@@ -223,10 +223,10 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     boolean isPost() { method == "POST" }
 
     /**
-    * Parses the request content as XML using XmlSlurper and returns
-    * the GPath result object. Throws an exception if there is no
-    * content or the content is not valid XML.
-    */
+     * Parses the request content as XML using XmlSlurper and returns
+     * the GPath result object. Throws an exception if there is no
+     * content or the content is not valid XML.
+     */
     def getXML() {
         if (!cachedXml) {
             cachedXml = GrailsMockHttpServletRequest.classLoader.loadClass("grails.converters.XML").parse(this)
@@ -566,6 +566,6 @@ class MockAsyncContext implements AsyncContext {
     }
 
     def <T extends AsyncListener> T createListener(Class<T> clazz) {
-        return clazz.newInstance()
+        return clazz.getDeclaredConstructor().newInstance()
     }
 }

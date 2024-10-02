@@ -4,6 +4,7 @@ import groovy.xml.XmlSlurper
 import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.validation.Validateable
+import groovy.xml.XmlSlurper
 import spock.lang.Issue
 import spock.lang.Specification
 

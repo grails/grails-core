@@ -26,7 +26,8 @@ class JSONBindingToNullTests extends Specification implements ControllerUnitTest
                                      multipartForm: 'multipart/form-data'
         ]
 
-    }}
+        }
+    }
 
     void testJsonBindingToNull() {
         when:

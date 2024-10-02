@@ -1,3 +1,5 @@
+import groovy.xml.XmlParser
+
 idea {
     project {
         jdkName "1.7"

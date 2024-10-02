@@ -39,12 +39,7 @@ import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.xml.GPathResultMap
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
-import org.grails.datastore.mapping.model.types.Association
-import org.grails.datastore.mapping.model.types.Basic
-import org.grails.datastore.mapping.model.types.ManyToOne
-import org.grails.datastore.mapping.model.types.OneToMany
-import org.grails.datastore.mapping.model.types.OneToOne
-import org.grails.datastore.mapping.model.types.Simple
+import org.grails.datastore.mapping.model.types.*
 import org.grails.web.databinding.DataBindingEventMulticastListener
 import org.grails.web.databinding.GrailsWebDataBindingListener
 import org.grails.web.databinding.SpringConversionServiceAdapter
@@ -59,7 +54,7 @@ import org.springframework.validation.ObjectError
 
 import java.lang.annotation.Annotation
 
-import static grails.web.databinding.DataBindingUtils.*
+import static grails.web.databinding.DataBindingUtils.getBindingIncludeList
 
 @CompileStatic
 class GrailsWebDataBinder extends SimpleDataBinder {
