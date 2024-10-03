@@ -49,12 +49,6 @@ publishing {
                             delegate.artifactId "async"
                             delegate.version asyncVersion
                             delegate.scope "api"
-                            delegate.exclusions {
-                                delegate.exclusion {
-                                    delegate.groupId 'javax'
-                                    delegate.artifactId 'javaee-web-api'
-                                }
-                            }
                         }
                         delegate.dependency {
                             delegate.groupId "org.grails.plugins"
@@ -67,12 +61,6 @@ publishing {
                             delegate.artifactId "gsp"
                             delegate.version gspVersion
                             delegate.scope "api"
-                            delegate.exclusions {
-                                delegate.exclusion {
-                                    delegate.groupId 'javax'
-                                    delegate.artifactId 'javaee-web-api'
-                                }
-                            }
                         }
                         delegate.dependency {
                             delegate.groupId "com.h2database"
