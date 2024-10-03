@@ -61,7 +61,6 @@ dependencies {
         exclude module:'grails-test'
         exclude module:'async'
     }
-    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }
 
 test {
