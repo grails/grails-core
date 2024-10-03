@@ -4,6 +4,9 @@ import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import spock.lang.Specification
 
+import java.time.LocalDate
+import java.time.ZoneId
+
 class UnitTestEmbeddedPropertyQuery extends Specification implements DataTest {
     
     void setupSpec() {
@@ -16,8 +19,8 @@ class UnitTestEmbeddedPropertyQuery extends Specification implements DataTest {
         def book = new Book2(
             name: 'Game of Thrones',
             publishPeriod: new Period(
-                startDate: new Date(2012, 1, 1),
-                endDate: new Date(2013, 1, 1)
+                startDate: date(2012, 1, 1),
+                endDate: date(2013, 1, 1)
             )
         )
 
@@ -29,27 +32,27 @@ class UnitTestEmbeddedPropertyQuery extends Specification implements DataTest {
 
         expect:
         Book2.withCriteria {
-            gt 'publishPeriod.startDate', new Date(2011, 1, 1)
+            gt 'publishPeriod.startDate', date(2011, 1, 1)
         }.size() == 1
 
         Book2.withCriteria {
-            ge 'publishPeriod.startDate', new Date(2012, 1, 1)
+            ge 'publishPeriod.startDate', date(2012, 1, 1)
         }.size() == 1
 
         Book2.withCriteria {
-            lt 'publishPeriod.startDate', new Date(2014, 1, 1)
+            lt 'publishPeriod.startDate', date(2014, 1, 1)
         }.size() == 1
 
         Book2.withCriteria {
-            le 'publishPeriod.startDate', new Date(2012, 1, 1)
+            le 'publishPeriod.startDate', date(2012, 1, 1)
         }.size() == 1
 
         Book2.withCriteria {
-            eq 'publishPeriod.startDate', new Date(2012, 1, 1)
+            eq 'publishPeriod.startDate', date(2012, 1, 1)
         }.size() == 1
 
         Book2.withCriteria {
-            ne 'publishPeriod.startDate', new Date(2017, 1, 1)
+            ne 'publishPeriod.startDate', date(2017, 1, 1)
         }.size() == 1
 
         Book2.withCriteria {
@@ -58,41 +61,41 @@ class UnitTestEmbeddedPropertyQuery extends Specification implements DataTest {
     }
 
     void testAssociated() {
-        
+
         expect:
         Author2.withCriteria {
             books {
-                gt 'publishPeriod.startDate', new Date(2011, 1, 1)
+                gt 'publishPeriod.startDate', date(2011, 1, 1)
             }
         }.size() == 1
 
         Author2.withCriteria {
             books {
-                ge 'publishPeriod.startDate', new Date(2012, 1, 1)
+                ge 'publishPeriod.startDate', date(2012, 1, 1)
             }
         }.size() == 1
 
         Author2.withCriteria {
             books {
-                lt 'publishPeriod.startDate', new Date(2014, 1, 1)
+                lt 'publishPeriod.startDate', date(2014, 1, 1)
             }
         }.size() == 1
 
         Author2.withCriteria {
             books {
-                le 'publishPeriod.startDate', new Date(2012, 1, 1)
+                le 'publishPeriod.startDate', date(2012, 1, 1)
             }
         }.size() == 1
 
         Author2.withCriteria {
             books {
-                eq 'publishPeriod.startDate', new Date(2012, 1, 1)
+                eq 'publishPeriod.startDate', date(2012, 1, 1)
             }
         }.size() == 1
 
         Author2.withCriteria {
             books {
-                ne 'publishPeriod.startDate', new Date(2017, 1, 1)
+                ne 'publishPeriod.startDate', date(2017, 1, 1)
             }
         }.size() == 1
 
@@ -104,14 +107,18 @@ class UnitTestEmbeddedPropertyQuery extends Specification implements DataTest {
     }
 
     void testQueryToOne() {
-        
+
         expect:
         Book2.withCriteria {
-            gt 'publishPeriod.startDate', new Date(2011, 1, 1)
+            gt 'publishPeriod.startDate', date(2011, 1, 1)
             author {
                 eq 'name', 'George'
             }
         }.size() == 1
+    }
+
+    private Date date(int year, int month, int day) {
+        Date.from(LocalDate.of(year, month, day).atStartOfDay(ZoneId.systemDefault()).toInstant())
     }
 }
 

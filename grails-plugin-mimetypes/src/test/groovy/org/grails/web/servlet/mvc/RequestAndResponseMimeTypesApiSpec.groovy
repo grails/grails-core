@@ -1,14 +1,18 @@
 package org.grails.web.servlet.mvc
+
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.spring.BeanBuilder
 import grails.util.GrailsWebMockUtil
 import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.mime.DefaultMimeUtility
-import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.context.ApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
 import org.springframework.mock.web.MockHttpServletRequest
@@ -18,6 +22,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
+
 /**
  * Tests for mime type resolution
  */
@@ -278,10 +283,18 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
     
 
     private MimeType[] buildMimeTypes() {
-        def mimeTypesFactory = new MimeTypesFactoryBean()
-        mimeTypesFactory.grailsApplication = application
-        def mimeTypes = mimeTypesFactory.getObject()
-        mimeTypes
+        final def mainContext = new GenericApplicationContext()
+        mainContext.refresh()
+        application.setApplicationContext(mainContext)
+
+        def bb = new BeanBuilder()
+        bb.beans {
+            grailsApplication = application
+            mimeConfiguration(MimeTypesConfiguration, application, [])
+        }
+        final ApplicationContext context = bb.createApplicationContext()
+        final MimeTypesConfiguration mimeTypesConfiguration = context.getBean(MimeTypesConfiguration)
+        mimeTypesConfiguration.mimeTypes()
     }
 
     String applicationConfigText = '''

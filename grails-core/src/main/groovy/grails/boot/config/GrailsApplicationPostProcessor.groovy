@@ -71,7 +71,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         }
         this.classes = classes != null ? classes : [] as Class[]
         grailsApplication = applicationClass != null ? new DefaultGrailsApplication(applicationClass) : new DefaultGrailsApplication()
-        pluginManager = new DefaultGrailsPluginManager(grailsApplication)
+        pluginManager = applicationContext?.getBeanNamesForType(GrailsPluginManager) ? applicationContext.getBean(GrailsPluginManager) : new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
             setApplicationContext(applicationContext)
         }

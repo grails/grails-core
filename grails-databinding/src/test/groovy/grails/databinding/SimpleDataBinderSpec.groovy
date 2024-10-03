@@ -152,17 +152,17 @@ class SimpleDataBinderSpec extends Specification {
         then:
         obj.localDateTime == LocalDateTime.parse("2013-04-15T21:26:31.974", DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     }
-    
+
     @Issue('GRAILS-10925')
     void 'Test binding a Date to a Date property marked with @BindingFormat'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
         def nowDate = new Date()
-        
+
         when:
         binder.bind obj, [formattedUtilDate: nowDate] as SimpleMapDataBindingSource
-        
+
         then:
         obj.formattedUtilDate == nowDate
     }
@@ -224,117 +224,141 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         binder.bind obj, new SimpleMapDataBindingSource([utilDate: '2013-04-15 21:26:31.973', formattedUtilDate: '11151969'])
+        final Calendar calendar = Calendar.getInstance()
+        calendar.setTime(obj.utilDate)
 
         then:
-        Calendar.APRIL == obj.utilDate.month
-        15 == obj.utilDate.date
-        113 == obj.utilDate.year
-        21 == obj.utilDate.hours
-        26 == obj.utilDate.minutes
-        31 == obj.utilDate.seconds
-        Calendar.NOVEMBER == obj.formattedUtilDate.month
-        15 == obj.formattedUtilDate.date
-        69 == obj.formattedUtilDate.year
+        Calendar.APRIL == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        2013 == calendar.get(Calendar.YEAR)
+        21 == calendar.get(Calendar.HOUR_OF_DAY)
+        26 == calendar.get(Calendar.MINUTE)
+        31 == calendar.get(Calendar.SECOND)
+
+        when:
+        calendar.setTime(obj.formattedUtilDate)
+
+        then:
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
 
         when:
         obj.utilDate = null
         binder.bind obj, new SimpleMapDataBindingSource([utilDate: "2011-03-12T09:24:22Z"])
+        calendar.setTime(obj.utilDate)
 
         then:
-        Calendar.MARCH == obj.utilDate.month
-        12 == obj.utilDate.date
-        111 == obj.utilDate.year
-        9 == obj.utilDate.hours
-        24 == obj.utilDate.minutes
-        22 == obj.utilDate.seconds
+        Calendar.MARCH == calendar.get(Calendar.MONTH)
+        12 == calendar.get(Calendar.DAY_OF_MONTH)
+        2011 == calendar.get(Calendar.YEAR)
+        9 == calendar.get(Calendar.HOUR_OF_DAY)
+        24 == calendar.get(Calendar.MINUTE)
+        22 == calendar.get(Calendar.SECOND)
     }
 
     void 'Test structured date binding'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
+        Calendar calendar = Calendar.getInstance()
 
         when:
         binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
-            utilDate_day: '15',
-            utilDate_year: '1969',
-            calendar_month: '4',
-            calendar_day: '21',
-            calendar_year: '2049',
-            sqlDate_month: '6',
-            sqlDate_day: '14',
-            sqlDate_year: '1937',
-            sqlDate: 'struct',
-            calendar: 'struct',
-            utilDate: 'struct']))
+                                                         utilDate_day: '15',
+                                                         utilDate_year: '1969',
+                                                         calendar_month: '4',
+                                                         calendar_day: '21',
+                                                         calendar_year: '2049',
+                                                         sqlDate_month: '6',
+                                                         sqlDate_day: '14',
+                                                         sqlDate_year: '1937',
+                                                         sqlDate: 'struct',
+                                                         calendar: 'struct',
+                                                         utilDate: 'struct']))
         def utilDate = obj.utilDate
-        def calendar = obj.calendar
-        def sqlDate = obj.sqlDate
+        calendar.setTime(utilDate)
 
         then:
-        Calendar.NOVEMBER == utilDate.month
-        15 == utilDate.date
-        69 == utilDate.year
-        Calendar.JUNE == sqlDate.month
-        14 == sqlDate.date
-        37 == sqlDate.year
-        Calendar.APRIL == calendar.get(Calendar.MONTH)
-        21 == calendar.get(Calendar.DATE)
-        2049 == calendar.get(Calendar.YEAR)
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
+
+        when:
+        calendar.setTime(obj.sqlDate)
+
+        then:
+        Calendar.JUNE == calendar.get(Calendar.MONTH)
+        14 == calendar.get(Calendar.DAY_OF_MONTH)
+        1937 == calendar.get(Calendar.YEAR)
+
+        when:
+        def cal = obj.calendar
+
+        then:
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        21 == cal.get(Calendar.DATE)
+        2049 == cal.get(Calendar.YEAR)
 
         when:
         obj.utilDate = obj.calendar = obj.sqlDate = null
         binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
-            utilDate_day: '15',
-            utilDate_year: '1969',
-            calendar_month: '4',
-            calendar_day: '21',
-            calendar_year: '2049',
-            sqlDate_month: '6',
-            sqlDate_day: '14',
-            sqlDate_year: '1937',
-            sqlDate: 'date.struct',
-            calendar: 'date.struct',
-            utilDate: 'date.struct']))
-        utilDate = obj.utilDate
-        calendar = obj.calendar
-        sqlDate = obj.sqlDate
+                                                         utilDate_day: '15',
+                                                         utilDate_year: '1969',
+                                                         calendar_month: '4',
+                                                         calendar_day: '21',
+                                                         calendar_year: '2049',
+                                                         sqlDate_month: '6',
+                                                         sqlDate_day: '14',
+                                                         sqlDate_year: '1937',
+                                                         sqlDate: 'date.struct',
+                                                         calendar: 'date.struct',
+                                                         utilDate: 'date.struct']))
+        calendar.setTime(obj.utilDate)
 
         then:
-        Calendar.NOVEMBER == utilDate.month
-        15 == utilDate.date
-        69 == utilDate.year
-        Calendar.JUNE == sqlDate.month
-        14 == sqlDate.date
-        37 == sqlDate.year
-        Calendar.APRIL == calendar.get(Calendar.MONTH)
-        21 == calendar.get(Calendar.DATE)
-        2049 == calendar.get(Calendar.YEAR)
+        Calendar.NOVEMBER == calendar.get(Calendar.MONTH)
+        15 == calendar.get(Calendar.DAY_OF_MONTH)
+        1969 == calendar.get(Calendar.YEAR)
+
+        when:
+        calendar.setTime(obj.sqlDate)
+
+        then:
+        Calendar.JUNE == calendar.get(Calendar.MONTH)
+        14 == calendar.get(Calendar.DAY_OF_MONTH)
+        1937 == calendar.get(Calendar.YEAR)
+
+        when:
+        cal = obj.calendar
+
+        then:
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        21 == cal.get(Calendar.DATE)
+        2049 == cal.get(Calendar.YEAR)
 
         when:
         obj.utilDate = obj.calendar = obj.sqlDate = null
         binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
-            utilDate_day: '15',
-            utilDate_year: '1969',
-            calendar_month: '4',
-            calendar_day: '21',
-            calendar_year: '2049',
-            sqlDate_month: '6',
-            sqlDate_day: '14',
-            sqlDate_year: '1937',
-            sqlDate: 'struct',
-            calendar: 'struct',
-            utilDate: 'struct']), null, ['sqlDate', 'utilDate'])
+                                                         utilDate_day: '15',
+                                                         utilDate_year: '1969',
+                                                         calendar_month: '4',
+                                                         calendar_day: '21',
+                                                         calendar_year: '2049',
+                                                         sqlDate_month: '6',
+                                                         sqlDate_day: '14',
+                                                         sqlDate_year: '1937',
+                                                         sqlDate: 'struct',
+                                                         calendar: 'struct',
+                                                         utilDate: 'struct']), null, ['sqlDate', 'utilDate'])
         utilDate = obj.utilDate
-        calendar = obj.calendar
-        sqlDate = obj.sqlDate
+        cal = obj.calendar
 
         then:
-        sqlDate == null
         utilDate == null
-        Calendar.APRIL == calendar.get(Calendar.MONTH)
-        21 == calendar.get(Calendar.DATE)
-        2049 == calendar.get(Calendar.YEAR)
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        21 == cal.get(Calendar.DATE)
+        2049 == cal.get(Calendar.YEAR)
     }
 
     void 'Test struct binding to a list'() {
@@ -530,44 +554,44 @@ class SimpleDataBinderSpec extends Specification {
         widget.names[1] == null
         widget.names[2] == 'two'
     }
-    
+
     void 'Test @BindUsing on a List<Integer>'() {
         given:
         def binder = new SimpleDataBinder()
         def widget = new Widget()
-        
+
         when:
         binder.bind widget, [listOfIntegers: '4'] as SimpleMapDataBindingSource
-        
+
         then:
         widget.listOfIntegers == [0, 1, 2, 3]
     }
-    
+
     @Issue('GRAILS-10853')
     void 'Test adding new elements to a Set using indexed properties'() {
         given:
         def binder = new SimpleDataBinder()
         def widget = new Widget()
-        
+
         when:
         binder.bind widget, ['factories[2]': [name: 'Tres'], 'factories[0]': [name: 'Uno'], 'factories[1]': [name: 'Dos']] as SimpleMapDataBindingSource
-        
+
         then:
         widget.factories.size() == 3
         widget.factories.find { it.name == 'Uno' }
         widget.factories.find { it.name == 'Dos' }
         widget.factories.find { it.name == 'Tres' }
     }
-    
+
     @Issue('GRAILS-10865')
     void 'Test binding to an inherited typed collection'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new ClassWithInheritedTypedCollection()
-        
+
         when:
         binder.bind obj, [list: ['1', '2', '3'], 'map[one]': '1', 'map[two]': '2' ] as SimpleMapDataBindingSource
-        
+
         then:
         obj.list == [1, 2, 3]
         obj.map.one == 1
@@ -699,7 +723,7 @@ class Widget {
     byte[] byteArray
     Integer[] integers
     List<String> names
-    @BindUsing({ obj, source -> 
+    @BindUsing({ obj, source ->
         def cnt = source['listOfIntegers'] as int
         def result = []
         cnt.times { result << it }

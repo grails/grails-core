@@ -254,7 +254,7 @@ class RestfulController<T> {
      * @return The resource instance
      */
     protected T createResource() {
-        T instance = resource.newInstance()
+        T instance = resource.getDeclaredConstructor().newInstance()
         bindData instance, getObjectToBind()
         instance
     }
