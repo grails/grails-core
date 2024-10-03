@@ -58,6 +58,12 @@ publishing {
                         }
                         delegate.dependency {
                             delegate.groupId "org.grails.plugins"
+                            delegate.artifactId "events"
+                            delegate.version asyncVersion
+                            delegate.scope "api"
+                        }
+                        delegate.dependency {
+                            delegate.groupId "org.grails.plugins"
                             delegate.artifactId "gsp"
                             delegate.version gspVersion
                             delegate.scope "api"
