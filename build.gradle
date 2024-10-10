@@ -60,7 +60,7 @@ ext {
             'micronautSpring'        : [version: micronautSpringVersion,
                                         group  : 'io.micronaut.spring',
                                         names  : ['micronaut-spring'],
-                                        modules: ['spring', 'context', 'boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
+                                        modules: ['', 'context', 'boot', 'web', 'boot-annotation', 'annotation', 'web-annotation']
             ],
             'mongodb'                : [version: mongodbJavaDriverVersion,
                                         group  : 'org.mongodb',
