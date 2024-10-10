@@ -1,11 +1,13 @@
-apply plugin: org.grails.gradle.GrailsBuildPlugin
+import org.gradle.api.internal.plugins.StartScriptGenerator
+import org.grails.gradle.GrailsBuildPlugin
+
+apply plugin: GrailsBuildPlugin
 
 def libsConfigurations = []
 subprojects { subproject ->
     if(subproject.name == 'grails-dependencies') return
     if(subproject.name == 'grails-bom') return
     if(subproject.name == 'grails-core') {
-
         configurations {
             libsConfigurations << libs {
                 extendsFrom compileClasspath, runtimeClasspath
@@ -15,7 +17,7 @@ subprojects { subproject ->
     }
 }
 
-task configurePopulateDependencies {
+tasks.register('configurePopulateDependencies') {
     ext {
         baseCachesDir = "$gradle.gradleUserHomeDir/caches"
         cacheDir = "$baseCachesDir/modules-2"
@@ -82,46 +84,51 @@ task configurePopulateDependencies {
     }
 }
 
-task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) {
+tasks.register('populateDependencies', Sync) {
+    dependsOn 'configurePopulateDependencies'
     into homeLibDir
     includeEmptyDirs = false
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 // Can't use sync task here because this directory contains other things as well.
-task sourcesJars(type: Sync) {
+tasks.register('sourcesJars', Sync) {
     into homeSrcDir
-    from subprojects
-            .findAll { subproject -> !subproject.name.startsWith('grails-test-suite') &&
-                    !subproject.name.startsWith('grails-dependencies') &&
-                    !subproject.name.startsWith('grails-bom')
-            }.sourcesJar*.outputs*.files
+    from rootProject.subprojects.findAll { subproject ->
+        !subproject.name.startsWith('grails-test-suite') &&
+        !subproject.name.startsWith('grails-dependencies') &&
+        !subproject.name.startsWith('grails-bom')
+    }.sourcesJar*.outputs*.files
     // sourcesFor comes from GrailsBuildPlugin
-    from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
-}
-
-task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
-    description = "Creates OS specific scripts to run grails-shell as a JVM application."
-    mainClass.set('org.grails.cli.GrailsCli')
-    applicationName = 'grails'
-    defaultJvmOpts = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
-    outputDir = file('bin')
-    classpath = rootProject.childProjects['grails-shell'].configurations.runtimeClasspath
-    projectArtifacts = rootProject.childProjects['grails-shell'].tasks['jar'].outputs.files.collect { "dist/${it.name}" }
-    doLast {
-        ant.replace(file: file('bin/grails'), token: 'media/gradle.icns', value: 'media/icons/grails.icns')
-        ant.chmod(file: file('bin/grails'), perm: 'ugo+rx')
+    from {
+        sourcesFor(
+            libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }
+        )
     }
 }
 
-class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateStartScripts {
+tasks.register('grailsCreateStartScripts', GrailsCreateStartScripts) {
+    description = 'Creates OS specific scripts to run grails-shell as a JVM application.'
+    mainClass = 'org.grails.cli.GrailsCli'
+    applicationName = 'grails'
+    defaultJvmOpts = ['-XX:+TieredCompilation', '-XX:TieredStopAtLevel=1', '-XX:CICompilerCount=3']
+    outputDir = rootProject.layout.projectDirectory.dir('bin').asFile
+    classpath = rootProject.childProjects['grails-shell'].configurations.runtimeClasspath
+    projectArtifacts = rootProject.childProjects['grails-shell'].tasks['jar'].outputs.files.collect { "dist/${it.name}" } as List<String>
+    doLast {
+        ant.replace(file: rootProject.layout.projectDirectory.file('bin/grails').asFile, token: 'media/gradle.icns', value: 'media/icons/grails.icns')
+        ant.chmod(file: rootProject.layout.projectDirectory.file('bin/grails').asFile, perm: 'ugo+rx')
+    }
+}
+
+class GrailsCreateStartScripts extends CreateStartScripts {
 
     @Input
     Collection<String> projectArtifacts=[]
 
-    @org.gradle.api.tasks.TaskAction
+    @TaskAction
     void generate() {
-        def generator = new org.gradle.api.internal.plugins.StartScriptGenerator()
+        def generator = new StartScriptGenerator()
         generator.unixStartScriptGenerator.template = project.rootProject.childProjects['grails-shell'].resources.text.fromFile('src/main/resources/unixStartScript.txt')
         generator.applicationName = getApplicationName()
         generator.mainClassName = getMainClassName()
@@ -142,7 +149,8 @@ class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateSt
     }
 }
 
-task install(dependsOn: [populateDependencies, grailsCreateStartScripts]) { task ->
+tasks.register('install') { task ->
+    dependsOn 'populateDependencies', 'grailsCreateStartScripts'
     subprojects { Project project ->
         if(!project.name.startsWith('grails-test-suite')) {
             task.dependsOn("$project.name:publishToMavenLocal")
@@ -152,29 +160,30 @@ task install(dependsOn: [populateDependencies, grailsCreateStartScripts]) { task
 //task install(dependsOn: [populateDependencies, grailsCreateStartScripts] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }
 //                                                                                                        *.collect { Project p -> p.tasks.withType(PublishToMavenLocal)})
 
-task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
-    destinationDirectory = project.layout.buildDirectory.dir("distributions")
+tasks.register('zipDist', Zip) {
+    dependsOn 'sourcesJars', 'install'
+    destinationDirectory = rootProject.layout.buildDirectory.dir('distributions')
     archiveBaseName = 'grails'
     archiveAppendix = grailsVersion
 
-    exclude "**/CVS/**"
+    exclude '**/CVS/**'
 
     into("grails-$grailsVersion") {
-        from(projectDir) {
-            include 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/"
+        from(rootProject.layout.projectDirectory) {
+            // Some of these are probably not needed as they are not in the project folder
+            include 'bin/grails', 'bin/grails.bat', 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', 'src/'
             exclude 'ant/bin', 'src/grails', 'src/war'
         }
-        from(project.layout.buildDirectory.dir("docs").get().asFile) {
-            into "doc"
-        }
-        from("conf") {
-            into "conf"
+        from(tasks.docs) {
+            into 'doc'
         }
         from(homeDistDir) {
-            into "dist"
-            exclude "*.zip"
+            into 'dist'
+            exclude '*.zip'
         }
     }
 }
 
-task assemble(dependsOn: zipDist)
+tasks.register('assemble') {
+    dependsOn 'zipDist'
+}

@@ -129,14 +129,12 @@ group = "org.grails"
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
-ext {
-    distInstallDir = layout.buildDirectory.dir("dist-tmp").get()
-    homeDistDir = layout.buildDirectory.dir("install/dist").get()
-    homeBinDir = layout.buildDirectory.dir("install/bin").get()
-    homeConfDir = layout.buildDirectory.dir("install/conf").get()
-    homeLibDir = layout.buildDirectory.dir("install/lib").get()
-    homeSrcDir = layout.buildDirectory.dir("install/src").get()
-}
+ext.set('distInstallDir', layout.buildDirectory.dir('dist-tmp'))
+ext.set('homeDistDir', layout.projectDirectory.dir('dist'))
+ext.set('homeBinDir', layout.projectDirectory.dir('bin'))
+ext.set('homeConfDir', layout.projectDirectory.dir('conf'))
+ext.set('homeLibDir', layout.projectDirectory.dir('lib'))
+ext.set('homeSrcDir', layout.projectDirectory.dir('src'))
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
 // configurations, so place the dependency in a shared variable. The
@@ -402,8 +400,8 @@ subprojects { project ->
         tasks.withType(PublishToMavenLocal).configureEach {
             dependsOn installToHomeDist
             doLast {
-                ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
-                    fileset dir: distInstallDir
+                ant.copy(todir: homeDistDir.asFile, flatten: true, includeEmptyDirs: false) {
+                    fileset dir: distInstallDir.get().asFile
                 }
             }
         }
@@ -587,6 +585,11 @@ subprojects { project ->
             languageVersion = JavaLanguageVersion.of(17)
         }
     }
+}
+
+tasks.register('clean', Delete) {
+    group = 'build'
+    delete layout.buildDirectory, homeBinDir, homeConfDir, homeDistDir, homeLibDir, homeSrcDir
 }
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
