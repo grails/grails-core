@@ -1,40 +1,35 @@
 import org.gradle.api.internal.plugins.StartScriptGenerator
+import org.gradle.api.internal.plugins.UnixStartScriptGenerator
+import org.gradle.api.internal.plugins.WindowsStartScriptGenerator
 import org.grails.gradle.GrailsBuildPlugin
 
 apply plugin: GrailsBuildPlugin
 
-def libsConfigurations = []
+List<Configuration> libsConfigurations = []
 subprojects { subproject ->
-    if(subproject.name == 'grails-dependencies') return
-    if(subproject.name == 'grails-bom') return
-    if(subproject.name == 'grails-core') {
-        configurations {
-            libsConfigurations << libs {
-                extendsFrom compileClasspath, runtimeClasspath
-                ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
-            }
+    if (subproject.name == 'grails-shell' || subproject.name == 'grails-core') {
+        libsConfigurations << configurations.create("${subproject.name}-libs") {
+            extendsFrom configurations.compileClasspath, configurations.runtimeClasspath
         }
     }
 }
 
 tasks.register('configurePopulateDependencies') {
-    ext {
-        baseCachesDir = "$gradle.gradleUserHomeDir/caches"
-        cacheDir = "$baseCachesDir/modules-2"
-        metadata = "$cacheDir/metadata-2.1/descriptors"
-    }
+    ext.set('baseCachesDir', "$gradle.gradleUserHomeDir/caches")
+    ext.set('cacheDir', "$baseCachesDir/modules-2")
+    ext.set('metadata', "$cacheDir/metadata-2.1/descriptors")
     doLast {
         def projectNames = rootProject.subprojects*.name
-
         def seen = []
         libsConfigurations.each { configuration ->
-            def sourceArtifacts = sourcesFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy {
+            configuration.exclude(group: 'org.codehaus.groovy')
+            def sourceArtifacts = sourcesFor(configuration).resolvedConfiguration.lenientConfiguration.artifacts.groupBy {
                 it.moduleVersion.id
             }
-            def javadocArtifacts = javadocFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy {
+            def javadocArtifacts = javadocFor(configuration).resolvedConfiguration.lenientConfiguration.artifacts.groupBy {
                 it.moduleVersion.id
             }
-            def pomArtifacts = pomFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy {
+            def pomArtifacts = pomFor(configuration).resolvedConfiguration.lenientConfiguration.artifacts.groupBy {
                 it.moduleVersion.id
             }
 
@@ -114,7 +109,7 @@ tasks.register('grailsCreateStartScripts', GrailsCreateStartScripts) {
     defaultJvmOpts = ['-XX:+TieredCompilation', '-XX:TieredStopAtLevel=1', '-XX:CICompilerCount=3']
     outputDir = rootProject.layout.projectDirectory.dir('bin').asFile
     classpath = rootProject.childProjects['grails-shell'].configurations.runtimeClasspath
-    projectArtifacts = rootProject.childProjects['grails-shell'].tasks['jar'].outputs.files.collect { "dist/${it.name}" } as List<String>
+    projectArtifacts = rootProject.childProjects['grails-shell'].tasks.named('jar').get().outputs.files.collect { "dist/${it.name}" } as List<String>
     doLast {
         ant.replace(file: rootProject.layout.projectDirectory.file('bin/grails').asFile, token: 'media/gradle.icns', value: 'media/icons/grails.icns')
         ant.chmod(file: rootProject.layout.projectDirectory.file('bin/grails').asFile, perm: 'ugo+rx')
@@ -124,28 +119,30 @@ tasks.register('grailsCreateStartScripts', GrailsCreateStartScripts) {
 class GrailsCreateStartScripts extends CreateStartScripts {
 
     @Input
-    Collection<String> projectArtifacts=[]
+    Collection<String> projectArtifacts = []
 
     @TaskAction
     void generate() {
-        def generator = new StartScriptGenerator()
-        generator.unixStartScriptGenerator.template = project.rootProject.childProjects['grails-shell'].resources.text.fromFile('src/main/resources/unixStartScript.txt')
-        generator.applicationName = getApplicationName()
-        generator.mainClassName = getMainClassName()
-        generator.defaultJvmOpts = getDefaultJvmOpts()
-        generator.optsEnvironmentVar = getOptsEnvironmentVar()
-        generator.exitEnvironmentVar = getExitEnvironmentVar()
+        Project grailsShellProject = project.rootProject.childProjects['grails-shell']
+        def unixStartScriptGenerator = new UnixStartScriptGenerator()
+        unixStartScriptGenerator.template = grailsShellProject.resources.text.fromFile('src/main/resources/unixStartScript.txt')
+        def generator = new StartScriptGenerator(unixStartScriptGenerator, new WindowsStartScriptGenerator())
+        generator.applicationName = applicationName
+        generator.mainClassName = mainClass.get()
+        generator.defaultJvmOpts = defaultJvmOpts
+        generator.optsEnvironmentVar = optsEnvironmentVar
+        generator.exitEnvironmentVar = exitEnvironmentVar
         generator.classpath = projectArtifacts + getClasspath().resolvedConfiguration.resolvedArtifacts.collect { artifact ->
             def dependency = artifact.moduleVersion.id
             String installedFile = "lib/$dependency.group/$dependency.name/jars/$artifact.file.name"
-            if(dependency.group=='org.grails' && !project.file(installedFile).exists()) {
+            if(dependency.group == 'org.grails' && !project.file(installedFile).exists()) {
                 installedFile = "dist/$artifact.file.name"
             }
             installedFile
         }
-        generator.scriptRelPath = "bin/${getUnixScript().name}"
-        generator.generateUnixScript(getUnixScript())
-        generator.generateWindowsScript(getWindowsScript())
+        generator.scriptRelPath = "bin/${unixScript.name}"
+        generator.generateUnixScript(unixScript)
+        generator.generateWindowsScript(windowsScript)
     }
 }
 
@@ -170,7 +167,7 @@ tasks.register('zipDist', Zip) {
 
     into("grails-$grailsVersion") {
         from(rootProject.layout.projectDirectory) {
-            // Some of these are probably not needed as they are not in the project folder
+            // Some of these are probably not needed as they are not present in the project folder
             include 'bin/grails', 'bin/grails.bat', 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', 'src/'
             exclude 'ant/bin', 'src/grails', 'src/war'
         }
