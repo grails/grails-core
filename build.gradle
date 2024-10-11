@@ -390,21 +390,6 @@ subprojects { project ->
         tasks.withType(io.github.gradlenexus.publishplugin.InitializeNexusStagingRepository).configureEach {
             shouldRunAfter(tasks.withType(Sign))
         }
-
-        tasks.register("installToHomeDist", Copy) {
-            dependsOn sourcesJar, javadocJar, jar
-            from layout.buildDirectory.dir("libs").get()
-            into distInstallDir
-        }
-
-        tasks.withType(PublishToMavenLocal).configureEach {
-            dependsOn installToHomeDist
-            doLast {
-                ant.copy(todir: homeDistDir.asFile, flatten: true, includeEmptyDirs: false) {
-                    fileset dir: distInstallDir.get().asFile
-                }
-            }
-        }
     }
 
     if (project.name == 'grails-dependencies') return
@@ -583,6 +568,23 @@ subprojects { project ->
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    if (!isTestSuite) {
+        tasks.register('installToHomeDist', Copy) {
+            dependsOn 'jar', 'sourcesJar', 'javadocJar'
+            from layout.buildDirectory.dir("libs").get()
+            into distInstallDir
+        }
+
+        tasks.withType(PublishToMavenLocal).configureEach {
+            dependsOn 'installToHomeDist'
+            doLast {
+                ant.copy(todir: homeDistDir.asFile, flatten: true, includeEmptyDirs: false) {
+                    fileset dir: distInstallDir.get().asFile
+                }
+            }
         }
     }
 }
