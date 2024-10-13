@@ -121,20 +121,18 @@ ext {
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 
-
+    // Directories created during the build which are related
+    // to turning the workspace root into a GRAILS_HOME
+    distInstallDir = layout.buildDirectory.dir('dist-tmp')
+    homeDistDir = layout.projectDirectory.dir('dist')
+    homeBinDir = layout.projectDirectory.dir('bin')
+    homeConfDir = layout.projectDirectory.dir('conf')
+    homeLibDir = layout.projectDirectory.dir('lib')
+    homeSrcDir = layout.projectDirectory.dir('src')
 }
 
 version = grailsVersion
 group = "org.grails"
-
-// directories created during the build which are related
-// to turning the workspace root into a GRAILS_HOME
-ext.set('distInstallDir', layout.buildDirectory.dir('dist-tmp'))
-ext.set('homeDistDir', layout.projectDirectory.dir('dist'))
-ext.set('homeBinDir', layout.projectDirectory.dir('bin'))
-ext.set('homeConfDir', layout.projectDirectory.dir('conf'))
-ext.set('homeLibDir', layout.projectDirectory.dir('lib'))
-ext.set('homeSrcDir', layout.projectDirectory.dir('src'))
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
 // configurations, so place the dependency in a shared variable. The
