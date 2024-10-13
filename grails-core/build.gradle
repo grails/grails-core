@@ -58,13 +58,6 @@ dependencies {
 
     testRuntimeOnly "com.h2database:h2:$h2Version"
     testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-
-    // These dependencies are not required, but due to a Groovy compiler bug they are loaded by Groovy and hence
-    // have to be on the path for compilation even though they shouldn't be
-    api "org.apache.ant:ant:$antVersion"
-    api "jline:jline:$jlineVersion"
-    api "org.fusesource.jansi:jansi:$jansiVersion"
-
 }
 
 def writeProps = tasks.register('writeGrailsProperties', WriteProperties) {
