@@ -415,8 +415,10 @@ subprojects { project ->
     if (project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
             compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+            testImplementation "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
             compileOnly "org.springframework:spring-test:$springVersion"
+            testImplementation "org.springframework:spring-test:$springVersion"
         }
     }
 
