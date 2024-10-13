@@ -572,7 +572,7 @@ subprojects { project ->
     if (!isTestSuite) {
         tasks.register('installToHomeDist', Copy) {
             dependsOn 'jar', 'sourcesJar', 'javadocJar'
-            from layout.buildDirectory.dir("libs").get()
+            from layout.buildDirectory.dir('libs')
             into distInstallDir
         }
 

@@ -7,7 +7,7 @@ apply plugin: GrailsBuildPlugin
 
 List<Configuration> libsConfigurations = []
 subprojects { subproject ->
-    if (subproject.name == 'grails-shell' || subproject.name == 'grails-core') {
+    if (subproject.name in ['grails-shell', 'grails-core']) {
         libsConfigurations << configurations.create("${subproject.name}-libs") {
             extendsFrom configurations.compileClasspath, configurations.runtimeClasspath
         }
