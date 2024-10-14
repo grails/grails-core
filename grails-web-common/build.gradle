@@ -10,7 +10,8 @@ dependencies {
     }
 
     api "org.apache.groovy:groovy-templates:$groovyVersion"
-    api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+    compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+    testCompileOnly "org.springframework:spring-test:$springVersion"
 
     api "org.springframework:spring-webmvc:$springVersion"
     api "org.springframework:spring-context-support:$springVersion"

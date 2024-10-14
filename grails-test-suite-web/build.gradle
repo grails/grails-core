@@ -46,7 +46,6 @@ dependencies {
         exclude group: 'org.grails', module:'grails-async'
         exclude group: 'org.grails', module:'grails-spring'
         exclude group: 'commons-collections', module:'commons-collections'
-        exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassit', module:'javassist'
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
