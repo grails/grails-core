@@ -419,11 +419,11 @@ subprojects { project ->
 
     if (project.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
-            api "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+            compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+            testImplementation "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes
-            api("org.springframework:spring-test:$springVersion") {
-                exclude group: 'commons-logging', module: 'commons-logging'
-            }
+            compileOnly "org.springframework:spring-test:$springVersion"
+            testImplementation "org.springframework:spring-test:$springVersion"
         }
     }
 
