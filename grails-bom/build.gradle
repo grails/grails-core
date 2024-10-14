@@ -45,27 +45,6 @@ publishing {
                                     if (sub.name == 'grails-dependencies') {
                                         mkp.type 'pom'
                                     }
-
-                                    if (sub.name == 'grails-bootstrap') {
-                                        mkp.exclusions {
-                                            mkp.exclusion {
-                                                mkp.groupId 'jline'
-                                                mkp.artifactId 'jline'
-                                            }
-                                            mkp.exclusion {
-                                                mkp.groupId 'org.fusesource.jansi'
-                                                mkp.artifactId 'jansi'
-                                            }
-                                            mkp.exclusion {
-                                                mkp.groupId 'net.java.dev.jna'
-                                                mkp.artifactId 'jna'
-                                            }
-                                            mkp.exclusion {
-                                                mkp.groupId 'org.apache.groovy'
-                                                mkp.artifactId 'groovy-ant'
-                                            }
-                                        }
-                                    }
                                 }
                             }
 
