@@ -71,11 +71,7 @@ publishing {
                                     artifactId = artifactId.replace("gorm.", "")
                                 }
                                 mkp.dependency {
-                                    if(artifactId == 'grails-gradle-plugin') {
-                                        mkp.groupId 'org.grails'
-                                    } else {
-                                        mkp.groupId 'org.grails.plugins'
-                                    }
+                                    mkp.groupId 'org.grails.plugins'
                                     mkp.artifactId artifactId
                                     String versionValue = plugin.value
                                     if (!isBuildSnapshot && versionValue.endsWith("-SNAPSHOT")) {
