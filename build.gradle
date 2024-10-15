@@ -31,11 +31,6 @@ ext {
                                         names  : ['grails-gradle-plugin'],
                                         modules: ['']
             ],
-            'fieldsPlugin'           : [version: fieldsPluginVersion,
-                                        group  : 'org.grails.plugins',
-                                        names  : ['fields'],
-                                        modules: ['']
-            ],
             'jakarta-annotation'     : [version: jakartaAnnotationApiVersion,
                                         group  : 'jakarta.annotation',
                                         names  : ['jakarta.annotation-api'],
