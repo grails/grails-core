@@ -82,10 +82,10 @@ import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
+import org.grails.web.util.WebUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -543,7 +543,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     isAllowedArgumentList.addExpression(new PropertyExpression(new VariableExpression("this"), DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY));
                     final Expression isAllowedMethodCall = new StaticMethodCallExpression(ClassHelper.make(AllowedMethodsHelper.class), "isAllowed", isAllowedArgumentList);
                     final BooleanExpression isValidRequestMethod = new BooleanExpression(isAllowedMethodCall);
-                    final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
+                    final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(WebUtils.SC_METHOD_NOT_ALLOWED));
                     final ReturnStatement returnStatement = new ReturnStatement(new ConstantExpression(null));
                     final BlockStatement blockToSendError = new BlockStatement();
                     blockToSendError.addStatement(new ExpressionStatement(sendErrorMethodCall));
