@@ -26,9 +26,9 @@ ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = [
-            'fieldsPlugin'           : [version: fieldsPluginVersion,
-                                        group  : 'org.grails.plugins',
-                                        names  : ['fields'],
+            'grailsGradlePlugin'      : [version: grailsGradlePluginVersion,
+                                        group  : 'org.grails',
+                                        names  : ['grails-gradle-plugin'],
                                         modules: ['']
             ],
             'jakarta-annotation'     : [version: jakartaAnnotationApiVersion,
