@@ -425,11 +425,6 @@ subprojects { project ->
         published.extendsFrom archives, meta
     }
 
-    // common-logging is a problematic dependency that is often included in the classpath
-    configurations {
-        all*.exclude(group: 'commons-logging', module: 'commons-logging')
-    }
-
     dependencies {
         documentation("org.fusesource.jansi:jansi:$jansiVersion")
         documentation("jline:jline:$jlineVersion")

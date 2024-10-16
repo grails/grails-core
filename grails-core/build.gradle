@@ -7,23 +7,13 @@ dependencies {
 
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     api("org.springframework.boot:spring-boot:$springBootVersion")
-    api("org.springframework:spring-core:$springVersion") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-    api("org.springframework:spring-tx:$springVersion") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-    api("org.springframework:spring-beans:$springVersion") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-    api("org.springframework:spring-context:$springVersion") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
+    api "org.springframework:spring-core:$springVersion"
+    api "org.springframework:spring-tx:$springVersion"
+    api "org.springframework:spring-beans:$springVersion"
+    api "org.springframework:spring-context:$springVersion"
 
-    compileOnly("org.springframework:spring-test:$springVersion") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-    compileOnly("org.apache.groovy:groovy-templates:$groovyVersion")
+    compileOnly "org.springframework:spring-test:$springVersion"
+    compileOnly "org.apache.groovy:groovy-templates:$groovyVersion"
 
 
     api project(":grails-bootstrap"), {
@@ -50,9 +40,7 @@ dependencies {
 
     api "org.grails:grails-datastore-core:$datastoreVersion"
 
-    testImplementation("org.springframework:spring-jdbc:$springVersion") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
+    testImplementation "org.springframework:spring-jdbc:$springVersion"
 
     testImplementation "org.hamcrest:hamcrest:$hamcrestVersion"
 
