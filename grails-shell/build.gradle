@@ -31,8 +31,8 @@ dependencies {
     api "org.apache.ant:ant:$antVersion"
     api "org.fusesource.jansi:jansi:$jansiVersion"
     api "jline:jline:$jlineVersion"
-    api "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
 
+    compileOnly "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
     compileOnly "org.springframework.boot:spring-boot:$springBootVersion"
     compileOnly "org.springframework.boot:spring-boot-loader-tools:$springBootVersion"
     compileOnly "org.springframework:spring-web:$springVersion"
