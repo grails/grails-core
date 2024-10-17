@@ -13,13 +13,9 @@ dependencies {
             "org.apache.groovy:groovy-ant:$groovyVersion"
 
     api "org.asciidoctor:asciidoctorj:$asciidoctorjVersion"
-    api("org.xhtmlrenderer:core-renderer:$xhtmlRendererVersion") {
-        exclude group: 'bouncycastle', module:'bcprov-jdk14'
-    }
+    implementation "org.xhtmlrenderer:flying-saucer-pdf-openpdf:$xhtmlRendererVersion"
 
     runtimeOnly "org.slf4j:slf4j-api:$slf4jVersion"
-
-    implementation "com.lowagie:itext:$itextVersion"
 
     api "org.jsoup:jsoup:$jsoupVersion"
     testImplementation("org.spockframework:spock-core:$spockVersion") { transitive = false }
