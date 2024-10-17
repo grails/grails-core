@@ -35,6 +35,13 @@ publishing {
 
                     mkp.dependencyManagement {
                         mkp.dependencies {
+                            mkp.dependency {
+                                mkp.groupId 'org.springframework.boot'
+                                mkp.artifactId 'spring-boot-dependencies'
+                                mkp.version springBootVersion
+                                mkp.type 'pom'
+                                mkp.scope 'import'
+                            }
                             for (sub in project.parent.subprojects) {
                                 if (sub.name == 'grails-bom') continue
 
