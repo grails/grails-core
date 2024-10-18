@@ -5,8 +5,7 @@ configurations.all {
 }
 
 dependencies {
-    compileOnly "org.aspectj:aspectjrt",
-            "org.aspectj:aspectjweaver"
+    compileOnly "org.aspectj:aspectjrt", "org.aspectj:aspectjweaver"
     api "jakarta.inject:jakarta.inject-api"
     api "jakarta.persistence:jakarta.persistence-api"
     api "jakarta.annotation:jakarta.annotation-api"
@@ -21,28 +20,8 @@ dependencies {
     compileOnly "org.springframework:spring-test"
     compileOnly "org.apache.groovy:groovy-templates"
 
-
-    api project(":grails-bootstrap"), {
-        exclude group:"org.fusesource.jansi", module:"jansi"
-        exclude group:"jline", module:"jline"
-        exclude group:"net.java.dev.jna", module:"jna"
-
-        // Ant
-        exclude group:"org.apache.groovy", module:"groovy-ant"
-        exclude group:"org.apache.ant", module:"ant"
-        exclude group:"org.apache.ant", module:"ant-launcher"
-        exclude group:"org.apache.ivy", module:"ivy"
-        exclude group:"org.apache.ant", module:"ant-trax"
-        exclude group:"org.apache.ant", module:"ant-junit"
-
-        exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
-    }
-
-    api project(":grails-spring"), {
-        exclude group:'org.springframework', module:'spring-tx'
-        exclude group:'org.springframework', module:'spring-web'
-        exclude group:'org.grails', module:'grails-bootstrap'
-    }
+    api project(":grails-bootstrap")
+    api project(":grails-spring")
 
     api "org.grails:grails-datastore-core"
 

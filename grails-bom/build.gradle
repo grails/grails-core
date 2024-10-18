@@ -39,6 +39,7 @@ ext {
         "org.fusesource.jansi:jansi::$jansiVersion",
         "jline:jline::$jlineVersion",
         "net.java.dev.jna:jna::$jnaVersion",
+        "org.apache.commons:commons-text::$commonsTextVersion",
         "commons-codec:commons-codec::$commonsCodecVersion",
         "org.grails:grails-datastore-core::$datastoreVersion",
         "org.aspectj:aspectjrt::$aspectjVersion",
@@ -47,7 +48,15 @@ ext {
         "jakarta.persistence:jakarta.persistence-api::$jakartaPersistenceVersion",
         "jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion",
         "jakarta.servlet:jakarta.servlet-api::$servletApiVersion",
-        "com.github.ben-manes.caffeine:caffeine::$caffeineVersion"
+        "com.github.ben-manes.caffeine:caffeine::$caffeineVersion",
+        "org.slf4j:slf4j-api::$slf4jVersion",
+        "org.slf4j:jcl-over-slf4j::$slf4jVersion",
+        "org.apache.ant:ant::$antVersion",
+        "org.grails:grails-gdoc-engine::$gdocEngineVersion",
+        "org.asciidoctor:asciidoctorj::$asciidoctorjVersion",
+        "org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion",
+        "org.jsoup:jsoup::$jsoupVersion"
+
     ]
     dependencyVersions = dependencyVersionsList.collect {
         def info = it.toString().split(':')
