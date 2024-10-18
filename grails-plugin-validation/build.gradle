@@ -1,4 +1,4 @@
 dependencies {
     api project(":grails-core"),
-            project(':grails-web')
+        project(':grails-web')
 }

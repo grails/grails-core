@@ -5,20 +5,20 @@ configurations {
 
 dependencies {
     gradleConf gradleApi()
-    api "org.apache.commons:commons-text:$commonsTextVersion",
-            "org.slf4j:jcl-over-slf4j:$slf4jVersion",
-            "org.apache.ant:ant:$antVersion",
-            "org.grails:grails-gdoc-engine:$gdocEngineVersion",
-            "org.yaml:snakeyaml:$snakeyamlVersion",
-            "org.apache.groovy:groovy-ant:$groovyVersion"
+    api "org.apache.commons:commons-text",
+            "org.slf4j:jcl-over-slf4j",
+            "org.apache.ant:ant",
+            "org.grails:grails-gdoc-engine",
+            "org.yaml:snakeyaml",
+            "org.apache.groovy:groovy-ant"
 
-    api "org.asciidoctor:asciidoctorj:$asciidoctorjVersion"
-    implementation "org.xhtmlrenderer:flying-saucer-pdf-openpdf:$xhtmlRendererVersion"
+    api "org.asciidoctor:asciidoctorj"
+    implementation "org.xhtmlrenderer:flying-saucer-pdf-openpdf"
 
-    runtimeOnly "org.slf4j:slf4j-api:$slf4jVersion"
+    runtimeOnly "org.slf4j:slf4j-api"
 
-    api "org.jsoup:jsoup:$jsoupVersion"
-    testImplementation("org.spockframework:spock-core:$spockVersion") { transitive = false }
+    api "org.jsoup:jsoup"
+    testImplementation("org.spockframework:spock-core") { transitive = false }
 }
 
 sourceSets {

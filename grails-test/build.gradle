@@ -1,27 +1,27 @@
 dependencies {
 
-    api "org.springframework:spring-tx:$springVersion"
+    api "org.springframework:spring-tx"
 
-    api "org.springframework.boot:spring-boot-test:$springBootVersion"
+    api "org.springframework.boot:spring-boot-test"
     // Testing
-    api "org.apache.groovy:groovy-test-junit5:$groovyVersion"
-    api("org.apache.groovy:groovy-test:$groovyVersion")
-    api("org.spockframework:spock-core:$spockVersion") { transitive = false }
-    api "org.junit.platform:junit-platform-runner:$junitPlatformRunnerVersion"
+    api "org.apache.groovy:groovy-test-junit5"
+    api("org.apache.groovy:groovy-test")
+    api("org.spockframework:spock-core") { transitive = false }
+    api "org.junit.platform:junit-platform-runner"
 
 
     api project(":grails-plugin-mimetypes")
     api project(":grails-web")
-    api "org.grails.plugins:converters:$legacyConvertersVersion"
+    api "org.grails.plugins:converters"
 
     // command line requirements
-    api  "jline:jline:$jlineVersion"
-    api "org.fusesource.jansi:jansi:$jansiVersion"
+    api  "jline:jline"
+    api "org.fusesource.jansi:jansi"
 
     // Ant
-    api "org.apache.ant:ant:$antVersion"
-    api "org.apache.ant:ant-junit:$antVersion"
+    api "org.apache.ant:ant"
+    api "org.apache.ant:ant-junit"
 
     // needed for Spock
-    api "org.objenesis:objenesis:$objenesisVersion"
+    api "org.objenesis:objenesis"
 }

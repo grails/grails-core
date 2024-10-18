@@ -1,20 +1,7 @@
 dependencies {
-    api "org.springframework:spring-tx:$springVersion"
-    api "org.springframework:spring-web:$springVersion"
-    api "org.springframework:spring-context:$springVersion"
-    api project(":grails-bootstrap"), {
-        exclude group:"org.fusesource.jansi", module:"jansi"
-        exclude group:"jline", module:"jline"
-        exclude group:"net.java.dev.jna", module:"jna"
-
-        // Ant
-        exclude group:"org.apache.ant", module:"ant"
-        exclude group:"org.apache.ant", module:"ant-launcher"
-        exclude group:"org.apache.ivy", module:"ivy"
-        exclude group:"org.apache.ant", module:"ant-trax"
-        exclude group:"org.apache.ant", module:"ant-junit"
-
-        exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
-    }
-    api ( "org.apache.groovy:groovy-xml:$groovyVersion" )
+    api "org.springframework:spring-tx"
+    api "org.springframework:spring-web"
+    api "org.springframework:spring-context"
+    api project(":grails-bootstrap")
+    api ( "org.apache.groovy:groovy-xml" )
 }

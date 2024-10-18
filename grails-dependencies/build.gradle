@@ -16,25 +16,6 @@ publishing {
                             delegate.artifactId "grails-bootstrap"
                             delegate.version( project.version )
                             delegate.scope "api"
-
-                            delegate.exclusions {
-                                delegate.exclusion {
-                                    delegate.groupId 'jline'
-                                    delegate.artifactId 'jline'
-                                }
-                                delegate.exclusion {
-                                    delegate.groupId 'org.fusesource.jansi'
-                                    delegate.artifactId 'jansi'
-                                }
-                                delegate.exclusion {
-                                    delegate.groupId 'net.java.dev.jna'
-                                    delegate.artifactId 'jna'
-                                }
-                                delegate.exclusion {
-                                    delegate.groupId 'org.apache.groovy'
-                                    delegate.artifactId 'groovy-ant'
-                                }
-                            }
                         }
                         for(sub in ['rest', 'databinding', 'i18n', 'services', 'url-mappings', 'interceptors']) {
                             delegate.dependency {

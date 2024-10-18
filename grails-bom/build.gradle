@@ -1,106 +1,154 @@
-apply plugin: 'maven-publish'
+plugins {
+    id 'java-platform'
+    id 'maven-publish'
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
+def plugins = new Properties()
+plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
+
+def profiles = new Properties()
+profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
+
+ext {
+    // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
+    // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
+    dependencyVersions = """\
+        com.fasterxml.jackson.core:jackson-databind::2.18.0
+        com.github.ben-manes.caffeine:caffeine::3.1.8
+        com.github.javaparser:javaparser-core::3.26.2
+        com.h2database:h2::2.3.232
+        commons-codec:commons-codec::1.17.1
+        io.methvin:directory-watcher::0.18.0
+        jakarta.annotation:jakarta.annotation-api::3.0.0
+        jakarta.inject:jakarta.inject-api::2.0.1
+        jakarta.persistence:jakarta.persistence-api::3.1.0
+        jakarta.servlet:jakarta.servlet-api::6.0.0
+        jakarta.xml.bind:jakarta.xml.bind-api::$jakartaXmlBindVersion
+        jline:jline::2.14.6
+        net.bytebuddy:byte-buddy::1.15.5
+        net.java.dev.jna:jna::5.15.0
+        org.apache.ant:ant:,junit:1.10.15
+        org.apache.commons:commons-text::1.12.0
+        org.apache.groovy:groovy:ant,cli-picocli,console,dateutil,json,macro,nio,sql,swing,templates,test,test-junit5,xml:$groovyVersion
+        org.apache.tomcat:tomcat-jdbc::$tomcatVersion:tomcat
+        org.apache.tomcat.embed:tomcat-embed-core::$tomcatVersion:tomcat
+        org.apache.tomcat.embed:tomcat-embed-logging-juli::8.5.2
+        org.asciidoctor:asciidoctorj::3.0.0
+        org.aspectj:aspectjrt,aspectjweaver::1.9.22.1
+        org.fusesource.jansi:jansi::2.4.1
+        com.github.spotbugs:spotbugs-annotations::4.8.6
+        org.grails.plugins:async,events::$asyncVersion
+        org.grails.plugins:converters::6.0.0-SNAPSHOT
+        org.grails.plugins:gsp::$gspVersion
+        org.grails:grails-async,grails-events:gpars,rxjava,rxjava2:$asyncVersion
+        org.grails:grails-datastore-gorm-hibernate5::9.0.0-SNAPSHOT
+        org.grails:grails-datastore:async,core,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation,web:$datastoreVersion
+        org.grails:grails-gdoc-engine::1.0.1
+        org.grails:grails-gradle-plugin::$grailsGradlePluginVersion
+        org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::4.0.0-SNAPSHOT
+        org.grails:grails:grails-web-taglib,gsp,web-gsp:$gspVersion:gsp
+        org.grails:views-json-testing-support::4.0.0-SNAPSHOT
+        org.hamcrest:hamcrest-core::$hamcrestVersion
+        org.jsoup:jsoup::1.18.1
+        org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion
+        org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion
+        org.objenesis:objenesis::3.4
+        org.slf4j:jcl-over-slf4j::$slf4jVersion
+        org.slf4j:slf4j:api,simple:$slf4jVersion
+        org.spockframework:spock-core,spock-spring::$spockVersion
+        org.springframework.boot:spring-boot-cli::$springBootVersion
+        org.springframework:springloaded::1.2.8.RELEASE
+        org.xhtmlrenderer:flying-saucer-pdf-openpdf::9.4.0
+        org.yaml:snakeyaml::2.3
+    """.trim().readLines().collect { it.trim() }.collect {
+        def info = it.toString().split(':')
+        def dep = [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
+        dep.name = info.length == 5? info[4] : dep.names[0] // allow name override
+        dep
+    }.collectEntries {
+        def depList = GroovyCollections
+                .combinations(it.names, it.modules)
+                .collect { it.join('-') }
+                .collect { it.endsWith('-') ? it[0..-2] : it }
+        [(it):depList]
+    }
+
+    dependencyList = dependencyVersions.collectMany { dependency, artifacts ->
+        artifacts.collect { artifactId ->
+            [groupId: dependency.group, artifactId: artifactId,
+             versionValue: dependency.version, name: dependency.name]
+        }
+    }
+
+    pluginsAndProfiles =
+        plugins.collect { [groupId: "org.grails.plugins", artifactId:it.key, versionValue: it.value, name: "plugins-${it.key}"] } +
+        profiles.collect { [groupId: "org.grails.profiles", artifactId:it.key, versionValue: it.value, name: "profiles-${it.key}"] }
+    allDependencies = (pluginsAndProfiles + dependencyList).sort { it.name + it.artifactId }
+    allDependencies.each { it << [version: "${it.name}.version"] }
+}
+
+allDependencies.each {
+    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+        throw new RuntimeException("Cannot have a snapshot dependency $it.version on a $it.name [$it.groupId] for a release!")
+    }
+}
+
+dependencies {
+    api platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+
+    constraints {
+        allDependencies.each {
+            api "${it.groupId}:${it.artifactId}:${it.versionValue}"
+        }
+    }
+}
 
 publishing {
     publications {
         maven(MavenPublication) {
             pom.withXml {
-                def xml = asNode()
-                def plugins = new Properties()
-                plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
+                def root = asNode()
 
-                def profiles = new Properties()
-                profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
+                def propsNode = root.appendNode('properties')
+                propsNode.appendNode('spring-boot.version', springBootVersion)
+                (dependencyList + pluginsAndProfiles).sort { it.name }
+                .groupBy { it.name }.collect { it.value.first() } // remove duplicates
+                .each {
+                    propsNode.appendNode(it.version, it.versionValue)
+                }
 
-                xml.children().last() + pomInfo
-                xml.children().last() + {
-                    def mkp = delegate
-
-                    mkp.properties {
-                        for (dep in plugins) {
-                            String version = dep.value
-                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$dep.key] for a release!")
-                            }
-                            mkp."${dep.key}.version"(version)
-                        }
-
-                        for (dep in dependencyVersions) {
-                            String version = dep.value.version
-                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                throw new RuntimeException("Cannot have a snapshot dependency on [$dep.key] for a release!")
-                            }
-                            mkp."${dep.key}.version"(version)
-                        }
+                def appendNodes = { node, attrs ->
+                    attrs.each {
+                        node.appendNode(it.key, it.value)
                     }
+                }
 
-                    mkp.dependencyManagement {
-                        mkp.dependencies {
-                            mkp.dependency {
-                                mkp.groupId 'org.springframework.boot'
-                                mkp.artifactId 'spring-boot-dependencies'
-                                mkp.version springBootVersion
-                                mkp.type 'pom'
-                                mkp.scope 'import'
-                            }
-                            for (sub in project.parent.subprojects) {
-                                if (sub.name == 'grails-bom') continue
+                def dpm = root.appendNode('dependencyManagement')
+                def deps = dpm.appendNode('dependencies')
+                appendNodes(deps.appendNode('dependency'), [
+                    groupId: 'org.springframework.boot',
+                    artifactId: 'spring-boot-dependencies',
+                    version: '${spring-boot.version}',
+                    type: 'pom',
+                    scope: 'import'
+                ])
 
-                                mkp.dependency {
-                                    mkp.groupId sub.group
-                                    mkp.artifactId sub.name
-                                    mkp.version sub.version
-                                    if (sub.name == 'grails-dependencies') {
-                                        mkp.type 'pom'
-                                    }
-                                }
-                            }
+                project.parent.subprojects.findResults {
+                    if (it.name == 'grails-bom') return null
+                    [groupId: it.group, artifactId: it.name, version: "\${${it.version}}"] +
+                        (it.name == 'grails-dependencies'? [type:'pom'] : [])
+                }.each {
+                    appendNodes(deps.appendNode('dependency'), it)
+                }
 
-                            for (dep in dependencyVersions) {
-                                def info = dep.value
-                                def depList = GroovyCollections
-                                        .combinations(info.names, info.modules)
-                                        .collect { it.join('-') }
-                                        .collect { it.endsWith('-') ? it[0..-2] : it }
-
-                                for (dependency in depList) {
-                                    mkp.dependency {
-                                        mkp.groupId info.group
-                                        mkp.artifactId dependency
-                                        mkp.version "\${${dep.key}.version}"
-                                    }
-                                }
-                            }
-
-                            for (plugin in plugins) {
-                                String artifactId = plugin.key
-                                String version = "\${${plugin.key}.version}"
-                                if (artifactId.startsWith("gorm.")) {
-                                    artifactId = artifactId.replace("gorm.", "")
-                                }
-                                mkp.dependency {
-                                    mkp.groupId 'org.grails.plugins'
-                                    mkp.artifactId artifactId
-                                    String versionValue = plugin.value
-                                    if (!isBuildSnapshot && versionValue.endsWith("-SNAPSHOT")) {
-                                        throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$artifactId] for a release!")
-                                    }
-                                    mkp.version version
-                                }
-                            }
-
-                            for (profile in profiles) {
-                                mkp.dependency {
-                                    mkp.groupId 'org.grails.profiles'
-                                    mkp.artifactId profile.key
-                                    String version = profile.value
-                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                        throw new RuntimeException("Cannot have a snapshot dependency on a profile [$profile.key] for a release!")
-                                    }
-                                    mkp.version(version)
-                                }
-                            }
-                        }
-                    }
+                allDependencies.collect { def m = it.subMap('groupId', 'artifactId', 'version')
+                    m + [version: "\${${m.version}}"]
+                }.each {
+                    appendNodes(deps.appendNode('dependency'), it)
                 }
             }
         }
