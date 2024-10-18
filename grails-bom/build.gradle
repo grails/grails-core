@@ -55,7 +55,8 @@ ext {
         "org.grails:grails-gdoc-engine::$gdocEngineVersion",
         "org.asciidoctor:asciidoctorj::$asciidoctorjVersion",
         "org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion",
-        "org.jsoup:jsoup::$jsoupVersion"
+        "org.jsoup:jsoup::$jsoupVersion",
+        "org.apache.tomcat:tomcat-jdbc::$tomcatVersion"
 
     ]
     dependencyVersions = dependencyVersionsList.collect {
