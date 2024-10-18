@@ -68,7 +68,14 @@ ext {
     """.trim().readLines().collect { it.trim() }.collect {
         def info = it.toString().split(':')
         [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
+    }.collectEntries {
+        def depList = GroovyCollections
+                .combinations(it.names, it.modules)
+                .collect { it.join('-') }
+                .collect { it.endsWith('-') ? it[0..-2] : it }
+        [(it):depList]
     }
+    sbv = springBootVersion
 }
 
 dependencies {
@@ -82,16 +89,9 @@ dependencies {
             api "org.grails.profiles:${key}:\${${key}.version}"
         }
 
-        dependencyVersions.each {
-            def depList = GroovyCollections
-                    .combinations(it.names, it.modules)
-                    .collect { it.join('-') }
-                    .collect { it.endsWith('-') ? it[0..-2] : it }
-
-            for (dependency in depList) {
-                it.modules.each { module ->
-                    api "${it.group}:${dependency}:${it.version}"
-                }
+        dependencyVersions.each { dependency, artifacts ->
+            artifacts.each {
+                api "${dependency.group}:${it}:${dependency.version}"
             }
         }
     }
@@ -100,12 +100,34 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.javaPlatform
-
             pom.withXml {
                 def root = asNode()
+
+                def dpm = root.appendNode('dependencyManagement')
+                def deps = dpm.appendNode('dependencies')
+                def ver = springBootVersion
+                deps.appendNode('dependency').with {
+                    appendNode('groupId', 'org.springframework.boot')
+                    appendNode('artifactId', 'spring-boot-dependencies')
+                    appendNode('version', "${ver}")
+                    appendNode('type', 'pom')
+                    appendNode('scope', 'import')
+                }
+
+                dependencyVersions.each { dependency, artifacts ->
+                    artifacts.each { artifact ->
+                        deps.appendNode('dependency').with {
+                            appendNode('groupId', dependency.group)
+                            appendNode('artifactId', artifact)
+                            appendNode('version', "\${${dependency.names[0]}.version}")
+                        }
+                    }
+                }
                 def propsNode = root.appendNode('properties')
 
+                dependencyVersions.each { dependency, artifacts ->
+                    propsNode.appendNode("${dependency.names[0]}.version", version)
+                }
                 plugins.each { key, version ->
                     if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
                         throw new RuntimeException("Cannot have a snapshot dependency $version on a plugin [$key] for a release!")
