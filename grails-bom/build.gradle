@@ -88,7 +88,7 @@ ext {
         plugins.collect { [groupId: "org.grails.plugins", artifactId:it.key, versionValue: it.value, name: "plugins-${it.key}"] } +
         profiles.collect { [groupId: "org.grails.profiles", artifactId:it.key, versionValue: it.value, name: "profiles-${it.key}"] }
     allDependencies = (pluginsAndProfiles + dependencyList).sort { it.name + it.artifactId }
-    allDependencies.each { it << [version: "\${${it.name}.version}"] }
+    allDependencies.each { it << [version: "${it.name}.version"] }
 }
 
 allDependencies.each {
@@ -118,7 +118,7 @@ publishing {
                 (dependencyList + pluginsAndProfiles).sort { it.name }
                 .groupBy { it.name }.collect { it.value.first() } // remove duplicates
                 .each {
-                    propsNode.appendNode(it.name, it.versionValue)
+                    propsNode.appendNode(it.version, it.versionValue)
                 }
 
                 def appendNodes = { node, attrs ->
@@ -139,13 +139,15 @@ publishing {
 
                 project.parent.subprojects.findResults {
                     if (it.name == 'grails-bom') return null
-                    [groupId: it.group, artifactId: it.name, version: it.version] +
+                    [groupId: it.group, artifactId: it.name, version: "\${${it.version}}"] +
                         (it.name == 'grails-dependencies'? [type:'pom'] : [])
                 }.each {
                     appendNodes(deps.appendNode('dependency'), it)
                 }
 
-                allDependencies.collect { it.subMap('groupId', 'artifactId', 'version') }.each {
+                allDependencies.collect { def m = it.subMap('groupId', 'artifactId', 'version')
+                    m + [version: "\${${m.version}}"]
+                }.each {
                     appendNodes(deps.appendNode('dependency'), it)
                 }
             }
