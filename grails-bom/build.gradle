@@ -52,8 +52,6 @@ ext {
         org.grails:views-json-testing-support::$viewsVersion
         org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::$jsoupVersion
-        org.junit.jupiter:junit-jupiter:api,engine:$junitVersion
-        org.junit.platform:junit-platform-runner::$junitPlatformRunnerVersion
         org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion
         org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion
         org.objenesis:objenesis::$objenesisVersion
