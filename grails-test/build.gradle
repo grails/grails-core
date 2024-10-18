@@ -1,12 +1,12 @@
 dependencies {
 
-    api "org.springframework:spring-tx:$springVersion"
+    api "org.springframework:spring-tx"
 
-    api "org.springframework.boot:spring-boot-test:$springBootVersion"
+    api "org.springframework.boot:spring-boot-test"
     // Testing
-    api "org.apache.groovy:groovy-test-junit5:$groovyVersion"
-    api("org.apache.groovy:groovy-test:$groovyVersion")
-    api("org.spockframework:spock-core:$spockVersion") { transitive = false }
+    api "org.apache.groovy:groovy-test-junit5"
+    api("org.apache.groovy:groovy-test")
+    api("org.spockframework:spock-core") { transitive = false }
     api "org.junit.platform:junit-platform-runner:$junitPlatformRunnerVersion"
 
 
