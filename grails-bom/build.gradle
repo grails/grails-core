@@ -77,18 +77,18 @@ ext {
         [(it):depList]
     }
 
-    def dependencyList = dependencyVersions.collectMany { dependency, artifacts ->
+    dependencyList = dependencyVersions.collectMany { dependency, artifacts ->
         artifacts.collect { artifactId ->
-            [groupId: dependency.group, artifactId: artifactId, version: "\${${dependency.name}.version}",
+            [groupId: dependency.group, artifactId: artifactId,
              versionValue: dependency.version, name: dependency.name]
         }
     }
 
     pluginsAndProfiles =
-        plugins.collect { [group: "org.grails.plugins", artifact:it.key, version: it.value, name: "plugins-${it.key}"] } +
-        profiles.collect { [group: "org.grails.profiles", artifact:it.key, version: it.value, name: "profiles-${it.key}"] }
-
+        plugins.collect { [groupId: "org.grails.plugins", artifactId:it.key, versionValue: it.value, name: "plugins-${it.key}"] } +
+        profiles.collect { [groupId: "org.grails.profiles", artifactId:it.key, versionValue: it.value, name: "profiles-${it.key}"] }
     allDependencies = (pluginsAndProfiles + dependencyList).sort { it.name + it.artifactId }
+    allDependencies.each { it << [version: "\${${it.name}.version}"] }
 }
 
 allDependencies.each {
@@ -115,9 +115,7 @@ publishing {
 
                 def propsNode = root.appendNode('properties')
                 propsNode.appendNode('spring-boot.version', springBootVersion)
-                (dependencyVersions.collect { [ versionValue:it.key.version, name: "${it.key.name}.version" ] } +
-                        pluginsAndProfiles
-                ).sort { it.name }
+                (dependencyList + pluginsAndProfiles).sort { it.name }
                 .groupBy { it.name }.collect { it.value.first() } // remove duplicates
                 .each {
                     propsNode.appendNode(it.name, it.versionValue)
