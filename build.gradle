@@ -331,6 +331,7 @@ subprojects { subproject ->
     }
 
     dependencies {
+        implementation platform(project(':grails-bom'))
         documentation "org.fusesource.jansi:jansi"
         documentation "jline:jline"
         documentation "com.github.javaparser:javaparser-core"
