@@ -41,7 +41,7 @@ ext {
         "net.java.dev.jna:jna::$jnaVersion",
         "org.apache.commons:commons-text::$commonsTextVersion",
         "commons-codec:commons-codec::$commonsCodecVersion",
-        "org.grails:grails-datastore-core::$datastoreVersion",
+        "org.grails:grails-datastore:core,gorm,gorm-support,gorm-validation:$datastoreVersion",
         "org.aspectj:aspectjrt::$aspectjVersion",
         "org.aspectj:aspectjweaver::$aspectjVersion",
         "jakarta.inject:jakarta.inject-api::$jakartaInjectVersion",
