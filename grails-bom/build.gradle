@@ -57,7 +57,6 @@ ext {
         "org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion",
         "org.jsoup:jsoup::$jsoupVersion",
         "org.apache.tomcat:tomcat-jdbc::$tomcatVersion"
-
     ]
     dependencyVersions = dependencyVersionsList.collect {
         def info = it.toString().split(':')

@@ -4,55 +4,12 @@ dependencies {
     api project(":grails-plugin-validation")
 
     // Datastore APIs
-    api("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
-        exclude group: 'org.grails', module:'grails-datastore-core'
-    }
+    api "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
     api("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
-        exclude group: 'org.grails', module:'grails-datastore-core'
-        exclude group: 'org.grails', module:'grails-bootstrap'
-        exclude group: 'org.grails', module:'grails-core'
-        exclude group: 'org.grails', module:'grails-async'
-        exclude group: 'org.grails', module:'grails-test'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jul-to-slf4j'
-        exclude group: 'org.slf4j', module:'slf4j-api'
-        exclude group: 'org.slf4j', module:'slf4j-simple'
-
     }
     api("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
         transitive = false
-        exclude group: 'org.grails', module:'grails-datastore-core'
-        exclude group: 'org.grails', module:'grails-datastore-gorm'
-        exclude group: 'org.grails', module:'grails-bootstrap'
-        exclude group: 'org.grails', module:'grails-core'
-        exclude group: 'org.grails', module:'grails-async'
-        exclude group: 'org.grails', module:'grails-test'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jul-to-slf4j'
-        exclude group: 'org.slf4j', module:'slf4j-api'
-        exclude group: 'org.slf4j', module:'slf4j-simple'
-
     }
-    api("org.grails:grails-datastore-core:$datastoreVersion") {
-        exclude group: 'org.springframework', module:'spring-core'
-        exclude group: 'org.springframework', module:'spring-context'
-        exclude group: 'org.springframework', module:'spring-web'
-        exclude group: 'org.springframework', module:'spring-beans'
-        exclude group: 'org.springframework', module:'spring-tx'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jul-to-slf4j'
-        exclude group: 'org.slf4j', module:'slf4j-api'
-        exclude group: 'org.slf4j', module:'slf4j-simple'
-        exclude group: 'org.grails', module:'grails-bootstrap'
-        exclude group: 'org.grails', module:'grails-core'
-        exclude group: 'org.grails', module:'grails-async'
-        exclude group: 'commons-collections', module:'commons-collections'
-        exclude group: 'javassist', module:'javassist'
-        exclude group: 'org.javassist', module: 'javassist'
-        exclude group: "jakarta.persistence", module:"persistence-api"
-        exclude group: 'java-persistence', module:'persistence-api'
-    }
-
-
+    api "org.grails:grails-datastore-core:$datastoreVersion"
 }
