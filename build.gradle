@@ -310,7 +310,6 @@ subprojects { subproject ->
 
     if (subproject.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            testImplementation "hsqldb:hsqldb"
             testImplementation "com.h2database:h2"
         }
     }

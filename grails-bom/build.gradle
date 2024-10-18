@@ -22,7 +22,6 @@ ext {
         com.github.javaparser:javaparser-core::$javaParserCoreVersion
         com.h2database:h2::$h2Version
         commons-codec:commons-codec::$commonsCodecVersion
-        hsqldb:hsqldb::$hsqldbVesion
         io.methvin:directory-watcher::$directoryWatcherVersion
         jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion
         jakarta.inject:jakarta.inject-api::$jakartaInjectVersion
