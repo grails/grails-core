@@ -1,7 +1,6 @@
 plugins {
     id 'java-platform'
     id 'maven-publish'
-    id 'version-catalog'
 }
 
 javaPlatform {
@@ -46,7 +45,7 @@ ext {
         org.grails.plugins:gsp::$gspVersion
         org.grails:grails-async,grails-events:gpars,rxjava,rxjava2:$asyncVersion
         org.grails:grails-datastore-gorm-hibernate5::$hibernateDatastoreVersion
-        org.grails:grails-datastore:async,core,web,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation:$datastoreVersion
+        org.grails:grails-datastore:async,core,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation,web:$datastoreVersion
         org.grails:grails-gdoc-engine::$gdocEngineVersion
         org.grails:grails-gradle-plugin::$grailsGradlePluginVersion
         org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::$testingSupportVersion
@@ -101,7 +100,7 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.versionCatalog
+            from components.javaPlatform
 
             pom.withXml {
                 def root = asNode()
