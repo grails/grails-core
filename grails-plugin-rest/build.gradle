@@ -1,16 +1,16 @@
 dependencies {
 
-    api "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
+    api "jakarta.xml.bind:jakarta.xml.bind-api"
 
     api project(":grails-web"),
             project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
 
-    api "org.grails.plugins:converters:$legacyConvertersVersion"
+    api "org.grails.plugins:converters"
 
-    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
+    implementation "com.github.ben-manes.caffeine:caffeine"
     testImplementation project(":grails-plugin-url-mappings"),
-                project(":grails-test-suite-base")
+            project(":grails-test-suite-base")
 
-    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind"
 }

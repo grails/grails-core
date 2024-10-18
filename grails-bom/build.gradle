@@ -19,6 +19,7 @@ ext {
     def dependencyVersionsList = [
         "org.grails:grails-gradle-plugin::$grailsGradlePluginVersion",
         "jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion",
+        "jakarta.xml.bind:jakarta.xml.bind-api::$jakartaXmlBindVersion",
         "org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion",
         "org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion",
         "org.grails:grails-datastore:async,core,web,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation:$datastoreVersion",
@@ -28,6 +29,7 @@ ext {
         "io.methvin:directory-watcher::$directoryWatcherVersion",
         "org.springframework:springloaded::$springLoadedVersion",
         "org.grails.plugins:async,events::$asyncVersion",
+        "org.grails.plugins:converters::$legacyConvertersVersion",
         "org.grails:grails-async,grails-events:gpars,rxjava,rxjava2:$asyncVersion",
         "org.yaml:snakeyaml::$snakeyamlVersion",
         "org.spockframework:spock-core,spock-spring::$spockVersion",
@@ -56,7 +58,8 @@ ext {
         "org.asciidoctor:asciidoctorj::$asciidoctorjVersion",
         "org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion",
         "org.jsoup:jsoup::$jsoupVersion",
-        "org.apache.tomcat:tomcat-jdbc::$tomcatVersion"
+        "org.apache.tomcat:tomcat-jdbc::$tomcatVersion",
+        "com.fasterxml.jackson.core:jackson-databind::$jacksonVersion"
     ]
     dependencyVersions = dependencyVersionsList.collect {
         def info = it.toString().split(':')
