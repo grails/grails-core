@@ -78,8 +78,9 @@ ext {
     }
 
     def dependencyList = dependencyVersions.collectMany { dependency, artifacts ->
-        artifacts.collect { artifact ->
-            [group: dependency.group, artifact:artifact, version: dependency.version, name: dependency.name]
+        artifacts.collect { artifactId ->
+            [groupId: dependency.group, artifactId: artifactId, version: "\${${dependency.name}.version}",
+             versionValue: dependency.version, name: dependency.name]
         }
     }
 
@@ -87,12 +88,12 @@ ext {
         plugins.collect { [group: "org.grails.plugins", artifact:it.key, version: it.value, name: "plugins-${it.key}"] } +
         profiles.collect { [group: "org.grails.profiles", artifact:it.key, version: it.value, name: "profiles-${it.key}"] }
 
-    allDependencies = (pluginsAndProfiles + dependencyList).sort { it.name + it.artifact }
+    allDependencies = (pluginsAndProfiles + dependencyList).sort { it.name + it.artifactId }
 }
 
 allDependencies.each {
     if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-        throw new RuntimeException("Cannot have a snapshot dependency $it.version on a $it.name [$it.group] for a release!")
+        throw new RuntimeException("Cannot have a snapshot dependency $it.version on a $it.name [$it.groupId] for a release!")
     }
 }
 
@@ -101,7 +102,7 @@ dependencies {
 
     constraints {
         allDependencies.each {
-            api "${it.group}:${it.artifact}:${it.version}"
+            api "${it.groupId}:${it.artifactId}:${it.versionValue}"
         }
     }
 }
@@ -113,31 +114,33 @@ publishing {
                 def root = asNode()
 
                 def propsNode = root.appendNode('properties')
-                (dependencyVersions.collect { [ version:it.key.version, name: "${it.key.name}.version" ] } +
+                propsNode.appendNode('spring-boot.version', springBootVersion)
+                (dependencyVersions.collect { [ versionValue:it.key.version, name: "${it.key.name}.version" ] } +
                         pluginsAndProfiles
                 ).sort { it.name }
                 .groupBy { it.name }.collect { it.value.first() } // remove duplicates
                 .each {
-                    propsNode.appendNode(it.name, it.version)
+                    propsNode.appendNode(it.name, it.versionValue)
+                }
+
+                def appendNodes = { node, attrs ->
+                    attrs.each {
+                        node.appendNode(it.key, it.value)
+                    }
                 }
 
                 def dpm = root.appendNode('dependencyManagement')
                 def deps = dpm.appendNode('dependencies')
-                def ver = springBootVersion
-                deps.appendNode('dependency').with {
-                    appendNode('groupId', 'org.springframework.boot')
-                    appendNode('artifactId', 'spring-boot-dependencies')
-                    appendNode('version', "${ver}")
-                    appendNode('type', 'pom')
-                    appendNode('scope', 'import')
-                }
-
-                allDependencies.each { dep ->
-                    deps.appendNode('dependency').with {
-                        appendNode('groupId', dep.group)
-                        appendNode('artifactId', dep.artifact)
-                        appendNode('version', "\${${dep.name}.version}")
-                    }
+                appendNodes(deps.appendNode('dependency'), [
+                    groupId: 'org.springframework.boot',
+                    artifactId: 'spring-boot-dependencies',
+                    version: '${spring-boot.version}',
+                    type: 'pom',
+                    scope: 'import'
+                ])
+                
+                allDependencies.collect { it.subMap('groupId', 'artifactId', 'version') }.each {
+                    appendNodes(deps.appendNode('dependency'), it)
                 }
             }
         }
