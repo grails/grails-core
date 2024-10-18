@@ -5,11 +5,11 @@ dependencies {
             project(':grails-plugin-validation'),
             project(':grails-plugin-domain-class')
 
-    api("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
-    compileOnlyApi "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+    api("org.springframework.boot:spring-boot-autoconfigure")
+    compileOnlyApi "jakarta.servlet:jakarta.servlet-api"
 
     runtimeOnly project(':grails-plugin-i18n')
 
-    testRuntimeOnly "jline:jline:$jlineVersion"
-    testRuntimeOnly "org.fusesource.jansi:jansi:$jansiVersion"
+    testRuntimeOnly "jline:jline"
+    testRuntimeOnly "org.fusesource.jansi:jansi"
 }
