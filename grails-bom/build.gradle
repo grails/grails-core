@@ -34,7 +34,7 @@ ext {
         net.java.dev.jna:jna::$jnaVersion
         org.apache.ant:ant:,junit:$antVersion
         org.apache.commons:commons-text::$commonsTextVersion
-        org.apache.groovy:groovy:ant.xml,cli-picocli,console,dateutil,json,macro,nio,sql,swing,templates,test,test-junit5:$groovyVersion
+        org.apache.groovy:groovy:ant,cli-picocli,console,dateutil,json,macro,nio,sql,swing,templates,test,test-junit5,xml:$groovyVersion
         org.apache.tomcat:tomcat-jdbc::$tomcatVersion
         org.asciidoctor:asciidoctorj::$asciidoctorjVersion
         org.aspectj:aspectjrt,aspectjweaver::$aspectjVersion
