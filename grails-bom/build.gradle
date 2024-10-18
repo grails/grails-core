@@ -48,7 +48,7 @@ ext {
         org.grails:grails-gdoc-engine::$gdocEngineVersion
         org.grails:grails-gradle-plugin::$grailsGradlePluginVersion
         org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::$testingSupportVersion
-        org.grails:grails:gsp,web-gsp:$gspVersion
+        org.grails:grails:grails-web-taglib,gsp,web-gsp:$gspVersion:gsp
         org.grails:views-json-testing-support::$viewsVersion
         org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::$jsoupVersion
@@ -58,7 +58,7 @@ ext {
         org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion
         org.objenesis:objenesis::$objenesisVersion
         org.slf4j:jcl-over-slf4j::$slf4jVersion
-        org.slf4j:slf4j:api,simple::$slf4jVersion
+        org.slf4j:slf4j:api,simple:$slf4jVersion
         org.spockframework:spock-core,spock-spring::$spockVersion
         org.springframework.boot:spring-boot-cli::$springBootVersion
         org.springframework:springloaded::$springLoadedVersion
@@ -66,7 +66,9 @@ ext {
         org.yaml:snakeyaml::$snakeyamlVersion
     """.trim().readLines().collect { it.trim() }.collect {
         def info = it.toString().split(':')
-        [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
+        def dep = [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
+        dep.name = info.length == 5? info[4] : dep.names[0] // allow name override
+        dep
     }.collectEntries {
         def depList = GroovyCollections
                 .combinations(it.names, it.modules)
@@ -77,7 +79,7 @@ ext {
 
     def dependencyList = dependencyVersions.collectMany { dependency, artifacts ->
         artifacts.collect { artifact ->
-            [group: dependency.group, artifact:artifact, version: dependency.version, name: dependency.names[0]]
+            [group: dependency.group, artifact:artifact, version: dependency.version, name: dependency.name]
         }
     }
 
@@ -130,9 +132,11 @@ publishing {
                 }
 
                 def propsNode = root.appendNode('properties')
-                (dependencyVersions.collect { [ version:it.key.version, name: "${it.key.names[0]}.version" ] } +
+                (dependencyVersions.collect { [ version:it.key.version, name: "${it.key.name}.version" ] } +
                         pluginsAndProfiles
-                ).sort { it.name }.each {
+                ).sort { it.name }
+                 .groupBy { it.name }.collect { it.value.first() } // remove duplicates
+                 .each {
                     propsNode.appendNode(it.name, it.version)
                 }
             }
