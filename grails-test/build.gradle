@@ -12,15 +12,15 @@ dependencies {
 
     api project(":grails-plugin-mimetypes")
     api project(":grails-web")
-    api "org.grails.plugins:converters:$legacyConvertersVersion"
+    api "org.grails.plugins:converters"
 
     // command line requirements
-    api  "jline:jline:$jlineVersion"
-    api "org.fusesource.jansi:jansi:$jansiVersion"
+    api  "jline:jline"
+    api "org.fusesource.jansi:jansi"
 
     // Ant
-    api "org.apache.ant:ant:$antVersion"
-    api "org.apache.ant:ant-junit:$antVersion"
+    api "org.apache.ant:ant"
+    api "org.apache.ant:ant-junit"
 
     // needed for Spock
     api "org.objenesis:objenesis:$objenesisVersion"

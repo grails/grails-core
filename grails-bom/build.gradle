@@ -55,7 +55,7 @@ ext {
         "com.github.ben-manes.caffeine:caffeine::$caffeineVersion",
         "org.slf4j:slf4j:api,simple:$slf4jVersion",
         "org.slf4j:jcl-over-slf4j::$slf4jVersion",
-        "org.apache.ant:ant::$antVersion",
+        "org.apache.ant:ant:,junit:$antVersion",
         "org.grails:grails-gdoc-engine::$gdocEngineVersion",
         "org.asciidoctor:asciidoctorj::$asciidoctorjVersion",
         "org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion",
