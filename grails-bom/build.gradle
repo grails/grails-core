@@ -106,9 +106,15 @@ publishing {
                 def propsNode = root.appendNode('properties')
 
                 plugins.each { key, version ->
+                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                        throw new RuntimeException("Cannot have a snapshot dependency $version on a plugin [$key] for a release!")
+                    }
                     propsNode.appendNode("${key}.version", version)
                 }
                 profiles.each { key, version ->
+                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+                        throw new RuntimeException("Cannot have a snapshot dependency $version on a plugin [$key] for a release!")
+                    }
                     propsNode.appendNode("${key}.version", version)
                 }
             }
