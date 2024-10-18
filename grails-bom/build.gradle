@@ -60,7 +60,7 @@ ext {
         org.objenesis:objenesis::$objenesisVersion
         org.slf4j:jcl-over-slf4j::$slf4jVersion
         org.slf4j:slf4j:api,simple::$slf4jVersion
-        org.spockframework:spock,spock:core,spring:$spockVersion
+        org.spockframework:spock-core,spock-spring::$spockVersion
         org.springframework.boot:spring-boot-cli::$springBootVersion
         org.springframework:springloaded::$springLoadedVersion
         org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion
