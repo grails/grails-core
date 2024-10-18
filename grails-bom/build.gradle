@@ -112,6 +112,15 @@ publishing {
             pom.withXml {
                 def root = asNode()
 
+                def propsNode = root.appendNode('properties')
+                (dependencyVersions.collect { [ version:it.key.version, name: "${it.key.name}.version" ] } +
+                        pluginsAndProfiles
+                ).sort { it.name }
+                .groupBy { it.name }.collect { it.value.first() } // remove duplicates
+                .each {
+                    propsNode.appendNode(it.name, it.version)
+                }
+
                 def dpm = root.appendNode('dependencyManagement')
                 def deps = dpm.appendNode('dependencies')
                 def ver = springBootVersion
@@ -129,15 +138,6 @@ publishing {
                         appendNode('artifactId', dep.artifact)
                         appendNode('version', "\${${dep.name}.version}")
                     }
-                }
-
-                def propsNode = root.appendNode('properties')
-                (dependencyVersions.collect { [ version:it.key.version, name: "${it.key.name}.version" ] } +
-                        pluginsAndProfiles
-                ).sort { it.name }
-                 .groupBy { it.name }.collect { it.value.first() } // remove duplicates
-                 .each {
-                    propsNode.appendNode(it.name, it.version)
                 }
             }
         }
