@@ -331,9 +331,10 @@ subprojects { subproject ->
     }
 
     dependencies {
-        documentation("org.fusesource.jansi:jansi:$jansiVersion")
-        documentation("jline:jline:$jlineVersion")
-        documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
+        documentation platform(project(':grails-bom'))
+        documentation "org.fusesource.jansi:jansi"
+        documentation "jline:jline"
+        documentation "com.github.javaparser:javaparser-core"
 
         if (compiledByGradleGroovyVersion(subproject)) {
             documentation "org.codehaus.groovy:groovy:$GroovySystem.version"
@@ -341,9 +342,9 @@ subprojects { subproject ->
             documentation "org.codehaus.groovy:groovy-cli-picocli:$GroovySystem.version"
         } else {
             api groovyDependency
-            documentation "org.apache.groovy:groovy:$groovyVersion"
-            documentation "org.apache.groovy:groovy-ant:$groovyVersion"
-            documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
+            documentation "org.apache.groovy:groovy"
+            documentation "org.apache.groovy:groovy-ant"
+            documentation "org.apache.groovy:groovy-cli-picocli"
         }
 
         testImplementation "org.apache.groovy:groovy-test-junit5"
