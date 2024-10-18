@@ -51,7 +51,7 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
+    testImplementation "org.grails:grails-web-testing-support", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'
@@ -74,7 +74,7 @@ dependencies {
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
+    testImplementation "org.grails:grails-gorm-testing-support", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'

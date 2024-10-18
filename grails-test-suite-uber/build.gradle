@@ -56,7 +56,7 @@ dependencies {
         exclude module:'grails-core'
         exclude module:'grails-plugin-domain-class'
     }
-    testImplementation "org.grails.plugins:gsp:$gspVersion", {
+    testImplementation "org.grails.plugins:gsp", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-controllers'
         exclude module:'grails-core'
@@ -64,14 +64,14 @@ dependencies {
         exclude module:'grails-web-common'
         exclude module:'grails-encoder'
     }
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
+    testImplementation "org.grails:grails-gorm-testing-support", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-domain-class'
         exclude module:'grails-test'
         exclude module:'grails-core'
         exclude module:'async'
     }
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
+    testImplementation "org.grails:grails-web-testing-support", {
         exclude module:'grails-plugin-codecs'
         exclude module:'grails-plugin-rest'
         exclude module:'grails-plugin-interceptors'
