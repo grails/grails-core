@@ -65,7 +65,7 @@ dependencies {
     implementation "commons-codec:commons-codec"
 
     testImplementation "net.sf.expectit:expectit-core:$expectitCoreVersion"
-    testImplementation "com.github.jnr:jnr-posix:$jnrPosixVersion"
+    testImplementation "com.github.jnr:jnr-posix:3.1.20"
     testImplementation "org.apache.groovy:groovy-xml"
     testImplementation "org.apache.groovy:groovy-json"
     testImplementation "org.apache.groovy:groovy-templates"

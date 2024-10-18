@@ -17,51 +17,53 @@ ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     dependencyVersions = """\
-        com.fasterxml.jackson.core:jackson-databind::$jacksonVersion
-        com.github.ben-manes.caffeine:caffeine::$caffeineVersion
-        com.github.javaparser:javaparser-core::$javaParserCoreVersion
-        com.h2database:h2::$h2Version
-        commons-codec:commons-codec::$commonsCodecVersion
-        io.methvin:directory-watcher::$directoryWatcherVersion
-        jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion
-        jakarta.inject:jakarta.inject-api::$jakartaInjectVersion
-        jakarta.persistence:jakarta.persistence-api::$jakartaPersistenceVersion
-        jakarta.servlet:jakarta.servlet-api::$servletApiVersion
+        com.fasterxml.jackson.core:jackson-databind::2.18.0
+        com.github.ben-manes.caffeine:caffeine::3.1.8
+        com.github.javaparser:javaparser-core::3.26.2
+        com.h2database:h2::2.3.232
+        commons-codec:commons-codec::1.17.1
+        io.methvin:directory-watcher::0.18.0
+        jakarta.annotation:jakarta.annotation-api::3.0.0
+        jakarta.inject:jakarta.inject-api::2.0.1
+        jakarta.persistence:jakarta.persistence-api::3.1.0
+        jakarta.servlet:jakarta.servlet-api::6.0.0
         jakarta.xml.bind:jakarta.xml.bind-api::$jakartaXmlBindVersion
-        jline:jline::$jlineVersion
-        net.bytebuddy:byte-buddy::$bytebuddyVersion
-        net.java.dev.jna:jna::$jnaVersion
-        org.apache.ant:ant:,junit:$antVersion
-        org.apache.commons:commons-text::$commonsTextVersion
+        jline:jline::2.14.6
+        net.bytebuddy:byte-buddy::1.15.5
+        net.java.dev.jna:jna::5.15.0
+        org.apache.ant:ant:,junit:1.10.15
+        org.apache.commons:commons-text::1.12.0
         org.apache.groovy:groovy:ant,cli-picocli,console,dateutil,json,macro,nio,sql,swing,templates,test,test-junit5,xml:$groovyVersion
-        org.apache.tomcat:tomcat-jdbc::$tomcatVersion
-        org.asciidoctor:asciidoctorj::$asciidoctorjVersion
-        org.aspectj:aspectjrt,aspectjweaver::$aspectjVersion
-        org.fusesource.jansi:jansi::$jansiVersion
-        com.github.spotbugs:spotbugs-annotations::$jsr305Version
+        org.apache.tomcat:tomcat-jdbc::$tomcatVersion:tomcat
+        org.apache.tomcat.embed:tomcat-embed-core::$tomcatVersion:tomcat
+        org.apache.tomcat.embed:tomcat-embed-logging-juli::8.5.2
+        org.asciidoctor:asciidoctorj::3.0.0
+        org.aspectj:aspectjrt,aspectjweaver::1.9.22.1
+        org.fusesource.jansi:jansi::2.4.1
+        com.github.spotbugs:spotbugs-annotations::4.8.6
         org.grails.plugins:async,events::$asyncVersion
-        org.grails.plugins:converters::$legacyConvertersVersion
+        org.grails.plugins:converters::6.0.0-SNAPSHOT
         org.grails.plugins:gsp::$gspVersion
         org.grails:grails-async,grails-events:gpars,rxjava,rxjava2:$asyncVersion
-        org.grails:grails-datastore-gorm-hibernate5::$hibernateDatastoreVersion
+        org.grails:grails-datastore-gorm-hibernate5::9.0.0-SNAPSHOT
         org.grails:grails-datastore:async,core,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation,web:$datastoreVersion
-        org.grails:grails-gdoc-engine::$gdocEngineVersion
+        org.grails:grails-gdoc-engine::1.0.1
         org.grails:grails-gradle-plugin::$grailsGradlePluginVersion
-        org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::$testingSupportVersion
+        org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::4.0.0-SNAPSHOT
         org.grails:grails:grails-web-taglib,gsp,web-gsp:$gspVersion:gsp
-        org.grails:views-json-testing-support::$viewsVersion
+        org.grails:views-json-testing-support::4.0.0-SNAPSHOT
         org.hamcrest:hamcrest-core::$hamcrestVersion
-        org.jsoup:jsoup::$jsoupVersion
+        org.jsoup:jsoup::1.18.1
         org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion
         org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion
-        org.objenesis:objenesis::$objenesisVersion
+        org.objenesis:objenesis::3.4
         org.slf4j:jcl-over-slf4j::$slf4jVersion
         org.slf4j:slf4j:api,simple:$slf4jVersion
         org.spockframework:spock-core,spock-spring::$spockVersion
         org.springframework.boot:spring-boot-cli::$springBootVersion
-        org.springframework:springloaded::$springLoadedVersion
-        org.xhtmlrenderer:flying-saucer-pdf-openpdf::$xhtmlRendererVersion
-        org.yaml:snakeyaml::$snakeyamlVersion
+        org.springframework:springloaded::1.2.8.RELEASE
+        org.xhtmlrenderer:flying-saucer-pdf-openpdf::9.4.0
+        org.yaml:snakeyaml::2.3
     """.trim().readLines().collect { it.trim() }.collect {
         def info = it.toString().split(':')
         def dep = [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
