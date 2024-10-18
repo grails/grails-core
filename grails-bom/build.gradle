@@ -35,7 +35,7 @@ ext {
         "org.yaml:snakeyaml::$snakeyamlVersion",
         "org.spockframework:spock,spock:core,spring:$spockVersion",
         "org.grails.plugins:gsp::$gspVersion",
-        "org.grails:grails-web-gsp::$gspVersion",
+        "org.grails:grails:gsp,web-gsp:$gspVersion",
         "org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::$testingSupportVersion",
         "org.junit.jupiter:junit-jupiter-api::$junitVersion",
         "org.grails:views-json-testing-support::$viewsVersion",

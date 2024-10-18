@@ -4,17 +4,14 @@ dependencies {
     }
     api project(":grails-databinding")
     api project(":grails-encoder")
-    api "org.grails:grails-gsp:$gspVersion", {
-        exclude group:'org.grails', module:'grails-core'
-        exclude group:'org.grails', module:'grails-encoder'
-    }
+    api "org.grails:grails-gsp"
 
-    api "org.apache.groovy:groovy-templates:$groovyVersion"
-    compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
-    testCompileOnly "org.springframework:spring-test:$springVersion"
+    api "org.apache.groovy:groovy-templates"
+    compileOnly "jakarta.servlet:jakarta.servlet-api"
+    testCompileOnly "org.springframework:spring-test"
 
-    api "org.springframework:spring-webmvc:$springVersion"
-    api "org.springframework:spring-context-support:$springVersion"
-    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
+    api "org.springframework:spring-webmvc"
+    api "org.springframework:spring-context-support"
+    implementation "com.github.ben-manes.caffeine:caffeine"
     compileOnly "com.github.spotbugs:spotbugs-annotations:$jsr305Version"
 }
