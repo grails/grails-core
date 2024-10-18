@@ -75,24 +75,32 @@ ext {
                 .collect { it.endsWith('-') ? it[0..-2] : it }
         [(it):depList]
     }
-    sbv = springBootVersion
+
+    def dependencyList = dependencyVersions.collectMany { dependency, artifacts ->
+        artifacts.collect { artifact ->
+            [group: dependency.group, artifact:artifact, version: dependency.version, name: dependency.names[0]]
+        }
+    }
+
+    pluginsAndProfiles =
+        plugins.collect { [group: "org.grails.plugins", artifact:it.key, version: it.value, name: "plugins-${it.key}"] } +
+        profiles.collect { [group: "org.grails.profiles", artifact:it.key, version: it.value, name: "profiles-${it.key}"] }
+
+    allDependencies = (pluginsAndProfiles + dependencyList).sort { it.name + it.artifact }
+}
+
+allDependencies.each {
+    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
+        throw new RuntimeException("Cannot have a snapshot dependency $it.version on a $it.name [$it.group] for a release!")
+    }
 }
 
 dependencies {
     api platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
 
     constraints {
-        plugins.each { key, version ->
-            api "org.grails.plugins:${key}:\${${key}.version}"
-        }
-        profiles.each { key, version ->
-            api "org.grails.profiles:${key}:\${${key}.version}"
-        }
-
-        dependencyVersions.each { dependency, artifacts ->
-            artifacts.each {
-                api "${dependency.group}:${it}:${dependency.version}"
-            }
+        allDependencies.each {
+            api "${it.group}:${it.artifact}:${it.version}"
         }
     }
 }
@@ -114,31 +122,19 @@ publishing {
                     appendNode('scope', 'import')
                 }
 
-                dependencyVersions.each { dependency, artifacts ->
-                    artifacts.each { artifact ->
-                        deps.appendNode('dependency').with {
-                            appendNode('groupId', dependency.group)
-                            appendNode('artifactId', artifact)
-                            appendNode('version', "\${${dependency.names[0]}.version}")
-                        }
+                allDependencies.each { dep ->
+                    deps.appendNode('dependency').with {
+                        appendNode('groupId', dep.group)
+                        appendNode('artifactId', dep.artifact)
+                        appendNode('version', "\${${dep.name}.version}")
                     }
                 }
-                def propsNode = root.appendNode('properties')
 
-                dependencyVersions.each { dependency, artifacts ->
-                    propsNode.appendNode("${dependency.names[0]}.version", version)
-                }
-                plugins.each { key, version ->
-                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                        throw new RuntimeException("Cannot have a snapshot dependency $version on a plugin [$key] for a release!")
-                    }
-                    propsNode.appendNode("${key}.version", version)
-                }
-                profiles.each { key, version ->
-                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                        throw new RuntimeException("Cannot have a snapshot dependency $version on a plugin [$key] for a release!")
-                    }
-                    propsNode.appendNode("${key}.version", version)
+                def propsNode = root.appendNode('properties')
+                (dependencyVersions.collect { [ version:it.key.version, name: "${it.key.names[0]}.version" ] } +
+                        pluginsAndProfiles
+                ).sort { it.name }.each {
+                    propsNode.appendNode(it.name, it.version)
                 }
             }
         }
