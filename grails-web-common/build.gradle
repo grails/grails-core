@@ -13,5 +13,5 @@ dependencies {
     api "org.springframework:spring-webmvc"
     api "org.springframework:spring-context-support"
     implementation "com.github.ben-manes.caffeine:caffeine"
-    compileOnly "com.github.spotbugs:spotbugs-annotations:$jsr305Version"
+    compileOnly "com.github.spotbugs:spotbugs-annotations"
 }

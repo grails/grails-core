@@ -1,6 +1,7 @@
 plugins {
     id 'java-platform'
     id 'maven-publish'
+    id 'version-catalog'
 }
 
 javaPlatform {
@@ -19,8 +20,10 @@ ext {
     dependencyVersions = """\
         com.fasterxml.jackson.core:jackson-databind::$jacksonVersion
         com.github.ben-manes.caffeine:caffeine::$caffeineVersion
+        com.github.javaparser:javaparser-core::$javaParserCoreVersion
         com.h2database:h2::$h2Version
         commons-codec:commons-codec::$commonsCodecVersion
+        hsqldb:hsqldb::$hsqldbVesion
         io.methvin:directory-watcher::$directoryWatcherVersion
         jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion
         jakarta.inject:jakarta.inject-api::$jakartaInjectVersion
@@ -28,14 +31,16 @@ ext {
         jakarta.servlet:jakarta.servlet-api::$servletApiVersion
         jakarta.xml.bind:jakarta.xml.bind-api::$jakartaXmlBindVersion
         jline:jline::$jlineVersion
+        net.bytebuddy:byte-buddy::$bytebuddyVersion
         net.java.dev.jna:jna::$jnaVersion
         org.apache.ant:ant:,junit:$antVersion
         org.apache.commons:commons-text::$commonsTextVersion
-        org.apache.groovy:groovy:xml,swing,console,json,ant,sql,templates,nio,dateutil,macro,test,test-junit5:$groovyVersion
+        org.apache.groovy:groovy:ant.xml,cli-picocli,console,dateutil,json,macro,nio,sql,swing,templates,test,test-junit5:$groovyVersion
         org.apache.tomcat:tomcat-jdbc::$tomcatVersion
         org.asciidoctor:asciidoctorj::$asciidoctorjVersion
         org.aspectj:aspectjrt,aspectjweaver::$aspectjVersion
         org.fusesource.jansi:jansi::$jansiVersion
+        com.github.spotbugs:spotbugs-annotations::$jsr305Version
         org.grails.plugins:async,events::$asyncVersion
         org.grails.plugins:converters::$legacyConvertersVersion
         org.grails.plugins:gsp::$gspVersion
@@ -49,9 +54,11 @@ ext {
         org.grails:views-json-testing-support::$viewsVersion
         org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::$jsoupVersion
-        org.junit.jupiter:junit-jupiter-api::$junitVersion
+        org.junit.jupiter:junit-jupiter:api,engine:$junitVersion
+        org.junit.platform:junit-platform-runner::$junitPlatformRunnerVersion
         org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion
         org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion
+        org.objenesis:objenesis::$objenesisVersion
         org.slf4j:jcl-over-slf4j::$slf4jVersion
         org.slf4j:slf4j:api,simple::$slf4jVersion
         org.spockframework:spock,spock:core,spring:$spockVersion
@@ -94,7 +101,7 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.javaPlatform
+            from components.versionCatalog
 
             pom.withXml {
                 def root = asNode()

@@ -7,7 +7,7 @@ dependencies {
     api "org.apache.groovy:groovy-test-junit5"
     api("org.apache.groovy:groovy-test")
     api("org.spockframework:spock-core") { transitive = false }
-    api "org.junit.platform:junit-platform-runner:$junitPlatformRunnerVersion"
+    api "org.junit.platform:junit-platform-runner"
 
 
     api project(":grails-plugin-mimetypes")
@@ -23,5 +23,5 @@ dependencies {
     api "org.apache.ant:ant-junit"
 
     // needed for Spock
-    api "org.objenesis:objenesis:$objenesisVersion"
+    api "org.objenesis:objenesis"
 }

@@ -58,10 +58,7 @@ if (jointBuildGroovyJarProperty) {
         throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
     }
 } else {
-    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}") {
-        exclude module:"commons-cli"
-        exclude module:"ant"
-    }
+    groovyDependency = dependencies.create("org.apache.groovy:groovy:${groovyVersion}")
 }
 
 if (isReleaseVersion) {
@@ -202,9 +199,9 @@ subprojects { subproject ->
 
         delegate.developers {
             delegate.developer {
-                delegate.id 'puneetbehl'
-                delegate.name 'Puneet Behl'
-                delegate.email 'behlp@objectcomputing.com'
+                delegate.id 'graemerocher'
+                delegate.name 'Graeme Rocher'
+                delegate.email 'grails-build@users.noreply.github.com'
             }
         }
 
@@ -266,9 +263,9 @@ subprojects { subproject ->
 
                         developers {
                             developer {
-                                id = 'puneetbehl'
-                                name = 'Puneet Behl'
-                                email = 'behlp@unityfoundation.io'
+                                id = 'graemerocher'
+                                name = 'Graeme Rocher'
+                                email = 'grails-build@users.noreply.github.com'
                             }
                         }
                     }
@@ -303,18 +300,18 @@ subprojects { subproject ->
 
     if (subproject.name =~ /^(grails-web|grails-plugin-|grails-test-suite|grails-test)/) {
         dependencies {
-            compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
-            testImplementation "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
+            compileOnly "jakarta.servlet:jakarta.servlet-api"
+            testImplementation "jakarta.servlet:jakarta.servlet-api"
             // MockHttpServletRequest/Response/Context used in many classes
-            compileOnly "org.springframework:spring-test:$springVersion"
-            testImplementation "org.springframework:spring-test:$springVersion"
+            compileOnly "org.springframework:spring-test"
+            testImplementation "org.springframework:spring-test"
         }
     }
 
     if (subproject.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
         dependencies {
-            testImplementation "hsqldb:hsqldb:$hsqldbVesion"
-            testImplementation "com.h2database:h2:$h2Version"
+            testImplementation "hsqldb:hsqldb"
+            testImplementation "com.h2database:h2"
         }
     }
 
@@ -334,9 +331,9 @@ subprojects { subproject ->
     }
 
     dependencies {
-        documentation("org.fusesource.jansi:jansi:$jansiVersion")
-        documentation("jline:jline:$jlineVersion")
-        documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
+        documentation "org.fusesource.jansi:jansi"
+        documentation "jline:jline"
+        documentation "com.github.javaparser:javaparser-core"
 
         if (compiledByGradleGroovyVersion(subproject)) {
             documentation "org.codehaus.groovy:groovy:$GroovySystem.version"
@@ -344,29 +341,29 @@ subprojects { subproject ->
             documentation "org.codehaus.groovy:groovy-cli-picocli:$GroovySystem.version"
         } else {
             api groovyDependency
-            documentation "org.apache.groovy:groovy:$groovyVersion"
-            documentation "org.apache.groovy:groovy-ant:$groovyVersion"
-            documentation "org.apache.groovy:groovy-cli-picocli:$groovyVersion"
+            documentation "org.apache.groovy:groovy"
+            documentation "org.apache.groovy:groovy-ant"
+            documentation "org.apache.groovy:groovy-cli-picocli"
         }
 
-        testImplementation "org.apache.groovy:groovy-test-junit5:$groovyVersion"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
-        testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformRunnerVersion"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+        testImplementation "org.apache.groovy:groovy-test-junit5"
+        testImplementation "org.junit.jupiter:junit-jupiter-api"
+        testImplementation "org.junit.platform:junit-platform-runner"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 
-        compileOnly "com.github.spotbugs:spotbugs-annotations:$jsr305Version"
+        compileOnly "com.github.spotbugs:spotbugs-annotations"
 
         if (subproject.name != "grails-docs") {
             // Logging
-            api "org.slf4j:slf4j-api:$slf4jVersion"
-            api "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+            api "org.slf4j:slf4j-api"
+            api "org.slf4j:jcl-over-slf4j"
 
             // Testing
-            testImplementation "org.slf4j:slf4j-simple:$slf4jVersion"
-            testImplementation("org.spockframework:spock-core:$spockVersion") { transitive = false }
+            testImplementation "org.slf4j:slf4j-simple"
+            testImplementation("org.spockframework:spock-core") { transitive = false }
             // Required by Spock's Mocking
-            testRuntimeOnly "net.bytebuddy:byte-buddy:$bytebuddyVersion"
-            testImplementation "org.objenesis:objenesis:$objenesisVersion"
+            testRuntimeOnly "net.bytebuddy:byte-buddy"
+            testImplementation "org.objenesis:objenesis"
         }
     }
 
