@@ -138,7 +138,15 @@ publishing {
                     type: 'pom',
                     scope: 'import'
                 ])
-                
+
+                project.parent.subprojects.findResults {
+                    if (it.name == 'grails-bom') return null
+                    [groupId: it.group, artifactId: it.name, version: it.version] +
+                        (it.name == 'grails-dependencies'? [type:'pom'] : [])
+                }.each {
+                    appendNodes(deps.appendNode('dependency'), it)
+                }
+
                 allDependencies.collect { it.subMap('groupId', 'artifactId', 'version') }.each {
                     appendNodes(deps.appendNode('dependency'), it)
                 }
