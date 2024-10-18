@@ -1,106 +1,100 @@
-apply plugin: 'maven-publish'
+plugins {
+    id 'java-platform'
+    id 'maven-publish'
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
+def plugins = new Properties()
+plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
+
+def profiles = new Properties()
+profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
+
+ext {
+    // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
+    // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
+    def dependencyVersionsList = [
+        "org.grails:grails-gradle-plugin::$grailsGradlePluginVersion",
+        "jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion",
+        "org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion",
+        "org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion",
+        "org.grails:grails-datastore:async,core,web,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation:$datastoreVersion",
+        "org.grails:grails-datastore-gorm-hibernate5::$hibernateDatastoreVersion",
+        "org.apache.groovy:groovy:xml,swing,console,json,ant,sql,templates,nio,dateutil,macro:$groovyVersion",
+//        "org.springframework:spring:aop,aspects,beans,context-support,context,core,expression,instrument,jdbc,jms,messaging,orm,oxm,test,tx,web,webmvc,websocket:$springVersion",
+        "io.methvin:directory-watcher::$directoryWatcherVersion",
+        "org.springframework:springloaded::$springLoadedVersion",
+        "org.grails.plugins:async,events::$asyncVersion",
+        "org.grails:grails-async,grails-events:gpars,rxjava,rxjava2:$asyncVersion",
+        "org.yaml:snakeyaml::$snakeyamlVersion",
+        "org.spockframework:spock-core,spock-spring::$spockVersion",
+        "org.grails.plugins:gsp::$gspVersion",
+        "org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::$testingSupportVersion",
+        "org.grails:views-json-testing-support::$viewsVersion",
+        "com.h2database:h2::$h2Version",
+        "org.hamcrest:hamcrest-core::$hamcrestVersion",
+        "org.fusesource.jansi:jansi::$jansiVersion",
+        "jline:jline::$jlineVersion",
+        "net.java.dev.jna:jna::$jnaVersion",
+        "commons-codec:commons-codec::$commonsCodecVersion",
+        "org.grails:grails-datastore-core::$datastoreVersion",
+        "org.aspectj:aspectjrt::$aspectjVersion",
+        "org.aspectj:aspectjweaver::$aspectjVersion",
+        "jakarta.inject:jakarta.inject-api::$jakartaInjectVersion",
+        "jakarta.persistence:jakarta.persistence-api::$jakartaPersistenceVersion",
+        "jakarta.annotation:jakarta.annotation-api::$jakartaAnnotationApiVersion",
+        "jakarta.servlet:jakarta.servlet-api::$servletApiVersion",
+        "com.github.ben-manes.caffeine:caffeine::$caffeineVersion"
+    ]
+    dependencyVersions = dependencyVersionsList.collect {
+        def info = it.toString().split(':')
+        [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
+    }
+}
+
+dependencies {
+    api platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+
+    constraints {
+        plugins.each { key, version ->
+            api "org.grails.plugins:${key}:\${${key}.version}"
+        }
+        profiles.each { key, version ->
+            api "org.grails.profiles:${key}:\${${key}.version}"
+        }
+
+        dependencyVersions.each {
+            def depList = GroovyCollections
+                    .combinations(it.names, it.modules)
+                    .collect { it.join('-') }
+                    .collect { it.endsWith('-') ? it[0..-2] : it }
+
+            for (dependency in depList) {
+                it.modules.each { module ->
+                    api "${it.group}:${dependency}:${it.version}"
+                }
+            }
+        }
+    }
+}
 
 publishing {
     publications {
         maven(MavenPublication) {
+            from components.javaPlatform
+
             pom.withXml {
-                def xml = asNode()
-                def plugins = new Properties()
-                plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
+                def root = asNode()
+                def propsNode = root.appendNode('properties')
 
-                def profiles = new Properties()
-                profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
-
-                xml.children().last() + pomInfo
-                xml.children().last() + {
-                    def mkp = delegate
-
-                    mkp.properties {
-                        for (dep in plugins) {
-                            String version = dep.value
-                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$dep.key] for a release!")
-                            }
-                            mkp."${dep.key}.version"(version)
-                        }
-
-                        for (dep in dependencyVersions) {
-                            String version = dep.value.version
-                            if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                throw new RuntimeException("Cannot have a snapshot dependency on [$dep.key] for a release!")
-                            }
-                            mkp."${dep.key}.version"(version)
-                        }
-                    }
-
-                    mkp.dependencyManagement {
-                        mkp.dependencies {
-                            mkp.dependency {
-                                mkp.groupId 'org.springframework.boot'
-                                mkp.artifactId 'spring-boot-dependencies'
-                                mkp.version springBootVersion
-                                mkp.type 'pom'
-                                mkp.scope 'import'
-                            }
-                            for (sub in project.parent.subprojects) {
-                                if (sub.name == 'grails-bom') continue
-
-                                mkp.dependency {
-                                    mkp.groupId sub.group
-                                    mkp.artifactId sub.name
-                                    mkp.version sub.version
-                                    if (sub.name == 'grails-dependencies') {
-                                        mkp.type 'pom'
-                                    }
-                                }
-                            }
-
-                            for (dep in dependencyVersions) {
-                                def info = dep.value
-                                def depList = GroovyCollections
-                                        .combinations(info.names, info.modules)
-                                        .collect { it.join('-') }
-                                        .collect { it.endsWith('-') ? it[0..-2] : it }
-
-                                for (dependency in depList) {
-                                    mkp.dependency {
-                                        mkp.groupId info.group
-                                        mkp.artifactId dependency
-                                        mkp.version "\${${dep.key}.version}"
-                                    }
-                                }
-                            }
-
-                            for (plugin in plugins) {
-                                String artifactId = plugin.key
-                                String version = "\${${plugin.key}.version}"
-                                if (artifactId.startsWith("gorm.")) {
-                                    artifactId = artifactId.replace("gorm.", "")
-                                }
-                                mkp.dependency {
-                                    mkp.groupId 'org.grails.plugins'
-                                    mkp.artifactId artifactId
-                                    String versionValue = plugin.value
-                                    if (!isBuildSnapshot && versionValue.endsWith("-SNAPSHOT")) {
-                                        throw new RuntimeException("Cannot have a snapshot dependency on a plugin [$artifactId] for a release!")
-                                    }
-                                    mkp.version version
-                                }
-                            }
-
-                            for (profile in profiles) {
-                                mkp.dependency {
-                                    mkp.groupId 'org.grails.profiles'
-                                    mkp.artifactId profile.key
-                                    String version = profile.value
-                                    if (!isBuildSnapshot && version.endsWith("-SNAPSHOT")) {
-                                        throw new RuntimeException("Cannot have a snapshot dependency on a profile [$profile.key] for a release!")
-                                    }
-                                    mkp.version(version)
-                                }
-                            }
-                        }
-                    }
+                plugins.each { key, version ->
+                    propsNode.appendNode("${key}.version", version)
+                }
+                profiles.each { key, version ->
+                    propsNode.appendNode("${key}.version", version)
                 }
             }
         }

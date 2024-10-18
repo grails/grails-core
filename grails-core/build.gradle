@@ -1,19 +1,25 @@
+configurations.all {
+    resolutionStrategy {
+        force "org.hamcrest:hamcrest-core:1.3"
+    }
+}
+
 dependencies {
-    compileOnly "org.aspectj:aspectjrt:$aspectjVersion",
-            "org.aspectj:aspectjweaver:$aspectjVersion"
-    api "jakarta.inject:jakarta.inject-api:$jakartaInjectVersion"
-    api "jakarta.persistence:jakarta.persistence-api:$jakartaPersistenceVersion"
-    api "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
+    compileOnly "org.aspectj:aspectjrt",
+            "org.aspectj:aspectjweaver"
+    api "jakarta.inject:jakarta.inject-api"
+    api "jakarta.persistence:jakarta.persistence-api"
+    api "jakarta.annotation:jakarta.annotation-api"
 
-    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
-    api("org.springframework.boot:spring-boot:$springBootVersion")
-    api "org.springframework:spring-core:$springVersion"
-    api "org.springframework:spring-tx:$springVersion"
-    api "org.springframework:spring-beans:$springVersion"
-    api "org.springframework:spring-context:$springVersion"
+    implementation "com.github.ben-manes.caffeine:caffeine"
+    api("org.springframework.boot:spring-boot")
+    api "org.springframework:spring-core"
+    api "org.springframework:spring-tx"
+    api "org.springframework:spring-beans"
+    api "org.springframework:spring-context"
 
-    compileOnly "org.springframework:spring-test:$springVersion"
-    compileOnly "org.apache.groovy:groovy-templates:$groovyVersion"
+    compileOnly "org.springframework:spring-test"
+    compileOnly "org.apache.groovy:groovy-templates"
 
 
     api project(":grails-bootstrap"), {
@@ -38,14 +44,14 @@ dependencies {
         exclude group:'org.grails', module:'grails-bootstrap'
     }
 
-    api "org.grails:grails-datastore-core:$datastoreVersion"
+    api "org.grails:grails-datastore-core"
 
-    testImplementation "org.springframework:spring-jdbc:$springVersion"
+    testImplementation "org.springframework:spring-jdbc"
 
-    testImplementation "org.hamcrest:hamcrest:$hamcrestVersion"
+    testImplementation "org.hamcrest:hamcrest-core:$hamcrestVersion"
 
-    testRuntimeOnly "com.h2database:h2:$h2Version"
-    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    testRuntimeOnly "com.h2database:h2"
+    testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind"
 }
 
 def writeProps = tasks.register('writeGrailsProperties', WriteProperties) {
