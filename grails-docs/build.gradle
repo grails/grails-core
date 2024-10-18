@@ -9,8 +9,8 @@ dependencies {
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
             "org.grails:grails-gdoc-engine:$gdocEngineVersion",
-            "org.yaml:snakeyaml:$snakeyamlVersion",
-            "org.apache.groovy:groovy-ant:$groovyVersion"
+            "org.yaml:snakeyaml",
+            "org.apache.groovy:groovy-ant"
 
     api "org.asciidoctor:asciidoctorj:$asciidoctorjVersion"
     implementation "org.xhtmlrenderer:flying-saucer-pdf-openpdf:$xhtmlRendererVersion"
