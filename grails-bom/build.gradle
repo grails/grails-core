@@ -13,6 +13,9 @@ plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
 def profiles = new Properties()
 profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
 
+def versions = new Properties()
+versions.load(new StringReader(new File("$projectDir.parentFile/gradle.properties").text))
+
 ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
@@ -65,9 +68,10 @@ ext {
         org.xhtmlrenderer:flying-saucer-pdf-openpdf::9.4.0
         org.yaml:snakeyaml::2.3
     """.stripIndent(true).trim().readLines().collect {
-        def info = it.toString().split(':')
-        def dep = [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info[3]]
+        def info = it.toString().split(':', -1)
+        def dep = [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info.length >= 4? info[3] : null]
         dep.name = info.length == 5? info[4] : dep.names[0] // allow name override
+        dep.version = dep.version ?: versions.get("${dep.name}.version".toString()) ?: '\t\t\t\t*** UNDEFINED **'
         dep
     }.collectEntries {
         def depList = GroovyCollections
