@@ -8,7 +8,7 @@ buildscript {
         classpath "io.github.gradle-nexus:publish-plugin:$gradleNexusPublishPluginVersion"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:$gradleExtraConfigurationsPluginVersion"
         classpath "com.bmuschko:gradle-nexus-plugin:$gradleNexusPluginVersion"
-        classpath "jakarta.xml.bind:jakarta.xml.bind-api:$jakartaXmlBindVersion"
+        classpath "jakarta.xml.bind:jakarta.xml.bind-api:${project['jakarta.xml.bind-api.version']}"
         classpath "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:$gradleLicensePluginVersion"
     }
 }
@@ -124,7 +124,7 @@ allprojects {
                         details.useVersion(groovyVersion)
                     }
                     if (details.requested.group == "org.spockframework") {
-                        details.useVersion(spockVersion)
+                        details.useVersion(project['spock.version'])
                     }
                 }
             }
