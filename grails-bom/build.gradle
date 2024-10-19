@@ -21,6 +21,7 @@ versions.load(new StringReader(new File("$projectDir.parentFile/gradle.propertie
 ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
+    // Grails dependencies are listed in SCOTTL format:
     dependenciesOverview = """\
         com.fasterxml.jackson.core:jackson-databind::
         com.github.ben-manes.caffeine:caffeine::
