@@ -164,7 +164,7 @@ task dependabot {
     def args = project.gradle.startParameter.taskNames.findAll { it != 'dependabot' }
 
     doLast {
-        def action = project.findProperty('generate') ?: project.findProperty('generate') ?: 'gradle'
+        def action = project.findProperty('generate') ?: project.findProperty('gen') ?: 'gradle'
 
         switch (action) {
             case 'properties':
@@ -174,7 +174,9 @@ task dependabot {
                 }
                 break
             default:
-                println """\
+                def dependabot = new File("${projectDir.parentFile}/dependabot/build.gradle")
+                dependabot.parentFile.mkdirs()
+                dependabot.write("""\
                     // Gemerated by: ./gradlew :grails-bom:dependabot
                     plugins {
                         id 'java'
@@ -183,7 +185,8 @@ task dependabot {
                     dependencies {
                     ${allDependencies.collect { "    compileOnly ${it.groupId}:${it.artifactId}:\${${it.version}}" }.join('\n                    ')}
                     }
-                    """.stripIndent(true).trim()
+                    """.stripIndent(true).trim())
+                println "${dependabot} created."
                 break
         }
     }
