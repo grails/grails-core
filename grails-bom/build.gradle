@@ -22,6 +22,8 @@ ext {
     // When making changes in the dependencyVersions, remember to also update the Grails BOM Documentation:
     // https://docs.grails.org/snapshot/ref/Dependency%20Versions/Grails%20BOM.html
     // Grails dependencies are listed in SCOTTL format:
+    // groupId:artifactId-prefixes:artifactId-suffixes:version:versionNameOverride
+    // version name = versionNameOverride ?: artifactId-prefixes[0]
     dependenciesOverview = """\
         com.fasterxml.jackson.core:jackson-databind::
         com.github.ben-manes.caffeine:caffeine::
@@ -40,23 +42,23 @@ ext {
         org.apache.ant:ant:,junit:
         org.apache.commons:commons-text::
         org.apache.groovy:groovy:ant,cli-picocli,console,dateutil,json,macro,nio,sql,swing,templates,test,test-junit5,xml:$groovyVersion
-        org.apache.tomcat:tomcat-jdbc::$tomcatVersion:tomcat
-        org.apache.tomcat.embed:tomcat-embed-core::$tomcatVersion:tomcat
+        org.apache.tomcat:tomcat-jdbc:::tomcat
+        org.apache.tomcat.embed:tomcat-embed-core:::tomcat
         org.apache.tomcat.embed:tomcat-embed-logging-juli::
         org.asciidoctor:asciidoctorj::
         org.aspectj:aspectjrt,aspectjweaver::
         org.fusesource.jansi:jansi::
         com.github.spotbugs:spotbugs-annotations::
-        org.grails.plugins:async,events::$asyncVersion
+        org.grails.plugins:async,events:::grails-async
         org.grails.plugins:converters::
-        org.grails.plugins:gsp::$gspVersion
-        org.grails:grails-async,grails-events:gpars,rxjava,rxjava2:$asyncVersion
+        org.grails.plugins:gsp::
+        org.grails:grails-async,grails-events:gpars,rxjava,rxjava2::grails-async
         org.grails:grails-datastore-gorm-hibernate5::
         org.grails:grails-datastore:async,core,gorm,gorm-async,gorm-support,gorm-rx,gorm-test,gorm-validation,web:$datastoreVersion
         org.grails:grails-gdoc-engine::
         org.grails:grails-gradle-plugin::$grailsGradlePluginVersion
         org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::
-        org.grails:grails:grails-web-taglib,gsp,web-gsp:$gspVersion:gsp
+        org.grails:grails:grails-web-taglib,gsp,web-gsp::gsp
         org.grails:views-json-testing-support::
         org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::
@@ -190,7 +192,7 @@ task dependabot {
                     }
                 
                     dependencies {
-                    ${allDependencies.collect { "    compileOnly ${it.groupId}:${it.artifactId}:\${${it.version}}" }.join('\n                    ')}
+                    ${allDependencies.collect { "    compileOnly \"${it.groupId}:${it.artifactId}:\${${it.version}}\"" }.join('\n                    ')}
                     }
                     """.stripIndent(true).trim())
                 println "${dependabot} created."

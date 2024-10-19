@@ -28,25 +28,25 @@ publishing {
                         delegate.dependency {
                             delegate.groupId "org.grails.plugins"
                             delegate.artifactId "async"
-                            delegate.version asyncVersion
+                            delegate.version "${grails-async.version}"
                             delegate.scope "api"
                         }
                         delegate.dependency {
                             delegate.groupId "org.grails.plugins"
                             delegate.artifactId "events"
-                            delegate.version asyncVersion
+                            delegate.version "${grails-async.version}"
                             delegate.scope "api"
                         }
                         delegate.dependency {
                             delegate.groupId "org.grails.plugins"
                             delegate.artifactId "gsp"
-                            delegate.version gspVersion
+                            delegate.version "${gsp.version}"
                             delegate.scope "api"
                         }
                         delegate.dependency {
                             delegate.groupId "com.h2database"
                             delegate.artifactId "h2"
-                            delegate.version( h2Version )
+                            delegate.version( "${h2.version}" )
                             delegate.scope "runtimeOnly"
                         }
 
