@@ -198,7 +198,6 @@ task dependabot {
                     }
                     """.stripIndent(true).trim())
                 println "${dependabotBuildFile} created."
-                break
         }
     }
 }
