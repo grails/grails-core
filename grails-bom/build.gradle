@@ -177,12 +177,14 @@ task dependabot {
         switch (action) {
             case 'props':
             case 'properties':
-                def gradleProperties = new File("${projectDir.parentFile}/gradle.properties")
-                gradleProperties << '\n\n' + """\
+                def gradlePropertiesFile = new File("${projectDir.parentFile}/gradle.properties")
+                String oldProperties = gradlePropertiesFile.text
+                gradlePropertiesFile.write(oldProperties.substring(0, oldProperties.indexOf("# Generated on")) + """\
                     # Generated on ${new Date()} by: ./gradlew :grails-bom:dependabot -Pgenerate=properties
+                    # Only version value modifications allowed after this point. Do not insert or change version names. 
                     ${dependenciesVersions.collect { "$it.version=$it.versionValue" }.join('\n                    ')}
-                    """.stripIndent(true).trim()
-                println "${gradleProperties} appended."
+                    """.stripIndent(true).trim())
+                println "${gradlePropertiesFile} updates."
                 break
             default:
                 def dependabot = new File("${projectDir.parentFile}/dependabot/build.gradle")
