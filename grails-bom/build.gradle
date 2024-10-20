@@ -149,7 +149,7 @@ publishing {
 
                 project.parent.subprojects.findResults {
                     if (it.name == 'grails-bom') return null
-                    [groupId: it.group, artifactId: it.name, version: "\${${it.version}}"] +
+                    [groupId: it.group, artifactId: it.name, version: "${it.version}"] +
                         (it.name == 'grails-dependencies'? [type:'pom'] : [])
                 }.each {
                     appendNodes(deps.appendNode('dependency'), it)
@@ -187,9 +187,9 @@ task dependabot {
                 println "${gradlePropertiesFile} updates."
                 break
             default:
-                def dependabot = new File("${projectDir.parentFile}/dependabot/build.gradle")
-                dependabot.parentFile.mkdirs()
-                dependabot.write("""\
+                def dependabotBuildFile = new File("${projectDir.parentFile}/dependabot/build.gradle")
+                dependabotBuildFile.parentFile.mkdirs()
+                dependabotBuildFile.write("""\
                     // Generated on ${new Date()} by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
                     plugins {
                         id 'java-library'
