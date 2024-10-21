@@ -27,7 +27,7 @@ dependencies {
 
     testImplementation "org.springframework:spring-jdbc"
 
-    testImplementation "org.hamcrest:hamcrest-core:$hamcrestVersion"
+    testImplementation "org.hamcrest:hamcrest-core:1.3"
 
     testRuntimeOnly "com.h2database:h2"
     testRuntimeOnly "com.fasterxml.jackson.core:jackson-databind"

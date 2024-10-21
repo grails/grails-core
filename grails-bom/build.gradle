@@ -52,7 +52,6 @@ ext {
         org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::
         org.grails:grails:gsp,web-gsp,web-taglib::gsp
         org.grails:views-json-testing-support::
-        org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::
         org.mongodb:bson:,record-codec::mongodb
         org.mongodb:mongodb-driver:core,sync::mongodb
