@@ -30,7 +30,6 @@ ext {
         com.github.javaparser:javaparser-core::
         com.h2database:h2::
         commons-codec:commons-codec::
-        commons-io:commons-io::
         io.methvin:directory-watcher::
         jline:jline::
         net.bytebuddy:byte-buddy::

@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 14:15:41 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
+// Generated on Mon Oct 21 14:20:05 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
 plugins {
     id 'java-library'
 }
@@ -10,7 +10,6 @@ dependencies {
     api "com.bertramlabs.plugins:asset-pipeline-grails:${project['asset-pipeline-grails.version']}"
     api "net.bytebuddy:byte-buddy:${project['byte-buddy.version']}"
     api "commons-codec:commons-codec:${project['commons-codec.version']}"
-    api "commons-io:commons-io:${project['commons-io.version']}"
     api "org.apache.commons:commons-text:${project['commons-text.version']}"
     api "org.grails.plugins:converters:${project['converters.version']}"
     api "io.methvin:directory-watcher:${project['directory-watcher.version']}"
