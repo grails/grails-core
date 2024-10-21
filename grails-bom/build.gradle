@@ -65,8 +65,6 @@ ext {
         org.mongodb:bson:,record-codec::mongodb
         org.mongodb:mongodb-driver:core,sync::mongodb
         org.objenesis:objenesis::
-        org.slf4j:jcl-over-slf4j::$slf4jVersion
-        org.slf4j:slf4j:api,simple:$slf4jVersion
         org.spockframework:spock-core,spock-spring:::spock
         org.springframework.boot:spring-boot-cli:::spring-boot
         org.springframework:springloaded::

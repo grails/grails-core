@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 10:34:15 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 10:48:20 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -66,7 +66,6 @@ dependencies {
     api "jakarta.xml.bind:jakarta.xml.bind-api:${project['jakarta.xml.bind-api.version']}"
     api "org.fusesource.jansi:jansi:${project['jansi.version']}"
     api "com.github.javaparser:javaparser-core:${project['javaparser-core.version']}"
-    api "org.slf4j:jcl-over-slf4j:${project['jcl-over-slf4j.version']}"
     api "jline:jline:${project['jline.version']}"
     api "net.java.dev.jna:jna:${project['jna.version']}"
     api "org.jsoup:jsoup:${project['jsoup.version']}"
@@ -97,8 +96,6 @@ dependencies {
     api "org.grails.profiles:vue:${project['profiles-vue.version']}"
     api "org.grails.profiles:web-plugin:${project['profiles-web-plugin.version']}"
     api "org.grails.profiles:web:${project['profiles-web.version']}"
-    api "org.slf4j:slf4j-api:${project['slf4j.version']}"
-    api "org.slf4j:slf4j-simple:${project['slf4j.version']}"
     api "org.yaml:snakeyaml:${project['snakeyaml.version']}"
     api "org.spockframework:spock-core:${project['spock.version']}"
     api "org.spockframework:spock-spring:${project['spock.version']}"
