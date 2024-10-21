@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 11:26:56 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 11:47:14 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -62,9 +62,9 @@ dependencies {
     api "org.grails.plugins:cache:${project['plugins-cache.version']}"
     api "org.grails.plugins:fields:${project['plugins-fields.version']}"
     api "org.grails.plugins:geb:${project['plugins-geb.version']}"
-    api "org.grails.plugins:gorm.hibernate5:${project['plugins-gorm.hibernate5.version']}"
-    api "org.grails.plugins:gorm.mongodb:${project['plugins-gorm.mongodb.version']}"
-    api "org.grails.plugins:gorm.neo4j:${project['plugins-gorm.neo4j.version']}"
+    api "org.grails.plugins:hibernate5:${project['plugins-hibernate5.version']}"
+    api "org.grails.plugins:mongodb:${project['plugins-mongodb.version']}"
+    api "org.grails.plugins:neo4j:${project['plugins-neo4j.version']}"
     api "org.grails.plugins:rxjava2:${project['plugins-rxjava2.version']}"
     api "org.grails.plugins:rxjava:${project['plugins-rxjava.version']}"
     api "org.grails.plugins:scaffolding:${project['plugins-scaffolding.version']}"
