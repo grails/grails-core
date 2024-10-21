@@ -43,9 +43,6 @@ ext {
         org.apache.ant:ant:,junit:
         org.apache.commons:commons-text::
         org.apache.groovy:groovy:bom:$groovyVersion
-        org.apache.tomcat:tomcat-jdbc:::tomcat
-        org.apache.tomcat.embed:tomcat-embed-core:::tomcat
-        org.apache.tomcat.embed:tomcat-embed-logging-juli::
         org.asciidoctor:asciidoctorj::
         org.fusesource.jansi:jansi::
         org.gebish:geb-spock::

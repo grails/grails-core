@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 11:55:48 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 12:04:22 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -92,8 +92,5 @@ dependencies {
     api "com.github.spotbugs:spotbugs-annotations:${project['spotbugs-annotations.version']}"
     api "org.springframework.boot:spring-boot-cli:${project['spring-boot.version']}"
     api "org.springframework:springloaded:${project['springloaded.version']}"
-    api "org.apache.tomcat.embed:tomcat-embed-logging-juli:${project['tomcat-embed-logging-juli.version']}"
-    api "org.apache.tomcat.embed:tomcat-embed-core:${project['tomcat.version']}"
-    api "org.apache.tomcat:tomcat-jdbc:${project['tomcat.version']}"
     api "org.grails:views-json-testing-support:${project['views-json-testing-support.version']}"
 }

@@ -4,7 +4,6 @@ dependencies {
     testImplementation project(":grails-plugin-controllers")
 
     testImplementation "org.apache.tomcat.embed:tomcat-embed-core"
-    testRuntimeOnly "org.apache.tomcat.embed:tomcat-embed-logging-juli"
     testRuntimeOnly project(":grails-plugin-i18n")
     testRuntimeOnly project(":grails-plugin-url-mappings")
 }
