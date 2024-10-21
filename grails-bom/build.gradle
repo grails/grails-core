@@ -58,7 +58,7 @@ ext {
         org.grails:grails-gdoc-engine::
         org.grails:grails-gradle-plugin::
         org.grails:grails-testing-support,grails-gorm-testing-support,grails-web-testing-support::
-        org.grails:grails:grails-web-taglib,gsp,web-gsp::gsp
+        org.grails:grails:gsp,web-gsp,web-taglib::gsp
         org.grails:views-json-testing-support::
         org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::
