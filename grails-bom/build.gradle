@@ -62,8 +62,8 @@ ext {
         org.grails:views-json-testing-support::
         org.hamcrest:hamcrest-core::$hamcrestVersion
         org.jsoup:jsoup::
-        org.mongodb:bson:,record-codec:$mongodbJavaDriverVersion
-        org.mongodb:mongodb-driver:core,sync:$mongodbJavaDriverVersion
+        org.mongodb:bson:,record-codec::mongodb
+        org.mongodb:mongodb-driver:core,sync::mongodb
         org.objenesis:objenesis::
         org.slf4j:jcl-over-slf4j::$slf4jVersion
         org.slf4j:slf4j:api,simple:$slf4jVersion

@@ -1,4 +1,4 @@
-// Gemerated on Sat Oct 19 01:10:02 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 10:34:15 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -9,8 +9,6 @@ dependencies {
     api "org.asciidoctor:asciidoctorj:${project['asciidoctorj.version']}"
     api "org.aspectj:aspectjrt:${project['aspectjrt.version']}"
     api "org.aspectj:aspectjweaver:${project['aspectjrt.version']}"
-    api "org.mongodb:bson:${project['bson.version']}"
-    api "org.mongodb:bson-record-codec:${project['bson.version']}"
     api "net.bytebuddy:byte-buddy:${project['byte-buddy.version']}"
     api "com.github.ben-manes.caffeine:caffeine:${project['caffeine.version']}"
     api "commons-codec:commons-codec:${project['commons-codec.version']}"
@@ -54,9 +52,9 @@ dependencies {
     api "org.apache.groovy:groovy-test:${project['groovy.version']}"
     api "org.apache.groovy:groovy-test-junit5:${project['groovy.version']}"
     api "org.apache.groovy:groovy-xml:${project['groovy.version']}"
-    api "org.grails:grails-grails-web-taglib:${project['gsp.version']}"
     api "org.grails:grails-gsp:${project['gsp.version']}"
     api "org.grails:grails-web-gsp:${project['gsp.version']}"
+    api "org.grails:grails-web-taglib:${project['gsp.version']}"
     api "org.grails.plugins:gsp:${project['gsp.version']}"
     api "com.h2database:h2:${project['h2.version']}"
     api "org.hamcrest:hamcrest-core:${project['hamcrest-core.version']}"
@@ -72,8 +70,10 @@ dependencies {
     api "jline:jline:${project['jline.version']}"
     api "net.java.dev.jna:jna:${project['jna.version']}"
     api "org.jsoup:jsoup:${project['jsoup.version']}"
-    api "org.mongodb:mongodb-driver-core:${project['mongodb-driver.version']}"
-    api "org.mongodb:mongodb-driver-sync:${project['mongodb-driver.version']}"
+    api "org.mongodb:bson:${project['mongodb.version']}"
+    api "org.mongodb:bson-record-codec:${project['mongodb.version']}"
+    api "org.mongodb:mongodb-driver-core:${project['mongodb.version']}"
+    api "org.mongodb:mongodb-driver-sync:${project['mongodb.version']}"
     api "org.objenesis:objenesis:${project['objenesis.version']}"
     api "org.grails.plugins:cache:${project['plugins-cache.version']}"
     api "org.grails.plugins:fields:${project['plugins-fields.version']}"
