@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 11:17:56 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 11:26:56 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -36,19 +36,7 @@ dependencies {
     api "org.grails:grails-gorm-testing-support:${project['grails-testing-support.version']}"
     api "org.grails:grails-testing-support:${project['grails-testing-support.version']}"
     api "org.grails:grails-web-testing-support:${project['grails-testing-support.version']}"
-    api "org.apache.groovy:groovy-ant:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-cli-picocli:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-console:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-dateutil:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-json:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-macro:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-nio:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-sql:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-swing:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-templates:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-test:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-test-junit5:${project['groovy.version']}"
-    api "org.apache.groovy:groovy-xml:${project['groovy.version']}"
+    api "org.apache.groovy:groovy-bom:${project['groovy.version']}"
     api "org.grails:grails-gsp:${project['gsp.version']}"
     api "org.grails:grails-web-gsp:${project['gsp.version']}"
     api "org.grails:grails-web-taglib:${project['gsp.version']}"
