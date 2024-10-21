@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 12:24:10 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 12:32:36 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
 plugins {
     id 'java-library'
 }
