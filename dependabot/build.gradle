@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 11:47:14 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 11:55:48 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -7,12 +7,16 @@ dependencies {
     api "org.apache.ant:ant:${project['ant.version']}"
     api "org.apache.ant:ant-junit:${project['ant.version']}"
     api "org.asciidoctor:asciidoctorj:${project['asciidoctorj.version']}"
+    api "com.bertramlabs.plugins:asset-pipeline:${project['asset-pipeline.version']}"
+    api "com.bertramlabs.plugins:asset-pipeline-grails:${project['asset-pipeline.version']}"
     api "net.bytebuddy:byte-buddy:${project['byte-buddy.version']}"
     api "commons-codec:commons-codec:${project['commons-codec.version']}"
+    api "commons-io:commons-io:${project['commons-io.version']}"
     api "org.apache.commons:commons-text:${project['commons-text.version']}"
     api "org.grails.plugins:converters:${project['converters.version']}"
     api "io.methvin:directory-watcher:${project['directory-watcher.version']}"
     api "org.xhtmlrenderer:flying-saucer-pdf-openpdf:${project['flying-saucer-pdf-openpdf.version']}"
+    api "org.gebish:geb-spock:${project['geb-spock.version']}"
     api "org.grails.plugins:async:${project['grails-async.version']}"
     api "org.grails.plugins:events:${project['grails-async.version']}"
     api "org.grails:grails-async-gpars:${project['grails-async.version']}"
@@ -60,6 +64,7 @@ dependencies {
     api "org.mongodb:mongodb-driver-sync:${project['mongodb.version']}"
     api "org.objenesis:objenesis:${project['objenesis.version']}"
     api "org.grails.plugins:cache:${project['plugins-cache.version']}"
+    api "org.grails.plugins:database-migration:${project['plugins-database-migration.version']}"
     api "org.grails.plugins:fields:${project['plugins-fields.version']}"
     api "org.grails.plugins:geb:${project['plugins-geb.version']}"
     api "org.grails.plugins:hibernate5:${project['plugins-hibernate5.version']}"
