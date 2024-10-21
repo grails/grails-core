@@ -25,7 +25,7 @@ ext {
     // groupId:artifactId-prefixes:artifactId-suffixes:version:versionNameOverride
     // version name = versionNameOverride ?: artifactId-prefixes[0]
     dependenciesOverview = """\
-        com.fasterxml.jackson.core:jackson-databind::
+        com.fasterxml.jackson:jackson-bom:::jackson
         com.github.javaparser:javaparser-core::
         com.h2database:h2::
         commons-codec:commons-codec::
