@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 10:52:07 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
+// Generated on Mon Oct 21 10:54:27 PDT 2024 by: ./gradlew :grails-bom:dependabot -Pgenerate=gradle
 plugins {
     id 'java-library'
 }
@@ -8,7 +8,6 @@ dependencies {
     api "org.apache.ant:ant-junit:${project['ant.version']}"
     api "org.asciidoctor:asciidoctorj:${project['asciidoctorj.version']}"
     api "net.bytebuddy:byte-buddy:${project['byte-buddy.version']}"
-    api "com.github.ben-manes.caffeine:caffeine:${project['caffeine.version']}"
     api "commons-codec:commons-codec:${project['commons-codec.version']}"
     api "org.apache.commons:commons-text:${project['commons-text.version']}"
     api "org.grails.plugins:converters:${project['converters.version']}"
