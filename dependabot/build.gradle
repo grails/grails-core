@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 12:41:56 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
+// Generated on Mon Oct 21 14:15:41 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
 plugins {
     id 'java-library'
 }
@@ -47,11 +47,6 @@ dependencies {
     api "com.h2database:h2:${project['h2.version']}"
     api "org.hamcrest:hamcrest-core:${project['hamcrest-core.version']}"
     api "com.fasterxml.jackson:jackson-bom:${project['jackson.version']}"
-    api "jakarta.annotation:jakarta.annotation-api:${project['jakarta.annotation-api.version']}"
-    api "jakarta.inject:jakarta.inject-api:${project['jakarta.inject-api.version']}"
-    api "jakarta.persistence:jakarta.persistence-api:${project['jakarta.persistence-api.version']}"
-    api "jakarta.servlet:jakarta.servlet-api:${project['jakarta.servlet-api.version']}"
-    api "jakarta.xml.bind:jakarta.xml.bind-api:${project['jakarta.xml.bind-api.version']}"
     api "org.fusesource.jansi:jansi:${project['jansi.version']}"
     api "com.github.javaparser:javaparser-core:${project['javaparser-core.version']}"
     api "jline:jline:${project['jline.version']}"
