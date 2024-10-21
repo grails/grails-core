@@ -1,4 +1,4 @@
-// Generated on Mon Oct 21 12:32:36 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
+// Generated on Mon Oct 21 12:41:56 PDT 2024 by: ./gradlew :grails-bom:dependabotBuild
 plugins {
     id 'java-library'
 }
@@ -85,7 +85,6 @@ dependencies {
     api "org.grails.profiles:vue:${project['profiles-vue.version']}"
     api "org.grails.profiles:web-plugin:${project['profiles-web-plugin.version']}"
     api "org.grails.profiles:web:${project['profiles-web.version']}"
-    api "org.yaml:snakeyaml:${project['snakeyaml.version']}"
     api "org.spockframework:spock-core:${project['spock.version']}"
     api "org.spockframework:spock-spring:${project['spock.version']}"
     api "com.github.spotbugs:spotbugs-annotations:${project['spotbugs-annotations.version']}"

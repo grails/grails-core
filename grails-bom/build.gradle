@@ -67,7 +67,6 @@ ext {
         org.springframework.boot:spring-boot-cli:::spring-boot
         org.springframework:springloaded::
         org.xhtmlrenderer:flying-saucer-pdf-openpdf::
-        org.yaml:snakeyaml::
     """.stripIndent(true).trim().readLines().collect {
         def info = it.toString().split(':', -1)
         def dep = [group: info[0], names: info[1].split(','), modules: info[2].split(','), version: info.length >= 4? info[3] : null]
