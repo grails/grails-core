@@ -165,7 +165,7 @@ task syncProps {
     def gradlePropertiesFile = rootProject.layout.projectDirectory.file('gradle.properties').asFile
     String oldProperties = gradlePropertiesFile.text
     gradlePropertiesFile.write(oldProperties.substring(0, oldProperties.indexOf("# Generated on")) + """\
-                    # Generated on ${new Date()} by: ./gradlew :grails-bom:syncProps
+                    # Generated on ${new Date()} by: ./gradlew :grails-bom:${name}
                     # Only version value modifications allowed after this point. Do not insert or change version names. 
                     ${dependenciesVersions.collect { "$it.version=$it.versionValue" }.join('\n                    ')}
                     """.stripIndent(true).trim())
@@ -176,7 +176,7 @@ task dependabotBuild {
     def dependabotBuildFile = rootProject.layout.projectDirectory.file('dependabot/build.gradle').asFile
     dependabotBuildFile.parentFile.mkdirs()
     dependabotBuildFile.write("""\
-                    // Generated on ${new Date()} by: ./gradlew :grails-bom:dependabotBuild
+                    // Generated on ${new Date()} by: ./gradlew :grails-bom:${name}
                     plugins {
                         id 'java-library'
                     }
