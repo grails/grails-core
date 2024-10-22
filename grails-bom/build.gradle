@@ -109,6 +109,19 @@ dependencies {
 }
 
 publishing {
+
+    if (isBuildSnapshot) {
+        repositories {
+            maven {
+                credentials {
+                    username = findProperty('artifactoryPublishUsername') ?: System.getenv('ARTIFACTORY_USERNAME') ?: ''
+                    password = findProperty('artifactoryPublishPassword') ?: System.getenv('ARTIFACTORY_PASSWORD') ?: ''
+                }
+                url = 'https://repo.grails.org/grails/libs-snapshots-local'
+            }
+        }
+    }
+
     publications {
         maven(MavenPublication) {
             pom.withXml {
