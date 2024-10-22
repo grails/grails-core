@@ -1,4 +1,4 @@
 dependencies {
     api project(":grails-web"), project(":grails-plugin-controllers")
-    testCompileOnly "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testCompileOnly "org.junit.jupiter:junit-jupiter-api"
 }

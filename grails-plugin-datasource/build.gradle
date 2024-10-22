@@ -1,11 +1,11 @@
 dependencies {
-    api "org.springframework:spring-jdbc:$springVersion"
-    api "org.apache.groovy:groovy-sql:$groovyVersion"
-    api "org.springframework:spring-context:$springVersion"
-    api "org.grails:grails-datastore-gorm:$datastoreVersion"
-    api "org.grails:grails-datastore-core:$datastoreVersion"
+    api "org.springframework:spring-jdbc"
+    api "org.apache.groovy:groovy-sql"
+    api "org.springframework:spring-context"
+    api "org.grails:grails-datastore-gorm"
+    api "org.grails:grails-datastore-core"
 
-    compileOnly "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
+    compileOnly "org.apache.tomcat:tomcat-jdbc"
 
     api project(":grails-core")
 }
