@@ -56,7 +56,6 @@ dependencies {
     implementation("org.apache.maven.resolver:maven-resolver-transport-file:$apacheMavenResolverVersion")
     implementation("org.apache.maven.resolver:maven-resolver-transport-http:$apacheMavenResolverVersion") {
         exclude group: "org.slf4j", module:"jcl-over-slf4j"
-        exclude group: "commons-codec", module:"commons-codec"
     }
 
     testImplementation "net.sf.expectit:expectit-core:$expectitCoreVersion"
