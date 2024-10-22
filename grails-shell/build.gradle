@@ -54,9 +54,7 @@ dependencies {
     implementation("org.apache.maven.resolver:maven-resolver-connector-basic:$apacheMavenResolverVersion")
     implementation("org.apache.maven.resolver:maven-resolver-impl:$apacheMavenResolverVersion")
     implementation("org.apache.maven.resolver:maven-resolver-transport-file:$apacheMavenResolverVersion")
-    implementation("org.apache.maven.resolver:maven-resolver-transport-http:$apacheMavenResolverVersion") {
-        exclude group: "org.slf4j", module:"jcl-over-slf4j"
-    }
+    implementation "org.apache.maven.resolver:maven-resolver-transport-http:$apacheMavenResolverVersion"
 
     testImplementation "net.sf.expectit:expectit-core:$expectitCoreVersion"
     testImplementation "com.github.jnr:jnr-posix:3.1.20"
