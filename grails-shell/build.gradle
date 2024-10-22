@@ -36,13 +36,9 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot"
     compileOnly "org.springframework.boot:spring-boot-loader-tools"
     compileOnly "org.springframework:spring-web"
-    api "org.springframework.boot:spring-boot-cli", {
-        exclude group: "org.codehaus.groovy", module: "groovy"
-    }
+    api "org.springframework.boot:spring-boot-cli"
     compileOnly "jakarta.servlet:jakarta.servlet-api"
-    implementation("org.apache.maven:maven-resolver-provider:$apacheMavenVersion") {
-        exclude group: "com.google.guava", module: "guava"
-    }
+    implementation "org.apache.maven:maven-resolver-provider:$apacheMavenVersion"
     compileOnly "net.sf.jopt-simple:jopt-simple:$joptSimpleVersion"
 
     implementation("org.apache.maven:maven-settings-builder:$apacheMavenVersion") {
@@ -62,7 +58,6 @@ dependencies {
         exclude group: "org.slf4j", module:"jcl-over-slf4j"
         exclude group: "commons-codec", module:"commons-codec"
     }
-    implementation "commons-codec:commons-codec"
 
     testImplementation "net.sf.expectit:expectit-core:$expectitCoreVersion"
     testImplementation "com.github.jnr:jnr-posix:3.1.20"
