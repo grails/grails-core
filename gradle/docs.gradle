@@ -20,7 +20,7 @@ dependencies {
     if (compiledByGradleGroovyVersion(project)) {
         documentation "org.codehaus.groovy:groovy-groovydoc:$GroovySystem.version"
     } else {
-        documentation "org.apache.groovy:groovy-groovydoc:$groovyVersion"
+        documentation "org.apache.groovy:groovy-groovydoc"
     }
 }
 
