@@ -2,7 +2,6 @@
 
 plugins {
     id 'java-platform'
-    id 'maven-publish'
 }
 
 javaPlatform {
