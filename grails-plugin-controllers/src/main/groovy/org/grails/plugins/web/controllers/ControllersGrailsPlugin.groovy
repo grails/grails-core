@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.plugins.web.servlet.context.BootStrapClassRunner
+import org.grails.config.http.GrailsFilters
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
@@ -32,7 +33,6 @@ import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean
 import org.springframework.boot.web.servlet.FilterRegistrationBean
-import org.springframework.boot.web.servlet.filter.OrderedFilter
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
@@ -93,19 +93,19 @@ class ControllersGrailsPlugin extends Plugin {
                 forceEncoding = filtersForceEncoding
             }
             urlPatterns = catchAllMapping
-            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 10
+            order = GrailsFilters.CHARACTER_ENCODING_FILTER.order
         }
 
         hiddenHttpMethodFilter(FilterRegistrationBean) {
             filter = bean(HiddenHttpMethodFilter)
             urlPatterns = catchAllMapping
-            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 20
+            order = GrailsFilters.HIDDEN_HTTP_METHOD_FILTER.order
         }
 
         grailsWebRequestFilter(FilterRegistrationBean) {
             filter = bean(GrailsWebRequestFilter)
             urlPatterns = catchAllMapping
-            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
+            order = GrailsFilters.GRAILS_WEB_REQUEST_FILTER.order
             dispatcherTypes = EnumSet.of(
                     DispatcherType.FORWARD,
                     DispatcherType.INCLUDE,
