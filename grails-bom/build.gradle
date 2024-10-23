@@ -153,20 +153,23 @@ publishing {
 }
 
 task syncProps {
-    def gradlePropertiesFile = rootProject.layout.projectDirectory.file('gradle.properties').asFile
-    String oldProperties = gradlePropertiesFile.text
-    gradlePropertiesFile.write(oldProperties.substring(0, oldProperties.indexOf("# Generated on")) + """\
+    doLast {
+        def gradlePropertiesFile = rootProject.layout.projectDirectory.file('gradle.properties').asFile
+        String oldProperties = gradlePropertiesFile.text
+        gradlePropertiesFile.write(oldProperties.substring(0, oldProperties.indexOf("# Generated on")) + """\
                     # Generated on ${new Date()} by: ./gradlew :grails-bom:${name}
                     # Only version value modifications allowed after this point. Do not insert or change version names. 
                     ${dependenciesVersions.collect { "$it.version=$it.versionValue" }.join('\n                    ')}
                     """.stripIndent(true).trim())
-    println "${gradlePropertiesFile} updated."
+        println "${gradlePropertiesFile} updated."
+    }
 }
 
 task dependabotBuild {
-    def dependabotBuildFile = rootProject.layout.projectDirectory.file('dependabot/build.gradle').asFile
-    dependabotBuildFile.parentFile.mkdirs()
-    dependabotBuildFile.write("""\
+    doLast {
+        def dependabotBuildFile = rootProject.layout.projectDirectory.file('dependabot/build.gradle').asFile
+        dependabotBuildFile.parentFile.mkdirs()
+        dependabotBuildFile.write("""\
                     // Generated on ${new Date()} by: ./gradlew :grails-bom:${name}
                     plugins {
                         id 'java-library'
@@ -176,7 +179,8 @@ task dependabotBuild {
                     ${allDependencies.collect { "    api \"${it.groupId}:${it.artifactId}:\${project['${it.version}']}\"" }.join('\n                    ')}
                     }
                     """.stripIndent(true).trim())
-    println "${dependabotBuildFile} created."
+        println "${dependabotBuildFile} created."
+    }
 }
 
 task dependabot {
