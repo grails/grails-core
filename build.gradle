@@ -464,7 +464,9 @@ subprojects { subproject ->
         }
     }
 
-    java.sourceCompatibility = JavaVersion.VERSION_17
+    compileJava {
+        options.release = 17
+    }
 
     if (!isTestSuite) {
         tasks.register('installToHomeDist', Copy) {
