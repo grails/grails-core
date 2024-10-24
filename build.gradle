@@ -172,8 +172,6 @@ subprojects { subproject ->
     version = grailsVersion
     group = "org.grails"
 
-    if (subproject.name == 'grails-bom') return
-
     ext.isTestSuite = subproject.name.startsWith("grails-test-suite")
     ext.isCiBuild = subproject.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
     ext.pomInfo = {
@@ -205,20 +203,24 @@ subprojects { subproject ->
 
     }
 
-    apply plugin: 'java-library'
-    apply plugin: 'groovy'
-    apply plugin: 'eclipse'
-    apply plugin: 'idea'
-    apply plugin: 'project-report'
+    if (subproject.name != 'grails-bom') {
+        apply plugin: 'java-library'
+        apply plugin: 'groovy'
+        apply plugin: 'eclipse'
+        apply plugin: 'idea'
+        apply plugin: 'project-report'
+    }
 
     if (!isTestSuite) {
 
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
 
-        java {
-            withJavadocJar()
-            withSourcesJar()
+        if (subproject.name != 'grails-bom') {
+            java {
+                withJavadocJar()
+                withSourcesJar()
+            }
         }
         publishing {
 
@@ -267,8 +269,9 @@ subprojects { subproject ->
                             }
                         }
                     }
-
-                    from components.java
+                    if (subproject.name != 'grails-bom') {
+                        from components.java
+                    }
                 }
             }
         }
@@ -290,7 +293,7 @@ subprojects { subproject ->
         }
     }
 
-    if (subproject.name == 'grails-dependencies') return
+    if (subproject.name in ['grails-dependencies', 'grails-bom']) return
 
     dependencies {
         implementation platform(project(':grails-bom'))
@@ -461,7 +464,9 @@ subprojects { subproject ->
         }
     }
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    compileJava {
+        options.release = 17
+    }
 
     if (!isTestSuite) {
         tasks.register('installToHomeDist', Copy) {
