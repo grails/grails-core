@@ -1,5 +1,3 @@
-package org.grails.config.http;
-
 /* Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +13,14 @@ package org.grails.config.http;
  * limitations under the License.
  */
 
+package org.grails.config.http;
+
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 
 /**
  * Stores the default order numbers of all Grails filters for use in configuration.
  * These filters are run prior to the Spring Security Filter Chain which is at DEFAULT_FILTER_ORDER
+ * @since 7.0
  */
 public enum GrailsFilters {
 
