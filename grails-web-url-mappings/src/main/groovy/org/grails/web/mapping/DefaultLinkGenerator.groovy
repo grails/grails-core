@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2011-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                         }
                     }
                     List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
-                    controller = tokens[-1]
+                    controller = controllerAttribute?:tokens[-1]
                     if (tokens.size()>1) {
                         for(t in tokens[0..-2]) {
                             final key = "${t}Id".toString()
@@ -291,6 +291,20 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected String getResourceId(resourceAttribute) {
+        try {
+            // Three options for using indent():
+            // 1. Check instanceof GormEntity, but that would require coupling web-common to grails-datastore-gorm
+            // 2. GrailsMetaClassUtils.invokeMethodIfExists(o, "ident", new Object[0]); Slow?
+            // 3. Just assuming resource is a GormEntity or has ident() implemented and catching an exception if it is not.
+            def ident = resourceAttribute.ident()
+            if (ident) {
+                return ident.toString()
+            }
+        } catch (MissingMethodException | IllegalStateException ignored) {
+            // An IllegalStateException occurs if GORM is not initialized.
+            // A MissingMethodException if it is not a GormEntity
+        }
+
         final id = resourceAttribute.id
         if (id) {
             return id.toString()

@@ -2,14 +2,17 @@ package org.grails.web.util
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.spring.BeanBuilder
 import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.support.MockApplicationContext
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.context.ApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -69,10 +72,19 @@ grails.mime.file.extensions=true
     private def bindMockRequest(DefaultGrailsApplication ga) {
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
-        def factory = new MimeTypesFactoryBean(grailsApplication: ga)
 
-        ctx.registerMockBean(MimeType.BEAN_NAME, factory.getObject())
+        final def mainContext = new GenericApplicationContext()
+        mainContext.refresh()
+        ga.setApplicationContext(mainContext)
 
+        def bb = new BeanBuilder()
+        bb.beans {
+            grailsApplication = ga
+            mimeConfiguration(MimeTypesConfiguration, ga, [])
+        }
+        final ApplicationContext context = bb.createApplicationContext()
+        final MimeTypesConfiguration mimeTypesConfiguration = context.getBean(MimeTypesConfiguration)
+        ctx.registerMockBean(MimeType.BEAN_NAME, mimeTypesConfiguration.mimeTypes())
         def servletContext = new MockServletContext()
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), servletContext)

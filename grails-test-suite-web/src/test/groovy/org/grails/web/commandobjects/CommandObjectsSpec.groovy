@@ -316,6 +316,13 @@ class TestController {
         [command: co]
     }
 
+    private seeIssue13486() {
+        // the presence of this local variable could break
+        // the compile-time generated no-arg methodActionWithDate()
+        // see https://github.com/grails/grails-core/issues/13486
+        String co
+    }
+
     def methodActionWithArtist(Artist a) {
         [artist: a]
     }

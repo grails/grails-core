@@ -24,69 +24,17 @@ dependencies {
                 project(':grails-web'),
                 project(':grails-web-databinding'),
                 project(':grails-spring')
-    testImplementation "org.grails.plugins:converters:$legacyConvertersVersion"
 
-    testImplementation "org.grails:grails-datastore-gorm-hibernate5:8.1.0", {
-        exclude group: 'org.grails', module:'grails-datastore-gorm'
-        exclude group: 'org.grails', module:'grails-datastore-core'
-        exclude group: 'org.springframework', module:'spring-core'
-        exclude group: 'org.springframework', module:'spring-context'
-        exclude group: 'org.springframework', module:'spring-web'
-        exclude group: 'org.springframework', module:'spring-beans'
-        exclude group: 'org.springframework', module:'spring-tx'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jul-to-slf4j'
-        exclude group: 'org.slf4j', module:'slf4j-api'
-        exclude group: 'org.slf4j', module:'slf4j-simple'
-        exclude group: 'org.grails', module:'grails-bootstrap'
-        exclude group: 'org.grails', module:'grails-plugin-domain-class'
-        exclude group: 'org.grails', module:'grails-core'
-        exclude group: 'org.grails', module:'grails-web'
-        exclude group: 'org.grails', module:'grails-test'
-        exclude group: 'org.grails', module:'grails-async'
-        exclude group: 'org.grails', module:'grails-spring'
-        exclude group: 'commons-collections', module:'commons-collections'
-        exclude group: 'commons-lang', module:'commons-lang'
-        exclude group: 'javassit', module:'javassist'
-        exclude group: 'java-persistence', module:'persistence-api'
-        exclude group: 'javassist', module: 'javassist'
-    }
+    testImplementation "org.grails.plugins:converters"
+    testImplementation "org.grails:grails-datastore-gorm-hibernate5"
+    testImplementation "org.grails:grails-web-testing-support"
+    testImplementation "org.grails.plugins:gsp"
+    testImplementation "org.grails.plugins:async"
+    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind"
 
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersionForTests", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-rest'
-        exclude module:'grails-plugin-interceptors'
-        exclude module:'grails-test'
-        exclude module:'grails-core'
-        exclude module:'async'
-        exclude module:'gsp'
-    }
-    testImplementation "org.grails.plugins:gsp:$gspVersion", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-controllers'
-        exclude module:'grails-core'
-        exclude module:'grails-plugin-domain-class'
-        exclude module:'grails-web-common'
-        exclude module:'grails-encoder'
-    }
-    testImplementation "org.grails.plugins:async:$asyncVersion", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-controllers'
-        exclude module:'grails-core'
-        exclude module:'grails-plugin-domain-class'
-    }
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersionForTests", {
-        exclude module:'grails-plugin-codecs'
-        exclude module:'grails-plugin-domain-class'
-        exclude module:'grails-test'
-        exclude module:'async'
-    }
-
-    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-
-    testRuntimeOnly "org.springframework:spring-aspects:${springVersion}"
-    testRuntimeOnly "org.aspectj:aspectjrt:$aspectjVersion",
-            "org.aspectj:aspectjweaver:$aspectjVersion"
+    testRuntimeOnly "org.springframework:spring-aspects"
+    testRuntimeOnly "org.aspectj:aspectjrt", "org.aspectj:aspectjweaver"
 
 }
 
@@ -109,20 +57,22 @@ def defaultTestConfig = {
                 "**/*\$*.class"]
 }
 
-def isolatedTests = ["**/ContentFormatControllerTests.class",
-                "**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class",
-                "**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class",
-                "**/GroovyPageAttributesTests.class",
-                "**/BindingExcludeTests.class",
-                "**/NestedXmlBindingTests.class",
-		"**/GSPResponseWriterSpec.class",
-		"**/RespondMethodSpec.class",
-        "**/ContentNegotiationSpec.class",
-        "**/pages/ext/jsp/*.class",
-        "**/WithFormatContentTypeSpec.class",
-        "**/CommandObjectNoDataSpec.class"]
+def isolatedTests = [
+    "**/ContentFormatControllerTests.class",
+    "**/JSONBindingTests.class",
+    "**/AutoParams*MarshallingTests.class",
+    "**/JSONBindingToNullTests.class",
+    "**/ControllerWithXmlConvertersTests.class",
+    "**/GroovyPageAttributesTests.class",
+    "**/BindingExcludeTests.class",
+    "**/NestedXmlBindingTests.class",
+    "**/GSPResponseWriterSpec.class",
+    "**/RespondMethodSpec.class",
+    "**/ContentNegotiationSpec.class",
+    "**/pages/ext/jsp/*.class",
+    "**/WithFormatContentTypeSpec.class",
+    "**/CommandObjectNoDataSpec.class"
+]
 
 task execIsolatedTests(type: Test) {
     configure defaultTestConfig

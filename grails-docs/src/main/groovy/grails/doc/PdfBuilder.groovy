@@ -14,6 +14,7 @@
  */
 package grails.doc
 
+import groovy.transform.CompileStatic
 import org.jsoup.parser.Parser
 
 import javax.xml.parsers.DocumentBuilder
@@ -23,6 +24,7 @@ import org.jsoup.Jsoup
 import org.w3c.dom.Document
 import org.xhtmlrenderer.pdf.ITextRenderer
 
+@CompileStatic
 class PdfBuilder {
 
     private static final String LIVE_DOC_SITE = 'https://grails.org'
@@ -43,7 +45,7 @@ class PdfBuilder {
      * <li>basedir = points to the root directory that contains the generated manual <b>required</b></li>
      * </ul>
      */
-    static void build(Map options) {
+    static void build(Map<String, String> options) {
         File baseDir = new File(options.basedir).canonicalFile
 
         File guideDir = new File(baseDir, "guide")

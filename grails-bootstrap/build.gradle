@@ -1,23 +1,32 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    compileOnly ( "org.apache.groovy:groovy-xml:$groovyVersion" )
-    compileOnly ( "org.apache.groovy:groovy-templates:$groovyVersion" )
-    api "org.yaml:snakeyaml:$snakeyamlVersion"
-    api "io.micronaut:micronaut-inject:$micronautVersion"
-    
-    compileOnly("io.methvin:directory-watcher:$methvinDirectoryWatcherVersion")
-    compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
-    compileOnly("jline:jline:$jlineVersion")
-    compileOnly("net.java.dev.jna:jna:$jnaVersion")
+    implementation platform(project(':grails-bom'))
 
-    // Ant
-    compileOnly "org.apache.groovy:groovy-ant:$groovyVersion"
-    testImplementation ( "org.apache.groovy:groovy-xml:$groovyVersion" )
-    testImplementation ( "org.apache.groovy:groovy-templates:$groovyVersion" )
-    testImplementation("org.fusesource.jansi:jansi:$jansiVersion")
-    testImplementation("jline:jline:$jlineVersion")
+    // compile grails-bootstap with the Groovy version provided by Gradle
+    // to ensure build compatibility with Gradle, currently Groovy 3.0.x
+    // when used by grails-gradle-plugin
+    // see: https://docs.gradle.org/current/userguide/compatibility.html#groovy
+    implementation "org.springframework:spring-context"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
 
+
+    compileOnly "org.codehaus.groovy:groovy:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-templates:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-xml:$GroovySystem.version"
+    compileOnly "org.codehaus.groovy:groovy-ant:$GroovySystem.version"
+
+    compileOnly "io.methvin:directory-watcher"
+    compileOnly "org.fusesource.jansi:jansi"
+    compileOnly "jline:jline"
+    compileOnly "net.java.dev.jna:jna"
+
+    api "org.yaml:snakeyaml"
+
+    testImplementation "org.apache.groovy:groovy-xml"
+    testImplementation "org.apache.groovy:groovy-templates"
+    testImplementation "org.fusesource.jansi:jansi"
+    testImplementation "jline:jline"
 }
 
 processResources {

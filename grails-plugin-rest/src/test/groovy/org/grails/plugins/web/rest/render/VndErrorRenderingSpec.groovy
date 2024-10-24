@@ -23,7 +23,6 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**

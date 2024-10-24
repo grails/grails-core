@@ -29,7 +29,6 @@ import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
 import groovy.lang.Closure;
 import groovy.transform.CompilationUnitAware;
-import org.apache.groovy.ast.tools.AnnotatedNodeUtils;
 import org.apache.groovy.ast.tools.ClassNodeUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -83,10 +82,10 @@ import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
+import org.grails.web.util.WebUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -98,6 +97,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
 import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
@@ -543,7 +543,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     isAllowedArgumentList.addExpression(new PropertyExpression(new VariableExpression("this"), DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY));
                     final Expression isAllowedMethodCall = new StaticMethodCallExpression(ClassHelper.make(AllowedMethodsHelper.class), "isAllowed", isAllowedArgumentList);
                     final BooleanExpression isValidRequestMethod = new BooleanExpression(isAllowedMethodCall);
-                    final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
+                    final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(WebUtils.SC_METHOD_NOT_ALLOWED));
                     final ReturnStatement returnStatement = new ReturnStatement(new ConstantExpression(null));
                     final BlockStatement blockToSendError = new BlockStatement();
                     blockToSendError.addStatement(new ExpressionStatement(sendErrorMethodCall));
@@ -753,9 +753,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final ClassNode controllerNode, final ClassNode commandObjectNode,
             final ASTNode actionNode, final String actionName, final String paramName,
             final SourceUnit source, final GeneratorContext context) {
-        final DeclarationExpression declareCoExpression = new DeclarationExpression(
-                new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
-        wrapper.addStatement(new ExpressionStatement(declareCoExpression));
+        final DeclarationExpression declareCoExpression = declX(localVarX(paramName, commandObjectNode), new EmptyExpression());
+        wrapper.addStatement(stmt(declareCoExpression));
 
         if(commandObjectNode.isInterface() || Modifier.isAbstract(commandObjectNode.getModifiers())) {
             final String warningMessage = "The [" + actionName + "] action in [" +
@@ -843,16 +842,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
             final ClassNode commandObjectNode, final String paramName, SourceUnit source) {
-
-        final ArgumentListExpression initializeCommandObjectArguments = new ArgumentListExpression();
-        initializeCommandObjectArguments.addExpression(new ClassExpression(commandObjectNode));
-        initializeCommandObjectArguments.addExpression(new ConstantExpression(paramName));
-        final MethodCallExpression initializeCommandObjectMethodCall = new MethodCallExpression(new VariableExpression("this"), "initializeCommandObject", initializeCommandObjectArguments);
+        final ArgumentListExpression initializeCommandObjectArguments = args(classX(commandObjectNode), constX(paramName));
+        final MethodCallExpression initializeCommandObjectMethodCall = callThisX("initializeCommandObject", initializeCommandObjectArguments);
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
-        
-        final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
-        
-        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
+        final Expression assignCommandObjectToParameter = assignX(varX(paramName), initializeCommandObjectMethodCall);
+        wrapper.addStatement(stmt(assignCommandObjectToParameter));
     }
 
     /**

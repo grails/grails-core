@@ -24,6 +24,7 @@ import grails.web.servlet.mvc.GrailsParameterMap;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.CompositeViewResolver;
 import org.springframework.context.ApplicationContext;
@@ -66,6 +67,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String GRAILS_SERVLET_PATH = "/grails";
     public static final String EXCEPTION_ATTRIBUTE = "exception";
     public static final String ASYNC_REQUEST_URI_ATTRIBUTE = "jakarta.servlet.async.request_uri";
+
+    public static final int SC_METHOD_NOT_ALLOWED = HttpServletResponse.SC_METHOD_NOT_ALLOWED;
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
