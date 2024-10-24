@@ -16,17 +16,17 @@ jobs:
       groovyVersion: ${{ steps.groovy-version.outputs.value }}
     steps:
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         with:
           distribution: liberica
           java-version: 17
       - name: "🗄️ Cache local Maven repository"
-        uses: actions/cache@v4
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4
         with:
           path: ~/.m2/repository
           key: cache-local-maven-${{ github.sha }}
       - name: "📥 Checkout Grails Core to fetch Gradle Plugin versions it uses"
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: settings.gradle
@@ -43,7 +43,7 @@ jobs:
       - name: "📥 Checkout Groovy 4_0_X (Grails 7 and later)"
         run: git clone --depth 1 https://github.com/apache/groovy.git -b GROOVY_4_0_X --single-branch
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808 # v4
         with:
           develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "📝 Store Groovy version to use when building Grails"
@@ -117,18 +117,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "📥 Checkout project"
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
         with:
           distribution: liberica
           java-version: 17
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@d156388eb19639ec20ade50009f3d199ce1e2808 # v4
         with:
           develocity-access-key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       - name: "🗄️ Restore local Maven repository from cache"
-        uses: actions/cache@v4
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4
         with:
           path: ~/.m2/repository
           key: cache-local-maven-${{ github.sha }}
