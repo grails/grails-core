@@ -464,9 +464,7 @@ subprojects { subproject ->
         }
     }
 
-    compileJava {
-        options.release = 17
-    }
+    compileJava.options.release = 17
 
     if (!isTestSuite) {
         tasks.register('installToHomeDist', Copy) {
