@@ -44,7 +44,9 @@
 
 <!--        <logger name="org.hibernate.SQL" level="DEBUG"/>-->
 <!--        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>-->
-<!--        <logger name="org.springframework.security" level="TRACE"/>-->
+        <!-- On for GRAILS-16217: says whether the login POST arrived, under which session, and
+             what Spring Security did with it - the server half of the same question. -->
+        <logger name="org.springframework.security" level="DEBUG"/>
 
 <!--        <root level="WARN"/>-->
     </springProfile>
