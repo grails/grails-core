@@ -65,7 +65,13 @@ class LoginPage extends NavigationPage {
                 // putting a session id in a public log.
                 "${it.name}#${Integer.toHexString(it.value?.hashCode() ?: 0)}@${it.domain}${it.path}"
             }
-            println "[16217] ${moment}: url=${browser.driver.currentUrl} cookies=${cookies}"
+            // The cookies say the session survived; they cannot say whether the submit was ever
+            // sent. A form still holding what was typed was never replaced, so the POST did not
+            // leave the browser. A form present but empty is a *new* login document, so the POST
+            // did reach the server and something answered with the login page again.
+            def usernameField = $('input', name: 'username')
+            String form = usernameField.empty ? 'gone' : (usernameField.value() ? 'retained' : 'empty')
+            println "[16217] ${moment}: url=${browser.driver.currentUrl} form=${form} cookies=${cookies}"
         }
         catch (Throwable reportFailed) {
             println "[16217] ${moment}: could not be reported (${reportFailed.class.simpleName})"
