@@ -16,25 +16,24 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.grails.datamapping.aot;
+package org.apache.grails.datamapping.aot
 
-import java.io.IOException;
+import groovy.transform.CompileStatic
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
+import org.jspecify.annotations.Nullable
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jspecify.annotations.Nullable;
+import org.springframework.aot.hint.MemberCategory
+import org.springframework.aot.hint.RuntimeHints
+import org.springframework.aot.hint.RuntimeHintsRegistrar
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.io.support.ResourcePatternResolver
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory
+import org.springframework.core.type.classreading.MetadataReaderFactory
+import org.springframework.util.ClassUtils
 
-import org.springframework.aot.hint.MemberCategory;
-import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.aot.hint.RuntimeHintsRegistrar;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.util.ClassUtils;
-
-import org.apache.grails.common.aot.RegistrableTypes;
+import org.apache.grails.common.aot.RegistrableTypes
 
 /**
  * Registers the persistence runtime a datastore reaches through Groovy.
@@ -57,56 +56,57 @@ import org.apache.grails.common.aot.RegistrableTypes;
  *
  * @since 8.0
  */
-public class GormRuntimeHints implements RuntimeHintsRegistrar {
+@CompileStatic
+class GormRuntimeHints implements RuntimeHintsRegistrar {
 
-    private static final Log logger = LogFactory.getLog(GormRuntimeHints.class);
+    private static final Log logger = LogFactory.getLog(GormRuntimeHints)
 
     /**
      * The persistence runtime. Registered by package: naming the types one at a time describes only
      * the operations that have been run so far, and every datastore adds its own.
      */
-    private static final String[] PATTERNS = {
-        ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "org/grails/datastore/mapping/**/*.class",
-        ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "org/grails/datastore/gorm/**/*.class"
-    };
+    private static final String[] PATTERNS = [
+        "${ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX}org/grails/datastore/mapping/**/*.class",
+        "${ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX}org/grails/datastore/gorm/**/*.class"
+    ] as String[]
 
     @Override
-    public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
-        ClassLoader loader = (classLoader != null) ? classLoader : ClassUtils.getDefaultClassLoader();
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(loader);
-        MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver);
-        int registered = 0;
+    void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
+        ClassLoader loader = (classLoader != null) ? classLoader : ClassUtils.getDefaultClassLoader()
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(loader)
+        MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver)
+        int registered = 0
         for (String pattern : PATTERNS) {
-            Resource[] resources;
+            Resource[] resources
             try {
-                resources = resolver.getResources(pattern);
+                resources = resolver.getResources(pattern)
             }
             catch (IOException ex) {
-                logger.warn("Unable to scan for the persistence runtime matching " + pattern, ex);
-                continue;
+                logger.warn("Unable to scan for the persistence runtime matching ${pattern}", ex)
+                continue
             }
             for (Resource resource : resources) {
-                String className;
+                String className
                 try {
                     className = metadataReaderFactory.getMetadataReader(resource)
-                            .getClassMetadata().getClassName();
+                            .getClassMetadata().getClassName()
                 }
-                catch (IOException | RuntimeException ex) {
-                    continue;
+                catch (IOException | RuntimeException ignored) {
+                    continue
                 }
                 if (!RegistrableTypes.loads(className, loader)) {
-                    continue;
+                    continue
                 }
                 hints.reflection().registerTypeIfPresent(loader, className,
                         MemberCategory.INVOKE_DECLARED_METHODS,
                         MemberCategory.INVOKE_PUBLIC_METHODS,
                         MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                         MemberCategory.ACCESS_DECLARED_FIELDS,
-                        MemberCategory.ACCESS_PUBLIC_FIELDS);
-                registered++;
+                        MemberCategory.ACCESS_PUBLIC_FIELDS)
+                registered++
             }
         }
-        logger.debug("Registered " + registered + " persistence runtime types for reflection");
+        logger.debug("Registered ${registered} persistence runtime types for reflection")
     }
 
 }
