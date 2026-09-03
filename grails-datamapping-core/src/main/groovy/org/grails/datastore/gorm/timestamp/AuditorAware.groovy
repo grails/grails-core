@@ -16,9 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.timestamp;
-
-import java.util.Optional;
+package org.grails.datastore.gorm.timestamp
 
 /**
  * Interface for components that are aware of the application's current auditor.
@@ -47,12 +45,12 @@ import java.util.Optional;
  * @author Scott Murphy Heiberg
  * @since 7.1
  */
-public interface AuditorAware<T> {
+interface AuditorAware<T> {
 
     /**
      * Returns the current auditor of the application.
      *
      * @return the current auditor, or {@link Optional#empty()} if no auditor is available
      */
-    Optional<T> getCurrentAuditor();
+    Optional<T> getCurrentAuditor()
 }

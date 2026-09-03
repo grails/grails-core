@@ -16,13 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.timestamp;
+package org.grails.datastore.gorm.timestamp
 
 /**
  * Interface for implementations that create timestamps for GORM dateCreated/lastUpdated fields
  *
  */
-public interface TimestampProvider {
+interface TimestampProvider {
+
     /**
      * Whether a timestamp can be created for the given type
      *
@@ -30,7 +31,7 @@ public interface TimestampProvider {
      *
      * @return True if it can
      */
-    boolean supportsCreating(Class<?> dateTimeClass);
+    boolean supportsCreating(Class<?> dateTimeClass)
 
     /**
      * Creates a timestamp for the given class
@@ -38,5 +39,5 @@ public interface TimestampProvider {
      * @param <T> The type of the timestamp class
      * @return An instance of the timestamp
      */
-    <T> T createTimestamp(Class<T> dateTimeClass);
+    <T> T createTimestamp(Class<T> dateTimeClass)
 }
