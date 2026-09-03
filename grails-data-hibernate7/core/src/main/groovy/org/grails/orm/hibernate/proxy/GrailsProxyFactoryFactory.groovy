@@ -16,14 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.proxy;
+package org.grails.orm.hibernate.proxy
 
-import java.io.Serial;
-
-import org.hibernate.bytecode.spi.BasicProxyFactory;
-import org.hibernate.bytecode.spi.ProxyFactoryFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.proxy.ProxyFactory;
+import groovy.transform.CompileStatic
+import org.hibernate.bytecode.spi.BasicProxyFactory
+import org.hibernate.bytecode.spi.ProxyFactoryFactory
+import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.proxy.ProxyFactory
 
 /**
  * A {@link ProxyFactoryFactory} implementation for Hibernate 7 that provides Groovy-aware proxies.
@@ -31,30 +30,31 @@ import org.hibernate.proxy.ProxyFactory;
  * @author Graeme Rocher
  * @since 7.0
  */
-public class GrailsProxyFactoryFactory implements ProxyFactoryFactory, java.io.Serializable {
+@CompileStatic
+class GrailsProxyFactoryFactory implements ProxyFactoryFactory, Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L
 
-    private final GrailsBytecodeProvider grailsBytecodeProvider;
+    private final GrailsBytecodeProvider grailsBytecodeProvider
 
-    public GrailsProxyFactoryFactory(GrailsBytecodeProvider grailsBytecodeProvider) {
-        this.grailsBytecodeProvider = grailsBytecodeProvider;
+    GrailsProxyFactoryFactory(GrailsBytecodeProvider grailsBytecodeProvider) {
+        this.grailsBytecodeProvider = grailsBytecodeProvider
     }
 
     @Override
-    public ProxyFactory buildProxyFactory(SessionFactoryImplementor sessionFactory) {
+    ProxyFactory buildProxyFactory(SessionFactoryImplementor sessionFactory) {
         return new ByteBuddyGroovyProxyFactory(grailsBytecodeProvider.getProxyHelper(),
-                isLazyToString(sessionFactory));
+                isLazyToString(sessionFactory))
     }
 
     private static boolean isLazyToString(SessionFactoryImplementor sessionFactory) {
-        Object value = sessionFactory.getProperties().get(GroovyProxyInterceptorLogic.PROPERTY_LAZY_TO_STRING);
-        return value != null && Boolean.parseBoolean(value.toString());
+        Object value = sessionFactory.getProperties().get(GroovyProxyInterceptorLogic.PROPERTY_LAZY_TO_STRING)
+        return value != null && Boolean.parseBoolean(value.toString())
     }
 
     @Override
-    public BasicProxyFactory buildBasicProxyFactory(Class superClassOrInterface) {
-        return null;
+    BasicProxyFactory buildBasicProxyFactory(Class superClassOrInterface) {
+        return null
     }
+
 }

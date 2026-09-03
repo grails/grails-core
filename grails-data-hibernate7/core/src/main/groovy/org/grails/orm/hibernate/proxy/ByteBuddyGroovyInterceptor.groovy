@@ -16,13 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.proxy;
+package org.grails.orm.hibernate.proxy
 
-import java.lang.reflect.Method;
+import groovy.transform.CompileStatic
+import org.hibernate.engine.spi.SharedSessionContractImplementor
+import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor
+import org.hibernate.type.CompositeType
 
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor;
-import org.hibernate.type.CompositeType;
+import java.lang.reflect.Method
 
 /**
  * A ByteBuddy interceptor that avoids initializing the proxy for Groovy-specific methods.
@@ -30,16 +31,17 @@ import org.hibernate.type.CompositeType;
  * @author Graeme Rocher
  * @since 7.0
  */
-public class ByteBuddyGroovyInterceptor extends ByteBuddyInterceptor {
+@CompileStatic
+class ByteBuddyGroovyInterceptor extends ByteBuddyInterceptor {
 
-    private static final String GET_ID_METHOD = "getId";
-    private static final String GET_IDENTIFIER_METHOD = "getIdentifier";
+    private static final String GET_ID_METHOD = 'getId'
+    private static final String GET_IDENTIFIER_METHOD = 'getIdentifier'
 
-    protected final Method getIdentifierMethod;
+    protected final Method getIdentifierMethod
 
-    private final boolean lazyToString;
+    private final boolean lazyToString
 
-    public ByteBuddyGroovyInterceptor(
+    ByteBuddyGroovyInterceptor(
             String entityName,
             Class<?> persistentClass,
             Class<?>[] interfaces,
@@ -59,32 +61,33 @@ public class ByteBuddyGroovyInterceptor extends ByteBuddyInterceptor {
                 setIdentifierMethod,
                 componentIdType,
                 session,
-                overridesEquals);
-        this.getIdentifierMethod = getIdentifierMethod;
-        this.lazyToString = lazyToString;
+                overridesEquals)
+        this.getIdentifierMethod = getIdentifierMethod
+        this.lazyToString = lazyToString
     }
 
     @Override
-    public Object intercept(Object proxy, Method method, Object[] args) throws Throwable {
-        String methodName = method.getName();
+    Object intercept(Object proxy, Method method, Object[] args) throws Throwable {
+        String methodName = method.getName()
 
         // Check these BEFORE calling this.invoke() to avoid premature initialization in Hibernate 7
-        if ((getIdentifierMethod != null && methodName.equals(getIdentifierMethod.getName())) ||
-                GET_ID_METHOD.equals(methodName) ||
-                GET_IDENTIFIER_METHOD.equals(methodName)) {
-            return getIdentifier();
+        if ((getIdentifierMethod != null && methodName == getIdentifierMethod.getName()) ||
+                GET_ID_METHOD == methodName ||
+                GET_IDENTIFIER_METHOD == methodName) {
+            return getIdentifier()
         }
 
         GroovyProxyInterceptorLogic.InterceptorState state = new GroovyProxyInterceptorLogic.InterceptorState(
-                getEntityName(), getPersistentClass(), getIdentifier(), lazyToString);
+                getEntityName(), getPersistentClass(), getIdentifier(), lazyToString)
 
         if (isUninitialized()) {
-            Object result = GroovyProxyInterceptorLogic.handleUninitialized(state, methodName, args);
-            if (result != GroovyProxyInterceptorLogic.INVOKE_IMPLEMENTATION) { // NOPMD: sentinel comparison
-                return result;
+            Object result = GroovyProxyInterceptorLogic.handleUninitialized(state, methodName, args)
+            if (!GroovyProxyInterceptorLogic.INVOKE_IMPLEMENTATION.is(result)) { // NOPMD: sentinel comparison
+                return result
             }
         }
 
-        return this.invoke(method, args, proxy);
+        return this.invoke(method, args, proxy)
     }
+
 }
