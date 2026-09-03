@@ -16,20 +16,18 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders;
-
-import groovy.lang.Closure;
+package org.grails.datastore.gorm.finders
 
 /**
  * Implementation of dynamic finders.
  */
-@SuppressWarnings("rawtypes")
-public interface FinderMethod {
+@SuppressWarnings('rawtypes')
+interface FinderMethod {
 
     /**
      * @param pattern A regular expression
      */
-    void setPattern(String pattern);
+    void setPattern(String pattern)
 
     /**
      * Invokes the method
@@ -38,7 +36,7 @@ public interface FinderMethod {
      * @param arguments The arguments
      * @return The return value
      */
-    Object invoke(Class clazz, String methodName, Object[] arguments);
+    Object invoke(Class clazz, String methodName, Object[] arguments)
 
     /**
      * Invokes the method
@@ -48,12 +46,12 @@ public interface FinderMethod {
      * @param arguments The arguments
      * @return The return value
      */
-    Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
+    Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments)
 
     /**
      * Whether the given method name matches this finder
      * @param methodName The method name
      * @return true if it does
      */
-    boolean isMethodMatch(String methodName);
+    boolean isMethodMatch(String methodName)
 }
