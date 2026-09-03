@@ -16,13 +16,9 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gorm;
+package grails.gorm
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import groovy.transform.CompileStatic
 
 /**
  * An interface for result lists that are paged and have a totalCount
@@ -30,140 +26,141 @@ import java.util.ListIterator;
  * @param <E> The element type
  * @since 1.0
  */
-public interface PagedList<E> extends List<E>, Serializable {
+@CompileStatic
+interface PagedList<E> extends List<E>, Serializable {
 
     /**
      * @return The total number of records for this query
      */
-    int getTotalCount();
+    int getTotalCount()
 
     /**
      * @return The underlying result list
      */
-    List<E> getResultList();
+    List<E> getResultList()
 
     /**
      * @return The maximum number of results
      */
-    int getMax();
+    int getMax()
 
     /**
      * @return The offset
      */
-    int getOffset();
+    int getOffset()
 
     @Override
     default int size() {
-        return getResultList().size();
+        return getResultList().size()
     }
 
     @Override
     default boolean isEmpty() {
-        return getResultList().isEmpty();
+        return getResultList().isEmpty()
     }
 
     @Override
     default boolean contains(Object o) {
-        return getResultList().contains(o);
+        return getResultList().contains(o)
     }
 
     @Override
     default Iterator<E> iterator() {
-        return getResultList().iterator();
+        return getResultList().iterator()
     }
 
     @Override
     default Object[] toArray() {
-        return getResultList().toArray();
+        return getResultList().toArray()
     }
 
     @Override
     default <T> T[] toArray(T[] a) {
-        return getResultList().toArray(a);
+        return getResultList().toArray(a)
     }
 
     @Override
     default boolean add(E e) {
-        return getResultList().add(e);
+        return getResultList().add(e)
     }
 
     @Override
     default boolean remove(Object o) {
-        return getResultList().remove(o);
+        return getResultList().remove(o)
     }
 
     @Override
     default boolean containsAll(Collection<?> c) {
-        return getResultList().containsAll(c);
+        return getResultList().containsAll(c)
     }
 
     @Override
     default boolean addAll(Collection<? extends E> c) {
-        return getResultList().addAll(c);
+        return getResultList().addAll(c)
     }
 
     @Override
     default boolean addAll(int index, Collection<? extends E> c) {
-        return getResultList().addAll(index, c);
+        return getResultList().addAll(index, c)
     }
 
     @Override
     default boolean removeAll(Collection<?> c) {
-        return getResultList().removeAll(c);
+        return getResultList().removeAll(c)
     }
 
     @Override
     default boolean retainAll(Collection<?> c) {
-        return getResultList().retainAll(c);
+        return getResultList().retainAll(c)
     }
 
     @Override
     default void clear() {
-        getResultList().clear();
+        getResultList().clear()
     }
 
     @Override
     default E get(int index) {
-        return getResultList().get(index);
+        return getResultList().get(index)
     }
 
     @Override
     default E set(int index, E element) {
-        return getResultList().set(index, element);
+        return getResultList().set(index, element)
     }
 
     @Override
     default void add(int index, E element) {
-        getResultList().add(index, element);
+        getResultList().add(index, element)
     }
 
     @Override
     default E remove(int index) {
-        return getResultList().remove(index);
+        return getResultList().remove(index)
     }
 
     @Override
     default int indexOf(Object o) {
-        return getResultList().indexOf(o);
+        return getResultList().indexOf(o)
     }
 
     @Override
     default int lastIndexOf(Object o) {
-        return getResultList().lastIndexOf(o);
+        return getResultList().lastIndexOf(o)
     }
 
     @Override
     default ListIterator<E> listIterator() {
-        return getResultList().listIterator();
+        return getResultList().listIterator()
     }
 
     @Override
     default ListIterator<E> listIterator(int index) {
-        return getResultList().listIterator(index);
+        return getResultList().listIterator(index)
     }
 
     @Override
     default List<E> subList(int fromIndex, int toIndex) {
-        return getResultList().subList(fromIndex, toIndex);
+        return getResultList().subList(fromIndex, toIndex)
     }
 }
