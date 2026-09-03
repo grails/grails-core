@@ -16,16 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.validation;
+package org.grails.datastore.gorm.validation
 
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
+import org.springframework.validation.Errors
+import org.springframework.validation.Validator
 
 /**
  * Extends the default Spring Validator interface and provides an additional method that specifies whether
  * validation should cascade into associations.
  */
-public interface CascadingValidator extends Validator, grails.gorm.validation.CascadingValidator {
+interface CascadingValidator extends Validator, grails.gorm.validation.CascadingValidator {
 
     /**
      * An extended version of the validate(errors,obj) method that takes an additional argument specifying whether
@@ -39,5 +39,5 @@ public interface CascadingValidator extends Validator, grails.gorm.validation.Ca
      * @see org.springframework.validation.Validator
      * @see org.springframework.validation.Validator#validate(Object, org.springframework.validation.Errors)
      */
-    void validate(Object obj, Errors errors, boolean cascade);
+    void validate(Object obj, Errors errors, boolean cascade)
 }
