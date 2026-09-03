@@ -16,20 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
+package org.grails.orm.hibernate.cfg.domainbinding.hibernate
 
-import java.beans.PropertyDescriptor;
+import groovy.transform.CompileStatic
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
 
-import org.grails.datastore.mapping.model.MappingContext;
-import org.grails.datastore.mapping.model.PersistentEntity;
-import org.grails.datastore.mapping.model.types.mapping.TenantIdWithMapping;
-import org.grails.orm.hibernate.cfg.PropertyConfig;
+import java.beans.PropertyDescriptor
 
-/** Hibernate implementation of {@link org.grails.datastore.mapping.model.types.TenantId} */
-public class HibernateTenantIdProperty extends TenantIdWithMapping<PropertyConfig>
-        implements HibernatePersistentProperty {
+/**
+ * Hibernate simple property whose Java type is an enum (no custom type marshaller). Created by
+ * {@link HibernateMappingFactory#createSimple} when {@code pd.propertyType.isEnum()} is true.
+ */
+@CompileStatic
+class HibernateSimpleEnumProperty extends HibernateSimpleProperty implements HibernateEnumProperty {
 
-    public HibernateTenantIdProperty(PersistentEntity entity, MappingContext context, PropertyDescriptor property) {
-        super(entity, context, property);
+    HibernateSimpleEnumProperty(PersistentEntity entity, MappingContext context, PropertyDescriptor property) {
+        super(entity, context, property)
     }
+
 }

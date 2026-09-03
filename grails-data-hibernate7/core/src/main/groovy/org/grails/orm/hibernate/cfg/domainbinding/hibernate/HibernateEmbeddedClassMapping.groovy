@@ -16,11 +16,30 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
+package org.grails.orm.hibernate.cfg.domainbinding.hibernate
+
+import groovy.transform.CompileStatic
+import org.grails.datastore.mapping.model.IdentityMapping
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
 
 /**
- * Marker interface for Hibernate to-one associations ({@link HibernateManyToOneProperty} and {@link
- * HibernateOneToOneProperty}). Parallel to {@link HibernateToManyProperty}.
+ * A {@link org.grails.datastore.mapping.model.ClassMapping} implementation for embedded entities in
+ * Hibernate
+ *
+ * @author Graeme Rocher
+ * @since 5.0
  */
-public interface HibernateToOneProperty extends HibernateAssociation {}
+@CompileStatic
+class HibernateEmbeddedClassMapping extends HibernateClassMapping {
 
+    HibernateEmbeddedClassMapping(PersistentEntity entity, MappingContext context) {
+        super(entity, context)
+    }
+
+    @Override
+    IdentityMapping<?> getIdentifier() {
+        return null
+    }
+
+}

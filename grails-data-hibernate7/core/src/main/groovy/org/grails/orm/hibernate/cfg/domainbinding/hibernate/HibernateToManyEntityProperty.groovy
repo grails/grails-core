@@ -16,19 +16,27 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
+package org.grails.orm.hibernate.cfg.domainbinding.hibernate
 
-import java.beans.PropertyDescriptor;
+import groovy.transform.CompileStatic
+import org.hibernate.MappingException
+import org.hibernate.mapping.PersistentClass
 
-import org.grails.datastore.mapping.model.MappingContext;
-import org.grails.datastore.mapping.model.PersistentEntity;
-import org.grails.datastore.mapping.model.types.mapping.SimpleWithMapping;
-import org.grails.orm.hibernate.cfg.PropertyConfig;
+/**
+ * Marker interface for Hibernate Collections
+ */
+@CompileStatic
+interface HibernateToManyEntityProperty extends HibernateToManyProperty {
 
-/** Hibernate implementation of {@link org.grails.datastore.mapping.model.types.Simple} */
-public class HibernateSimpleProperty extends SimpleWithMapping<PropertyConfig> implements HibernatePersistentProperty {
+    @Override
+    HibernatePersistentEntity getHibernateAssociatedEntity()
 
-    public HibernateSimpleProperty(PersistentEntity entity, MappingContext context, PropertyDescriptor property) {
-        super(entity, context, property);
+    default PersistentClass getAssociatedClass() {
+        PersistentClass associatedClass = getHibernateAssociatedEntity().persistentClass
+        if (associatedClass == null) {
+            throw new MappingException("Association [${name}] has no associated class")
+        }
+        return associatedClass
     }
+
 }

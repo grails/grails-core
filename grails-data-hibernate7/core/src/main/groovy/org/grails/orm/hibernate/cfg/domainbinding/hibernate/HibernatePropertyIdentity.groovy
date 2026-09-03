@@ -16,24 +16,28 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
+package org.grails.orm.hibernate.cfg.domainbinding.hibernate
 
-import org.hibernate.MappingException;
-import org.hibernate.mapping.PersistentClass;
+import org.grails.orm.hibernate.cfg.NaturalId
 
-/**
- * Marker interface for Hibernate Collections
- */
-public interface HibernateToManyEntityProperty extends HibernateToManyProperty {
+/** A marker interface for single and composite identity configurations in GORM for Hibernate. */
+interface HibernatePropertyIdentity {
 
-    @Override
-    HibernatePersistentEntity getHibernateAssociatedEntity();
+    /**
+     * @return The natural id definition
+     */
+    NaturalId getNatural()
 
-    default PersistentClass getAssociatedClass() {
-        PersistentClass associatedClass = getHibernateAssociatedEntity().getPersistentClass();
-        if (associatedClass == null) {
-            throw new MappingException("Association [" + getName() + "] has no associated class");
-        }
-        return associatedClass;
-    }
+    /**
+     * Sets the natural id definition
+     *
+     * @param natural The natural id definition
+     */
+    void setNatural(NaturalId natural)
+
+    /**
+     * @return The property names that make up the identity
+     */
+    String[] getPropertyNames()
+
 }

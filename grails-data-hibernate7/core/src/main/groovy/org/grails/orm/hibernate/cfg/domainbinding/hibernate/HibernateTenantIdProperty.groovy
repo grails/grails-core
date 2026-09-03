@@ -16,27 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
+package org.grails.orm.hibernate.cfg.domainbinding.hibernate
 
-import org.grails.datastore.mapping.model.IdentityMapping;
-import org.grails.datastore.mapping.model.MappingContext;
-import org.grails.datastore.mapping.model.PersistentEntity;
+import groovy.transform.CompileStatic
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.types.mapping.TenantIdWithMapping
+import org.grails.orm.hibernate.cfg.PropertyConfig
 
-/**
- * A {@link org.grails.datastore.mapping.model.ClassMapping} implementation for embedded entities in
- * Hibernate
- *
- * @author Graeme Rocher
- * @since 5.0
- */
-public class HibernateEmbeddedClassMapping extends HibernateClassMapping {
+import java.beans.PropertyDescriptor
 
-    public HibernateEmbeddedClassMapping(PersistentEntity entity, MappingContext context) {
-        super(entity, context);
+/** Hibernate implementation of {@link org.grails.datastore.mapping.model.types.TenantId} */
+@CompileStatic
+class HibernateTenantIdProperty extends TenantIdWithMapping<PropertyConfig>
+        implements HibernatePersistentProperty {
+
+    HibernateTenantIdProperty(PersistentEntity entity, MappingContext context, PropertyDescriptor property) {
+        super(entity, context, property)
     }
 
-    @Override
-    public IdentityMapping<?> getIdentifier() {
-        return null;
-    }
 }
