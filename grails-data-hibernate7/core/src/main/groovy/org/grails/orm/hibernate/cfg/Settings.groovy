@@ -16,26 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg;
-
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
+package org.grails.orm.hibernate.cfg
 
 /**
- * Allows plugging into to custom naming strategies
+ * Settings for Hibernate
  *
  * @author Graeme Rocher
- * @since 5.0
+ * @since 6.0
  */
-public interface PersistentEntityNamingStrategy {
-
-    String resolveColumnName(String logicalName);
-
-    default String resolveTableName(GrailsHibernatePersistentEntity entity) {
-        return resolveTableName(entity.getJavaClass().getSimpleName());
-    }
-
-    String resolveTableName(String logicalName);
-
-    String resolveForeignKeyForPropertyDomainClass(HibernatePersistentProperty property);
-}
+interface Settings extends org.grails.datastore.mapping.config.Settings {}
