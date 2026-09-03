@@ -16,23 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.collectionType;
+package org.grails.orm.hibernate.cfg.domainbinding.collectionType
 
-import java.util.Collection;
+import groovy.transform.CompileStatic
+import org.hibernate.boot.spi.MetadataBuildingContext
+import org.hibernate.mapping.Collection
+import org.hibernate.mapping.PersistentClass
 
-import org.hibernate.boot.spi.MetadataBuildingContext;
-import org.hibernate.mapping.PersistentClass;
+@CompileStatic
+class SetCollectionType extends CollectionType {
 
-/** The bag collection type class. */
-public class BagCollectionType extends CollectionType {
-
-    /** Creates a new {@link BagCollectionType} instance. */
-    public BagCollectionType(MetadataBuildingContext buildingContext) {
-        super(Collection.class, buildingContext);
+    SetCollectionType(MetadataBuildingContext buildingContext) {
+        super(Set, buildingContext)
     }
 
     @Override
-    public org.hibernate.mapping.Collection createCollection(PersistentClass owner) {
-        return new org.hibernate.mapping.Bag(buildingContext, owner);
+    Collection createCollection(PersistentClass owner) {
+        return new org.hibernate.mapping.Set(buildingContext, owner)
     }
+
 }
