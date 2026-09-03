@@ -16,8 +16,9 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.grails.datastore.gorm.schemaless
 
-package org.grails.datastore.gorm.schemaless;
+import groovy.transform.CompileStatic
 
 /**
  * Helper class for use in other traits
@@ -25,9 +26,10 @@ package org.grails.datastore.gorm.schemaless;
  * @author Graeme Rocher
  * @since 6.0
  */
-public class DynamicAttributeHelper {
+@CompileStatic
+class DynamicAttributeHelper {
 
-    public static void setAttribute(DynamicAttributes dynamicAttributes, String name, Object value) {
-        dynamicAttributes.putAt(name, value);
+    static void setAttribute(DynamicAttributes dynamicAttributes, String name, Object value) {
+        dynamicAttributes.putAt(name, value)
     }
 }
