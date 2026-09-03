@@ -16,10 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders;
+package org.grails.datastore.gorm.finders
 
-import org.grails.datastore.mapping.core.Session;
-import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.query.Query
 
 /**
  * Implemented by finders that build queries.
@@ -27,7 +27,7 @@ import org.grails.datastore.mapping.query.Query;
  * @author Graeme Rocher
  * @since 1.0
  */
-public interface QueryBuildingFinder {
+interface QueryBuildingFinder {
 
     /**
      * Build a query from an invocation
@@ -35,5 +35,5 @@ public interface QueryBuildingFinder {
      * @param session an active session
      * @return The query
      */
-    Query buildQuery(DynamicFinderInvocation invocation, Session session);
+    Query buildQuery(DynamicFinderInvocation invocation, Session session)
 }
