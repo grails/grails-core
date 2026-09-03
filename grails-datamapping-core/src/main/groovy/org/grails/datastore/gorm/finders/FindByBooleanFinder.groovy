@@ -16,36 +16,37 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders;
+package org.grails.datastore.gorm.finders
 
-import org.grails.datastore.gorm.DatastoreResolver;
-import org.grails.datastore.mapping.core.Datastore;
-import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.gorm.DatastoreResolver
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.model.MappingContext
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-public class FindByBooleanFinder extends FindByFinder {
-    public static final String METHOD_PATTERN = "(find)((\\w+)(By)([A-Z]\\w*)|(\\w+))";
+class FindByBooleanFinder extends FindByFinder {
 
-    public FindByBooleanFinder(Datastore datastore) {
-        super(datastore);
-        setPattern(METHOD_PATTERN);
+    public static final String METHOD_PATTERN = '(find)((\\w+)(By)([A-Z]\\w*)|(\\w+))'
+
+    FindByBooleanFinder(Datastore datastore) {
+        super(datastore)
+        setPattern(METHOD_PATTERN)
     }
 
-    public FindByBooleanFinder(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
-        super(datastoreResolver, mappingContext);
-        setPattern(METHOD_PATTERN);
+    FindByBooleanFinder(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
+        super(datastoreResolver, mappingContext)
+        setPattern(METHOD_PATTERN)
     }
 
-    public FindByBooleanFinder(MappingContext mappingContext) {
-        super(mappingContext);
-        setPattern(METHOD_PATTERN);
+    FindByBooleanFinder(MappingContext mappingContext) {
+        super(mappingContext)
+        setPattern(METHOD_PATTERN)
     }
 
     @Override
-    public boolean firstExpressionIsRequiredBoolean() {
-        return true;
+    boolean firstExpressionIsRequiredBoolean() {
+        return true
     }
 }

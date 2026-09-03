@@ -16,30 +16,30 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders;
+package org.grails.datastore.gorm.finders
 
-import java.util.regex.Pattern;
+import java.util.regex.Pattern
 
-import org.grails.datastore.gorm.DatastoreResolver;
-import org.grails.datastore.mapping.core.Datastore;
-import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.gorm.DatastoreResolver
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.model.MappingContext
 
 /**
  * Finder used to return a single result
  */
-public class FindByFinder extends AbstractFindByFinder {
+class FindByFinder extends AbstractFindByFinder {
 
-    private static final String METHOD_PATTERN = "(findBy)([A-Z]\\w*)";
+    private static final String METHOD_PATTERN = '(findBy)([A-Z]\\w*)'
 
-    public FindByFinder(final Datastore datastore) {
-        super(Pattern.compile(METHOD_PATTERN), datastore);
+    FindByFinder(final Datastore datastore) {
+        super(Pattern.compile(METHOD_PATTERN), datastore)
     }
 
-    public FindByFinder(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
-        super(Pattern.compile(METHOD_PATTERN), OPERATORS, datastoreResolver, mappingContext);
+    FindByFinder(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
+        super(Pattern.compile(METHOD_PATTERN), OPERATORS, datastoreResolver, mappingContext)
     }
 
-    public FindByFinder(MappingContext mappingContext) {
-        super(Pattern.compile(METHOD_PATTERN), mappingContext);
+    FindByFinder(MappingContext mappingContext) {
+        super(Pattern.compile(METHOD_PATTERN), mappingContext)
     }
 }
