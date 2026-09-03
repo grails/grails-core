@@ -16,23 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gorm.annotation;
+package grails.gorm.annotation
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+import java.lang.annotation.ElementType
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 
 /**
- * A class annotation used to make a class into a GORM domain class.
+ * A property annotation used to apply auto-timestamping on a field
+ * upon gorm insert events. This is an alias for @AutoTimestamp(EventType.CREATED).
  *
- * @author Graeme Rocher
- * @since 6.1
+ * @author Scott Murphy Heiberg
+ * @since 7.1
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-@GroovyASTTransformationClass("org.grails.compiler.gorm.JpaGormEntityTransformation")
-public @interface JpaEntity {
+@Target([ElementType.FIELD])
+@interface CreatedDate {
+
 }

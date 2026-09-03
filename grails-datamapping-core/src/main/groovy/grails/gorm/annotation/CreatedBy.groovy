@@ -16,29 +16,29 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gorm.annotation;
+package grails.gorm.annotation
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.ElementType
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 
 /**
  * A property annotation used to automatically populate a field with the current auditor
- * upon GORM insert and update events. The current auditor is retrieved from an
- * {@link org.grails.datastore.gorm.timestamp.AuditorAware} bean registered in the Spring application context.
+ * upon GORM insert events. The current auditor is retrieved from an {@link org.grails.datastore.gorm.timestamp.AuditorAware}
+ * bean registered in the Spring application context.
  *
  * <p>Example usage:</p>
  * <pre>{@code
  * class Book {
- *     @LastModifiedBy
- *     String lastModifiedBy
+ *     @CreatedBy
+ *     String createdBy
  *
- *     @LastModifiedBy
- *     User lastModifier
+ *     @CreatedBy
+ *     User creator
  *
- *     @LastModifiedBy
- *     Long lastModifierId
+ *     @CreatedBy
+ *     Long creatorId
  * }
  * }</pre>
  *
@@ -48,9 +48,10 @@ import java.lang.annotation.Target;
  * @author Scott Murphy Heiberg
  * @since 7.1
  * @see org.grails.datastore.gorm.timestamp.AuditorAware
- * @see CreatedBy
+ * @see LastModifiedBy
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface LastModifiedBy {
+@Target([ElementType.FIELD])
+@interface CreatedBy {
+
 }
