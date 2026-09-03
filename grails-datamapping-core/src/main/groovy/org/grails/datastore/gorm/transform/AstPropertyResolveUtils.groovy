@@ -16,29 +16,25 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.grails.datastore.gorm.transform
 
-package org.grails.datastore.gorm.transform;
+import groovy.transform.CompileStatic
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.FieldNode
+import org.codehaus.groovy.ast.MethodNode
+import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.PropertyNode
+import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.MapEntryExpression
+import org.codehaus.groovy.ast.expr.MapExpression
 
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-
-import org.grails.datastore.mapping.model.config.GormProperties;
-import org.grails.datastore.mapping.reflect.AstUtils;
-import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
-import org.grails.datastore.mapping.reflect.NameUtils;
+import org.grails.datastore.mapping.model.config.GormProperties
+import org.grails.datastore.mapping.reflect.AstUtils
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
+import org.grails.datastore.mapping.reflect.NameUtils
 
 /**
  * Utilities for resolving property names from domain classes etc.
@@ -46,7 +42,8 @@ import org.grails.datastore.mapping.reflect.NameUtils;
  * @author Graeme Rocher
  * @since 6.1
  */
-public class AstPropertyResolveUtils {
+@CompileStatic
+class AstPropertyResolveUtils {
 
     /**
      * Key under which the resolved property map is stashed as {@code ClassNode} metadata via
@@ -145,7 +142,7 @@ public class AstPropertyResolveUtils {
      * as-yet-uncached node; the second to acquire the monitor discards its own (equivalent) result
      * and returns whatever the first published, so only one map is ever visible to callers.
      */
-    private static final String PROPERTIES_CACHE_KEY = AstPropertyResolveUtils.class.getName() + ".properties";
+    private static final String PROPERTIES_CACHE_KEY = AstPropertyResolveUtils.name + '.properties'
 
     /**
      * Resolves the type of of the given property
@@ -154,30 +151,32 @@ public class AstPropertyResolveUtils {
      * @param propertyName The property
      * @return The type
      */
-    public static ClassNode getPropertyType(ClassNode classNode, String propertyName) {
+    static ClassNode getPropertyType(ClassNode classNode, String propertyName) {
         if (propertyName == null || propertyName.length() == 0) {
-            return null;
+            return null
         }
-        Map<String, ClassNode> cachedProperties = getPropertiesFromCache(classNode);
+        Map<String, ClassNode> cachedProperties = getPropertiesFromCache(classNode)
         if (cachedProperties.containsKey(propertyName)) {
-            return cachedProperties.get(propertyName);
+            return cachedProperties.get(propertyName)
         }
-        ClassNode type = null;
-        PropertyNode property = classNode.getProperty(propertyName);
+        ClassNode type = null
+        PropertyNode property = classNode.getProperty(propertyName)
         if (property != null) {
-            type = property.getType();
-        } else {
-            MethodNode methodNode = classNode.getMethod(NameUtils.getGetterName(propertyName), new Parameter[0]);
+            type = property.getType()
+        }
+        else {
+            MethodNode methodNode = classNode.getMethod(NameUtils.getGetterName(propertyName), new Parameter[0])
             if (methodNode != null) {
-                type = methodNode.getReturnType();
-            } else {
-                FieldNode fieldNode = classNode.getDeclaredField(propertyName);
+                type = methodNode.getReturnType()
+            }
+            else {
+                FieldNode fieldNode = classNode.getDeclaredField(propertyName)
                 if (fieldNode != null) {
-                    type = fieldNode.getType();
+                    type = fieldNode.getType()
                 }
             }
         }
-        return type;
+        return type
     }
 
     /**
@@ -186,97 +185,103 @@ public class AstPropertyResolveUtils {
      * @param classNode The class node
      * @return The property names
      */
-    public static List<String> getPropertyNames(ClassNode classNode) {
-        Map<String, ClassNode> cachedProperties = getPropertiesFromCache(classNode);
-        return new ArrayList<>(cachedProperties.keySet());
+    static List<String> getPropertyNames(ClassNode classNode) {
+        Map<String, ClassNode> cachedProperties = getPropertiesFromCache(classNode)
+        return new ArrayList<>(cachedProperties.keySet())
     }
 
     private static Map<String, ClassNode> getPropertiesFromCache(ClassNode classNode) {
-        ClassNode cacheHolder = classNode.redirect();
+        ClassNode cacheHolder = classNode.redirect()
         if (!cacheHolder.isPrimaryClassNode()) {
-            return computeProperties(cacheHolder);
+            return computeProperties(cacheHolder)
         }
         synchronized (cacheHolder) {
-            Map<String, ClassNode> cached = cacheHolder.getNodeMetaData(PROPERTIES_CACHE_KEY);
+            Map<String, ClassNode> cached = (Map<String, ClassNode>) cacheHolder.getNodeMetaData(PROPERTIES_CACHE_KEY)
             if (cached != null) {
-                return cached;
+                return cached
             }
         }
-        Map<String, ClassNode> computed = computeProperties(cacheHolder);
+        Map<String, ClassNode> computed = computeProperties(cacheHolder)
         synchronized (cacheHolder) {
-            Map<String, ClassNode> cached = cacheHolder.getNodeMetaData(PROPERTIES_CACHE_KEY);
+            Map<String, ClassNode> cached = (Map<String, ClassNode>) cacheHolder.getNodeMetaData(PROPERTIES_CACHE_KEY)
             if (cached != null) {
-                return cached;
+                return cached
             }
-            cacheHolder.putNodeMetaData(PROPERTIES_CACHE_KEY, computed);
-            return computed;
+            cacheHolder.putNodeMetaData(PROPERTIES_CACHE_KEY, computed)
+            return computed
         }
     }
 
     private static Map<String, ClassNode> computeProperties(ClassNode classNode) {
-        Map<String, ClassNode> newProperties = new HashMap<>();
-        boolean isDomainClass = AstUtils.isDomainClass(classNode);
+        Map<String, ClassNode> newProperties = new HashMap<>()
+        boolean isDomainClass = AstUtils.isDomainClass(classNode)
         if (isDomainClass) {
-            newProperties.put(GormProperties.IDENTITY, ClassHelper.make(Long.class).getPlainNodeReference());
-            newProperties.put(GormProperties.VERSION, ClassHelper.make(Long.class).getPlainNodeReference());
+            newProperties.put(GormProperties.IDENTITY, ClassHelper.make(Long).getPlainNodeReference())
+            newProperties.put(GormProperties.VERSION, ClassHelper.make(Long).getPlainNodeReference())
         }
-        ClassNode currentNode = classNode;
-        while (currentNode != null && !currentNode.equals(ClassHelper.OBJECT_TYPE)) {
-            populatePropertiesForClassNode(currentNode, newProperties, isDomainClass, !isDomainClass);
-            currentNode = currentNode.getSuperClass();
+        ClassNode currentNode = classNode
+        while (currentNode != null && currentNode != ClassHelper.OBJECT_TYPE) {
+            populatePropertiesForClassNode(currentNode, newProperties, isDomainClass, !isDomainClass)
+            currentNode = currentNode.getSuperClass()
         }
-        return newProperties;
+        return newProperties
     }
 
     private static void populatePropertiesForClassNode(ClassNode classNode, Map<String, ClassNode> cachedProperties, boolean isDomainClass, boolean allowAbstract) {
-        List<MethodNode> methods = classNode.getMethods();
+        List<MethodNode> methods = classNode.getMethods()
         for (MethodNode method : methods) {
-            String methodName = method.getName();
+            String methodName = method.getName()
             if (AstUtils.isGetter(method)) {
-                if (!allowAbstract && method.isAbstract()) continue;
-                String propertyName = NameUtils.getPropertyNameForGetterOrSetter(methodName);
-                if (GormProperties.META_CLASS.equals(propertyName)) continue;
-                if (isDomainClass && (GormProperties.HAS_MANY.equals(propertyName) || GormProperties.BELONGS_TO.equals(propertyName) || GormProperties.HAS_ONE.equals(propertyName))) {
-                    FieldNode field = classNode.getField(propertyName);
+                if (!allowAbstract && method.isAbstract()) {
+                    continue
+                }
+                String propertyName = NameUtils.getPropertyNameForGetterOrSetter(methodName)
+                if (GormProperties.META_CLASS == propertyName) {
+                    continue
+                }
+                if (isDomainClass && (GormProperties.HAS_MANY == propertyName || GormProperties.BELONGS_TO == propertyName || GormProperties.HAS_ONE == propertyName)) {
+                    FieldNode field = classNode.getField(propertyName)
                     if (field != null) {
-                        populatePropertiesForInitialExpression(cachedProperties, field.getInitialExpression());
+                        populatePropertiesForInitialExpression(cachedProperties, field.getInitialExpression())
                     }
-                } else if (!method.isStatic()) {
-                    cachedProperties.put(propertyName, method.getReturnType());
+                }
+                else if (!method.isStatic()) {
+                    cachedProperties.put(propertyName, method.getReturnType())
                 }
             }
         }
-        List<PropertyNode> properties = classNode.getProperties();
+        List<PropertyNode> properties = classNode.getProperties()
         for (PropertyNode property : properties) {
-
-            String propertyName = property.getName();
-            if (propertyName.equals(GormProperties.META_CLASS)) continue;
-            if (isDomainClass && (GormProperties.HAS_MANY.equals(propertyName) || GormProperties.BELONGS_TO.equals(propertyName) || GormProperties.HAS_ONE.equals(propertyName))) {
-                Expression initialExpression = property.getInitialExpression();
-                populatePropertiesForInitialExpression(cachedProperties, initialExpression);
-            } else {
-                cachedProperties.put(propertyName, property.getType());
+            String propertyName = property.getName()
+            if (propertyName == GormProperties.META_CLASS) {
+                continue
+            }
+            if (isDomainClass && (GormProperties.HAS_MANY == propertyName || GormProperties.BELONGS_TO == propertyName || GormProperties.HAS_ONE == propertyName)) {
+                Expression initialExpression = property.getInitialExpression()
+                populatePropertiesForInitialExpression(cachedProperties, initialExpression)
+            }
+            else {
+                cachedProperties.put(propertyName, property.getType())
             }
         }
 
         if (isDomainClass && classNode.isResolved()) {
-            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(classNode.getTypeClass());
-            cachePropertiesForAssociationMetadata(cachedProperties, propertyFetcher, GormProperties.HAS_MANY);
-            cachePropertiesForAssociationMetadata(cachedProperties, propertyFetcher, GormProperties.BELONGS_TO);
-            cachePropertiesForAssociationMetadata(cachedProperties, propertyFetcher, GormProperties.HAS_ONE);
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(classNode.getTypeClass())
+            cachePropertiesForAssociationMetadata(cachedProperties, propertyFetcher, GormProperties.HAS_MANY)
+            cachePropertiesForAssociationMetadata(cachedProperties, propertyFetcher, GormProperties.BELONGS_TO)
+            cachePropertiesForAssociationMetadata(cachedProperties, propertyFetcher, GormProperties.HAS_ONE)
         }
-
     }
 
     private static void cachePropertiesForAssociationMetadata(Map<String, ClassNode> cachedProperties, ClassPropertyFetcher propertyFetcher, String associationMetadataName) {
         if (propertyFetcher.isReadableProperty(associationMetadataName)) {
-            Object propertyValue = propertyFetcher.getPropertyValue(associationMetadataName);
+            Object propertyValue = propertyFetcher.getPropertyValue(associationMetadataName)
             if (propertyValue instanceof Map) {
-                Map hasManyMap = (Map) propertyValue;
+                Map hasManyMap = (Map) propertyValue
                 for (Object propertyName : hasManyMap.keySet()) {
-                    Object val = hasManyMap.get(propertyName);
+                    Object val = hasManyMap.get(propertyName)
                     if (val instanceof Class) {
-                        cachedProperties.put(propertyName.toString(), ClassHelper.make((Class) val).getPlainNodeReference());
+                        cachedProperties.put(propertyName.toString(), ClassHelper.make((Class) val).getPlainNodeReference())
                     }
                 }
             }
@@ -285,13 +290,13 @@ public class AstPropertyResolveUtils {
 
     private static void populatePropertiesForInitialExpression(Map<String, ClassNode> cachedProperties, Expression initialExpression) {
         if (initialExpression instanceof MapExpression) {
-            MapExpression me = (MapExpression) initialExpression;
-            List<MapEntryExpression> mapEntryExpressions = me.getMapEntryExpressions();
+            MapExpression me = (MapExpression) initialExpression
+            List<MapEntryExpression> mapEntryExpressions = me.getMapEntryExpressions()
             for (MapEntryExpression mapEntryExpression : mapEntryExpressions) {
-                Expression keyExpression = mapEntryExpression.getKeyExpression();
-                Expression valueExpression = mapEntryExpression.getValueExpression();
+                Expression keyExpression = mapEntryExpression.getKeyExpression()
+                Expression valueExpression = mapEntryExpression.getValueExpression()
                 if (valueExpression instanceof ClassExpression) {
-                    cachedProperties.put(keyExpression.getText(), valueExpression.getType());
+                    cachedProperties.put(keyExpression.getText(), valueExpression.getType())
                 }
             }
         }
