@@ -16,48 +16,50 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.jdbc;
+package org.grails.datastore.gorm.jdbc
 
-import org.springframework.beans.PropertyValue;
+import groovy.transform.CompileStatic
+import org.springframework.beans.PropertyValue
 
 /**
  * A {@link PropertyValue} that can provide information about its origin.
  *
  * @author Andy Wilkinson
  */
+@CompileStatic
 class OriginCapablePropertyValue extends PropertyValue {
 
-    private static final String ATTRIBUTE_PROPERTY_ORIGIN = "propertyOrigin";
+    private static final String ATTRIBUTE_PROPERTY_ORIGIN = 'propertyOrigin'
 
-    private final PropertyOrigin origin;
+    private final PropertyOrigin origin
 
     private OriginCapablePropertyValue(PropertyValue propertyValue) {
         this(propertyValue.getName(), propertyValue.getValue(),
-                (PropertyOrigin) propertyValue.getAttribute(ATTRIBUTE_PROPERTY_ORIGIN));
+                (PropertyOrigin) propertyValue.getAttribute(ATTRIBUTE_PROPERTY_ORIGIN))
     }
 
     OriginCapablePropertyValue(String name, Object value, PropertyOrigin origin) {
-        super(name, value);
-        this.origin = origin;
-        setAttribute(ATTRIBUTE_PROPERTY_ORIGIN, origin);
+        super(name, value)
+        this.origin = origin
+        setAttribute(ATTRIBUTE_PROPERTY_ORIGIN, origin)
     }
 
     private PropertyOrigin getOrigin() {
-        return this.origin;
+        return this.origin
     }
 
     @Override
-    public String toString() {
-        String name = this.origin != null ? this.origin.getName() : this.getName();
-        String source = this.origin.getSource() != null ? this.origin.getSource().getName() : "unknown";
-        return "'" + name + "' from '" + source + "'";
+    String toString() {
+        String name = this.origin != null ? this.origin.getName() : this.getName()
+        String source = this.origin.getSource() != null ? this.origin.getSource().getName() : 'unknown'
+        return "'${name}' from '${source}'"
     }
 
     static PropertyOrigin getOrigin(PropertyValue propertyValue) {
         if (propertyValue instanceof OriginCapablePropertyValue) {
-            return ((OriginCapablePropertyValue) propertyValue).getOrigin();
+            return ((OriginCapablePropertyValue) propertyValue).getOrigin()
         }
-        return new OriginCapablePropertyValue(propertyValue).getOrigin();
+        return new OriginCapablePropertyValue(propertyValue).getOrigin()
     }
 
 }

@@ -16,10 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.grails.datastore.gorm.jdbc
 
-package org.grails.datastore.gorm.jdbc;
-
-import org.springframework.core.env.PropertySource;
+import groovy.transform.CompileStatic
+import org.springframework.core.env.PropertySource
 
 /**
  * The origin of a property, specifically its source and its name before any prefix was
@@ -28,23 +28,24 @@ import org.springframework.core.env.PropertySource;
  * @author Andy Wilkinson
  * @since 1.3.0
  */
+@CompileStatic
 class PropertyOrigin {
 
-    private final PropertySource<?> source;
+    private final PropertySource<?> source
 
-    private final String name;
+    private final String name
 
     PropertyOrigin(PropertySource<?> source, String name) {
-        this.name = name;
-        this.source = source;
+        this.name = name
+        this.source = source
     }
 
-    public PropertySource<?> getSource() {
-        return this.source;
+    PropertySource<?> getSource() {
+        return this.source
     }
 
-    public String getName() {
-        return this.name;
+    String getName() {
+        return this.name
     }
 
 }
