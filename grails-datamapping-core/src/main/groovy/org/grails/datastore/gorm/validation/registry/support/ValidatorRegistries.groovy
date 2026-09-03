@@ -16,18 +16,18 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package org.grails.datastore.gorm.validation.registry.support
 
-package org.grails.datastore.gorm.validation.registry.support;
+import groovy.transform.CompileStatic
+import org.springframework.context.MessageSource
+import org.springframework.context.support.StaticMessageSource
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.StaticMessageSource;
-
-import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
-import org.grails.datastore.gorm.validation.jakarta.JakartaValidatorRegistry;
-import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings;
-import org.grails.datastore.mapping.model.MappingContext;
-import org.grails.datastore.mapping.reflect.ClassUtils;
-import org.grails.datastore.mapping.validation.ValidatorRegistry;
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
+import org.grails.datastore.gorm.validation.jakarta.JakartaValidatorRegistry
+import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.reflect.ClassUtils
+import org.grails.datastore.mapping.validation.ValidatorRegistry
 
 /**
  * Utility methods for creating Validator registries
@@ -35,7 +35,8 @@ import org.grails.datastore.mapping.validation.ValidatorRegistry;
  * @author Graeme Rocher
  * @since 6.1
  */
-public class ValidatorRegistries {
+@CompileStatic
+class ValidatorRegistries {
 
     private ValidatorRegistries() {
     }
@@ -47,8 +48,8 @@ public class ValidatorRegistries {
      * @param settings The settings
      * @return The registry
      */
-    public static ValidatorRegistry createValidatorRegistry(MappingContext mappingContext, ConnectionSourceSettings settings) {
-        return createValidatorRegistry(mappingContext, settings, new StaticMessageSource());
+    static ValidatorRegistry createValidatorRegistry(MappingContext mappingContext, ConnectionSourceSettings settings) {
+        return createValidatorRegistry(mappingContext, settings, new StaticMessageSource())
     }
 
     /**
@@ -59,21 +60,22 @@ public class ValidatorRegistries {
      * @param messageSource the message source
      * @return The registry
      */
-    public static ValidatorRegistry createValidatorRegistry(MappingContext mappingContext, ConnectionSourceSettings settings, MessageSource messageSource) {
-        ValidatorRegistry validatorRegistry;
+    static ValidatorRegistry createValidatorRegistry(MappingContext mappingContext, ConnectionSourceSettings settings, MessageSource messageSource) {
+        ValidatorRegistry validatorRegistry
         if (isJakartaValidationAvailable()) {
-            validatorRegistry = new JakartaValidatorRegistry(mappingContext, settings, messageSource);
+            validatorRegistry = new JakartaValidatorRegistry(mappingContext, settings, messageSource)
         }
         else {
-            validatorRegistry = new DefaultValidatorRegistry(mappingContext, settings, messageSource);
+            validatorRegistry = new DefaultValidatorRegistry(mappingContext, settings, messageSource)
         }
-        return validatorRegistry;
+        return validatorRegistry
     }
 
     /**
      * @return Whether jakarta.validation is available
      */
     static boolean isJakartaValidationAvailable() {
-        return ClassUtils.isPresent("jakarta.validation.Validation");
+        return ClassUtils.isPresent('jakarta.validation.Validation')
     }
+
 }
