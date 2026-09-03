@@ -16,11 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders;
+package org.grails.datastore.gorm.finders
 
-import org.grails.datastore.gorm.DatastoreResolver;
-import org.grails.datastore.mapping.core.Datastore;
-import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.gorm.DatastoreResolver
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.model.MappingContext
 
 /**
  * The "findAll<booleanProperty>By*" static persistent method. This method allows querying for
@@ -31,26 +31,27 @@ import org.grails.datastore.mapping.model.MappingContext;
  *
  * @author Graeme Rocher
  */
-public class FindAllByBooleanFinder extends FindAllByFinder {
-    public static final String METHOD_PATTERN = "(findAll)((\\w+)(By)([A-Z]\\w*)|(\\w+))";
+class FindAllByBooleanFinder extends FindAllByFinder {
 
-    public FindAllByBooleanFinder(Datastore datastore) {
-        super(datastore);
-        setPattern(METHOD_PATTERN);
+    public static final String METHOD_PATTERN = '(findAll)((\\w+)(By)([A-Z]\\w*)|(\\w+))'
+
+    FindAllByBooleanFinder(Datastore datastore) {
+        super(datastore)
+        setPattern(METHOD_PATTERN)
     }
 
-    public FindAllByBooleanFinder(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
-        super(datastoreResolver, mappingContext);
-        setPattern(METHOD_PATTERN);
+    FindAllByBooleanFinder(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
+        super(datastoreResolver, mappingContext)
+        setPattern(METHOD_PATTERN)
     }
 
-    public FindAllByBooleanFinder(MappingContext mappingContext) {
-        super(mappingContext);
-        setPattern(METHOD_PATTERN);
+    FindAllByBooleanFinder(MappingContext mappingContext) {
+        super(mappingContext)
+        setPattern(METHOD_PATTERN)
     }
 
     @Override
-    public boolean firstExpressionIsRequiredBoolean() {
-        return true;
+    boolean firstExpressionIsRequiredBoolean() {
+        return true
     }
 }
