@@ -16,9 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.utils;
+package org.grails.datastore.gorm.utils
 
-import java.lang.reflect.Method;
+import groovy.transform.CompileStatic
+
+import java.lang.reflect.Method
 
 /**
  * Utility methods for working with reflection.
@@ -26,8 +28,9 @@ import java.lang.reflect.Method;
  * @author Graeme Rocher
  * @since 1.0
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class ReflectionUtils {
+@SuppressWarnings(['rawtypes', 'unchecked'])
+@CompileStatic
+class ReflectionUtils {
 
     /**
      * Tests whether a method is overridden from the parent
@@ -35,22 +38,22 @@ public class ReflectionUtils {
      * @param method The method to check
      * @return True if it is
      */
-    public static boolean isMethodOverriddenFromParent(Method method) {
-        Class declaringClass = method.getDeclaringClass();
+    static boolean isMethodOverriddenFromParent(Method method) {
+        Class declaringClass = method.getDeclaringClass()
 
-        final Class superClass = declaringClass.getSuperclass();
+        final Class superClass = declaringClass.getSuperclass()
 
         if (superClass != null) {
             try {
-                final Method superMethod = superClass.getMethod(method.getName(), method.getParameterTypes());
+                final Method superMethod = superClass.getMethod(method.getName(), method.getParameterTypes())
                 if (superMethod != null) {
-                    return true;
+                    return true
                 }
-            } catch (NoSuchMethodException e) {
-                // ignore
+            }
+            catch (NoSuchMethodException ignored) {
             }
         }
 
-        return false;
+        return false
     }
 }
