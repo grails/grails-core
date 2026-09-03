@@ -16,24 +16,24 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gorm.transactions;
+package grails.gorm.transactions
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.Documented
+import java.lang.annotation.ElementType
+import java.lang.annotation.Inherited
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 
-import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
 
-import org.grails.datastore.gorm.transform.GormASTTransformationClass;
-import org.grails.datastore.mapping.core.connections.ConnectionSource;
-import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider;
+import org.grails.datastore.gorm.transform.GormASTTransformationClass
+import org.grails.datastore.mapping.core.connections.ConnectionSource
+import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider
 
 /**
  * Define a read-only transaction
@@ -41,13 +41,14 @@ import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider;
  * @since 6.1
  * @author Graeme Rocher
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target([ElementType.METHOD, ElementType.TYPE])
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@GroovyASTTransformationClass("org.grails.datastore.gorm.transform.OrderedGormTransformation")
-@GormASTTransformationClass("org.grails.datastore.gorm.transactions.transform.TransactionalTransform")
-public @interface ReadOnly {
+@GroovyASTTransformationClass('org.grails.datastore.gorm.transform.OrderedGormTransformation')
+@GormASTTransformationClass('org.grails.datastore.gorm.transactions.transform.TransactionalTransform')
+@interface ReadOnly {
+
     /**
      * A qualifier value for the specified transaction.
      * <p>May be used to determine the target transaction manager,
@@ -55,28 +56,28 @@ public @interface ReadOnly {
      * {@link org.springframework.transaction.PlatformTransactionManager}
      * bean definition.
      */
-    String value() default "";
+    String value() default ''
 
     /**
      * The transaction propagation type.
      * Defaults to {@link org.springframework.transaction.annotation.Propagation#REQUIRED}.
      * @see org.springframework.transaction.interceptor.TransactionAttribute#getPropagationBehavior()
      */
-    Propagation propagation() default Propagation.REQUIRED;
+    Propagation propagation() default Propagation.REQUIRED
 
     /**
      * The transaction isolation level.
      * Defaults to {@link org.springframework.transaction.annotation.Isolation#DEFAULT}.
      * @see org.springframework.transaction.interceptor.TransactionAttribute#getIsolationLevel()
      */
-    Isolation isolation() default Isolation.DEFAULT;
+    Isolation isolation() default Isolation.DEFAULT
 
     /**
      * The timeout for this transaction.
      * Defaults to the default timeout of the underlying transaction system.
      * @see org.springframework.transaction.interceptor.TransactionAttribute#getTimeout()
      */
-    int timeout() default TransactionDefinition.TIMEOUT_DEFAULT;
+    int timeout() default TransactionDefinition.TIMEOUT_DEFAULT
 
     /**
      * Defines zero (0) or more exception {@link Class classes}, which must be a
@@ -86,7 +87,7 @@ public @interface ReadOnly {
      * exception class and subclasses.
      * <p>Similar to {@link org.springframework.transaction.interceptor.RollbackRuleAttribute#RollbackRuleAttribute(Class clazz)}
      */
-    Class<? extends Throwable>[] rollbackFor() default {};
+    Class<? extends Throwable>[] rollbackFor() default {}
 
     /**
      * Defines zero (0) or more exception names (for exceptions which must be a
@@ -103,7 +104,7 @@ public @interface ReadOnly {
      * names such as "BaseBusinessException" there is no need to use a FQN.
      * <p>Similar to {@link org.springframework.transaction.interceptor.RollbackRuleAttribute#RollbackRuleAttribute(String exceptionName)}
      */
-    String[] rollbackForClassName() default {};
+    String[] rollbackForClassName() default {}
 
     /**
      * Defines zero (0) or more exception {@link Class Classes}, which must be a
@@ -113,7 +114,7 @@ public @interface ReadOnly {
      * exception class and subclasses.
      * <p>Similar to {@link org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(Class clazz)}
      */
-    Class<? extends Throwable>[] noRollbackFor() default {};
+    Class<? extends Throwable>[] noRollbackFor() default {}
 
     /**
      * Defines zero (0) or more exception names (for exceptions which must be a
@@ -123,7 +124,7 @@ public @interface ReadOnly {
      * the specified names are treated.
      * <p>Similar to {@link org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(String exceptionName)}
      */
-    String[] noRollbackForClassName() default {};
+    String[] noRollbackForClassName() default {}
 
     /**
      * In Spring, when there are nested transaction calls, the execution of the outermost callback will throw UnexpectedRollbackException if TransactionStatus.setRollbackOnly() was called in a nested transaction callback.
@@ -132,17 +133,17 @@ public @interface ReadOnly {
      * The default value is true.
      *
      */
-    boolean inheritRollbackOnly() default true;
+    boolean inheritRollbackOnly() default true
 
     /**
      * If you are using multiple GORM implementations and wish to create a transaction for a specific implementation then use this. For example {@code @Transactional(forDatastore=HibernateDatastore) }
      *
      * @return The type of the datastore
      */
-    Class<? extends ConnectionSourcesProvider>[] datastore() default {};
+    Class<? extends ConnectionSourcesProvider>[] datastore() default {}
 
     /**
      * The connection to use by default
      */
-    String connection() default ConnectionSource.DEFAULT;
+    String connection() default ConnectionSource.DEFAULT
 }

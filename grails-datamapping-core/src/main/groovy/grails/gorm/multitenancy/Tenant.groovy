@@ -16,26 +16,26 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gorm.multitenancy;
+package grails.gorm.multitenancy
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.Documented
+import java.lang.annotation.ElementType
+import java.lang.annotation.Inherited
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 
-import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
-import org.grails.datastore.gorm.transform.GormASTTransformationClass;
-import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider;
+import org.grails.datastore.gorm.transform.GormASTTransformationClass
+import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider
 
 /**
- * <p>An AST transformation that makes a particular class or method execute without a tenant id. For example:</p>
+ * <p>An AST transformation that makes a particular class or method applicable to the tenant id returned by the passed closure. For example:</p>
  *
  * <pre>
  * class FooService {
- *  {@code @WithoutTenant}
+ *  {@code @Tenant}({ "foo" })
  *   void updateFoo() {
  *       ...
  *   }
@@ -45,17 +45,25 @@ import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider;
  * @since 6.1
  * @author Graeme Rocher
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target([ElementType.METHOD, ElementType.TYPE])
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@GroovyASTTransformationClass("org.grails.datastore.gorm.transform.OrderedGormTransformation")
-@GormASTTransformationClass("org.grails.datastore.gorm.multitenancy.transform.TenantTransform")
-public @interface WithoutTenant {
+@GroovyASTTransformationClass('org.grails.datastore.gorm.transform.OrderedGormTransformation')
+@GormASTTransformationClass('org.grails.datastore.gorm.multitenancy.transform.TenantTransform')
+@interface Tenant {
+
+    /**
+     * The tenant resolver
+     *
+     * @return A closure that resolves the tenant id
+     */
+    Class value()
+
     /**
      * If you are using multiple GORM implementations and wish to create a transaction for a specific implementation then use this. For example {@code @Transactional(forDatastore=HibernateDatastore) }
      *
      * @return The type of the datastore
      */
-    Class<? extends ConnectionSourcesProvider>[] datastore() default {};
+    Class<? extends ConnectionSourcesProvider>[] datastore() default {}
 }

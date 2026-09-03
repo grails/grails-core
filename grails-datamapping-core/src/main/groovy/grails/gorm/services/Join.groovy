@@ -16,15 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+package grails.gorm.services
 
-package grails.gorm.services;
+import java.lang.annotation.ElementType
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.JoinType
 
 /**
  * Allow specifying the join to services
@@ -33,15 +32,16 @@ import jakarta.persistence.criteria.JoinType;
  * @since 6.1
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface Join {
+@Target([ElementType.METHOD])
+@interface Join {
+
     /**
      * @return The property name to join on
      */
-    String value();
+    String value()
 
     /**
      * @return The join type
      */
-    JoinType[] type() default {};
+    JoinType[] type() default {}
 }
