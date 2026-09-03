@@ -16,51 +16,52 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders;
+package org.grails.datastore.gorm.finders
 
-import java.util.regex.Pattern;
+import java.util.regex.Pattern
 
-import org.grails.datastore.gorm.DatastoreResolver;
-import org.grails.datastore.mapping.core.Datastore;
-import org.grails.datastore.mapping.core.Session;
-import org.grails.datastore.mapping.core.SessionCallback;
-import org.grails.datastore.mapping.model.MappingContext;
-import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.gorm.DatastoreResolver
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.core.SessionCallback
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.query.Query
 
-public abstract class AbstractFindByFinder extends DynamicFinder {
-    public static final String OPERATOR_OR = "Or";
-    public static final String OPERATOR_AND = "And";
-    public static final String[] OPERATORS = { OPERATOR_AND, OPERATOR_OR };
+abstract class AbstractFindByFinder extends DynamicFinder {
+
+    public static final String OPERATOR_OR = 'Or'
+    public static final String OPERATOR_AND = 'And'
+    public static final String[] OPERATORS = [OPERATOR_AND, OPERATOR_OR] as String[]
 
     protected AbstractFindByFinder(Pattern pattern, Datastore datastore) {
-        super(pattern, OPERATORS, datastore);
+        super(pattern, OPERATORS, datastore)
     }
 
     protected AbstractFindByFinder(Pattern pattern, String[] operators, DatastoreResolver datastoreResolver, MappingContext mappingContext) {
-        super(pattern, operators, datastoreResolver, mappingContext);
+        super(pattern, operators, datastoreResolver, mappingContext)
     }
 
     protected AbstractFindByFinder(Pattern pattern, MappingContext mappingContext) {
-        super(pattern, OPERATORS, mappingContext);
+        super(pattern, OPERATORS, mappingContext)
     }
 
     @Override
     protected Object doInvokeInternal(final DynamicFinderInvocation invocation) {
         return execute(new SessionCallback<Object>() {
-            public Object doInSession(final Session session) {
-                Query query = buildQuery(invocation, session);
-                adjustQuery(query);
-                return invokeQuery(query);
+            Object doInSession(final Session session) {
+                Query query = buildQuery(invocation, session)
+                adjustQuery(query)
+                return invokeQuery(query)
             }
-        });
+        })
     }
 
     protected Object invokeQuery(Query q) {
-        return q.singleResult();
+        return q.singleResult()
     }
 
-    public boolean firstExpressionIsRequiredBoolean() {
-        return super.firstExpressionIsRequiredBoolean();
+    boolean firstExpressionIsRequiredBoolean() {
+        return super.firstExpressionIsRequiredBoolean()
     }
 
     protected void adjustQuery(Query query) {
