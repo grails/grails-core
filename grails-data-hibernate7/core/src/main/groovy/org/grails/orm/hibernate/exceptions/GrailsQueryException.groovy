@@ -16,27 +16,27 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.exceptions;
+package org.grails.orm.hibernate.exceptions
 
-import java.io.Serial;
-
-import org.grails.datastore.mapping.core.DatastoreException;
+import groovy.transform.CompileStatic
+import org.grails.datastore.mapping.core.DatastoreException
 
 /**
- * Base exception class for errors related to Hibernate configuration in Grails.
+ * Base exception class for errors related to Domain class queries in Grails.
  *
- * @author Steven Devijver
+ * @author Graeme Rocher
  */
-public abstract class GrailsHibernateException extends DatastoreException {
+@CompileStatic
+class GrailsQueryException extends DatastoreException {
 
-    @Serial
-    private static final long serialVersionUID = -6019220941440364736L;
+    private static final long serialVersionUID = 775603608315415077L
 
-    public GrailsHibernateException(String message) {
-        super(message);
+    GrailsQueryException(String message, Throwable cause) {
+        super(message, cause)
     }
 
-    public GrailsHibernateException(String message, Throwable cause) {
-        super(message, cause);
+    GrailsQueryException(String message) {
+        super(message)
     }
+
 }
