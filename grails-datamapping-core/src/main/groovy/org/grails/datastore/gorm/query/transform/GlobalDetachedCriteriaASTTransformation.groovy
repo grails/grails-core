@@ -16,20 +16,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.query.transform;
+package org.grails.datastore.gorm.query.transform
 
-import java.util.List;
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ASTNode
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.ModuleNode
+import org.codehaus.groovy.control.CompilePhase
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.transform.ASTTransformation
+import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.codehaus.groovy.transform.TransformWithPriority
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.control.CompilePhase;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.transform.ASTTransformation;
-import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.codehaus.groovy.transform.TransformWithPriority;
-
-import org.apache.grails.common.compiler.GroovyTransformOrder;
+import org.apache.grails.common.compiler.GroovyTransformOrder
 
 /**
  * Global version of the detached query transformer
@@ -38,7 +37,9 @@ import org.apache.grails.common.compiler.GroovyTransformOrder;
  * @since 1.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class GlobalDetachedCriteriaASTTransformation implements ASTTransformation, TransformWithPriority {
+@CompileStatic
+class GlobalDetachedCriteriaASTTransformation implements ASTTransformation, TransformWithPriority {
+
     /**
      * The method is invoked when an AST Transformation is active. For local transformations, it is invoked once
      * each time the local annotation is encountered. For global transformations, it is invoked once for every source
@@ -50,17 +51,18 @@ public class GlobalDetachedCriteriaASTTransformation implements ASTTransformatio
      * @param source The source unit being compiled. The source unit may contain several classes. For global transformations,
      *               information about the AST can be retrieved from this object.
      */
-    public void visit(ASTNode[] nodes, SourceUnit source) {
-        DetachedCriteriaTransformer transformer = new DetachedCriteriaTransformer(source);
-        ModuleNode ast = source.getAST();
-        List<ClassNode> classes = ast.getClasses();
+    void visit(ASTNode[] nodes, SourceUnit source) {
+        DetachedCriteriaTransformer transformer = new DetachedCriteriaTransformer(source)
+        ModuleNode ast = source.getAST()
+        List<ClassNode> classes = ast.getClasses()
         for (ClassNode aClass : classes) {
-            transformer.visitClass(aClass);
+            transformer.visitClass(aClass)
         }
     }
 
     @Override
-    public int priority() {
-        return GroovyTransformOrder.WHERE_ORDER;
+    int priority() {
+        return GroovyTransformOrder.WHERE_ORDER
     }
+
 }

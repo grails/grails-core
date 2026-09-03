@@ -16,20 +16,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.query.transform;
+package org.grails.datastore.gorm.query.transform
 
-import java.util.List;
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ASTNode
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.ModuleNode
+import org.codehaus.groovy.control.CompilePhase
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.transform.ASTTransformation
+import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.codehaus.groovy.transform.TransformWithPriority
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.control.CompilePhase;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.transform.ASTTransformation;
-import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.codehaus.groovy.transform.TransformWithPriority;
-
-import org.apache.grails.common.compiler.GroovyTransformOrder;
+import org.apache.grails.common.compiler.GroovyTransformOrder
 
 /**
  * Global version of {@link GormQuerySafetyTransformer} - runs automatically against every class
@@ -46,7 +45,8 @@ import org.apache.grails.common.compiler.GroovyTransformOrder;
  * @since 8.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class GlobalGormQuerySafetyASTTransformation implements ASTTransformation, TransformWithPriority {
+@CompileStatic
+class GlobalGormQuerySafetyASTTransformation implements ASTTransformation, TransformWithPriority {
 
     /**
      * System property that enables this check; defaults to {@code true}. There is no fully
@@ -55,22 +55,23 @@ public class GlobalGormQuerySafetyASTTransformation implements ASTTransformation
      * {@code false} only as a last resort, e.g. a false positive blocking a build with no other
      * workaround.
      */
-    public static final String PROTECT_SQL_INJECTION_ATTACKS_PROPERTY = "protectSqlInjectionAttacks";
+    public static final String PROTECT_SQL_INJECTION_ATTACKS_PROPERTY = 'protectSqlInjectionAttacks'
 
-    public void visit(ASTNode[] nodes, SourceUnit source) {
-        if (!Boolean.parseBoolean(System.getProperty(PROTECT_SQL_INJECTION_ATTACKS_PROPERTY, "true"))) {
-            return;
+    void visit(ASTNode[] nodes, SourceUnit source) {
+        if (!Boolean.parseBoolean(System.getProperty(PROTECT_SQL_INJECTION_ATTACKS_PROPERTY, 'true'))) {
+            return
         }
-        GormQuerySafetyTransformer transformer = new GormQuerySafetyTransformer(source);
-        ModuleNode ast = source.getAST();
-        List<ClassNode> classes = ast.getClasses();
+        GormQuerySafetyTransformer transformer = new GormQuerySafetyTransformer(source)
+        ModuleNode ast = source.getAST()
+        List<ClassNode> classes = ast.getClasses()
         for (ClassNode aClass : classes) {
-            transformer.visitClass(aClass);
+            transformer.visitClass(aClass)
         }
     }
 
     @Override
-    public int priority() {
-        return GroovyTransformOrder.QUERY_SAFETY_ORDER;
+    int priority() {
+        return GroovyTransformOrder.QUERY_SAFETY_ORDER
     }
+
 }

@@ -16,44 +16,37 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.query.transform;
+package org.grails.datastore.gorm.query.transform
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ASTNode
+import org.codehaus.groovy.ast.AnnotatedNode
+import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassCodeVisitorSupport
+import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.FieldNode
+import org.codehaus.groovy.ast.MethodNode
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
+import org.codehaus.groovy.ast.expr.BinaryExpression
+import org.codehaus.groovy.ast.expr.CastExpression
+import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.ConstantExpression
+import org.codehaus.groovy.ast.expr.DeclarationExpression
+import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.GStringExpression
+import org.codehaus.groovy.ast.expr.ListExpression
+import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.codehaus.groovy.ast.expr.PropertyExpression
+import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
+import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.stmt.IfStatement
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.control.messages.WarningMessage
+import org.codehaus.groovy.syntax.Token
+import org.codehaus.groovy.syntax.Types
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.CastExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.GStringExpression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.IfStatement;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.control.messages.WarningMessage;
-import org.codehaus.groovy.syntax.Token;
-import org.codehaus.groovy.syntax.Types;
-
-import org.grails.datastore.mapping.reflect.AstUtils;
+import org.grails.datastore.mapping.reflect.AstUtils
 
 /**
  * {@link ClassCodeVisitorSupport} that detects GORM HQL/Cypher query text built from a
@@ -122,12 +115,13 @@ import org.grails.datastore.mapping.reflect.AstUtils;
  *
  * @since 8.0
  */
-public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
+@CompileStatic
+class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
 
     /**
      * What a tracked local variable currently holds, from this check's point of view.
      */
-    private enum Origin {
+    private static enum Origin {
         /** Not derived from an interpolated GString or unsafe concatenation - nothing to track. */
         NONE,
         /** Still a real {@link groovy.lang.GString} - safe if passed directly to a query method. */
@@ -142,7 +136,7 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * What kind of unsafe query argument was found at a candidate call site, and therefore how
      * severely (and with what message) to report it.
      */
-    private enum Finding {
+    private static enum Finding {
         NONE,
         FLATTENED_GSTRING,
         FLATTENED_FIELD,
@@ -154,103 +148,105 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * warnings below) on the enclosing method (or, for calls outside any method, the enclosing
      * class).
      */
-    public static final String SUPPRESS_WARNINGS_VALUE = "GormUnsafeQueryString";
+    public static final String SUPPRESS_WARNINGS_VALUE = 'GormUnsafeQueryString'
 
     private static final Set<String> CANDIDATE_METHODS = new HashSet<>(Arrays.asList(
-            "find", "findAll", "executeQuery", "executeUpdate",
-            "findAllWithSql", "cypherStatic", "findPath", "findPathTo"));
+            'find', 'findAll', 'executeQuery', 'executeUpdate',
+            'findAllWithSql', 'cypherStatic', 'findPath', 'findPathTo'))
 
     /**
      * The positional index of the query argument for each candidate method. Every candidate
      * method takes the query as its first argument except Neo4j's
      * {@code findPathTo(Class type, CharSequence query, Map params)}.
      */
-    private static final Map<String, Integer> QUERY_ARGUMENT_INDEX = buildQueryArgumentIndex();
+    private static final Map<String, Integer> QUERY_ARGUMENT_INDEX = buildQueryArgumentIndex()
 
     private static Map<String, Integer> buildQueryArgumentIndex() {
-        Map<String, Integer> indexes = new HashMap<>();
+        Map<String, Integer> indexes = new HashMap<>()
         for (String method : CANDIDATE_METHODS) {
-            indexes.put(method, 0);
+            indexes.put(method, 0)
         }
-        indexes.put("findPathTo", 1);
-        return Collections.unmodifiableMap(indexes);
+        indexes.put('findPathTo', 1)
+        return Collections.unmodifiableMap(indexes)
     }
 
-    private final SourceUnit sourceUnit;
-    private final Map<String, ASTNode> flattenedStringVars = new HashMap<>();
-    private final Map<String, ASTNode> liveGStringVars = new HashMap<>();
-    private final Map<String, ASTNode> concatenatedStringVars = new HashMap<>();
-    private final Map<String, ASTNode> flattenedFields = new HashMap<>();
-    private ClassNode currentClassNode;
-    private MethodNode currentMethodNode;
+    private final SourceUnit sourceUnit
+    private final Map<String, ASTNode> flattenedStringVars = new HashMap<>()
+    private final Map<String, ASTNode> liveGStringVars = new HashMap<>()
+    private final Map<String, ASTNode> concatenatedStringVars = new HashMap<>()
+    private final Map<String, ASTNode> flattenedFields = new HashMap<>()
+    private ClassNode currentClassNode
+    private MethodNode currentMethodNode
 
-    public GormQuerySafetyTransformer(SourceUnit sourceUnit) {
-        this.sourceUnit = sourceUnit;
+    GormQuerySafetyTransformer(SourceUnit sourceUnit) {
+        this.sourceUnit = sourceUnit
     }
 
     @Override
     protected SourceUnit getSourceUnit() {
-        return this.sourceUnit;
+        return this.sourceUnit
     }
 
     @Override
-    public void visitClass(ClassNode node) {
+    void visitClass(ClassNode node) {
         try {
-            this.currentClassNode = node;
+            this.currentClassNode = node
             // Pre-scan field initializers so a field flattened here is already tracked no matter
             // which order the base class visits fields vs. methods in.
             for (FieldNode field : node.getFields()) {
-                trackFieldInitializer(field);
+                trackFieldInitializer(field)
             }
-            super.visitClass(node);
-        } finally {
-            this.currentClassNode = null;
-            clearTracking();
-            flattenedFields.clear();
+            super.visitClass(node)
+        }
+        finally {
+            this.currentClassNode = null
+            clearTracking()
+            flattenedFields.clear()
         }
     }
 
     @Override
-    public void visitMethod(MethodNode node) {
-        this.currentMethodNode = node;
+    void visitMethod(MethodNode node) {
+        this.currentMethodNode = node
         try {
-            super.visitMethod(node);
-        } finally {
-            this.currentMethodNode = null;
-            clearTracking();
+            super.visitMethod(node)
+        }
+        finally {
+            this.currentMethodNode = null
+            clearTracking()
         }
     }
 
     private void clearTracking() {
-        flattenedStringVars.clear();
-        liveGStringVars.clear();
-        concatenatedStringVars.clear();
+        flattenedStringVars.clear()
+        liveGStringVars.clear()
+        concatenatedStringVars.clear()
     }
 
     @Override
-    public void visitDeclarationExpression(DeclarationExpression expression) {
+    void visitDeclarationExpression(DeclarationExpression expression) {
         // getVariableExpression() is null for multiple-assignment declarations, e.g. def (a, b) = [...]
         VariableExpression variableExpression = expression.isMultipleAssignmentDeclaration() ?
-                null : expression.getVariableExpression();
+                null : expression.getVariableExpression()
         if (variableExpression != null) {
-            track(variableExpression.getName(), expression.getRightExpression(), variableExpression.getType(), expression);
+            track(variableExpression.getName(), expression.getRightExpression(), variableExpression.getType(), expression)
         }
-        super.visitDeclarationExpression(expression);
+        super.visitDeclarationExpression(expression)
     }
 
     @Override
-    public void visitBinaryExpression(BinaryExpression expression) {
+    void visitBinaryExpression(BinaryExpression expression) {
         if (expression.getOperation().getType() == Types.ASSIGN) {
-            Expression left = expression.getLeftExpression();
+            Expression left = expression.getLeftExpression()
             if (left instanceof VariableExpression) {
-                VariableExpression leftVariable = (VariableExpression) left;
-                track(leftVariable.getName(), expression.getRightExpression(), leftVariable.getType(), expression);
+                VariableExpression leftVariable = (VariableExpression) left
+                track(leftVariable.getName(), expression.getRightExpression(), leftVariable.getType(), expression)
             }
             else if (isThisFieldReference(left)) {
-                trackField(fieldNameOf(left), expression.getRightExpression(), expression);
+                trackField(fieldNameOf(left), expression.getRightExpression(), expression)
             }
         }
-        super.visitBinaryExpression(expression);
+        super.visitBinaryExpression(expression)
     }
 
     /**
@@ -262,74 +258,75 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * {@code if} branch would be forgotten if the {@code else} branch reassigns it safely.
      */
     @Override
-    public void visitIfElse(IfStatement ifElse) {
-        ifElse.getBooleanExpression().visit(this);
+    void visitIfElse(IfStatement ifElse) {
+        ifElse.getBooleanExpression().visit(this)
 
-        TrackingSnapshot beforeBranches = snapshot();
+        TrackingSnapshot beforeBranches = snapshot()
 
-        ifElse.getIfBlock().visit(this);
-        TrackingSnapshot afterIf = snapshot();
+        ifElse.getIfBlock().visit(this)
+        TrackingSnapshot afterIf = snapshot()
 
-        restore(beforeBranches);
-        ifElse.getElseBlock().visit(this);
-        TrackingSnapshot afterElse = snapshot();
+        restore(beforeBranches)
+        ifElse.getElseBlock().visit(this)
+        TrackingSnapshot afterElse = snapshot()
 
-        restore(mergePessimistically(afterIf, afterElse));
+        restore(mergePessimistically(afterIf, afterElse))
     }
 
     private TrackingSnapshot snapshot() {
-        return new TrackingSnapshot(flattenedStringVars, liveGStringVars, concatenatedStringVars);
+        return new TrackingSnapshot(flattenedStringVars, liveGStringVars, concatenatedStringVars)
     }
 
     private void restore(TrackingSnapshot state) {
-        flattenedStringVars.clear();
-        flattenedStringVars.putAll(state.flattened);
-        liveGStringVars.clear();
-        liveGStringVars.putAll(state.live);
-        concatenatedStringVars.clear();
-        concatenatedStringVars.putAll(state.concatenated);
+        flattenedStringVars.clear()
+        flattenedStringVars.putAll(state.flattened)
+        liveGStringVars.clear()
+        liveGStringVars.putAll(state.live)
+        concatenatedStringVars.clear()
+        concatenatedStringVars.putAll(state.concatenated)
     }
 
     private TrackingSnapshot mergePessimistically(TrackingSnapshot a, TrackingSnapshot b) {
-        Set<String> names = new HashSet<>();
-        names.addAll(a.flattened.keySet());
-        names.addAll(a.live.keySet());
-        names.addAll(a.concatenated.keySet());
-        names.addAll(b.flattened.keySet());
-        names.addAll(b.live.keySet());
-        names.addAll(b.concatenated.keySet());
+        Set<String> names = new HashSet<>()
+        names.addAll(a.flattened.keySet())
+        names.addAll(a.live.keySet())
+        names.addAll(a.concatenated.keySet())
+        names.addAll(b.flattened.keySet())
+        names.addAll(b.live.keySet())
+        names.addAll(b.concatenated.keySet())
 
-        Map<String, ASTNode> mergedFlattened = new HashMap<>();
-        Map<String, ASTNode> mergedLive = new HashMap<>();
-        Map<String, ASTNode> mergedConcatenated = new HashMap<>();
+        Map<String, ASTNode> mergedFlattened = new HashMap<>()
+        Map<String, ASTNode> mergedLive = new HashMap<>()
+        Map<String, ASTNode> mergedConcatenated = new HashMap<>()
 
         for (String name : names) {
             // Unsafe states win pessimistically: if either branch leaves this variable unsafe,
             // that state survives past the if/else regardless of which branch actually runs.
             if (a.flattened.containsKey(name) || b.flattened.containsKey(name)) {
-                mergedFlattened.put(name, a.flattened.containsKey(name) ? a.flattened.get(name) : b.flattened.get(name));
+                mergedFlattened.put(name, a.flattened.containsKey(name) ? a.flattened.get(name) : b.flattened.get(name))
             }
             else if (a.concatenated.containsKey(name) || b.concatenated.containsKey(name)) {
-                mergedConcatenated.put(name, a.concatenated.containsKey(name) ? a.concatenated.get(name) : b.concatenated.get(name));
+                mergedConcatenated.put(name, a.concatenated.containsKey(name) ? a.concatenated.get(name) : b.concatenated.get(name))
             }
             else if (a.live.containsKey(name) || b.live.containsKey(name)) {
-                mergedLive.put(name, a.live.containsKey(name) ? a.live.get(name) : b.live.get(name));
+                mergedLive.put(name, a.live.containsKey(name) ? a.live.get(name) : b.live.get(name))
             }
         }
-        return new TrackingSnapshot(mergedFlattened, mergedLive, mergedConcatenated);
+        return new TrackingSnapshot(mergedFlattened, mergedLive, mergedConcatenated)
     }
 
     private static final class TrackingSnapshot {
 
-        final Map<String, ASTNode> flattened;
-        final Map<String, ASTNode> live;
-        final Map<String, ASTNode> concatenated;
+        final Map<String, ASTNode> flattened
+        final Map<String, ASTNode> live
+        final Map<String, ASTNode> concatenated
 
         TrackingSnapshot(Map<String, ASTNode> flattened, Map<String, ASTNode> live, Map<String, ASTNode> concatenated) {
-            this.flattened = new HashMap<>(flattened);
-            this.live = new HashMap<>(live);
-            this.concatenated = new HashMap<>(concatenated);
+            this.flattened = new HashMap<>(flattened)
+            this.live = new HashMap<>(live)
+            this.concatenated = new HashMap<>(concatenated)
         }
+
     }
 
     /**
@@ -339,25 +336,25 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * {@code String}-typed variable.
      */
     private void track(String variableName, Expression rightExpression, ClassNode declaredType, ASTNode locationNode) {
-        Origin origin = classify(rightExpression, declaredType);
+        Origin origin = classify(rightExpression, declaredType)
         // Any reassignment first clears prior tracking under all three categories - last write
         // wins for what follows, then the switch below re-establishes tracking if still unsafe.
-        flattenedStringVars.remove(variableName);
-        liveGStringVars.remove(variableName);
-        concatenatedStringVars.remove(variableName);
+        flattenedStringVars.remove(variableName)
+        liveGStringVars.remove(variableName)
+        concatenatedStringVars.remove(variableName)
         switch (origin) {
-            case FLATTENED:
-                flattenedStringVars.put(variableName, locationNode);
-                break;
-            case LIVE_GSTRING:
-                liveGStringVars.put(variableName, locationNode);
-                break;
-            case CONCATENATED:
-                concatenatedStringVars.put(variableName, locationNode);
-                break;
-            case NONE:
+            case Origin.FLATTENED:
+                flattenedStringVars.put(variableName, locationNode)
+                break
+            case Origin.LIVE_GSTRING:
+                liveGStringVars.put(variableName, locationNode)
+                break
+            case Origin.CONCATENATED:
+                concatenatedStringVars.put(variableName, locationNode)
+                break
+            case Origin.NONE:
             default:
-                break;
+                break
         }
     }
 
@@ -369,36 +366,36 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      */
     private Origin classify(Expression expression, ClassNode declaredType) {
         if (expression instanceof VariableExpression) {
-            String name = ((VariableExpression) expression).getName();
+            String name = ((VariableExpression) expression).getName()
             if (flattenedStringVars.containsKey(name)) {
-                return Origin.FLATTENED; // already a plain String - stays unsafe regardless of declaredType
+                return Origin.FLATTENED // already a plain String - stays unsafe regardless of declaredType
             }
             if (concatenatedStringVars.containsKey(name)) {
-                return Origin.CONCATENATED; // already a plain String - stays unsafe regardless of declaredType
+                return Origin.CONCATENATED // already a plain String - stays unsafe regardless of declaredType
             }
             if (liveGStringVars.containsKey(name)) {
-                return ClassHelper.STRING_TYPE.equals(declaredType) ? Origin.FLATTENED : Origin.LIVE_GSTRING;
+                return ClassHelper.STRING_TYPE.equals(declaredType) ? Origin.FLATTENED : Origin.LIVE_GSTRING
             }
-            return Origin.NONE;
+            return Origin.NONE
         }
         if (isInterpolatedGString(expression)) {
-            return ClassHelper.STRING_TYPE.equals(declaredType) ? Origin.FLATTENED : Origin.LIVE_GSTRING;
+            return ClassHelper.STRING_TYPE.equals(declaredType) ? Origin.FLATTENED : Origin.LIVE_GSTRING
         }
         if (expression instanceof CastExpression) {
-            CastExpression cast = (CastExpression) expression;
+            CastExpression cast = (CastExpression) expression
             if (ClassHelper.STRING_TYPE.equals(cast.getType()) && isUnsafeSource(cast.getExpression())) {
-                return Origin.FLATTENED;
+                return Origin.FLATTENED
             }
-            return Origin.NONE;
+            return Origin.NONE
         }
         if (expression instanceof MethodCallExpression) {
-            MethodCallExpression call = (MethodCallExpression) expression;
-            if ("toString".equals(call.getMethodAsString()) && isUnsafeSource(call.getObjectExpression())) {
-                return Origin.FLATTENED; // .toString() always yields a String, regardless of declaredType
+            MethodCallExpression call = (MethodCallExpression) expression
+            if ('toString' == call.getMethodAsString() && isUnsafeSource(call.getObjectExpression())) {
+                return Origin.FLATTENED // .toString() always yields a String, regardless of declaredType
             }
-            return Origin.NONE;
+            return Origin.NONE
         }
-        return classifyConcatenation(expression);
+        return classifyConcatenation(expression)
     }
 
     /**
@@ -411,15 +408,15 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      */
     private Origin classifyConcatenation(Expression expression) {
         if (!isConcatenation(expression)) {
-            return Origin.NONE;
+            return Origin.NONE
         }
         if (containsGString(expression)) {
-            return Origin.FLATTENED;
+            return Origin.FLATTENED
         }
         if (hasNonConstantOperand(expression)) {
-            return Origin.CONCATENATED;
+            return Origin.CONCATENATED
         }
-        return Origin.NONE;
+        return Origin.NONE
     }
 
     /**
@@ -429,44 +426,44 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      */
     private boolean isUnsafeSource(Expression expression) {
         if (isInterpolatedGString(expression)) {
-            return true;
+            return true
         }
         if (expression instanceof VariableExpression) {
-            String name = ((VariableExpression) expression).getName();
-            return flattenedStringVars.containsKey(name) || liveGStringVars.containsKey(name);
+            String name = ((VariableExpression) expression).getName()
+            return flattenedStringVars.containsKey(name) || liveGStringVars.containsKey(name)
         }
-        return false;
+        return false
     }
 
     private boolean isInterpolatedGString(Expression expression) {
-        return expression instanceof GStringExpression && !((GStringExpression) expression).getValues().isEmpty();
+        return expression instanceof GStringExpression && !((GStringExpression) expression).getValues().isEmpty()
     }
 
     private boolean isConcatenation(Expression expression) {
         return expression instanceof BinaryExpression &&
-                ((BinaryExpression) expression).getOperation().getType() == Types.PLUS;
+                ((BinaryExpression) expression).getOperation().getType() == Types.PLUS
     }
 
     private boolean hasNonConstantOperand(Expression expression) {
         if (expression instanceof ConstantExpression) {
-            return false;
+            return false
         }
         if (isConcatenation(expression)) {
-            BinaryExpression binary = (BinaryExpression) expression;
-            return hasNonConstantOperand(binary.getLeftExpression()) || hasNonConstantOperand(binary.getRightExpression());
+            BinaryExpression binary = (BinaryExpression) expression
+            return hasNonConstantOperand(binary.getLeftExpression()) || hasNonConstantOperand(binary.getRightExpression())
         }
-        return true;
+        return true
     }
 
     private boolean containsGString(Expression expression) {
         if (expression instanceof GStringExpression) {
-            return true;
+            return true
         }
         if (expression instanceof BinaryExpression) {
-            BinaryExpression binary = (BinaryExpression) expression;
-            return containsGString(binary.getLeftExpression()) || containsGString(binary.getRightExpression());
+            BinaryExpression binary = (BinaryExpression) expression
+            return containsGString(binary.getLeftExpression()) || containsGString(binary.getRightExpression())
         }
-        return false;
+        return false
     }
 
     /**
@@ -476,9 +473,9 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * cast coercion - to keep the (already lower-confidence) field check simple.
      */
     private void trackFieldInitializer(FieldNode field) {
-        Expression initial = field.getInitialValueExpression();
+        Expression initial = field.getInitialValueExpression()
         if (initial != null && isInterpolatedGString(initial) && ClassHelper.STRING_TYPE.equals(field.getType())) {
-            flattenedFields.put(field.getName(), field);
+            flattenedFields.put(field.getName(), field)
         }
     }
 
@@ -487,194 +484,194 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * for that field - last-write-wins, with no branch-sensitivity (see class Javadoc).
      */
     private void trackField(String fieldName, Expression rightExpression, ASTNode locationNode) {
-        ClassNode fieldType = fieldDeclaredType(fieldName);
+        ClassNode fieldType = fieldDeclaredType(fieldName)
         if (isInterpolatedGString(rightExpression) && ClassHelper.STRING_TYPE.equals(fieldType)) {
-            flattenedFields.put(fieldName, locationNode);
+            flattenedFields.put(fieldName, locationNode)
         }
         else {
-            flattenedFields.remove(fieldName);
+            flattenedFields.remove(fieldName)
         }
     }
 
     private ClassNode fieldDeclaredType(String fieldName) {
         if (currentClassNode == null) {
-            return null;
+            return null
         }
-        FieldNode field = currentClassNode.getField(fieldName);
-        return field != null ? field.getType() : null;
+        FieldNode field = currentClassNode.getField(fieldName)
+        return field != null ? field.getType() : null
     }
 
     private boolean isThisFieldReference(Expression expression) {
         if (!(expression instanceof PropertyExpression)) {
-            return false;
+            return false
         }
-        PropertyExpression property = (PropertyExpression) expression;
+        PropertyExpression property = (PropertyExpression) expression
         return property.getObjectExpression() instanceof VariableExpression &&
                 ((VariableExpression) property.getObjectExpression()).isThisExpression() &&
-                property.getPropertyAsString() != null;
+                property.getPropertyAsString() != null
     }
 
     private String fieldNameOf(Expression expression) {
-        return ((PropertyExpression) expression).getPropertyAsString();
+        return ((PropertyExpression) expression).getPropertyAsString()
     }
 
     @Override
-    public void visitMethodCallExpression(MethodCallExpression call) {
-        String methodName = call.getMethodAsString();
+    void visitMethodCallExpression(MethodCallExpression call) {
+        String methodName = call.getMethodAsString()
         if (methodName != null && CANDIDATE_METHODS.contains(methodName) &&
                 isGormReceiver(call.getObjectExpression()) && !isSuppressed()) {
-            report(findUnsafeArgument(methodName, call.getArguments()), call, methodName);
+            report(findUnsafeArgument(methodName, call.getArguments()), call, methodName)
         }
-        super.visitMethodCallExpression(call);
+        super.visitMethodCallExpression(call)
     }
 
     @Override
-    public void visitStaticMethodCallExpression(StaticMethodCallExpression call) {
-        String methodName = call.getMethod();
+    void visitStaticMethodCallExpression(StaticMethodCallExpression call) {
+        String methodName = call.getMethod()
         if (CANDIDATE_METHODS.contains(methodName) &&
                 AstUtils.isDomainClass(call.getOwnerType()) && !isSuppressed()) {
-            report(findUnsafeArgument(methodName, call.getArguments()), call, methodName);
+            report(findUnsafeArgument(methodName, call.getArguments()), call, methodName)
         }
-        super.visitStaticMethodCallExpression(call);
+        super.visitStaticMethodCallExpression(call)
     }
 
     private boolean isGormReceiver(Expression objectExpression) {
         if (objectExpression instanceof ClassExpression) {
-            return AstUtils.isDomainClass(((ClassExpression) objectExpression).getType());
+            return AstUtils.isDomainClass(((ClassExpression) objectExpression).getType())
         }
         if (objectExpression instanceof VariableExpression && ((VariableExpression) objectExpression).isThisExpression()) {
-            return currentClassNode != null && AstUtils.isDomainClass(currentClassNode);
+            return currentClassNode != null && AstUtils.isDomainClass(currentClassNode)
         }
-        return false;
+        return false
     }
 
     private Finding findUnsafeArgument(String methodName, Expression arguments) {
         if (!(arguments instanceof ArgumentListExpression)) {
-            return Finding.NONE;
+            return Finding.NONE
         }
-        List<Expression> args = ((ArgumentListExpression) arguments).getExpressions();
-        Integer index = QUERY_ARGUMENT_INDEX.get(methodName);
+        List<Expression> args = ((ArgumentListExpression) arguments).getExpressions()
+        Integer index = QUERY_ARGUMENT_INDEX.get(methodName)
         if (index == null || args.size() <= index) {
-            return Finding.NONE;
+            return Finding.NONE
         }
-        Expression argument = args.get(index);
+        Expression argument = args.get(index)
 
         if (argument instanceof VariableExpression) {
-            String name = ((VariableExpression) argument).getName();
+            String name = ((VariableExpression) argument).getName()
             if (flattenedStringVars.containsKey(name)) {
-                return Finding.FLATTENED_GSTRING;
+                return Finding.FLATTENED_GSTRING
             }
             if (concatenatedStringVars.containsKey(name)) {
-                return Finding.UNSAFE_CONCATENATION;
+                return Finding.UNSAFE_CONCATENATION
             }
-            return Finding.NONE;
+            return Finding.NONE
         }
         if (isThisFieldReference(argument) && flattenedFields.containsKey(fieldNameOf(argument))) {
-            return Finding.FLATTENED_FIELD;
+            return Finding.FLATTENED_FIELD
         }
         if (argument instanceof CastExpression) {
-            CastExpression cast = (CastExpression) argument;
+            CastExpression cast = (CastExpression) argument
             if (ClassHelper.STRING_TYPE.equals(cast.getType()) && isUnsafeSource(cast.getExpression())) {
-                return Finding.FLATTENED_GSTRING;
+                return Finding.FLATTENED_GSTRING
             }
         }
         if (argument instanceof MethodCallExpression) {
-            MethodCallExpression flatteningCall = (MethodCallExpression) argument;
-            if ("toString".equals(flatteningCall.getMethodAsString()) && isUnsafeSource(flatteningCall.getObjectExpression())) {
-                return Finding.FLATTENED_GSTRING;
+            MethodCallExpression flatteningCall = (MethodCallExpression) argument
+            if ('toString' == flatteningCall.getMethodAsString() && isUnsafeSource(flatteningCall.getObjectExpression())) {
+                return Finding.FLATTENED_GSTRING
             }
         }
-        Origin concatOrigin = classifyConcatenation(argument);
+        Origin concatOrigin = classifyConcatenation(argument)
         if (concatOrigin == Origin.FLATTENED) {
-            return Finding.FLATTENED_GSTRING;
+            return Finding.FLATTENED_GSTRING
         }
         if (concatOrigin == Origin.CONCATENATED) {
-            return Finding.UNSAFE_CONCATENATION;
+            return Finding.UNSAFE_CONCATENATION
         }
-        return Finding.NONE;
+        return Finding.NONE
     }
 
     private void report(Finding finding, ASTNode node, String methodName) {
         switch (finding) {
-            case FLATTENED_GSTRING:
-                reportUnsafeQuery(node, methodName);
-                break;
-            case FLATTENED_FIELD:
-                reportFlattenedFieldQuery(node, methodName);
-                break;
-            case UNSAFE_CONCATENATION:
-                reportUnsafeConcatenation(node, methodName);
-                break;
-            case NONE:
+            case Finding.FLATTENED_GSTRING:
+                reportUnsafeQuery(node, methodName)
+                break
+            case Finding.FLATTENED_FIELD:
+                reportFlattenedFieldQuery(node, methodName)
+                break
+            case Finding.UNSAFE_CONCATENATION:
+                reportUnsafeConcatenation(node, methodName)
+                break
+            case Finding.NONE:
             default:
-                break;
+                break
         }
     }
 
     private boolean isSuppressed() {
         if (currentMethodNode != null && isSuppressedNode(currentMethodNode)) {
-            return true;
+            return true
         }
-        return currentClassNode != null && isSuppressedNode(currentClassNode);
+        return currentClassNode != null && isSuppressedNode(currentClassNode)
     }
 
     private boolean isSuppressedNode(AnnotatedNode node) {
-        for (AnnotationNode annotation : node.getAnnotations(ClassHelper.make(SuppressWarnings.class))) {
-            Expression value = annotation.getMember("value");
+        for (AnnotationNode annotation : node.getAnnotations(ClassHelper.make(SuppressWarnings))) {
+            Expression value = annotation.getMember('value')
             if (containsSuppressionValue(value)) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 
     private boolean containsSuppressionValue(Expression value) {
         if (value instanceof ConstantExpression) {
-            return SUPPRESS_WARNINGS_VALUE.equals(((ConstantExpression) value).getValue());
+            return SUPPRESS_WARNINGS_VALUE == ((ConstantExpression) value).getValue()
         }
         if (value instanceof ListExpression) {
             for (Expression element : ((ListExpression) value).getExpressions()) {
                 if (containsSuppressionValue(element)) {
-                    return true;
+                    return true
                 }
             }
         }
-        return false;
+        return false
     }
 
     private void reportUnsafeQuery(ASTNode node, String methodName) {
-        String message = "[GORM] The query string passed to '" + methodName + "' was built from a " +
-                "GString that Groovy already coerced to a plain String, so any interpolated " +
-                "values are now embedded as raw, unescaped text - this is a query injection " +
-                "risk. Keep the value as a GString when calling '" + methodName + "' (GORM turns " +
-                "GString interpolations into bound query parameters automatically), or pass " +
-                "named/positional parameters explicitly. To suppress this check for a reviewed, " +
-                "safe call site, add @SuppressWarnings(\"" + SUPPRESS_WARNINGS_VALUE + "\") to the " +
-                "enclosing method.";
-        sourceUnit.getErrorCollector().addErrorAndContinue(message, node, sourceUnit);
+        String message = "[GORM] The query string passed to '${methodName}' was built from a " +
+                'GString that Groovy already coerced to a plain String, so any interpolated ' +
+                'values are now embedded as raw, unescaped text - this is a query injection ' +
+                "risk. Keep the value as a GString when calling '${methodName}' (GORM turns " +
+                'GString interpolations into bound query parameters automatically), or pass ' +
+                'named/positional parameters explicitly. To suppress this check for a reviewed, ' +
+                "safe call site, add @SuppressWarnings(\"${SUPPRESS_WARNINGS_VALUE}\") to the " +
+                'enclosing method.'
+        sourceUnit.getErrorCollector().addErrorAndContinue(message, node, sourceUnit)
     }
 
     private void reportFlattenedFieldQuery(ASTNode node, String methodName) {
-        String message = "[GORM] The query string passed to '" + methodName + "' was built from a " +
-                "field that was assigned a GString-interpolated value coerced to a plain String, " +
-                "so any interpolated values may be embedded as raw, unescaped text - this is a " +
-                "query injection risk if that field can be influenced by user input. This is a " +
-                "warning rather than a build failure because field assignments outside this method " +
+        String message = "[GORM] The query string passed to '${methodName}' was built from a " +
+                'field that was assigned a GString-interpolated value coerced to a plain String, ' +
+                'so any interpolated values may be embedded as raw, unescaped text - this is a ' +
+                'query injection risk if that field can be influenced by user input. This is a ' +
+                'warning rather than a build failure because field assignments outside this method ' +
                 "(other methods, constructors, subclasses) aren't visible to this check. Prefer " +
-                "keeping the value as a GString or passing named/positional parameters; to " +
-                "suppress, add @SuppressWarnings(\"" + SUPPRESS_WARNINGS_VALUE + "\") to the " +
-                "enclosing method.";
-        reportWarning(node, message);
+                'keeping the value as a GString or passing named/positional parameters; to ' +
+                "suppress, add @SuppressWarnings(\"${SUPPRESS_WARNINGS_VALUE}\") to the " +
+                'enclosing method.'
+        reportWarning(node, message)
     }
 
     private void reportUnsafeConcatenation(ASTNode node, String methodName) {
-        String message = "[GORM] The query string passed to '" + methodName + "' is built using " +
+        String message = "[GORM] The query string passed to '${methodName}' is built using " +
                 "'+' string concatenation with a non-constant value, so no automatic parameter " +
-                "binding is possible - this is a query injection risk if that value can be " +
-                "influenced by user input. Prefer a GString (GORM binds interpolated values " +
-                "automatically) or named/positional parameters. To suppress, add " +
-                "@SuppressWarnings(\"" + SUPPRESS_WARNINGS_VALUE + "\") to the enclosing method.";
-        reportWarning(node, message);
+                'binding is possible - this is a query injection risk if that value can be ' +
+                'influenced by user input. Prefer a GString (GORM binds interpolated values ' +
+                'automatically) or named/positional parameters. To suppress, add ' +
+                "@SuppressWarnings(\"${SUPPRESS_WARNINGS_VALUE}\") to the enclosing method."
+        reportWarning(node, message)
     }
 
     /**
@@ -684,7 +681,8 @@ public class GormQuerySafetyTransformer extends ClassCodeVisitorSupport {
      * {@link Token} carrying just the line/column is built to satisfy it.
      */
     private void reportWarning(ASTNode node, String message) {
-        Token location = new Token(Types.UNKNOWN, "", node.getLineNumber(), node.getColumnNumber());
-        sourceUnit.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, message, location, sourceUnit);
+        Token location = new Token(Types.UNKNOWN, '', node.getLineNumber(), node.getColumnNumber())
+        sourceUnit.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, message, location, sourceUnit)
     }
+
 }

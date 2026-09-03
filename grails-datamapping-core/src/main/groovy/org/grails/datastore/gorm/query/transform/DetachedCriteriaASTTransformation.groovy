@@ -16,24 +16,26 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.query.transform;
+package org.grails.datastore.gorm.query.transform
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.control.CompilePhase;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.transform.ASTTransformation;
-import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.codehaus.groovy.transform.TransformWithPriority;
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ASTNode
+import org.codehaus.groovy.ast.AnnotatedNode
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.control.CompilePhase
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.transform.ASTTransformation
+import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.codehaus.groovy.transform.TransformWithPriority
 
-import org.apache.grails.common.compiler.GroovyTransformOrder;
+import org.apache.grails.common.compiler.GroovyTransformOrder
 
 /**
  * Transforms regular Groovy-style finders into detached criteria
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class DetachedCriteriaASTTransformation implements ASTTransformation, TransformWithPriority {
+@CompileStatic
+class DetachedCriteriaASTTransformation implements ASTTransformation, TransformWithPriority {
 
     /**
      * The method is invoked when an AST Transformation is active. For local transformations, it is invoked once
@@ -46,15 +48,16 @@ public class DetachedCriteriaASTTransformation implements ASTTransformation, Tra
      * @param source The source unit being compiled. The source unit may contain several classes. For global transformations,
      *               information about the AST can be retrieved from this object.
      */
-    public void visit(ASTNode[] nodes, SourceUnit source) {
-        DetachedCriteriaTransformer transformer = new DetachedCriteriaTransformer(source);
-        AnnotatedNode parent = (AnnotatedNode) nodes[1];
-        ClassNode cNode = (ClassNode) parent;
-        transformer.visitClass(cNode);
+    void visit(ASTNode[] nodes, SourceUnit source) {
+        DetachedCriteriaTransformer transformer = new DetachedCriteriaTransformer(source)
+        AnnotatedNode parent = (AnnotatedNode) nodes[1]
+        ClassNode cNode = (ClassNode) parent
+        transformer.visitClass(cNode)
     }
 
     @Override
-    public int priority() {
-        return GroovyTransformOrder.FINDER_ORDER;
+    int priority() {
+        return GroovyTransformOrder.FINDER_ORDER
     }
+
 }
