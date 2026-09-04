@@ -49,6 +49,9 @@ import groovy.xml.XmlSlurper;
 
 import org.xml.sax.SAXException;
 
+import grails.util.Metadata;
+import org.apache.grails.gradle.common.XmlParserFeature;
+
 /**
  * Simple utility methods for file and stream copying.
  * All copy methods use a block size of 4096 bytes,
@@ -416,50 +419,86 @@ public class SpringIOUtils {
         return factory.newSAXParser();
     }
 
-    private static SAXParserFactory saxParserFactory = null;
+    /**
+     * Configuration key permitting {@code DOCTYPE} declarations in documents parsed by this class.
+     *
+     * <p>Parsers handed out here reject a {@code DOCTYPE} by default. Set
+     * {@code grails.xml.allowDocTypeDeclaration} to {@code true} in {@code application.yml}, or as
+     * a system property, to accept one.
+     *
+     * <p>Opting in does not reopen the XXE vector. External general entities, external parameter
+     * entities and external DTDs stay refused whichever way this is set, so an entity pointing at
+     * a file on disk still contributes nothing. What opting in changes is only whether a document
+     * carrying a declaration is refused outright.
+     *
+     * <p>It exists because these parsers also read trusted descriptors from the classpath, and
+     * some of those carry a {@code DOCTYPE}. JSP tag library descriptors are the common case:
+     * {@code jakarta.servlet.jsp.jstl} ships several, among them {@code c-1_0-rt.tld}, which the
+     * default {@code grails.gsp.tldScanPattern} scans.
+     */
+    public static final String ALLOW_DOCTYPE_DECLARATION = "grails.xml.allowDocTypeDeclaration";
+
+    /**
+     * Parser features switched off for every parser this class hands out.
+     *
+     * <p>{@link XmlParserFeature#DISALLOW_DOCTYPE_DECL} is handled separately because it is the
+     * one feature an application may turn off; see {@link #ALLOW_DOCTYPE_DECLARATION}.
+     */
+    private static final XmlParserFeature[] DISABLED_PARSER_FEATURES = {
+        XmlParserFeature.EXTERNAL_GENERAL_ENTITIES,
+        XmlParserFeature.EXTERNAL_PARAMETER_ENTITIES,
+        XmlParserFeature.LOAD_DTD_GRAMMAR,
+        XmlParserFeature.LOAD_EXTERNAL_DTD
+    };
+
+    private static SAXParserFactory strictParserFactory = null;
+
+    private static SAXParserFactory docTypeParserFactory = null;
 
     private static SAXParserFactory createParserFactory() throws ParserConfigurationException {
-        if (saxParserFactory == null) {
-            saxParserFactory = FactorySupport.createSaxParserFactory();
-            saxParserFactory.setNamespaceAware(true);
-            saxParserFactory.setValidating(false);
-            try {
-                saxParserFactory.setXIncludeAware(false);
-            } catch (UnsupportedOperationException e) {
-                // ignore, parser doesn't support
+        if (isDocTypeDeclarationAllowed()) {
+            if (docTypeParserFactory == null) {
+                docTypeParserFactory = buildParserFactory(true);
             }
+            return docTypeParserFactory;
+        }
+        if (strictParserFactory == null) {
+            strictParserFactory = buildParserFactory(false);
+        }
+        return strictParserFactory;
+    }
 
+    private static boolean isDocTypeDeclarationAllowed() {
+        return Boolean.TRUE.equals(
+                Metadata.getCurrent().getProperty(ALLOW_DOCTYPE_DECLARATION, Boolean.class, Boolean.FALSE));
+    }
+
+    private static SAXParserFactory buildParserFactory(boolean allowDocTypeDeclaration) throws ParserConfigurationException {
+        SAXParserFactory factory = FactorySupport.createSaxParserFactory();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
+        try {
+            factory.setXIncludeAware(false);
+        } catch (UnsupportedOperationException e) {
+            // ignore, parser doesn't support
+        }
+        try {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (Exception e) {
+            // ignore, parser doesn't support
+        }
+        try {
+            factory.setFeature(XmlParserFeature.DISALLOW_DOCTYPE_DECL.getFeatureName(), !allowDocTypeDeclaration);
+        } catch (Exception e) {
+            // ignore, parser doesn't support
+        }
+        for (XmlParserFeature feature : DISABLED_PARSER_FEATURES) {
             try {
-                saxParserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            } catch (Exception pce) {
-                // ignore, parser doesn't support
-            }
-            try {
-                saxParserFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            } catch (Exception pce) {
-                // ignore, parser doesn't support
-            }
-            try {
-                saxParserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            } catch (Exception pce) {
-                // ignore, parser doesn't support
-            }
-            try {
-                saxParserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            } catch (Exception e) {
-                // ignore, parser doesn't support
-            }
-            try {
-                saxParserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-            } catch (Exception e) {
-                // ignore, parser doesn't support
-            }
-            try {
-                saxParserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                factory.setFeature(feature.getFeatureName(), false);
             } catch (Exception e) {
                 // ignore, parser doesn't support
             }
         }
-        return saxParserFactory;
+        return factory;
     }
 }
