@@ -121,7 +121,12 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * <dd>The positive counterpart - "register this only when something else supplied that" - taking
  * the same positional types and named attributes. It has no zero-argument form: with nothing named
  * Spring deduces the type from this bean's own return type, conditioning a bean on a bean of its
- * own type already existing.</dd>
+ * own type already existing.
+ * <p>Mind what it can see. Unlike the other conditions this one is order-dependent: it matches only
+ * against bean definitions the context has <i>already processed</i>, which is why Spring restricts
+ * it to auto-configurations, and why naming a bean declared beside it in the same block is not a
+ * condition that reliably holds - whether it does depends on {@code @Bean} method order within one
+ * class. Name something another configuration supplies.</p></dd>
  *
  * <dt>{@code .conditionalOnMissingBeanName(...)}</dt>
  * <dd>Backs off by this bean's own name, set automatically so the two strings cannot diverge.

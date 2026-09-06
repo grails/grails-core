@@ -941,19 +941,26 @@ class GrailsBeansASTTransformationSpec extends Specification {
     }
 
     def "conditionalOnBean registers a bean only when the bean it names is there"() {
-        given: "the shape an optional integration takes - wire the adapter only if the transport exists"
+        given: "the transport is supplied by a SEPARATE configuration, registered first"
         String source = """
             import grails.compiler.beans.GrailsBeans
             import org.springframework.boot.autoconfigure.AutoConfiguration
+            import org.springframework.context.annotation.Bean
+            import org.springframework.context.annotation.Configuration
 
             class Transport { }
             class Adapter { }
+
+            @Configuration
+            class TransportConfig${suffix} {
+                @Bean
+                Transport transport() { new Transport() }
+            }
 
             @GrailsBeans
             @AutoConfiguration
             class ConditionalOnBeanFixture${suffix} {
                 def beans = {
-                    ${transport}
                     bean('adapter', Adapter).conditionalOnBean(Transport) {
                         new Adapter()
                     }
@@ -961,11 +968,18 @@ class GrailsBeansASTTransformationSpec extends Specification {
             }
         """
 
-        and:
+        and: """@ConditionalOnBean matches only against definitions the context has ALREADY processed,
+                which is why Spring restricts it to auto-configurations. Declaring the transport beside
+                the adapter in one block would make this test depend on @Bean method order within a
+                single class - which it did, and which passed locally and failed under an indy-off
+                compile. Registering the supplier first is the ordering the annotation guarantees."""
         GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
         loader.parseClass(source)
         def context = new AnnotationConfigApplicationContext()
         context.classLoader = loader
+        if (transportSupplied) {
+            context.register(loader.loadClass("TransportConfig${suffix}"))
+        }
         context.register(loader.loadClass("ConditionalOnBeanFixture${suffix}"))
 
         when:
@@ -978,9 +992,9 @@ class GrailsBeansASTTransformationSpec extends Specification {
         context.close()
 
         where:
-        description                  | suffix     | transport                                                     | registered
-        'the transport is present'   | 'Present'  | "bean('transport', Transport)"                                | true
-        'the transport is absent'    | 'Absent'   | ''                                                            | false
+        description                  | suffix     | transportSupplied | registered
+        'the transport is present'   | 'Present'  | true              | true
+        'the transport is absent'    | 'Absent'   | false             | false
     }
 
     def "conditionalOnBean rejects the zero-argument form, which would condition a bean on its own type"() {
