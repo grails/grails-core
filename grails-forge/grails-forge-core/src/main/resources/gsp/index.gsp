@@ -8,7 +8,7 @@
        value="${pluginManager.allPlugins.toList()
                .withIndex()
                .collect { p, i -> [plugin: p, order: ((int) i) + 1] }
-               .sort { a, b -> a.plugin.name.toLowerCase() <=> b.plugin.name.toLowerCase() }}"
+               .sort { Map a, Map b -> ((grails.plugins.GrailsPlugin) a.plugin).name.toLowerCase() <=> ((grails.plugins.GrailsPlugin) b.plugin).name.toLowerCase() }}"
 />
 <g:def type="int" var="numControllers" value="${grailsApplication.controllerClasses.size()}"/>
 <g:def type="int" var="numDomains" value="${grailsApplication.domainClasses.size()}"/>
@@ -459,7 +459,7 @@
                                            try { plugin = pluginManager.getPluginForClass(dc.clazz) } catch (Throwable ignored) { }
                                            plugin?.name ?: ''
                                        }
-                                       .sort { a, b -> a.key.toLowerCase() <=> b.key.toLowerCase() }}"/>
+                                       .sort { Map.Entry a, Map.Entry b -> a.key.toString().toLowerCase() <=> b.key.toString().toLowerCase() }}"/>
                         <div id="domains-list">
                             <g:each var="pEntry" in="${domainsByPlugin}" status="pIndex">
                                 <div class="${pIndex > 0 ? 'mt-4' : ''}" data-filter-group>
@@ -566,7 +566,7 @@
                                .collect { l -> [name: (l.getClass().simpleName ?: l.getClass().name.tokenize('.').last()),
                                                 packageName: (l.getClass().package?.name ?: ''),
                                                 detail: l.toString()] }
-                               .sort { a, b -> (a.name.toLowerCase() <=> b.name.toLowerCase()) ?: (a.detail <=> b.detail) }}"/>
+                               .sort { Map a, Map b -> (a.name.toString().toLowerCase() <=> b.name.toString().toLowerCase()) ?: (a.detail.toString() <=> b.detail.toString()) }}"/>
                 <g:set var="bindingGroups"
                        value="${[[code: 'welcome.binding.value', beans: applicationContext.getBeansOfType(grails.databinding.converters.ValueConverter)],
                                  [code: 'welcome.binding.formatted', beans: applicationContext.getBeansOfType(grails.databinding.converters.FormattedValueConverter)],
@@ -1341,7 +1341,7 @@
                 <g:set var="mimeTypes"
                        value="${applicationContext.containsBean('mimeTypes') ?
                                applicationContext.getBean('mimeTypes').toList()
-                                       .sort { a, b -> ((a.extension ?: '').toLowerCase() <=> (b.extension ?: '').toLowerCase()) ?: (a.name <=> b.name) } : []}"/>
+                                       .sort { grails.web.mime.MimeType a, grails.web.mime.MimeType b -> ((a.extension ?: '').toLowerCase() <=> (b.extension ?: '').toLowerCase()) ?: (a.name <=> b.name) } : []}"/>
                 <div class="card border-1 shadow-sm mt-4">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-3">
