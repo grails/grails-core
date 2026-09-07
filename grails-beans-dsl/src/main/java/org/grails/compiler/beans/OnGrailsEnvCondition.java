@@ -25,6 +25,7 @@ import java.util.Map;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.util.ClassUtils;
 
 /**
  * Matches when the current Grails environment is one of those named by
@@ -75,7 +76,11 @@ public class OnGrailsEnvCondition implements Condition {
 
     private String currentEnvironmentNameFromGrails(ClassLoader classLoader) {
         try {
-            ClassLoader loader = classLoader != null ? classLoader : getClass().getClassLoader();
+            // ConditionContext.getClassLoader() is allowed to be null early in bootstrapping.
+            // Spring's own class-presence checks fall back to getDefaultClassLoader(), which tries
+            // the thread context loader first - the one that can see Grails when this class and the
+            // application are loaded by different loaders, as under Boot's LaunchedClassLoader.
+            ClassLoader loader = classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader();
             Class<?> environmentClass = Class.forName(ENVIRONMENT_CLASS, true, loader);
             Object current = environmentClass.getMethod("getCurrent").invoke(null);
             if (current == null) {
@@ -85,9 +90,18 @@ public class OnGrailsEnvCondition implements Condition {
             Object name = getName.invoke(current);
             return name == null ? null : name.toString().toLowerCase(Locale.ENGLISH);
         }
-        catch (ReflectiveOperationException | RuntimeException ignored) {
+        catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
             // Not a Grails application, or an Environment that cannot answer - fall back to the
             // property rather than fail a condition the rest of the context depends on.
+            //
+            // LinkageError is not paranoia: ClassNotFoundException only covers the class being
+            // absent from the loader that was asked. A class present but unlinkable - a transitive
+            // dependency missing, a version mismatch - raises NoClassDefFoundError, and initializing
+            // Environment (Class.forName with initialize = true, which is what reading getCurrent
+            // needs) can raise ExceptionInInitializerError. Both are LinkageError, neither is a
+            // ReflectiveOperationException, and either would otherwise be thrown out of matches()
+            // and fail the whole configuration this condition was meant to skip quietly.
+            // VirtualMachineError is deliberately still not caught.
             return null;
         }
     }
