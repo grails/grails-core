@@ -202,16 +202,6 @@ class ControllersAutoConfigurationSpec extends Specification {
                 }
     }
 
-    private WebApplicationContextRunner hiddenMethodContextRunner() {
-        def grailsApplication = Mock(GrailsApplication) {
-            getClassLoader() >> getClass().classLoader
-        }
-        Supplier<GrailsApplication> grailsApplicationSupplier = () -> grailsApplication
-        new WebApplicationContextRunner()
-                .withBean(GrailsApplication, grailsApplicationSupplier)
-                .withConfiguration(AutoConfigurations.of(ControllersAutoConfiguration, WebMvcAutoConfiguration))
-    }
-
     private static MockServletContext servletContextWithWebApplicationContext() {
         def servletContext = new MockServletContext()
         def webApplicationContext = new StaticWebApplicationContext()

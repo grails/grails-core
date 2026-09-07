@@ -3315,9 +3315,10 @@ def uri = webRequest.currentRequest.requestURI
 def uri = webRequest.request.requestURI
 ----
 
-Nothing about the value returned has changed, so this is a rename, not a behaviour change. Code that
-reaches for the uploaded files of a multipart request should use the `request.getFile(..)` methods
-described in section 53.
+`getRequest()` is not new - it has always been there on Spring's `ServletRequestAttributes`. What changed is
+that `getCurrentRequest()` no longer returns anything different from it, so switching is a change of caller,
+not of behaviour. Code that reaches for the uploaded files of a multipart request should use the
+`request.getFile(..)` methods described in section 53.
 
 Tests that mock a `GrailsWebRequest` and stub `getCurrentRequest()` need updating. `getRequest()` is
 `final` on Spring's `ServletRequestAttributes`, so `getCurrentRequest()` was the only stubbable request
