@@ -1,4 +1,5 @@
 <%@ page import="grails.util.Environment"%>
+<%@ page import="grails.web.mime.MimeType"%>
 <%@ page import="org.springframework.boot.SpringBootVersion"%>
 <%@ page import="org.springframework.core.SpringVersion"%>
 <%@ page import="org.springframework.util.ClassUtils"%>
@@ -1341,7 +1342,7 @@
                 <g:set var="mimeTypes"
                        value="${applicationContext.containsBean('mimeTypes') ?
                                applicationContext.getBean('mimeTypes').toList()
-                                       .sort { grails.web.mime.MimeType a, grails.web.mime.MimeType b -> ((a.extension ?: '').toLowerCase() <=> (b.extension ?: '').toLowerCase()) ?: (a.name <=> b.name) } : []}"/>
+                                       .sort { MimeType a, MimeType b -> ((a.extension ?: '').toLowerCase() <=> (b.extension ?: '').toLowerCase()) ?: (a.name <=> b.name) } : []}"/>
                 <div class="card border-1 shadow-sm mt-4">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-3">
