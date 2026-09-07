@@ -52,12 +52,10 @@ class RequestPathController {
         render(report() as JSON)
     }
 
+    // Forwards to the member URL rather than naming an action, so the internal dispatch is routed by the
+    // mappings and reports which method they matched it on.
     def forwarding() {
-        forward(action: 'forwarded')
-    }
-
-    def forwarded() {
-        render(report() as JSON)
+        forward(uri: '/request-path/1')
     }
 
     private Map report(RequestPathCommand command = null) {

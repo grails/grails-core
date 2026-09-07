@@ -107,6 +107,35 @@ class RequestPathSpec extends Specification implements HttpClientSupport {
         response.json().action == 'update'
     }
 
+    def 'an override the dispatcher resolved still routes an internal dispatch'() {
+        when: 'a form POST naming DELETE reaches an action that forwards to the member URL'
+        def response = httpPostForm('/requestPath/forwarding', [_method: 'DELETE'])
+
+        then: 'the forward is routed on the method the dispatcher resolved, as it is under the servlet filter'
+        response.assertStatus(200)
+        response.json().action == 'delete'
+        response.json().forwarded == true
+    }
+
+    def 'a forward without an override routes as the method the request arrived as'() {
+        when:
+        def response = httpPostForm('/requestPath/forwarding', [description: 'forwarded without a parameter'])
+
+        then: 'the member URL answers a plain POST at update'
+        response.assertStatus(200)
+        response.json().action == 'update'
+        response.json().forwarded == true
+    }
+
+    def 'a forward from an unrestricted controller is not refused by the target allowedMethods'() {
+        when: 'a GET reaches an unrestricted action that forwards into a DELETE-only action elsewhere'
+        def response = http('/requestPathForwarder/forwardToRestricted')
+
+        then: 'it is admitted - the first action recorded that it began handling this request'
+        response.assertStatus(200)
+        response.json().action == 'delete'
+    }
+
     def 'a real DELETE still routes as itself'() {
         when:
         def response = httpDelete('/request-path/1')
