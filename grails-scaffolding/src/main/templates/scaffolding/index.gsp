@@ -1,4 +1,4 @@
-@{ model="List<${fullName}> ${propertyName}List; Integer ${propertyName}Count" }
+@{ model="List<${fullName}> ${propertyName}List; Long ${propertyName}Count" }
 <!DOCTYPE html>
 <html>
 <head>
