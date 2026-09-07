@@ -9,7 +9,7 @@
        value="${pluginManager.allPlugins.toList()
                .withIndex()
                .collect { p, i -> [plugin: p, order: ((int) i) + 1] }
-               .sort { Map a, Map b -> ((grails.plugins.GrailsPlugin) a.plugin).name.toLowerCase() <=> ((grails.plugins.GrailsPlugin) b.plugin).name.toLowerCase() }}"
+               .sort { Map row -> ((grails.plugins.GrailsPlugin) row.plugin).name.toLowerCase() }}"
 />
 <g:def type="int" var="numControllers" value="${grailsApplication.controllerClasses.size()}"/>
 <g:def type="int" var="numDomains" value="${grailsApplication.domainClasses.size()}"/>
@@ -456,11 +456,11 @@
                         <g:set var="domainsByPlugin"
                                value="${grailsApplication.domainClasses.toList()
                                        .groupBy { dc ->
-                                           def plugin = null
-                                           try { plugin = pluginManager.getPluginForClass(dc.clazz) } catch (Throwable ignored) { }
-                                           plugin?.name ?: ''
+                                           String pluginName = ''
+                                           try { pluginName = pluginManager.getPluginForClass(dc.clazz)?.name ?: '' } catch (Throwable ignored) { }
+                                           pluginName
                                        }
-                                       .sort { Map.Entry a, Map.Entry b -> a.key.toString().toLowerCase() <=> b.key.toString().toLowerCase() }}"/>
+                                       .sort { it.key.toLowerCase() }}"/>
                         <div id="domains-list">
                             <g:each var="pEntry" in="${domainsByPlugin}" status="pIndex">
                                 <div class="${pIndex > 0 ? 'mt-4' : ''}" data-filter-group>
@@ -567,7 +567,7 @@
                                .collect { l -> [name: (l.getClass().simpleName ?: l.getClass().name.tokenize('.').last()),
                                                 packageName: (l.getClass().package?.name ?: ''),
                                                 detail: l.toString()] }
-                               .sort { Map a, Map b -> (a.name.toString().toLowerCase() <=> b.name.toString().toLowerCase()) ?: (a.detail.toString() <=> b.detail.toString()) }}"/>
+                               .sort { Map<String, String> a, Map<String, String> b -> (a.name.toLowerCase() <=> b.name.toLowerCase()) ?: (a.detail <=> b.detail) }}"/>
                 <g:set var="bindingGroups"
                        value="${[[code: 'welcome.binding.value', beans: applicationContext.getBeansOfType(grails.databinding.converters.ValueConverter)],
                                  [code: 'welcome.binding.formatted', beans: applicationContext.getBeansOfType(grails.databinding.converters.FormattedValueConverter)],
