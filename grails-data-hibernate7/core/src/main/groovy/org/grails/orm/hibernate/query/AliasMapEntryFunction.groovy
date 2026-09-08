@@ -16,20 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.query;
+package org.grails.orm.hibernate.query
 
-/**
- * Represents a property path combined with a scalar arithmetic operand,
- * e.g. {@code price * 10} in a where-DSL expression.
- * <p>
- * At query-build time {@link PredicateGenerator} resolves this into the
- * appropriate JPA {@code CriteriaBuilder} arithmetic expression
- * ({@code cb.prod}, {@code cb.sum}, {@code cb.diff}, {@code cb.quot}).
- */
-public record PropertyArithmetic(String propertyName, Operator operator, Number operand) {
+import java.util.function.Function
 
-    public enum Operator {
-        MULTIPLY, ADD, SUBTRACT, DIVIDE
+import groovy.transform.CompileStatic
+
+import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria
+
+/** Maps detached association criteria by association path for alias registration. */
+@CompileStatic
+class AliasMapEntryFunction
+        implements Function<DetachedAssociationCriteria<?>, Map.Entry<String, DetachedAssociationCriteria<?>>> {
+
+    @Override
+    Map.Entry<String, DetachedAssociationCriteria<?>> apply(
+            DetachedAssociationCriteria<?> detachedAssociationCriteria) {
+        return Map.entry(detachedAssociationCriteria.associationPath, detachedAssociationCriteria)
     }
 
 }

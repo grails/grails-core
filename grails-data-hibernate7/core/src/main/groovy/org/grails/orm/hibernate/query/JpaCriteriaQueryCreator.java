@@ -260,7 +260,7 @@ public class JpaCriteriaQueryCreator<T> {
                 }
             } else if (criterion instanceof DetachedAssociationCriteria<?> dac) {
                 if (dac.getAlias() != null) {
-                    context.registerAlias(dac.getAlias(), new HibernateAlias(dac.getAssociationPath(), dac.getAlias()));
+                    context.registerAlias(dac.getAlias(), new HibernateAlias(dac.getAssociationPath(), dac.getAlias(), JoinType.INNER));
                 }
                 discoverAliases(dac.getCriteria(), context);
             } else if (criterion instanceof Query.PropertyNameCriterion pnc) {
@@ -269,7 +269,7 @@ public class JpaCriteriaQueryCreator<T> {
                     String alias = propertyName.substring(0, propertyName.indexOf("."));
                     // Only register if not already known in this or parent context
                     if (!context.hasAlias(alias)) {
-                        context.registerAlias(alias, new HibernateAlias(alias, alias));
+                        context.registerAlias(alias, new HibernateAlias(alias, alias, JoinType.INNER));
                     }
                 }
             } else if (criterion instanceof Query.Junction junction) {

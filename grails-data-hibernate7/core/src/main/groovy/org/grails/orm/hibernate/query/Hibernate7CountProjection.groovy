@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.orm.hibernate.query;
+package org.grails.orm.hibernate.query
 
-import org.grails.datastore.mapping.query.Query;
+import groovy.transform.CompileStatic
+
+import org.grails.datastore.mapping.query.Query
 
 /**
  * A {@link Query.CountProjection} that also includes a property name.
@@ -23,14 +25,17 @@ import org.grails.datastore.mapping.query.Query;
  * @author graemerocher
  * @since 7.0.0
  */
-public class Hibernate7CountProjection extends Query.CountProjection {
-    private final String propertyName;
+@CompileStatic
+class Hibernate7CountProjection extends Query.CountProjection {
 
-    public Hibernate7CountProjection(String propertyName) {
-        this.propertyName = propertyName;
+    private final String propertyName
+
+    Hibernate7CountProjection(String propertyName) {
+        this.propertyName = propertyName
     }
 
-    public String getPropertyName() {
-        return propertyName;
+    String getPropertyName() {
+        return propertyName
     }
+
 }
