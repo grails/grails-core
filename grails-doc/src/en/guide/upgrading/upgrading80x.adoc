@@ -3590,3 +3590,26 @@ whatever a controller supplies:
 ----
 @{ model="List<Book> bookList; Number bookCount" }
 ----
+
+The GraphQL count field changes type with it. `graphql-java` maps `Long` to
+`ExtendedScalars.GraphQLLong`, so a schema that exposed
+
+[source,graphql]
+----
+type Query {
+  personCount: Int
+}
+----
+
+now exposes
+
+[source,graphql]
+----
+type Query {
+  personCount: Long
+}
+----
+
+Queries that select the field are unchanged and the JSON value is unchanged, but generated clients and
+schema snapshots need regenerating. The count fetcher previously narrowed the datastore result to fit
+`Int`, so counts above `Integer.MAX_VALUE` were truncated there too.
