@@ -403,7 +403,10 @@ public abstract class AbstractMongoObectEntityPersister<T> extends NativeEntryEn
                     PersistentEntity childPersistentEntity =
                             getMappingContext().getPersistentEntity(o.getClass().getName());
                     EntityAccess entityAccess = createEntityAccess(childPersistentEntity, o);
-                    ids.add(entityAccess.getIdentifier());
+                    // Stored in the target's _id type for the same reason as every other
+                    // association reference.
+                    ids.add(MongoIdCoercion.coerceIdToStoredType(
+                            entityAccess.getIdentifier(), childPersistentEntity));
                 }
             }
         }
@@ -452,11 +455,15 @@ public abstract class AbstractMongoObectEntityPersister<T> extends NativeEntryEn
             if (!association.isBidirectional()) {
                 List dbRefs = new ArrayList();
                 for (Object foreignKey : foreignKeys) {
+                    // Same as formulateDatabaseReference: the stored reference must carry the
+                    // target's _id type, or raw joins and DBRef consumers cannot match it.
+                    Object coerced = MongoIdCoercion.coerceIdToStoredType(
+                            foreignKey, association.getAssociatedEntity());
                     if (isReference) {
-                        dbRefs.add(new DBRef(getCollectionName(association.getAssociatedEntity()), foreignKey));
+                        dbRefs.add(new DBRef(getCollectionName(association.getAssociatedEntity()), coerced));
                     }
                     else {
-                        dbRefs.add(foreignKey);
+                        dbRefs.add(coerced);
                     }
                 }
                 // update the native entry directly.

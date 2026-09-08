@@ -54,10 +54,10 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
     MongoDatastore mappingEngineDatastore
 
     void setupSpec() {
-        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset)
+        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag)
         mappingEngineDatastore = new MongoDatastore(
                 manager.configuration + [(MongoSettings.SETTING_ENGINE): 'mapping'],
-                MeVideo, MeOwner, MeAsset)
+                MeVideo, MeOwner, MeAsset, MeTag)
     }
 
     void "the datastore under test really is the mapping engine"() {
@@ -192,6 +192,27 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
         rawAsset.get('owner') == new ObjectId(toId)
     }
 
+    void "a unidirectional one-to-many stores keys in the target's stored _id type"() {
+        given: 'the keys are held on the owning document, written by the association indexer'
+        String assetId = null
+        String tagAId = null, tagBId = null
+        mappingEngineDatastore.withSession { Session s ->
+            MeTag a = new MeTag(label: 'uni-a'); MeTag b = new MeTag(label: 'uni-b')
+            s.persist(a); s.persist(b); s.flush()
+            tagAId = a.id; tagBId = b.id
+            MeAsset asset = new MeAsset(label: 'Tagged')
+            asset.tags = [a, b]
+            s.persist(asset); s.flush(); assetId = asset.id
+        }
+
+        when:
+        Document raw = raw('meAsset').find(new Document('_id', new ObjectId(assetId))).first()
+
+        then:
+        raw.get('tags').every { it instanceof ObjectId }
+        raw.get('tags') as Set == [new ObjectId(tagAId), new ObjectId(tagBId)] as Set
+    }
+
     private String persist(Closure<?> make) {
         String id = null
         mappingEngineDatastore.withSession { Session s ->
@@ -227,5 +248,14 @@ class MeAsset {
     String id
     String label
     MeOwner owner
+    Set<MeTag> tags = []
+    static hasMany = [tags: MeTag]
+    static mapping = { version false }
+}
+
+@Entity
+class MeTag {
+    String id
+    String label
     static mapping = { version false }
 }
