@@ -155,10 +155,10 @@ public class HibernateMappingContextConfiguration extends Configuration
             properties.put("hibernate.enhancer.enableDirtyTracking", FALSE_LITERAL);
             properties.put("hibernate.enhancer.enableAssociationManagement", FALSE_LITERAL);
             ClassLoader applicationClassLoader = applicationContext.getClassLoader();
-            // Keep CLASSLOADERS absent when the context loader is null and DevTools is not
+            // Keep CLASSLOADERS absent when the context loader is null and DevTools restart is not
             // active so buildSessionFactory can fall back to this class's loader.
             if (applicationClassLoader != null ||
-                    DevToolsClassLoaders.isRestartClassLoader(Thread.currentThread().getContextClassLoader())) {
+                    DevToolsClassLoaders.isRestartClassLoaderOrDescendant(Thread.currentThread().getContextClassLoader())) {
                 properties.put(AvailableSettings.CLASSLOADERS,
                         DevToolsClassLoaders.preferRestartClassLoader(applicationClassLoader));
             }
@@ -374,9 +374,9 @@ public class HibernateMappingContextConfiguration extends Configuration
         Object classLoaderObject = getProperties().get(AvailableSettings.CLASSLOADERS);
         ClassLoader storedClassLoader = classLoaderObject instanceof ClassLoader ?
                 (ClassLoader) classLoaderObject : getClass().getClassLoader();
-        // Re-check TCCL: addProperties() / a custom configClass can overwrite CLASSLOADERS
-        // after the setters. GrailsDomainBinder.bindClass only setClassName(entityName);
-        // Hibernate then re-resolves Class via ReflectHelper.classForName (TCCL).
+        // addProperties() or a custom configClass may have replaced CLASSLOADERS after the
+        // setters ran. GrailsDomainBinder binds entities by class name and Hibernate resolves
+        // them through this loader, so it has to see the restarted application classes.
         return DevToolsClassLoaders.preferRestartClassLoader(storedClassLoader);
     }
 

@@ -332,6 +332,89 @@ class HibernateMappingContextConfigurationSpec extends Specification {
         Thread.currentThread().contextClassLoader = originalCl
     }
 
+    def "setApplicationContext prefers a thread context class loader that delegates to the RestartClassLoader over the context class loader"() {
+        given: "a servlet container has swapped its web application loader in during context start"
+        def config = new HibernateMappingContextConfiguration()
+        ClassLoader contextLoader = new URLClassLoader([] as URL[], Thread.currentThread().contextClassLoader)
+        ApplicationContext appCtx = Stub(ApplicationContext) {
+            containsBean("dataSource") >> false
+            getClassLoader() >> contextLoader
+        }
+        ClassLoader containerLoader = new URLClassLoader([] as URL[], restartClassLoader())
+        def originalCl = Thread.currentThread().contextClassLoader
+
+        when:
+        Thread.currentThread().contextClassLoader = containerLoader
+        config.setApplicationContext(appCtx)
+
+        then:
+        config.getProperties().get(AvailableSettings.CLASSLOADERS).is(containerLoader)
+
+        cleanup:
+        Thread.currentThread().contextClassLoader = originalCl
+    }
+
+    def "setApplicationContext with a null context class loader uses a thread context class loader that delegates to the RestartClassLoader"() {
+        given:
+        def config = new HibernateMappingContextConfiguration()
+        ApplicationContext appCtx = Stub(ApplicationContext) {
+            containsBean("dataSource") >> false
+            getClassLoader() >> null
+        }
+        ClassLoader containerLoader = new URLClassLoader([] as URL[], restartClassLoader())
+        def originalCl = Thread.currentThread().contextClassLoader
+
+        when:
+        Thread.currentThread().contextClassLoader = containerLoader
+        config.setApplicationContext(appCtx)
+
+        then:
+        config.getProperties().get(AvailableSettings.CLASSLOADERS).is(containerLoader)
+
+        cleanup:
+        Thread.currentThread().contextClassLoader = originalCl
+    }
+
+    def "setDataSourceConnectionSource uses a thread context class loader that delegates to the RestartClassLoader"() {
+        given:
+        def config = new HibernateMappingContextConfiguration()
+        DataSource ds = Stub(DataSource)
+        ConnectionSource<DataSource, DataSourceSettings> connSrc = Stub(ConnectionSource) {
+            getName() >> ConnectionSource.DEFAULT
+            getSource() >> ds
+        }
+        ClassLoader containerLoader = new URLClassLoader([] as URL[], restartClassLoader())
+        def originalCl = Thread.currentThread().contextClassLoader
+
+        when:
+        Thread.currentThread().contextClassLoader = containerLoader
+        config.setDataSourceConnectionSource(connSrc)
+
+        then:
+        config.getProperties().get(AvailableSettings.CLASSLOADERS).is(containerLoader)
+        config.getProperties().get(JdbcSettings.JAKARTA_NON_JTA_DATASOURCE).is(ds)
+
+        cleanup:
+        Thread.currentThread().contextClassLoader = originalCl
+    }
+
+    def "resolveSessionFactoryClassLoader keeps a configured class loader that delegates to the RestartClassLoader"() {
+        given:
+        def config = new HibernateMappingContextConfiguration()
+        ClassLoader configuredLoader = new URLClassLoader([] as URL[], restartClassLoader())
+        config.getProperties().put(AvailableSettings.CLASSLOADERS, configuredLoader)
+        def originalCl = Thread.currentThread().contextClassLoader
+
+        when:
+        Thread.currentThread().contextClassLoader = new URLClassLoader([] as URL[], originalCl)
+
+        then:
+        config.resolveSessionFactoryClassLoader().is(configuredLoader)
+
+        cleanup:
+        Thread.currentThread().contextClassLoader = originalCl
+    }
+
     def "setApplicationContext when datasource property already set does not overwrite it"() {
         given:
         def config = new HibernateMappingContextConfiguration()
@@ -513,6 +596,12 @@ class HibernateMappingContextConfigurationSpec extends Specification {
         
         expect:
         config.getProperties().get(AvailableSettings.CLASSLOADERS).is(cl)
+    }
+
+    private static ClassLoader restartClassLoader() {
+        new GroovyClassLoader().parseClass(
+                'class RestartClassLoader extends ClassLoader {}'
+        ).getDeclaredConstructor().newInstance() as ClassLoader
     }
 }
 
