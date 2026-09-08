@@ -16,13 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.mapping.mongo.engine;
+package org.grails.datastore.mapping.mongo.engine
 
-import org.springframework.core.convert.ConversionService;
+import groovy.transform.CompileStatic
+import org.springframework.core.convert.ConversionService
 
-import org.grails.datastore.mapping.model.ClassMapping;
-import org.grails.datastore.mapping.model.IdentityMapping;
-import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.ClassMapping
+import org.grails.datastore.mapping.model.IdentityMapping
+import org.grails.datastore.mapping.model.PersistentEntity
 
 /**
  * Centralizes coercion of an identifier value to the {@code storedAs} type declared
@@ -39,7 +40,8 @@ import org.grails.datastore.mapping.model.PersistentEntity;
  *
  * @since 7.1.1
  */
-public final class MongoIdCoercion {
+@CompileStatic
+final class MongoIdCoercion {
 
     private MongoIdCoercion() {
     }
@@ -49,16 +51,19 @@ public final class MongoIdCoercion {
      * if the mapping doesn't declare one (or the mapping implementation predates
      * {@link IdentityMapping#getStoredAs()}).
      */
-    public static Class<?> resolveStoredAs(PersistentEntity entity) {
-        if (entity == null) return null;
-        try {
-            ClassMapping<?> mapping = entity.getMapping();
-            if (mapping == null) return null;
-            IdentityMapping identifier = mapping.getIdentifier();
-            return identifier != null ? identifier.getStoredAs() : null;
+    static Class<?> resolveStoredAs(PersistentEntity entity) {
+        if (entity == null) {
+            return null
         }
-        catch (Exception ignored) {
-            return null;
+        try {
+            ClassMapping<?> mapping = entity.getMapping()
+            if (mapping == null) {
+                return null
+            }
+            IdentityMapping identifier = mapping.getIdentifier()
+            return identifier != null ? identifier.getStoredAs() : null
+        } catch (Exception ignored) {
+            return null
         }
     }
 
@@ -77,17 +82,21 @@ public final class MongoIdCoercion {
      *   <li>the converter throws.</li>
      * </ul>
      */
-    public static Object coerceIdToStoredType(Object key, PersistentEntity entity) {
-        if (key == null) return null;
-        Class<?> storedAs = resolveStoredAs(entity);
-        if (storedAs == null || storedAs.isInstance(key)) return key;
-        try {
-            ConversionService cs = entity.getMappingContext().getConversionService();
-            Object converted = cs.convert(key, storedAs);
-            return converted != null ? converted : key;
+    static Object coerceIdToStoredType(Object key, PersistentEntity entity) {
+        if (key == null) {
+            return null
         }
-        catch (Exception ignored) {
-            return key;
+        Class<?> storedAs = resolveStoredAs(entity)
+        if (storedAs == null || storedAs.isInstance(key)) {
+            return key
+        }
+        try {
+            ConversionService cs = entity.getMappingContext().getConversionService()
+            Object converted = cs.convert(key, storedAs)
+            return converted != null ? converted : key
+        } catch (Exception ignored) {
+            return key
         }
     }
+
 }
