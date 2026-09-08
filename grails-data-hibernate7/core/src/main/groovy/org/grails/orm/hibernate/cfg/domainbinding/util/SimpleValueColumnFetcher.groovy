@@ -16,28 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.util;
+package org.grails.orm.hibernate.cfg.domainbinding.util
 
-import java.util.Optional;
-import java.util.function.Function;
+import groovy.transform.CompileStatic
+import org.hibernate.mapping.Column
+import org.hibernate.mapping.SimpleValue
 
-/**
- * Removes matching leading and trailing backticks from mapping names.
- * Used to strip the Groovy backtick-quoting convention from property and column names
- * before passing them to the Hibernate mapping layer.
- *
- * @since 8.0
- */
-public class BackticksRemover implements Function<String, String> {
+@CompileStatic
+class SimpleValueColumnFetcher {
 
-    public static final String BACKTICK = "`";
-
-    @Override
-    public String apply(String string) {
-        return Optional.ofNullable(string)
-                .map(String::trim)
-                .filter(s -> s.length() >= 2 && s.startsWith(BACKTICK) && s.endsWith(BACKTICK))
-                .map(s -> s.substring(1, s.length() - 1))
-                .orElse(string);
+    Column getColumnForSimpleValue(SimpleValue element) {
+        return element.columns.isEmpty() ? null : element.columns.iterator().next()
     }
+
 }

@@ -16,37 +16,40 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.util;
+package org.grails.orm.hibernate.cfg.domainbinding.util
 
-import org.hibernate.mapping.Property;
-import org.hibernate.mapping.Value;
+import groovy.transform.CompileStatic
+import org.hibernate.mapping.Property
+import org.hibernate.mapping.Value
 
-import org.grails.orm.hibernate.cfg.domainbinding.binder.PropertyBinder;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEnumProperty;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
+import org.grails.orm.hibernate.cfg.domainbinding.binder.PropertyBinder
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEnumProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 
-public class PropertyFromValueCreator {
+@CompileStatic
+class PropertyFromValueCreator {
 
-    private final PropertyBinder propertyBinder;
+    private final PropertyBinder propertyBinder
 
-    public PropertyFromValueCreator() {
-        this.propertyBinder = new PropertyBinder();
+    PropertyFromValueCreator() {
+        this.propertyBinder = new PropertyBinder()
     }
 
     protected PropertyFromValueCreator(PropertyBinder propertyBinder) {
-        this.propertyBinder = propertyBinder;
+        this.propertyBinder = propertyBinder
     }
 
-    public Property createProperty(Value value, HibernatePersistentProperty grailsProperty) {
+    Property createProperty(Value value, HibernatePersistentProperty grailsProperty) {
         // set type
         if (!(grailsProperty instanceof HibernateEnumProperty)) {
-            value.setTypeUsingReflection(grailsProperty.getOwnerClassName(), grailsProperty.getName());
+            value.setTypeUsingReflection(grailsProperty.ownerClassName, grailsProperty.name)
         }
 
-        if (value.getTable() != null) {
-            value.createForeignKey();
+        if (value.table != null) {
+            value.createForeignKey()
         }
 
-        return propertyBinder.bindProperty(grailsProperty, value);
+        return propertyBinder.bindProperty(grailsProperty, value)
     }
+
 }
