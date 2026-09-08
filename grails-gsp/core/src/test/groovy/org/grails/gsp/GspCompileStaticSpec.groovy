@@ -247,6 +247,19 @@ Date d4=new Date(123L)
         rendered == '42'
     }
 
+    def "a Number model field accepts every numeric type a controller may supply"() {
+        given:
+        def template = '''@{ model="Number sampleCount"}${sampleCount}'''
+        when:
+        def rendered = renderTemplate(template, [sampleCount: supplied], true)
+        then:
+        rendered == '42'
+        where:
+        // scaffolded controllers supply Long via the generated service and Integer
+        // via RestfulController.countResources()
+        supplied << [42 as Integer, 42L, 42 as Short, 42 as BigInteger]
+    }
+
     def "a model value of the wrong type names the field and both types"() {
         given:
         def template = '''@{ model="Integer sampleCount"}${sampleCount}'''
