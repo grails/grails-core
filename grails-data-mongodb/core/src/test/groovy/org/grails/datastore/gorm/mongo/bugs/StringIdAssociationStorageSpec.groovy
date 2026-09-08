@@ -40,7 +40,7 @@ import org.bson.types.ObjectId
 class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTckManager> {
 
     void setupSpec() {
-        manager.registerDomainClasses(RefProject, RefTicket, RefTag)
+        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson)
     }
 
     void "a to-one reference is written as the target's stored _id type"() {
@@ -310,6 +310,25 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         raw.get('project') == new ObjectId(to.id)
     }
 
+    void "updateAll writes an embedded association as a subdocument, not an id"() {
+        given: 'Embedded extends ToOne, so id-reference normalization must skip it'
+        RefPerson p = new RefPerson(name: 'Embedded owner', address: new RefAddress(city: 'before'))
+        p.save(flush: true)
+
+        when:
+        manager.session.clear()
+        RefPerson.where { name == 'Embedded owner' }.updateAll(address: new RefAddress(city: 'after'))
+        Document raw = rawPeople().find(new Document('_id', new ObjectId(p.id))).first()
+
+        then: 'a subdocument, not a scalar id or null'
+        raw.get('address') instanceof Document
+        raw.get('address').getString('city') == 'after'
+    }
+
+    private MongoCollection<Document> rawPeople() {
+        manager.mongoClient.getDatabase('test').getCollection('refPerson')
+    }
+
     private MongoCollection<Document> rawTickets() {
         manager.mongoClient.getDatabase('test').getCollection('refTicket')
     }
@@ -347,4 +366,18 @@ class RefTag {
     static mapping = {
         version false
     }
+}
+
+@Entity
+class RefPerson {
+    String id
+    String name
+    RefAddress address
+    static embedded = ['address']
+    static mapping = { version false }
+}
+
+@Entity
+class RefAddress {
+    String city
 }

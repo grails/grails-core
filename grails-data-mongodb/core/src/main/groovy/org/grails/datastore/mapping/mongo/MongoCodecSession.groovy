@@ -60,6 +60,7 @@ import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.Association
+import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
@@ -354,7 +355,11 @@ class MongoCodecSession extends AbstractMongoSession {
         Map<String, Object> updateProperties = new LinkedHashMap<String, Object>(properties)
         for (Association association in entity.associations) {
             String associationName = association.name
-            if (association instanceof ToOne && updateProperties.containsKey(associationName)) {
+            // Embedded extends ToOne, but an embedded value is a subdocument with no
+            // identity of its own -- normal persistence encodes it through the embedded
+            // path, not ToOneEncoder. Reflecting an id from one yields null.
+            if (association instanceof ToOne && !(association instanceof Embedded)
+                    && updateProperties.containsKey(associationName)) {
                 def value = updateProperties.get(associationName)
                 if (value != null) {
                     // Write the reference exactly as ToOneEncoder does on the normal

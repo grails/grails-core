@@ -58,6 +58,7 @@ import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.model.types.Embedded;
 import org.grails.datastore.mapping.model.types.ToOne;
 import org.grails.datastore.mapping.mongo.config.MongoAttribute;
 import org.grails.datastore.mapping.mongo.engine.AbstractMongoObectEntityPersister;
@@ -378,7 +379,11 @@ public class MongoSession extends AbstractMongoSession {
         final Map<String, Object> updateProperties = new LinkedHashMap<String, Object>(properties);
         for (Association association : entity.getAssociations()) {
             final String associationName = association.getName();
-            if (association instanceof ToOne && updateProperties.containsKey(associationName)) {
+            // Embedded extends ToOne, but an embedded value is a subdocument with no
+            // identity of its own -- normal persistence encodes it through the embedded
+            // path, not ToOneEncoder. Reflecting an id from one yields null.
+            if (association instanceof ToOne && !(association instanceof Embedded)
+                    && updateProperties.containsKey(associationName)) {
                 final Object value = updateProperties.get(associationName);
                 if (value != null) {
                     final PersistentEntity associatedEntity = association.getAssociatedEntity();
