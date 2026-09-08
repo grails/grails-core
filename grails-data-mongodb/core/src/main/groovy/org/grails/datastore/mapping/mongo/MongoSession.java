@@ -64,6 +64,7 @@ import org.grails.datastore.mapping.mongo.engine.AbstractMongoObectEntityPersist
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister;
 import org.grails.datastore.mapping.mongo.engine.MongoIdCoercion;
 import org.grails.datastore.mapping.mongo.query.MongoQuery;
+import org.grails.datastore.mapping.proxy.ProxyFactory;
 import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.api.QueryableCriteria;
 
@@ -381,9 +382,14 @@ public class MongoSession extends AbstractMongoSession {
                 final Object value = updateProperties.get(associationName);
                 if (value != null) {
                     final PersistentEntity associatedEntity = association.getAssociatedEntity();
-                    final Object associationId = MongoIdCoercion.coerceIdToStoredType(
-                            getMappingContext().getEntityReflector(associatedEntity).getIdentifier(value),
-                            associatedEntity);
+                    // A lazy proxy keeps its id in the proxy handler, not in the reflected
+                    // field, so reflecting one yields null. ToOneEncoder asks the proxy
+                    // factory first for the same reason.
+                    final ProxyFactory proxyFactory = getMappingContext().getProxyFactory();
+                    final Object declaredId = proxyFactory.isProxy(value)
+                            ? proxyFactory.getIdentifier(value)
+                            : getMappingContext().getEntityReflector(associatedEntity).getIdentifier(value);
+                    final Object associationId = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity);
                     final MongoAttribute attr = (MongoAttribute) association.getMapping().getMappedForm();
                     if (attr != null && attr.isReference()) {
                         updateProperties.put(associationName,

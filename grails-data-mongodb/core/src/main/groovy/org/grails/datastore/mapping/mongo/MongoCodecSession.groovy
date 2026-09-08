@@ -362,8 +362,14 @@ class MongoCodecSession extends AbstractMongoSession {
                     // mapping asks for one. Otherwise a bulk update leaves a reference that
                     // association queries and external clients cannot match.
                     def associatedEntity = association.associatedEntity
-                    def associationId = MongoIdCoercion.coerceIdToStoredType(
-                            associatedEntity.reflector.getIdentifier(value), associatedEntity)
+                    // A lazy proxy keeps its id in the proxy handler, not in the reflected
+                    // field, so reflecting one yields null. ToOneEncoder asks the proxy
+                    // factory first for the same reason.
+                    def proxyFactory = mappingContext.proxyFactory
+                    def declaredId = proxyFactory.isProxy(value)
+                            ? proxyFactory.getIdentifier(value)
+                            : associatedEntity.reflector.getIdentifier(value)
+                    def associationId = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity)
                     MongoAttribute attr = (MongoAttribute) association.mapping.mappedForm
                     if (attr?.isReference()) {
                         updateProperties.put(associationName,

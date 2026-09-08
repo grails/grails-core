@@ -294,6 +294,22 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         noExceptionThrown()
     }
 
+    void "updateAll extracts the id from a lazy proxy"() {
+        given: 'a proxy keeps its id in the proxy handler, not in the reflected field'
+        RefProject to = new RefProject(name: 'Proxy target').save(flush: true)
+        RefTicket ticket = new RefTicket(title: 'Proxy update', project: to).save(flush: true)
+        RefProject other = new RefProject(name: 'Other').save(flush: true)
+        RefTicket.where { title == 'Proxy update' }.updateAll(project: other)
+
+        when:
+        manager.session.clear()
+        RefTicket.where { title == 'Proxy update' }.updateAll(project: RefProject.load(to.id))
+        Document raw = rawTickets().find(new Document('_id', new ObjectId(ticket.id))).first()
+
+        then: 'reflecting the proxy would have yielded null'
+        raw.get('project') == new ObjectId(to.id)
+    }
+
     private MongoCollection<Document> rawTickets() {
         manager.mongoClient.getDatabase('test').getCollection('refTicket')
     }
