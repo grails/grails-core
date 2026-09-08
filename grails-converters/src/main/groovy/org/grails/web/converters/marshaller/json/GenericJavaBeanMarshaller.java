@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 import grails.converters.JSON;
 import grails.persistence.PersistenceMethod;
@@ -67,7 +66,11 @@ public class GenericJavaBeanMarshaller extends IncludeExcludePropertyMarshaller<
                     if (readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
                     if (readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Method invokableMethod = ClassUtils.getInterfaceMethodIfPossible(readMethod, clazz);
-                    ReflectionUtils.makeAccessible(invokableMethod);
+                    if (!invokableMethod.canAccess(o)) {
+                        // Widen a private copy, so the flag never leaks into the shared descriptor cache
+                        invokableMethod = invokableMethod.getDeclaringClass().getDeclaredMethod(invokableMethod.getName());
+                        invokableMethod.setAccessible(true);
+                    }
                     Object value = invokableMethod.invoke(o, (Object[]) null);
                     writer.key(name);
                     json.convertAnother(value);

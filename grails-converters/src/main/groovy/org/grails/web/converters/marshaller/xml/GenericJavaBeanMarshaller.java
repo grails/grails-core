@@ -25,7 +25,6 @@ import java.lang.reflect.Modifier;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 import grails.converters.XML;
 import org.grails.web.converters.exceptions.ConverterException;
@@ -49,7 +48,11 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<XML> {
                 if (readMethod != null) {
                     if (Modifier.isStatic(readMethod.getModifiers())) continue;
                     Method invokableMethod = ClassUtils.getInterfaceMethodIfPossible(readMethod, o.getClass());
-                    ReflectionUtils.makeAccessible(invokableMethod);
+                    if (!invokableMethod.canAccess(o)) {
+                        // Widen a private copy, so the flag never leaks into the shared descriptor cache
+                        invokableMethod = invokableMethod.getDeclaringClass().getDeclaredMethod(invokableMethod.getName());
+                        invokableMethod.setAccessible(true);
+                    }
                     Object value = invokableMethod.invoke(o, (Object[]) null);
                     xml.startNode(name);
                     xml.convertAnother(value);

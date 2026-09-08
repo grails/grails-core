@@ -18,10 +18,12 @@
  */
 package org.grails.web.converters.marshaller.json
 
+import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 import spock.lang.Specification
 
+import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationContext
 
 import grails.converters.JSON
@@ -208,5 +210,23 @@ class NonPublicClassMarshallingSpec extends Specification {
             return value.collect { normalise(it) }
         }
         value
+    }
+
+    void 'marshalling does not widen access on the shared property descriptor cache'() {
+        given: 'a package-private class with no interface, the only shape that needs widening'
+        def person = JavaPersonFactory.standalonePerson('user')
+
+        expect: 'its cached read method is not invokable from another package to begin with'
+        !readMethodOf(person).canAccess(person)
+
+        when:
+        new JSON(person).toString()
+
+        then: 'marshalling left the flag on the cached instance alone'
+        !readMethodOf(person).canAccess(person)
+    }
+
+    private static Method readMethodOf(Object bean) {
+        BeanUtils.getPropertyDescriptors(bean.getClass()).find { it.name == 'name' }.readMethod
     }
 }
