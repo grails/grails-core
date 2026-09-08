@@ -16,17 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.mapping.mongo;
+package org.grails.datastore.mapping.mongo
 
-import com.mongodb.MongoException;
-import com.mongodb.client.ClientSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.mongodb.MongoException
+import com.mongodb.client.ClientSession
+import groovy.transform.CompileStatic
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.TransactionUsageException
 
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionUsageException;
-
-import org.grails.datastore.mapping.transactions.Transaction;
+import org.grails.datastore.mapping.transactions.Transaction
 
 /**
  * A {@link Transaction} backed by a real MongoDB multi-document transaction on a
@@ -51,39 +51,40 @@ import org.grails.datastore.mapping.transactions.Transaction;
  *
  * @since 8.0
  */
-public class MongoTransaction implements Transaction<ClientSession> {
+@CompileStatic
+class MongoTransaction implements Transaction<ClientSession> {
 
     /**
      * Maximum number of times {@link ClientSession#commitTransaction()} is retried when the server
      * reports an {@code UnknownTransactionCommitResult} (i.e. the commit outcome is unknown and the
      * operation is safe to retry).
      */
-    private static final int MAX_COMMIT_RETRIES = 3;
+    private static final int MAX_COMMIT_RETRIES = 3
 
-    private static final Logger LOG = LoggerFactory.getLogger(MongoTransaction.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MongoTransaction)
 
-    private final AbstractMongoSession session;
-    private final ClientSession clientSession;
-    private boolean active = true;
+    private final AbstractMongoSession session
+    private final ClientSession clientSession
+    private boolean active = true
 
-    public MongoTransaction(AbstractMongoSession session, ClientSession clientSession) {
-        this.session = session;
-        this.clientSession = clientSession;
+    MongoTransaction(AbstractMongoSession session, ClientSession clientSession) {
+        this.session = session
+        this.clientSession = clientSession
     }
 
     @Override
-    public void commit() {
+    void commit() {
         if (!active) {
-            return;
+            return
         }
-        boolean committed = false;
+        boolean committed = false
         try {
             // Flush pending GORM operations into the active transaction. When driven by the
             // DatastoreTransactionManager the session was already flushed, so this clears nothing
             // and is a no-op; it covers callers that commit the transaction directly.
-            session.flush();
-            commitWithRetry();
-            committed = true;
+            session.flush()
+            commitWithRetry()
+            committed = true
         } finally {
             if (!committed) {
                 // The commit (or the flush before it) failed. Explicitly abort the server transaction
@@ -92,83 +93,80 @@ public class MongoTransaction implements Transaction<ClientSession> {
                 // that were never committed.
                 if (clientSession.hasActiveTransaction()) {
                     try {
-                        clientSession.abortTransaction();
-                    }
-                    catch (RuntimeException e) {
-                        LOG.debug("Error aborting transaction after failed commit: {}", e.getMessage(), e);
+                        clientSession.abortTransaction()
+                    } catch (RuntimeException e) {
+                        LOG.debug('Error aborting transaction after failed commit: {}', e.getMessage(), e)
                     }
                 }
                 try {
-                    session.clear();
-                }
-                catch (RuntimeException e) {
-                    LOG.debug("Error clearing session after failed transaction commit: {}", e.getMessage(), e);
+                    session.clear()
+                } catch (RuntimeException e) {
+                    LOG.debug('Error clearing session after failed transaction commit: {}', e.getMessage(), e)
                 }
             }
-            close();
+            close()
         }
     }
 
     @Override
-    public void rollback() {
+    void rollback() {
         if (!active) {
-            return;
+            return
         }
         try {
             if (clientSession.hasActiveTransaction()) {
-                clientSession.abortTransaction();
+                clientSession.abortTransaction()
             }
         } finally {
-            close();
+            close()
         }
     }
 
     @Override
-    public ClientSession getNativeTransaction() {
-        return clientSession;
+    ClientSession getNativeTransaction() {
+        return clientSession
     }
 
     @Override
-    public boolean isActive() {
-        return active;
+    boolean isActive() {
+        return active
     }
 
     @Override
-    public void setTimeout(int timeout) {
+    void setTimeout(int timeout) {
         if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
             // The server-side transaction is started before the manager applies a timeout, so a
             // per-transaction timeout cannot be honored here; the server's transactionLifetimeLimitSeconds
             // governs the maximum transaction duration. Fail rather than silently ignore the request.
-            throw new TransactionUsageException("A per-transaction timeout (" + timeout + "s) is not supported by " +
-                    "GORM for MongoDB transactions; the server's transactionLifetimeLimitSeconds governs transaction " +
-                    "duration. Remove the timeout from the transaction definition.");
+            throw new TransactionUsageException('A per-transaction timeout (' + timeout + 's) is not supported by ' +
+                    'GORM for MongoDB transactions; the server\'s transactionLifetimeLimitSeconds governs transaction ' +
+                    'duration. Remove the timeout from the transaction definition.')
         }
     }
 
     private void commitWithRetry() {
-        int attempts = 0;
+        int attempts = 0
         while (true) {
             try {
-                clientSession.commitTransaction();
-                return;
-            }
-            catch (MongoException e) {
+                clientSession.commitTransaction()
+                return
+            } catch (MongoException e) {
                 if (attempts++ < MAX_COMMIT_RETRIES &&
                         e.hasErrorLabel(MongoException.UNKNOWN_TRANSACTION_COMMIT_RESULT_LABEL)) {
-                    continue;
+                    continue
                 }
-                throw e;
+                throw e
             }
         }
     }
 
     private void close() {
-        active = false;
+        active = false
         try {
-            clientSession.close();
-        }
-        finally {
-            session.clearClientSession();
+            clientSession.close()
+        } finally {
+            session.clearClientSession()
         }
     }
+
 }
