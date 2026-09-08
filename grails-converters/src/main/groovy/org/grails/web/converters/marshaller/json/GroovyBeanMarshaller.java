@@ -27,12 +27,11 @@ import java.util.List;
 import groovy.lang.GroovyObject;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 import grails.converters.JSON;
 import grails.persistence.PersistenceMethod;
 import grails.web.controllers.ControllerMethod;
+import org.apache.grails.common.reflect.ReflectionUtils;
 import org.grails.core.util.IncludeExcludeSupport;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
@@ -55,6 +54,7 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
         List<String> excludes = json.getExcludes(clazz);
         List<String> includes = json.getIncludes(clazz);
         IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<>();
+        ReflectionUtils.warnOnNonPublicClass(clazz);
         try {
             writer.object();
             for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(clazz)) {
@@ -68,13 +68,8 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
                     if (Modifier.isStatic(readMethod.getModifiers())) continue;
                     if (readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
                     if (readMethod.getAnnotation(ControllerMethod.class) != null) continue;
-                    Method invokableMethod = ClassUtils.getInterfaceMethodIfPossible(readMethod, clazz);
-                    if (!invokableMethod.canAccess(o)) {
-                        // Widen a private copy, so the flag never leaks into the shared descriptor cache
-                        invokableMethod = invokableMethod.getDeclaringClass().getDeclaredMethod(invokableMethod.getName());
-                        invokableMethod.setAccessible(true);
-                    }
-                    Object value = invokableMethod.invoke(o, (Object[]) null);
+                    Method invokable = ReflectionUtils.resolveInvokableReadMethod(readMethod, clazz, o);
+                    Object value = invokable.invoke(o, (Object[]) null);
                     writer.key(name);
                     json.convertAnother(value);
                 }
@@ -84,7 +79,7 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
                 if (Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) && !field.isSynthetic()) {
                     String name = field.getName();
                     if (!shouldInclude(includeExcludeSupport, includes, excludes, o, name)) continue;
-                    ReflectionUtils.makeAccessible(field);
+                    if (!ReflectionUtils.tryMakeReadable(field, o)) continue;
                     writer.key(name);
                     json.convertAnother(field.get(o));
                 }

@@ -45,6 +45,28 @@ public final class JavaPersonFactory {
     }
 
     /**
+     * @return an anonymous implementation that also exposes a public field. Because the declaring
+     *         class is not public, the field is not readable from another package until access is
+     *         widened, which is why it used to be dropped from the output
+     */
+    public static PublicPerson anonymousPersonWithPublicField(final String name, final int age, String nick) {
+        return new PublicPerson() {
+
+            public final String nickname = nick;
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public int getAge() {
+                return age;
+            }
+        };
+    }
+
+    /**
      * @return an instance of a package-private class implementing a public interface
      */
     public static PublicPerson packagePrivatePerson(String name, int age) {

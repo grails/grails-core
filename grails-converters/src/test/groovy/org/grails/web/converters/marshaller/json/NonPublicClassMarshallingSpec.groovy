@@ -28,11 +28,13 @@ import org.springframework.context.ApplicationContext
 
 import grails.converters.JSON
 import grails.core.DefaultGrailsApplication
+import org.apache.grails.common.reflect.ReflectionUtils
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.web.converters.beans.DynamicGroovyPersonFactory
 import org.grails.web.converters.beans.GroovyPersonFactory
 import org.grails.web.converters.beans.JavaPersonFactory
+import org.grails.web.converters.beans.SerializableGroovyBean
 import org.grails.web.converters.beans.SerializableJavaBean
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 
@@ -46,6 +48,7 @@ import org.grails.web.converters.configuration.ConvertersConfigurationInitialize
 class NonPublicClassMarshallingSpec extends Specification {
 
     void setup() {
+        ReflectionUtils.resetWarnedClasses()
         def initializer = new ConvertersConfigurationInitializer()
         def grailsApplication = new DefaultGrailsApplication()
         grailsApplication.initialise()
@@ -228,5 +231,70 @@ class NonPublicClassMarshallingSpec extends Specification {
 
     private static Method readMethodOf(Object bean) {
         BeanUtils.getPropertyDescriptors(bean.getClass()).find { it.name == 'name' }.readMethod
+    }
+
+    void 'a public field of an anonymous Java class is marshalled'() {
+        given:
+        def person = JavaPersonFactory.anonymousPersonWithPublicField('user', 42, 'nick')
+
+        expect: 'the field is public, but unreadable from here until access is widened'
+        !Modifier.isPublic(person.getClass().modifiers)
+        !person.getClass().getDeclaredField('nickname').canAccess(person)
+
+        when:
+        Map json = parse(new JSON(person).toString())
+
+        then:
+        json == [active: true, age: 42, name: 'user', nickname: 'nick']
+    }
+
+    void 'a Serializable Groovy bean is marshalled without tripping over its static fields'() {
+        given:
+        def bean = new SerializableGroovyBean('ROLE_ADMIN', 'Administrator')
+
+        when:
+        Map json = parse(new JSON(bean).toString())
+
+        then:
+        json == [authority: 'ROLE_ADMIN', label: 'Administrator']
+
+        and:
+        !json.containsKey('serialVersionUID')
+        !json.containsKey('KIND')
+    }
+
+    void 'marshalling a Groovy bean does not widen access on the shared property descriptor cache'() {
+        given: 'a package-private Groovy class with no interface, the only shape needing widening'
+        def person = GroovyPersonFactory.standalonePerson('user')
+
+        expect:
+        !readMethodOf(person).canAccess(person)
+
+        when:
+        new JSON(person).toString()
+
+        then:
+        !readMethodOf(person).canAccess(person)
+    }
+
+    void 'a bean class that is not public is reported once'() {
+        given:
+        def person = GroovyPersonFactory.packagePrivatePerson('user', 42)
+
+        when:
+        new JSON(person).toString()
+
+        then: 'marshalling reported the class, so a further report finds it already done'
+        !ReflectionUtils.warnOnNonPublicClass(person.getClass())
+
+        when: 'another instance of the same class is marshalled'
+        new JSON(GroovyPersonFactory.packagePrivatePerson('other', 43)).toString()
+
+        then: 'it is still reported only the once'
+        !ReflectionUtils.warnOnNonPublicClass(person.getClass())
+    }
+
+    void cleanup() {
+        ReflectionUtils.resetWarnedClasses()
     }
 }

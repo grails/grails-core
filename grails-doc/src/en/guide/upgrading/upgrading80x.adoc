@@ -3097,3 +3097,70 @@ grails {
 imported whether or not they are present — a star import of an absent package contributes no classes and is
 not an error in Groovy, so the probe changed nothing it could observe. An application that relied on the
 import being *omitted* when the package was absent sees no difference in compiled output.
+
+==== 54. Non-Public Bean Classes Are Marshalled, and Reported Once
+
+`someObject as JSON` (and `as XML`) previously failed when the object's class was not `public` — an
+anonymous, local, or package-private class — even though its property getters were public. The request
+failed with `ConverterException` wrapping `IllegalAccessException`. The same conversion also failed for any
+`Serializable` bean, because the marshaller asked whether a `private static final long serialVersionUID`
+field was accessible before checking that it was static, which the JDK rejects.
+
+Both now work. The most common shape is an anonymous implementation of a public interface, which Groovy 4
+compiled to a `public` class and Groovy 5 does not:
+
+[source,groovy]
+----
+def show() {
+    def user = new UserDetails() {
+        @Override Collection<? extends GrantedAuthority> getAuthorities() { [new SimpleGrantedAuthority('ROLE_ADMIN')] }
+        @Override String getPassword() { null }
+        @Override String getUsername() { 'user' }
+    }
+    render([user: user] as JSON)
+}
+----
+
+===== 54.1 Public Fields of Non-Public Classes Are Now Included
+
+Java and Groovy beans are now treated alike. A `public` instance field declared on a class that is not
+public was silently omitted from the JSON or XML body when the bean was a plain Java object; it is now
+included, as it always was for a Groovy bean. If a field was being dropped by accident and should stay out
+of the payload, exclude it explicitly or register an `ObjectMarshaller` for the class:
+
+[source,groovy]
+----
+def json = someObject as JSON
+json.excludes = ['nickname']
+render json
+----
+
+Fields of a class in a named module that does not open its package are skipped rather than failing the
+whole conversion.
+
+===== 54.2 The Warning
+
+Reading a non-public class requires widening access reflectively, which is compatibility handling rather
+than a supported contract. Each such class is therefore reported once:
+
+[source,text]
+----
+Class [com.example.DemoController$1] is not public, so its properties can only be read by widening access
+reflectively. Declare the class public - as a named class rather than an anonymous one where necessary - so
+that it reads as a standard JavaBean. This handling may be withdrawn in a future major release. To silence
+this, set the log level of [org.apache.grails.common.reflect.ReflectionUtils] above WARN. (warned once per class)
+----
+
+The fix is to declare the class `public` — as a named class where it is currently anonymous — or to register
+an `ObjectMarshaller` for it. Classes from the JDK, Groovy, and Spring are never reported, since an
+application cannot declare them public.
+
+To silence the warning instead:
+
+[source,yaml]
+.application.yml
+----
+logging:
+    level:
+        org.apache.grails.common.reflect.ReflectionUtils: ERROR
+----

@@ -27,13 +27,12 @@ import java.util.List;
 import groovy.lang.GroovyObject;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 
 import grails.converters.XML;
 import grails.persistence.Entity;
 import grails.persistence.PersistenceMethod;
 import grails.web.controllers.ControllerMethod;
+import org.apache.grails.common.reflect.ReflectionUtils;
 import org.grails.core.util.IncludeExcludeSupport;
 import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.web.converters.exceptions.ConverterException;
@@ -52,6 +51,7 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> 
     public void marshalObject(Object o, XML xml) throws ConverterException {
         try {
             Class<? extends Object> clazz = o.getClass();
+            ReflectionUtils.warnOnNonPublicClass(clazz);
             List<String> excludes = xml.getExcludes(clazz);
             List<String> includes = xml.getIncludes(clazz);
             IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<>();
@@ -68,13 +68,8 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> 
                     if (Modifier.isStatic(readMethod.getModifiers())) continue;
                     if (readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
                     if (readMethod.getAnnotation(ControllerMethod.class) != null) continue;
-                    Method invokableMethod = ClassUtils.getInterfaceMethodIfPossible(readMethod, clazz);
-                    if (!invokableMethod.canAccess(o)) {
-                        // Widen a private copy, so the flag never leaks into the shared descriptor cache
-                        invokableMethod = invokableMethod.getDeclaringClass().getDeclaredMethod(invokableMethod.getName());
-                        invokableMethod.setAccessible(true);
-                    }
-                    Object value = invokableMethod.invoke(o, (Object[]) null);
+                    Method invokable = ReflectionUtils.resolveInvokableReadMethod(readMethod, clazz, o);
+                    Object value = invokable.invoke(o, (Object[]) null);
                     xml.startNode(name);
                     xml.convertAnother(value);
                     xml.end();
@@ -86,7 +81,7 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> 
                     String name = field.getName();
                     if (!shouldInclude(includeExcludeSupport, includes, excludes, o, name)) continue;
                     if (isEntity && (name.equals(GormProperties.ATTACHED) || name.equals(GormProperties.ERRORS))) continue;
-                    ReflectionUtils.makeAccessible(field);
+                    if (!ReflectionUtils.tryMakeReadable(field, o)) continue;
                     xml.startNode(name);
                     xml.convertAnother(field.get(o));
                     xml.end();
