@@ -26,7 +26,6 @@ import jakarta.servlet.ServletException
 import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletRequestWrapper
 import jakarta.servlet.http.HttpServletResponse
 
 import org.springframework.security.access.ConfigAttribute
@@ -134,17 +133,29 @@ class IpAddressFilter extends GenericFilterBean {
         false
     }
 
+    /**
+     * Resolves the path that restriction patterns are matched against: the original request URI when the request
+     * was forwarded, otherwise the request URI, canonicalized the way request dispatch sees it. Matrix parameters
+     * are removed and percent escapes decoded before the context path is stripped, so an encoded or matrix-parameter
+     * variant of a restricted path cannot sidestep its restriction. A URI with a malformed percent escape is matched
+     * undecoded rather than aborting the filter chain.
+     */
     protected String getPathWithinApplication(HttpServletRequest request) {
-        String forwardUri = request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) as String
-        if (forwardUri) {
-            return urlPathHelper.removeSemicolonContent(urlPathHelper.getPathWithinApplication(new HttpServletRequestWrapper(request) {
-                @Override
-                String getRequestURI() {
-                    forwardUri
-                }
-            }))
+        String uri = (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) as String) ?: request.requestURI
+        if (!uri) {
+            return '/'
         }
-        urlPathHelper.removeSemicolonContent(urlPathHelper.getPathWithinApplication(request))
+        String path = urlPathHelper.removeSemicolonContent(uri)
+        try {
+            path = urlPathHelper.decodeRequestString(request, path)
+        } catch (IllegalArgumentException ignored) {
+            // malformed percent escape: keep the undecoded path
+        }
+        String contextPath = request.contextPath
+        if (contextPath && contextPath != '/' && path.startsWith(contextPath)) {
+            path = path.substring(contextPath.length())
+        }
+        path ?: '/'
     }
 
     protected List<InterceptedUrl> findMatchingRules(String uri) {

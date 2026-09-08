@@ -18,15 +18,12 @@
  */
 package org.grails.plugins.web.interceptors
 
-import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.util.HashCodeHelper
 
 import org.springframework.util.AntPathMatcher
-import org.springframework.web.util.UriUtils
-import org.springframework.web.util.UrlPathHelper
 
 import grails.artefact.Interceptor
 import grails.interceptors.Matcher
@@ -34,6 +31,12 @@ import grails.web.mapping.UrlMappingInfo
 
 /**
  * Used to match {@link UrlMappingInfo} instance by {@link grails.artefact.Interceptor} instances
+ *
+ * <p>URI patterns are matched against the path passed to {@link #doesMatch(String, UrlMappingInfo, String, String)}
+ * as-is. {@link grails.artefact.Interceptor#doesMatch(jakarta.servlet.http.HttpServletRequest)} passes the decoded,
+ * application-relative path that URL mappings route on, so this class must not decode or remove matrix parameters
+ * again: that would match a different path than the one dispatched ({@code /health%3Bx} is dispatched as
+ * {@code /health;x}, not as {@code /health}).
  *
  * @author Graeme Rocher
  * @since 3.0
@@ -67,17 +70,17 @@ class UrlMappingMatcher implements Matcher {
         doesMatch(uri, info, method, null)
     }
 
+    @Override
     boolean doesMatch(String uri, UrlMappingInfo info, String method, String contextPath) {
         boolean hasUriPatterns = !uriPatterns.isEmpty()
-        String path = canonicalizePath(uri)
 
-        boolean isExcluded = this.isExcluded(path, info, contextPath)
+        boolean isExcluded = this.isExcluded(uri, info, contextPath)
         if (matchAll && !isExcluded) return true
 
         if (!isExcluded) {
             if (hasUriPatterns) {
                 for (pattern in uriPatterns) {
-                    if (matchesPattern(pattern, path, contextPath)) {
+                    if (matchesPattern(pattern, uri, contextPath)) {
                         return true
                     }
                 }
@@ -110,20 +113,12 @@ class UrlMappingMatcher implements Matcher {
         return false
     }
 
-    private String canonicalizePath(String uri) {
-        if (uri == null || uri.isEmpty()) {
-            return '/'
-        }
-        String path = UrlPathHelper.defaultInstance.removeSemicolonContent(uri)
-        try {
-            path = UriUtils.decode(path, StandardCharsets.UTF_8)
-        } catch (IllegalArgumentException ignored) {
-            // keep the semicolon-stripped form when the URI is malformed
-        }
-        path = UrlPathHelper.defaultInstance.removeSemicolonContent(path)
-        path ?: '/'
-    }
-
+    /**
+     * Matches the pattern against the application-relative path. A pattern that begins with the context path is
+     * also accepted with the context path removed, so interceptors written against a context-prefixed URI
+     * (issue 10857) keep working. The path itself is never re-prefixed with the context path, so a pattern such as
+     * <code>/*&#47;*</code> only matches paths with two segments inside the application.
+     */
     private boolean matchesPattern(String pattern, String path, String contextPath) {
         if (pathMatcher.match(pattern, path)) {
             return true

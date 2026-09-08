@@ -22,6 +22,7 @@ import jakarta.servlet.FilterChain
 
 import grails.plugin.springsecurity.AbstractUnitSpec
 import org.grails.web.util.WebUtils
+import spock.lang.Unroll
 
 /**
  * Unit tests for <code>IpAddressFilter</code>.
@@ -191,31 +192,76 @@ class IpAddressFilterSpec extends AbstractUnitSpec {
         0 == chainCount
     }
 
-    void 'doFilter canonicalizes restricted paths'() {
+    @Unroll
+    void 'doFilter matches restrictions against the path as dispatch sees it: #requestUri'() {
         given:
-        filter.allowLocalhost = false
-        filter.ipRestrictions = [[pattern: '/admin/**', access: '10.0.0.0/8']]
-        int chainCount = 0
-        def chain = [doFilter: { req, res -> chainCount++ }] as FilterChain
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
         request.remoteAddr = '192.168.1.123'
+        request.requestURI = requestUri
 
         when:
-        request.requestURI = requestUri
-        response.reset()
         filter.doFilter(request, response, chain)
 
         then:
-        response.status == 404
-        chainCount == 0
+        (response.status == 404) == denied
+        (denied ? 0 : 1) * chain.doFilter(_, _)
 
         where:
-        requestUri << ['/admin;x=1/deleteUser', '/admin%3Bx=1/deleteUser', '/%61dmin/deleteUser']
+        requestUri                | denied | reason
+        '/admin/deleteUser'       | true   | 'plain path'
+        '/admin;x=1/deleteUser'   | true   | 'matrix parameters are removed'
+        '/%61dmin/deleteUser'     | true   | 'percent escapes are decoded'
+        '/admin%3Bx=1/deleteUser' | false  | 'an encoded semicolon is a literal character, so this is not an /admin/** path'
+        '/public'                 | false  | 'unrestricted path'
+    }
+
+    @Unroll
+    void 'doFilter matches a malformed percent escape undecoded instead of throwing: #requestUri'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '192.168.1.123'
+        request.requestURI = requestUri
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        (response.status == 404) == denied
+        (denied ? 0 : 1) * chain.doFilter(_, _)
+
+        where:
+        requestUri    | denied
+        '/foo%'       | false
+        '/admin/foo%' | true
+    }
+
+    @Unroll
+    void 'doFilter strips the context path before matching: #requestUri'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '192.168.1.123'
+        request.contextPath = '/app'
+        request.requestURI = requestUri
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        (response.status == 404) == denied
+        (denied ? 0 : 1) * chain.doFilter(_, _)
+
+        where:
+        requestUri              | denied
+        '/app/admin/deleteUser' | true
+        '/app/public'           | false
     }
 
     void 'doFilter canonicalizes forwarded restricted paths'() {
         given:
-        filter.allowLocalhost = false
-        filter.ipRestrictions = [[pattern: '/admin/**', access: '10.0.0.0/8']]
+        restrictAdminToIntranet()
         def chain = Mock(FilterChain)
         request.remoteAddr = '192.168.1.123'
         request.requestURI = '/public'
@@ -227,5 +273,59 @@ class IpAddressFilterSpec extends AbstractUnitSpec {
         then:
         response.status == 404
         0 * chain.doFilter(_, _)
+    }
+
+    void 'doFilter strips the context path from a forwarded path'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '192.168.1.123'
+        request.contextPath = '/app'
+        request.requestURI = '/app/public'
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, '/app/%61dmin/deleteUser')
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        response.status == 404
+        0 * chain.doFilter(_, _)
+    }
+
+    void 'doFilter restricts the forwarded path even when an include attribute is present'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '192.168.1.123'
+        request.requestURI = '/public'
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, '/admin/deleteUser')
+        request.setAttribute(WebUtils.INCLUDE_REQUEST_URI_ATTRIBUTE, '/public')
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        response.status == 404
+        0 * chain.doFilter(_, _)
+    }
+
+    void 'doFilter allows a restricted path from an address in the allowed range'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '10.20.30.40'
+        request.requestURI = '/%61dmin;x=1/deleteUser'
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        response.status == 200
+        1 * chain.doFilter(_, _)
+    }
+
+    private void restrictAdminToIntranet() {
+        filter.allowLocalhost = false
+        filter.ipRestrictions = [[pattern: '/admin/**', access: '10.0.0.0/8']]
     }
 }

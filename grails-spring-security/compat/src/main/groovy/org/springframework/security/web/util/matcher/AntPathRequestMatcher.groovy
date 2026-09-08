@@ -28,6 +28,8 @@ import org.springframework.web.util.UrlPathHelper
 @CompileStatic
 class AntPathRequestMatcher implements RequestMatcher {
 
+    private static final UrlPathHelper PATH_HELPER = UrlPathHelper.defaultInstance
+
     private final String pattern
     private final String httpMethod
     private final boolean caseSensitive
@@ -48,10 +50,35 @@ class AntPathRequestMatcher implements RequestMatcher {
         if (httpMethod && !httpMethod.equalsIgnoreCase(request.method)) {
             return false
         }
-        def path = UrlPathHelper.defaultInstance.removeSemicolonContent(UrlPathHelper.defaultInstance.getPathWithinApplication(request)) ?: '/'
-        def candidate = caseSensitive ? path : path.toLowerCase(Locale.ENGLISH)
-        def matcherPattern = caseSensitive ? pattern : pattern.toLowerCase(Locale.ENGLISH)
+        String path = getPathWithinApplication(request)
+        String candidate = caseSensitive ? path : path.toLowerCase(Locale.ENGLISH)
+        String matcherPattern = caseSensitive ? pattern : pattern.toLowerCase(Locale.ENGLISH)
         pathMatcher.match(matcherPattern, candidate)
+    }
+
+    /**
+     * The request URI canonicalized the way request dispatch sees it: matrix parameters removed, percent escapes
+     * decoded and the context path stripped, so an encoded or matrix-parameter variant of a path selects the same
+     * filter chain as the plain path. The request URI itself is used rather than an include attribute, because the
+     * chain is selected for the request being filtered. A URI with a malformed percent escape is matched undecoded
+     * rather than failing chain selection.
+     */
+    private static String getPathWithinApplication(HttpServletRequest request) {
+        String uri = request.requestURI
+        if (!uri) {
+            return '/'
+        }
+        String path = PATH_HELPER.removeSemicolonContent(uri)
+        try {
+            path = PATH_HELPER.decodeRequestString(request, path)
+        } catch (IllegalArgumentException ignored) {
+            // malformed percent escape: keep the undecoded path
+        }
+        String contextPath = request.contextPath
+        if (contextPath && contextPath != '/' && path.startsWith(contextPath)) {
+            path = path.substring(contextPath.length())
+        }
+        path ?: '/'
     }
 
     @Override

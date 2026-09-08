@@ -78,6 +78,15 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         doesMatch(request)
     }
     /**
+     * Whether this interceptor matches the given request.
+     *
+     * <p>URI matchers see the same path that URL mappings route on: decoded, with matrix parameters removed and the
+     * context path stripped. During a {@code RequestDispatcher} include this is the included path, which is also
+     * the path the include is dispatched on. The path is canonicalized once per call and passed to every
+     * {@link Matcher}. A request whose URI contains a malformed percent escape is matched undecoded rather than
+     * failing.
+     *
+     * @param request The request to match
      * @return Whether the current interceptor does match
      */
     @Generated
@@ -90,17 +99,21 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
             allMatchers << matcher
         }
 
-        String uri = UrlPathHelper.defaultInstance.getPathWithinApplication(request)
-
-        def matchedInfo = request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
-
-        UrlMappingInfo grailsMappingInfo = (UrlMappingInfo) matchedInfo
+        String uri
+        try {
+            uri = UrlPathHelper.defaultInstance.getPathWithinApplication(request)
+        } catch (IllegalArgumentException ignored) {
+            // the URI has a malformed percent escape and cannot be decoded: match it undecoded rather than fail
+            UrlPathHelper rawPathHelper = new UrlPathHelper()
+            rawPathHelper.urlDecode = false
+            uri = rawPathHelper.getPathWithinApplication(request)
+        }
+        String contextPath = request.contextPath
+        String method = request.method
+        UrlMappingInfo grailsMappingInfo = (UrlMappingInfo) request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
 
         for (Matcher matcher in allMatchers) {
-            boolean matches = matcher instanceof UrlMappingMatcher
-                    ? ((UrlMappingMatcher) matcher).doesMatch(uri, grailsMappingInfo, request.method, request.contextPath)
-                    : matcher.doesMatch(uri, grailsMappingInfo, request.method)
-            if (matches) {
+            if (matcher.doesMatch(uri, grailsMappingInfo, method, contextPath)) {
                 return true
             }
         }

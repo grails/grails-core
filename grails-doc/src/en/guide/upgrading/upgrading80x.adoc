@@ -3097,3 +3097,38 @@ grails {
 imported whether or not they are present — a star import of an absent package contributes no classes and is
 not an error in Groovy, so the probe changed nothing it could observe. An application that relied on the
 import being *omitted* when the package was absent sees no difference in compiled output.
+
+==== 54. Interceptor URI Matching Uses the Dispatched Path
+
+Interceptors that match on `uri`, with `match(uri: ...)` or `excludes(uri: ...)`, now match the same path that URL
+mappings route on: percent escapes are decoded, matrix parameters (`;name=value`) are removed and the context path is
+stripped before the pattern is applied. Previously the raw request URI was matched, so an encoded (`/%61dmin/users`)
+or matrix-parameter (`/admin;x=1/users`) request could reach a controller without triggering an interceptor declared
+for `/admin/**`. Interceptors matched by controller, action or namespace are unaffected.
+
+Review interceptors that use `uri` matching for the following changes:
+
+* **Interceptors combining `match(uri:)` with `excludes(uri:)` now run under a context path.**
+In earlier versions such an interceptor never matched when the application was deployed under a non-root context path
+(for example `server.servlet.context-path=/app`), because the exclusion check also required the pattern to match the
+context-prefixed request URI. It now behaves as configured, so interceptors that were silently inactive start
+executing.
+
+* **Patterns are matched against the path within the application only.**
+A pattern is no longer also compared with the context-prefixed request URI, so `+match(uri: '/*/*')+` no longer matches
+`/app/save` under the context path `/app`. Patterns that begin with the context path, such as
+`match(uri: '/app/admin/**')`, are still accepted for backwards compatibility.
+
+* **Includes are matched against the included path.**
+During a `<g:include>` or `RequestDispatcher` include, `uri` matchers see the included path rather than the URI of the
+outer request. This is consistent with the controller selected for the include and with `match(controller:)`
+matchers, which already matched the included controller.
+
+* **Custom `grails.interceptors.Matcher` implementations receive the canonical path.**
+The `uri` argument passed to `doesMatch` is now the decoded, application-relative path without matrix parameters. A new
+`doesMatch(String uri, UrlMappingInfo info, String method, String contextPath)` default method also supplies the
+context path; override it when a matcher needs the context-prefixed form.
+
+The Spring Security plugin applies the same canonicalization when matching `ipRestrictions` patterns and when the
+`AntPathRequestMatcher` compatibility class selects a filter chain, so an encoded or matrix-parameter variant of a
+restricted path is subject to the same restriction as the plain path.
