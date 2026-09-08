@@ -16,24 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate;
+package org.grails.orm.hibernate
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import groovy.transform.CompileStatic
+import org.hibernate.boot.Metadata
+import org.hibernate.boot.spi.BootstrapContext
+import org.hibernate.engine.spi.SessionFactoryImplementor
+import org.hibernate.event.internal.DefaultMergeEventListener
+import org.hibernate.event.internal.DefaultPersistEventListener
+import org.hibernate.event.service.spi.EventListenerGroup
+import org.hibernate.event.service.spi.EventListenerRegistry
+import org.hibernate.event.spi.EventType
+import org.hibernate.integrator.spi.Integrator
+import org.hibernate.service.spi.SessionFactoryServiceRegistry
 
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.spi.BootstrapContext;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.event.service.spi.EventListenerGroup;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.EventType;
-import org.hibernate.integrator.spi.Integrator;
-import org.hibernate.service.spi.SessionFactoryServiceRegistry;
-
-public class EventListenerIntegrator implements Integrator {
+@CompileStatic
+class EventListenerIntegrator implements Integrator {
 
     protected static final List<EventType<?>> TYPES = Arrays.asList(
             EventType.AUTO_FLUSH,
@@ -66,97 +64,98 @@ public class EventListenerIntegrator implements Integrator {
             EventType.POST_COMMIT_INSERT,
             EventType.POST_COLLECTION_RECREATE,
             EventType.POST_COLLECTION_REMOVE,
-            EventType.POST_COLLECTION_UPDATE);
-    protected HibernateEventListeners hibernateEventListeners;
-    protected Map<String, Object> eventListeners;
+            EventType.POST_COLLECTION_UPDATE)
+    protected HibernateEventListeners hibernateEventListeners
+    protected Map<String, Object> eventListeners
 
-    public EventListenerIntegrator(
+    EventListenerIntegrator(
             HibernateEventListeners hibernateEventListeners, Map<String, Object> eventListeners) {
-        this.hibernateEventListeners = hibernateEventListeners;
-        this.eventListeners = eventListeners;
+        this.hibernateEventListeners = hibernateEventListeners
+        this.eventListeners = eventListeners
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes", "PMD.DataflowAnomalyAnalysis"})
+    @SuppressWarnings(['unchecked', 'rawtypes', 'PMD.DataflowAnomalyAnalysis'])
     @Override
-    public void integrate(
+    void integrate(
             Metadata metadata,
             BootstrapContext bootstrapContext,
             SessionFactoryImplementor sfi) {
 
-        EventListenerRegistry listenerRegistry = sfi.getServiceRegistry().getService(EventListenerRegistry.class);
+        EventListenerRegistry listenerRegistry = sfi.serviceRegistry.getService(EventListenerRegistry)
         if (listenerRegistry == null) {
-            throw new IllegalStateException("EventListenerRegistry not available from ServiceRegistry");
+            throw new IllegalStateException('EventListenerRegistry not available from ServiceRegistry')
         }
 
         if (eventListeners != null) {
             for (Map.Entry<String, Object> entry : eventListeners.entrySet()) {
-                EventType type = EventType.resolveEventTypeByName(entry.getKey());
-                Object listenerObject = entry.getValue();
+                EventType type = EventType.resolveEventTypeByName(entry.key)
+                Object listenerObject = entry.value
                 if (listenerObject instanceof Collection) {
-                    appendListeners(listenerRegistry, type, (Collection) listenerObject);
+                    appendListeners(listenerRegistry, type, (Collection) listenerObject)
                 } else if (listenerObject != null) {
-                    appendListeners(listenerRegistry, type, Collections.singleton(listenerObject));
+                    appendListeners(listenerRegistry, type, (Collection) Collections.singleton(listenerObject))
                 }
             }
         }
 
-        if (hibernateEventListeners != null && hibernateEventListeners.getListenerMap() != null) {
-            Map<String, Object> listenerMap = hibernateEventListeners.getListenerMap();
+        if (hibernateEventListeners != null && hibernateEventListeners.listenerMap != null) {
+            Map<String, Object> listenerMap = hibernateEventListeners.listenerMap
             for (EventType<?> type : TYPES) {
-                appendListeners(listenerRegistry, type, listenerMap);
+                appendListeners(listenerRegistry, type, listenerMap)
             }
         }
     }
 
-    @SuppressWarnings("PMD.DataflowAnomalyAnalysis")
+    @SuppressWarnings('PMD.DataflowAnomalyAnalysis')
     protected <T> void appendListeners(
             EventListenerRegistry listenerRegistry, EventType<T> eventType, Collection<T> listeners) {
 
-        EventListenerGroup<T> group = listenerRegistry.getEventListenerGroup(eventType);
+        EventListenerGroup<T> group = listenerRegistry.getEventListenerGroup(eventType)
         for (T listener : listeners) {
             if (listener != null) {
                 if (shouldOverrideListeners(eventType, listener)) {
                     // since ClosureEventTriggeringInterceptor extends DefaultSaveOrUpdateEventListener we
                     // want to override instead of append the listener here
                     // to avoid there being 2 implementations which would impact performance too
-                    group.clearListeners();
-                    group.appendListener(listener);
+                    group.clearListeners()
+                    group.appendListener(listener)
                 } else {
-                    group.appendListener(listener);
+                    group.appendListener(listener)
                 }
             }
         }
     }
 
     private <T> boolean shouldOverrideListeners(EventType<T> eventType, Object listener) {
-        var isMergeListener = listener instanceof org.hibernate.event.internal.DefaultMergeEventListener;
-        var isMergeEvent = eventType.equals(EventType.MERGE);
-        var isPersistEventListener = listener instanceof org.hibernate.event.internal.DefaultPersistEventListener;
-        var isPersistEvent = eventType.equals(EventType.PERSIST);
-        return isMergeListener && isMergeEvent || isPersistEventListener && isPersistEvent;
+        boolean isMergeListener = listener instanceof DefaultMergeEventListener
+        boolean isMergeEvent = eventType == EventType.MERGE
+        boolean isPersistEventListener = listener instanceof DefaultPersistEventListener
+        boolean isPersistEvent = eventType == EventType.PERSIST
+        return isMergeListener && isMergeEvent || isPersistEventListener && isPersistEvent
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings('unchecked')
     protected <T> void appendListeners(
-            final EventListenerRegistry listenerRegistry,
-            final EventType<T> eventType,
-            final Map<String, Object> listeners) {
+            EventListenerRegistry listenerRegistry,
+            EventType<T> eventType,
+            Map<String, Object> listeners) {
 
-        Object listener = listeners.get(eventType.eventName());
+        Object listener = listeners.get(eventType.eventName())
         if (listener != null) {
             if (shouldOverrideListeners(eventType, listener)) {
                 // since ClosureEventTriggeringInterceptor extends DefaultSaveOrUpdateEventListener we want
                 // to override instead of append the listener here
                 // to avoid there being 2 implementations which would impact performance too
-                listenerRegistry.setListeners(eventType, (T) listener);
+                listenerRegistry.setListeners(eventType, (T) listener)
             } else {
-                listenerRegistry.appendListeners(eventType, (T) listener);
+                listenerRegistry.appendListeners(eventType, (T) listener)
             }
         }
     }
 
     @Override
-    public void disintegrate(SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+    void disintegrate(SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
         // nothing to do
     }
+
 }
