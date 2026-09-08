@@ -1358,6 +1358,166 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'a name that is not an ident'  | 'BadName' | "group('not an identifier') { bean('x', String) { 'x' } }"               | 'valid Java identifier'
     }
 
+    def "an anonymous class inside a nested closure keeps that closure as its enclosing instance"() {
+        given: "the lift moves the bean's own body; a nested closure survives it, and still homes what it contains"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface NestedGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class NestedAnonymousBeans {
+                def beans = {
+                    bean('greeter', NestedGreeter) {
+                        List<NestedGreeter> made = ['x'].collect { String tag ->
+                            new NestedGreeter() { String greet() { 'hello ' + tag } }
+                        }
+                        made[0]
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def fixture = loader.loadClass('NestedAnonymousBeans').getDeclaredConstructor().newInstance()
+
+        expect: "re-homing it would rewrite a correct `this` and fail with a GroovyCastException"
+        fixture.greeter().greet() == 'hello x'
+    }
+
+    def "a staticMethod bean may construct an anonymous class inside a nested closure"() {
+        given: "the nested closure supplies the enclosing instance the static method has not got"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+            import org.springframework.beans.factory.config.BeanFactoryPostProcessor
+            import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+
+            @GrailsBeans
+            @AutoConfiguration
+            class StaticNestedAnonymousBeans {
+                def beans = {
+                    bean('bfpp', BeanFactoryPostProcessor).staticMethod() {
+                        List<BeanFactoryPostProcessor> made = ['x'].collect { String tag ->
+                            new BeanFactoryPostProcessor() {
+                                void postProcessBeanFactory(ConfigurableListableBeanFactory bf) { }
+                            }
+                        }
+                        made[0]
+                    }
+                }
+            }
+        '''
+
+        when:
+        Class<?> compiled = compile(source)
+
+        then: "rejected only when the anonymous class is written directly in the lifted body"
+        noExceptionThrown()
+        compiled.getDeclaredMethod('bfpp') != null
+    }
+
+    @Unroll
+    def "group survives @CompileStatic on #hostKind"() {
+        given: "every in-tree plugin descriptor is statically compiled, so this is the case that matters"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            @GrailsBeans
+            @CompileStatic
+            @AutoConfiguration
+            class StaticGroup${fixture} ${extendsClause} {
+                def beans = {
+                    group('extras').conditionalOnProperty('probe.enabled') {
+                        bean('greeting', String) { 'hello'.toUpperCase() }
+                    }
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then: """statically compiling the nested class before Groovy adds its inner-class MOP methods
+                 fails class generation with a GroovyBugError, so the pass is deferred to
+                 INSTRUCTION_SELECTION - after those methods exist"""
+        noExceptionThrown()
+
+        where:
+        hostKind            | fixture  | extendsClause
+        'a plain host'      | 'Plain'  | ''
+        'a plugin descriptor' | 'GrailsPlugin' | 'extends Plugin'
+    }
+
+    def "a group's bodies really are statically compiled, not silently left dynamic"() {
+        given: "a body that only type-checks dynamically"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            @GrailsBeans
+            @CompileStatic
+            @AutoConfiguration
+            class StaticGroupBodyBeans {
+                def beans = {
+                    group('extras') {
+                        bean('greeting', String) { 'hello'.noSuchMethodAnywhere() }
+                    }
+                }
+            }
+        '''
+
+        when:
+        compile(source)
+
+        then: "deferring the pass must not amount to skipping it"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('noSuchMethodAnywhere')
+    }
+
+    @Unroll
+    def "duplicate bean names are rejected for #description too"() {
+        given: "shared-name validation has to read the same head processBeanStatement does"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface DupIface { }
+            class DupImplA implements DupIface { }
+            class DupImplB implements DupIface { }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class DuplicateNameFixture${fixture} {
+                static final String NAME = 'dup'
+                def beans = {
+                    ${declarations}
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then: "without a discriminating condition Spring keeps the first and drops the rest"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('is already used as the Spring bean name of another bean(...) statement')
+
+        where:
+        description                     | fixture  | declarations
+        'the implementation form'       | 'Impl'   | "bean('dup', DupIface, DupImplA)\n                    bean('dup', DupIface, DupImplB)"
+        'a constant name'               | 'Const'  | "bean(NAME, String) { 'a' }\n                    bean(NAME, String) { 'b' }"
+        'a literal name'                | 'Literal'| "bean('dup', String) { 'a' }\n                    bean('dup', String) { 'b' }"
+    }
+
     private Class<?> compile() {
         compile(FIXTURE)
     }

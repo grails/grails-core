@@ -224,9 +224,25 @@ Three mistakes the DSL used to accept are now compile errors, because each of th
 * Calling one bean from another does not return the registered singleton unless the host is a proxied `@Configuration` class — and the DSL's usual hosts are not: `@AutoConfiguration` is `@Configuration(proxyBeanMethods = false)`, a generated plugin sibling carries exactly that, and an `Application` class is a configuration source without being annotated at all. Such a call silently constructs a second instance, so it is rejected; inject the bean as a closure parameter instead. A static `@Bean` method is never intercepted even on a proxied class, so `.staticMethod()` beans are checked everywhere.
 * A `BeanFactoryPostProcessor` or `BeanPostProcessor` bean must be `.staticMethod()`.
 
+[NOTE]
+====
+On a *plugin descriptor* the generated members land on a sibling class, but an anonymous inner class written in a bean body keeps the descriptor as its outer class — Groovy fixes that when it creates the class, before this transform runs. Such a class works if it touches nothing outside itself, but an unqualified reference from its body back to a `field(...)` or `method(...)` member fails: at runtime with `NoSuchFieldError` for the descriptor's `this$0`, or at compile time under `@CompileStatic`. Give the anonymous class what it needs as a constructor argument or a captured local, or declare the bean on a class that is not a plugin descriptor.
+====
+
 === Seeing what a block compiled to
 
-Building with `-Dgrails.beans.dsl.dumpdir=<dir>` writes one `<qualified name>.beans.txt` per host class, listing the generated members — bean names, the annotations the qualifiers became, modifiers, declared types with any type arguments they ended up carrying, and parameter annotations. Bodies are omitted, being the closure bodies from the source. Nothing is written unless the property is set.
+The property is read by the transform, which runs inside the process that runs the Groovy compiler — and `GroovyCompile` forks by default, so `./gradlew build -Dgrails.beans.dsl.dumpdir=...` sets it on the Gradle client and daemon, not on the compiler, and nothing is written. Set it where the compiler will see it:
+
+[source,groovy]
+----
+tasks.withType(GroovyCompile).configureEach {
+    groovyOptions.forkOptions.jvmArgs += '-Dgrails.beans.dsl.dumpdir=/absolute/path/to/beans'
+}
+----
+
+An absolute path is the safe form, since a relative one resolves against that worker process's working directory rather than the project's.
+
+Building with the property set writes one `<qualified name>.beans.txt` per host class, listing the generated members — bean names, the annotations the qualifiers became, modifiers, declared types with any type arguments they ended up carrying, and parameter annotations. Bodies are omitted, being the closure bodies from the source. Nothing is written unless the property is set.
 
 Because the result is an ordinary `AutoConfiguration` class, it must be registered the same way any Spring Boot auto-configuration is: listed in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`. **The compiler writes that entry for you.** The class is generated rather than written, so its name is one only the compiler knows — leaving the registration to be typed by hand made a plugin whose beans are silently never registered the ordinary consequence of not knowing the class exists.
 

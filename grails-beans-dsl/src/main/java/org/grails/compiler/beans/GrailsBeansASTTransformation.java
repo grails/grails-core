@@ -79,6 +79,7 @@ import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Types;
@@ -295,7 +296,7 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 createAutoConfigurationSibling(classNode, grailsBeansAnnotation, source) : classNode;
 
         Set<String> usedNames = existingMemberNames(beanMethodHost);
-        validateSharedBeanNames(statements, source);
+        validateSharedBeanNames(statements, classNode, source);
         // Two passes: field(...)/method(...) declare explicit member names, so they are processed
         // first (along with anything malformed, so every statement is still processed exactly
         // once) and bean(...) statements second. A bean's derived method name then adapts to every
@@ -320,7 +321,10 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         dumpGeneratedMembers(beanMethodHost, generatedMethods, generatedFields, source);
 
         if (beanMethodHost != classNode) {
-            applyStaticCompilation(classNode, beanMethodHost, source);
+            // Deferred for the same reason a group's nested class is: this pass reaches any nested
+            // class the sibling now holds, and marking one before Groovy has added its inner-class
+            // MOP methods fails class generation.
+            deferStaticCompilation(classNode, beanMethodHost, source);
         }
 
         removeBeansProperty(classNode, beansProperty);
@@ -519,6 +523,26 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 TypeChecked.class, new StaticTypesTransformation());
     }
 
+    /**
+     * {@link #applyStaticCompilation} run at INSTRUCTION_SELECTION instead of now, for a class whose
+     * inner-class MOP methods do not exist yet.
+     *
+     * <p>Falls back to applying it immediately when there is no compilation unit to schedule against
+     * - a unit test invoking the transform directly - since dynamic bodies in a statically compiled
+     * file would be the worse of the two failures.</p>
+     */
+    private void deferStaticCompilation(ClassNode annotationSource, ClassNode target, SourceUnit source) {
+        if (compilationUnit == null) {
+            applyStaticCompilation(annotationSource, target, source);
+            return;
+        }
+        compilationUnit.addPhaseOperation((CompilationUnit.ISourceUnitOperation) unit -> {
+            if (unit == source) {
+                applyStaticCompilation(annotationSource, target, source);
+            }
+        }, Phases.INSTRUCTION_SELECTION);
+    }
+
     private boolean applyStaticTypesTransformation(ClassNode pluginClass, ClassNode sibling, SourceUnit source,
             Class<? extends java.lang.annotation.Annotation> annotationType, StaticTypesTransformation transformation) {
         List<AnnotationNode> annotations = pluginClass.getAnnotations(ClassHelper.make(annotationType));
@@ -614,13 +638,14 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     // back-off (.conditionalOnMissingBeanName(), or .conditionalOnMissingBean() with no
     // arguments) does not count: it is identical on every duplicate by construction, so it can
     // never tell them apart.
-    private void validateSharedBeanNames(List<Statement> statements, SourceUnit source) {
+    private void validateSharedBeanNames(List<Statement> statements, ClassNode declaringClass,
+            SourceUnit source) {
         Map<String, List<BeanNameUse>> usesByName = new LinkedHashMap<>();
         for (Statement statement : statements) {
             if (!isBeanRootedStatement(statement)) {
                 continue;
             }
-            BeanNameUse use = parseBeanNameUse(
+            BeanNameUse use = parseBeanNameUse(declaringClass, 
                     (MethodCallExpression) ((ExpressionStatement) statement).getExpression());
             if (use != null) {
                 usesByName.computeIfAbsent(use.beanName, key -> new ArrayList<>()).add(use);
@@ -658,7 +683,17 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     // isBeanRootedStatement: extracts the bean name and whether the statement carries a
     // discriminating condition, returning null for anything malformed - a malformed statement
     // still produces its usual errors when actually processed.
-    private BeanNameUse parseBeanNameUse(MethodCallExpression outerCall) {
+    // A trailing pair of type literals is "declared type, implementation".
+    private boolean namesImplementation(List<Expression> args) {
+        return args.size() >= 2 && args.get(args.size() - 1) instanceof ClassExpression &&
+                args.get(args.size() - 2) instanceof ClassExpression;
+    }
+
+    private List<Expression> withoutImplementation(List<Expression> args) {
+        return args.subList(0, args.size() - 1);
+    }
+
+    private BeanNameUse parseBeanNameUse(ClassNode declaringClass, MethodCallExpression outerCall) {
         List<MethodCallExpression> qualifierCalls = new ArrayList<>();
         MethodCallExpression baseCall = outerCall;
         while (!ROOT_STATEMENT_CALL_NAMES.contains(baseCall.getMethodAsString())) {
@@ -672,7 +707,14 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
             return null;
         }
 
+        // The same head rules processBeanStatement uses. Reading them separately is how the
+        // implementation form and constant names fell out of this check while still compiling: a
+        // three-argument declaration and a non-literal name both simply returned null here, so two
+        // declarations of one name passed validation and Spring silently kept the first.
         List<Expression> args = withoutTrailingClosure(flatten(baseCall.getArguments()), baseCall, outerCall);
+        if (namesImplementation(args)) {
+            args = withoutImplementation(args);
+        }
         if (args.isEmpty() || args.size() > 2 || !(args.get(args.size() - 1) instanceof ClassExpression)) {
             return null;
         }
@@ -681,12 +723,10 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
             name = decapitalize(((ClassExpression) args.get(0)).getType().getNameWithoutPackage());
         }
         else {
-            Object nameValue = args.get(0) instanceof ConstantExpression ?
-                    ((ConstantExpression) args.get(0)).getValue() : null;
-            if (!(nameValue instanceof String)) {
+            name = resolveStringConstant(args.get(0), declaringClass);
+            if (name == null) {
                 return null;
             }
-            name = (String) nameValue;
         }
         return new BeanNameUse(name, baseCall, hasDiscriminatingCondition(qualifierCalls, outerCall));
     }
@@ -971,7 +1011,7 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
 
         Set<String> groupNames = existingMemberNames(group);
         List<MethodNode> preExisting = new ArrayList<>(group.getMethods());
-        validateSharedBeanNames(statements, source);
+        validateSharedBeanNames(statements, declaringClass, source);
         for (Statement statement : statements) {
             if (!isBeanRootedStatement(statement)) {
                 processStatement(group, declaringClass, statement, source, groupNames);
@@ -988,7 +1028,15 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
 
         // The group is compiled as its own class, so it needs the host's static-compilation
         // treatment in its own right - otherwise its bodies are dynamic inside a @CompileStatic file.
-        applyStaticCompilation(classNode, group, source);
+        //
+        // Deferred to INSTRUCTION_SELECTION rather than applied here. Groovy's
+        // InnerClassCompletionVisitor adds the MOP dispatch methods every inner class gets, and it
+        // runs as a post-transform CANONICALIZATION operation - after this. Marking the class for
+        // static compilation now means those methods are generated afterwards having never been
+        // type-checked, and class generation dies with "StaticTypesCallSiteWriter#makeCallSite
+        // should not have been called". Waiting until the methods exist is what a hand-written
+        // annotation effectively gets.
+        deferStaticCompilation(classNode, group, source);
     }
 
     // Same silent classification as isBeanRootedStatement, for the nesting check.
@@ -1620,11 +1668,33 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
      *
      * <p>So the three places that decision landed are corrected here: the {@code this$0} field, the
      * synthetic constructor's first parameter, and the argument at the call site.</p>
+     *
+     * <p>What this cannot correct is the anonymous class's <i>outer class</i>, which
+     * {@code InnerClassNode} fixes at construction. On a plugin descriptor the members move to a
+     * sibling while the anonymous class stays homed on the descriptor, so the MOP dispatch methods
+     * Groovy generates for it read a {@code this$0} typed as the descriptor while the field now
+     * holds the sibling. An anonymous class that touches nothing outside itself is fine; one that
+     * reaches back to a {@code field(...)} or {@code method(...)} member fails with
+     * {@code NoSuchFieldError} at runtime, or is rejected at compile time under
+     * {@code @CompileStatic}. Documented rather than detected: recognising an implicit-this
+     * reference inside an anonymous class body means deciding which names are its own, and a
+     * false positive there would reject working code.</p>
      */
     private boolean rehomeAnonymousInnerClasses(Statement body, ClassNode host, boolean staticMethod,
             String beanName, SourceUnit source) {
         List<ConstructorCallExpression> anonymous = new ArrayList<>();
         body.visit(new CodeVisitorSupport() {
+            // Deliberately not descending. The lift moves the closure's own body into a method, so
+            // an anonymous class written directly in it loses the closure it was homed against -
+            // that is what this repairs. One written inside a NESTED closure does not: that closure
+            // survives the lift and is still its enclosing instance, so re-homing it would rewrite a
+            // correct `this` into the configuration class and fail at runtime with the very
+            // GroovyCastException this method exists to prevent - or, under .staticMethod(), reject
+            // a body that has an enclosing instance and compiles perfectly well.
+            @Override
+            public void visitClosureExpression(ClosureExpression expression) {
+            }
+
             @Override
             public void visitConstructorCallExpression(ConstructorCallExpression call) {
                 if (call.isUsingAnonymousInnerClass()) {
@@ -2026,11 +2096,9 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         // Two trailing type literals mean the second is the implementation. Split it off first so
         // everything below reads the same [name, ] Type head it always did.
         ClassExpression implementation = null;
-        if (allowImplementation && args.size() >= 2 &&
-                args.get(args.size() - 1) instanceof ClassExpression &&
-                args.get(args.size() - 2) instanceof ClassExpression) {
+        if (allowImplementation && namesImplementation(args)) {
             implementation = (ClassExpression) args.get(args.size() - 1);
-            args = args.subList(0, args.size() - 1);
+            args = withoutImplementation(args);
         }
         int maxArgs = 2;
         if (args.isEmpty() || args.size() > maxArgs || !(args.get(args.size() - 1) instanceof ClassExpression)) {
