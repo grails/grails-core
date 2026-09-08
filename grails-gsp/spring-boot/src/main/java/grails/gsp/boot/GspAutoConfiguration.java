@@ -68,6 +68,7 @@ import org.springframework.web.servlet.ViewResolver;
 
 import grails.core.ApplicationAttributes;
 import grails.core.GrailsApplication;
+import grails.web.mapping.UrlMappingsHolder;
 import org.grails.encoder.CodecLookup;
 import org.grails.encoder.impl.StandaloneCodecLookup;
 import org.grails.gsp.GroovyPagesTemplateEngine;
@@ -82,6 +83,7 @@ import org.grails.taglib.TagLibraryLookup;
 import org.grails.web.gsp.GroovyPagesTemplateRenderer;
 import org.grails.web.gsp.io.CachingGrailsConventionGroovyPageLocator;
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
+import org.grails.web.mapping.DefaultUrlMappingsHolder;
 import org.grails.web.pages.StandaloneTagLibraryLookup;
 import org.grails.web.servlet.view.GroovyPageViewResolver;
 
@@ -92,7 +94,9 @@ import org.grails.web.servlet.view.GroovyPageViewResolver;
 // application had to allow before it would start.
 // The codecs module is named rather than referenced so that GSP keeps working for an application
 // that does not have it on the class path.
-@AutoConfigureAfter(value = WebMvcAutoConfiguration.class, name = "org.grails.plugins.codecs.CodecsConfiguration")
+@AutoConfigureAfter(value = WebMvcAutoConfiguration.class, name = {
+    "org.grails.plugins.codecs.CodecsConfiguration",
+    "org.grails.plugins.web.mapping.UrlMappingsAutoConfiguration" })
 public class GspAutoConfiguration {
     protected static abstract class AbstractGspConfig {
         @Value("${spring.gsp.reloadingEnabled:true}")
@@ -293,6 +297,23 @@ public class GspAutoConfiguration {
             groovyPageViewResolver.setAllowGrailsViewCaching(!gspReloadingEnabled || viewCacheTimeout != 0);
             groovyPageViewResolver.setCacheTimeout(gspReloadingEnabled ? viewCacheTimeout : -1);
             return groovyPageViewResolver;
+        }
+    }
+
+    /**
+     * The mappings a link generator looks a controller and action up in. The url-mappings module
+     * contributes a link generator - the asset pipeline's {@code <asset:...>} tags build their URLs
+     * with one - and a Grails application gives it the mappings of its {@code UrlMappings} artefact.
+     * An application routing with Spring MVC has no such artefact and so no holder, which the
+     * generator requires; the empty one here is what it would otherwise have to declare itself.
+     */
+    @Configuration
+    @ConditionalOnClass(DefaultUrlMappingsHolder.class)
+    protected static class UrlMappingsHolderConfiguration {
+        @Bean
+        @ConditionalOnMissingBean(name = "grailsUrlMappingsHolder")
+        public UrlMappingsHolder grailsUrlMappingsHolder() {
+            return new DefaultUrlMappingsHolder(Collections.emptyList());
         }
     }
 
