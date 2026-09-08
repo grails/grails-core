@@ -16,26 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.generator;
+package org.grails.orm.hibernate.cfg.domainbinding.generator
 
-import java.io.Serial;
-import java.util.Optional;
-import java.util.Properties;
+import groovy.transform.CompileStatic
+import org.hibernate.generator.GeneratorCreationContext
+import org.hibernate.id.IdentityGenerator
 
-import org.hibernate.generator.GeneratorCreationContext;
-import org.hibernate.id.IdentityGenerator;
+import org.grails.orm.hibernate.cfg.HibernateSimpleIdentity
 
-import org.grails.orm.hibernate.cfg.HibernateSimpleIdentity;
+@CompileStatic
+class GrailsIdentityGenerator extends IdentityGenerator {
 
-public class GrailsIdentityGenerator extends IdentityGenerator {
+    private static final long serialVersionUID = 1L
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    public GrailsIdentityGenerator(GeneratorCreationContext context, HibernateSimpleIdentity mappedId) {
-        var generatorProps =
-                Optional.ofNullable(mappedId).map(HibernateSimpleIdentity::getProperties).orElse(new Properties());
-        super.configure(context, generatorProps);
-        context.getProperty().getValue().getColumns().get(0).setIdentity(true);
+    GrailsIdentityGenerator(GeneratorCreationContext context, HibernateSimpleIdentity mappedId) {
+        Properties generatorProps = mappedId?.properties ?: new Properties()
+        super.configure(context, generatorProps)
+        context.property.value.columns.get(0).identity = true
     }
+
 }
