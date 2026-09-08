@@ -254,9 +254,26 @@ class IpAddressFilterSpec extends AbstractUnitSpec {
         (denied ? 0 : 1) * chain.doFilter(_, _)
 
         where:
-        requestUri              | denied
-        '/app/admin/deleteUser' | true
-        '/app/public'           | false
+        requestUri              | denied | reason
+        '/app/admin/deleteUser' | true   | 'context-prefixed restricted path'
+        '/APP/admin/deleteUser' | true   | 'the context path is compared case-insensitively, as dispatch does'
+        '/app/public'           | false  | 'unrestricted path'
+    }
+
+    void 'doFilter restricts the included path during an include, as dispatch does'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '192.168.1.123'
+        request.requestURI = '/public'
+        request.setAttribute(WebUtils.INCLUDE_REQUEST_URI_ATTRIBUTE, '/admin/deleteUser')
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        response.status == 404
+        0 * chain.doFilter(_, _)
     }
 
     void 'doFilter canonicalizes forwarded restricted paths'() {
@@ -290,6 +307,28 @@ class IpAddressFilterSpec extends AbstractUnitSpec {
         then:
         response.status == 404
         0 * chain.doFilter(_, _)
+    }
+
+    @Unroll
+    void 'doFilter strips the forwarded context path case-insensitively: #forwardUri'() {
+        given:
+        restrictAdminToIntranet()
+        def chain = Mock(FilterChain)
+        request.remoteAddr = '192.168.1.123'
+        request.contextPath = '/app'
+        request.requestURI = '/app/public'
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, forwardUri)
+        request.setAttribute(WebUtils.FORWARD_CONTEXT_PATH_ATTRIBUTE, '/app')
+
+        when:
+        filter.doFilter(request, response, chain)
+
+        then:
+        response.status == 404
+        0 * chain.doFilter(_, _)
+
+        where:
+        forwardUri << ['/app/admin/deleteUser', '/APP/admin/deleteUser']
     }
 
     void 'doFilter restricts the forwarded path even when an include attribute is present'() {

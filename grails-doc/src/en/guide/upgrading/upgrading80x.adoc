@@ -3132,3 +3132,13 @@ context path; override it when a matcher needs the context-prefixed form.
 The Spring Security plugin applies the same canonicalization when matching `ipRestrictions` patterns and when the
 `AntPathRequestMatcher` compatibility class selects a filter chain, so an encoded or matrix-parameter variant of a
 restricted path is subject to the same restriction as the plain path.
+
+The canonical form follows the URI and Servlet specifications, with two deliberate exceptions. Path parameters are
+removed from each segment before percent-decoding, as Jakarta Servlet 6.0 section 3.5.2 requires of containers, so an
+encoded semicolon (`%3B`) is a literal character and not a parameter delimiter (RFC 3986 section 2.2). Percent-encoded
+unreserved characters such as `%61` are decoded (RFC 3986 section 2.3), and the path is decoded exactly once
+(RFC 3986 section 2.4). The exceptions are inherited from Spring's `UrlPathHelper`, which Grails URL mapping dispatch
+has used since Grails 3: the context path is compared case-insensitively although RFC 3986 section 6.2.2.1 and
+RFC 9110 section 4.2.3 define paths as case-sensitive, and during a `RequestDispatcher` include the included path is
+matched. Interceptors and the Spring Security matchers follow dispatch on both points because a matcher that
+disagrees with dispatch lets a request reach a controller without its interceptors or restrictions.

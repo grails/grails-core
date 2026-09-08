@@ -56,6 +56,7 @@ class IpAddressFilter extends GenericFilterBean {
 
     protected final AntPathMatcher pathMatcher = new AntPathMatcher()
     protected final UrlPathHelper urlPathHelper = UrlPathHelper.defaultInstance
+    protected final UrlPathHelper rawUrlPathHelper = rawUrlPathHelper()
 
     protected List<InterceptedUrl> restrictions
 
@@ -134,28 +135,41 @@ class IpAddressFilter extends GenericFilterBean {
     }
 
     /**
-     * Resolves the path that restriction patterns are matched against: the original request URI when the request
-     * was forwarded, otherwise the request URI, canonicalized the way request dispatch sees it. Matrix parameters
-     * are removed and percent escapes decoded before the context path is stripped, so an encoded or matrix-parameter
-     * variant of a restricted path cannot sidestep its restriction. A URI with a malformed percent escape is matched
-     * undecoded rather than aborting the filter chain.
+     * Resolves the path that restriction patterns are matched against, in the form Grails URL mapping dispatch
+     * resolves it: path parameters removed per segment before percent-decoding (Jakarta Servlet 6.0 section 3.5.2),
+     * decoded exactly once (RFC 3986 section 2.4) and relative to the context path, so an encoded or matrix-parameter
+     * variant of a restricted path is subject to the same restriction. For a forwarded request the original request
+     * URI is checked, canonicalized the same way. Like dispatch, and unlike RFC 3986 section 6.2.2.1, the context
+     * path is compared case-insensitively. A URI with an illegal percent escape, which a Servlet 6.0 container
+     * rejects with 400 before the filter chain runs, is matched undecoded rather than aborting the chain.
      */
     protected String getPathWithinApplication(HttpServletRequest request) {
-        String uri = (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) as String) ?: request.requestURI
-        if (!uri) {
-            return '/'
+        String forwardUri = request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) as String
+        if (!forwardUri) {
+            try {
+                return urlPathHelper.getPathWithinApplication(request)
+            } catch (IllegalArgumentException ignored) {
+                return rawUrlPathHelper.getPathWithinApplication(request)
+            }
         }
-        String path = urlPathHelper.removeSemicolonContent(uri)
+        String path = urlPathHelper.removeSemicolonContent(forwardUri)
+        String contextPath = (request.getAttribute(WebUtils.FORWARD_CONTEXT_PATH_ATTRIBUTE) as String) ?: request.contextPath
         try {
             path = urlPathHelper.decodeRequestString(request, path)
+            contextPath = urlPathHelper.decodeRequestString(request, contextPath)
         } catch (IllegalArgumentException ignored) {
-            // malformed percent escape: keep the undecoded path
+            // illegal percent escape: match the undecoded path
         }
-        String contextPath = request.contextPath
-        if (contextPath && contextPath != '/' && path.startsWith(contextPath)) {
+        if (contextPath && contextPath != '/' && path.regionMatches(true, 0, contextPath, 0, contextPath.length())) {
             path = path.substring(contextPath.length())
         }
         path ?: '/'
+    }
+
+    private static UrlPathHelper rawUrlPathHelper() {
+        UrlPathHelper helper = new UrlPathHelper()
+        helper.urlDecode = false
+        helper
     }
 
     protected List<InterceptedUrl> findMatchingRules(String uri) {

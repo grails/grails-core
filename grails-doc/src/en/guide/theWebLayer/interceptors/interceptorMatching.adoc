@@ -82,4 +82,6 @@ class AdminInterceptor {
 }
 ----
 
+This is the canonical form defined by RFC 3986 and the Jakarta Servlet specification: path parameters are removed from each segment before percent-decoding, so an encoded semicolon (`%3B`) is a literal character rather than a parameter delimiter, and the path is decoded exactly once.
+
 A pattern that starts with the context path, such as `match(uri: '/app/admin/**')`, is also accepted for backwards compatibility. Requests dispatched through `<g:include>` are matched against the included path, which is the path the include is dispatched to.

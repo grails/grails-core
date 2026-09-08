@@ -29,6 +29,7 @@ import org.springframework.web.util.UrlPathHelper
 class AntPathRequestMatcher implements RequestMatcher {
 
     private static final UrlPathHelper PATH_HELPER = UrlPathHelper.defaultInstance
+    private static final UrlPathHelper RAW_PATH_HELPER = rawPathHelper()
 
     private final String pattern
     private final String httpMethod
@@ -57,28 +58,27 @@ class AntPathRequestMatcher implements RequestMatcher {
     }
 
     /**
-     * The request URI canonicalized the way request dispatch sees it: matrix parameters removed, percent escapes
-     * decoded and the context path stripped, so an encoded or matrix-parameter variant of a path selects the same
-     * filter chain as the plain path. The request URI itself is used rather than an include attribute, because the
-     * chain is selected for the request being filtered. A URI with a malformed percent escape is matched undecoded
-     * rather than failing chain selection.
+     * The request path within the application, resolved with the same {@link UrlPathHelper} call that Grails URL
+     * mapping dispatch uses, so an encoded or matrix-parameter variant of a path selects the same filter chain as
+     * the path it is dispatched to. Path parameters are removed per segment before percent-decoding (Jakarta Servlet
+     * 6.0 section 3.5.2), so an encoded semicolon stays a literal character (RFC 3986 section 2.2), and the path is
+     * decoded exactly once (RFC 3986 section 2.4). Like dispatch, and unlike RFC 3986 section 6.2.2.1, the context
+     * path is compared case-insensitively, and during a {@code RequestDispatcher} include the included URI is
+     * matched. A URI with an illegal percent escape, which a Servlet 6.0 container rejects with 400 before the filter
+     * chain runs, is matched undecoded rather than failing chain selection.
      */
     private static String getPathWithinApplication(HttpServletRequest request) {
-        String uri = request.requestURI
-        if (!uri) {
-            return '/'
-        }
-        String path = PATH_HELPER.removeSemicolonContent(uri)
         try {
-            path = PATH_HELPER.decodeRequestString(request, path)
+            PATH_HELPER.getPathWithinApplication(request)
         } catch (IllegalArgumentException ignored) {
-            // malformed percent escape: keep the undecoded path
+            RAW_PATH_HELPER.getPathWithinApplication(request)
         }
-        String contextPath = request.contextPath
-        if (contextPath && contextPath != '/' && path.startsWith(contextPath)) {
-            path = path.substring(contextPath.length())
-        }
-        path ?: '/'
+    }
+
+    private static UrlPathHelper rawPathHelper() {
+        UrlPathHelper helper = new UrlPathHelper()
+        helper.urlDecode = false
+        helper
     }
 
     @Override

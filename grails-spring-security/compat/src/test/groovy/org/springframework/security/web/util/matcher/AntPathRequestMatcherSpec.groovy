@@ -42,7 +42,8 @@ class AntPathRequestMatcherSpec extends Specification {
         '/app/%61dmin/deleteUser'     | true    | 'percent escapes are decoded'
         '/app/admin%3Bx=1/deleteUser' | false   | 'an encoded semicolon is a literal character, so this is a different path'
         '/app/public'                 | false   | 'unrelated path'
-        '/APP/admin/deleteUser'       | false   | 'the context path is matched case-sensitively'
+        '/APP/admin/deleteUser'       | true    | 'the context path is compared case-insensitively, as dispatch does'
+        '/app/admin//deleteUser'      | true    | 'empty segments are collapsed, as dispatch does'
     }
 
     void 'matches the request path when deployed at the root'() {
@@ -67,7 +68,7 @@ class AntPathRequestMatcherSpec extends Specification {
     }
 
     @Unroll
-    void 'the request URI is matched even when an include attribute is present: #pattern'() {
+    void 'the included path is matched during an include, as dispatch does: #pattern'() {
         given:
         def request = new MockHttpServletRequest('GET', '/app/public')
         request.contextPath = '/app'
@@ -78,8 +79,8 @@ class AntPathRequestMatcherSpec extends Specification {
 
         where:
         pattern      | matches
-        '/admin/**'  | false
-        '/public/**' | true
+        '/admin/**'  | true
+        '/public/**' | false
     }
 
     void 'pattern matching is case-insensitive by default and case-sensitive on request'() {

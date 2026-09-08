@@ -80,11 +80,19 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     /**
      * Whether this interceptor matches the given request.
      *
-     * <p>URI matchers see the same path that URL mappings route on: decoded, with matrix parameters removed and the
-     * context path stripped. During a {@code RequestDispatcher} include this is the included path, which is also
-     * the path the include is dispatched on. The path is canonicalized once per call and passed to every
-     * {@link Matcher}. A request whose URI contains a malformed percent escape is matched undecoded rather than
-     * failing.
+     * <p>URI matchers see the same path that URL mappings route on, resolved with the same {@link UrlPathHelper}
+     * call: path parameters ({@code ;name=value}) are removed per segment before percent-decoding, as Jakarta
+     * Servlet 6.0 section 3.5.2 requires of containers, so an encoded semicolon ({@code %3B}) stays a literal
+     * character (RFC 3986 section 2.2); the path is decoded exactly once (RFC 3986 section 2.4); and the context
+     * path is stripped. Two points follow Spring, and therefore dispatch, rather than the URI specification: the
+     * context path is compared case-insensitively although RFC 3986 section 6.2.2.1 defines paths as case-sensitive,
+     * and during a {@code RequestDispatcher} include the included path is matched, which is also the path the
+     * include is dispatched on. A matcher that disagreed with dispatch on either point would let a request reach a
+     * controller without its interceptors, so dispatch wins.
+     *
+     * <p>The path is canonicalized once per call and passed to every {@link Matcher}. A request whose URI contains
+     * an illegal percent escape, which a Servlet 6.0 container rejects with 400 before dispatch, is matched
+     * undecoded rather than failing.
      *
      * @param request The request to match
      * @return Whether the current interceptor does match
@@ -103,7 +111,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         try {
             uri = UrlPathHelper.defaultInstance.getPathWithinApplication(request)
         } catch (IllegalArgumentException ignored) {
-            // the URI has a malformed percent escape and cannot be decoded: match it undecoded rather than fail
+            // illegal percent escape: match the undecoded path rather than fail
             UrlPathHelper rawPathHelper = new UrlPathHelper()
             rawPathHelper.urlDecode = false
             uri = rawPathHelper.getPathWithinApplication(request)
