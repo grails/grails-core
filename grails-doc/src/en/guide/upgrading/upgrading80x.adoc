@@ -3134,3 +3134,18 @@ class SomeSpec extends Specification { }
 
 `@Integration` tests are unaffected: they always name the application class. So are tests using the
 `grails-testing-support` unit test mixins, which build their context without the lifecycle either way.
+
+==== 55. `sitemesh.decorator.default` Is Consulted for the Default Layout
+
+The SiteMesh 3 integration resolved the default layout from `grails.sitemesh.default.layout`, falling back to
+the legacy `grails.views.layout.default`. With neither set it used the implicit `application` layout.
+
+SiteMesh's own `sitemesh.decorator.default` is now consulted as a last fallback, after both Grails keys. It is
+the property a Spring Boot application rendering views with GSP configures, and the one
+`Sitemesh3EnvironmentPostProcessor` derives from the Grails keys, so it decides only where neither Grails key
+is set.
+
+This changes behaviour for a Grails application that set `sitemesh.decorator.default` and neither Grails key:
+it was decorated with the implicit `application` layout and is now decorated with the layout that property
+names. Set `grails.sitemesh.default.layout` to be explicit, or remove `sitemesh.decorator.default` to keep the
+implicit `application` layout. An application that sets either Grails key is unaffected — those still win.

@@ -155,6 +155,11 @@ class GroovyPageCompiler {
                 // is written whole rather than merged into what an earlier run left behind. Merging kept naming
                 // pages that have since been renamed, removed or registered under a different prefix, against
                 // classes no longer on the class path.
+                //
+                // This holds because a caller hands the compiler the whole source set on every run, which is what
+                // GroovyPageForkCompileTask and GroovyPageCompilerTask both do - each passes its full srcDir and
+                // lets the up-to-date check above decide what to recompile. The merge existed for a caller that
+                // passed only the changed files; one that did would now write a registry naming those alone.
                 File viewregistryFile = new File(targetDir, 'gsp/views.properties')
                 viewregistryFile.parentFile.mkdirs()
                 // Use SortedProperties to ensure a consistent order of entries for reproducible builds
