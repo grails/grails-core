@@ -59,6 +59,8 @@ import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.model.types.Embedded;
+import org.grails.datastore.mapping.model.types.ToMany;
+import org.grails.datastore.mapping.model.types.EmbeddedCollection;
 import org.grails.datastore.mapping.model.types.ToOne;
 import org.grails.datastore.mapping.mongo.config.MongoAttribute;
 import org.grails.datastore.mapping.mongo.engine.AbstractMongoObectEntityPersister;
@@ -403,6 +405,34 @@ public class MongoSession extends AbstractMongoSession {
                     else {
                         updateProperties.put(associationName, associationId);
                     }
+                }
+            }
+            // OneToMany / ManyToMany carry a collection of associated instances. Normal
+            // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
+            // bulk path has to do the same rather than sending the domain objects through
+            // $set. EmbeddedCollection is excluded: those are subdocuments, not references.
+            else if (association instanceof ToMany && !(association instanceof EmbeddedCollection)
+                    && updateProperties.containsKey(associationName)) {
+                final Object value = updateProperties.get(associationName);
+                if (value instanceof Collection) {
+                    final PersistentEntity associatedEntity = association.getAssociatedEntity();
+                    final ProxyFactory proxyFactory = getMappingContext().getProxyFactory();
+                    final MongoAttribute attr = (MongoAttribute) association.getMapping().getMappedForm();
+                    final List<Object> encoded = new ArrayList<Object>();
+                    for (Object element : (Collection<?>) value) {
+                        if (element == null) {
+                            encoded.add(null);
+                            continue;
+                        }
+                        final Object declaredId = proxyFactory.isProxy(element)
+                                ? proxyFactory.getIdentifier(element)
+                                : getMappingContext().getEntityReflector(associatedEntity).getIdentifier(element);
+                        final Object id = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity);
+                        encoded.add(attr != null && attr.isReference()
+                                ? new DBRef(getCollectionName(associatedEntity), id)
+                                : id);
+                    }
+                    updateProperties.put(associationName, encoded);
                 }
             }
         }

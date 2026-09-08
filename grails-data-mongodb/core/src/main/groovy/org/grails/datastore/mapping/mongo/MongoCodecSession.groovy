@@ -60,7 +60,9 @@ import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.Association
+import org.grails.datastore.mapping.model.types.EmbeddedCollection
 import org.grails.datastore.mapping.model.types.Embedded
+import org.grails.datastore.mapping.model.types.ToMany
 import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
@@ -383,6 +385,28 @@ class MongoCodecSession extends AbstractMongoSession {
                     else {
                         updateProperties.put(associationName, associationId)
                     }
+                }
+            }
+            // OneToMany / ManyToMany carry a collection of associated instances. Normal
+            // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
+            // bulk path has to do the same rather than sending the domain objects through
+            // $set. EmbeddedCollection is excluded: those are subdocuments, not references.
+            else if (association instanceof ToMany && !(association instanceof EmbeddedCollection)
+                    && updateProperties.containsKey(associationName)) {
+                def value = updateProperties.get(associationName)
+                if (value instanceof Collection) {
+                    def associatedEntity = association.associatedEntity
+                    def proxyFactory = mappingContext.proxyFactory
+                    MongoAttribute attr = (MongoAttribute) association.mapping.mappedForm
+                    def encoded = value.collect { element ->
+                        if (element == null) return null
+                        def declaredId = proxyFactory.isProxy(element)
+                                ? proxyFactory.getIdentifier(element)
+                                : associatedEntity.reflector.getIdentifier(element)
+                        def id = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity)
+                        attr?.isReference() ? new DBRef(getCollectionName(associatedEntity), id) : id
+                    }
+                    updateProperties.put(associationName, encoded)
                 }
             }
         }

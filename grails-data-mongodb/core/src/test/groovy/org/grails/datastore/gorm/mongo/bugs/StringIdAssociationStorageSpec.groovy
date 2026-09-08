@@ -325,6 +325,24 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         raw.get('address').getString('city') == 'after'
     }
 
+    void "updateAll encodes a to-many association as stored ids"() {
+        given: 'normal persistence stores ids; the bulk path used to send the domain objects'
+        RefTag a = new RefTag(label: 'bulk-a').save(flush: true)
+        RefTag b = new RefTag(label: 'bulk-b').save(flush: true)
+        RefProject project = new RefProject(name: 'Bulk tags')
+        project.save(flush: true)
+
+        when:
+        manager.session.clear()
+        RefProject.where { name == 'Bulk tags' }
+                .updateAll(tags: [RefTag.get(a.id), RefTag.get(b.id)])
+        Document raw = rawProjects().find(new Document('_id', new ObjectId(project.id))).first()
+
+        then:
+        raw.get('tags').every { it instanceof ObjectId }
+        raw.get('tags') as Set == [new ObjectId(a.id), new ObjectId(b.id)] as Set
+    }
+
     private MongoCollection<Document> rawPeople() {
         manager.mongoClient.getDatabase('test').getCollection('refPerson')
     }
