@@ -19,6 +19,7 @@
 package org.grails.datastore.gorm
 
 import grails.gorm.annotation.Entity
+import grails.gorm.api.GormStaticOperations
 import grails.gorm.multitenancy.Tenants
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.core.Session
@@ -105,10 +106,20 @@ class GormStaticApiSpec extends Specification {
         def api = new GormStaticApi(GormStaticApiThing, datastore, [])
 
         when:
-        Integer n = api.count()
+        Long n = api.count()
 
         then:
-        n == 0
+        n == 0L
+    }
+
+    void "count() returns a Long so a large table is not truncated"() {
+        given:
+        def api = new GormStaticApi(GormStaticApiThing, datastore, [])
+
+        expect: 'the value and the declared contract agree, so static callers are not narrowed'
+        api.count() instanceof Long
+        GormStaticOperations.getMethod('count').returnType == Long
+        GormStaticOperations.getMethod('getCount').returnType == Long
     }
 
     void "getGormDynamicFinders returns the finders the api was constructed with"() {

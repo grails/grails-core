@@ -258,7 +258,7 @@ class DefaultHalViewHelper extends DefaultJsonViewHelper implements HalViewHelpe
      * @param order The order in which the results are to be sorted eg: DESC or ASC
      */
     //TODO: Once GROOVY-9662 is fixed, remove explicit delegate call and typecast to StreamingJsonDelegate
-    void paginate(Object object, Integer total, Integer offset = null, Integer max = null,  String sort = null, String order = null) {
+    void paginate(Object object, Number total, Integer offset = null, Integer max = null,  String sort = null, String order = null) {
         Map<String, Object> linkParams = buildPaginateParams(max, offset, sort, order)
 
         GrailsView jsonView = view
@@ -277,7 +277,7 @@ class DefaultHalViewHelper extends DefaultJsonViewHelper implements HalViewHelpe
                 ((StreamingJsonBuilder.StreamingJsonDelegate) delegate).call(HREFLANG_ATTRIBUTE, locale.toString())
                 ((StreamingJsonBuilder.StreamingJsonDelegate) delegate).call(TYPE_ATTRIBUTE, contentTypeMimeType ?: contentType)
             }
-            List<Link> links = getPaginationLinks(object, total, max, offset, sort, order) as List<Link>
+            List<Link> links = getPaginationLinks(object, total?.intValue(), max, offset, sort, order) as List<Link>
             for (link in links) {
                 ((StreamingJsonBuilder.StreamingJsonDelegate) delegate).call(link.rel) {
                     ((StreamingJsonBuilder.StreamingJsonDelegate) delegate).call(HREF_ATTRIBUTE, link.href)
