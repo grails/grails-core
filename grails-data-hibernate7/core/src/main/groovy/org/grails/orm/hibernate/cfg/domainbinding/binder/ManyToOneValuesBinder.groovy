@@ -16,31 +16,30 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.binder;
+package org.grails.orm.hibernate.cfg.domainbinding.binder
 
-import java.util.Optional;
+import groovy.transform.CompileStatic
+import org.hibernate.FetchMode
+import org.hibernate.mapping.ManyToOne
 
-import org.hibernate.FetchMode;
-import org.hibernate.mapping.ManyToOne;
+import org.grails.orm.hibernate.cfg.PropertyConfig
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation
 
-import org.grails.orm.hibernate.cfg.PropertyConfig;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation;
+@CompileStatic
+class ManyToOneValuesBinder {
 
-public class ManyToOneValuesBinder {
+    void bindManyToOneValues(HibernateAssociation property, ManyToOne manyToOne) {
+        PropertyConfig config = property.hibernateMappedForm
 
-    public ManyToOneValuesBinder() {}
+        FetchMode fetchMode = config.fetchMode != null ? config.fetchMode : FetchMode.DEFAULT
+        manyToOne.fetchMode = fetchMode
 
-    public void bindManyToOneValues(HibernateAssociation property, ManyToOne manyToOne) {
-        PropertyConfig config = property.getHibernateMappedForm();
+        manyToOne.lazy = property.isLazy()
 
-        var fetchMode = Optional.ofNullable(config.getFetchMode()).orElse(FetchMode.DEFAULT);
-        manyToOne.setFetchMode(fetchMode);
-
-        manyToOne.setLazy(property.isLazy());
-
-        manyToOne.setIgnoreNotFound(config.getIgnoreNotFound());
+        manyToOne.ignoreNotFound = config.ignoreNotFound
 
         // set referenced entity
-        manyToOne.setReferencedEntityName(property.getAssociatedEntity().getName());
+        manyToOne.referencedEntityName = property.associatedEntity.name
     }
+
 }
