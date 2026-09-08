@@ -1518,6 +1518,100 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'a literal name'                | 'Literal'| "bean('dup', String) { 'a' }\n                    bean('dup', String) { 'b' }"
     }
 
+    def "an anonymous class on a plugin descriptor cannot reach a member that moved to the sibling"() {
+        given: "the member compiles onto the sibling; the anonymous class stays homed on the descriptor"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface MovedGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class MovedMemberGrailsPlugin extends Plugin {
+                def beans = {
+                    method('suffix', String) { '!' }
+
+                    bean('greeter', MovedGreeter) {
+                        new MovedGreeter() { String greet() { 'hello' + suffix() } }
+                    }
+                }
+            }
+        '''
+
+        when:
+        compile(source)
+
+        then: "rejected here rather than as a NoSuchFieldError inside a running application"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('keeps the plugin descriptor as its outer class')
+        e.message.contains('suffix()')
+    }
+
+    def "an anonymous class on a plugin descriptor that reaches nothing outside itself is fine"() {
+        given: "the shape that works, and must not be caught by the check above"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface SelfContainedGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class SelfContainedGrailsPlugin extends Plugin {
+                def beans = {
+                    method('suffix', String) { '!' }
+
+                    bean('greeter', SelfContainedGreeter) {
+                        new SelfContainedGreeter() {
+                            String greet() { own() }
+                            private String own() { 'hello' }
+                        }
+                    }
+                }
+            }
+        '''
+
+        when:
+        Class<?> compiled = compile(source)
+
+        then: "its own methods, and anything it inherits, resolve on the anonymous class itself"
+        noExceptionThrown()
+        compiled != null
+    }
+
+    def "the same reference on a non-plugin host is left alone, because nothing moved"() {
+        given: "members and the anonymous class share a home here, so the reference resolves"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface HomedGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class HomedMemberBeans {
+                def beans = {
+                    method('suffix', String) { '!' }
+
+                    bean('greeter', HomedGreeter) {
+                        new HomedGreeter() { String greet() { 'hello' + suffix() } }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def fixture = loader.loadClass('HomedMemberBeans').getDeclaredConstructor().newInstance()
+
+        expect:
+        fixture.greeter().greet() == 'hello!'
+    }
+
     private Class<?> compile() {
         compile(FIXTURE)
     }

@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.CodeVisitorSupport;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.InnerClassNode;
@@ -318,6 +319,8 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         List<FieldNode> generatedFields = new ArrayList<>(beanMethodHost.getFields());
         generatedFields.removeAll(preExistingFields);
         rejectUnproxiedSiblingBeanCalls(beanMethodHost, generatedMethods, source);
+        rejectAnonymousClassReachingMovedMembers(beanMethodHost, classNode, generatedMethods,
+                generatedFields, source);
         dumpGeneratedMembers(beanMethodHost, generatedMethods, generatedFields, source);
 
         if (beanMethodHost != classNode) {
@@ -1481,6 +1484,101 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 host.getNameWithoutPackage() + " is not a proxied @Configuration class";
     }
 
+    /**
+     * Rejects an unqualified reference from an anonymous inner class in a bean body to a member that
+     * moved to the generated sibling.
+     *
+     * <p>Only on a plugin descriptor, and only because the anonymous class cannot follow. Groovy
+     * fixes an inner class's outer class when it creates the node and offers no way to move it, so
+     * the class stays homed on the descriptor while the members it wants are on the sibling. Its MOP
+     * dispatch methods then read a {@code this$0} typed as the descriptor where the field holds the
+     * sibling, and the reference fails with {@code NoSuchFieldError} inside a running application -
+     * or, under {@code @CompileStatic}, as a "cannot find matching method" naming a synthetic class
+     * nobody wrote.</p>
+     *
+     * <p>The test is the narrow one: a name that is <i>both</i> a member this block generated and
+     * not resolvable on the anonymous class itself or anything it inherits. A call to the anonymous
+     * class's own method, or to one from the interface it implements, is left alone - it is only the
+     * names that actually moved that cannot be reached.</p>
+     */
+    private void rejectAnonymousClassReachingMovedMembers(ClassNode host, ClassNode declaringClass,
+            List<MethodNode> generatedMethods, List<FieldNode> generatedFields, SourceUnit source) {
+        if (host == declaringClass) {
+            // Not a plugin descriptor: the members and the anonymous class share a home, so an
+            // unqualified reference resolves the way it reads.
+            return;
+        }
+        Set<String> moved = new HashSet<>();
+        for (MethodNode method : generatedMethods) {
+            moved.add(method.getName());
+        }
+        for (FieldNode field : generatedFields) {
+            moved.add(field.getName());
+        }
+        if (moved.isEmpty()) {
+            return;
+        }
+        for (MethodNode method : generatedMethods) {
+            if (method.getCode() == null) {
+                continue;
+            }
+            List<ConstructorCallExpression> anonymous = new ArrayList<>();
+            method.getCode().visit(new CodeVisitorSupport() {
+                @Override
+                public void visitConstructorCallExpression(ConstructorCallExpression call) {
+                    if (call.isUsingAnonymousInnerClass()) {
+                        anonymous.add(call);
+                    }
+                    super.visitConstructorCallExpression(call);
+                }
+            });
+            for (ConstructorCallExpression call : anonymous) {
+                reportMovedMemberReferences(call, moved, host, source);
+            }
+        }
+    }
+
+    private void reportMovedMemberReferences(ConstructorCallExpression call, Set<String> moved,
+            ClassNode host, SourceUnit source) {
+        ClassNode inner = call.getType();
+        Set<String> own = existingMemberNames(inner);
+        for (MethodNode method : inner.getMethods()) {
+            if (method.getCode() == null) {
+                continue;
+            }
+            method.getCode().visit(new CodeVisitorSupport() {
+                @Override
+                public void visitMethodCallExpression(MethodCallExpression inner) {
+                    super.visitMethodCallExpression(inner);
+                    if (inner.isImplicitThis()) {
+                        report(inner.getMethodAsString(), inner, "()");
+                    }
+                }
+
+                @Override
+                public void visitVariableExpression(VariableExpression expression) {
+                    super.visitVariableExpression(expression);
+                    if (expression.getAccessedVariable() instanceof DynamicVariable) {
+                        report(expression.getName(), expression, "");
+                    }
+                }
+
+                private void report(String name, ASTNode at, String callSuffix) {
+                    if (name == null || own.contains(name) || !moved.contains(name)) {
+                        return;
+                    }
+                    addError(at, source, "\"" + name + callSuffix + "\" is declared in this block, so it " +
+                            "compiles onto " + host.getNameWithoutPackage() + " - but an anonymous inner class " +
+                            "keeps the plugin descriptor as its outer class, which Groovy fixes when it creates " +
+                            "the class and this cannot move. The reference would fail with NoSuchFieldError at " +
+                            "runtime. Pass what the anonymous class needs as a constructor argument or a captured " +
+                            "local, give it a name and declare it as a static nested class, or declare this bean " +
+                            "on a class that is not a plugin descriptor.");
+                }
+            });
+        }
+    }
+
     // An unqualified call, or one written against this. Anything with a real receiver is somebody
     // else's method that happens to share the name.
     private boolean isSelfCall(MethodCallExpression call) {
@@ -1673,12 +1771,10 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
      * {@code InnerClassNode} fixes at construction. On a plugin descriptor the members move to a
      * sibling while the anonymous class stays homed on the descriptor, so the MOP dispatch methods
      * Groovy generates for it read a {@code this$0} typed as the descriptor while the field now
-     * holds the sibling. An anonymous class that touches nothing outside itself is fine; one that
-     * reaches back to a {@code field(...)} or {@code method(...)} member fails with
-     * {@code NoSuchFieldError} at runtime, or is rejected at compile time under
-     * {@code @CompileStatic}. Documented rather than detected: recognising an implicit-this
-     * reference inside an anonymous class body means deciding which names are its own, and a
-     * false positive there would reject working code.</p>
+     * holds the sibling. An anonymous class that touches only its own members and what it inherits
+     * is fine; one that reaches a member declared in the block is rejected by
+     * {@link #rejectAnonymousClassReachingMovedMembers}, rather than left to fail with
+     * {@code NoSuchFieldError} inside a running application.</p>
      */
     private boolean rehomeAnonymousInnerClasses(Statement body, ClassNode host, boolean staticMethod,
             String beanName, SourceUnit source) {
