@@ -33,6 +33,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import grails.artefact.Artefact;
 import grails.core.gsp.GrailsTagLibClass;
 import grails.gsp.TagLib;
+import org.grails.core.artefact.gsp.TagLibArtefactHandler;
 import org.grails.core.gsp.DefaultGrailsTagLibClass;
 import org.grails.taglib.TagLibraryLookup;
 
@@ -44,9 +45,6 @@ import org.grails.taglib.TagLibraryLookup;
  */
 public class StandaloneTagLibraryLookup extends TagLibraryLookup
         implements SmartInitializingSingleton, ApplicationListener<ContextRefreshedEvent> {
-
-    /** What {@link Artefact} marks a tag library with, the way a Grails plugin declares one. */
-    private static final String TAG_LIB_ARTEFACT = "TagLib";
 
     Set<Object> tagLibInstancesSet;
 
@@ -115,7 +113,7 @@ public class StandaloneTagLibraryLookup extends TagLibraryLookup
         Collection<Object> artefacts = new LinkedHashSet<>();
         for (Object bean : applicationContext.getBeansWithAnnotation(Artefact.class).values()) {
             Artefact artefact = AnnotationUtils.findAnnotation(bean.getClass(), Artefact.class);
-            if (artefact != null && TAG_LIB_ARTEFACT.equals(artefact.value())) {
+            if (artefact != null && TagLibArtefactHandler.TYPE.equals(artefact.value())) {
                 artefacts.add(bean);
             }
         }
