@@ -16,14 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
+package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 
-import java.io.Serial;
-import java.util.Map;
+import groovy.transform.CompileStatic
+import org.hibernate.MappingException
+import org.hibernate.boot.spi.SecondPass
 
-import org.hibernate.MappingException;
-
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
 
 /**
  * Second pass class for grails relationships. This is required as all persistent classes need to be
@@ -31,23 +30,24 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyPrope
  *
  * @author Graeme
  */
-@SuppressWarnings("PMD.NonSerializableClass")
-public class SetSecondPass implements org.hibernate.boot.spi.SecondPass, GrailsSecondPass, java.io.Serializable {
+@CompileStatic
+@SuppressWarnings('PMD.NonSerializableClass')
+class SetSecondPass implements SecondPass, GrailsSecondPass, Serializable {
 
-    @Serial
-    private static final long serialVersionUID = -5540526942092611348L;
+    private static final long serialVersionUID = -5540526942092611348L
 
-    protected final HibernateToManyProperty property;
-    private final CollectionSecondPassBinder collectionSecondPassBinder;
+    protected final HibernateToManyProperty property
+    private final CollectionSecondPassBinder collectionSecondPassBinder
 
-    public SetSecondPass(CollectionSecondPassBinder collectionSecondPassBinder, HibernateToManyProperty property) {
-        this.collectionSecondPassBinder = collectionSecondPassBinder;
-        this.property = property;
+    SetSecondPass(CollectionSecondPassBinder collectionSecondPassBinder, HibernateToManyProperty property) {
+        this.collectionSecondPassBinder = collectionSecondPassBinder
+        this.property = property
     }
 
     @Override
-    public void doSecondPass(Map persistentClasses) throws MappingException {
-        collectionSecondPassBinder.bindCollectionSecondPass(property);
-        createCollectionKeys(property.getCollection());
+    void doSecondPass(Map persistentClasses) throws MappingException {
+        collectionSecondPassBinder.bindCollectionSecondPass(property)
+        createCollectionKeys(property.collection)
     }
+
 }
