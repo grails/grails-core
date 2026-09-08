@@ -23,6 +23,7 @@ import jakarta.persistence.FetchType
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import spock.lang.AutoCleanup
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * {@link DynamicFinderSpec} (pre-existing) covers only {@code buildMatchSpec}. This spec targets
@@ -35,7 +36,7 @@ import spock.lang.Specification
 class DynamicFinderCoverageSpec extends Specification {
 
     @AutoCleanup
-    SimpleMapDatastore datastore = new SimpleMapDatastore(DynamicFinderThing)
+    SimpleMapDatastore datastore = new SimpleMapDatastore(DynamicFinderThing, DynamicFinderOwner, DynamicFinderCompositeThing)
 
     def setup() {
         new DynamicFinderThing(name: 'Alice', age: 30, title: 'Engineer').save(flush: true)
@@ -257,32 +258,121 @@ class DynamicFinderCoverageSpec extends Specification {
         DynamicFinderThing.list(sort: 'age')*.age == [25, 30, 35]
     }
 
-    void "list(sort) rejects injected property names"() {
-        when:
-        DynamicFinderThing.list(sort: 'age, id')
-
-        then:
-        thrown(IllegalArgumentException)
+    void "list(sort) accepts the identity and version properties"() {
+        expect:
+        DynamicFinderThing.list(sort: 'id')*.id == DynamicFinderThing.list()*.id.sort()
+        DynamicFinderThing.list(sort: 'id', order: 'desc')*.id == DynamicFinderThing.list()*.id.sort().reverse()
+        DynamicFinderThing.list(sort: 'version').size() == 3
     }
 
-    void "list(sort) rejects unknown property names"() {
+    @Unroll
+    void "list(sort) rejects a sort key #description with a message that does not echo it"() {
         when:
-        DynamicFinderThing.list(sort: 'notAProperty')
+        DynamicFinderThing.list(sort: sort)
 
         then:
-        thrown(IllegalArgumentException)
+        def e = thrown(IllegalArgumentException)
+        e.message == 'Invalid sort property'
+
+        where:
+        sort         | description
+        'age, id'    | 'carrying a second expression'
+        'age desc'   | 'carrying a direction'
+        'upper(age)' | 'wrapped in a function call'
+        "age'"       | 'containing a quote'
+        ''           | 'that is empty'
+        ' '          | 'that is blank'
     }
 
-    void "populateArgumentsForCriteria rejects injected sort map keys"() {
+    void "list(sort) accepts a path through an association, including the associated identity"() {
+        // SimpleMapQuery cannot evaluate a nested sort itself, so no owners are persisted: the
+        // empty result shows the key was accepted by every argument-handling entry point
+        expect:
+        DynamicFinderOwner.list(sort: 'thing.name') == []
+        DynamicFinderOwner.list(sort: 'thing.id') == []
+        DynamicFinderOwner.findAllByName('nobody', [sort: 'thing.age']) == []
+        DynamicFinderOwner.where { eq('name', 'nobody') }.list(sort: 'thing.name') == []
+    }
+
+    void "list(sort) leaves a root segment that is not a persistent property to the underlying query so aliases keep working"() {
+        // c1 is what a where-query alias (def c1 = thing) or createAlias('thing', 'c1') looks like
+        expect:
+        DynamicFinderOwner.list(sort: 'c1.name') == []
+        DynamicFinderOwner.list(sort: 'c1.name', order: 'desc') == []
+        DynamicFinderOwner.findAllByName('nobody', [sort: 'c1.name']) == []
+        DynamicFinderOwner.where { eq('name', 'nobody') }.list(sort: 'c1.name') == []
+    }
+
+    @Unroll
+    void "list(sort) rejects #description"() {
+        when:
+        DynamicFinderOwner.list(sort: sort)
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == 'Invalid sort property'
+
+        where:
+        sort             | description
+        'thing.notAProp' | 'an unknown property of the associated entity'
+        'name.length'    | 'a segment beneath a property that is not an association'
+        'tags.value'     | 'a segment beneath a basic collection, which has no associated entity'
+        'thing.id.value' | 'a segment beneath an identity'
+    }
+
+    void "list(sort) accepts the members of a composite identity"() {
+        expect:
+        DynamicFinderCompositeThing.list(sort: 'a') == []
+        DynamicFinderCompositeThing.list(sort: [a: 'asc', b: 'desc']) == []
+        DynamicFinderCompositeThing.list(order: 'desc') == []
+    }
+
+    void "list(Map) takes each sort map entry's direction from its value rather than the order argument"() {
+        expect:
+        DynamicFinderThing.list(sort: [age: 'desc'])*.age == [35, 30, 25]
+        DynamicFinderThing.list(sort: [age: 'desc'], order: 'asc')*.age == [35, 30, 25]
+        DynamicFinderThing.list(sort: [age: 'asc'], order: 'desc')*.age == [25, 30, 35]
+        DynamicFinderThing.list(sort: [age: null], order: 'desc')*.age == [25, 30, 35]
+    }
+
+    void "populateArgumentsForCriteria(BuildableCriteria, Map) takes each sort map entry's direction from its value"() {
         given:
         def api = new org.grails.datastore.gorm.GormStaticApi(DynamicFinderThing, datastore, [])
-        def criteria = api.createCriteria()
+        def descending = api.createCriteria()
+        def ascending = api.createCriteria()
 
         when:
-        DynamicFinder.populateArgumentsForCriteria(criteria, [sort: ['age, id': 'asc']])
+        DynamicFinder.populateArgumentsForCriteria(descending, [sort: [age: 'desc'], order: 'asc'])
+        DynamicFinder.populateArgumentsForCriteria(ascending, [sort: [age: null], order: 'desc'])
 
         then:
-        thrown(IllegalArgumentException)
+        descending.list(null)*.age == [35, 30, 25]
+        ascending.list(null)*.age == [25, 30, 35]
+    }
+
+    void "populateArgumentsForCriteria(BuildableCriteria, Map) validates sort keys the same way as the Query overload"() {
+        given:
+        def api = new org.grails.datastore.gorm.GormStaticApi(DynamicFinderOwner, datastore, [])
+
+        when: 'a key carrying a second expression'
+        DynamicFinder.populateArgumentsForCriteria(api.createCriteria(), [sort: ['name, id': 'asc']])
+
+        then:
+        def injected = thrown(IllegalArgumentException)
+        injected.message == 'Invalid sort property'
+
+        when: 'an unknown property beneath a known association'
+        DynamicFinder.populateArgumentsForCriteria(api.createCriteria(), [sort: 'thing.notAProp'])
+
+        then:
+        def unknown = thrown(IllegalArgumentException)
+        unknown.message == 'Invalid sort property'
+
+        when: 'a root segment that is not a persistent property'
+        DynamicFinder.populateArgumentsForCriteria(api.createCriteria(), [sort: 'c1.name', order: 'desc'])
+
+        then:
+        notThrown(IllegalArgumentException)
     }
 }
 
@@ -292,4 +382,21 @@ class DynamicFinderThing {
     String name
     Integer age
     String title
+}
+
+@Entity
+class DynamicFinderOwner {
+    Long id
+    String name
+    DynamicFinderThing thing
+    static hasMany = [tags: String]
+}
+
+@Entity
+class DynamicFinderCompositeThing {
+    String a
+    String b
+    static mapping = {
+        id composite: ['a', 'b']
+    }
 }

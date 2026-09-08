@@ -92,7 +92,6 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
     public static final String ARGUMENT_IGNORE_CASE = "ignoreCase";
     public static final String ARGUMENT_CACHE = "cache";
     public static final String ARGUMENT_LOCK = "lock";
-    private static final Pattern SORT_PROPERTY_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*");
     protected Pattern pattern;
 
     private static final String OPERATOR_OR = "Or";
@@ -107,6 +106,7 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
 
     private static final String NOT = "Not";
+    private static final String INVALID_SORT_PROPERTY = "Invalid sort property";
     private static final Map<String, Constructor> methodExpressions = new LinkedHashMap<String, Constructor>();
     protected final MappingContext mappingContext;
 
@@ -447,56 +447,39 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
         }
 
         Object sortObject = argMap.get(ARGUMENT_SORT);
-        if (sortObject == null && orderParam != null) {
-            PersistentEntity entity = null;
-            if (query instanceof AbstractCriteriaBuilder) {
-                entity = ((AbstractCriteriaBuilder) query).getPersistentEntity();
-            }
-            else if (query instanceof AbstractDetachedCriteria) {
-                entity = ((AbstractDetachedCriteria) query).getPersistentEntity();
-            }
-
-            if (entity != null) {
-                PersistentProperty identity = entity.getIdentity();
-                if (identity != null) {
-                    sortObject = identity.getName();
-                } else {
-                    PersistentProperty[] composite = entity.getCompositeIdentity();
-                    if (composite != null && composite.length > 0) {
-                        Map<String, String> sortMap = new LinkedHashMap<>();
-                        for (PersistentProperty p : composite) {
-                            sortMap.put(p.getName(), orderParam);
-                        }
-                        sortObject = sortMap;
+        PersistentEntity entity = resolvePersistentEntity(query);
+        if (sortObject == null && orderParam != null && entity != null) {
+            PersistentProperty identity = entity.getIdentity();
+            if (identity != null) {
+                sortObject = identity.getName();
+            } else {
+                PersistentProperty[] composite = entity.getCompositeIdentity();
+                if (composite != null && composite.length > 0) {
+                    Map<String, String> sortMap = new LinkedHashMap<>();
+                    for (PersistentProperty p : composite) {
+                        sortMap.put(p.getName(), orderParam);
                     }
+                    sortObject = sortMap;
                 }
             }
         }
         boolean ignoreCase = !argMap.containsKey(ARGUMENT_IGNORE_CASE) || ClassUtils.getBooleanFromMap(ARGUMENT_IGNORE_CASE, argMap);
 
-        PersistentEntity sortEntity = resolvePersistentEntity(query);
         if (sortObject != null) {
             if (sortObject instanceof CharSequence) {
                 final String sort = sortObject.toString();
-                validateSortProperty(sortEntity, sort);
-                final Query.Order order = ORDER_DESC.equalsIgnoreCase(orderParam) ? Query.Order.desc(sort) : Query.Order.asc(sort);
-                if (ignoreCase) {
-                    order.ignoreCase();
-                }
-                query.order(order);
+                validateSortProperty(entity, sort);
+                query.order(buildOrder(sort, orderParam, ignoreCase));
             }
             else if (sortObject instanceof Map) {
+                // each entry carries its own direction, as in applySortForMap for the Query overload
                 Map sortMap = (Map) sortObject;
                 for (Object key : sortMap.keySet()) {
                     Object value = sortMap.get(key);
                     String sort = key.toString();
-                    validateSortProperty(sortEntity, sort);
-                    String direction = value != null ? value.toString() : orderParam;
-                    final Query.Order order = ORDER_DESC.equalsIgnoreCase(direction) ? Query.Order.desc(sort) : Query.Order.asc(sort);
-                    if (ignoreCase) {
-                        order.ignoreCase();
-                    }
-                    query.order(order);
+                    String direction = value != null ? value.toString() : ORDER_ASC;
+                    validateSortProperty(entity, sort);
+                    query.order(buildOrder(sort, direction, ignoreCase));
                 }
             }
         }
@@ -784,55 +767,78 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
     }
 
     /**
-     * Rejects sort keys that are not identifier-shaped property paths, and when a
-     * mapping is available, keys that do not resolve to a persistent property.
+     * Rejects a sort key that is not shaped like a property path. When the entity is known and the
+     * first segment names one of its persistent properties, every further segment must also resolve
+     * through the mapping: associations and embedded components are traversed, and identity
+     * properties, including the members of a composite identity, are recognised. A first segment
+     * that is not a persistent property is accepted on the shape check alone, because criteria and
+     * where-query aliases such as {@code c1.name} are not persistent properties; the underlying
+     * query implementation resolves them, or reports an unknown name, itself.
+     * <p>
+     * The exception message deliberately omits the caller-supplied value: sort keys are commonly
+     * taken straight from request parameters.
      *
      * @param entity the entity being queried, or {@code null} when it cannot be resolved
      * @param sort the requested sort property
+     * @throws IllegalArgumentException if the sort key is malformed or does not resolve
      */
-    public static void validateSortProperty(PersistentEntity entity, String sort) {
-        if (sort == null || !SORT_PROPERTY_PATTERN.matcher(sort).matches()) {
-            throw new IllegalArgumentException("Invalid sort property: " + sort);
+    private static void validateSortProperty(PersistentEntity entity, String sort) {
+        if (!NameUtils.isValidPropertyPath(sort)) {
+            throw new IllegalArgumentException(INVALID_SORT_PROPERTY);
         }
         if (entity == null) {
             return;
         }
-        PersistentEntity current = entity;
-        String[] parts = sort.split("\\.");
-        for (int i = 0; i < parts.length; i++) {
-            PersistentProperty prop = current.getPropertyByName(parts[i]);
-            if (prop == null) {
-                PersistentProperty identity = current.getIdentity();
-                if (identity != null && parts[i].equals(identity.getName()) && i == parts.length - 1) {
-                    return;
-                }
-                throw new IllegalArgumentException("Unknown sort property: " + sort);
+        String[] segments = sort.split("\\.");
+        PersistentProperty property = resolveProperty(entity, segments[0]);
+        if (property == null) {
+            return;
+        }
+        for (int i = 1; i < segments.length; i++) {
+            PersistentEntity associated = property instanceof Association ? ((Association) property).getAssociatedEntity() : null;
+            if (associated == null) {
+                throw new IllegalArgumentException(INVALID_SORT_PROPERTY);
             }
-            if (i < parts.length - 1) {
-                if (!(prop instanceof Association)) {
-                    throw new IllegalArgumentException("Invalid sort property: " + sort);
-                }
-                current = ((Association) prop).getAssociatedEntity();
-                if (current == null) {
-                    throw new IllegalArgumentException("Invalid sort property: " + sort);
-                }
+            property = resolveProperty(associated, segments[i]);
+            if (property == null) {
+                throw new IllegalArgumentException(INVALID_SORT_PROPERTY);
             }
         }
     }
 
+    /**
+     * Resolves one path segment against an entity, including its identity property and the members
+     * of a composite identity, which are not guaranteed to be reachable through
+     * {@link PersistentEntity#getPropertyByName(String)}.
+     */
+    private static PersistentProperty resolveProperty(PersistentEntity entity, String name) {
+        PersistentProperty property = entity.getPropertyByName(name);
+        if (property != null) {
+            return property;
+        }
+        PersistentProperty identity = entity.getIdentity();
+        if (identity != null && name.equals(identity.getName())) {
+            return identity;
+        }
+        PersistentProperty[] compositeIdentity = entity.getCompositeIdentity();
+        if (compositeIdentity != null) {
+            for (PersistentProperty candidate : compositeIdentity) {
+                if (candidate != null && name.equals(candidate.getName())) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Query.Order buildOrder(String sort, String direction, boolean ignoreCase) {
+        Query.Order order = ORDER_DESC.equalsIgnoreCase(direction) ? Query.Order.desc(sort) : Query.Order.asc(sort);
+        return ignoreCase ? order.ignoreCase() : order;
+    }
+
     private static void addSimpleSort(Query q, String sort, String order, boolean ignoreCase) {
         validateSortProperty(q.getEntity(), sort);
-        Query.Order o;
-        if (ORDER_DESC.equalsIgnoreCase(order)) {
-            o = Query.Order.desc(sort);
-        }
-        else {
-            o = Query.Order.asc(sort);
-        }
-
-        if (ignoreCase) o = o.ignoreCase();
-
-        q.order(o);
+        q.order(buildOrder(sort, order, ignoreCase));
     }
 
     private void populateOperators(String[] operators) {

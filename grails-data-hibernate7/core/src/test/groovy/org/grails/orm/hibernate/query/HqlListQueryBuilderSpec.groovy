@@ -137,6 +137,8 @@ class HqlListQueryBuilderSpec extends Specification {
 
     void "test buildListHql with join fetch"() {
         given:
+        entity.getHibernatePropertyByPath("books") >> Mock(HibernatePersistentProperty)
+        entity.getHibernatePropertyByPath("profile") >> Mock(HibernatePersistentProperty)
         def builder = new HqlListQueryBuilder(entity, [
                 (HibernateQueryArgument.FETCH.value()): [
                         books: HibernateQueryArgument.JOIN.value(),
@@ -209,25 +211,51 @@ class HqlListQueryBuilderSpec extends Specification {
         [max: 10, offset: 5] | true
     }
 
-    void "test buildListHql rejects injected sort property"() {
+    @Unroll
+    void "test buildListHql rejects sort property #description without echoing it"() {
         when:
-        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.SORT.value()): "name, e.id"]).buildListHql()
+        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.SORT.value()): sort]).buildListHql()
 
         then:
         def e = thrown(IllegalArgumentException)
-        e.message.contains("Invalid sort property")
+        e.message == "Invalid sort property"
+
+        where:
+        sort           | description
+        "name, e.id"   | "carrying a second expression"
+        "name desc"    | "carrying a direction"
+        "upper(name)"  | "wrapped in a function call"
+        "notAProperty" | "that the mapping does not know"
+        ""             | "that is empty"
+        " "            | "that is blank"
     }
 
-    void "test buildListHql rejects unknown sort property"() {
+    void "test buildListHql rejects a blank property in a sort map instead of emitting an empty order part"() {
+        given:
+        def prop = Mock(HibernatePersistentProperty)
+        prop.getType() >> String
+        entity.getHibernatePropertyByPath("name") >> prop
+
         when:
-        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.SORT.value()): "notAProperty"]).buildListHql()
+        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.SORT.value()): ["": "asc", name: "asc"]]).buildListHql()
 
         then:
         def e = thrown(IllegalArgumentException)
-        e.message.contains("Unknown sort property")
+        e.message == "Invalid sort property"
     }
 
-    void "test buildListHql rejects injected sort direction"() {
+    void "test buildListHql accepts identifier characters beyond ASCII letters in a sort property"() {
+        given:
+        def prop = Mock(HibernatePersistentProperty)
+        prop.getType() >> Integer
+        entity.getHibernatePropertyByPath('total$amount') >> prop
+
+        expect:
+        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.SORT.value()): 'total$amount']).buildListHql() ==
+                'from Person e order by e.total$amount asc'
+    }
+
+    void "test buildListHql rejects injected sort direction without echoing it"() {
         given:
         def prop = Mock(HibernatePersistentProperty)
         prop.getType() >> String
@@ -241,6 +269,53 @@ class HqlListQueryBuilderSpec extends Specification {
 
         then:
         def e = thrown(IllegalArgumentException)
-        e.message.contains("Invalid sort direction")
+        e.message == "Invalid sort direction"
+    }
+
+    @Unroll
+    void "test buildListHql normalizes sort direction '#direction' to #expected"() {
+        given:
+        def prop = Mock(HibernatePersistentProperty)
+        prop.getType() >> Integer
+        entity.getHibernatePropertyByPath("age") >> prop
+
+        expect:
+        new HqlListQueryBuilder(entity, [
+                (HibernateQueryArgument.SORT.value()) : "age",
+                (HibernateQueryArgument.ORDER.value()): direction
+        ]).buildListHql() == "from Person e order by e.age ${expected}"
+
+        where:
+        direction | expected
+        " desc"   | "desc"
+        "DESC "   | "desc"
+        "Asc"     | "asc"
+        ""        | "asc"
+        "   "     | "asc"
+    }
+
+    @Unroll
+    void "test buildListHql rejects fetch key #description without echoing it"() {
+        when:
+        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.FETCH.value()): [(key): HibernateQueryArgument.JOIN.value()]]).buildListHql()
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == "Invalid fetch property"
+
+        where:
+        key                                   | description
+        "books left join fetch e.secretNotes" | "carrying a second join"
+        "books, e.secretNotes"                | "carrying a second expression"
+        "notAnAssociation"                    | "that the mapping does not know"
+        ""                                    | "that is empty"
+    }
+
+    void "test buildListHql ignores fetch keys whose value is neither join nor eager"() {
+        given:
+        def builder = new HqlListQueryBuilder(entity, [(HibernateQueryArgument.FETCH.value()): [books: "select"]])
+
+        expect:
+        builder.buildListHql() == "from Person e"
     }
 }

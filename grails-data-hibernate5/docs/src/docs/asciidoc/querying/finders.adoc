@@ -146,3 +146,5 @@ The same pagination and sorting parameters available on the link:../api/org/grai
 def books = Book.findAllByTitleLike("Harry Pot%",
                [max: 3, offset: 2, sort: "title", order: "desc"])
 ----
+
+The `sort` value must be a property path made up of identifiers separated by dots, such as `"title"` or `"author.name"`, that resolves through the domain class mapping. Anything else, for example a value carrying a second expression or a function call, is rejected with an `IllegalArgumentException` before the query is built, so request parameters can be passed through safely. A key whose first segment is not a property of the domain class is left for the query implementation to resolve, so aliases created with `createAlias` or declared in a <<whereQueries,where query>> can still be sorted on.

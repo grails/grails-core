@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
+import org.grails.datastore.mapping.reflect.NameUtils;
 import org.grails.orm.hibernate.cfg.HibernateMappingContext;
 import org.grails.orm.hibernate.cfg.Mapping;
 import org.grails.orm.hibernate.cfg.SortConfig;
@@ -39,7 +39,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentP
  */
 public class HqlListQueryBuilder {
 
-    private static final Pattern PROPERTY_PATH = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*");
+    private static final String ASC = HibernateQueryArgument.ORDER_ASC.value();
+    private static final String DESC = HibernateQueryArgument.ORDER_DESC.value();
 
     private final GrailsHibernatePersistentEntity entity;
     private final Map<String, Object> params;
@@ -58,6 +59,7 @@ public class HqlListQueryBuilder {
             Map<String, Object> fetchMap = (Map<String, Object>) fetchObj;
             fetchMap.forEach((prop, type) -> {
                 if (HibernateQueryArgument.JOIN.value().equals(type) || HibernateQueryArgument.EAGER.value().equals(type)) {
+                    requireMappedProperty(prop, HibernateQueryArgument.FETCH.value());
                     hql.append(" join fetch e.").append(prop);
                 }
             });
@@ -82,7 +84,7 @@ public class HqlListQueryBuilder {
         boolean isIgnoreCase = ignoreCase == null || (ignoreCase instanceof Boolean && (Boolean) ignoreCase);
 
         if (sort instanceof String) {
-            return buildSortPart((String) sort, order instanceof String ? (String) order : "asc", isIgnoreCase);
+            return buildSortPart((String) sort, order instanceof String ? (String) order : ASC, isIgnoreCase);
         } else if (sort instanceof Map) {
             List<String> parts = new ArrayList<>();
             ((Map<String, String>) sort).forEach((prop, direction) -> {
@@ -114,16 +116,7 @@ public class HqlListQueryBuilder {
     }
 
     private String buildSortPart(String propertyName, String direction, boolean ignoreCase) {
-        if (propertyName == null || propertyName.isBlank()) {
-            return "";
-        }
-        if (!PROPERTY_PATH.matcher(propertyName).matches()) {
-            throw new IllegalArgumentException("Invalid sort property: " + propertyName);
-        }
-        HibernatePersistentProperty prop = entity.getHibernatePropertyByPath(propertyName);
-        if (prop == null) {
-            throw new IllegalArgumentException("Unknown sort property: " + propertyName);
-        }
+        HibernatePersistentProperty prop = requireMappedProperty(propertyName, HibernateQueryArgument.SORT.value());
         String normalizedDirection = normalizeDirection(direction);
         String path = "e." + propertyName;
         if (prop.getType() == String.class && ignoreCase) {
@@ -132,17 +125,37 @@ public class HqlListQueryBuilder {
         return path + " " + normalizedDirection;
     }
 
+    /**
+     * Resolves a caller-supplied property path against the mapping before it is interpolated into
+     * HQL. Blank and malformed paths are rejected together with paths that do not resolve to a
+     * mapped property. The message deliberately omits the value, which usually originates from
+     * request parameters.
+     *
+     * @param propertyPath The property path taken from the query arguments
+     * @param argument The name of the query argument the path came from, for the error message
+     * @return The mapped property
+     * @throws IllegalArgumentException if the path is malformed or does not resolve
+     */
+    private HibernatePersistentProperty requireMappedProperty(String propertyPath, String argument) {
+        if (!NameUtils.isValidPropertyPath(propertyPath)) {
+            throw new IllegalArgumentException("Invalid " + argument + " property");
+        }
+        HibernatePersistentProperty prop = entity.getHibernatePropertyByPath(propertyPath);
+        if (prop == null) {
+            throw new IllegalArgumentException("Invalid " + argument + " property");
+        }
+        return prop;
+    }
+
     private static String normalizeDirection(String direction) {
-        if (direction == null || direction.isBlank()) {
-            return "asc";
+        String normalized = direction == null ? "" : direction.trim();
+        if (normalized.isEmpty() || ASC.equalsIgnoreCase(normalized)) {
+            return ASC;
         }
-        if ("asc".equalsIgnoreCase(direction)) {
-            return "asc";
+        if (DESC.equalsIgnoreCase(normalized)) {
+            return DESC;
         }
-        if ("desc".equalsIgnoreCase(direction)) {
-            return "desc";
-        }
-        throw new IllegalArgumentException("Invalid sort direction: " + direction);
+        throw new IllegalArgumentException("Invalid sort direction");
     }
 
     public static boolean isPaged(Map<String, Object> params) {
