@@ -3108,11 +3108,14 @@ for `/admin/**`. Interceptors matched by controller, action or namespace are una
 
 Review interceptors that use `uri` matching for the following changes:
 
-* **Interceptors combining `match(uri:)` with `excludes(uri:)` now run under a context path.**
-In earlier versions such an interceptor never matched when the application was deployed under a non-root context path
-(for example `server.servlet.context-path=/app`), because the exclusion check also required the pattern to match the
-context-prefixed request URI. It now behaves as configured, so interceptors that were silently inactive start
-executing.
+* **Interceptors combining `match(uri:)` with an `excludes(...)` now run under a context path.**
+In earlier versions a matcher that paired a `uri` pattern with any exclusion (`excludes(uri:)`, `excludes(controller:)`,
+`excludes(action:)` or a closure) never matched when the application was deployed under a non-root context path (for
+example `server.servlet.context-path=/app`), because the exclusion check required the pattern to match both the
+context-prefixed and the context-relative request URI, which a pattern such as `/api/**` cannot do. Only that shape was
+affected: `matchAll()` with exclusions, `match(controller:)` and other name-based matchers, `match(uri:)` without an
+exclusion, and `uri` patterns that match both forms such as `/**` all ran as expected. The affected shape now behaves
+as configured, so an interceptor written that way starts executing under a context path.
 
 * **Patterns are matched against the path within the application only.**
 A pattern is no longer also compared with the context-prefixed request URI, so `+match(uri: '/*/*')+` no longer matches

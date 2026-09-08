@@ -362,6 +362,23 @@ class InterceptorSpec extends Specification {
     }
 
     @Unroll
+    void "Test match with uri and a controller exclude under a context path: #requestUri"() {
+        given: "match(uri: '/api/**').excludes(controller: 'health') deployed under /app"
+        def interceptor = new TestApiExcludingHealthControllerInterceptor()
+        def request = bindRequest(requestUri, '/app')
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: controller))
+
+        expect:
+        interceptor.doesMatch() == shouldMatch
+
+        where:
+        requestUri        | controller | shouldMatch
+        '/app/api/orders' | 'orders'   | true
+        '/app/api/health' | 'health'   | false
+        '/app/other'      | 'other'    | false
+    }
+
+    @Unroll
     void "Test URI patterns are matched against the path within the application only: #pattern"() {
         given: "a request for /app/save deployed under /app"
         def interceptor = new TestPatternUriInterceptor(pattern)
@@ -619,6 +636,12 @@ class TestExcludeHealthUriInterceptor implements Interceptor {
 class TestApiExcludingHealthUriInterceptor implements Interceptor {
     TestApiExcludingHealthUriInterceptor() {
         match(uri: '/api/**').excludes(uri: '/api/health')
+    }
+}
+
+class TestApiExcludingHealthControllerInterceptor implements Interceptor {
+    TestApiExcludingHealthControllerInterceptor() {
+        match(uri: '/api/**').excludes(controller: 'health')
     }
 }
 
