@@ -3115,3 +3115,22 @@ application and relied on its `doWithSpring` or `beanRegistrar` beans being cont
 longer registered. A plugin that also publishes an auto-configuration — as the Grails modules do, and as
 `@GrailsBeans` generates for a plugin's `beans` block — continues to contribute through Spring Boot's own
 auto-configuration, which needs no lifecycle.
+
+It also matters inside a Grails application, in one place: a `@SpringBootTest` that names configuration
+classes of its own rather than the application class. The context of such a test has no Grails application
+class among its sources, so it is not a Grails application by the rule above and the lifecycle no longer runs
+for it — where before it did, and the test was given the whole plugin runtime.
+
+[source,groovy]
+----
+// Grails 7: the plugin lifecycle ran, and this context had a GrailsApplication and every plugin's beans
+@SpringBootTest(classes = SomeConfig)
+class SomeSpec extends Specification { }
+
+// Grails 8: name the application class as well, and the context is a Grails application again
+@SpringBootTest(classes = [Application, SomeConfig])
+class SomeSpec extends Specification { }
+----
+
+`@Integration` tests are unaffected: they always name the application class. So are tests using the
+`grails-testing-support` unit test mixins, which build their context without the lifecycle either way.

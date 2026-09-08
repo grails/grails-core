@@ -83,8 +83,8 @@ import org.grails.spring.RuntimeSpringConfiguration;
  * (controllers, services, interceptors) iterate {@code grailsApplication} artefacts inside their
  * {@code doWithSpring} closures. Application classes are resolved from the source classes stashed by
  * {@link grails.boot.GrailsApp} (see {@link #APPLICATION_SOURCE_CLASSES_BEAN_NAME}) and scanned with the
- * same logic {@link GrailsAutoConfiguration#classes()} uses; when the application was not started
- * through {@code GrailsApp} the phase proceeds without application classes.
+ * same logic {@link GrailsAutoConfiguration#classes()} uses; an application {@code GrailsApp} did not
+ * start has its sources read from the context instead.
  *
  * <p>Once complete, the {@code grailsApplication} and {@code pluginManager} singletons are promoted to
  * the bean factory together with the {@link #EARLY_REGISTRATION_COMPLETE_BEAN_NAME} marker, so
