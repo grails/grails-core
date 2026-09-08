@@ -59,8 +59,8 @@ import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.model.types.Embedded;
-import org.grails.datastore.mapping.model.types.ToMany;
 import org.grails.datastore.mapping.model.types.EmbeddedCollection;
+import org.grails.datastore.mapping.model.types.ToMany;
 import org.grails.datastore.mapping.model.types.ToOne;
 import org.grails.datastore.mapping.mongo.config.MongoAttribute;
 import org.grails.datastore.mapping.mongo.engine.AbstractMongoObectEntityPersister;
@@ -384,8 +384,8 @@ public class MongoSession extends AbstractMongoSession {
             // Embedded extends ToOne, but an embedded value is a subdocument with no
             // identity of its own -- normal persistence encodes it through the embedded
             // path, not ToOneEncoder. Reflecting an id from one yields null.
-            if (association instanceof ToOne && !(association instanceof Embedded)
-                    && updateProperties.containsKey(associationName)) {
+            if (association instanceof ToOne && !(association instanceof Embedded) &&
+                    updateProperties.containsKey(associationName)) {
                 final Object value = updateProperties.get(associationName);
                 if (value != null) {
                     final PersistentEntity associatedEntity = association.getAssociatedEntity();
@@ -393,9 +393,9 @@ public class MongoSession extends AbstractMongoSession {
                     // field, so reflecting one yields null. ToOneEncoder asks the proxy
                     // factory first for the same reason.
                     final ProxyFactory proxyFactory = getMappingContext().getProxyFactory();
-                    final Object declaredId = proxyFactory.isProxy(value)
-                            ? proxyFactory.getIdentifier(value)
-                            : getMappingContext().getEntityReflector(associatedEntity).getIdentifier(value);
+                    final Object declaredId = proxyFactory.isProxy(value) ?
+                            proxyFactory.getIdentifier(value) :
+                            getMappingContext().getEntityReflector(associatedEntity).getIdentifier(value);
                     final Object associationId = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity);
                     final MongoAttribute attr = (MongoAttribute) association.getMapping().getMappedForm();
                     if (attr != null && attr.isReference()) {
@@ -411,8 +411,8 @@ public class MongoSession extends AbstractMongoSession {
             // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
             // bulk path has to do the same rather than sending the domain objects through
             // $set. EmbeddedCollection is excluded: those are subdocuments, not references.
-            else if (association instanceof ToMany && !(association instanceof EmbeddedCollection)
-                    && updateProperties.containsKey(associationName)) {
+            else if (association instanceof ToMany && !(association instanceof EmbeddedCollection) &&
+                    updateProperties.containsKey(associationName)) {
                 final Object value = updateProperties.get(associationName);
                 if (value instanceof Collection) {
                     final PersistentEntity associatedEntity = association.getAssociatedEntity();
@@ -424,13 +424,13 @@ public class MongoSession extends AbstractMongoSession {
                             encoded.add(null);
                             continue;
                         }
-                        final Object declaredId = proxyFactory.isProxy(element)
-                                ? proxyFactory.getIdentifier(element)
-                                : getMappingContext().getEntityReflector(associatedEntity).getIdentifier(element);
+                        final Object declaredId = proxyFactory.isProxy(element) ?
+                                proxyFactory.getIdentifier(element) :
+                                getMappingContext().getEntityReflector(associatedEntity).getIdentifier(element);
                         final Object id = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity);
-                        encoded.add(attr != null && attr.isReference()
-                                ? new DBRef(getCollectionName(associatedEntity), id)
-                                : id);
+                        encoded.add(attr != null && attr.isReference() ?
+                                new DBRef(getCollectionName(associatedEntity), id) :
+                                id);
                     }
                     updateProperties.put(associationName, encoded);
                 }
