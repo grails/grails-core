@@ -82,6 +82,14 @@ import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 @GrailsBeans
 @AutoConfiguration(before = [PropertyPlaceholderAutoConfiguration])
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+// The beans below are the beans of a Grails application: they read the GrailsApplication, or they
+// configure the context one is loaded into. This configuration is generated from the block below and
+// so is contributed to every Spring Boot application with grails-core on its class path, where only a
+// Grails application has the plugin lifecycle that builds one - and where the rest get the
+// auto-configuration of the library they did ask for. The condition is on the configuration as a
+// whole rather than on the beans that name the application, so that an application either has the
+// core plugin's beans or has none of them.
+@ConditionalOnBean(GrailsApplication)
 class CoreGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
@@ -93,19 +101,13 @@ class CoreGrailsPlugin extends Plugin {
     private static final String SPRING_PROXY_TARGET_CLASS_CONFIG = 'spring.aop.proxy-target-class'
 
     def beans = {
-        // Both of these are the GrailsApplication read through another type, so both stand down for
-        // an application that has none: this configuration is contributed by every Spring Boot
-        // application with grails-core on its class path, where only a Grails application has the
-        // plugin lifecycle that builds one.
-        bean(ClassLoader).primary().annotate(ConditionalOnBean, value: GrailsApplication) { GrailsApplication grailsApplication ->
+        bean(ClassLoader).primary() { GrailsApplication grailsApplication ->
             grailsApplication.classLoader
         }
 
-        bean('grailsConfigProperties', ConfigProperties)
-                .primary()
-                .annotate(ConditionalOnBean, value: GrailsApplication) { GrailsApplication grailsApplication ->
-                    new ConfigProperties(grailsApplication.config)
-                }
+        bean('grailsConfigProperties', ConfigProperties).primary() { GrailsApplication grailsApplication ->
+            new ConfigProperties(grailsApplication.config)
+        }
 
         // GroovyPagesGrailsPlugin registers its own caching, GSP-aware locator under this name
         // from doWithSpring, which runs earlier, so this backs off when GSP is present.
