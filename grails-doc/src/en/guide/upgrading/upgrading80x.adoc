@@ -3542,10 +3542,14 @@ Integer total = Book.count()
 Long total = Book.count()
 ----
 
-The datastore has always produced a `Long` here — `COUNT(*)` is a 64-bit value in SQL, and GORM narrowed
-it to fit the declared return type. That narrowing used `intValue()`, which truncates silently, so a table
-with more than `Integer.MAX_VALUE` rows reported a wrong and possibly negative count with no error. The
-declared type now matches what the query returns.
+How wide the underlying value is depends on the datastore. Hibernate counts with SQL `COUNT(*)` and Neo4j
+with Cypher `count(*)`, both 64-bit. MongoDB aggregates with `{$sum: 1}`, which returns Int32 and promotes
+to Int64 once the total exceeds it, so the width depends on how many documents the collection holds. Only
+the in-memory datastore is fixed at 32 bits, and it returns a list size. GORM normalises whatever it gets
+with `longValue()`, then the declared return type narrowed it again with `intValue()`. That second step truncates silently, so
+a table with more than `Integer.MAX_VALUE` rows reported a wrong and possibly negative count with no
+error. `Long` is the only type that holds every value a datastore can produce here, so it is what the API
+now declares.
 
 The change affects `GormStaticOperations.count()` and `getCount()`, the `count()` and `count` members
 generated on every domain class, and `RestfulController.countResources()`. Dynamic Groovy is unaffected:
