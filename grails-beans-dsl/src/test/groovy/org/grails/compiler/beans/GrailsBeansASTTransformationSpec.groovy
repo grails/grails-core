@@ -6255,6 +6255,78 @@ class GrailsBeansASTTransformationSpec extends Specification {
         beans.getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
     }
 
+    def "an anonymous inner class works under @CompileStatic on a plugin descriptor too"() {
+        given: "the descriptor's own static-compilation pass runs first and visits the lifted class"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface StaticPluginGreeter { String greet() }
+
+            @GrailsBeans
+            @CompileStatic
+            @AutoConfiguration
+            class StaticAnonymousGrailsPlugin extends Plugin {
+                def beans = {
+                    bean('greeter', StaticPluginGreeter) {
+                        new StaticPluginGreeter() { String greet() { 'hello' } }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def sibling = loader.loadClass('StaticAnonymousAutoConfiguration')
+
+        expect: "a lifted class has no enclosing method from the parser, and static compilation reads one"
+        sibling.getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+    }
+
+    @Unroll
+    def "a group(...) bean body may construct an anonymous inner class on #hostKind#staticness"() {
+        given:
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            ${staticAnnotation}
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    group('extras') {
+                        bean('greeter', ${fixture}Greeter) {
+                            new ${fixture}Greeter() { String greet() { 'hello' } }
+                        }
+                    }
+                }
+            }
+        """
+
+        and: "the group is visited as an inner class of the host before its own bean method is"
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def group = loader.loadClass("${owner}\$ExtrasConfiguration")
+
+        expect:
+        group.getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+
+        where: "the group nests under whatever the beans landed on - the host, or its generated sibling"
+        hostKind              | staticness               | fixture           | suffixClass    | extendsClause    | staticAnnotation | owner
+        'a plain host'        | ''                       | 'GroupAnon'       | 'Beans'        | ''               | ''               | 'GroupAnonBeans'
+        'a plugin descriptor' | ''                       | 'GroupAnon'       | 'GrailsPlugin' | 'extends Plugin' | ''               | 'GroupAnonAutoConfiguration'
+        'a plain host'        | ', under @CompileStatic' | 'StaticGroupAnon' | 'Beans'        | ''               | '@CompileStatic' | 'StaticGroupAnonBeans'
+        'a plugin descriptor' | ', under @CompileStatic' | 'StaticGroupAnon' | 'GrailsPlugin' | 'extends Plugin' | '@CompileStatic' | 'StaticGroupAnonAutoConfiguration'
+    }
+
     def "an empty beans block on a plain configuration class is a no-op"() {
         given:
         String source = '''
