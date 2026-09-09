@@ -23,9 +23,11 @@
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <title>Decorated <g:layoutTitle /></title>
-        <asset:stylesheet src="application.css"/>
+        <%-- Compiled by the asset pipeline at build time and served by its filter, which resolves
+             the name to the digest-named file the build wrote. --%>
+        <link rel="stylesheet" href="${request.contextPath}/assets/application.css"/>
         <%-- In the head, so the colour mode is set before the page paints rather than after it. --%>
-        <asset:javascript src="theme.js"/>
+        <script src="${request.contextPath}/assets/theme.js"></script>
         <g:layoutHead />
     </head>
     <body class="bg-body-tertiary d-flex flex-column min-vh-100">
@@ -104,6 +106,6 @@
                 </g:if>
             </div>
         </footer>
-        <asset:javascript src="application.js"/>
+        <script src="${request.contextPath}/assets/application.js"></script>
     </body>
 </html>

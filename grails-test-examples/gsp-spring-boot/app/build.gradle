@@ -38,7 +38,7 @@ apply plugin: 'org.apache.grails.gradle.grails-gsp'
 // The asset pipeline compiles the stylesheets and scripts this application serves, Bootstrap among
 // them, into build/assets at build time. Bootstrap is therefore an input to the build rather than a
 // library the application ships: it is declared on the assets configuration below, and what reaches
-// the artifact is the one compiled, minified, digest-named file the manifest asks for.
+// the artifact is the one compiled, minified, digest-named file the manifest names.
 apply plugin: 'cloud.wondrify.asset-pipeline'
 
 assets {
@@ -52,6 +52,9 @@ assets {
     // A source map is for reading the sources of a page as it runs, and this application ships
     // none of them.
     enableSourceMaps = false
+    // What is compiled is packaged with the application's resources rather than only into its
+    // archives, so a test run from the project, bootRun and the artifact all serve the same files.
+    developmentRuntime = false
 }
 
 // Jasper compiles a JSP at run time with the Eclipse compiler, and an executable jar packages no JSP
@@ -95,10 +98,9 @@ dependencies {
     assets 'org.webjars.npm:bootstrap' // compiled into application.css and application.js, not shipped
     assets 'org.webjars.npm:bootstrap-icons' // the icons of the theme menu
 
-    // The <asset:...> tag library, the service behind it and the filter that serves what the
-    // pipeline compiled. The application declares them as beans, so it compiles against them.
-    implementation 'cloud.wondrify:asset-pipeline-grails'
-    implementation 'cloud.wondrify:asset-pipeline-core' // AssetPipelineConfigHolder
+    // The filter that serves what the pipeline compiled, from the asset pipeline's own Spring Boot
+    // module. Application imports its configuration; nothing else is declared for it here.
+    implementation 'cloud.wondrify:asset-pipeline-spring-boot'
 
     implementation(project(':grails-web-jsp')) {
         exclude group: 'org.apache.grails.web', module: 'grails-web-databinding'

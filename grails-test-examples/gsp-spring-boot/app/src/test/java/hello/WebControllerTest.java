@@ -54,14 +54,16 @@ class WebControllerTest {
     }
 
     @Test
-    void aTagLibraryWrittenForGrailsIsRegisteredAndRuns() throws Exception {
-        // <asset:stylesheet> belongs to the asset pipeline, a tag library this application declares
-        // as beans rather than installs as a plugin. An unregistered namespace is not a failure in
-        // GSP - the tag is written out as it stands - so what proves it registered is that no tag of
-        // that namespace reaches the browser.
-        String body = get("/");
+    void whatTheAssetPipelineCompiledIsLinkedAndServed() throws Exception {
+        // Bootstrap is compiled into application.css at build time, and the layout links it by
+        // name; the asset pipeline's filter resolves that name to the digest-named file the build
+        // wrote, so what the browser is sent is the compiled stylesheet and script
+        String page = get("/");
+        assertThat(page).contains("href=\"/assets/application.css\"");
+        assertThat(page).contains("src=\"/assets/theme.js\"");
 
-        assertThat(body).doesNotContain("<asset:");
+        assertThat(get("/assets/application.css")).contains("--bs-").contains(".field-error");
+        assertThat(get("/assets/theme.js")).contains("data-bs-theme");
     }
 
     @Test
