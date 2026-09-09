@@ -49,6 +49,9 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("org.hibernate.orm:hibernate-core")
     implementation("org.hibernate.models:hibernate-models")
+    // hibernate-core's Gradle metadata exposes jboss-logging at runtime only, but Groovydoc
+    // resolves the documented Hibernate types with Class.forName and needs it on the compile classpath.
+    compileOnly("org.jboss.logging:jboss-logging")
     compileOnly("org.hibernate.orm:hibernate-envers")
     testCompileOnly("org.hibernate.orm:hibernate-envers")
 
