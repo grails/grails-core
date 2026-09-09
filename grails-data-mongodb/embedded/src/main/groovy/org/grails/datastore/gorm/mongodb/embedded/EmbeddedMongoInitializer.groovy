@@ -16,30 +16,24 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.mongodb.embedded;
+package org.grails.datastore.gorm.mongodb.embedded
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.aot.AbstractAotProcessor;
-import org.springframework.core.SpringProperties;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.util.ClassUtils;
+import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationContextInitializer
+import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.aot.AbstractAotProcessor
+import org.springframework.core.SpringProperties
+import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.env.MapPropertySource
+import org.springframework.util.ClassUtils
 
 /**
  * Starts an embedded MongoDB before the application context refreshes and publishes its
@@ -95,46 +89,58 @@ import org.springframework.util.ClassUtils;
  *
  * @since 8.0
  */
-public class EmbeddedMongoInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+@CompileStatic
+class EmbeddedMongoInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     /**
      * The host that means "start one and connect me to it" rather than an address to reach.
      */
-    public static final String EMBEDDED_HOST = "embedded";
+    public static final String EMBEDDED_HOST = 'embedded'
 
-    public static final String BACKEND = "embedded.mongodb.backend";
+    public static final String BACKEND = 'embedded.mongodb.backend'
 
-    public static final String PROPERTY_NAMES = "embedded.mongodb.property-names";
+    public static final String PROPERTY_NAMES = 'embedded.mongodb.property-names'
 
-    public static final String DATABASE_DIR = "embedded.mongodb.database-dir";
+    public static final String DATABASE_DIR = 'embedded.mongodb.database-dir'
 
-    public static final String VERSION = "embedded.mongodb.version";
+    public static final String VERSION = 'embedded.mongodb.version'
 
     /**
      * The name of the replica set to run as. A transaction, a change stream and a causally
      * consistent read all need one; a standalone server refuses them. Left unset, the server is
      * standalone unless the application asks GORM for transactions.
      */
-    public static final String REPLICA_SET = "embedded.mongodb.replica-set";
+    public static final String REPLICA_SET = 'embedded.mongodb.replica-set'
 
     /**
      * What GORM is told, which is the reason an application would want a replica set at all.
      */
-    public static final String TRANSACTIONAL = "grails.mongodb.transactional";
+    public static final String TRANSACTIONAL = 'grails.mongodb.transactional'
 
-    public static final String DEFAULT_REPLICA_SET = "rs0";
+    public static final String DEFAULT_REPLICA_SET = 'rs0'
 
-    public static final String DEFAULT_PROPERTY_NAME = "grails.mongodb.url";
+    public static final String DEFAULT_PROPERTY_NAME = 'grails.mongodb.url'
 
-    private static final Logger log = LoggerFactory.getLogger(EmbeddedMongoInitializer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EmbeddedMongoInitializer)
 
-    private static final String PROPERTY_SOURCE_NAME = "embeddedMongoDB";
+    private static final String PROPERTY_SOURCE_NAME = 'embeddedMongoDB'
 
-    private static final String DEFAULT_DATABASE = "test";
+    private static final String DEFAULT_DATABASE = 'test'
 
-    private static final int DEFAULT_PORT = 27017;
+    private static final int DEFAULT_PORT = 27017
 
-    private static final int DEFAULT_SERVER_PORT = 8080;
+    private static final int DEFAULT_SERVER_PORT = 8080
+
+    /**
+     * Copies of {@code FlapdoodleMongoBackend.MONGOD_CLASS} and {@code FlapdoodleMongoBackend.NAME}.
+     * Deliberately not read from that class: Groovy compiles a reference to a constant as a field
+     * read, which loads and links the class - and its methods name flapdoodle types that are not
+     * on the classpath unless an application added them - whereas javac inlined the literals and
+     * never touched it. The presence check below only works because nothing here names the class.
+     */
+    private static final String FLAPDOODLE_MONGOD_CLASS = 'de.flapdoodle.embed.mongo.transitions.Mongod'
+
+    private static final String FLAPDOODLE_BACKEND_NAME = 'flapdoodle'
 
     /**
      * A URL asking for an embedded server, with the port and database it asks for. Credentials are
@@ -142,25 +148,25 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      * there is nothing to authenticate against.
      */
     private static final Pattern EMBEDDED_URL = Pattern.compile(
-            "^mongodb(?:\\+srv)?://(?:[^@/]*@)?" + EMBEDDED_HOST + "(?::(\\d+))?(?:/([^?]*))?(?:\\?.*)?$");
+            '^mongodb(?:\\+srv)?://(?:[^@/]*@)?' + EMBEDDED_HOST + '(?::(\\d+))?(?:/([^?]*))?(?:\\?.*)?$')
 
     /**
      * The servers this JVM started, by port. Keyed rather than a single field because two
      * application contexts in one JVM can ask for different ports, and consulted so that a
      * devtools restart reuses its own server without mistaking any other listener for one.
      */
-    private static final Map<Integer, StartedServer> STARTED = new ConcurrentHashMap<>();
+    private static final Map<Integer, StartedServer> STARTED = new ConcurrentHashMap<>()
 
-    private static final AtomicBoolean SHUTDOWN_HOOK_ADDED = new AtomicBoolean();
+    private static final AtomicBoolean SHUTDOWN_HOOK_ADDED = new AtomicBoolean()
 
     /**
      * Flapdoodle first, so that adding it to an application is all it takes to move from
      * the in-memory reimplementation to a real mongod.
      */
-    private final List<EmbeddedMongoBackend> backends;
+    private final List<EmbeddedMongoBackend> backends
 
-    public EmbeddedMongoInitializer() {
-        this(defaultBackends(EmbeddedMongoInitializer.class.getClassLoader()));
+    EmbeddedMongoInitializer() {
+        this(defaultBackends(EmbeddedMongoInitializer.getClassLoader()))
     }
 
     /**
@@ -175,27 +181,29 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      *
      * <p>So the question is asked of the class loader instead, by a name rather than by a type.</p>
      */
+    @PackageScope
     static List<EmbeddedMongoBackend> defaultBackends(ClassLoader classLoader) {
-        List<EmbeddedMongoBackend> backends = new ArrayList<>();
-        if (ClassUtils.isPresent(FlapdoodleMongoBackend.MONGOD_CLASS, classLoader)) {
-            backends.add(new FlapdoodleMongoBackend());
+        List<EmbeddedMongoBackend> backends = new ArrayList<>()
+        if (ClassUtils.isPresent(FLAPDOODLE_MONGOD_CLASS, classLoader)) {
+            backends.add(new FlapdoodleMongoBackend())
         }
-        backends.add(new InMemoryMongoBackend());
-        return backends;
+        backends.add(new InMemoryMongoBackend())
+        return backends
     }
 
+    @PackageScope
     EmbeddedMongoInitializer(List<EmbeddedMongoBackend> backends) {
-        this.backends = backends;
+        this.backends = backends
     }
 
     @Override
-    public void initialize(ConfigurableApplicationContext applicationContext) {
-        ConfigurableEnvironment environment = applicationContext.getEnvironment();
+    void initialize(ConfigurableApplicationContext applicationContext) {
+        ConfigurableEnvironment environment = applicationContext.getEnvironment()
 
-        Set<String> propertyNames = propertyNames(environment);
-        Matcher asked = firstAskingForEmbedded(environment, propertyNames);
+        Set<String> propertyNames = propertyNames(environment)
+        Matcher asked = firstAskingForEmbedded(environment, propertyNames)
         if (asked == null) {
-            return;
+            return
         }
         if (SpringProperties.getFlag(AbstractAotProcessor.AOT_PROCESSING)) {
             // Ahead-of-time processing writes bean definitions out as code. It refreshes a context
@@ -203,21 +211,21 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
             // of no use to it. Starting one is also unrecoverable: the server listens on a
             // non-daemon thread and is stopped only by a JVM shutdown hook, so generation finished
             // and then hung, holding the port, until it was killed.
-            log.debug("Not starting an embedded MongoDB: this is ahead-of-time processing");
-            return;
+            LOG.debug('Not starting an embedded MongoDB: this is ahead-of-time processing')
+            return
         }
 
-        int port = resolvePort(environment, asked.group(1));
-        String database = resolveDatabase(asked.group(2));
+        int port = resolvePort(environment, asked.group(1))
+        String database = resolveDatabase(asked.group(2))
 
-        EmbeddedMongoSettings settings = settings(environment, port);
+        EmbeddedMongoSettings settings = settings(environment, port)
         // Resolved before the reuse check rather than inside start(): which backend is being asked
         // for decides whether the running server is the one wanted, so it cannot wait until after
         // that question has been answered.
-        EmbeddedMongoBackend backend = selectBackend(environment);
+        EmbeddedMongoBackend backend = selectBackend(environment)
 
-        String url;
-        StartedServer started = discard(STARTED.get(port), settings, backend.getName());
+        String url
+        StartedServer started = discard(STARTED.get(port), settings, backend.getName())
         if (started != null) {
             // A devtools restart reuses this JVM and this class is loaded from a jar, so it
             // survives in the base classloader along with the server the previous
@@ -230,29 +238,28 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
                 // only once the context has refreshed: a datastore builds its indexes as it is
                 // constructed, which happens while beans are still being created, and a url
                 // published for a server that is not listening fails there first.
-                started.running().restart();
+                started.running().restart()
             }
-            url = "mongodb://" + started.running().getHost() + ":" + started.running().getPort() +
-                    "/" + database;
-            log.info("Reusing the embedded MongoDB this JVM already started at {}", url);
-        }
-        else {
-            url = start(backend, settings, database);
+            url = 'mongodb://' + started.running().getHost() + ':' + started.running().getPort() +
+                    '/' + database
+            LOG.info('Reusing the embedded MongoDB this JVM already started at {}', url)
+        } else {
+            url = start(backend, settings, database)
         }
 
-        Map<String, Object> published = new HashMap<>();
+        Map<String, Object> published = new HashMap<>()
         for (String propertyName : propertyNames) {
-            published.put(propertyName, url);
+            published.put(propertyName, url)
         }
-        environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, published));
+        environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, published))
 
         // Registered as a singleton rather than a bean definition because this runs before
         // any definitions are read, and the server it manages already exists by now. The
         // JVM shutdown hook above still covers the case where the context never refreshes.
-        StartedServer running = STARTED.get(port);
+        StartedServer running = STARTED.get(port)
         if (running != null) {
             applicationContext.getBeanFactory().registerSingleton(EmbeddedMongoLifecycle.BEAN_NAME,
-                    new EmbeddedMongoLifecycle(running.running()));
+                    new EmbeddedMongoLifecycle(running.running()))
         }
     }
 
@@ -262,33 +269,31 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      * enabling this was meant to replace.
      */
     private String start(EmbeddedMongoBackend backend, EmbeddedMongoSettings settings, String database) {
-        int port = settings.getPort();
+        int port = settings.getPort()
 
-        RunningEmbeddedMongo running;
+        RunningEmbeddedMongo running
         try {
-            running = backend.start(settings);
-        }
-        catch (IllegalStateException ex) {
-            throw ex;
-        }
-        catch (Exception ex) {
-            throw new IllegalStateException("Failed to start the " + backend.getName() +
-                    " embedded MongoDB on port " + port + ", which something else may already be using. " +
-                    "Name a free port as mongodb://" + EMBEDDED_HOST + ":<port>/<database>, or name a host " +
-                    "instead of " + EMBEDDED_HOST + " to use an external MongoDB.", ex);
+            running = backend.start(settings)
+        } catch (IllegalStateException ex) {
+            throw ex
+        } catch (Exception ex) {
+            throw new IllegalStateException('Failed to start the ' + backend.getName() +
+                    ' embedded MongoDB on port ' + port + ', which something else may already be using. ' +
+                    'Name a free port as mongodb://' + EMBEDDED_HOST + ':<port>/<database>, or name a host ' +
+                    'instead of ' + EMBEDDED_HOST + ' to use an external MongoDB.', ex)
         }
 
-        STARTED.put(port, new StartedServer(running, settings, backend.getName()));
-        stopEverythingAtExit();
+        STARTED.put(port, new StartedServer(running, settings, backend.getName()))
+        stopEverythingAtExit()
 
-        String url = "mongodb://" + running.getHost() + ":" + running.getPort() + "/" + database;
-        log.info("Embedded MongoDB started at {} using the {} backend", url, backend.getName());
-        return url;
+        String url = 'mongodb://' + running.getHost() + ':' + running.getPort() + '/' + database
+        LOG.info('Embedded MongoDB started at {} using the {} backend', url, backend.getName())
+        return url
     }
 
     private EmbeddedMongoSettings settings(ConfigurableEnvironment environment, int port) {
         return new EmbeddedMongoSettings(port, environment.getProperty(VERSION),
-                environment.getProperty(DATABASE_DIR), replicaSet(environment));
+                environment.getProperty(DATABASE_DIR), replicaSet(environment))
     }
 
     /**
@@ -299,16 +304,16 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      * {@code $text} query refused by the in-memory backend.
      */
     private StartedServer discard(StartedServer started, EmbeddedMongoSettings settings, String backend) {
-        if (started == null || (started.settings().equals(settings) && started.backend().equals(backend))) {
-            return started;
+        if (started == null || (started.settings() == settings && started.backend() == backend)) {
+            return started
         }
-        log.info("Replacing the embedded MongoDB this JVM started ({} on the {} backend): it is now " +
-                "asked for with {} on the {} backend", started.settings(), started.backend(), settings, backend);
-        started.running().stop();
+        LOG.info('Replacing the embedded MongoDB this JVM started ({} on the {} backend): it is now ' +
+                'asked for with {} on the {} backend', started.settings(), started.backend(), settings, backend)
+        started.running().stop()
         // Keyed removal, so a server another thread has just started on this port is not the one
         // taken out of the registry.
-        STARTED.remove(settings.getPort(), started);
-        return null;
+        STARTED.remove(settings.getPort(), started)
+        return null
     }
 
     /**
@@ -317,69 +322,69 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      * replica set itself, which wins either way.
      */
     private String replicaSet(ConfigurableEnvironment environment) {
-        String named = environment.getProperty(REPLICA_SET);
+        String named = environment.getProperty(REPLICA_SET)
         if (named != null && !named.isEmpty()) {
-            return named;
+            return named
         }
-        return environment.getProperty(TRANSACTIONAL, Boolean.class, Boolean.FALSE) ? DEFAULT_REPLICA_SET : null;
+        return environment.getProperty(TRANSACTIONAL, Boolean, Boolean.FALSE) ? DEFAULT_REPLICA_SET : null
     }
 
     private EmbeddedMongoBackend selectBackend(ConfigurableEnvironment environment) {
-        String requested = environment.getProperty(BACKEND);
+        String requested = environment.getProperty(BACKEND)
         if (requested != null && !requested.isEmpty()) {
             for (EmbeddedMongoBackend backend : this.backends) {
-                if (backend.getName().equals(requested)) {
+                if (backend.getName() == requested) {
                     if (!backend.isAvailable()) {
-                        throw new IllegalStateException(BACKEND + "=" + requested +
-                                " but its library is not on the classpath. Add it as a dependency, or choose one of " +
-                                availableNames() + ".");
+                        throw new IllegalStateException(BACKEND + '=' + requested +
+                                ' but its library is not on the classpath. Add it as a dependency, or choose one of ' +
+                                availableNames() + '.')
                     }
-                    return backend;
+                    return backend
                 }
             }
-            if (FlapdoodleMongoBackend.NAME.equals(requested)) {
-                throw new IllegalStateException(BACKEND + "=" + requested +
-                        " but its library is not on the classpath. Add it as a dependency, or choose one of " +
-                        availableNames() + ".");
+            if (FLAPDOODLE_BACKEND_NAME == requested) {
+                throw new IllegalStateException(BACKEND + '=' + requested +
+                        ' but its library is not on the classpath. Add it as a dependency, or choose one of ' +
+                        availableNames() + '.')
             }
-            throw new IllegalStateException(BACKEND + "=" + requested + " is not a known backend. Use one of " +
-                    this.backends.stream().map(EmbeddedMongoBackend::getName).collect(Collectors.joining(", ")) +
-                    ".");
+            throw new IllegalStateException(BACKEND + '=' + requested + ' is not a known backend. Use one of ' +
+                    this.backends.collect { EmbeddedMongoBackend backend -> backend.getName() }.join(', ') +
+                    '.')
         }
 
         for (EmbeddedMongoBackend backend : this.backends) {
             if (backend.isAvailable()) {
-                return backend;
+                return backend
             }
         }
-        throw new IllegalStateException("A url asked for " + EMBEDDED_HOST +
-                " but no embedded MongoDB backend is on the classpath. " +
-                "Add de.bwaldvogel:mongo-java-server for an in-memory server, or " +
-                "de.flapdoodle.embed:de.flapdoodle.embed.mongo for a real mongod.");
+        throw new IllegalStateException('A url asked for ' + EMBEDDED_HOST +
+                ' but no embedded MongoDB backend is on the classpath. ' +
+                'Add de.bwaldvogel:mongo-java-server for an in-memory server, or ' +
+                'de.flapdoodle.embed:de.flapdoodle.embed.mongo for a real mongod.')
     }
 
     private List<String> availableNames() {
-        List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>()
         for (EmbeddedMongoBackend backend : this.backends) {
             if (backend.isAvailable()) {
-                names.add(backend.getName());
+                names.add(backend.getName())
             }
         }
-        return names;
+        return names
     }
 
     private Set<String> propertyNames(ConfigurableEnvironment environment) {
-        Set<String> propertyNames = new LinkedHashSet<>();
-        for (String propertyName : environment.getProperty(PROPERTY_NAMES, DEFAULT_PROPERTY_NAME).split(",")) {
-            String trimmed = propertyName.trim();
+        Set<String> propertyNames = new LinkedHashSet<>()
+        for (String propertyName : environment.getProperty(PROPERTY_NAMES, DEFAULT_PROPERTY_NAME).split(',')) {
+            String trimmed = propertyName.trim()
             if (!trimmed.isEmpty()) {
-                propertyNames.add(trimmed);
+                propertyNames.add(trimmed)
             }
         }
         if (propertyNames.isEmpty()) {
-            propertyNames.add(DEFAULT_PROPERTY_NAME);
+            propertyNames.add(DEFAULT_PROPERTY_NAME)
         }
-        return propertyNames;
+        return propertyNames
     }
 
     /**
@@ -391,15 +396,15 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      */
     private Matcher firstAskingForEmbedded(ConfigurableEnvironment environment, Set<String> propertyNames) {
         for (String propertyName : propertyNames) {
-            String url = environment.getProperty(propertyName);
+            String url = environment.getProperty(propertyName)
             if (url != null) {
-                Matcher matcher = EMBEDDED_URL.matcher(url.trim());
+                Matcher matcher = EMBEDDED_URL.matcher(url.trim())
                 if (matcher.matches()) {
-                    return matcher;
+                    return matcher
                 }
             }
         }
-        return null;
+        return null
     }
 
     /**
@@ -408,10 +413,10 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      */
     private int resolvePort(ConfigurableEnvironment environment, String urlPort) {
         if (urlPort != null && !urlPort.isEmpty()) {
-            return Integer.parseInt(urlPort);
+            return Integer.parseInt(urlPort)
         }
-        int serverPort = Integer.parseInt(environment.getProperty("server.port", String.valueOf(DEFAULT_SERVER_PORT)));
-        return serverPort == 0 ? DEFAULT_PORT : DEFAULT_PORT + (serverPort - DEFAULT_SERVER_PORT);
+        int serverPort = Integer.parseInt(environment.getProperty('server.port', String.valueOf(DEFAULT_SERVER_PORT)))
+        return serverPort == 0 ? DEFAULT_PORT : DEFAULT_PORT + (serverPort - DEFAULT_SERVER_PORT)
     }
 
     /**
@@ -419,7 +424,7 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      * one is written down now that the URL is what asks for a server at all.
      */
     private String resolveDatabase(String urlDatabase) {
-        return urlDatabase == null || urlDatabase.isEmpty() ? DEFAULT_DATABASE : urlDatabase;
+        return urlDatabase == null || urlDatabase.isEmpty() ? DEFAULT_DATABASE : urlDatabase
     }
 
     /**
@@ -431,11 +436,11 @@ public class EmbeddedMongoInitializer implements ApplicationContextInitializer<C
      */
     private static void stopEverythingAtExit() {
         if (SHUTDOWN_HOOK_ADDED.compareAndSet(false, true)) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Runtime.getRuntime().addShutdownHook(new Thread({ ->
                 for (StartedServer started : STARTED.values()) {
-                    started.running().stop();
+                    started.running().stop()
                 }
-            }));
+            } as Runnable))
         }
     }
 
