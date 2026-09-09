@@ -125,6 +125,9 @@ class DirtyCheckingSupport {
         if (coll instanceof List) {
             return new DirtyCheckingList(coll, parent, property)
         }
+        if (coll instanceof SortedSet) {
+            return new DirtyCheckingSortedSet(coll, parent, property)
+        }
         if (coll instanceof Set) {
             return new DirtyCheckingSet(coll, parent, property)
         }
@@ -144,10 +147,16 @@ class DirtyCheckingSupport {
      * every load (an empty tracked collection is falsy in Groovy), and because the new empty
      * collection equals the old one the assignment itself was never flagged either.
      *
-     * <p>Tracking is only re-established, never introduced: when the value being replaced is
-     * not a tracked wrapper — a transient instance, or a store like Hibernate that performs its
-     * own snapshot-based dirty checking and never installs these wrappers — the new value is
-     * returned untouched, keeping this a no-op for those cases.
+     * <p>Tracking is only re-established, never introduced, and only for the plugin's own
+     * generic wrappers: when the value being replaced is not the exact class installed by a
+     * datastore decode or a previous rewrap — a transient instance, a store like Hibernate that
+     * performs its own snapshot-based dirty checking, a {@code PersistentCollection}, or a
+     * store-specific subclass such as the Neo4j collection types — the new value is returned
+     * untouched. Store-specific wrappers in particular must NOT be replaced by a generic one:
+     * the store's persister recognises its own types (and treats anything already
+     * dirty-checkable as such), so a generic replacement would permanently disable that store's
+     * relationship handling for the property. Leaving the raw value lets the persister wrap it
+     * in its own type on save, exactly as it did before this method existed.
      *
      * @param parent The dirty-checkable owner
      * @param property The property being assigned
@@ -156,7 +165,7 @@ class DirtyCheckingSupport {
      * @return The value to store: {@code newValue}, wrapped if it replaces a tracked value
      */
     static Object rewrap(DirtyCheckable parent, String property, Object oldValue, Object newValue) {
-        if (newValue == null || !(oldValue instanceof DirtyCheckableCollection)) {
+        if (newValue == null || !isGenericWrapper(oldValue)) {
             return newValue
         }
         if (newValue instanceof DirtyCheckableCollection) {
@@ -168,6 +177,9 @@ class DirtyCheckingSupport {
         if (newValue instanceof List) {
             return new DirtyCheckingList((List) newValue, parent, property, true)
         }
+        if (newValue instanceof SortedSet) {
+            return new DirtyCheckingSortedSet((SortedSet) newValue, parent, property, true)
+        }
         if (newValue instanceof Set) {
             return new DirtyCheckingSet((Set) newValue, parent, property, true)
         }
@@ -178,5 +190,17 @@ class DirtyCheckingSupport {
             return new DirtyCheckingMap((Map) newValue, parent, property, true)
         }
         return newValue
+    }
+
+    /**
+     * True only for the plugin's own generic wrapper classes — the exact types installed by a
+     * datastore decode or a previous {@link #rewrap}. Subclasses (Neo4jList, Neo4jSet, …) and
+     * {@code PersistentCollection} implementations deliberately fail this check.
+     */
+    private static boolean isGenericWrapper(Object value) {
+        Class<?> valueClass = value?.getClass()
+        return valueClass == DirtyCheckingCollection || valueClass == DirtyCheckingList ||
+                valueClass == DirtyCheckingSet || valueClass == DirtyCheckingSortedSet ||
+                valueClass == DirtyCheckingMap
     }
 }

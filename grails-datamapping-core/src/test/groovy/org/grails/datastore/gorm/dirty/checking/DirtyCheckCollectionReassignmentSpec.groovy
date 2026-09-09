@@ -21,7 +21,9 @@ package org.grails.datastore.gorm.dirty.checking
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckingCollection
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckingList
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckingMap
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckingSortedSet
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckingSupport
 
 import spock.lang.Shared
@@ -60,6 +62,7 @@ import grails.gorm.dirty.checking.DirtyCheck
 class ScheduleLike {
     List<String> shares = []
     Set<String> tags = new HashSet<String>()
+    SortedSet<String> ranked = new TreeSet<String>()
     Map<String, String> attributes = [:]
 }
 ''')
@@ -143,6 +146,39 @@ class ScheduleLike {
         entity.hasChanged('attributes')
     }
 
+    def 'reassigning a plain SortedSet over a tracked SortedSet keeps tracking and the SortedSet API'() {
+        given:
+        def entity = entityClass.newInstance()
+        entity.ranked = DirtyCheckingSupport.wrap(new TreeSet(), (DirtyCheckable) entity, 'ranked')
+        entity.trackChanges()
+
+        when:
+        if (!entity.ranked) {
+            entity.ranked = new TreeSet()
+        }
+        entity.ranked.add('r1')
+
+        then: 'the replacement is the SortedSet wrapper, so the property keeps its declared API'
+        entity.ranked instanceof DirtyCheckingSortedSet
+        entity.ranked instanceof SortedSet
+        ((DirtyCheckableCollection) entity.ranked).isAssigned()
+        entity.hasChanged('ranked')
+    }
+
+    def 'a store-specific wrapper subclass is never replaced by a generic rewrap'() {
+        given: 'a value tracked by a store-specific subclass, as the Neo4j store installs'
+        def entity = entityClass.newInstance()
+        entity.shares = new StoreSpecificList([], (DirtyCheckable) entity, 'shares')
+        entity.trackChanges()
+
+        when: 'the property is reassigned wholesale'
+        entity.shares = ['a']
+
+        then: 'the raw value is stored so the store persister can install its own type on save'
+        !(entity.shares instanceof DirtyCheckableCollection)
+        entity.hasChanged('shares')
+    }
+
     def 'a property that was never tracked is left untouched by the setter'() {
         given: 'a transient instance whose initializer collections were never wrapped'
         def entity = entityClass.newInstance()
@@ -205,5 +241,11 @@ class ScheduleLike {
         then:
         entity.shares == null
         entity.hasChanged('shares')
+    }
+}
+
+class StoreSpecificList extends DirtyCheckingList {
+    StoreSpecificList(List target, DirtyCheckable parent, String property) {
+        super(target, parent, property)
     }
 }

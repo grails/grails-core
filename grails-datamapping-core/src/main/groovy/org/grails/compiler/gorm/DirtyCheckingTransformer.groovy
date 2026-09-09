@@ -102,7 +102,7 @@ class DirtyCheckingTransformer implements CompilationUnitAware {
     // tracking via DirtyCheckingSupport.rewrap. Restricted to the exact interfaces the
     // DirtyChecking* wrappers implement so the cast in the generated setter is always valid.
     private static final Set<String> REWRAPPABLE_TYPE_NAMES = [
-            Collection.name, List.name, Set.name, Map.name
+            Collection.name, List.name, Set.name, SortedSet.name, Map.name
     ] as Set<String>
 
     static {

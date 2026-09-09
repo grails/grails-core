@@ -86,6 +86,12 @@ class DirtyCheckingList extends DirtyCheckingCollection implements List {
     }
 
     @Override
+    List subList(int fromIndex, int toIndex) {
+        // A live view that writes through to this list — return it tracking the same parent
+        return new DirtyCheckingList(target.subList(fromIndex, toIndex), parent, property)
+    }
+
+    @Override
     ListIterator listIterator() {
         trackingListIterator(target.listIterator())
     }

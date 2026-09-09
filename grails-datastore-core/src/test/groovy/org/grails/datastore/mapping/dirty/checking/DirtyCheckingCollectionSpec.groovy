@@ -259,6 +259,91 @@ class DirtyCheckingCollectionSpec extends Specification {
         !new MinimalDirtyCheckableCollection().isAssigned()
     }
 
+    def 'subList mutations mark the parent dirty'() {
+        given:
+        def owner = new CollectionOwner()
+        def list = new DirtyCheckingList(['a', 'b', 'c'], owner, 'items')
+        owner.trackChanges()
+
+        when: 'an element is removed through the live subList view'
+        list.subList(0, 2).remove('a')
+
+        then:
+        list.size() == 2
+        owner.hasChanged('items')
+    }
+
+    def 'wrap returns the SortedSet wrapper for a SortedSet'() {
+        given:
+        def owner = new CollectionOwner()
+
+        expect:
+        DirtyCheckingSupport.wrap(new TreeSet(['a']), owner, 'sorted') instanceof DirtyCheckingSortedSet
+    }
+
+    def 'Map default methods mark the parent dirty'() {
+        given:
+        def owner = new CollectionOwner()
+        def map = new DirtyCheckingMap([a: 1], owner, 'attrs')
+
+        expect:
+        marksDirty(owner) { map.putIfAbsent('b', 2) }
+        marksDirty(owner) { map.merge('a', 10) { x, y -> x + y } }
+        marksDirty(owner) { map.computeIfAbsent('c') { 3 } }
+        marksDirty(owner) { map.computeIfPresent('a') { k, v -> v + 1 } }
+        marksDirty(owner) { map.compute('a') { k, v -> 99 } }
+        marksDirty(owner) { map.replace('a', 100) }
+        marksDirty(owner) { map.replace('a', 100, 101) }
+        marksDirty(owner) { map.replaceAll { k, v -> v } }
+        marksDirty(owner) { map.remove('absent', 0) }
+    }
+
+    def 'Map view removals mark the parent dirty'() {
+        given:
+        def owner = new CollectionOwner()
+        def map = new DirtyCheckingMap([a: 1, b: 2, c: 3, d: 4], owner, 'attrs')
+        owner.trackChanges()
+
+        when: 'an entry is removed through the entrySet iterator (the path Groovy DGM removal methods use)'
+        Iterator entries = map.entrySet().iterator()
+        entries.next()
+        entries.remove()
+
+        then:
+        map.size() == 3
+        owner.hasChanged('attrs')
+
+        when:
+        owner.trackChanges()
+        map.keySet().remove('b')
+
+        then:
+        map.size() == 2
+        owner.hasChanged('attrs')
+
+        when:
+        owner.trackChanges()
+        map.values().removeIf { it == 3 }
+
+        then:
+        map.size() == 1
+        owner.hasChanged('attrs')
+
+        when:
+        owner.trackChanges()
+        map.entrySet().removeAll { Map.Entry e -> e.key == 'd' }
+
+        then:
+        map.isEmpty()
+        owner.hasChanged('attrs')
+    }
+
+    private static boolean marksDirty(CollectionOwner owner, Closure mutation) {
+        owner.trackChanges()
+        mutation()
+        owner.hasChanged('attrs')
+    }
+
     def 'iteration without mutation does not mark the parent dirty'() {
         given:
         def owner = new CollectionOwner()
@@ -281,6 +366,7 @@ class CollectionOwner implements DirtyCheckable {
     List<String> items
     Set<String> tags
     SortedSet<String> sorted
+    Map<String, Object> attrs
 }
 
 class MinimalDirtyCheckableCollection implements DirtyCheckableCollection {
