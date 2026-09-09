@@ -107,6 +107,7 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
 
     private static final String NOT = "Not";
     private static final String INVALID_SORT_PROPERTY = "Invalid sort property";
+    private static final String INVALID_SORT_DIRECTION = "Invalid sort direction";
     private static final Map<String, Constructor> methodExpressions = new LinkedHashMap<String, Constructor>();
     protected final MappingContext mappingContext;
 
@@ -570,8 +571,7 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
         if (sortObject != null) {
             if (sortObject instanceof CharSequence) {
                 final String sort = sortObject.toString();
-                final String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC;
-                addSimpleSort(query, sort, order, ignoreCase);
+                addSimpleSort(query, sort, orderParam, ignoreCase);
             }
             else if (sortObject instanceof Map) {
                 Map sortMap = (Map) sortObject;
@@ -831,8 +831,28 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
         return null;
     }
 
+    /**
+     * Trims and accepts only {@code asc} or {@code desc}, case-insensitively. Blank and
+     * {@code null} default to {@code asc}. The exception message omits the caller-supplied
+     * value, which usually originates from request parameters.
+     *
+     * @param direction the caller-supplied order argument
+     * @return {@link #ORDER_ASC} or {@link #ORDER_DESC}
+     * @throws IllegalArgumentException if the value is neither asc nor desc
+     */
+    private static String normalizeDirection(String direction) {
+        String normalized = direction == null ? "" : direction.trim();
+        if (normalized.isEmpty() || ORDER_ASC.equalsIgnoreCase(normalized)) {
+            return ORDER_ASC;
+        }
+        if (ORDER_DESC.equalsIgnoreCase(normalized)) {
+            return ORDER_DESC;
+        }
+        throw new IllegalArgumentException(INVALID_SORT_DIRECTION);
+    }
+
     private static Query.Order buildOrder(String sort, String direction, boolean ignoreCase) {
-        Query.Order order = ORDER_DESC.equalsIgnoreCase(direction) ? Query.Order.desc(sort) : Query.Order.asc(sort);
+        Query.Order order = ORDER_DESC.equals(normalizeDirection(direction)) ? Query.Order.desc(sort) : Query.Order.asc(sort);
         return ignoreCase ? order.ignoreCase() : order;
     }
 

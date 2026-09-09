@@ -109,6 +109,30 @@ class DynamicFinderCoverageSpec extends Specification {
         DynamicFinderThing.list(sort: 'age', order: 'desc')*.name == ['Charlie', 'Alice', 'Bob']
     }
 
+    void "list(Map) trims surrounding whitespace on the order direction"() {
+        expect:
+        DynamicFinderThing.list(sort: 'age', order: ' DESC ')*.name == ['Charlie', 'Alice', 'Bob']
+        DynamicFinderThing.list(sort: 'age', order: ' asc ')*.name == ['Bob', 'Alice', 'Charlie']
+        DynamicFinderThing.list(sort: [age: ' DESC '])*.age == [35, 30, 25]
+        DynamicFinderThing.findAllByTitle('Engineer', [sort: 'age', order: ' DESC '])*.name == ['Charlie', 'Alice']
+    }
+
+    @Unroll
+    void "list(Map) rejects order direction #description without echoing it"() {
+        when:
+        DynamicFinderThing.list(sort: 'age', order: order)
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == 'Invalid sort direction'
+
+        where:
+        order        | description
+        'sideways'   | 'that is not asc or desc'
+        'desc extra' | 'carrying extra tokens'
+        'descending' | 'that is a longer word'
+    }
+
     void "list(Map) sorts by a Map of property to direction"() {
         expect:
         DynamicFinderThing.list(sort: [age: 'asc'])*.name == ['Bob', 'Alice', 'Charlie']
@@ -178,6 +202,25 @@ class DynamicFinderCoverageSpec extends Specification {
         org.grails.datastore.mapping.query.Query.Criterion createCriterion() {
             new org.grails.datastore.mapping.query.Query.IsNotNull(propertyName)
         }
+    }
+
+    void "populateArgumentsForCriteria(BuildableCriteria, Map) trims and validates the order direction"() {
+        given:
+        def api = new org.grails.datastore.gorm.GormStaticApi(DynamicFinderThing, datastore, [])
+        def criteria = api.createCriteria()
+
+        when:
+        DynamicFinder.populateArgumentsForCriteria(criteria, [sort: 'age', order: ' DESC '])
+
+        then:
+        criteria.list(null)*.age == [35, 30, 25]
+
+        when:
+        DynamicFinder.populateArgumentsForCriteria(api.createCriteria(), [sort: 'age', order: 'sideways'])
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == 'Invalid sort direction'
     }
 
     void "populateArgumentsForCriteria(BuildableCriteria, Map) applies sort and order to a real criteria query"() {

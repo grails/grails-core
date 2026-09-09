@@ -124,6 +124,9 @@ class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
         SavClub.list(sort: 'name', order: ' DESC ')*.name == ['United', 'Arsenal']
         SavClub.list(sort: 'name', order: 'Asc')*.name == ['Arsenal', 'United']
         SavClub.list(sort: [name: ' desc'])*.name == ['United', 'Arsenal']
+        SavClub.findAllByNameLike('%', [sort: 'name', order: ' DESC '])*.name == ['United', 'Arsenal']
+        SavClub.findAllByNameLike('%', [sort: 'name', order: ' asc '])*.name == ['Arsenal', 'United']
+        SavClub.where { name != null }.list(sort: 'name', order: ' DESC ')*.name == ['United', 'Arsenal']
     }
 
     void "each sort map entry takes its direction from its value rather than the order argument"() {
@@ -168,6 +171,28 @@ class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
         then:
         def e = thrown(IllegalArgumentException)
         e.message == 'Invalid sort direction'
+    }
+
+    @Unroll
+    void "dynamic finders and where queries reject order direction #description without echoing it"() {
+        when:
+        SavClub.findAllByNameLike('%', [sort: 'name', order: order])
+
+        then:
+        def finder = thrown(IllegalArgumentException)
+        finder.message == 'Invalid sort direction'
+
+        when:
+        SavClub.where { name != null }.list(sort: 'name', order: order)
+
+        then:
+        def where = thrown(IllegalArgumentException)
+        where.message == 'Invalid sort direction'
+
+        where:
+        order        | description
+        'sideways'   | 'that is not asc or desc'
+        'desc extra' | 'carrying extra tokens'
     }
 
     @Unroll
