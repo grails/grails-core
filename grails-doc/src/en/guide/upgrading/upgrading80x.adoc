@@ -3451,7 +3451,7 @@ imported whether or not they are present — a star import of an absent package 
 not an error in Groovy, so the probe changed nothing it could observe. An application that relied on the
 import being *omitted* when the package was absent sees no difference in compiled output.
 
-==== 54. Non-Public Bean Classes Are Marshalled, and Reported Once
+==== 58. Non-Public Bean Classes Are Marshalled, and Reported Once
 
 Groovy 4 stamped `ACC_PUBLIC` on anonymous inner classes; Groovy 5, which Grails 8 builds on, does not.
 Reflection cannot invoke a method on a class that is not `public` from another package, even when the method
@@ -3529,7 +3529,7 @@ logging:
         org.apache.grails.common.reflect.ReflectionUtils: ERROR
 ----
 
-==== 58. `count()` Returns `Long`
+==== 59. `count()` Returns `Long`
 
 `count()` and the `count` property return `Long` instead of `Integer`:
 
