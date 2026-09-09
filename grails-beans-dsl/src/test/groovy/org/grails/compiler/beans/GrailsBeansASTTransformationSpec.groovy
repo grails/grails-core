@@ -1612,6 +1612,113 @@ class GrailsBeansASTTransformationSpec extends Specification {
         fixture.greeter().greet() == 'hello!'
     }
 
+    @Unroll
+    def "an anonymous class in a group(...) body cannot reach #description, on #hostKind"() {
+        given: "a group compiles to a static nested class - there is no enclosing instance behind it at all"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${hostMember}
+                    group('extras') {
+                        ${groupMember}
+                        bean('greeter', ${fixture}Greeter) {
+                            new ${fixture}Greeter() { String greet() { 'hello' + suffix() } }
+                        }
+                    }
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then: "rejected here rather than as a NoSuchFieldError inside a running application"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('nothing outside the anonymous class is in reach')
+        e.message.contains('suffix()')
+
+        where:
+        description                | hostKind             | fixture      | suffixClass   | extendsClause    | hostMember                        | groupMember
+        'a group-level member'     | 'a plain host'       | 'GroupOwn'   | 'Beans'       | ''               | ''                                | "method('suffix', String) { '!' }"
+        'a host-level member'      | 'a plain host'       | 'GroupHost'  | 'Beans'       | ''               | "method('suffix', String) { '!' }" | ''
+        'a group-level member'     | 'a plugin descriptor'| 'GroupOwn'   | 'GrailsPlugin'| 'extends Plugin' | ''                                | "method('suffix', String) { '!' }"
+        'a host-level member'      | 'a plugin descriptor'| 'GroupHost'  | 'GrailsPlugin'| 'extends Plugin' | "method('suffix', String) { '!' }" | ''
+    }
+
+    def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
+        given: "the shape that works, and must not be caught by the check above"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface GroupSelfContainedGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class GroupSelfContainedBeans {
+                def beans = {
+                    group('extras') {
+                        method('suffix', String) { '!' }
+
+                        bean('greeter', GroupSelfContainedGreeter) {
+                            new GroupSelfContainedGreeter() {
+                                String greet() { own() }
+                                private String own() { 'hello' }
+                            }
+                        }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def group = loader.loadClass('GroupSelfContainedBeans$ExtrasConfiguration')
+
+        expect:
+        group.getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+    }
+
+    def "a captured local reaches an anonymous class in a group(...) body, which is what the error suggests"() {
+        given: "the way out the message names - a local is copied into the class, not reached through an enclosing instance"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface GroupCapturedGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class GroupCapturedBeans {
+                def beans = {
+                    group('extras') {
+                        bean('greeter', GroupCapturedGreeter) {
+                            String suffix = '!'
+                            new GroupCapturedGreeter() { String greet() { 'hello' + suffix } }
+                        }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def group = loader.loadClass('GroupCapturedBeans$ExtrasConfiguration')
+
+        expect:
+        group.getDeclaredConstructor().newInstance().greeter().greet() == 'hello!'
+    }
+
     private Class<?> compile() {
         compile(FIXTURE)
     }

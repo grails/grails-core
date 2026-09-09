@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -319,8 +320,18 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         List<FieldNode> generatedFields = new ArrayList<>(beanMethodHost.getFields());
         generatedFields.removeAll(preExistingFields);
         rejectUnproxiedSiblingBeanCalls(beanMethodHost, generatedMethods, source);
-        rejectAnonymousClassReachingMovedMembers(beanMethodHost, classNode, generatedMethods,
-                generatedFields, source);
+        if (beanMethodHost != classNode) {
+            // Only on a plugin descriptor. On a plain host the members and the anonymous class share
+            // a home, so an unqualified reference resolves the way it reads.
+            Set<String> moved = new HashSet<>();
+            for (MethodNode method : generatedMethods) {
+                moved.add(method.getName());
+            }
+            for (FieldNode field : generatedFields) {
+                moved.add(field.getName());
+            }
+            rejectAnonymousClassReachingOutward(beanMethodHost, moved, generatedMethods, source);
+        }
         dumpGeneratedMembers(beanMethodHost, generatedMethods, generatedFields, source);
 
         if (beanMethodHost != classNode) {
@@ -1027,6 +1038,7 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         }
         List<MethodNode> generated = generatedMembers(group, preExisting);
         rejectUnproxiedSiblingBeanCalls(group, generated, source);
+        rejectAnonymousClassReachingOutward(group, null, generated, source);
         dumpGeneratedMembers(group, generated, new ArrayList<>(group.getFields()), source);
 
         // The group is compiled as its own class, so it needs the host's static-compilation
@@ -1485,37 +1497,30 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     }
 
     /**
-     * Rejects an unqualified reference from an anonymous inner class in a bean body to a member that
-     * moved to the generated sibling.
+     * Rejects an unqualified reference out of an anonymous inner class in a bean body to something
+     * the class cannot reach once the block is compiled.
      *
-     * <p>Only on a plugin descriptor, and only because the anonymous class cannot follow. Groovy
-     * fixes an inner class's outer class when it creates the node and offers no way to move it, so
-     * the class stays homed on the descriptor while the members it wants are on the sibling. Its MOP
-     * dispatch methods then read a {@code this$0} typed as the descriptor where the field holds the
-     * sibling, and the reference fails with {@code NoSuchFieldError} inside a running application -
-     * or, under {@code @CompileStatic}, as a "cannot find matching method" naming a synthetic class
+     * <p>Groovy fixes an inner class's outer class when it creates the node and offers no way to
+     * move it, so a class constructed in a bean body stays homed on the class the {@code beans}
+     * block was written on, while the members around it compile somewhere else - onto the generated
+     * sibling of a plugin descriptor, or onto a {@code group(...)}'s nested class. Its MOP dispatch
+     * methods then read a {@code this$0} typed as the original home where the field holds the new
+     * one, and the reference fails with {@code NoSuchFieldError} inside a running application - or,
+     * under {@code @CompileStatic}, as a "cannot find matching method" naming a synthetic class
      * nobody wrote.</p>
      *
-     * <p>The test is the narrow one: a name that is <i>both</i> a member this block generated and
-     * not resolvable on the anonymous class itself or anything it inherits. A call to the anonymous
-     * class's own method, or to one from the interface it implements, is left alone - it is only the
-     * names that actually moved that cannot be reached.</p>
+     * <p>What is out of reach differs by where the beans landed. On a sibling it is the names this
+     * block generated and only those: the descriptor is still what {@code this$0} is typed as, so
+     * everything else about it resolves the way it reads. A group is a static nested class with no
+     * enclosing instance behind it at all, so nothing outside the anonymous class is reachable -
+     * not a group member, not a host member - and {@code outOfReach} is null to say so.</p>
+     *
+     * <p>Either way a call to the anonymous class's own method, or to one it inherits, is left
+     * alone: it never leaves the class.</p>
      */
-    private void rejectAnonymousClassReachingMovedMembers(ClassNode host, ClassNode declaringClass,
-            List<MethodNode> generatedMethods, List<FieldNode> generatedFields, SourceUnit source) {
-        if (host == declaringClass) {
-            // Not a plugin descriptor: the members and the anonymous class share a home, so an
-            // unqualified reference resolves the way it reads.
-            return;
-        }
-        Set<String> moved = new HashSet<>();
-        for (MethodNode method : generatedMethods) {
-            moved.add(method.getName());
-        }
-        for (FieldNode field : generatedFields) {
-            moved.add(field.getName());
-        }
-        if (moved.isEmpty()) {
+    private void rejectAnonymousClassReachingOutward(ClassNode owner, Set<String> outOfReach,
+            List<MethodNode> generatedMethods, SourceUnit source) {
+        if (outOfReach != null && outOfReach.isEmpty()) {
             return;
         }
         for (MethodNode method : generatedMethods) {
@@ -1533,13 +1538,13 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 }
             });
             for (ConstructorCallExpression call : anonymous) {
-                reportMovedMemberReferences(call, moved, host, source);
+                reportOutwardReferences(call, owner, outOfReach, source);
             }
         }
     }
 
-    private void reportMovedMemberReferences(ConstructorCallExpression call, Set<String> moved,
-            ClassNode host, SourceUnit source) {
+    private void reportOutwardReferences(ConstructorCallExpression call, ClassNode owner,
+            Set<String> outOfReach, SourceUnit source) {
         ClassNode inner = call.getType();
         Set<String> own = existingMemberNames(inner);
         for (MethodNode method : inner.getMethods()) {
@@ -1551,7 +1556,7 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 public void visitMethodCallExpression(MethodCallExpression inner) {
                     super.visitMethodCallExpression(inner);
                     if (inner.isImplicitThis()) {
-                        report(inner.getMethodAsString(), inner, "()");
+                        report(Collections.singletonList(inner.getMethodAsString()), inner, "()");
                     }
                 }
 
@@ -1559,24 +1564,37 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 public void visitVariableExpression(VariableExpression expression) {
                     super.visitVariableExpression(expression);
                     if (expression.getAccessedVariable() instanceof DynamicVariable) {
-                        report(expression.getName(), expression, "");
+                        report(Collections.singletonList(expression.getName()), expression, "");
                     }
                 }
 
-                private void report(String name, ASTNode at, String callSuffix) {
-                    if (name == null || own.contains(name) || !moved.contains(name)) {
+                private void report(List<String> spellings, ASTNode at, String callSuffix) {
+                    String name = spellings.get(0);
+                    if (name == null || own.contains(name)) {
                         return;
                     }
-                    addError(at, source, "\"" + name + callSuffix + "\" is declared in this block, so it " +
-                            "compiles onto " + host.getNameWithoutPackage() + " - but an anonymous inner class " +
-                            "keeps the plugin descriptor as its outer class, which Groovy fixes when it creates " +
-                            "the class and this cannot move. The reference would fail with NoSuchFieldError at " +
-                            "runtime. Pass what the anonymous class needs as a constructor argument or a captured " +
-                            "local, give it a name and declare it as a static nested class, or declare this bean " +
-                            "on a class that is not a plugin descriptor.");
+                    if (outOfReach != null && Collections.disjoint(spellings, outOfReach)) {
+                        return;
+                    }
+                    addError(at, source, "\"" + name + callSuffix + "\" does not resolve on this anonymous " +
+                            "inner class, and " + reachDescription(owner, outOfReach) + ". The reference would " +
+                            "fail with NoSuchFieldError at runtime. Pass what the anonymous class needs as a " +
+                            "constructor argument or a captured local, or give it a name and declare it as a " +
+                            "static nested class.");
                 }
             });
         }
+    }
+
+    private String reachDescription(ClassNode owner, Set<String> outOfReach) {
+        if (outOfReach == null) {
+            return "a group's beans compile onto " + owner.getNameWithoutPackage() + ", a static nested " +
+                    "class with no enclosing instance behind it, so nothing outside the anonymous class " +
+                    "is in reach";
+        }
+        return "it is declared in this block, so it compiles onto the generated sibling " +
+                owner.getNameWithoutPackage() + " - while the anonymous class keeps the plugin descriptor " +
+                "as its outer class, which Groovy fixes when it creates the class and this cannot move";
     }
 
     // An unqualified call, or one written against this. Anything with a real receiver is somebody
@@ -1770,12 +1788,12 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
      * one written in a property initializer.</p>
      *
      * <p>What this cannot correct is the anonymous class's <i>outer class</i>, which
-     * {@code InnerClassNode} fixes at construction. On a plugin descriptor the members move to a
-     * sibling while the anonymous class stays homed on the descriptor, so the MOP dispatch methods
-     * Groovy generates for it read a {@code this$0} typed as the descriptor while the field now
-     * holds the sibling. An anonymous class that touches only its own members and what it inherits
-     * is fine; one that reaches a member declared in the block is rejected by
-     * {@link #rejectAnonymousClassReachingMovedMembers}, rather than left to fail with
+     * {@code InnerClassNode} fixes at construction. Where the beans compile onto something other
+     * than the class the block was written on - a plugin descriptor's sibling, or a group's nested
+     * class - the MOP dispatch methods Groovy generates read a {@code this$0} typed as the original
+     * home while the field now holds the new one. An anonymous class that touches only its own
+     * members and what it inherits is fine; one that reaches outward is rejected by
+     * {@link #rejectAnonymousClassReachingOutward}, rather than left to fail with
      * {@code NoSuchFieldError} inside a running application.</p>
      */
     private boolean rehomeAnonymousInnerClasses(MethodNode liftedMethod, ClassNode host, boolean staticMethod,

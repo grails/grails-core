@@ -226,7 +226,7 @@ Three mistakes the DSL used to accept are now compile errors, because each of th
 
 [NOTE]
 ====
-On a *plugin descriptor* the generated members land on a sibling class, but an anonymous inner class written in a bean body keeps the descriptor as its outer class — Groovy fixes that when it creates the class, and it cannot be moved afterwards. Such a class is fine when it touches only its own members and whatever it inherits; an unqualified reference from its body to a member declared in the `beans` block is a compile error, since at runtime it would fail with `NoSuchFieldError` for the descriptor's `this$0`. Give the anonymous class what it needs as a constructor argument or a captured local, give it a name and declare it as a static nested class, or declare the bean on a class that is not a plugin descriptor.
+An anonymous inner class written in a bean body keeps the class the `beans` block was written on as its outer class — Groovy fixes that when it creates the class, and it cannot be moved afterwards. It is fine when it touches only its own members and whatever it inherits, and an unqualified reference to anything it cannot reach that way is a compile error rather than a `NoSuchFieldError` at runtime. What is out of reach depends on where the bean landed: on a *plugin descriptor* it is the members declared in the `beans` block, which compile onto the sibling class; inside a `group(...)` it is everything outside the anonymous class, the group being a static nested class with no enclosing instance behind it at all. Give the anonymous class what it needs as a constructor argument or a captured local, or give it a name and declare it as a static nested class.
 ====
 
 === Seeing what a block compiled to

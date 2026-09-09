@@ -217,6 +217,15 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * class at all and delegates rather than subclasses. A {@code .staticMethod()} bean cannot carry
  * one, having no enclosing instance to give it.</p>
  *
+ * <p>What the lift cannot correct is the class's <i>outer</i> class, which Groovy also fixes at
+ * creation. That only matters where the beans do not compile onto the class the block was written
+ * on: on a plugin descriptor they move to the sibling, and inside a {@code group(...)} they move to
+ * a static nested class with no enclosing instance behind it at all. An anonymous class that
+ * touches only its own members and what it inherits is unaffected; a reference to anything else is
+ * a compile error rather than a {@code NoSuchFieldError} at runtime. Pass what it needs as a
+ * constructor argument or a captured local, or give it a name and declare it as a static nested
+ * class.</p>
+ *
  * <p>They are also the only correct way to reach a sibling bean. A host Spring does not proxy - an
  * {@code @AutoConfiguration}, a generated plugin sibling, a Grails {@code Application} class -
  * returns a second instance from a direct call rather than the registered singleton, so such calls
