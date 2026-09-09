@@ -84,7 +84,7 @@ ext {
             // extended-scalars compatibility. See https://github.com/apache/grails-core/issues/15674
             'graphql-java.version'          : '25.0',
             'graphql-java-extended-scalars.version': '24.0',
-            'groovy.version'                : '5.1.0',
+            'groovy.version'                : '5.1.2',
             'guava.version'                 : '33.7.1-jre',
             // Groovy YAML 5.1.0 requires a minimum of Jackson 2.22.1, and 2.22.2 also overrides the
             // 2.21.5 Spring Boot 4.1 manages: it adds the StreamReadConstraints length limit to
