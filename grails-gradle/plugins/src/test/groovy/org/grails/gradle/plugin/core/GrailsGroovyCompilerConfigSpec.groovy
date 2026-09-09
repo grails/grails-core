@@ -141,9 +141,25 @@ class GrailsGroovyCompilerConfigSpec extends GradleSpecification {
         result.output.contains('HAS_NAME_INPUT=true')
     }
 
+    def "the generator waits for a task that produces the build's own config script"() {
+        given: 'a build whose configurationScript is the output of another task'
+        setupTestResourceProject('compiler-config-generated-user-script')
+
+        when: 'the compile task graph is built'
+        def result = executeTask('compileGroovy', ['--dry-run'])
+        def order = result.output.readLines().findAll { it.startsWith(':') }
+        int producer = order.findIndexOf { it.startsWith(':generateUserConfigScript') }
+        int generator = order.findIndexOf { it.startsWith(':generateCompileGroovyGrailsCompilerConfig') }
+
+        then: 'the producer is scheduled first, so its content is present when the script is combined'
+        producer >= 0
+        generator >= 0
+        producer < generator
+    }
+
     def "a generated user script is consumed during compilation and follows changes with #wiring wiring"() {
         given: 'a compiler script wired by provider or by plain file plus a compile dependency'
-        setupTestResourceProject('compiler-config-generated-user-script')
+        setupTestResourceProject('compiler-config-generated-user-script-execution')
 
         when: 'a clean build compiles and runs source that needs both sets of imports'
         def first = executeTask('clean', ['verifyCompilation'] + scriptArgs)
@@ -181,7 +197,7 @@ class GrailsGroovyCompilerConfigSpec extends GradleSpecification {
 
     def "a plain script file keeps its producer ordered before script preparation"() {
         given: 'the legacy file assignment with a separate compileGroovy dependency'
-        setupTestResourceProject('compiler-config-generated-user-script')
+        setupTestResourceProject('compiler-config-generated-user-script-execution')
 
         when: 'compilation is requested normally from a clean project'
         def natural = executeTask('verifyCompilation', ['-PplainFile'])
@@ -205,7 +221,7 @@ class GrailsGroovyCompilerConfigSpec extends GradleSpecification {
 
     def "script preparation does not inherit unrelated compile dependencies with #wiring wiring"() {
         given: 'an additional compile dependency that itself depends on script preparation'
-        setupTestResourceProject('compiler-config-generated-user-script')
+        setupTestResourceProject('compiler-config-generated-user-script-execution')
 
         when:
         def result = executeTask('verifyCompilation', ['-PadditionalDependency'] + scriptArgs)
@@ -226,7 +242,7 @@ class GrailsGroovyCompilerConfigSpec extends GradleSpecification {
 
     def "a generated user script keeps its producer with the configuration cache and #wiring wiring"() {
         given:
-        setupTestResourceProject('compiler-config-generated-user-script')
+        setupTestResourceProject('compiler-config-generated-user-script-execution')
 
         when: 'a cached graph is reused after cleaning all generated outputs'
         def stored = executeTask('clean', ['verifyCompilation', '--configuration-cache'] + scriptArgs)
@@ -240,6 +256,52 @@ class GrailsGroovyCompilerConfigSpec extends GradleSpecification {
         reused.task(':compileGroovy').outcome == TaskOutcome.SUCCESS
         reused.output.contains('CONFIGURED_TYPE=java.nio.file.Path')
         reused.output.contains('GRAILS_IMPORT=1')
+
+        where:
+        wiring     | scriptArgs
+        'provider' | []
+        'plain'    | ['-PplainFile']
+    }
+
+    def "a build-cached user script is consumed during compilation with #wiring wiring"() {
+        given: 'an isolated build cache and a compiler that always executes after cleaning'
+        setupTestResourceProject('compiler-config-generated-user-script-execution')
+        def args = ['verifyCompilation', '--build-cache', '-PuncachedCompilation'] + scriptArgs
+
+        when: 'the producer populates the build cache'
+        def first = executeTask('clean', args)
+
+        then:
+        first.task(':generateUserConfigScript').outcome == TaskOutcome.SUCCESS
+        first.task(':compileGroovy').outcome == TaskOutcome.SUCCESS
+        first.output.contains('CONFIGURED_TYPE=java.nio.file.Path')
+
+        when: 'outputs are deleted and the producer is restored from the build cache'
+        def restored = executeTask('clean', args)
+
+        then: 'compilation actually executes using the restored script'
+        restored.task(':generateUserConfigScript').outcome == TaskOutcome.FROM_CACHE
+        restored.task(':generateCompileGroovyGrailsCompilerConfig').outcome == TaskOutcome.SUCCESS
+        restored.task(':compileGroovy').outcome == TaskOutcome.SUCCESS
+        restored.output.contains('CONFIGURED_TYPE=java.nio.file.Path')
+        restored.output.contains('GRAILS_IMPORT=1')
+
+        when: 'the producer input changes'
+        def changed = executeTask('clean', args + ['-PimportedType=java.net.URI'])
+
+        then: 'the old cache entry is not reused'
+        changed.task(':generateUserConfigScript').outcome == TaskOutcome.SUCCESS
+        changed.task(':compileGroovy').outcome == TaskOutcome.SUCCESS
+        changed.output.contains('CONFIGURED_TYPE=java.net.URI')
+
+        when: 'the original input is requested again after cleaning'
+        def original = executeTask('clean', args)
+
+        then: 'the original cached script replaces the changed script'
+        original.task(':generateUserConfigScript').outcome == TaskOutcome.FROM_CACHE
+        original.task(':compileGroovy').outcome == TaskOutcome.SUCCESS
+        original.output.contains('CONFIGURED_TYPE=java.nio.file.Path')
+        original.output.contains('GRAILS_IMPORT=1')
 
         where:
         wiring     | scriptArgs
