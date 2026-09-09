@@ -52,7 +52,6 @@ import org.grails.orm.hibernate.HibernateEventListeners;
 import org.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.grails.orm.hibernate.cfg.HibernateMappingContext;
 import org.grails.orm.hibernate.cfg.HibernateMappingContextConfiguration;
-import org.grails.orm.hibernate.cfg.Settings;
 import org.grails.orm.hibernate.support.AbstractClosureEventTriggeringInterceptor;
 import org.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor;
 
@@ -140,18 +139,14 @@ public class HibernateConnectionSourceFactory extends AbstractHibernateConnectio
             configuration.getProperties().put("jakarta.persistence.validation.factory", registry);
         }
 
-        // setApplicationContext looks up dataSource / dataSource_<name> from this field.
         configuration.setDataSourceName(name);
-
-        String dsName = dataSourceConnectionSource.getName();
-        String beanName = ConnectionSource.DEFAULT.equals(dsName) ?
-                Settings.SETTING_DATASOURCE :
-                Settings.SETTING_DATASOURCE + "_" + dsName;
-        if (applicationContext != null && applicationContext.containsBean(beanName)) {
-            configuration.setApplicationContext(this.applicationContext);
-        }
-        else {
-            configuration.setDataSourceConnectionSource(dataSourceConnectionSource);
+        // The connection source is the DataSource of record: the datastore's connection source
+        // and transaction manager use it, so Hibernate must open sessions against the same instance.
+        configuration.setDataSourceConnectionSource(dataSourceConnectionSource);
+        if (applicationContext != null) {
+            // Resolves resources and class loading through the context, whose loader is the one
+            // the application classes were loaded with, also under a DevTools restart.
+            configuration.setApplicationContext(applicationContext);
         }
 
         Resource[] configLocations = hibernateSettings.getConfigLocations();

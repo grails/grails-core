@@ -39,13 +39,8 @@ class DevToolsClassLoadersSpec extends Specification {
     }
 
     void "isRestartClassLoader matches the RestartClassLoader simple name"() {
-        given:
-        ClassLoader restartLoader = new GroovyClassLoader().parseClass(
-                'class RestartClassLoader extends ClassLoader {}'
-        ).getDeclaredConstructor().newInstance() as ClassLoader
-
         expect:
-        DevToolsClassLoaders.isRestartClassLoader(restartLoader)
+        DevToolsClassLoaders.isRestartClassLoader(restartClassLoader())
     }
 
     void "isRestartClassLoader does not match RestartClassLoader ignoring case"() {
@@ -68,21 +63,52 @@ class DevToolsClassLoadersSpec extends Specification {
         DevToolsClassLoaders.isRestartClassLoader(restartLoader)
     }
 
+    void "isRestartClassLoader does not match a loader that only delegates to the RestartClassLoader"() {
+        expect:
+        !DevToolsClassLoaders.isRestartClassLoader(loaderUnder(restartClassLoader()))
+    }
+
+    void "isRestartClassLoaderOrDescendant is false for null and ordinary loaders"() {
+        expect:
+        !DevToolsClassLoaders.isRestartClassLoaderOrDescendant(null)
+        !DevToolsClassLoaders.isRestartClassLoaderOrDescendant(DevToolsClassLoaders.classLoader)
+        !DevToolsClassLoaders.isRestartClassLoaderOrDescendant(loaderUnder(DevToolsClassLoaders.classLoader))
+    }
+
+    void "isRestartClassLoaderOrDescendant matches the RestartClassLoader and loaders delegating to it"() {
+        given:
+        ClassLoader restartLoader = restartClassLoader()
+        ClassLoader child = loaderUnder(restartLoader)
+
+        expect:
+        DevToolsClassLoaders.isRestartClassLoaderOrDescendant(restartLoader)
+        DevToolsClassLoaders.isRestartClassLoaderOrDescendant(child)
+        DevToolsClassLoaders.isRestartClassLoaderOrDescendant(loaderUnder(child))
+    }
+
     void "preferRestartClassLoader prefers a RestartClassLoader thread context class loader"() {
         given:
-        ClassLoader fallback = new URLClassLoader([] as URL[], DevToolsClassLoaders.classLoader)
-        ClassLoader restartLoader = new GroovyClassLoader().parseClass(
-                'class RestartClassLoader extends ClassLoader {}'
-        ).getDeclaredConstructor().newInstance() as ClassLoader
+        ClassLoader fallback = loaderUnder(DevToolsClassLoaders.classLoader)
+        ClassLoader restartLoader = restartClassLoader()
         Thread.currentThread().contextClassLoader = restartLoader
 
         expect:
         DevToolsClassLoaders.preferRestartClassLoader(fallback).is(restartLoader)
     }
 
+    void "preferRestartClassLoader prefers a thread context class loader that delegates to the RestartClassLoader"() {
+        given: "a servlet container has swapped its web application loader in as the context class loader"
+        ClassLoader fallback = loaderUnder(DevToolsClassLoaders.classLoader)
+        ClassLoader containerLoader = loaderUnder(restartClassLoader())
+        Thread.currentThread().contextClassLoader = containerLoader
+
+        expect:
+        DevToolsClassLoaders.preferRestartClassLoader(fallback).is(containerLoader)
+    }
+
     void "preferRestartClassLoader returns the fallback when DevTools is not active"() {
         given:
-        ClassLoader fallback = new URLClassLoader([] as URL[], DevToolsClassLoaders.classLoader)
+        ClassLoader fallback = loaderUnder(DevToolsClassLoaders.classLoader)
 
         expect:
         DevToolsClassLoaders.preferRestartClassLoader(fallback).is(fallback)
@@ -90,9 +116,8 @@ class DevToolsClassLoadersSpec extends Specification {
 
     void "preferRestartClassLoader ignores a non-restart thread context class loader"() {
         given:
-        ClassLoader fallback = new URLClassLoader([] as URL[], DevToolsClassLoaders.classLoader)
-        ClassLoader otherLoader = new URLClassLoader([] as URL[], DevToolsClassLoaders.classLoader)
-        Thread.currentThread().contextClassLoader = otherLoader
+        ClassLoader fallback = loaderUnder(DevToolsClassLoaders.classLoader)
+        Thread.currentThread().contextClassLoader = loaderUnder(DevToolsClassLoaders.classLoader)
 
         expect:
         DevToolsClassLoaders.preferRestartClassLoader(fallback).is(fallback)
@@ -100,13 +125,20 @@ class DevToolsClassLoadersSpec extends Specification {
 
     void "preferRestartClassLoader prefers a RestartClassLoader even when fallback is null"() {
         given:
-        ClassLoader restartLoader = new GroovyClassLoader().parseClass(
-                'class RestartClassLoader extends ClassLoader {}'
-        ).getDeclaredConstructor().newInstance() as ClassLoader
+        ClassLoader restartLoader = restartClassLoader()
         Thread.currentThread().contextClassLoader = restartLoader
 
         expect:
         DevToolsClassLoaders.preferRestartClassLoader(null).is(restartLoader)
+    }
+
+    void "preferRestartClassLoader prefers a delegating thread context class loader even when fallback is null"() {
+        given:
+        ClassLoader containerLoader = loaderUnder(restartClassLoader())
+        Thread.currentThread().contextClassLoader = containerLoader
+
+        expect:
+        DevToolsClassLoaders.preferRestartClassLoader(null).is(containerLoader)
     }
 
     void "preferRestartClassLoader falls back to this class's loader when fallback is null"() {
@@ -116,11 +148,18 @@ class DevToolsClassLoadersSpec extends Specification {
 
     void "preferRestartClassLoader returns a descendant fallback of the RestartClassLoader"() {
         given:
-        ClassLoader restartLoader = new GroovyClassLoader().parseClass(
-                'class RestartClassLoader extends ClassLoader {}'
-        ).getDeclaredConstructor().newInstance() as ClassLoader
-        ClassLoader fallback = new URLClassLoader([] as URL[], restartLoader)
+        ClassLoader restartLoader = restartClassLoader()
+        ClassLoader fallback = loaderUnder(restartLoader)
         Thread.currentThread().contextClassLoader = restartLoader
+
+        expect:
+        DevToolsClassLoaders.preferRestartClassLoader(fallback).is(fallback)
+    }
+
+    void "preferRestartClassLoader keeps a fallback that delegates to the RestartClassLoader when the thread context class loader is unrelated"() {
+        given:
+        ClassLoader fallback = loaderUnder(restartClassLoader())
+        Thread.currentThread().contextClassLoader = loaderUnder(DevToolsClassLoaders.classLoader)
 
         expect:
         DevToolsClassLoaders.preferRestartClassLoader(fallback).is(fallback)
@@ -128,17 +167,20 @@ class DevToolsClassLoadersSpec extends Specification {
 
     void "preferRestartClassLoader returns the RestartClassLoader fallback"() {
         given:
-        ClassLoader restartLoader = new GroovyClassLoader().parseClass(
-                'class RestartClassLoader extends ClassLoader {}'
-        ).getDeclaredConstructor().newInstance() as ClassLoader
+        ClassLoader restartLoader = restartClassLoader()
         Thread.currentThread().contextClassLoader = restartLoader
 
         expect:
         DevToolsClassLoaders.preferRestartClassLoader(restartLoader).is(restartLoader)
     }
 
-    void "resolve delegates to preferRestartClassLoader"() {
-        expect:
-        DevToolsClassLoaders.resolve(null).is(DevToolsClassLoaders.preferRestartClassLoader(null))
+    private static ClassLoader restartClassLoader() {
+        new GroovyClassLoader().parseClass(
+                'class RestartClassLoader extends ClassLoader {}'
+        ).getDeclaredConstructor().newInstance() as ClassLoader
+    }
+
+    private static ClassLoader loaderUnder(ClassLoader parent) {
+        new URLClassLoader([] as URL[], parent)
     }
 }

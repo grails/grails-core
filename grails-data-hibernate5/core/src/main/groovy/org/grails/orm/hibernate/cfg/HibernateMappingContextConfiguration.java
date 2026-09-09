@@ -118,18 +118,22 @@ public class HibernateMappingContextConfiguration extends Configuration implemen
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(applicationContext);
-        String dsName = ConnectionSource.DEFAULT.equals(dataSourceName) ? "dataSource" : "dataSource_" + dataSourceName;
+        String dsName = ConnectionSource.DEFAULT.equals(dataSourceName) ?
+                Settings.SETTING_DATASOURCE :
+                Settings.SETTING_DATASOURCE + "_" + dataSourceName;
         Properties properties = getProperties();
 
-        if (applicationContext.containsBean(dsName)) {
+        // A DataSource already configured (by setDataSourceConnectionSource) is the one the
+        // datastore's connection source and transaction manager use, so it stays authoritative.
+        if (!properties.containsKey(Environment.DATASOURCE) && applicationContext.containsBean(dsName)) {
             properties.put(Environment.DATASOURCE, applicationContext.getBean(dsName));
         }
         properties.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, currentSessionContext.getName());
         ClassLoader applicationClassLoader = applicationContext.getClassLoader();
-        // Keep CLASSLOADERS absent when the context loader is null and DevTools is not
+        // Keep CLASSLOADERS absent when the context loader is null and DevTools restart is not
         // active so buildSessionFactory can fall back to this class's loader.
         if (applicationClassLoader != null ||
-                DevToolsClassLoaders.isRestartClassLoader(Thread.currentThread().getContextClassLoader())) {
+                DevToolsClassLoaders.isRestartClassLoaderOrDescendant(Thread.currentThread().getContextClassLoader())) {
             properties.put(AvailableSettings.CLASSLOADERS,
                     DevToolsClassLoaders.preferRestartClassLoader(applicationClassLoader));
         }
@@ -338,9 +342,9 @@ public class HibernateMappingContextConfiguration extends Configuration implemen
         Object classLoaderObject = getProperties().get(AvailableSettings.CLASSLOADERS);
         ClassLoader storedClassLoader = classLoaderObject instanceof ClassLoader ?
                 (ClassLoader) classLoaderObject : getClass().getClassLoader();
-        // Re-check TCCL: addProperties() / a custom configClass can overwrite CLASSLOADERS
-        // after the setters. GrailsDomainBinder.bindClass only setClassName(entityName);
-        // Hibernate then re-resolves Class via ReflectHelper.classForName (TCCL).
+        // addProperties() or a custom configClass may have replaced CLASSLOADERS after the
+        // setters ran. GrailsDomainBinder binds entities by class name and Hibernate resolves
+        // them through this loader, so it has to see the restarted application classes.
         return DevToolsClassLoaders.preferRestartClassLoader(storedClassLoader);
     }
 
