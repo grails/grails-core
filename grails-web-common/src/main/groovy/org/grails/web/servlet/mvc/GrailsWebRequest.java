@@ -279,11 +279,10 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
     /**
      * @return The currently executing request
      *
-     * @deprecated as of 8.0, use {@link #getRequest()} instead. This used to return the resolved
-     *             multipart request in place of the request Grails was bound to; that substitution is
-     *             gone, so the two are now the same object.
+     * <p>This used to return the resolved multipart request in place of the request Grails was bound to.
+     * That substitution is gone, so this and {@link #getRequest()} are the same object; either may be
+     * called.</p>
      */
-    @Deprecated(since = "8.0")
     public HttpServletRequest getCurrentRequest() {
         return getRequest();
     }

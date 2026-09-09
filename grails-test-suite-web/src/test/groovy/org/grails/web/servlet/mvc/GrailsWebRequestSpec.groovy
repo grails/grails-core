@@ -71,7 +71,7 @@ class GrailsWebRequestSpec extends Specification {
                 (ServletContext) null).attributes != null
     }
 
-    void 'the deprecated current request is an alias for the request the web request was built with'() {
+    void 'the current request is an alias for the request the web request was built with'() {
         given: 'a request already wrapped by a filter, as the outermost request usually is'
         def wrapped = new HttpServletRequestWrapper(new MockHttpServletRequest(servletContext))
 
@@ -98,9 +98,12 @@ class GrailsWebRequestSpec extends Specification {
         !webRequest.params.containsKey('name')
     }
 
-    void 'the current request accessor is deprecated in favour of getRequest'() {
-        expect: 'plugins still compile against it, but are told where to go instead'
-        GrailsWebRequest.getMethod('getCurrentRequest').isAnnotationPresent(Deprecated)
+    void 'the two request accessors answer with the same object'() {
+        given: 'getCurrentRequest used to hand back the resolved multipart request instead'
+        def webRequest = newWebRequest()
+
+        expect: 'that substitution is gone, so either accessor may be called'
+        webRequest.getCurrentRequest().is(webRequest.getRequest())
     }
 
     private GrailsWebRequest newWebRequest() {

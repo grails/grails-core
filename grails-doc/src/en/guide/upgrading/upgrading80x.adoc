@@ -3299,26 +3299,15 @@ request.setAttribute(WebUtils.MULTIPART_HTTP_SERVLET_REQUEST_ATTRIBUTE, resolved
 webRequest.multipartRequestResolved()
 ----
 
-===== 54.5 `GrailsWebRequest.getCurrentRequest()` is deprecated
+===== 54.5 `GrailsWebRequest.getCurrentRequest()` returns what `getRequest()` returns
 
-`getCurrentRequest()` existed to hand back the resolved multipart request in place of the request Grails
-was bound to. That substitution is gone (see _52. `request` Is No Longer a `MultipartHttpServletRequest`_),
-so the method now returns exactly what `getRequest()` returns. It is deprecated; call `getRequest()`
-instead.
+`getCurrentRequest()` existed to hand back the resolved multipart request in place of the request Grails was
+bound to. That substitution is gone (see _53. `request` Is No Longer a `MultipartHttpServletRequest`_), so
+the two accessors now answer with the same object. The method stays, and calling it is fine; there is simply
+nothing left that distinguishes the two.
 
-[source,groovy]
-----
-// Before
-def uri = webRequest.currentRequest.requestURI
-
-// After
-def uri = webRequest.request.requestURI
-----
-
-`getRequest()` is not new - it has always been there on Spring's `ServletRequestAttributes`. What changed is
-that `getCurrentRequest()` no longer returns anything different from it, so switching is a change of caller,
-not of behaviour. Code that reaches for the uploaded files of a multipart request should use the
-`request.getFile(..)` methods described in section 53.
+Code that reaches for the uploaded files of a multipart request should use the `request.getFile(..)` methods
+described in section 53.
 
 Tests that mock a `GrailsWebRequest` and stub `getCurrentRequest()` need updating. `getRequest()` is
 `final` on Spring's `ServletRequestAttributes`, so `getCurrentRequest()` was the only stubbable request
