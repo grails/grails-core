@@ -86,6 +86,8 @@ dependencies {
     // view, and each exclusion below names a part it does not: it routes and binds with Spring MVC,
     // it has no domain classes, and it answers in HTML.
     implementation(project(':grails-gsp-spring-boot')) {
+        exclude group: 'org.apache.grails.web', module: 'grails-web-url-mappings' // g:link, g:createLink
+        exclude group: 'org.apache.grails.data', module: 'grails-datamapping-validation' // g:validate
         exclude group: 'org.apache.grails.web', module: 'grails-web-databinding'
         exclude group: 'org.apache.grails.databinding', module: 'grails-databinding-core'
         exclude group: 'org.apache.grails.web', module: 'grails-web-mvc'
@@ -103,6 +105,8 @@ dependencies {
     implementation 'cloud.wondrify:asset-pipeline-spring-boot'
 
     implementation(project(':grails-web-jsp')) {
+        exclude group: 'org.apache.grails.web', module: 'grails-web-url-mappings'
+        exclude group: 'org.apache.grails.data', module: 'grails-datamapping-validation'
         exclude group: 'org.apache.grails.web', module: 'grails-web-databinding'
         exclude group: 'org.apache.grails.databinding', module: 'grails-databinding-core'
         exclude group: 'org.apache.grails.web', module: 'grails-web-mvc'
