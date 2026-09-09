@@ -3583,8 +3583,8 @@ not unbox to `int`:
 
 [source,java]
 ----
-long total = BookGormEntity.count();          // preferred
-int  small = Book.count().intValue();         // only when the count is known to be small
+long total = Book.count();            // auto-unboxes, no change needed
+int  small = Book.count().intValue();  // only when the count is known to be small
 ----
 
 A GSP that declares the count in a typed model directive should declare it as `Number`, which accepts
@@ -3617,3 +3617,7 @@ type Query {
 Queries that select the field are unchanged and the JSON value is unchanged, but generated clients and
 schema snapshots need regenerating. The count fetcher previously narrowed the datastore result to fit
 `Int`, so counts above `Integer.MAX_VALUE` were truncated there too.
+
+Paginated list responses already type `totalCount` as `Long` through the same type manager, in
+`DefaultGraphQLPaginationResponseHandler`, so this aligns the count field with a scalar the schema
+already used rather than introducing a new one.

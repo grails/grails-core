@@ -21,7 +21,7 @@ import functional.tests.Product
 
 model {
     Iterable<Product> productList
-    Number productCount
+    Long productCount
     Integer max
     Integer offset
     String sort

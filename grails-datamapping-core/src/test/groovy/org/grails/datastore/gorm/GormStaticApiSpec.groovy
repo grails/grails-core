@@ -19,7 +19,6 @@
 package org.grails.datastore.gorm
 
 import grails.gorm.annotation.Entity
-import grails.gorm.api.GormStaticOperations
 import grails.gorm.multitenancy.Tenants
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.core.Session
@@ -29,6 +28,7 @@ import org.grails.datastore.mapping.core.connections.ConnectionSources
 import org.grails.datastore.mapping.core.connections.ConnectionSourcesProvider
 import org.grails.datastore.mapping.core.connections.MultipleConnectionSourceCapableDatastore
 import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.multitenancy.MultiTenancySettings
 import org.grails.datastore.mapping.multitenancy.MultiTenantCapableDatastore
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
@@ -112,14 +112,27 @@ class GormStaticApiSpec extends Specification {
         n == 0L
     }
 
-    void "count() returns a Long so a large table is not truncated"() {
+    void "count() preserves a datastore count above Integer.MAX_VALUE"() {
         given:
-        def api = new GormStaticApi(GormStaticApiThing, datastore, [])
+        def ds = Stub(Datastore)
+        def session = Stub(Session)
+        def query = Mock(Query)
+        ds.getMappingContext() >> datastore.mappingContext
+        ds.connect() >> session
+        session.getDatastore() >> ds
+        session.createQuery(GormStaticApiThing) >> query
+        query.projections() >> Mock(Query.ProjectionList)
+        query.singleResult() >> 3_000_000_000L
+        def api = new GormStaticApi(GormStaticApiThing, ds, [])
 
-        expect: 'the value and the declared contract agree, so static callers are not narrowed'
-        api.count() instanceof Long
-        GormStaticOperations.getMethod('count').returnType == Long
-        GormStaticOperations.getMethod('getCount').returnType == Long
+        expect: 'the value survives instead of wrapping to a negative int'
+        api.count() == 3_000_000_000L
+    }
+
+    void "the count members a domain class exposes are Long"() {
+        expect:
+        GormStaticApiThing.count() instanceof Long
+        GormStaticApiThing.count instanceof Long
     }
 
     void "getGormDynamicFinders returns the finders the api was constructed with"() {
