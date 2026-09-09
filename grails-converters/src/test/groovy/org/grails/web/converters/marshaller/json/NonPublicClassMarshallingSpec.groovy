@@ -294,6 +294,20 @@ class NonPublicClassMarshallingSpec extends Specification {
         !ReflectionUtils.warnOnNonPublicClass(person.getClass())
     }
 
+    void 'a covariant read method with no public declaring type is marshalled from the override'() {
+        given: 'the class carries both a String override and the compiler\'s Object bridge'
+        def bean = JavaPersonFactory.covariantBean('tag')
+
+        expect:
+        !Modifier.isPublic(bean.getClass().modifiers)
+
+        when:
+        Map json = parse(new JSON(bean).toString())
+
+        then: 'the override was read, once'
+        json == [tag: 'tag']
+    }
+
     void cleanup() {
         ReflectionUtils.resetWarnedClasses()
     }

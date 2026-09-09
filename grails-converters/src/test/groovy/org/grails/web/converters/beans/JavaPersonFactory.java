@@ -80,4 +80,13 @@ public final class JavaPersonFactory {
     public static Object standalonePerson(String name) {
         return new PackagePrivateStandaloneJavaBean(name);
     }
+
+    /**
+     * @return an instance of a class carrying both a covariant read method and the compiler's
+     *         bridge for it, with no public type in its hierarchy, so reading it has to choose
+     *         between the two
+     */
+    public static Object covariantBean(String tag) {
+        return new HiddenCovariantJavaBean(tag);
+    }
 }

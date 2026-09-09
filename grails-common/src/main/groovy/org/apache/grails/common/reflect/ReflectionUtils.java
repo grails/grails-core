@@ -78,20 +78,20 @@ public final class ReflectionUtils {
     /**
      * Resolves a read method that can actually be invoked on {@code target}.
      *
-     * <p>Where the property is declared by an interface, the interface method is returned: it is
-     * declared by an accessible type, and virtual dispatch still reaches the implementation. Where
-     * it is not -- a non-public class with no interface declaring the getter -- a private copy of
-     * the method is widened, so that the accessibility flag cannot leak into a {@code Method}
-     * instance shared through a descriptor cache.
+     * <p>Where an equivalent method is declared by a public type anywhere in the hierarchy -- an
+     * interface or a superclass -- that one is returned: it is declared by an accessible type, and
+     * virtual dispatch still reaches the override. Only where there is no such type does the method
+     * need help, and then a private copy is widened, so that the accessibility flag cannot leak
+     * into a {@code Method} instance shared through a descriptor cache.
      *
      * @param readMethod  the property's read method, typically from a {@code PropertyDescriptor}
-     * @param targetClass the class being read, used to resolve the interface method
+     * @param targetClass the class being read, used to resolve the publicly accessible method
      * @param target      the instance being read, or {@code null} for a static read method
      * @return a method that may be invoked on {@code target}
      */
     public static Method resolveInvokableReadMethod(Method readMethod, Class<?> targetClass, @Nullable Object target)
             throws NoSuchMethodException {
-        Method invokable = ClassUtils.getInterfaceMethodIfPossible(readMethod, targetClass);
+        Method invokable = ClassUtils.getPubliclyAccessibleMethodIfPossible(readMethod, targetClass);
         if (canAccess(invokable, target)) {
             return invokable;
         }
@@ -151,10 +151,10 @@ public final class ReflectionUtils {
             return false;
         }
         if (LOG.isWarnEnabled()) {
-            LOG.warn("Class [{}] is not public, so its properties can only be read by widening access reflectively. " +
-                            "Declare the class public - as a named class rather than an anonymous one where " +
-                            "necessary - so that it reads as a standard JavaBean. This handling may be withdrawn in " +
-                            "a future major release. To silence this, set the log level of [{}] above WARN. " +
+            LOG.warn("Class [{}] is not public. Grails reads its properties through compatibility handling that may " +
+                            "be withdrawn in a future major release. Declare it as a named public class so that it " +
+                            "reads as a standard JavaBean, or register an ObjectMarshaller for it if the class is " +
+                            "not yours. To silence this, set the log level of [{}] above WARN. " +
                             "(warned once per class)",
                     clazz.getName(), LOG.getName());
         }

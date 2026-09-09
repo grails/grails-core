@@ -3100,14 +3100,20 @@ import being *omitted* when the package was absent sees no difference in compile
 
 ==== 54. Non-Public Bean Classes Are Marshalled, and Reported Once
 
-`someObject as JSON` (and `as XML`) previously failed when the object's class was not `public` — an
-anonymous, local, or package-private class — even though its property getters were public. The request
-failed with `ConverterException` wrapping `IllegalAccessException`. The same conversion also failed for any
-`Serializable` bean, because the marshaller asked whether a `private static final long serialVersionUID`
-field was accessible before checking that it was static, which the JDK rejects.
+Groovy 4 stamped `ACC_PUBLIC` on anonymous inner classes; Groovy 5, which Grails 8 builds on, does not.
+Reflection cannot invoke a method on a class that is not `public` from another package, even when the method
+itself is public, so code that marshalled an anonymous class perfectly well under Grails 7 started failing on
+Grails 8 with `ConverterException` wrapping `IllegalAccessException`. Nothing in the application changed —
+only the class modifier the compiler emits.
 
-Both now work. The most common shape is an anonymous implementation of a public interface, which Groovy 4
-compiled to a `public` class and Groovy 5 does not:
+A second failure in the same code path is fixed alongside it: converting any `Serializable` bean threw
+`IllegalArgumentException`, because the marshaller asked whether a `private static final long
+serialVersionUID` field was accessible before checking that it was static, which the JDK rejects. Practically
+every serializable bean declares that field, so this affected a large share of objects passed to `as JSON`.
+
+Grails 8 adds compatibility handling for the non-public case, and reports each such class once so that the
+code can be corrected — see 54.2 below. The shape that hits it is an anonymous implementation of a public
+interface:
 
 [source,groovy]
 ----
@@ -3120,6 +3126,10 @@ def show() {
     render([user: user] as JSON)
 }
 ----
+
+NOTE: Ordinary Groovy code is unaffected. Property access and method calls through the metaclass still work
+on such an object from any package, as does the JDK's `Introspector`; only raw reflection against the method
+as the non-public class declares it fails. That is what bean marshalling was doing.
 
 ===== 54.1 Public Fields of Non-Public Classes Are Now Included
 
@@ -3135,25 +3145,26 @@ json.excludes = ['nickname']
 render json
 ----
 
-Fields of a class in a named module that does not open its package are skipped rather than failing the
-whole conversion.
+A `public` *field* that cannot be read at all — because its class is in a named module that does not open
+its package — is skipped, and the rest of the object still converts. A *getter* in that same situation is
+not skipped: the conversion fails, as it did before Grails 8.
 
 ===== 54.2 The Warning
 
-Reading a non-public class requires widening access reflectively, which is compatibility handling rather
-than a supported contract. Each such class is therefore reported once:
+Reading a bean whose class is not public is compatibility handling rather than a supported contract, so each
+such class is reported once:
 
 [source,text]
 ----
-Class [com.example.DemoController$1] is not public, so its properties can only be read by widening access
-reflectively. Declare the class public - as a named class rather than an anonymous one where necessary - so
-that it reads as a standard JavaBean. This handling may be withdrawn in a future major release. To silence
+Class [com.example.DemoController$1] is not public. Grails reads its properties through compatibility
+handling that may be withdrawn in a future major release. Declare it as a named public class so that it
+reads as a standard JavaBean, or register an ObjectMarshaller for it if the class is not yours. To silence
 this, set the log level of [org.apache.grails.common.reflect.ReflectionUtils] above WARN. (warned once per class)
 ----
 
-The fix is to declare the class `public` — as a named class where it is currently anonymous — or to register
-an `ObjectMarshaller` for it. Classes from the JDK, Groovy, and Spring are never reported, since an
-application cannot declare them public.
+The fix is to declare the class `public` — as a named class where it is currently anonymous — or, for a class
+you do not own, to register an `ObjectMarshaller` for it. Classes from the JDK, Groovy, and Spring are never
+reported, since an application cannot declare those public.
 
 To silence the warning instead:
 

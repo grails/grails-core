@@ -48,6 +48,15 @@ public final class ThingFactory {
     public static Object covariantThing(String value) {
         return new CovariantThing(value);
     }
+
+    /**
+     * @return a covariant override with no public type anywhere in its hierarchy, so the read method
+     *         cannot be resolved to an accessible declaration and has to be widened. This is the
+     *         only shape that reaches the override-versus-bridge choice.
+     */
+    public static Object hiddenCovariantThing(String tag) {
+        return new HiddenCovariantThing(tag);
+    }
 }
 
 class StandaloneThing {
@@ -74,5 +83,24 @@ class CovariantThing extends PublicCovariantBase {
     @Override
     public String getValue() {
         return value;
+    }
+}
+
+abstract class HiddenCovariantBase {
+
+    public abstract Object getTag();
+}
+
+class HiddenCovariantThing extends HiddenCovariantBase {
+
+    private final String tag;
+
+    HiddenCovariantThing(String tag) {
+        this.tag = tag;
+    }
+
+    @Override
+    public String getTag() {
+        return tag;
     }
 }

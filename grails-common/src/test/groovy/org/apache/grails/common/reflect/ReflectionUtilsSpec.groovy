@@ -18,12 +18,14 @@
  */
 package org.apache.grails.common.reflect
 
-import java.beans.Introspector
 import java.beans.PropertyDescriptor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
+import org.springframework.beans.BeanUtils
+
+import org.apache.grails.common.reflect.beans.PublicCovariantBase
 import org.apache.grails.common.reflect.beans.PublicFieldBean
 import org.apache.grails.common.reflect.beans.PublicThing
 import org.apache.grails.common.reflect.beans.ThingFactory
@@ -44,8 +46,13 @@ class ReflectionUtilsSpec extends Specification {
         ReflectionUtils.resetWarnedClasses()
     }
 
+    /**
+     * Takes the read method the way the marshallers do. {@code java.beans.Introspector} pre-resolves
+     * a getter to its publicly accessible declaration, which would leave these features asserting
+     * nothing, so this asks Spring for the declaring-class method instead.
+     */
     private static Method readMethodOf(Object bean, String property) {
-        PropertyDescriptor descriptor = Introspector.getBeanInfo(bean.getClass()).propertyDescriptors
+        PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptors(bean.getClass())
                 .find { it.name == property }
         descriptor.readMethod
     }
@@ -55,11 +62,15 @@ class ReflectionUtilsSpec extends Specification {
         def thing = ThingFactory.anonymousThing('thing')
         Method readMethod = readMethodOf(thing, 'name')
 
+        expect: 'the method as declared by the anonymous class cannot be invoked from here'
+            !readMethod.canAccess(thing)
+
         when:
         Method invokable = ReflectionUtils.resolveInvokableReadMethod(readMethod, thing.getClass(), thing)
 
-        then: 'the interface declares it, so it is invokable as it stands'
+        then: 'the interface declares it, so nothing has to be widened'
             invokable.declaringClass == PublicThing
+            invokable.canAccess(thing)
             invokable.invoke(thing) == 'thing'
     }
 
@@ -82,17 +93,43 @@ class ReflectionUtilsSpec extends Specification {
             !readMethod.canAccess(thing)
     }
 
-    void 'a covariant read method resolves to the override rather than the bridge'() {
-        given:
+    void 'a read method declared by a public superclass needs no widening either'() {
+        given: 'a package-private class covariantly overriding a public superclass method'
         def thing = ThingFactory.covariantThing('value')
         Method readMethod = readMethodOf(thing, 'value')
+
+        expect:
+            !readMethod.canAccess(thing)
+
+        when:
+        Method invokable = ReflectionUtils.resolveInvokableReadMethod(readMethod, thing.getClass(), thing)
+
+        then: 'the superclass declaration is accessible, and dispatch still reaches the override'
+            invokable.declaringClass == PublicCovariantBase
+            invokable.canAccess(thing)
+            invokable.invoke(thing) == 'value'
+
+        and: 'so the method handed in was left alone'
+            !readMethod.canAccess(thing)
+    }
+
+    void 'a covariant read method with no public declaring type resolves to the override, not the bridge'() {
+        given: 'nothing public anywhere in the hierarchy, so the copy has to be widened'
+        def thing = ThingFactory.hiddenCovariantThing('tag')
+        Method readMethod = readMethodOf(thing, 'tag')
+
+        expect:
+            !readMethod.canAccess(thing)
 
         when:
         Method invokable = ReflectionUtils.resolveInvokableReadMethod(readMethod, thing.getClass(), thing)
 
         then:
-            invokable.invoke(thing) == 'value'
+            invokable.invoke(thing) == 'tag'
             !invokable.bridge
+
+        and:
+            !readMethod.canAccess(thing)
     }
 
     void 'a field that is already readable is not widened'() {
