@@ -67,7 +67,10 @@ if (providers.gradleProperty('additionalDependency').isPresent()) {
     def preparation = tasks.register('prepareCompilation') {
         // Copying every compile dependency onto script preparation would create a cycle here.
         dependsOn 'generateCompileGroovyGrailsCompilerConfig'
+        def unrelatedOutput = layout.buildDirectory.file('unrelated-config.groovy')
+        outputs.file(unrelatedOutput)
         doLast {
+            unrelatedOutput.get().asFile.text = '// Not the configured compiler script'
             println 'ADDITIONAL_COMPILE_DEPENDENCY=ran'
         }
     }
@@ -78,7 +81,7 @@ if (providers.gradleProperty('additionalDependency').isPresent()) {
 
 tasks.named('compileGroovy', GroovyCompile) {
     if (providers.gradleProperty('plainFile').isPresent()) {
-        // The old pattern orders compilation, but does not identify the script's producer.
+        // The plugin matches this file against the compile dependency's declared output.
         dependsOn genUserScript
         groovyOptions.configurationScript = file('build/user-config.groovy')
     } else {
