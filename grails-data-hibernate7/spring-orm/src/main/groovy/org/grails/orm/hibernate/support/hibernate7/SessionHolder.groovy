@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.orm.hibernate.support.hibernate7
 
-package org.grails.orm.hibernate.support.hibernate7;
-
-import org.hibernate.FlushMode;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.jspecify.annotations.Nullable;
-
-import org.springframework.orm.jpa.EntityManagerHolder;
+import groovy.transform.CompileStatic
+import org.hibernate.FlushMode
+import org.hibernate.Session
+import org.hibernate.Transaction
+import org.springframework.orm.jpa.EntityManagerHolder
 
 /**
  * Resource holder wrapping a Hibernate {@link Session} (plus an optional {@link Transaction}).
@@ -36,46 +34,43 @@ import org.springframework.orm.jpa.EntityManagerHolder;
  * @see HibernateTransactionManager
  * @see SessionFactoryUtils
  */
-public class SessionHolder extends EntityManagerHolder {
+@CompileStatic
+class SessionHolder extends EntityManagerHolder {
 
-    @Nullable
-    private Transaction transaction;
+    private Transaction transaction
 
-    @Nullable
-    private FlushMode previousFlushMode;
+    private FlushMode previousFlushMode
 
-    public SessionHolder(Session session) {
-        super(session);
+    SessionHolder(Session session) {
+        super(session)
     }
 
-    public Session getSession() {
-        return (Session) getEntityManager();
+    Session getSession() {
+        return (Session) getEntityManager()
     }
 
-    public void setTransaction(@Nullable Transaction transaction) {
-        this.transaction = transaction;
-        setTransactionActive(transaction != null);
+    void setTransaction(Transaction transaction) {
+        this.transaction = transaction
+        setTransactionActive(transaction != null)
     }
 
-    @Nullable
-    public Transaction getTransaction() {
-        return this.transaction;
+    Transaction getTransaction() {
+        return this.transaction
     }
 
-    public void setPreviousFlushMode(@Nullable FlushMode previousFlushMode) {
-        this.previousFlushMode = previousFlushMode;
+    void setPreviousFlushMode(FlushMode previousFlushMode) {
+        this.previousFlushMode = previousFlushMode
     }
 
-    @Nullable
-    public FlushMode getPreviousFlushMode() {
-        return this.previousFlushMode;
+    FlushMode getPreviousFlushMode() {
+        return this.previousFlushMode
     }
 
     @Override
-    public void clear() {
-        super.clear();
-        this.transaction = null;
-        this.previousFlushMode = null;
+    void clear() {
+        super.clear()
+        this.transaction = null
+        this.previousFlushMode = null
     }
 
 }
