@@ -75,6 +75,17 @@ class DirtyCheckingMap implements Map, DirtyCheckableCollection {
         parent.hasChanged(property)
     }
 
+    // Content equality, like AbstractPersistentCollection — see DirtyCheckingCollection.
+    @Override
+    boolean equals(Object other) {
+        target.equals(other)
+    }
+
+    @Override
+    int hashCode() {
+        target.hashCode()
+    }
+
     @Override
     Object put(Object key, Object value) {
         parent.markDirty(property)

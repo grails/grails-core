@@ -344,6 +344,28 @@ class DirtyCheckingCollectionSpec extends Specification {
         owner.hasChanged('attrs')
     }
 
+    def 'wrappers are content-equal to plain collections in both directions'() {
+        given:
+        def owner = new CollectionOwner()
+        def list = new DirtyCheckingList(['a', 'b'], owner, 'items')
+        def set = new DirtyCheckingSet(['a'] as Set, owner, 'tags')
+        def map = new DirtyCheckingMap([a: 1, b: 2], owner, 'attrs')
+
+        expect: 'Groovy == and Java equals both hold, both ways (AbstractPersistentCollection precedent)'
+        list == ['a', 'b']
+        ['a', 'b'] == list
+        list.hashCode() == ['a', 'b'].hashCode()
+        set == (['a'] as Set)
+        map == [a: 1, b: 2]
+        [a: 1, b: 2] == map
+        map.hashCode() == [a: 1, b: 2].hashCode()
+
+        and: 'the map views are content-equal to the raw views (what Map equality iterates)'
+        map.keySet() == (['a', 'b'] as Set)
+        map.entrySet() == [a: 1, b: 2].entrySet()
+        map.values() as List == [1, 2]
+    }
+
     def 'iteration without mutation does not mark the parent dirty'() {
         given:
         def owner = new CollectionOwner()

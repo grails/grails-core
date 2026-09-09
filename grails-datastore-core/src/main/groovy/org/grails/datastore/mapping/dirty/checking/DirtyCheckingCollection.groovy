@@ -74,6 +74,20 @@ class DirtyCheckingCollection implements Collection, DirtyCheckableCollection {
         parent.hasChanged(property) || hasChangedElements()
     }
 
+    // Content equality, like AbstractPersistentCollection: the wrapper is transparent, so it
+    // equals whatever its target equals. Without this, the tracking views handed out by
+    // DirtyCheckingMap (keySet/entrySet/values) broke Groovy's Map == Map, whose extension
+    // method compares self.keySet().equals(other.keySet()).
+    @Override
+    boolean equals(Object other) {
+        target.equals(other)
+    }
+
+    @Override
+    int hashCode() {
+        target.hashCode()
+    }
+
     protected boolean hasChangedElements() {
         target.any { (it instanceof DirtyCheckable) && ((DirtyCheckable) it).hasChanged() }
     }
