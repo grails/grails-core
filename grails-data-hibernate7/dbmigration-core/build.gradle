@@ -45,6 +45,7 @@ configurations {
 dependencies {
     implementation platform(project(':grails-hibernate7-bom'))
 
+    api 'org.apache.groovy:groovy'
     implementation("org.liquibase:liquibase-core")
     implementation("org.hibernate.orm:hibernate-core")
     implementation("org.hibernate.models:hibernate-models")
