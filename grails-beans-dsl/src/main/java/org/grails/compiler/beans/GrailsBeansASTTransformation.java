@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1564,7 +1565,11 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 public void visitVariableExpression(VariableExpression expression) {
                     super.visitVariableExpression(expression);
                     if (expression.getAccessedVariable() instanceof DynamicVariable) {
-                        report(Collections.singletonList(expression.getName()), expression, "");
+                        // A property-style read of a moved accessor is the same reference by another
+                        // spelling - method('getSuffix', ...) plus `suffix` in the body resolves to
+                        // getSuffix() and fails in exactly the same place - so the accessor names
+                        // this one would resolve to count as uses of it.
+                        report(accessorSpellings(expression.getName()), expression, "");
                     }
                 }
 
@@ -1595,6 +1600,16 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         return "it is declared in this block, so it compiles onto the generated sibling " +
                 owner.getNameWithoutPackage() + " - while the anonymous class keeps the plugin descriptor " +
                 "as its outer class, which Groovy fixes when it creates the class and this cannot move";
+    }
+
+    // The names a property-style reference resolves to, itself included. BeanUtils.capitalize
+    // matches the JavaBeans rule the accessor names were reserved under.
+    private static List<String> accessorSpellings(String name) {
+        if (name == null) {
+            return Collections.singletonList(null);
+        }
+        String capitalized = BeanUtils.capitalize(name);
+        return Arrays.asList(name, "get" + capitalized, "is" + capitalized, "set" + capitalized);
     }
 
     // An unqualified call, or one written against this. Anything with a real receiver is somebody

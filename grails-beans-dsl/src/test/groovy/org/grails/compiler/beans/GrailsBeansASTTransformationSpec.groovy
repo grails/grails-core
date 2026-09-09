@@ -1612,6 +1612,37 @@ class GrailsBeansASTTransformationSpec extends Specification {
         fixture.greeter().greet() == 'hello!'
     }
 
+    def "an anonymous class on a plugin descriptor cannot reach a moved accessor read as a property either"() {
+        given: "method('getSuffix') moves; 'suffix' in the body is the same reference by another spelling"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface MovedAccessorGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class MovedAccessorGrailsPlugin extends Plugin {
+                def beans = {
+                    method('getSuffix', String) { '!' }
+
+                    bean('greeter', MovedAccessorGreeter) {
+                        new MovedAccessorGreeter() { String greet() { 'hello' + suffix } }
+                    }
+                }
+            }
+        '''
+
+        when:
+        compile(source)
+
+        then: "comparing raw names alone would let this through to a NoSuchFieldError"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('keeps the plugin descriptor as its outer class')
+        e.message.contains('"suffix"')
+    }
+
     @Unroll
     def "an anonymous class in a group(...) body cannot reach #description, on #hostKind"() {
         given: "a group compiles to a static nested class - there is no enclosing instance behind it at all"
