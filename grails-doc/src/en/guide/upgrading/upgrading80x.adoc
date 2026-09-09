@@ -3097,3 +3097,69 @@ grails {
 imported whether or not they are present — a star import of an absent package contributes no classes and is
 not an error in Groovy, so the probe changed nothing it could observe. An application that relied on the
 import being *omitted* when the package was absent sees no difference in compiled output.
+
+==== 54. Generated Groovy Compiler Configuration Scripts
+
+On Gradle 9.7+, configure `groovyOptions.configurationScriptFile` before task execution. Assigning
+`groovyOptions.configurationScript` from `compileGroovy.doFirst { ... }` fails because Gradle has
+already finalized the compiler options. Grails prepares the combined compiler script before compilation.
+
+If another task generates your compiler script, pass that task's output provider to
+`configurationScriptFile`. A plain file path and a separate dependency on `compileGroovy` do not
+identify the script's producer to the earlier preparation step:
+
+[source,groovy]
+.build.gradle (replace this wiring)
+----
+tasks.named('compileGroovy', GroovyCompile) {
+    dependsOn generateUserConfigScript
+    groovyOptions.configurationScript = file('build/user-config.groovy')
+}
+----
+
+Both prerequisites must finish before compilation, but they are not ordered relative to each other.
+A clean build can therefore fail because the user script does not exist yet; an existing file can also
+hide the missing ordering and supply stale configuration.
+
+Declare the generated script as an output and connect it through its provider:
+
+[source,groovy]
+.build.gradle
+----
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.compile.GroovyCompile
+import org.gradle.work.DisableCachingByDefault
+
+@DisableCachingByDefault(because = 'Writing a short compiler script is inexpensive')
+abstract class GenerateCompilerScript extends DefaultTask {
+    @OutputFile
+    abstract RegularFileProperty getOutputFile()
+
+    @TaskAction
+    void generate() {
+        def script = outputFile.get().asFile
+        script.parentFile.mkdirs()
+        script.text = "withConfig(configuration) { imports { star 'java.nio.file' } }"
+    }
+}
+
+def generateUserConfigScript = tasks.register('generateUserConfigScript', GenerateCompilerScript) {
+    outputFile.set(layout.buildDirectory.file('user-config.groovy'))
+}
+
+tasks.named('compileGroovy', GroovyCompile) {
+    groovyOptions.configurationScriptFile.set(generateUserConfigScript.flatMap { it.outputFile })
+}
+----
+
+The provider carries both the file location and its producing task. Grails preserves that dependency
+when combining your script with the Grails compiler configuration, so no separate `dependsOn` is needed
+for this producer. If the script's content depends on task properties or other files, declare those as
+task inputs so changes regenerate the script.
+
+An existing, checked-in compiler script can still use a plain file assignment. Tasks that only generate
+source or classpath entries do not need additional ordering against compiler-script preparation:
+Grails does not read the compile or runtime classpath to prepare its script.
