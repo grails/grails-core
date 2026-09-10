@@ -1583,9 +1583,10 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                     }
                     addError(at, source, "\"" + name + callSuffix + "\" does not resolve on this anonymous " +
                             "inner class, and " + reachDescription(owner, outOfReach) + ". The reference would " +
-                            "fail with NoSuchFieldError at runtime. Pass what the anonymous class needs as a " +
-                            "constructor argument or a captured local, or give it a name and declare it as a " +
-                            "static nested class.");
+                            "fail at runtime - with NoSuchFieldError, or a ClassCastException where the class " +
+                            "sits inside a nested closure. Pass what the anonymous class needs as a constructor " +
+                            "argument or a captured local, or give it a name and declare it as a static nested " +
+                            "class.");
                 }
             });
         }
@@ -1814,6 +1815,19 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     private boolean rehomeAnonymousInnerClasses(MethodNode liftedMethod, ClassNode host, boolean staticMethod,
             String beanName, SourceUnit source) {
         Statement body = liftedMethod.getCode();
+        // Every anonymous class in the body needs its enclosing method, one inside a nested closure
+        // included: the parser sets it per enclosing METHOD, so a closure in between makes no
+        // difference to what it would have written. This walk descends for that reason; the
+        // re-homing below deliberately does not, re-homing being the narrower repair.
+        body.visit(new CodeVisitorSupport() {
+            @Override
+            public void visitConstructorCallExpression(ConstructorCallExpression call) {
+                super.visitConstructorCallExpression(call);
+                if (call.isUsingAnonymousInnerClass() && call.getType().getEnclosingMethod() == null) {
+                    call.getType().setEnclosingMethod(liftedMethod);
+                }
+            }
+        });
         List<ConstructorCallExpression> anonymous = new ArrayList<>();
         body.visit(new CodeVisitorSupport() {
             // Deliberately not descending. The lift moves the closure's own body into a method, so
@@ -1852,12 +1866,6 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
             }
             ClassNode enclosing = host.getPlainNodeReference();
             outerField.setType(enclosing);
-            // The parser sets this for every anonymous class written inside a method body and has no
-            // method to name for one written in a property initializer, so a lifted class arrives with
-            // none. Static compilation reads it through the constructor call, and reaches for it
-            // whenever the class was already visited as an inner class of its outer - which is what
-            // happens the moment either pass is deferred, or the class sits in a group.
-            inner.setEnclosingMethod(liftedMethod);
             for (ConstructorNode constructor : inner.getDeclaredConstructors()) {
                 Parameter[] parameters = constructor.getParameters();
                 if (parameters.length > 0 && ClassHelper.CLOSURE_TYPE.equals(parameters[0].getType())) {

@@ -6465,6 +6465,80 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'a plugin descriptor' | ', under @CompileStatic' | 'StaticGroupAnon' | 'GrailsPlugin' | 'extends Plugin' | '@CompileStatic' | 'StaticGroupAnonAutoConfiguration'
     }
 
+    @Unroll
+    def "an anonymous class inside a nested closure compiles under @CompileStatic #scenario"() {
+        given: "the parser sets enclosingMethod per enclosing method, closures in between included"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @CompileStatic
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        bean('greeter', ${fixture}Greeter) {
+                            ['x'].collect { String t ->
+                                new ${fixture}Greeter() { String greet() { 'hello' } }
+                            }[0]
+                        }
+                    ${close}
+                }
+            }
+        """
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect: "class generation dies with a GroovyBugError when the enclosing method is not set"
+        loader.loadClass(owner).getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+
+        where:
+        scenario                      | fixture    | suffixClass    | extendsClause    | open                | close | owner
+        'on a plugin descriptor'      | 'NcPlugin' | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | 'NcPluginAutoConfiguration'
+        'in a group on a plain host'  | 'NcGroup'  | 'Beans'        | ''               | "group('extras') {" | '}'   | 'NcGroupBeans$ExtrasConfiguration'
+        'in a group on a descriptor'  | 'NcBoth'   | 'GrailsPlugin' | 'extends Plugin' | "group('extras') {" | '}'   | 'NcBothAutoConfiguration$ExtrasConfiguration'
+    }
+
+    def "an anonymous class inside a nested closure in a group cannot reach outward either"() {
+        given: "the lift leaves the closure as its enclosing instance, so the group is never behind it"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface NestedGroupGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class NestedGroupBeans {
+                def beans = {
+                    group('extras') {
+                        method('suffix', String) { '!' }
+
+                        bean('greeter', NestedGroupGreeter) {
+                            ['x'].collect { String t ->
+                                new NestedGroupGreeter() { String greet() { 'hello' + suffix() } }
+                            }[0]
+                        }
+                    }
+                }
+            }
+        '''
+
+        when:
+        compile(source)
+
+        then: "uncaught it is a ClassCastException naming the group and the host, at runtime"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('nothing outside the anonymous class is in reach')
+    }
+
     def "an empty beans block on a plain configuration class is a no-op"() {
         given:
         String source = '''
