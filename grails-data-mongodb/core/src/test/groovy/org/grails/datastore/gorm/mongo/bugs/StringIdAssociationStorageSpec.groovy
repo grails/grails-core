@@ -40,7 +40,7 @@ import org.bson.types.ObjectId
 class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTckManager> {
 
     void setupSpec() {
-        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson)
+        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson, RefNote)
     }
 
     void "a to-one reference is written as the target's stored _id type"() {
@@ -343,6 +343,24 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         raw.get('tags') as Set == [new ObjectId(a.id), new ObjectId(b.id)] as Set
     }
 
+    void "updateAll on a basic collection passes the values through untouched"() {
+        given: 'Basic extends ToMany but has no associated entity -- this must not enter the id branch'
+        RefNote note = new RefNote(title: 'note', labels: ['x']).save(flush: true)
+
+        when:
+        manager.session.clear()
+        RefNote.where { title == 'note' }.updateAll(labels: ['y', 'z'])
+        Document rawNote = rawNotes().find(new Document('_id', new ObjectId(note.id))).first()
+
+        then: 'the String list lands as-is, exactly as it did before this branch existed'
+        notThrown(NullPointerException)
+        rawNote.get('labels') == ['y', 'z']
+    }
+
+    private MongoCollection<Document> rawNotes() {
+        manager.mongoClient.getDatabase('test').getCollection('refNote')
+    }
+
     private MongoCollection<Document> rawPeople() {
         manager.mongoClient.getDatabase('test').getCollection('refPerson')
     }
@@ -398,4 +416,13 @@ class RefPerson {
 @Entity
 class RefAddress {
     String city
+}
+
+@Entity
+class RefNote {
+    String id
+    String title
+    List<String> labels = []
+    static hasMany = [labels: String]
+    static mapping = { version false }
 }

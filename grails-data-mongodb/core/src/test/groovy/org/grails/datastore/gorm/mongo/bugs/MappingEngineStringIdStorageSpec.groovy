@@ -54,10 +54,10 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
     MongoDatastore mappingEngineDatastore
 
     void setupSpec() {
-        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag)
+        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag, MeNote)
         mappingEngineDatastore = new MongoDatastore(
                 manager.configuration + [(MongoSettings.SETTING_ENGINE): 'mapping'],
-                MeVideo, MeOwner, MeAsset, MeTag)
+                MeVideo, MeOwner, MeAsset, MeTag, MeNote)
     }
 
     void "the datastore under test really is the mapping engine"() {
@@ -206,11 +206,28 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
         }
 
         when:
-        Document raw = raw('meAsset').find(new Document('_id', new ObjectId(assetId))).first()
+        Document rawAsset = raw('meAsset').find(new Document('_id', new ObjectId(assetId))).first()
 
         then:
-        raw.get('tags').every { it instanceof ObjectId }
-        raw.get('tags') as Set == [new ObjectId(tagAId), new ObjectId(tagBId)] as Set
+        rawAsset.get('tags').every { it instanceof ObjectId }
+        rawAsset.get('tags') as Set == [new ObjectId(tagAId), new ObjectId(tagBId)] as Set
+    }
+
+    void "updateAll on a basic collection passes the values through untouched"() {
+        given: 'Basic extends ToMany but has no associated entity -- this must not enter the id branch'
+        String noteId = persist { Session s -> new MeNote(title: 'note', labels: ['x']) }
+
+        when:
+        mappingEngineDatastore.withSession { Session s ->
+            s.clear()
+            DetachedCriteria criteria = new DetachedCriteria(MeNote).build { eq 'title', 'note' }
+            ((MongoSession) s).updateAll(criteria, [labels: ['y', 'z']])
+        }
+        Document rawNote = raw('meNote').find(new Document('_id', new ObjectId(noteId))).first()
+
+        then:
+        notThrown(NullPointerException)
+        rawNote.get('labels') == ['y', 'z']
     }
 
     private String persist(Closure<?> make) {
@@ -257,5 +274,14 @@ class MeAsset {
 class MeTag {
     String id
     String label
+    static mapping = { version false }
+}
+
+@Entity
+class MeNote {
+    String id
+    String title
+    List<String> labels = []
+    static hasMany = [labels: String]
     static mapping = { version false }
 }

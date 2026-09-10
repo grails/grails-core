@@ -60,8 +60,9 @@ import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.Association
-import org.grails.datastore.mapping.model.types.EmbeddedCollection
 import org.grails.datastore.mapping.model.types.Embedded
+import org.grails.datastore.mapping.model.types.ManyToMany
+import org.grails.datastore.mapping.model.types.OneToMany
 import org.grails.datastore.mapping.model.types.ToMany
 import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
@@ -390,8 +391,10 @@ class MongoCodecSession extends AbstractMongoSession {
             // OneToMany / ManyToMany carry a collection of associated instances. Normal
             // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
             // bulk path has to do the same rather than sending the domain objects through
-            // $set. EmbeddedCollection is excluded: those are subdocuments, not references.
-            else if (association instanceof ToMany && !(association instanceof EmbeddedCollection)
+            // $set. Only those two kinds: Basic also extends ToMany but is a collection of
+            // simple values with no associated entity, and must pass through untouched.
+            else if ((association instanceof OneToMany || association instanceof ManyToMany)
+                    && association.associatedEntity != null
                     && updateProperties.containsKey(associationName)) {
                 def value = updateProperties.get(associationName)
                 if (value instanceof Collection) {
