@@ -1765,6 +1765,161 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'the accessor is inherited'               | 'CtlD'    | "abstract class CtlDBase implements CtlDGreeter { String getTag() { 'hello' } }" | "method('tag', String) { 'moved' }" | '' | "new CtlDBase() { String greet() { tag } }"
     }
 
+    @Unroll
+    def "an anonymous class cannot reach outward from a field initializer either, #hostKind"() {
+        given: "the Verifier folds an initializer into the constructor at class generation, long after this"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        method('suffix', String) { '!' }
+
+                        bean('greeter', ${fixture}Greeter) {
+                            new ${fixture}Greeter() {
+                                String s = suffix()
+                                String greet() { 'hello' + s }
+                            }
+                        }
+                    ${close}
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then:
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('does not resolve on this anonymous')
+
+        where:
+        hostKind               | fixture    | suffixClass    | extendsClause    | open                | close
+        'on a descriptor'      | 'InitA'    | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''
+        'in a group'           | 'InitB'    | 'Beans'        | ''               | "group('extras') {" | '}'
+    }
+
+    def "a field initializer that resolves on the anonymous class itself is left alone"() {
+        given:
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface InitOwnGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class InitOwnGrailsPlugin extends Plugin {
+                def beans = {
+                    method('suffix', String) { 'moved' }
+
+                    bean('greeter', InitOwnGreeter) {
+                        new InitOwnGreeter() {
+                            String s = own()
+                            String greet() { s }
+                            private String own() { 'hello' }
+                        }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect:
+        loader.loadClass('InitOwnAutoConfiguration').getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+    }
+
+    @Unroll
+    def "an anonymous class cannot reach #target either, #hostKind"() {
+        given: "the lift retypes the enclosing-instance field, so nothing behind it survives"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                ${hostMember}
+                def beans = {
+                    bean('greeter', ${fixture}Greeter) {
+                        new ${fixture}Greeter() { String greet() { 'hello' + ${reference} } }
+                    }
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then: "a descriptor member is as unreachable as a moved one - this\$0 is typed as the sibling"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('does not resolve on this anonymous')
+
+        where:
+        target                                  | hostKind          | fixture   | suffixClass    | extendsClause    | hostMember                   | reference
+        'a method the descriptor declares'      | 'a descriptor'    | 'ReachA'  | 'GrailsPlugin' | 'extends Plugin' | "String ownMethod() { '!' }" | 'ownMethod()'
+        'a field the descriptor declares'       | 'a descriptor'    | 'ReachB'  | 'GrailsPlugin' | 'extends Plugin' | "String ownField = '!'"      | 'ownField'
+        'a method inherited from Plugin'        | 'a descriptor'    | 'ReachC'  | 'GrailsPlugin' | 'extends Plugin' | ''                           | 'String.valueOf(getPluginManager())'
+        'a property inherited from Plugin'      | 'a descriptor'    | 'ReachD'  | 'GrailsPlugin' | 'extends Plugin' | ''                           | 'String.valueOf(grailsApplication)'
+    }
+
+    @Unroll
+    def "an anonymous class may still use #usable, #hostKind"() {
+        given: "these resolve against the instance itself and never fetch the enclosing instance"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+            ${extraTypes}
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        ${declaration}
+                        bean('greeter', ${fixture}Greeter) {
+                            ${prelude}
+                            ${construction}
+                        }
+                    ${close}
+                }
+            }
+        """
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect: "none of these may be reported"
+        loader.loadClass(owner).getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+
+        where:
+        usable                             | hostKind        | fixture  | suffixClass    | extendsClause    | extraTypes | open              | close | declaration                            | prelude                   | construction | owner
+        'a captured local'                 | 'in a group'    | 'UseA'   | 'Beans'        | ''               | ''         | "group('extras') {" | '}' | "method('suffix', String) { 'moved' }" | "String suffix = 'hello'" | "new UseAGreeter() { String greet() { suffix } }" | 'UseABeans$ExtrasConfiguration'
+        'a captured local'                 | 'on a descriptor' | 'UseB' | 'GrailsPlugin' | 'extends Plugin' | ''         | ''                | ''    | "method('suffix', String) { 'moved' }" | "String suffix = 'hello'" | "new UseBGreeter() { String greet() { suffix } }" | 'UseBAutoConfiguration'
+        'println and with'                 | 'on a descriptor' | 'UseC' | 'GrailsPlugin' | 'extends Plugin' | ''         | ''                | ''    | ''                                     | ''                        | "new UseCGreeter() { String greet() { println 'noise'; 'hello'.with { String s -> s } } }" | 'UseCAutoConfiguration'
+        'identity'                         | 'in a group'    | 'UseD'   | 'Beans'        | ''               | ''         | "group('extras') {" | '}' | ''                                     | ''                        | "new UseDGreeter() { String greet() { identity { 'hello' } } }" | 'UseDBeans$ExtrasConfiguration'
+        'its own methodMissing'            | 'on a descriptor' | 'UseE' | 'GrailsPlugin' | 'extends Plugin' | ''         | ''                | ''    | "method('suffix', String) { '!' }"     | ''                        | "new UseEGreeter() { String greet() { 'hello' + anythingAtAll() }\n                                          def methodMissing(String m, a) { '' } }" | 'UseEAutoConfiguration'
+        'a property of another object'     | 'in a group'    | 'UseF'   | 'Beans'        | ''               | "class UseFHolder { String suffix = 'hello' }" | "group('extras') {" | '}' | "method('suffix', String) { 'moved' }" | 'UseFHolder h = new UseFHolder()' | "new UseFGreeter() { String greet() { h.suffix } }" | 'UseFBeans$ExtrasConfiguration'
+    }
+
     def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
         given: "the shape that works, and must not be caught by the check above"
         String source = '''

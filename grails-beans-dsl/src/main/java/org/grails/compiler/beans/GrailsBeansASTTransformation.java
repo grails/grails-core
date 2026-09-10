@@ -21,6 +21,7 @@ package org.grails.compiler.beans;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -58,6 +59,7 @@ import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -83,6 +85,7 @@ import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.ASTTransformation;
@@ -321,16 +324,9 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         generatedFields.removeAll(preExistingFields);
         rejectUnproxiedSiblingBeanCalls(beanMethodHost, generatedMethods, source);
         if (beanMethodHost != classNode) {
-            // Only on a plugin descriptor. On a plain host the members and the anonymous class share
-            // a home, so an unqualified reference resolves the way it reads.
-            Set<String> moved = new HashSet<>();
-            for (MethodNode method : generatedMethods) {
-                moved.add(method.getName());
-            }
-            for (FieldNode field : generatedFields) {
-                moved.add(field.getName());
-            }
-            rejectAnonymousClassReachingOutward(beanMethodHost, moved, generatedMethods, source);
+            // Only on a plugin descriptor. On a plain host the beans and the anonymous class share a
+            // home, so this$0 is never retyped and an unqualified reference resolves as it reads.
+            rejectAnonymousClassReachingOutward(beanMethodHost, false, generatedMethods, source);
         }
         dumpGeneratedMembers(beanMethodHost, generatedMethods, generatedFields, source);
 
@@ -1038,7 +1034,7 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         }
         List<MethodNode> generated = generatedMembers(group, preExisting);
         rejectUnproxiedSiblingBeanCalls(group, generated, source);
-        rejectAnonymousClassReachingOutward(group, null, generated, source);
+        rejectAnonymousClassReachingOutward(group, true, generated, source);
         dumpGeneratedMembers(group, generated, new ArrayList<>(group.getFields()), source);
 
         // The group is compiled as its own class, so it needs the host's static-compilation
@@ -1271,8 +1267,11 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     }
 
     /**
-     * Writes the members this block generated to {@code -Dgrails.beans.dsl.dumpdir=<dir>}, one file
-     * per host class.
+     * Writes the members this block generated to the directory named by the
+     * {@code grails.beans.dsl.dumpdir} system property, one file per host class. The property is
+     * read here, in the process running the Groovy compiler - which a forking {@code GroovyCompile}
+     * makes a different JVM from the one the build was launched on, so see {@link GrailsBeans} for
+     * where it actually has to be set.
      *
      * <p>Everything the DSL decides that the source does not say is a declaration, not a body: the
      * bean name Spring will resolve by, the annotations the qualifiers became, the modifiers, the
@@ -1509,20 +1508,22 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
      * under {@code @CompileStatic}, as a "cannot find matching method" naming a synthetic class
      * nobody wrote.</p>
      *
-     * <p>What is out of reach differs by where the beans landed. On a sibling it is the names this
-     * block generated and only those: the descriptor is still what {@code this$0} is typed as, so
-     * everything else about it resolves the way it reads. A group is a static nested class with no
-     * enclosing instance behind it at all, so nothing outside the anonymous class is reachable -
-     * not a group member, not a host member - and {@code outOfReach} is null to say so.</p>
+     * <p>What is out of reach is everything the anonymous class cannot answer itself. The narrower
+     * rule this once used for a sibling - only the names the block generated - rested on the idea
+     * that a descriptor member still resolves through {@code this$0}, and that is not so: the lift
+     * retypes {@code this$0} to the sibling, so a call to a method the descriptor itself declares,
+     * or to one it inherits from {@code Plugin}, fails exactly as a moved one does. A group is the
+     * same shape, being a static nested class with no host instance behind it at all.</p>
      *
-     * <p>Either way a call to the anonymous class's own method, or to one it inherits, is left
-     * alone: it never leaves the class.</p>
+     * <p>"Answer itself" is wider than the declared and inherited members, though. An implicit-this
+     * call can also land on an extension method every object has - {@code println}, {@code with},
+     * {@code tap}, {@code identity} - which the runtime resolves against the instance and never
+     * reaches {@code this$0} for, so those names are reachable and must not be reported. A class
+     * that declares {@code methodMissing} or {@code propertyMissing} can answer anything at all,
+     * and is left alone entirely.</p>
      */
-    private void rejectAnonymousClassReachingOutward(ClassNode owner, Set<String> outOfReach,
+    private void rejectAnonymousClassReachingOutward(ClassNode owner, boolean isGroup,
             List<MethodNode> generatedMethods, SourceUnit source) {
-        if (outOfReach != null && outOfReach.isEmpty()) {
-            return;
-        }
         for (MethodNode method : generatedMethods) {
             if (method.getCode() == null) {
                 continue;
@@ -1538,20 +1539,36 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 }
             });
             for (ConstructorCallExpression call : anonymous) {
-                reportOutwardReferences(call, owner, outOfReach, source);
+                reportOutwardReferences(call, owner, isGroup, source);
             }
         }
     }
 
     private void reportOutwardReferences(ConstructorCallExpression call, ClassNode owner,
-            Set<String> outOfReach, SourceUnit source) {
+            boolean isGroup, SourceUnit source) {
         ClassNode inner = call.getType();
+        if (answersAnything(inner)) {
+            return;
+        }
         Set<String> own = existingMemberNames(inner);
+        own.addAll(OBJECT_EXTENSION_METHOD_NAMES);
+        // Not just the methods: a field initializer and an object initializer are the class's code
+        // too, and the Verifier only folds them into the constructor at class generation - long
+        // after this. A reference written there fails in exactly the same place.
+        List<ASTNode> bodies = new ArrayList<>();
         for (MethodNode method : inner.getMethods()) {
-            if (method.getCode() == null) {
-                continue;
+            if (method.getCode() != null) {
+                bodies.add(method.getCode());
             }
-            method.getCode().visit(new CodeVisitorSupport() {
+        }
+        for (FieldNode field : inner.getFields()) {
+            if (field.getInitialExpression() != null) {
+                bodies.add(field.getInitialExpression());
+            }
+        }
+        bodies.addAll(inner.getObjectInitializerStatements());
+        for (ASTNode body : bodies) {
+            body.visit(new CodeVisitorSupport() {
                 // Both spellings of a self-call. `this.suffix()` leaves the class exactly as
                 // `suffix()` does - isSelfCall is what the sibling-call check already uses to say so.
                 @Override
@@ -1575,7 +1592,15 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 @Override
                 public void visitVariableExpression(VariableExpression expression) {
                     super.visitVariableExpression(expression);
-                    if (expression.getAccessedVariable() instanceof DynamicVariable) {
+                    Variable accessed = expression.getAccessedVariable();
+                    // A dynamic variable resolved to nothing, so it can only be answered through
+                    // this$0. A field or property resolved to a real declaration is the subtler
+                    // case: VariableScopeVisitor searches the ENCLOSING class too, so an outer
+                    // member reads as resolved while still needing this$0 to be fetched. A local or
+                    // a parameter is neither - the lift copies those into the class, which is why
+                    // a captured local is the way out this error recommends.
+                    if (accessed instanceof DynamicVariable ||
+                            !declaredWithin(inner, declaringClassOf(accessed))) {
                         report(relatedNames(expression.getName()), expression, "");
                     }
                 }
@@ -1585,11 +1610,8 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                     if (name == null || !Collections.disjoint(spellings, own)) {
                         return;
                     }
-                    if (outOfReach != null && Collections.disjoint(spellings, outOfReach)) {
-                        return;
-                    }
                     addError(at, source, "\"" + name + callSuffix + "\" does not resolve on this anonymous " +
-                            "inner class, and " + reachDescription(owner, outOfReach) + ". The reference would " +
+                            "inner class, and " + reachDescription(owner, isGroup) + ". The reference would " +
                             "fail at runtime - with NoSuchFieldError, or a ClassCastException where the class " +
                             "sits inside a nested closure. Pass what the anonymous class needs as a constructor " +
                             "argument or a captured local, or give it a name and declare it as a static nested " +
@@ -1599,15 +1621,71 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         }
     }
 
-    private String reachDescription(ClassNode owner, Set<String> outOfReach) {
-        if (outOfReach == null) {
+    private String reachDescription(ClassNode owner, boolean isGroup) {
+        if (isGroup) {
             return "a group's beans compile onto " + owner.getNameWithoutPackage() + ", a static nested " +
                     "class with no enclosing instance behind it, so nothing outside the anonymous class " +
                     "is in reach";
         }
-        return "it is declared in this block, so it compiles onto the generated sibling " +
-                owner.getNameWithoutPackage() + " - while the anonymous class keeps the plugin descriptor " +
-                "as its outer class, which Groovy fixes when it creates the class and this cannot move";
+        return "this block's beans compile onto the generated sibling " + owner.getNameWithoutPackage() +
+                " - while the anonymous class keeps the plugin descriptor as its outer class, which Groovy " +
+                "fixes when it creates the class and this cannot move, so nothing outside the anonymous " +
+                "class is in reach";
+    }
+
+    // Names an implicit-this call resolves against the instance itself, through the runtime rather
+    // than through a declared member: DefaultGroovyMethods' extensions on Object - println, with,
+    // tap, identity, sleep and the rest. They never reach this$0, so they are not out of reach, and
+    // reporting them would reject working code.
+    private static final Set<String> OBJECT_EXTENSION_METHOD_NAMES = objectExtensionMethodNames();
+
+    private static Set<String> objectExtensionMethodNames() {
+        Set<String> names = new HashSet<>();
+        for (Method method : DefaultGroovyMethods.class.getMethods()) {
+            Class<?>[] parameters = method.getParameterTypes();
+            if (Modifier.isStatic(method.getModifiers()) && parameters.length > 0 &&
+                    parameters[0] == Object.class) {
+                names.add(method.getName());
+            }
+        }
+        return names;
+    }
+
+    // A class carrying its own methodMissing/propertyMissing/invokeMethod/getProperty answers any
+    // name at all without consulting this$0, so nothing about it can be called out of reach.
+    // GROOVY_OBJECT_TYPE's own declarations do not count - every Groovy class has those.
+    private static final String[] CATCH_ALL_MEMBERS = {
+        "methodMissing", "propertyMissing", "invokeMethod", "getProperty",
+    };
+
+    // Null for anything that is not a member declaration - a local, a parameter, a dynamic variable -
+    // which declaredWithin then treats as in reach, because it is.
+    private static ClassNode declaringClassOf(Variable accessed) {
+        if (accessed instanceof FieldNode) {
+            return ((FieldNode) accessed).getDeclaringClass();
+        }
+        if (accessed instanceof PropertyNode) {
+            FieldNode field = ((PropertyNode) accessed).getField();
+            return field != null ? field.getDeclaringClass() : null;
+        }
+        return null;
+    }
+
+    private boolean declaredWithin(ClassNode inner, ClassNode declaring) {
+        return declaring == null || inner.getName().equals(declaring.getName()) ||
+                inner.isDerivedFrom(declaring) || inner.implementsInterface(declaring);
+    }
+
+    private boolean answersAnything(ClassNode inner) {
+        for (ClassNode current = inner; current != null &&
+                !ClassHelper.OBJECT_TYPE.getName().equals(current.getName()); current = current.getSuperClass()) {
+            for (String member : CATCH_ALL_MEMBERS) {
+                if (!current.getDeclaredMethods(member).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // Every name one reference could resolve to, itself included, in both directions: `suffix` also

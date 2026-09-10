@@ -218,13 +218,15 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * one, having no enclosing instance to give it.</p>
  *
  * <p>What the lift cannot correct is the class's <i>outer</i> class, which Groovy also fixes at
- * creation. That only matters where the beans do not compile onto the class the block was written
- * on: on a plugin descriptor they move to the sibling, and inside a {@code group(...)} they move to
- * a static nested class with no enclosing instance behind it at all. An anonymous class that
- * touches only its own members and what it inherits is unaffected; a reference to anything else is
- * a compile error rather than a {@code NoSuchFieldError} at runtime. Pass what it needs as a
- * constructor argument or a captured local, or give it a name and declare it as a static nested
- * class.</p>
+ * creation. That matters wherever the beans do not compile onto the class the block was written on
+ * - a plugin descriptor's generated sibling, or a {@code group(...)}'s static nested class - because
+ * the enclosing-instance field is retyped to the new home while the outer class stays the old one.
+ * Nothing reachable only through that field survives, so an anonymous class there may use its own
+ * members, anything it inherits, and the extension methods every object has ({@code println},
+ * {@code with}, {@code tap}); a reference to anything else - a member the block declared, a member
+ * the descriptor itself declares, one inherited from {@code Plugin} - is a compile error rather
+ * than a {@code NoSuchFieldError} at runtime. Pass what it needs as a constructor argument or a
+ * captured local, or give it a name and declare it as a static nested class.</p>
  *
  * <p>They are also the only correct way to reach a sibling bean. A host Spring does not proxy - an
  * {@code @AutoConfiguration}, a generated plugin sibling, a Grails {@code Application} class -
@@ -243,11 +245,23 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *
  * <h2>Seeing what a block compiled to</h2>
  *
- * Build with {@code -Dgrails.beans.dsl.dumpdir=<dir>}: each host class writes a
+ * Set {@code grails.beans.dsl.dumpdir} and each host class writes a
  * {@code <qualified name>.beans.txt} there listing the generated members - bean names, the
  * annotations the qualifiers became, modifiers, declared types with any type arguments they ended
  * up carrying, and parameter annotations. Bodies are omitted, being the author's own closure bodies
  * lifted verbatim. Nothing is written unless the property is set.
+ *
+ * <p>It has to be set on the process that runs the Groovy compiler, which under Gradle is not the
+ * one you type the command on - {@code GroovyCompile} forks by default, so
+ * {@code ./gradlew build -Dgrails.beans.dsl.dumpdir=...} reaches the client and the daemon and
+ * nothing is written. In a Gradle build it belongs on the compiler's own JVM:</p>
+ *
+ * <pre>{@code tasks.withType(GroovyCompile).configureEach {
+ *     groovyOptions.forkOptions.jvmArgs += '-Dgrails.beans.dsl.dumpdir=/absolute/path/to/beans'
+ * }}</pre>
+ *
+ * <p>A relative path resolves against that worker process's working directory rather than the
+ * project, so an absolute path is the safe form.
  *
  * <h2>Where the generated methods go</h2>
  *
