@@ -3529,7 +3529,55 @@ logging:
         org.apache.grails.common.reflect.ReflectionUtils: ERROR
 ----
 
-==== 58. Sort and Order Query Arguments Are Validated
+==== 58. Interceptor URI Matching Uses the Dispatched Path
+
+Interceptors that match on `uri`, with `match(uri: ...)` or `excludes(uri: ...)`, now match the same path that URL
+mappings route on: percent escapes are decoded, matrix parameters (`;name=value`) are removed and the context path is
+stripped before the pattern is applied. Previously the raw request URI was matched, so an encoded (`/%61dmin/users`)
+or matrix-parameter (`/admin;x=1/users`) request could reach a controller without triggering an interceptor declared
+for `/admin/**`. Interceptors matched by controller, action or namespace are unaffected.
+
+Review interceptors that use `uri` matching for the following changes:
+
+* **Interceptors combining `match(uri:)` with an `excludes(...)` now run under a context path.**
+In earlier versions a matcher that paired a `uri` pattern with any exclusion (`excludes(uri:)`, `excludes(controller:)`,
+`excludes(action:)` or a closure) never matched when the application was deployed under a non-root context path (for
+example `server.servlet.context-path=/app`), because the exclusion check required the pattern to match both the
+context-prefixed and the context-relative request URI, which a pattern such as `/api/**` cannot do. Only that shape was
+affected: `matchAll()` with exclusions, `match(controller:)` and other name-based matchers, `match(uri:)` without an
+exclusion, and `uri` patterns that match both forms such as `/**` all ran as expected. The affected shape now behaves
+as configured, so an interceptor written that way starts executing under a context path.
+
+* **Patterns are matched against the path within the application only.**
+A pattern is no longer also compared with the context-prefixed request URI, so `+match(uri: '/*/*')+` no longer matches
+`/app/save` under the context path `/app`. Patterns that begin with the context path, such as
+`match(uri: '/app/admin/**')`, are still accepted for backwards compatibility.
+
+* **Includes are matched against the included path.**
+During a `<g:include>` or `RequestDispatcher` include, `uri` matchers see the included path rather than the URI of the
+outer request. This is consistent with the controller selected for the include and with `match(controller:)`
+matchers, which already matched the included controller.
+
+* **Custom `grails.interceptors.Matcher` implementations receive the canonical path.**
+The `uri` argument passed to `doesMatch` is now the decoded, application-relative path without matrix parameters. A new
+`doesMatch(String uri, UrlMappingInfo info, String method, String contextPath)` default method also supplies the
+context path; override it when a matcher needs the context-prefixed form.
+
+The Spring Security plugin applies the same canonicalization when matching `ipRestrictions` patterns and when the
+`AntPathRequestMatcher` compatibility class selects a filter chain, so an encoded or matrix-parameter variant of a
+restricted path is subject to the same restriction as the plain path.
+
+The canonical form follows the URI and Servlet specifications, with two deliberate exceptions. Path parameters are
+removed from each segment before percent-decoding, as Jakarta Servlet 6.0 section 3.5.2 requires of containers, so an
+encoded semicolon (`%3B`) is a literal character and not a parameter delimiter (RFC 3986 section 2.2). Percent-encoded
+unreserved characters such as `%61` are decoded (RFC 3986 section 2.3), and the path is decoded exactly once
+(RFC 3986 section 2.4). The exceptions are inherited from Spring's `UrlPathHelper`, which Grails URL mapping dispatch
+has used since Grails 3: the context path is compared case-insensitively although RFC 3986 section 6.2.2.1 and
+RFC 9110 section 4.2.3 define paths as case-sensitive, and during a `RequestDispatcher` include the included path is
+matched. Interceptors and the Spring Security matchers follow dispatch on both points because a matcher that
+disagrees with dispatch lets a request reach a controller without its interceptors or restrictions.
+
+==== 59. Sort and Order Query Arguments Are Validated
 
 Grails 8 checks the `sort` and `order` arguments of `list()`, dynamic finders, where queries, criteria queries and `listOrderBy*` before the query is built, on both Hibernate 5 and Hibernate 7. A client-supplied sort value used to be interpolated into the query, and the entry points did not agree on how a bad value was handled. They now fail the same way everywhere, with an `IllegalArgumentException` whose message deliberately does not echo the value.
 
