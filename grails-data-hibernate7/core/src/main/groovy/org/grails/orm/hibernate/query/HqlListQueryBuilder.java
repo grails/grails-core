@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.grails.datastore.gorm.finders.DynamicFinder;
 import org.grails.datastore.mapping.reflect.NameUtils;
 import org.grails.orm.hibernate.cfg.HibernateMappingContext;
 import org.grails.orm.hibernate.cfg.Mapping;
@@ -38,9 +39,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentP
  * @since 7.0.0
  */
 public class HqlListQueryBuilder {
-
-    private static final String ASC = HibernateQueryArgument.ORDER_ASC.value();
-    private static final String DESC = HibernateQueryArgument.ORDER_DESC.value();
 
     private final GrailsHibernatePersistentEntity entity;
     private final Map<String, Object> params;
@@ -80,11 +78,14 @@ public class HqlListQueryBuilder {
     private String buildSortClause() {
         Object sort = params.get(HibernateQueryArgument.SORT.value());
         Object order = params.get(HibernateQueryArgument.ORDER.value());
+        // checked before looking at the sort key, so an invalid direction is rejected even when
+        // there is nothing to sort by rather than being silently ignored
+        String orderDirection = DynamicFinder.normalizeDirection(order instanceof String ? (String) order : null);
         Object ignoreCase = params.get(HibernateQueryArgument.IGNORE_CASE.value());
         boolean isIgnoreCase = ignoreCase == null || (ignoreCase instanceof Boolean && (Boolean) ignoreCase);
 
         if (sort instanceof String) {
-            return buildSortPart((String) sort, order instanceof String ? (String) order : ASC, isIgnoreCase);
+            return buildSortPart((String) sort, orderDirection, isIgnoreCase);
         } else if (sort instanceof Map) {
             List<String> parts = new ArrayList<>();
             ((Map<String, String>) sort).forEach((prop, direction) -> {
@@ -117,7 +118,7 @@ public class HqlListQueryBuilder {
 
     private String buildSortPart(String propertyName, String direction, boolean ignoreCase) {
         HibernatePersistentProperty prop = requireMappedProperty(propertyName, HibernateQueryArgument.SORT.value());
-        String normalizedDirection = normalizeDirection(direction);
+        String normalizedDirection = DynamicFinder.normalizeDirection(direction);
         String path = "e." + propertyName;
         if (prop.getType() == String.class && ignoreCase) {
             return "upper(" + path + ") " + normalizedDirection;
@@ -145,17 +146,6 @@ public class HqlListQueryBuilder {
             throw new IllegalArgumentException("Invalid " + argument + " property");
         }
         return prop;
-    }
-
-    private static String normalizeDirection(String direction) {
-        String normalized = direction == null ? "" : direction.trim();
-        if (normalized.isEmpty() || ASC.equalsIgnoreCase(normalized)) {
-            return ASC;
-        }
-        if (DESC.equalsIgnoreCase(normalized)) {
-            return DESC;
-        }
-        throw new IllegalArgumentException("Invalid sort direction");
     }
 
     public static boolean isPaged(Map<String, Object> params) {

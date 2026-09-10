@@ -20,6 +20,8 @@ package org.grails.datastore.gorm.finders
 
 import grails.gorm.annotation.Entity
 import jakarta.persistence.FetchType
+import org.grails.datastore.mapping.query.Query
+import org.grails.datastore.mapping.query.api.BuildableCriteria
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import spock.lang.AutoCleanup
 import spock.lang.Specification
@@ -318,13 +320,30 @@ class DynamicFinderCoverageSpec extends Specification {
         e.message == 'Invalid sort property'
 
         where:
-        sort         | description
-        'age, id'    | 'carrying a second expression'
-        'age desc'   | 'carrying a direction'
-        'upper(age)' | 'wrapped in a function call'
-        "age'"       | 'containing a quote'
-        ''           | 'that is empty'
-        ' '          | 'that is blank'
+        sort           | description
+        'age, id'      | 'carrying a second expression'
+        'age desc'     | 'carrying a direction'
+        'upper(age)'   | 'wrapped in a function call'
+        "age'"         | 'containing a quote'
+        ''             | 'that is empty'
+        ' '            | 'that is blank'
+        'notAProperty' | 'naming an unknown property'
+    }
+
+    void "dynamic finders and where queries reject a bare name that is not a property"() {
+        when:
+        DynamicFinderThing.findAllByTitle('Engineer', [sort: 'notAProperty'])
+
+        then:
+        def finder = thrown(IllegalArgumentException)
+        finder.message == 'Invalid sort property'
+
+        when:
+        DynamicFinderThing.where { eq('title', 'Engineer') }.list(sort: 'notAProperty')
+
+        then:
+        def where = thrown(IllegalArgumentException)
+        where.message == 'Invalid sort property'
     }
 
     void "list(sort) accepts a path through an association, including the associated identity"() {
@@ -337,8 +356,9 @@ class DynamicFinderCoverageSpec extends Specification {
         DynamicFinderOwner.where { eq('name', 'nobody') }.list(sort: 'thing.name') == []
     }
 
-    void "list(sort) leaves a root segment that is not a persistent property to the underlying query so aliases keep working"() {
-        // c1 is what a where-query alias (def c1 = thing) or createAlias('thing', 'c1') looks like
+    void "list(sort) leaves a dotted key whose root is not a persistent property to the underlying query so aliases keep working"() {
+        // c1 is what a where-query alias (def c1 = thing) or createAlias('thing', 'c1') looks like;
+        // only a dotted key gets this treatment, a bare unknown name is rejected above
         expect:
         DynamicFinderOwner.list(sort: 'c1.name') == []
         DynamicFinderOwner.list(sort: 'c1.name', order: 'desc') == []
@@ -411,11 +431,39 @@ class DynamicFinderCoverageSpec extends Specification {
         def unknown = thrown(IllegalArgumentException)
         unknown.message == 'Invalid sort property'
 
-        when: 'a root segment that is not a persistent property'
+        when: 'a bare name that is not a persistent property'
+        DynamicFinder.populateArgumentsForCriteria(api.createCriteria(), [sort: 'notAProperty'])
+
+        then:
+        def bare = thrown(IllegalArgumentException)
+        bare.message == 'Invalid sort property'
+
+        when: 'a dotted key whose root is not a persistent property'
         DynamicFinder.populateArgumentsForCriteria(api.createCriteria(), [sort: 'c1.name', order: 'desc'])
 
         then:
         notThrown(IllegalArgumentException)
+    }
+
+    void "populateArgumentsForCriteria(BuildableCriteria, Map) falls back to the shape check when the criteria does not expose its entity"() {
+        given: 'a BuildableCriteria that is neither a CriteriaBuilder nor a DetachedCriteria, so no mapping can be consulted'
+        def criteria = Mock(BuildableCriteria)
+
+        when: 'the key is not a property of anything, but is shaped like one'
+        DynamicFinder.populateArgumentsForCriteria(criteria, [sort: 'notAProperty.either', order: ' DESC '])
+
+        then: 'it is accepted on shape alone and the direction is still normalized'
+        1 * criteria.order({ Query.Order o ->
+            o.property == 'notAProperty.either' && o.direction == Query.Order.Direction.DESC && o.ignoreCase
+        })
+
+        when: 'the key carries a second expression'
+        DynamicFinder.populateArgumentsForCriteria(criteria, [sort: 'name, id'])
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == 'Invalid sort property'
+        0 * criteria.order(_)
     }
 }
 

@@ -3528,3 +3528,30 @@ logging:
     level:
         org.apache.grails.common.reflect.ReflectionUtils: ERROR
 ----
+
+==== 58. Sort and Order Query Arguments Are Validated
+
+Grails 8 checks the `sort` and `order` arguments of `list()`, dynamic finders, where queries, criteria queries and `listOrderBy*` before the query is built, on both Hibernate 5 and Hibernate 7. A client-supplied sort value used to be interpolated into the query, and the entry points did not agree on how a bad value was handled. They now fail the same way everywhere, with an `IllegalArgumentException` whose message deliberately does not echo the value.
+
+A `sort` key must be a property path made up of identifiers separated by dots, such as `"title"` or `"author.name"`, that resolves through the domain class mapping. A dotted key whose first segment is an alias created with `createAlias` or declared in a where query is still left to the query to resolve. Anything else is rejected with the message `Invalid sort property`:
+
+* A value carrying a second expression, a direction or a function call, for example `"title, id"`, `"title desc"` or `"upper(title)"`.
+* A bare name that is not a property of the domain class. Previously this reached Hibernate and failed with a Hibernate exception or a `NullPointerException`.
+* A path into an unknown property of an association, or into a property that is not an association, for example `"author.unknown"` or `"title.length"`.
+
+An `order` value must be `"asc"` or `"desc"`, compared case-insensitively with surrounding whitespace ignored. Any other value is rejected with the message `Invalid sort direction`. Previously most entry points treated anything other than `desc` as ascending, so a typo such as `order: "descending"` silently sorted ascending. The value is checked even when no `sort` argument is given.
+
+With Hibernate 7, `list()` additionally requires each `fetch` key to name a persistent property, and rejects anything else with the message `Invalid fetch property`.
+
+Applications that pass request parameters straight through to these methods no longer need their own checks. Code that relied on an invalid value being ignored must now pass `asc` or `desc` and a real property name. To return a different response for a bad value, catch `IllegalArgumentException` where the query is issued:
+
+[source,groovy]
+----
+def index(Integer max) {
+    try {
+        respond Book.list(max: max, sort: params.sort, order: params.order)
+    } catch (IllegalArgumentException ignored) {
+        render status: 400
+    }
+}
+----

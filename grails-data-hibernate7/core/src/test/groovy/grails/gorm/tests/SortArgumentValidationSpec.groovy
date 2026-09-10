@@ -24,10 +24,10 @@ import spock.lang.Unroll
 /**
  * Exercises the validation of the {@code sort}, {@code order} and {@code fetch} query arguments
  * against real Hibernate mappings, through every public entry point that accepts them:
- * {@code list()}, dynamic finders, where queries and criteria queries. Alongside the rejection
+ * {@code list()}, dynamic finders, where queries, criteria queries and {@code listOrderBy*}. Alongside the rejection
  * cases it pins the shapes that must keep working: identity and version properties, inherited
  * properties, embedded and association paths, composite identities, the default sort declared in
- * the mapping, and aliases that are not persistent properties at all.
+ * the mapping, and dotted aliases that are not persistent properties at all.
  */
 class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
 
@@ -129,6 +129,43 @@ class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
         SavClub.where { name != null }.list(sort: 'name', order: ' DESC ')*.name == ['United', 'Arsenal']
     }
 
+    void "criteria queries normalize the sort direction regardless of case and surrounding whitespace"() {
+        expect:
+        SavClub.createCriteria().list(sort: 'name', order: ' DESC ') { }*.name == ['United', 'Arsenal']
+        SavClub.createCriteria().list(sort: 'name', order: 'Asc') { }*.name == ['Arsenal', 'United']
+        SavClub.createCriteria().list(max: 10, sort: 'name', order: ' desc') { }*.name == ['United', 'Arsenal']
+    }
+
+    void "listOrderBy normalizes the order direction regardless of case and surrounding whitespace"() {
+        expect:
+        SavClub.listOrderByName(order: ' DESC ')*.name == ['United', 'Arsenal']
+        SavClub.listOrderByName(order: 'Asc')*.name == ['Arsenal', 'United']
+    }
+
+    void "an order argument is validated even when there is no sort key"() {
+        when:
+        def listed = SavClub.list(order: 'desc')
+        def byCriteria = SavClub.createCriteria().list(order: 'desc') { }
+
+        then:
+        listed.size() == 2
+        byCriteria.size() == 2
+
+        when:
+        SavClub.list(order: 'sideways')
+
+        then:
+        def list = thrown(IllegalArgumentException)
+        list.message == 'Invalid sort direction'
+
+        when:
+        SavClub.createCriteria().list(order: 'sideways') { }
+
+        then:
+        def criteria = thrown(IllegalArgumentException)
+        criteria.message == 'Invalid sort direction'
+    }
+
     void "each sort map entry takes its direction from its value rather than the order argument"() {
         expect:
         SavClub.list(sort: [name: 'desc'], order: 'asc')*.name == ['United', 'Arsenal']
@@ -196,6 +233,60 @@ class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
     }
 
     @Unroll
+    void "criteria queries and listOrderBy reject order direction #description without echoing it"() {
+        when:
+        SavClub.createCriteria().list(sort: 'name', order: order) { }
+
+        then:
+        def criteria = thrown(IllegalArgumentException)
+        criteria.message == 'Invalid sort direction'
+
+        when:
+        SavClub.createCriteria().list(max: 10, sort: 'name', order: order) { }
+
+        then:
+        def paged = thrown(IllegalArgumentException)
+        paged.message == 'Invalid sort direction'
+
+        when:
+        SavClub.listOrderByName(order: order)
+
+        then:
+        def listOrderBy = thrown(IllegalArgumentException)
+        listOrderBy.message == 'Invalid sort direction'
+
+        where:
+        order        | description
+        'sideways'   | 'that is not asc or desc'
+        'desc extra' | 'carrying extra tokens'
+    }
+
+    @Unroll
+    void "a criteria query rejects the sort key #description without echoing it"() {
+        when:
+        SavTeam.createCriteria().list(sort: sort) { }
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == 'Invalid sort property'
+
+        when:
+        SavTeam.createCriteria().list(max: 10, sort: sort) { }
+
+        then:
+        def paged = thrown(IllegalArgumentException)
+        paged.message == 'Invalid sort property'
+
+        where:
+        sort                | description
+        'name, e.id'        | 'carrying a second expression'
+        'name desc'         | 'carrying a direction'
+        'notAProperty'      | 'naming an unknown property'
+        'club.notAProperty' | 'naming an unknown property of an association'
+        'name.length'       | 'descending into a property that is not an association'
+    }
+
+    @Unroll
     void "list rejects the fetch key #description without echoing it"() {
         when:
         SavTeam.list(fetch: [(key): 'join'])
@@ -224,6 +315,7 @@ class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
         where:
         sort                | description
         'name, id'          | 'carrying a second expression'
+        'notAProperty'      | 'naming an unknown property'
         'club.notAProperty' | 'naming an unknown property of an association'
         'name.length'       | 'descending into a property that is not an association'
         'tags.value'        | 'descending into a basic collection'
@@ -241,6 +333,7 @@ class SortArgumentValidationSpec extends HibernateGormDatastoreSpec {
         where:
         sort                | description
         'name; drop table'  | 'carrying a statement separator'
+        'notAProperty'      | 'naming an unknown property'
         'club.notAProperty' | 'naming an unknown property of an association'
         'name.length'       | 'descending into a property that is not an association'
         'tags.value'        | 'descending into a basic collection'

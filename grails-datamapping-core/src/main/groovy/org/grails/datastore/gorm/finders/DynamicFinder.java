@@ -770,10 +770,17 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
      * Rejects a sort key that is not shaped like a property path. When the entity is known and the
      * first segment names one of its persistent properties, every further segment must also resolve
      * through the mapping: associations and embedded components are traversed, and identity
-     * properties, including the members of a composite identity, are recognised. A first segment
-     * that is not a persistent property is accepted on the shape check alone, because criteria and
-     * where-query aliases such as {@code c1.name} are not persistent properties; the underlying
-     * query implementation resolves them, or reports an unknown name, itself.
+     * properties, including the members of a composite identity, are recognised. A dotted key
+     * whose first segment is not a persistent property is accepted on the shape check alone,
+     * because criteria and where-query aliases such as {@code c1.name} are not persistent
+     * properties; the underlying query implementation resolves them, or reports an unknown name,
+     * itself. A bare name that is not a persistent property is rejected, since nothing else can be
+     * sorted on by a single name.
+     * <p>
+     * This is the single check behind every entry point that accepts a caller-supplied
+     * {@code sort} argument: {@code list()}, dynamic finders, where queries and criteria queries.
+     * Query implementations that handle the argument themselves call it so that the same value
+     * fails the same way everywhere.
      * <p>
      * The exception message deliberately omits the caller-supplied value: sort keys are commonly
      * taken straight from request parameters.
@@ -782,7 +789,7 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
      * @param sort the requested sort property
      * @throws IllegalArgumentException if the sort key is malformed or does not resolve
      */
-    private static void validateSortProperty(PersistentEntity entity, String sort) {
+    public static void validateSortProperty(PersistentEntity entity, String sort) {
         if (!NameUtils.isValidPropertyPath(sort)) {
             throw new IllegalArgumentException(INVALID_SORT_PROPERTY);
         }
@@ -792,6 +799,9 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
         String[] segments = sort.split("\\.");
         PersistentProperty property = resolveProperty(entity, segments[0]);
         if (property == null) {
+            if (segments.length == 1) {
+                throw new IllegalArgumentException(INVALID_SORT_PROPERTY);
+            }
             return;
         }
         for (int i = 1; i < segments.length; i++) {
@@ -835,12 +845,16 @@ public abstract class DynamicFinder extends AbstractFinder implements QueryBuild
      * Trims and accepts only {@code asc} or {@code desc}, case-insensitively. Blank and
      * {@code null} default to {@code asc}. The exception message omits the caller-supplied
      * value, which usually originates from request parameters.
+     * <p>
+     * Like {@link #validateSortProperty(PersistentEntity, String)}, this is shared by every entry
+     * point that accepts an {@code order} argument, including {@code listOrderBy*} and criteria
+     * queries, so a direction is never silently coerced on one path and rejected on another.
      *
      * @param direction the caller-supplied order argument
      * @return {@link #ORDER_ASC} or {@link #ORDER_DESC}
      * @throws IllegalArgumentException if the value is neither asc nor desc
      */
-    private static String normalizeDirection(String direction) {
+    public static String normalizeDirection(String direction) {
         String normalized = direction == null ? "" : direction.trim();
         if (normalized.isEmpty() || ORDER_ASC.equalsIgnoreCase(normalized)) {
             return ORDER_ASC;

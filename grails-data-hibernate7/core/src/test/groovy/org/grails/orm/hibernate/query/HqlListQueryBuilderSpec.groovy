@@ -294,6 +294,21 @@ class HqlListQueryBuilderSpec extends Specification {
         "   "     | "asc"
     }
 
+    void "test buildListHql validates the order argument even when there is no sort key"() {
+        when:
+        new HqlListQueryBuilder(entity, [(HibernateQueryArgument.ORDER.value()): "sideways"]).buildListHql()
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == "Invalid sort direction"
+
+        when:
+        def hql = new HqlListQueryBuilder(entity, [(HibernateQueryArgument.ORDER.value()): "desc"]).buildListHql()
+
+        then:
+        hql == "from Person e"
+    }
+
     @Unroll
     void "test buildListHql rejects fetch key #description without echoing it"() {
         when:
