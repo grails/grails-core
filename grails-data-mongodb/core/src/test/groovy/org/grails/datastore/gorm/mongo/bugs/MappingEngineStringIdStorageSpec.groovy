@@ -54,10 +54,10 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
     MongoDatastore mappingEngineDatastore
 
     void setupSpec() {
-        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag, MeNote)
+        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag, MeNote, MeBiParent, MeBiChild)
         mappingEngineDatastore = new MongoDatastore(
                 manager.configuration + [(MongoSettings.SETTING_ENGINE): 'mapping'],
-                MeVideo, MeOwner, MeAsset, MeTag, MeNote)
+                MeVideo, MeOwner, MeAsset, MeTag, MeNote, MeBiParent, MeBiChild)
     }
 
     void "the datastore under test really is the mapping engine"() {
@@ -230,6 +230,29 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
         rawNote.get('labels') == ['y', 'z']
     }
 
+    void "updateAll rejects a bidirectional one-to-many"() {
+        given:
+        String parentId = persist { Session s -> new MeBiParent(name: 'bi') }
+        mappingEngineDatastore.withSession { Session s ->
+            MeBiChild c = new MeBiChild(name: 'kid', parent: s.retrieve(MeBiParent, parentId))
+            s.persist(c); s.flush()
+        }
+
+        when:
+        mappingEngineDatastore.withSession { Session s ->
+            s.clear()
+            DetachedCriteria criteria = new DetachedCriteria(MeBiParent).build { eq 'name', 'bi' }
+            ((MongoSession) s).updateAll(criteria, [children: []])
+        }
+
+        then:
+        UnsupportedOperationException e = thrown()
+        e.message.contains('children')
+
+        and: 'nothing stray was written'
+        raw('meBiParent').find(new Document('_id', new ObjectId(parentId))).first().get('children') == null
+    }
+
     private String persist(Closure<?> make) {
         String id = null
         mappingEngineDatastore.withSession { Session s ->
@@ -283,5 +306,23 @@ class MeNote {
     String title
     List<String> labels = []
     static hasMany = [labels: String]
+    static mapping = { version false }
+}
+
+@Entity
+class MeBiParent {
+    String id
+    String name
+    Set<MeBiChild> children = []
+    static hasMany = [children: MeBiChild]
+    static mapping = { version false }
+}
+
+@Entity
+class MeBiChild {
+    String id
+    String name
+    MeBiParent parent
+    static belongsTo = [parent: MeBiParent]
     static mapping = { version false }
 }

@@ -388,6 +388,19 @@ class MongoCodecSession extends AbstractMongoSession {
                     }
                 }
             }
+            // A bidirectional one-to-many keeps its foreign key on the inverse side, so there
+            // is no field on this document to update -- OneToManyEncoder's shouldEncodeIds
+            // skips it for the same reason, and the decoder never reads one. Left in the $set
+            // the value is written as raw subdocuments and the owner stops decoding, so this
+            // says so rather than corrupting the document or silently doing nothing.
+            else if (association instanceof OneToMany && !(association instanceof ManyToMany)
+                    && association.isBidirectional()
+                    && updateProperties.containsKey(associationName)) {
+                throw new UnsupportedOperationException(
+                        "Cannot updateAll the bidirectional one-to-many [${entity.name}.${associationName}]: " +
+                        "its foreign key is held by [${association.associatedEntity?.name}], " +
+                        "so update the inverse side instead")
+            }
             // OneToMany / ManyToMany carry a collection of associated instances. Normal
             // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
             // bulk path has to do the same rather than sending the domain objects through

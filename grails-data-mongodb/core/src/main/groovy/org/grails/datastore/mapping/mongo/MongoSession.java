@@ -408,6 +408,18 @@ public class MongoSession extends AbstractMongoSession {
                     }
                 }
             }
+            // A bidirectional one-to-many keeps its foreign key on the inverse side, so there
+            // is no field on this document to update -- OneToManyEncoder's shouldEncodeIds
+            // skips it for the same reason, and nothing reads one back. This says so rather
+            // than leaving a stray field or silently doing nothing.
+            else if (association instanceof OneToMany && !(association instanceof ManyToMany) &&
+                    association.isBidirectional() &&
+                    updateProperties.containsKey(associationName)) {
+                throw new UnsupportedOperationException(
+                        "Cannot updateAll the bidirectional one-to-many [" + entity.getName() + "." +
+                        associationName + "]: its foreign key is held by the inverse side, " +
+                        "so update that instead");
+            }
             // OneToMany / ManyToMany carry a collection of associated instances. Normal
             // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
             // bulk path has to do the same rather than sending the domain objects through

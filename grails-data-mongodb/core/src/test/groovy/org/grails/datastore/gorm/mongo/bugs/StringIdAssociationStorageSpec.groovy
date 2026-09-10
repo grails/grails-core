@@ -40,7 +40,7 @@ import org.bson.types.ObjectId
 class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTckManager> {
 
     void setupSpec() {
-        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson, RefNote)
+        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson, RefNote, RefBiParent, RefBiChild)
     }
 
     void "a to-one reference is written as the target's stored _id type"() {
@@ -357,6 +357,31 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         rawNote.get('labels') == ['y', 'z']
     }
 
+    void "updateAll rejects a bidirectional one-to-many instead of corrupting the owner"() {
+        given: 'the foreign key lives on the inverse side, so there is no field here to update'
+        RefBiParent parent = new RefBiParent(name: 'bi-parent').save(flush: true)
+        RefBiChild child = new RefBiChild(name: 'kid', parent: parent).save(flush: true)
+
+        when:
+        manager.session.clear()
+        RefBiParent.where { name == 'bi-parent' }.updateAll(children: [RefBiChild.get(child.id)])
+
+        then: 'named clearly, rather than writing raw subdocuments the decoder cannot read'
+        UnsupportedOperationException e = thrown()
+        e.message.contains('children')
+
+        and: 'nothing was written, so the owner still decodes'
+        rawBiParents().find(new Document('_id', new ObjectId(parent.id))).first().get('children') == null
+
+        and:
+        manager.session.clear()
+        RefBiParent.get(parent.id).name == 'bi-parent'
+    }
+
+    private MongoCollection<Document> rawBiParents() {
+        manager.mongoClient.getDatabase('test').getCollection('refBiParent')
+    }
+
     private MongoCollection<Document> rawNotes() {
         manager.mongoClient.getDatabase('test').getCollection('refNote')
     }
@@ -424,5 +449,23 @@ class RefNote {
     String title
     List<String> labels = []
     static hasMany = [labels: String]
+    static mapping = { version false }
+}
+
+@Entity
+class RefBiParent {
+    String id
+    String name
+    Set<RefBiChild> children = []
+    static hasMany = [children: RefBiChild]
+    static mapping = { version false }
+}
+
+@Entity
+class RefBiChild {
+    String id
+    String name
+    RefBiParent parent
+    static belongsTo = [parent: RefBiParent]
     static mapping = { version false }
 }
