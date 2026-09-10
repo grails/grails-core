@@ -85,10 +85,45 @@ class DirtyCheckingList extends DirtyCheckingCollection implements List {
         return super.iterator()
     }
 
+    // SequencedCollection (Java 21) mutators. Without these the @Delegate-generated versions
+    // call straight through to the target, bypassing change tracking entirely.
+    @Override
+    void addFirst(Object element) {
+        parent.markDirty(property)
+        target.addFirst(element)
+    }
+
+    @Override
+    void addLast(Object element) {
+        parent.markDirty(property)
+        target.addLast(element)
+    }
+
+    @Override
+    Object removeFirst() {
+        parent.markDirty(property)
+        target.removeFirst()
+    }
+
+    @Override
+    Object removeLast() {
+        parent.markDirty(property)
+        target.removeLast()
+    }
+
+    @Override
+    List reversed() {
+        // A live view that writes through to this list — return it tracking the same parent
+        // Flagged as assigned: a view stored on a property IS a wholesale replacement, and a
+        // persister must re-encode it rather than diff it element-by-element against what the
+        // property held before. The flag is inert for a view that is only traversed.
+        return new DirtyCheckingList(target.reversed(), parent, property, true)
+    }
+
     @Override
     List subList(int fromIndex, int toIndex) {
         // A live view that writes through to this list — return it tracking the same parent
-        return new DirtyCheckingList(target.subList(fromIndex, toIndex), parent, property)
+        return new DirtyCheckingList(target.subList(fromIndex, toIndex), parent, property, true)
     }
 
     @Override

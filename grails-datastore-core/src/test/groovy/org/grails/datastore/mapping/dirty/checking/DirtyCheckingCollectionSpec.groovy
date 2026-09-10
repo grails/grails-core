@@ -366,6 +366,80 @@ class DirtyCheckingCollectionSpec extends Specification {
         map.values() as List == [1, 2]
     }
 
+    def 'SequencedCollection mutators mark the parent dirty'() {
+        given: 'without overrides these are @Delegate-generated straight through to the target'
+        def owner = new CollectionOwner()
+        def list = new DirtyCheckingList(['a', 'b', 'c'], owner, 'items')
+
+        expect:
+        marksDirtyOn(owner, 'items') { list.addFirst('z') }
+        marksDirtyOn(owner, 'items') { list.addLast('y') }
+        marksDirtyOn(owner, 'items') { list.removeFirst() }
+        marksDirtyOn(owner, 'items') { list.removeLast() }
+    }
+
+    def 'mutating the reversed view marks the parent dirty'() {
+        given:
+        def owner = new CollectionOwner()
+        def list = new DirtyCheckingList(['a', 'b'], owner, 'items')
+        owner.trackChanges()
+
+        when: 'the live reverse-ordered view is mutated'
+        list.reversed().remove('a')
+
+        then:
+        list.size() == 1
+        owner.hasChanged('items')
+    }
+
+    def 'SortedSet sequenced removals and its reversed view mark the parent dirty'() {
+        given:
+        def owner = new CollectionOwner()
+        def sorted = new DirtyCheckingSortedSet(new TreeSet(['a', 'b', 'c']), owner, 'sorted')
+
+        expect:
+        marksDirtyOn(owner, 'sorted') { sorted.removeFirst() }
+        marksDirtyOn(owner, 'sorted') { sorted.removeLast() }
+        marksDirtyOn(owner, 'sorted') { sorted.reversed().remove('b') }
+    }
+
+    def 'SortedSet range views mark the parent dirty'() {
+        given: 'headSet/subSet/tailSet are live views that write through to the backing set'
+        def owner = new CollectionOwner()
+        def sorted = new DirtyCheckingSortedSet(new TreeSet(['a', 'b', 'c', 'd']), owner, 'sorted')
+
+        expect:
+        marksDirtyOn(owner, 'sorted') { sorted.headSet('b').remove('a') }
+        marksDirtyOn(owner, 'sorted') { sorted.tailSet('d').remove('d') }
+        marksDirtyOn(owner, 'sorted') { sorted.subSet('b', 'c').clear() }
+
+        and:
+        sorted.size() == 1
+    }
+
+    def 'a view stored back onto a property counts as a wholesale replacement'() {
+        given: 'the flag decides whether a persister re-encodes or diffs element by element'
+        def owner = new CollectionOwner()
+        def list = new DirtyCheckingList(['a', 'b', 'c'], owner, 'items')
+        def sorted = new DirtyCheckingSortedSet(new TreeSet(['a', 'b']), owner, 'sorted')
+        def map = new DirtyCheckingMap([a: 1], owner, 'attrs')
+
+        expect: 'every live view reports itself as assigned; the backing wrapper does not'
+        !((DirtyCheckableCollection) list).isAssigned()
+        ((DirtyCheckableCollection) list.reversed()).isAssigned()
+        ((DirtyCheckableCollection) list.subList(0, 2)).isAssigned()
+        ((DirtyCheckableCollection) sorted.reversed()).isAssigned()
+        ((DirtyCheckableCollection) sorted.headSet('b')).isAssigned()
+        ((DirtyCheckableCollection) map.keySet()).isAssigned()
+        ((DirtyCheckableCollection) map.values()).isAssigned()
+    }
+
+    private static boolean marksDirtyOn(CollectionOwner owner, String property, Closure mutation) {
+        owner.trackChanges()
+        mutation()
+        owner.hasChanged(property)
+    }
+
     def 'iteration without mutation does not mark the parent dirty'() {
         given:
         def owner = new CollectionOwner()

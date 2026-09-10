@@ -173,16 +173,16 @@ class DirtyCheckingMap implements Map, DirtyCheckableCollection {
      */
     @Override
     Set entrySet() {
-        return new DirtyCheckingSet(target.entrySet(), parent, property)
+        return new DirtyCheckingSet(target.entrySet(), parent, property, true)
     }
 
     @Override
     Set keySet() {
-        return new DirtyCheckingSet(target.keySet(), parent, property)
+        return new DirtyCheckingSet(target.keySet(), parent, property, true)
     }
 
     @Override
     Collection values() {
-        return new DirtyCheckingCollection(target.values(), parent, property)
+        return new DirtyCheckingCollection(target.values(), parent, property, true)
     }
 }
