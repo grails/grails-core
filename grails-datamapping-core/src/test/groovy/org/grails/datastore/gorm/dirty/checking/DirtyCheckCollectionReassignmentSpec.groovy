@@ -51,8 +51,28 @@ class DirtyCheckCollectionReassignmentSpec extends Specification {
     @Shared
     Class entityClass
 
+    @Shared
+    Class keyedEntityClass
+
     def setupSpec() {
         def gcl = new GroovyClassLoader()
+        keyedEntityClass = gcl.parseClass('''
+package org.grails.datastore.gorm.dirty.checking
+
+import grails.gorm.dirty.checking.DirtyCheck
+
+@DirtyCheck
+class KeyedScheduleLike {
+    String businessKey
+    List<String> shares = []
+
+    boolean equals(Object o) {
+        o instanceof KeyedScheduleLike && ((KeyedScheduleLike) o).businessKey == businessKey
+    }
+
+    int hashCode() { businessKey == null ? 0 : businessKey.hashCode() }
+}
+''')
         entityClass = gcl.parseClass('''
 package org.grails.datastore.gorm.dirty.checking
 
@@ -177,6 +197,145 @@ class ScheduleLike {
         then: 'the raw value is stored so the store persister can install its own type on save'
         !(entity.shares instanceof DirtyCheckableCollection)
         entity.hasChanged('shares')
+    }
+
+    def "assigning another entity's tracked list re-binds it to the entity being assigned to"() {
+        given: 'two entities, each holding a decode-installed wrapper of its own'
+        def a = entityClass.newInstance()
+        def b = entityClass.newInstance()
+        a.shares = DirtyCheckingSupport.wrap(['a1'], (DirtyCheckable) a, 'shares')
+        b.shares = DirtyCheckingSupport.wrap(['b1'], (DirtyCheckable) b, 'shares')
+        a.trackChanges()
+        b.trackChanges()
+
+        when: "b's collection is assigned onto a"
+        a.shares = b.shares
+
+        then: 'a holds a NEW wrapper bound to a, flagged as the wholesale replacement it is'
+        !a.shares.is(b.shares)
+        a.shares.getParent().is(a)
+        ((DirtyCheckableCollection) a.shares).isAssigned()
+
+        when: 'changes are reset and the collection is mutated through a'
+        a.trackChanges()
+        b.trackChanges()
+        a.shares.add('added')
+
+        then: 'a is marked dirty and b is left alone — before, it was the other way round'
+        a.hasChanged('shares')
+        !b.hasChanged('shares')
+
+        and: 'the two properties still share one underlying collection, as a plain assignment does'
+        b.shares.contains('added')
+    }
+
+    def "assigning another entity's tracked map re-binds it too"() {
+        given: 'the Map wrapper shares no supertype with the collection wrappers'
+        def a = entityClass.newInstance()
+        def b = entityClass.newInstance()
+        a.attributes = new DirtyCheckingMap([x: '1'], (DirtyCheckable) a, 'attributes')
+        b.attributes = new DirtyCheckingMap([y: '2'], (DirtyCheckable) b, 'attributes')
+        a.trackChanges()
+        b.trackChanges()
+
+        when:
+        a.attributes = b.attributes
+
+        then:
+        !a.attributes.is(b.attributes)
+        a.attributes.getParent().is(a)
+        ((DirtyCheckableCollection) a.attributes).isAssigned()
+
+        when:
+        a.trackChanges()
+        b.trackChanges()
+        a.attributes.put('k', 'v')
+
+        then:
+        a.hasChanged('attributes')
+        !b.hasChanged('attributes')
+    }
+
+    def "a store-specific wrapper borrowed from another entity is stored untouched"() {
+        given: 'the value being replaced is tracked, so the re-binding branch is reached'
+        def a = entityClass.newInstance()
+        def b = entityClass.newInstance()
+        a.shares = DirtyCheckingSupport.wrap([], (DirtyCheckable) a, 'shares')
+        def storeSpecific = new StoreSpecificList(['x'], (DirtyCheckable) b, 'shares')
+        a.trackChanges()
+
+        when:
+        a.shares = storeSpecific
+
+        then: 'never swapped for a generic wrapper — the store re-wraps it on save'
+        a.shares.is(storeSpecific)
+    }
+
+    def "the same-owner check compares identity, not equals"() {
+        given: 'two distinct entities that are equal by business key'
+        def a1 = keyedEntityClass.newInstance()
+        def a2 = keyedEntityClass.newInstance()
+        a1.businessKey = 'same'
+        a2.businessKey = 'same'
+        assert a1 == a2
+        assert !a1.is(a2)
+        a1.shares = DirtyCheckingSupport.wrap(['x'], (DirtyCheckable) a1, 'shares')
+        a1.trackChanges()
+
+        when: "a wrapper owned by the equal-but-distinct a2 is assigned to a1"
+        a1.shares = DirtyCheckingSupport.wrap(['y'], (DirtyCheckable) a2, 'shares')
+
+        then: "it is re-bound to a1 rather than mistaken for a1's own"
+        a1.shares.getParent().is(a1)
+        ((DirtyCheckableCollection) a1.shares).isAssigned()
+    }
+
+    def "a wrapper nested inside another is unwrapped all the way to the raw collection"() {
+        given: "an encoder can leave a wrapper wrapping a wrapper (BasicCollectionTypeEncoder does)"
+        def a = entityClass.newInstance()
+        def b = entityClass.newInstance()
+        def raw = ['x']
+        def nested = new DirtyCheckingList(
+                new DirtyCheckingList(raw, (DirtyCheckable) b, 'shares'), (DirtyCheckable) b, 'shares')
+        a.shares = DirtyCheckingSupport.wrap([], (DirtyCheckable) a, 'shares')
+        a.trackChanges()
+        b.trackChanges()
+
+        when:
+        a.shares = nested
+
+        then: "re-bound onto the raw collection, not onto b's inner wrapper"
+        a.shares.getTarget().is(raw)
+
+        when:
+        a.shares.add('added')
+
+        then: "so a mutation marks only a — an inner wrapper would have marked b as well"
+        a.hasChanged('shares')
+        !b.hasChanged('shares')
+    }
+
+    def "a collection borrowed onto a property that was never tracked is still re-bound"() {
+        given: "the shape of new Entity(shares: other.shares) — the field starts out null"
+        def a = entityClass.newInstance()
+        def b = entityClass.newInstance()
+        b.shares = DirtyCheckingSupport.wrap(['b1'], (DirtyCheckable) b, 'shares')
+        a.shares = null
+        a.trackChanges()
+        b.trackChanges()
+
+        when:
+        a.shares = b.shares
+
+        then: "a wrapper's existence proves a store already tracks it, just for the wrong owner"
+        a.shares.getParent().is(a)
+
+        when:
+        a.shares.add('added')
+
+        then:
+        a.hasChanged('shares')
+        !b.hasChanged('shares')
     }
 
     def 'a property that was never tracked is left untouched by the setter'() {

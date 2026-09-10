@@ -46,6 +46,13 @@ also track iterator-based mutation — Groovy's `removeAll(Closure)` / `retainAl
 methods (`putIfAbsent`, `merge`, `compute*`, `replace*`) and removals through the `entrySet()` / `keySet()` /
 `values()` views.
 
+Assigning a collection that belongs to *another* entity re-binds it to the entity being assigned to, so
+`bookA.tags = bookB.tags` followed by `bookA.tags.add('classic')` marks `bookA` dirty rather than `bookB`.
+The two properties go on sharing the same underlying collection afterwards, exactly as a plain Groovy
+assignment would. This applies to the properties GORM wraps in a dirty checking aware collection — basic
+collections and maps, and embedded collections. A one-to-many or many-to-many is held in a
+`PersistentCollection` instead and is left to the store, as with the store-specific types below.
+
 A few paths remain outside automatic dirty checking and still require an explicit `markDirty(propertyName)`:
 
 * a hand-written setter (one you define yourself rather than the generated one) stores the value it is given

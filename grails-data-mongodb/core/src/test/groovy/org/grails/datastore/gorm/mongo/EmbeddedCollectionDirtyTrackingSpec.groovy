@@ -68,6 +68,34 @@ class EmbeddedCollectionDirtyTrackingSpec extends GrailsDataTckSpec<GrailsDataMo
         calendar.shares[0].role == "VIEWER"
     }
 
+    void "a mutation after borrowing another entity's collection is not silently lost"() {
+        given: "two calendars whose tag lists have identical content"
+        SharedCalendar a = new SharedCalendar(name: "A", tags: ["shared"]).save(flush: true, validate: false)
+        SharedCalendar b = new SharedCalendar(name: "B", tags: ["shared"]).save(flush: true, validate: false)
+        manager.session.clear()
+
+        when: "B's list is assigned onto A and then mutated through A"
+        a = SharedCalendar.get(a.id)
+        a.trackChanges()
+        b = SharedCalendar.get(b.id)
+        a.tags = b.tags
+        a.tags.add("added-via-a")
+        a.save(flush: true)
+        manager.session.clear()
+        a = SharedCalendar.get(a.id)
+
+        // Pre-fix A kept B's wrapper, so the add marked B dirty and left A clean, and the
+        // assignment could not flag A either: the two lists were equal in content and markDirty
+        // suppresses an equal-valued assignment. An explicit save() still sets the whole-class
+        // dirty marker, but the lastUpdated PreUpdate write replaces that marker with a map
+        // holding lastUpdated alone - so the update carried lastUpdated and nothing else, and
+        // B silently absorbed the element. SharedCalendar.lastUpdated is load-bearing here:
+        // without it the class-wide marker survives, every property is re-encoded, and this
+        // spec passes whether or not the fix is present.
+        then: "A's own document records the addition"
+        a.tags == ["shared", "added-via-a"]
+    }
+
     /**
      * Regression guard: pre-fix this passed only by luck — the wrapper missed the iterator
      * removal, but the Mongo persister's size-change net (DirtyCheckableCollection
@@ -100,6 +128,7 @@ class EmbeddedCollectionDirtyTrackingSpec extends GrailsDataTckSpec<GrailsDataMo
 class SharedCalendar {
     ObjectId id
     String name
+    List<String> tags
     List<CalendarShare> shares
     // Auto-timestamped like real-world domains. The PreUpdate timestamp write destroys the
     // whole-class dirty marker that an explicit save() sets (markDirty(String) resets the
@@ -113,6 +142,7 @@ class SharedCalendar {
     }
     static constraints = {
         shares(blank: true, nullable: true)
+        tags(blank: true, nullable: true)
     }
     static embedded = ['shares']
 }
