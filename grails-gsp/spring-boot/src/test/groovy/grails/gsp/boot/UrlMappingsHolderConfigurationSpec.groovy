@@ -35,8 +35,9 @@ import spock.lang.Specification
  * routes with Spring MVC and has no {@code UrlMappings} artefact for them to come from.
  *
  * <p>The configuration under test is a nested one of {@link GspAutoConfiguration} and is run here on
- * its own, as the conditions are what it contributes; the gsp-spring-boot example covers a whole
- * application starting with an asset pipeline link generator in it.
+ * its own, as the conditions are what it contributes. No example application exercises it: one is
+ * reached only by keeping grails-web-url-mappings on the class path, which the gsp-spring-boot
+ * example excludes, so this specification is the whole of its coverage.
  */
 class UrlMappingsHolderConfigurationSpec extends Specification {
 
