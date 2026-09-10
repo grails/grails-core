@@ -40,7 +40,7 @@ import org.bson.types.ObjectId
 class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTckManager> {
 
     void setupSpec() {
-        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson, RefNote, RefBiParent, RefBiChild)
+        manager.registerDomainClasses(RefProject, RefTicket, RefTag, RefPerson, RefNote, RefBiParent, RefBiChild, RefFace, RefNose)
     }
 
     void "a to-one reference is written as the target's stored _id type"() {
@@ -378,6 +378,27 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         RefBiParent.get(parent.id).name == 'bi-parent'
     }
 
+    void "updateAll rejects a hasOne association"() {
+        given: 'hasOne keeps the foreign key on the child, so the owner carries no field for it'
+        RefFace face = new RefFace(name: 'face').save(flush: true)
+        RefNose nose = new RefNose(size: 'big', face: face).save(flush: true)
+
+        when:
+        manager.session.clear()
+        RefFace.where { name == 'face' }.updateAll(nose: RefNose.get(nose.id))
+
+        then: 'ToOneEncoder writes nothing on the owner for this; neither should updateAll'
+        UnsupportedOperationException e = thrown()
+        e.message.contains('nose')
+
+        and: 'no id field on a document that never carries one'
+        rawFaces().find(new Document('_id', new ObjectId(face.id))).first().get('nose') == null
+    }
+
+    private MongoCollection<Document> rawFaces() {
+        manager.mongoClient.getDatabase('test').getCollection('refFace')
+    }
+
     private MongoCollection<Document> rawBiParents() {
         manager.mongoClient.getDatabase('test').getCollection('refBiParent')
     }
@@ -467,5 +488,23 @@ class RefBiChild {
     String name
     RefBiParent parent
     static belongsTo = [parent: RefBiParent]
+    static mapping = { version false }
+}
+
+@Entity
+class RefFace {
+    String id
+    String name
+    RefNose nose
+    static hasOne = [nose: RefNose]
+    static mapping = { version false }
+}
+
+@Entity
+class RefNose {
+    String id
+    String size
+    RefFace face
+    static belongsTo = [face: RefFace]
     static mapping = { version false }
 }

@@ -384,6 +384,17 @@ public class MongoSession extends AbstractMongoSession {
             // Embedded extends ToOne, but an embedded value is a subdocument with no
             // identity of its own -- normal persistence encodes it through the embedded
             // path, not ToOneEncoder. Reflecting an id from one yields null.
+            // hasOne keeps the foreign key on the child, so ToOneEncoder writes nothing on the
+            // owner for it -- see its !isForeignKeyInChild() guard. Normalizing it here would
+            // put an id field on a document that never carries one.
+            if (association instanceof ToOne && !(association instanceof Embedded) &&
+                    ((ToOne) association).isForeignKeyInChild() &&
+                    updateProperties.containsKey(associationName)) {
+                throw new UnsupportedOperationException(
+                        "Cannot updateAll the hasOne association [" + entity.getName() + "." +
+                        associationName + "]: its foreign key is held by the inverse side, " +
+                        "so update that instead");
+            }
             if (association instanceof ToOne && !(association instanceof Embedded) &&
                     updateProperties.containsKey(associationName)) {
                 final Object value = updateProperties.get(associationName);
