@@ -1927,22 +1927,32 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
      */
     private boolean rehomeAnonymousInnerClasses(MethodNode liftedMethod, ClassNode host, boolean staticMethod,
             String beanName, SourceUnit source) {
-        Statement body = liftedMethod.getCode();
-        // Every anonymous class in the body needs its enclosing method, one inside a nested closure
+        // The body is not the only code the lift moved: a closure parameter's default value comes
+        // across with the parameter, so an anonymous class written there needs the same repairs.
+        List<ASTNode> roots = new ArrayList<>();
+        roots.add(liftedMethod.getCode());
+        for (Parameter parameter : liftedMethod.getParameters()) {
+            if (parameter.getInitialExpression() != null) {
+                roots.add(parameter.getInitialExpression());
+            }
+        }
+        // Every anonymous class in there needs its enclosing method, one inside a nested closure
         // included: the parser sets it per enclosing METHOD, so a closure in between makes no
         // difference to what it would have written. This walk descends for that reason; the
         // re-homing below deliberately does not, re-homing being the narrower repair.
-        body.visit(new CodeVisitorSupport() {
-            @Override
-            public void visitConstructorCallExpression(ConstructorCallExpression call) {
-                super.visitConstructorCallExpression(call);
-                if (call.isUsingAnonymousInnerClass() && call.getType().getEnclosingMethod() == null) {
-                    call.getType().setEnclosingMethod(liftedMethod);
+        for (ASTNode root : roots) {
+            root.visit(new CodeVisitorSupport() {
+                @Override
+                public void visitConstructorCallExpression(ConstructorCallExpression call) {
+                    super.visitConstructorCallExpression(call);
+                    if (call.isUsingAnonymousInnerClass() && call.getType().getEnclosingMethod() == null) {
+                        call.getType().setEnclosingMethod(liftedMethod);
+                    }
                 }
-            }
-        });
+            });
+        }
         List<ConstructorCallExpression> anonymous = new ArrayList<>();
-        body.visit(new CodeVisitorSupport() {
+        CodeVisitorSupport collector = new CodeVisitorSupport() {
             // Deliberately not descending. The lift moves the closure's own body into a method, so
             // an anonymous class written directly in it loses the closure it was homed against -
             // that is what this repairs. One written inside a NESTED closure does not: that closure
@@ -1961,7 +1971,10 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 }
                 super.visitConstructorCallExpression(call);
             }
-        });
+        };
+        for (ASTNode root : roots) {
+            root.visit(collector);
+        }
         for (ConstructorCallExpression call : anonymous) {
             ClassNode inner = call.getType();
             FieldNode outerField = inner.getDeclaredField("this$0");

@@ -1920,6 +1920,46 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'a property of another object'     | 'in a group'    | 'UseF'   | 'Beans'        | ''               | "class UseFHolder { String suffix = 'hello' }" | "group('extras') {" | '}' | "method('suffix', String) { 'moved' }" | 'UseFHolder h = new UseFHolder()' | "new UseFGreeter() { String greet() { h.suffix } }" | 'UseFBeans$ExtrasConfiguration'
     }
 
+    @Unroll
+    def "an anonymous class in a closure parameter default is repaired too, #hostKind"() {
+        given: "a parameter default comes across with the parameter, so the lift has to reach it"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @CompileStatic
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        ${declaration}
+                        bean('greeter', ${fixture}Greeter) { ${beanParam} }
+                    ${close}
+                }
+            }
+        """
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        Class<?> generated = loader.loadClass(owner)
+
+        expect: "class generation dies with a GroovyBugError when the default is never visited"
+        generated.declaredMethods.find { it.name == 'greeter' && it.parameterCount == 0 }
+                .invoke(generated.getDeclaredConstructor().newInstance()).greet() == 'defaulted'
+
+        where:
+        hostKind              | fixture      | suffixClass    | extendsClause    | open                | close | declaration | beanParam | owner
+        'on a plain host'     | 'ParamDefA'  | 'Beans'        | ''               | ''                  | ''    | ''          | "ParamDefAGreeter f = new ParamDefAGreeter() { String greet() { 'defaulted' } } -> f" | 'ParamDefABeans'
+        'on a descriptor'     | 'ParamDefB'  | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | ''          | "ParamDefBGreeter f = new ParamDefBGreeter() { String greet() { 'defaulted' } } -> f" | 'ParamDefBAutoConfiguration'
+        'in a group'          | 'ParamDefC'  | 'Beans'        | ''               | "group('extras') {" | '}'   | ''          | "ParamDefCGreeter f = new ParamDefCGreeter() { String greet() { 'defaulted' } } -> f" | 'ParamDefCBeans\$ExtrasConfiguration'
+    }
+
     def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
         given: "the shape that works, and must not be caught by the check above"
         String source = '''
