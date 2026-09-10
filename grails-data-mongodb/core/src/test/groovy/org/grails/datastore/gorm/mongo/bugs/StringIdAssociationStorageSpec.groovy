@@ -350,11 +350,11 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         when:
         manager.session.clear()
         RefNote.where { title == 'note' }.updateAll(labels: ['y', 'z'])
-        Document rawNote = rawNotes().find(new Document('_id', new ObjectId(note.id))).first()
+        Document raw = rawNotes().find(new Document('_id', new ObjectId(note.id))).first()
 
         then: 'the String list lands as-is, exactly as it did before this branch existed'
         notThrown(NullPointerException)
-        rawNote.get('labels') == ['y', 'z']
+        raw.get('labels') == ['y', 'z']
     }
 
     void "updateAll rejects a bidirectional one-to-many instead of corrupting the owner"() {

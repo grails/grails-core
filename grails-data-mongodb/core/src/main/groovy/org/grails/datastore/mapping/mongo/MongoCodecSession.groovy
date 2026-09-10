@@ -63,7 +63,6 @@ import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.mapping.model.types.ManyToMany
 import org.grails.datastore.mapping.model.types.OneToMany
-import org.grails.datastore.mapping.model.types.ToMany
 import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
@@ -388,6 +387,11 @@ class MongoCodecSession extends AbstractMongoSession {
                     }
                 }
             }
+            // OneToMany / ManyToMany carry a collection of associated instances. Normal
+            // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
+            // bulk path has to do the same rather than sending the domain objects through
+            // $set. Only those two kinds: Basic also extends ToMany but is a collection of
+            // simple values with no associated entity, and must pass through untouched.
             // A bidirectional one-to-many keeps its foreign key on the inverse side, so there
             // is no field on this document to update -- OneToManyEncoder's shouldEncodeIds
             // skips it for the same reason, and the decoder never reads one. Left in the $set
@@ -399,13 +403,10 @@ class MongoCodecSession extends AbstractMongoSession {
                 throw new UnsupportedOperationException(
                         "Cannot updateAll the bidirectional one-to-many [${entity.name}.${associationName}]: " +
                         "its foreign key is held by [${association.associatedEntity?.name}], " +
-                        "so update the inverse side instead")
+                        'so update the inverse side instead')
             }
-            // OneToMany / ManyToMany carry a collection of associated instances. Normal
-            // persistence stores their ids -- DBRefs where the mapping asks for it -- so the
-            // bulk path has to do the same rather than sending the domain objects through
-            // $set. Only those two kinds: Basic also extends ToMany but is a collection of
-            // simple values with no associated entity, and must pass through untouched.
+            // Mirrors OneToManyEncoder's shouldEncodeIds for the rest: an id array belongs on
+            // this document when the association is unidirectional or many-to-many.
             else if ((association instanceof OneToMany || association instanceof ManyToMany)
                     && association.associatedEntity != null
                     && updateProperties.containsKey(associationName)) {

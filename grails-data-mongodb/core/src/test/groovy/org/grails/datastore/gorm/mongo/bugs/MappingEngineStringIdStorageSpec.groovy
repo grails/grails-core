@@ -54,10 +54,12 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
     MongoDatastore mappingEngineDatastore
 
     void setupSpec() {
-        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag, MeNote, MeBiParent, MeBiChild)
+        manager.registerDomainClasses(MeVideo, MeOwner, MeAsset, MeTag, MeNote,
+                MeRole, MeRight, MeBiParent, MeBiChild)
         mappingEngineDatastore = new MongoDatastore(
                 manager.configuration + [(MongoSettings.SETTING_ENGINE): 'mapping'],
-                MeVideo, MeOwner, MeAsset, MeTag, MeNote, MeBiParent, MeBiChild)
+                MeVideo, MeOwner, MeAsset, MeTag, MeNote,
+                MeRole, MeRight, MeBiParent, MeBiChild)
     }
 
     void "the datastore under test really is the mapping engine"() {
@@ -230,6 +232,55 @@ class MappingEngineStringIdStorageSpec extends GrailsDataTckSpec<GrailsDataMongo
         rawNote.get('labels') == ['y', 'z']
     }
 
+    void "a unidirectional one-to-many reads back through the coerced keys"() {
+        given: 'guards the retrieveAllEntities conversion, not just what lands on disk'
+        String assetId = null
+        mappingEngineDatastore.withSession { Session s ->
+            MeTag a = new MeTag(label: 'read-a'); MeTag b = new MeTag(label: 'read-b')
+            s.persist(a); s.persist(b); s.flush()
+            MeAsset asset = new MeAsset(label: 'Readable tags')
+            asset.tags = [a, b]
+            s.persist(asset); s.flush(); assetId = asset.id
+        }
+
+        expect:
+        mappingEngineDatastore.withSession { Session s ->
+            s.clear()
+            s.retrieve(MeAsset, assetId).tags*.label as Set
+        } == ['read-a', 'read-b'] as Set
+    }
+
+    void "updateAll on a many-to-many writes the key this engine actually reads"() {
+        given: 'this engine keeps many-to-many ids under a suffixed key -- see setManyToMany'
+        String roleId = null, rightTwoId = null
+        mappingEngineDatastore.withSession { Session s ->
+            MeRight one = new MeRight(label: 'right-one')
+            MeRight two = new MeRight(label: 'right-two')
+            s.persist(one); s.persist(two); s.flush()
+            rightTwoId = two.id
+            MeRole role = new MeRole(label: 'role')
+            role.rights = [one]
+            s.persist(role); s.flush(); roleId = role.id
+        }
+
+        when:
+        mappingEngineDatastore.withSession { Session s ->
+            s.clear()
+            DetachedCriteria criteria = new DetachedCriteria(MeRole).build { eq 'label', 'role' }
+            ((MongoSession) s).updateAll(criteria, [rights: [s.retrieve(MeRight, rightTwoId)]])
+        }
+        Document rawRole = raw('meRole').find(new Document('_id', new ObjectId(roleId))).first()
+
+        then: 'written under the suffixed key, in the target stored _id type'
+        rawRole.get('rights_$$manyToManyIds') == [new ObjectId(rightTwoId)]
+
+        and: 'so the change is visible on read back, rather than being a silent no-op'
+        mappingEngineDatastore.withSession { Session s ->
+            s.clear()
+            s.retrieve(MeRole, roleId).rights*.label
+        } == ['right-two']
+    }
+
     void "updateAll rejects a bidirectional one-to-many"() {
         given:
         String parentId = persist { Session s -> new MeBiParent(name: 'bi') }
@@ -306,6 +357,25 @@ class MeNote {
     String title
     List<String> labels = []
     static hasMany = [labels: String]
+    static mapping = { version false }
+}
+
+@Entity
+class MeRole {
+    String id
+    String label
+    Set<MeRight> rights = []
+    static hasMany = [rights: MeRight]
+    static mapping = { version false }
+}
+
+@Entity
+class MeRight {
+    String id
+    String label
+    Set<MeRole> roles = []
+    static hasMany = [roles: MeRole]
+    static belongsTo = MeRole
     static mapping = { version false }
 }
 
