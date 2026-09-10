@@ -214,8 +214,9 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * from where it was written - a class inside a closure gets a {@code Closure} - so lifting the body
  * into a method corrects that; the alternative, coercing a closure to a single-abstract-method type
  * ({@code { ... } as Handler<Order>}, parameterized under {@code @CompileStatic}), needs no inner
- * class at all and delegates rather than subclasses. A {@code .staticMethod()} bean cannot carry
- * one, having no enclosing instance to give it.</p>
+ * class at all and delegates rather than subclasses. A {@code .staticMethod()} bean cannot carry one
+ * written directly in its body, a static method having no enclosing instance to give it; one inside
+ * a nested closure is fine, that closure being the enclosing instance.</p>
  *
  * <p>What the lift cannot correct is the class's <i>outer</i> class, which Groovy also fixes at
  * creation. That matters wherever the beans do not compile onto the class the block was written on
@@ -245,11 +246,15 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  *
  * <h2>Seeing what a block compiled to</h2>
  *
- * Set {@code grails.beans.dsl.dumpdir} and each host class writes a
- * {@code <qualified name>.beans.txt} there listing the generated members - bean names, the
- * annotations the qualifiers became, modifiers, declared types with any type arguments they ended
- * up carrying, and parameter annotations. Bodies are omitted, being the author's own closure bodies
- * lifted verbatim. Nothing is written unless the property is set.
+ * Set {@code grails.beans.dsl.dumpdir} and each class the block generated members on writes a
+ * {@code <qualified name>.beans.txt} there listing them - bean names, the annotations the
+ * qualifiers became, modifiers, declared types with any type arguments they ended up carrying, and
+ * parameter annotations. Bodies are omitted, being the author's own closure bodies lifted verbatim.
+ * Nothing is written unless the property is set.
+ *
+ * <p>That is one file per generated class rather than one per host: a plugin descriptor's beans are
+ * filed under its sibling's name, and each {@code group(...)} writes its own file under the nested
+ * class's name, holding the beans declared inside it and no others.
  *
  * <p>It has to be set on the process that runs the Groovy compiler, which under Gradle is not the
  * one you type the command on - {@code GroovyCompile} forks by default, so

@@ -1960,6 +1960,82 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'in a group'          | 'ParamDefC'  | 'Beans'        | ''               | "group('extras') {" | '}'   | ''          | "ParamDefCGreeter f = new ParamDefCGreeter() { String greet() { 'defaulted' } } -> f" | 'ParamDefCBeans\$ExtrasConfiguration'
     }
 
+    @Unroll
+    def "the reach check follows the lift: #shape"() {
+        given: "wherever the lift repairs a class, this has to be able to see it"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        method('suffix', String) { '!' }
+                        bean('greeter', ${fixture}Greeter) { ${declaration} }
+                    ${close}
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then:
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('does not resolve on this anonymous')
+
+        where:
+        shape                                          | fixture   | suffixClass    | extendsClause    | open                | close | declaration
+        'a class in a parameter default, descriptor'   | 'DeepA'   | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | "DeepAGreeter f = new DeepAGreeter() { String greet() { 'hello' + suffix() } } -> f"
+        'a class nested in another, in a group'        | 'DeepB'   | 'Beans'        | ''               | "group('extras') {" | '}'   | "new DeepBGreeter() { String greet() { DeepBGreeter d = new DeepBGreeter() { String greet() { 'hello' + suffix() } }\n                                d.greet() } }"
+        'a class nested in another, on a descriptor'   | 'DeepC'   | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | "new DeepCGreeter() { String greet() { DeepCGreeter d = new DeepCGreeter() { String greet() { 'hello' + suffix() } }\n                                d.greet() } }"
+    }
+
+    def "a nested anonymous class may still reach the one it is nested inside"() {
+        given: "its own enclosing instance was never retyped - it holds the outer anonymous class"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface DeepOwnGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class DeepOwnBeans {
+                def beans = {
+                    group('extras') {
+                        method('suffix', String) { 'moved' }
+
+                        bean('greeter', DeepOwnGreeter) {
+                            new DeepOwnGreeter() {
+                                String greet() {
+                                    DeepOwnGreeter deep = new DeepOwnGreeter() {
+                                        String greet() { outerHelper() }
+                                    }
+                                    deep.greet()
+                                }
+                                String outerHelper() { 'hello' }
+                            }
+                        }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect:
+        loader.loadClass('DeepOwnBeans$ExtrasConfiguration')
+                .getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+    }
+
     def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
         given: "the shape that works, and must not be caught by the check above"
         String source = '''

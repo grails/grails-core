@@ -242,7 +242,7 @@ tasks.withType(GroovyCompile).configureEach {
 
 An absolute path is the safe form, since a relative one resolves against that worker process's working directory rather than the project's.
 
-Building with the property set writes one `<qualified name>.beans.txt` per host class, listing the generated members — bean names, the annotations the qualifiers became, modifiers, declared types with any type arguments they ended up carrying, and parameter annotations. Bodies are omitted, being the closure bodies from the source. Nothing is written unless the property is set.
+Building with the property set writes one `<qualified name>.beans.txt` per generated class — not per host: a plugin descriptor's beans are filed under its sibling's name, and each `group(...)` writes its own file under the nested class's name, holding only the beans declared inside it. Each lists the generated members — bean names, the annotations the qualifiers became, modifiers, declared types with any type arguments they ended up carrying, and parameter annotations. Bodies are omitted, being the closure bodies from the source. Nothing is written unless the property is set.
 
 Because the result is an ordinary `AutoConfiguration` class, it must be registered the same way any Spring Boot auto-configuration is: listed in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`. **The compiler writes that entry for you.** The class is generated rather than written, so its name is one only the compiler knows — leaving the registration to be typed by hand made a plugin whose beans are silently never registered the ordinary consequence of not knowing the class exists.
 

@@ -1525,11 +1525,8 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     private void rejectAnonymousClassReachingOutward(ClassNode owner, boolean isGroup,
             List<MethodNode> generatedMethods, SourceUnit source) {
         for (MethodNode method : generatedMethods) {
-            if (method.getCode() == null) {
-                continue;
-            }
             List<ConstructorCallExpression> anonymous = new ArrayList<>();
-            method.getCode().visit(new CodeVisitorSupport() {
+            CodeVisitorSupport collector = new CodeVisitorSupport() {
                 @Override
                 public void visitConstructorCallExpression(ConstructorCallExpression call) {
                     if (call.isUsingAnonymousInnerClass()) {
@@ -1537,21 +1534,37 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                     }
                     super.visitConstructorCallExpression(call);
                 }
-            });
+            };
+            // The same two roots the lift repairs - the body, and every parameter default that came
+            // across with its parameter. A class the lift re-homed and this did not look at is the
+            // one shape that reaches runtime with the mismatch and no diagnostic.
+            if (method.getCode() != null) {
+                method.getCode().visit(collector);
+            }
+            for (Parameter parameter : method.getParameters()) {
+                if (parameter.getInitialExpression() != null) {
+                    parameter.getInitialExpression().visit(collector);
+                }
+            }
             for (ConstructorCallExpression call : anonymous) {
-                reportOutwardReferences(call, owner, isGroup, source);
+                reportOutwardReferences(call.getType(), owner, isGroup, source,
+                        new HashSet<>(), new HashSet<>());
             }
         }
     }
 
-    private void reportOutwardReferences(ConstructorCallExpression call, ClassNode owner,
-            boolean isGroup, SourceUnit source) {
-        ClassNode inner = call.getType();
-        if (answersAnything(inner)) {
+    // `enclosingReachable` carries the names of the anonymous classes this one is nested inside. An
+    // inner anonymous class's own enclosing-instance field was never retyped - it holds the outer
+    // anonymous class, exactly as written - so a name on that outer class does resolve from here,
+    // and only what lies beyond the outermost one is out of reach.
+    private void reportOutwardReferences(ClassNode inner, ClassNode owner, boolean isGroup,
+            SourceUnit source, Set<String> enclosingReachable, Set<ClassNode> visited) {
+        if (!visited.add(inner) || answersAnything(inner)) {
             return;
         }
         Set<String> own = existingMemberNames(inner);
         own.addAll(OBJECT_EXTENSION_METHOD_NAMES);
+        own.addAll(enclosingReachable);
         // Not just the methods: a field initializer and an object initializer are the class's code
         // too, and the Verifier only folds them into the constructor at class generation - long
         // after this. A reference written there fails in exactly the same place.
@@ -1567,8 +1580,17 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
             }
         }
         bodies.addAll(inner.getObjectInitializerStatements());
+        List<ConstructorCallExpression> nested = new ArrayList<>();
         for (ASTNode body : bodies) {
             body.visit(new CodeVisitorSupport() {
+                @Override
+                public void visitConstructorCallExpression(ConstructorCallExpression call) {
+                    super.visitConstructorCallExpression(call);
+                    if (call.isUsingAnonymousInnerClass()) {
+                        nested.add(call);
+                    }
+                }
+
                 // Both spellings of a self-call. `this.suffix()` leaves the class exactly as
                 // `suffix()` does - isSelfCall is what the sibling-call check already uses to say so.
                 @Override
@@ -1618,6 +1640,9 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                             "class.");
                 }
             });
+        }
+        for (ConstructorCallExpression call : nested) {
+            reportOutwardReferences(call.getType(), owner, isGroup, source, own, visited);
         }
     }
 
