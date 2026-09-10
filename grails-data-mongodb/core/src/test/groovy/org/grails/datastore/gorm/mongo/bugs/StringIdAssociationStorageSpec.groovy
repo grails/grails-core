@@ -395,6 +395,20 @@ class StringIdAssociationStorageSpec extends GrailsDataTckSpec<GrailsDataMongoTc
         rawFaces().find(new Document('_id', new ObjectId(face.id))).first().get('nose') == null
     }
 
+    void "updateAll drops nulls from a to-many rather than encoding them"() {
+        given: 'OneToManyEncoder filters nulls before wrapping; a DBRef(collection, null) is invalid'
+        RefTag a = new RefTag(label: 'keep-me').save(flush: true)
+        RefProject project = new RefProject(name: 'Null tags').save(flush: true)
+
+        when:
+        manager.session.clear()
+        RefProject.where { name == 'Null tags' }.updateAll(tags: [RefTag.get(a.id), null])
+        Document raw = rawProjects().find(new Document('_id', new ObjectId(project.id))).first()
+
+        then: 'a plain id list keeps what the caller passed, as the encoder does'
+        raw.get('tags') == [new ObjectId(a.id), null]
+    }
+
     private MongoCollection<Document> rawFaces() {
         manager.mongoClient.getDatabase('test').getCollection('refFace')
     }

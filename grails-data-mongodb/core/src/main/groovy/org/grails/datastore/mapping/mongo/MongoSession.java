@@ -445,28 +445,38 @@ public class MongoSession extends AbstractMongoSession {
                     final PersistentEntity associatedEntity = association.getAssociatedEntity();
                     final ProxyFactory proxyFactory = getMappingContext().getProxyFactory();
                     final MongoAttribute attr = (MongoAttribute) association.getMapping().getMappedForm();
-                    final List<Object> encoded = new ArrayList<Object>();
+                    final List<Object> ids = new ArrayList<Object>();
                     for (Object element : (Collection<?>) value) {
                         if (element == null) {
-                            encoded.add(null);
+                            ids.add(null);
                             continue;
                         }
                         final Object declaredId = proxyFactory.isProxy(element) ?
                                 proxyFactory.getIdentifier(element) :
                                 getMappingContext().getEntityReflector(associatedEntity).getIdentifier(element);
-                        final Object id = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity);
-                        encoded.add(attr != null && attr.isReference() ?
-                                new DBRef(getCollectionName(associatedEntity), id) :
-                                id);
+                        ids.add(MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity));
                     }
-                    // This engine keeps many-to-many ids under a suffixed key -- see
-                    // setManyToMany/getManyToManyKeys -- so writing the plain name would
-                    // leave the real field untouched and the update would be a silent no-op.
                     if (association instanceof ManyToMany) {
+                        // setManyToMany stores plain identifiers under a suffixed key and
+                        // getManyToManyKeys reads them back the same way -- never DBRefs -- so
+                        // writing the plain name, or wrapping these, would leave the field the
+                        // read path actually uses untouched.
                         updateProperties.remove(associationName);
-                        updateProperties.put(associationName + "_$$manyToManyIds", encoded);
+                        updateProperties.put(associationName + "_$$manyToManyIds", ids);
                     }
                     else {
+                        // Exactly OneToManyEncoder's shape: nulls are dropped before wrapping,
+                        // never turned into DBRef(collection, null), and a non-reference list
+                        // keeps whatever the caller passed.
+                        List<Object> encoded = ids;
+                        if (attr != null && attr.isReference()) {
+                            encoded = new ArrayList<Object>();
+                            for (Object id : ids) {
+                                if (id != null) {
+                                    encoded.add(new DBRef(getCollectionName(associatedEntity), id));
+                                }
+                            }
+                        }
                         updateProperties.put(associationName, encoded);
                     }
                 }

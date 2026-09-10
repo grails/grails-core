@@ -426,14 +426,19 @@ class MongoCodecSession extends AbstractMongoSession {
                     def associatedEntity = association.associatedEntity
                     def proxyFactory = mappingContext.proxyFactory
                     MongoAttribute attr = (MongoAttribute) association.mapping.mappedForm
-                    def encoded = value.collect { element ->
+                    def ids = value.collect { element ->
                         if (element == null) return null
                         def declaredId = proxyFactory.isProxy(element)
                                 ? proxyFactory.getIdentifier(element)
                                 : associatedEntity.reflector.getIdentifier(element)
-                        def id = MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity)
-                        attr?.isReference() ? new DBRef(getCollectionName(associatedEntity), id) : id
+                        MongoIdCoercion.coerceIdToStoredType(declaredId, associatedEntity)
                     }
+                    // Exactly OneToManyEncoder's shape: nulls are dropped before wrapping,
+                    // never turned into DBRef(collection, null), and a non-reference list
+                    // keeps whatever the caller passed.
+                    def encoded = attr?.isReference()
+                            ? ids.findAll { it != null }.collect { new DBRef(getCollectionName(associatedEntity), it) }
+                            : ids
                     updateProperties.put(associationName, encoded)
                 }
             }
