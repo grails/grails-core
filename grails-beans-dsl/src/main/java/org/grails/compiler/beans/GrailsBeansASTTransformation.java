@@ -1565,6 +1565,15 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         Set<String> own = existingMemberNames(inner);
         own.addAll(OBJECT_EXTENSION_METHOD_NAMES);
         own.addAll(enclosingReachable);
+        // existingMemberNames walks the supertypes for METHOD names and for the accessors a property
+        // reserves, but ClassNode.getFields() is declared fields only. Without the inherited ones,
+        // `this.tag` would be reported where the bare `tag` is not - the variable path resolves it to
+        // a real FieldNode and declaredWithin lets it through, so the two spellings must agree.
+        for (ClassNode current = inner; current != null; current = current.getSuperClass()) {
+            for (FieldNode field : current.getFields()) {
+                own.add(field.getName());
+            }
+        }
         // Not just the methods: a field initializer and an object initializer are the class's code
         // too, and the Verifier only folds them into the constructor at class generation - long
         // after this. A reference written there fails in exactly the same place.
@@ -1583,6 +1592,16 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
         List<ConstructorCallExpression> nested = new ArrayList<>();
         for (ASTNode body : bodies) {
             body.visit(new CodeVisitorSupport() {
+                // Deliberately not descending, the same reason rejectUnproxiedSiblingBeanCalls does
+                // not: a closure's resolve strategy and delegate are runtime facts, so an
+                // implicit-this call inside one may well be answered by a delegate rather than by
+                // this class - `sb.tap { append(x) }`, `s.with { toUpperCase() }`. Reporting there
+                // would reject working code, which is worse than the NoSuchFieldError it would have
+                // caught: an author who hits that one still gets an error naming the class.
+                @Override
+                public void visitClosureExpression(ClosureExpression expression) {
+                }
+
                 @Override
                 public void visitConstructorCallExpression(ConstructorCallExpression call) {
                     super.visitConstructorCallExpression(call);

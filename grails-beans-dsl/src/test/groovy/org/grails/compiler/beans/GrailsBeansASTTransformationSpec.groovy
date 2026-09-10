@@ -2036,6 +2036,78 @@ class GrailsBeansASTTransformationSpec extends Specification {
                 .getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
     }
 
+    @Unroll
+    def "the reach check does not descend into a closure in the class body: #shape"() {
+        given: "a closure's resolve strategy and delegate are runtime facts - a delegate may answer this"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+            ${extraTypes}
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        bean('greeter', ${fixture}Greeter) { ${construction} }
+                    ${close}
+                }
+            }
+        """
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect: "rejecting these would break working code, the regression this check must not become"
+        loader.loadClass(owner).getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+
+        where:
+        shape                            | fixture  | suffixClass    | extendsClause    | extraTypes | open                | close | construction | owner
+        'with { } in a group'            | 'DelA'   | 'Beans'        | ''               | ''         | "group('extras') {" | '}'   | "new DelAGreeter() { String greet() { 'hello'.with { toLowerCase() } } }" | 'DelABeans$ExtrasConfiguration'
+        'tap { } on a descriptor'        | 'DelB'   | 'GrailsPlugin' | 'extends Plugin' | ''         | ''                  | ''    | "new DelBGreeter() { String greet() { new StringBuilder().tap { append('hello') }.toString() } }" | 'DelBAutoConfiguration'
+    }
+
+    def "this-qualified and bare spellings of an inherited field agree"() {
+        given: "getFields() is declared fields only, so the inherited ones have to be added by hand"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface InheritedFieldGreeter { String greet() }
+            abstract class InheritedFieldBase implements InheritedFieldGreeter {
+                protected String tag = 'hello'
+            }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class InheritedFieldGrailsPlugin extends Plugin {
+                def beans = {
+                    bean('qualified', InheritedFieldGreeter) {
+                        new InheritedFieldBase() { String greet() { this.tag } }
+                    }
+
+                    bean('bare', InheritedFieldGreeter) {
+                        new InheritedFieldBase() { String greet() { tag } }
+                    }
+                }
+            }
+        '''
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+        def sibling = loader.loadClass('InheritedFieldAutoConfiguration').getDeclaredConstructor().newInstance()
+
+        expect:
+        sibling.qualified().greet() == 'hello'
+        sibling.bare().greet() == 'hello'
+    }
+
     def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
         given: "the shape that works, and must not be caught by the check above"
         String source = '''
