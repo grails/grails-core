@@ -37,8 +37,9 @@ plugins {
 apply plugin: 'org.apache.grails.gradle.grails-gsp'
 // The asset pipeline compiles the stylesheets and scripts this application serves, Bootstrap among
 // them, into build/assets at build time. Bootstrap is therefore an input to the build rather than a
-// library the application ships: it is declared on the assets configuration below, and what reaches
-// the artifact is the one compiled, minified, digest-named file the manifest names.
+// library the application ships: it is declared on the assetDevelopmentRuntime configuration below,
+// which the compiler reads and the runtime classpath does not extend, and what reaches the artifact
+// is the one compiled, minified, digest-named file the manifest names.
 apply plugin: 'cloud.wondrify.asset-pipeline'
 
 assets {
@@ -96,9 +97,12 @@ dependencies {
 
     implementation 'org.hibernate.validator:hibernate-validator' // validation
 
-    assets platform(project(':grails-bom')) // the assets configuration takes its versions from the BOM too
-    assets 'org.webjars.npm:bootstrap' // compiled into application.css and application.js, not shipped
-    assets 'org.webjars.npm:bootstrap-icons' // the icons of the theme menu
+    // On assetDevelopmentRuntime rather than assets: the compiler reads both, but the runtime
+    // classpath extends assets, so a webjar declared there is compiled from AND packaged - 1.8MB of
+    // Bootstrap and 1.7MB of icons that nothing serves, since what is served is compiled from them.
+    assetDevelopmentRuntime platform(project(':grails-bom')) // versions from the BOM here too
+    assetDevelopmentRuntime 'org.webjars.npm:bootstrap' // compiled into application.css and application.js
+    assetDevelopmentRuntime 'org.webjars.npm:bootstrap-icons' // the icons of the theme menu
 
     // The filter that serves what the pipeline compiled, from the asset pipeline's own Spring Boot
     // module. Application imports its configuration; nothing else is declared for it here.
