@@ -1684,6 +1684,87 @@ class GrailsBeansASTTransformationSpec extends Specification {
         'a host-level member'      | 'a plugin descriptor'| 'GroupHost'  | 'GrailsPlugin'| 'extends Plugin' | "method('suffix', String) { '!' }" | ''
     }
 
+    @Unroll
+    def "an anonymous class cannot reach a moved member spelled #spelling either"() {
+        given: "every spelling of the same unreachable reference, not just the bare implicit-this one"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                def beans = {
+                    ${open}
+                        ${declaration}
+
+                        bean('greeter', ${fixture}Greeter) {
+                            new ${fixture}Greeter() { String greet() { 'hello' + ${reference} } }
+                        }
+                    ${close}
+                }
+            }
+        """
+
+        when:
+        compile(source)
+
+        then: "rejected here rather than as a NoSuchFieldError inside a running application"
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('does not resolve on this anonymous')
+
+        where:
+        spelling                              | fixture    | suffixClass    | extendsClause    | open                | close | declaration                        | reference
+        'this.suffix() on a descriptor'       | 'SpellA'   | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | "method('suffix', String) { '!' }" | 'this.suffix()'
+        'this.suffix on a descriptor'         | 'SpellB'   | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | "method('getSuffix', String) { '!' }" | 'this.suffix'
+        'this.suffix() in a group'            | 'SpellC'   | 'Beans'        | ''               | "group('extras') {" | '}'   | "method('suffix', String) { '!' }" | 'this.suffix()'
+        'getSuffix() against a moved field'   | 'SpellD'   | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | "field('suffix', String)"          | 'getSuffix()'
+        'suffix against a moved getSuffix'    | 'SpellE'   | 'GrailsPlugin' | 'extends Plugin' | ''                  | ''    | "method('getSuffix', String) { '!' }" | 'suffix'
+    }
+
+    @Unroll
+    def "a reference the anonymous class can resolve itself is left alone: #control"() {
+        given: "the same names, reachable - none of these may be rejected"
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+            ${extraTypes}
+
+            @GrailsBeans
+            @AutoConfiguration
+            class ${fixture}GrailsPlugin extends Plugin {
+                def beans = {
+                    ${declaration}
+
+                    bean('greeter', ${fixture}Greeter) {
+                        ${prelude}
+                        ${construction}
+                    }
+                }
+            }
+        """
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect:
+        loader.loadClass("${fixture}AutoConfiguration").getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+
+        where:
+        control                                   | fixture   | extraTypes                                             | declaration                             | prelude                    | construction
+        'this.own() is the class\'s own method'   | 'CtlA'    | ''                                                     | "method('own', String) { 'moved' }"     | ''                         | "new CtlAGreeter() { String greet() { this.own() }\n                                          private String own() { 'hello' } }"
+        'this.name resolves to its own getName()' | 'CtlB'    | ''                                                     | "method('getName', String) { 'moved' }" | ''                         | "new CtlBGreeter() { String greet() { this.name }\n                                          String getName() { 'hello' } }"
+        'the property belongs to another object'  | 'CtlC'    | "class CtlCHolder { String suffix = 'hello' }"          | "method('suffix', String) { 'moved' }"  | 'CtlCHolder h = new CtlCHolder()' | "new CtlCGreeter() { String greet() { h.suffix } }"
+        'the accessor is inherited'               | 'CtlD'    | "abstract class CtlDBase implements CtlDGreeter { String getTag() { 'hello' } }" | "method('tag', String) { 'moved' }" | '' | "new CtlDBase() { String greet() { tag } }"
+    }
+
     def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
         given: "the shape that works, and must not be caught by the check above"
         String source = '''

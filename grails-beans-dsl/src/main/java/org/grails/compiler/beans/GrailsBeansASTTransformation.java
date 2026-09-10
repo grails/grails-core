@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1553,11 +1552,23 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 continue;
             }
             method.getCode().visit(new CodeVisitorSupport() {
+                // Both spellings of a self-call. `this.suffix()` leaves the class exactly as
+                // `suffix()` does - isSelfCall is what the sibling-call check already uses to say so.
                 @Override
                 public void visitMethodCallExpression(MethodCallExpression inner) {
                     super.visitMethodCallExpression(inner);
-                    if (inner.isImplicitThis()) {
-                        report(Collections.singletonList(inner.getMethodAsString()), inner, "()");
+                    if (isSelfCall(inner)) {
+                        report(relatedNames(inner.getMethodAsString()), inner, "()");
+                    }
+                }
+
+                // `this.suffix` is a PropertyExpression, not a variable, so it needs its own visit -
+                // and AttributeExpression (`this.@suffix`) routes through here too.
+                @Override
+                public void visitPropertyExpression(PropertyExpression expression) {
+                    super.visitPropertyExpression(expression);
+                    if (expression.isImplicitThis() || isThisExpression(expression.getObjectExpression())) {
+                        report(relatedNames(expression.getPropertyAsString()), expression, "");
                     }
                 }
 
@@ -1565,17 +1576,13 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 public void visitVariableExpression(VariableExpression expression) {
                     super.visitVariableExpression(expression);
                     if (expression.getAccessedVariable() instanceof DynamicVariable) {
-                        // A property-style read of a moved accessor is the same reference by another
-                        // spelling - method('getSuffix', ...) plus `suffix` in the body resolves to
-                        // getSuffix() and fails in exactly the same place - so the accessor names
-                        // this one would resolve to count as uses of it.
-                        report(accessorSpellings(expression.getName()), expression, "");
+                        report(relatedNames(expression.getName()), expression, "");
                     }
                 }
 
                 private void report(List<String> spellings, ASTNode at, String callSuffix) {
                     String name = spellings.get(0);
-                    if (name == null || own.contains(name)) {
+                    if (name == null || !Collections.disjoint(spellings, own)) {
                         return;
                     }
                     if (outOfReach != null && Collections.disjoint(spellings, outOfReach)) {
@@ -1603,14 +1610,42 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 "as its outer class, which Groovy fixes when it creates the class and this cannot move";
     }
 
-    // The names a property-style reference resolves to, itself included. BeanUtils.capitalize
-    // matches the JavaBeans rule the accessor names were reserved under.
-    private static List<String> accessorSpellings(String name) {
+    // Every name one reference could resolve to, itself included, in both directions: `suffix` also
+    // reaches a moved `getSuffix`, and `getSuffix()` also reaches a moved property `suffix`. One
+    // spelling in the body and the other in the block is still one reference, and it fails the same
+    // way. BeanUtils.capitalize and Introspector.decapitalize are the pair the accessor names were
+    // reserved under in collectMethodNames.
+    private static List<String> relatedNames(String name) {
         if (name == null) {
             return Collections.singletonList(null);
         }
+        List<String> names = new ArrayList<>();
+        names.add(name);
         String capitalized = BeanUtils.capitalize(name);
-        return Arrays.asList(name, "get" + capitalized, "is" + capitalized, "set" + capitalized);
+        names.add("get" + capitalized);
+        names.add("is" + capitalized);
+        names.add("set" + capitalized);
+        String property = propertyNameOf(name);
+        if (property != null) {
+            names.add(property);
+        }
+        return names;
+    }
+
+    // "getSuffix" -> "suffix", "isReady" -> "ready", "setSuffix" -> "suffix"; anything that is not an
+    // accessor name -> null. The uppercase test is what keeps "getaway" and "issue" out of it.
+    private static String propertyNameOf(String name) {
+        for (String prefix : new String[] { "get", "set", "is" }) {
+            if (name.length() > prefix.length() && name.startsWith(prefix) &&
+                    Character.isUpperCase(name.charAt(prefix.length()))) {
+                return Introspector.decapitalize(name.substring(prefix.length()));
+            }
+        }
+        return null;
+    }
+
+    private boolean isThisExpression(Expression expression) {
+        return expression instanceof VariableExpression && ((VariableExpression) expression).isThisExpression();
     }
 
     // An unqualified call, or one written against this. Anything with a real receiver is somebody
