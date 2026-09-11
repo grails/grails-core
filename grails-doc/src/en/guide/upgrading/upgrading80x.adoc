@@ -3603,3 +3603,21 @@ def index(Integer max) {
     }
 }
 ----
+
+==== 60. XML Request Bodies That Declare a DOCTYPE Are Refused
+
+XML that Grails parses on an application's behalf is now read with external entity expansion, external DTD retrieval and
+DTD grammar loading disabled. Earlier releases set these parser features under identifiers the parser did not recognise,
+so the parser's own defaults applied instead.
+
+An `application/xml`, `text/xml` or `application/hal+xml` request body, or a string passed to `XML.parse`, that declares
+a `DOCTYPE` is additionally refused rather than bound, whether or not the declaration references anything external.
+Binding such a body fails with the `invalidRequestBody` error code. There is no setting that relaxes this; a client that
+sends a declaration needs to omit it.
+
+Descriptors that Grails reads from the classpath, such as JSP tag library descriptors and `web.xml`, and the
+`response.xml` accessor in controller unit tests are not affected. They may declare a `DOCTYPE`, though the DTD it names
+is never retrieved. The plugin descriptor `grails-plugin.xml` is not among them: Grails generates it and never writes a
+declaration, so it is read strictly at compile time and at runtime alike.
+
+See <<upgrading>> for the full description of the XML parsing defaults.
