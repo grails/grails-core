@@ -223,8 +223,9 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  * - a plugin descriptor's generated sibling, or a {@code group(...)}'s static nested class - because
  * the enclosing-instance field is retyped to the new home while the outer class stays the old one.
  * Nothing reachable only through that field survives, so an anonymous class there may use its own
- * members, anything it inherits, and the extension methods every object has ({@code println},
- * {@code with}, {@code tap}); a reference to anything else - a member the block declared, a member
+ * members, anything it inherits, and Groovy's extension methods ({@code println},
+ * {@code with}, {@code tap}, {@code join}), and - on a statically compiled host - static members of
+ * the enclosing class, which are reached by invokestatic rather than through the enclosing instance; a reference to anything else - a member the block declared, a member
  * the descriptor itself declares, one inherited from {@code Plugin} - is a compile error rather
  * than a {@code NoSuchFieldError} at runtime. Pass what it needs as a constructor argument or a
  * captured local, or give it a name and declare it as a static nested class.</p>

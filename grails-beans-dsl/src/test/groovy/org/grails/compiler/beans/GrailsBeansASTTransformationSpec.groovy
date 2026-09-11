@@ -2108,6 +2108,74 @@ class GrailsBeansASTTransformationSpec extends Specification {
         sibling.bare().greet() == 'hello'
     }
 
+    @Unroll
+    def "the reachable set follows what the runtime answers: #usable"() {
+        given:
+        String source = """
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import groovy.transform.CompileStatic
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface ${fixture}Greeter { String greet() }
+            ${extraTypes}
+
+            @GrailsBeans
+            ${staticAnnotation}
+            @AutoConfiguration
+            class ${fixture}${suffixClass} ${extendsClause} {
+                ${hostMembers}
+                def beans = {
+                    ${open}
+                        bean('greeter', ${fixture}Greeter) { ${construction} }
+                    ${close}
+                }
+            }
+        """
+
+        and:
+        GroovyClassLoader loader = new GroovyClassLoader(getClass().classLoader)
+        loader.parseClass(source)
+
+        expect: "none of these ever reads the enclosing instance, so none may be reported"
+        loader.loadClass(owner).getDeclaredConstructor().newInstance().greeter().greet() == 'hello'
+
+        where:
+        usable                                           | fixture | suffixClass    | extendsClause    | staticAnnotation | hostMembers | extraTypes | open                | close | construction | owner
+        'an extension method on a collection receiver'   | 'ExtA'  | 'Beans'        | ''               | ''               | ''          | 'abstract class ExtAList extends ArrayList<String> implements ExtAGreeter {}' | "group('extras') {" | '}' | "new ExtAList() { String greet() { add('hel'); add('lo'); join('') } }" | 'ExtABeans$ExtrasConfiguration'
+        'a static member of a @CompileStatic descriptor' | 'ExtB'  | 'GrailsPlugin' | 'extends Plugin' | '@CompileStatic' | "static final String SUFFIX = ''\n                static String helper() { 'hello' }" | '' | '' | '' | "new ExtBGreeter() { String greet() { helper() + SUFFIX } }" | 'ExtBAutoConfiguration'
+    }
+
+    def "a static member of a DYNAMIC host is still out of reach, and the error says how to qualify it"() {
+        given: "without @CompileStatic the same reference goes through the enclosing instance"
+        String source = '''
+            import grails.compiler.beans.GrailsBeans
+            import grails.plugins.Plugin
+            import org.springframework.boot.autoconfigure.AutoConfiguration
+
+            interface DynStaticGreeter { String greet() }
+
+            @GrailsBeans
+            @AutoConfiguration
+            class DynStaticGrailsPlugin extends Plugin {
+                static String helper() { 'hello' }
+
+                def beans = {
+                    bean('greeter', DynStaticGreeter) {
+                        new DynStaticGreeter() { String greet() { helper() } }
+                    }
+                }
+            }
+        '''
+
+        when:
+        compile(source)
+
+        then:
+        MultipleCompilationErrorsException e = thrown(MultipleCompilationErrorsException)
+        e.message.contains('static member of an enclosing class')
+    }
+
     def "an anonymous class in a group(...) body that reaches nothing outside itself is fine"() {
         given: "the shape that works, and must not be caught by the check above"
         String source = '''

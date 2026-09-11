@@ -1563,8 +1563,13 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
             return;
         }
         Set<String> own = existingMemberNames(inner);
-        own.addAll(OBJECT_EXTENSION_METHOD_NAMES);
+        own.addAll(EXTENSION_METHOD_NAMES);
         own.addAll(enclosingReachable);
+        Set<String> enclosingStatics = enclosingStaticNames(inner);
+        boolean staticsInReach = inner.getOuterClass() != null && isStaticallyCompiled(inner.getOuterClass());
+        if (staticsInReach) {
+            own.addAll(enclosingStatics);
+        }
         // existingMemberNames walks the supertypes for METHOD names and for the accessors a property
         // reserves, but ClassNode.getFields() is declared fields only. Without the inherited ones,
         // `this.tag` would be reported where the bare `tag` is not - the variable path resolves it to
@@ -1656,7 +1661,11 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                             "fail at runtime - with NoSuchFieldError, or a ClassCastException where the class " +
                             "sits inside a nested closure. Pass what the anonymous class needs as a constructor " +
                             "argument or a captured local, or give it a name and declare it as a static nested " +
-                            "class.");
+                            "class." + (Collections.disjoint(spellings, enclosingStatics) ? "" :
+                            " This one is a static member of an enclosing class, which a statically " +
+                            "compiled host would reach by invokestatic - here it goes through the " +
+                            "enclosing instance, so qualifying it with the declaring class name is " +
+                            "enough."));
                 }
             });
         }
@@ -1678,29 +1687,61 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
     }
 
     // Names an implicit-this call resolves against the instance itself, through the runtime rather
-    // than through a declared member: DefaultGroovyMethods' extensions on Object - println, with,
-    // tap, identity, sleep and the rest. They never reach this$0, so they are not out of reach, and
-    // reporting them would reject working code.
-    private static final Set<String> OBJECT_EXTENSION_METHOD_NAMES = objectExtensionMethodNames();
+    // than through a declared member - Groovy's extension methods. The metaclass finds these on the
+    // instance, so they never reach this$0 and are not out of reach; reporting one would reject
+    // working code. Taken from every DGM-like class rather than from the Object-receiver entries
+    // alone, or `join` on a List-typed anonymous class reads as unreachable. That over-approximates
+    // - an `each` written inside a Runnable is let through to the runtime error - which is the same
+    // trade the closure case above already makes, and it is the right direction for a diagnostic.
+    private static final Set<String> EXTENSION_METHOD_NAMES = extensionMethodNames();
 
-    private static Set<String> objectExtensionMethodNames() {
+    private static Set<String> extensionMethodNames() {
         Set<String> names = new HashSet<>();
-        for (Method method : DefaultGroovyMethods.class.getMethods()) {
-            Class<?>[] parameters = method.getParameterTypes();
-            if (Modifier.isStatic(method.getModifiers()) && parameters.length > 0 &&
-                    parameters[0] == Object.class) {
-                names.add(method.getName());
+        for (Class<?> category : DefaultGroovyMethods.DGM_LIKE_CLASSES) {
+            for (Method method : category.getMethods()) {
+                if (Modifier.isStatic(method.getModifiers()) && method.getParameterCount() > 0) {
+                    names.add(method.getName());
+                }
             }
         }
         return names;
     }
 
-    // A class carrying its own methodMissing/propertyMissing/invokeMethod/getProperty answers any
-    // name at all without consulting this$0, so nothing about it can be called out of reach.
-    // GROOVY_OBJECT_TYPE's own declarations do not count - every Groovy class has those.
-    private static final String[] CATCH_ALL_MEMBERS = {
-        "methodMissing", "propertyMissing", "invokeMethod", "getProperty",
-    };
+    private static final ClassNode COMPILE_STATIC_TYPE = ClassHelper.make(CompileStatic.class);
+
+    // A static member of an enclosing class is reached by invokestatic under @CompileStatic and
+    // never through this$0 - measured with javap - so it is in reach there. On a dynamic host the
+    // same reference goes through getProperty/invokeMethod on this$0 and is not, which is why this
+    // is conditional rather than unconditional.
+    private Set<String> enclosingStaticNames(ClassNode inner) {
+        Set<String> names = new HashSet<>();
+        for (ClassNode outer = inner.getOuterClass(); outer != null; outer = outer.getOuterClass()) {
+            for (ClassNode current = outer; current != null; current = current.getSuperClass()) {
+                for (MethodNode method : current.getMethods()) {
+                    if (method.isStatic()) {
+                        names.add(method.getName());
+                    }
+                }
+                for (FieldNode field : current.getFields()) {
+                    if (field.isStatic()) {
+                        names.add(field.getName());
+                    }
+                }
+            }
+        }
+        return names;
+    }
+
+    // @GrailsCompileStatic and @GrailsTypeChecked need no handling of their own here either:
+    // @AnnotationCollector has already expanded them by canonicalization.
+    private boolean isStaticallyCompiled(ClassNode type) {
+        for (ClassNode current = type; current != null; current = current.getOuterClass()) {
+            if (!current.getAnnotations(COMPILE_STATIC_TYPE).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Null for anything that is not a member declaration - a local, a parameter, a dynamic variable -
     // which declaredWithin then treats as in reach, because it is.
@@ -1720,13 +1761,24 @@ public class GrailsBeansASTTransformation implements ASTTransformation, Compilat
                 inner.isDerivedFrom(declaring) || inner.implementsInterface(declaring);
     }
 
+    // A class carrying its own methodMissing/propertyMissing/invokeMethod/getProperty answers any
+    // name at all without consulting this$0, so nothing about it can be called out of reach.
     private boolean answersAnything(ClassNode inner) {
         for (ClassNode current = inner; current != null &&
                 !ClassHelper.OBJECT_TYPE.getName().equals(current.getName()); current = current.getSuperClass()) {
-            for (String member : CATCH_ALL_MEMBERS) {
-                if (!current.getDeclaredMethods(member).isEmpty()) {
-                    return true;
-                }
+            if (!current.getDeclaredMethods("methodMissing").isEmpty() ||
+                    !current.getDeclaredMethods("propertyMissing").isEmpty()) {
+                return true;
+            }
+            // invokeMethod and getProperty only say that when somebody wrote them. They became
+            // GroovyObject default methods in Groovy 3; a superclass from a library compiled before
+            // that declares both on every class, which would exempt anything extending it from the
+            // check entirely. getModule() is non-null only for a class this unit compiles from
+            // source, which is where "somebody wrote them" can actually be told apart.
+            if (current.getModule() != null &&
+                    (!current.getDeclaredMethods("invokeMethod").isEmpty() ||
+                            !current.getDeclaredMethods("getProperty").isEmpty())) {
+                return true;
             }
         }
         return false;
