@@ -429,9 +429,8 @@ public class SpringIOUtils {
      * <p>Documents parsed through this class fall into two trust levels, and each level gets its
      * own parser. Request bodies are untrusted and are refused if they declare a {@code DOCTYPE};
      * that is the {@code false} form and the default. Descriptors read from the application
-     * classpath, such as JSP tag library descriptors, {@code web.xml} and
-     * {@code grails-plugin.xml}, are trusted and routinely declare one, so their readers pass
-     * {@code true}.
+     * classpath, such as JSP tag library descriptors and {@code web.xml}, are trusted and routinely
+     * declare one, so their readers pass {@code true}.
      *
      * <p>Tolerating the declaration does not reopen the XXE vector. External general entities,
      * external parameter entities, DTD grammar loading and external DTD retrieval stay off on both

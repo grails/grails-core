@@ -3588,6 +3588,9 @@ a `DOCTYPE` is additionally refused rather than bound, whether or not the declar
 Binding such a body fails with the `invalidRequestBody` error code. There is no setting that relaxes this; a client that
 sends a declaration needs to omit it.
 
-Descriptors that Grails reads from the classpath, such as JSP tag library descriptors, `web.xml` and `grails-plugin.xml`,
-and the `response.xml` accessor in controller unit tests are not affected. They may declare a `DOCTYPE`, though the DTD
-it names is never retrieved. See <<upgrading>> for the full description of the XML parsing defaults.
+Descriptors that Grails reads from the classpath, such as JSP tag library descriptors and `web.xml`, and the
+`response.xml` accessor in controller unit tests are not affected. They may declare a `DOCTYPE`, though the DTD it names
+is never retrieved. The plugin descriptor `grails-plugin.xml` is not among them: Grails generates it and never writes a
+declaration, so it is read strictly at compile time and at runtime alike.
+
+See <<upgrading>> for the full description of the XML parsing defaults.
