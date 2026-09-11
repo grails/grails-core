@@ -21,9 +21,8 @@ package org.grails.io.support
 import java.nio.file.Files
 import java.nio.file.Path
 
-import grails.util.Metadata
-
 import org.xml.sax.SAXParseException
+import org.xml.sax.helpers.DefaultHandler
 
 import spock.lang.Specification
 import spock.lang.TempDir
@@ -36,6 +35,11 @@ import spock.lang.TempDir
  * the feature identifiers, so a search-and-replace over those identifiers would rewrite the
  * production code and this spec together and the suite would still pass. Driving real documents
  * through the parser keeps the assertions independent of how the hardening is spelled.
+ *
+ * <p>Two parsers are handed out. The strict one, which every no-argument method returns, is for
+ * untrusted input and refuses a {@code DOCTYPE}. The tolerant one, requested with {@code true}, is
+ * for trusted descriptors that declare one; it is the parser that can be driven past the
+ * declaration, so it is the one the entity and DTD assertions run against.
  */
 class SpringIOUtilsSpec extends Specification {
 
@@ -48,17 +52,29 @@ class SpringIOUtilsSpec extends Specification {
   <tag><name>out</name><tag-class>org.example.OutTag</tag-class></tag>
 </taglib>'''
 
+    private static final String SECRET = 'top-secret-token'
+
     @TempDir
     Path tempDir
 
-    void cleanup() {
-        System.clearProperty(SpringIOUtils.ALLOW_DOCTYPE_DECLARATION)
-        Metadata.reset()
+    private String externalEntityDocument() {
+        Path secret = tempDir.resolve('secret.txt')
+        Files.writeString(secret, SECRET)
+        """<!DOCTYPE root [
+<!ENTITY ext SYSTEM '${secret.toUri().toASCIIString()}'>
+]>
+<root>&ext;</root>"""
     }
 
-    private static void allowDocTypeDeclarations() {
-        System.setProperty(SpringIOUtils.ALLOW_DOCTYPE_DECLARATION, 'true')
-        Metadata.reset()
+    private static String parseWithSaxParser(javax.xml.parsers.SAXParser parser, String xml) {
+        StringBuilder text = new StringBuilder()
+        parser.parse(new ByteArrayInputStream(xml.getBytes('UTF-8')), new DefaultHandler() {
+            @Override
+            void characters(char[] chars, int start, int length) {
+                text.append(chars, start, length)
+            }
+        })
+        text.toString()
     }
 
     void 'createXmlSlurper parses a document without a doctype'() {
@@ -74,7 +90,8 @@ class SpringIOUtilsSpec extends Specification {
         SpringIOUtils.createXmlSlurper().parseText(TLD)
 
         then:
-        thrown(SAXParseException)
+        SAXParseException e = thrown()
+        e.message.contains('DOCTYPE is disallowed')
     }
 
     void 'createXmlSlurper rejects an internal doctype subset by default'() {
@@ -85,72 +102,93 @@ class SpringIOUtilsSpec extends Specification {
 <root>&msg;</root>''')
 
         then:
-        thrown(SAXParseException)
+        SAXParseException e = thrown()
+        e.message.contains('DOCTYPE is disallowed')
     }
 
-    void 'the doctype configuration key lets an application parse descriptors that declare one'() {
-        given: 'an application.yml opting in, as an application would configure it'
-        Metadata.getInstance(new ByteArrayInputStream('''grails:
-    xml:
-        allowDocTypeDeclaration: true
-'''.getBytes('UTF-8')))
-
+    void 'declining doctype tolerance explicitly is the default'() {
         when:
-        def parsed = SpringIOUtils.createXmlSlurper().parseText(TLD)
+        SpringIOUtils.createXmlSlurper(false).parseText(TLD)
 
-        then: 'the descriptor is readable'
+        then:
+        SAXParseException e = thrown()
+        e.message.contains('DOCTYPE is disallowed')
+    }
+
+    void 'newSAXParser rejects a doctype declaration by default'() {
+        when:
+        parseWithSaxParser(SpringIOUtils.newSAXParser(), TLD)
+
+        then:
+        SAXParseException e = thrown()
+        e.message.contains('DOCTYPE is disallowed')
+    }
+
+    void 'asking for doctype tolerance parses a descriptor that declares one'() {
+        when:
+        def parsed = SpringIOUtils.createXmlSlurper(true).parseText(TLD)
+
+        then:
         parsed.uri.text() == 'jakarta.tags.core'
         parsed.tag.name.text() == 'out'
     }
 
-    void 'external entities stay blocked when doctype declarations are permitted'() {
+    void 'the doctype-tolerant slurper does not resolve external general entities'() {
         given: 'a document whose entity points at a readable file on disk'
-        allowDocTypeDeclarations()
-        Path secret = tempDir.resolve('secret.txt')
-        Files.writeString(secret, 'top-secret-token')
-        String xml = """<!DOCTYPE root [
-<!ENTITY ext SYSTEM '${secret.toUri().toASCIIString()}'>
-]>
-<root>&ext;</root>"""
+        String xml = externalEntityDocument()
 
         when:
-        def parsed = SpringIOUtils.createXmlSlurper().parseText(xml)
+        def parsed = SpringIOUtils.createXmlSlurper(true).parseText(xml)
 
-        then: 'relaxing the doctype rule does not reopen the XXE vector'
-        !parsed.text().contains('top-secret-token')
+        then: 'tolerating the declaration does not reopen the XXE vector'
+        !parsed.text().contains(SECRET)
     }
 
-    void 'external dtds are skipped rather than retrieved when doctype declarations are permitted'() {
-        given:
-        allowDocTypeDeclarations()
+    void 'the doctype-tolerant slurper does not resolve external parameter entities'() {
+        given: 'a parameter entity that would pull a file into the internal subset'
+        Path secret = tempDir.resolve('secret.dtd')
+        Files.writeString(secret, "<!ENTITY leaked '${SECRET}'>")
+        String xml = """<!DOCTYPE root [
+<!ENTITY % ext SYSTEM '${secret.toUri().toASCIIString()}'>
+%ext;
+]>
+<root>ok</root>"""
+
+        when:
+        def parsed = SpringIOUtils.createXmlSlurper(true).parseText(xml)
+
+        then:
+        parsed.text() == 'ok'
+    }
+
+    void 'the doctype-tolerant slurper skips an external dtd rather than retrieving it'() {
+        given: 'a document naming a DTD that does not exist, so retrieval would fail loudly'
         String xml = """<!DOCTYPE root SYSTEM '${tempDir.resolve('missing.dtd').toUri().toASCIIString()}'>
 <root>ok</root>"""
 
         expect:
-        SpringIOUtils.createXmlSlurper().parseText(xml).text() == 'ok'
+        SpringIOUtils.createXmlSlurper(true).parseText(xml).text() == 'ok'
     }
 
-    void 'newSAXParser applies the same hardening as createXmlSlurper'() {
+    void 'the doctype-tolerant sax parser applies the same entity hardening'() {
         given:
-        allowDocTypeDeclarations()
-        Path secret = tempDir.resolve('secret.txt')
-        Files.writeString(secret, 'top-secret-token')
-        String xml = """<!DOCTYPE root [
-<!ENTITY ext SYSTEM '${secret.toUri().toASCIIString()}'>
-]>
-<root>&ext;</root>"""
-        StringBuilder text = new StringBuilder()
+        String xml = externalEntityDocument()
 
         when:
-        SpringIOUtils.newSAXParser().parse(new ByteArrayInputStream(xml.getBytes('UTF-8')),
-                new org.xml.sax.helpers.DefaultHandler() {
-                    @Override
-                    void characters(char[] chars, int start, int length) {
-                        text.append(chars, start, length)
-                    }
-                })
+        String text = parseWithSaxParser(SpringIOUtils.newSAXParser(true), xml)
 
         then:
-        !text.toString().contains('top-secret-token')
+        !text.contains(SECRET)
+    }
+
+    void 'both parsers are namespace aware'() {
+        given:
+        String xml = '<t:root xmlns:t="urn:test"><t:child>ok</t:child></t:root>'
+
+        expect:
+        SpringIOUtils.createXmlSlurper(allowDocType).parseText(xml).child.text() == 'ok'
+
+        where:
+        allowDocType << [false, true]
     }
 }

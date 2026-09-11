@@ -31,6 +31,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import groovy.transform.NamedDelegate
 import groovy.transform.NamedVariant
+import groovy.util.logging.Slf4j
 import groovy.xml.FactorySupport
 import groovy.xml.MarkupBuilder
 import groovy.xml.XmlSlurper
@@ -44,6 +45,7 @@ import org.apache.grails.gradle.common.XmlParserFeature
  *
  * @since 7.0.10
  */
+@Slf4j
 @CompileStatic
 class XmlUtils {
 
@@ -113,7 +115,8 @@ class XmlUtils {
     /**
      * Creates an {@link XmlSlurper} with secure defaults.
      * <p>
-     * The default parser is namespace aware, non-validating, and rejects DOCTYPE declarations.
+     * The default parser is namespace aware, non-validating, rejects DOCTYPE declarations, and disables
+     * external entity expansion plus external DTD loading.
      *
      * @param slurperConfig optional XML parser configuration or custom factory
      * @return configured {@link XmlSlurper}
@@ -231,8 +234,11 @@ class XmlUtils {
             try {
                 saxParserFactory.setFeature(feature, enabled)
             }
-            catch (Exception ignored) {
-                // ignore, parser doesn't support
+            catch (ParserConfigurationException | SAXException e) {
+                // tolerated so any SAX provider works, but reported: an unrecognised feature identifier
+                // once switched this hardening off without a trace
+                log.warn('XML parser factory [{}] does not support feature [{}]: {}',
+                        saxParserFactory.class.name, feature, e.message)
             }
         }
 

@@ -51,17 +51,7 @@ grails:
         tldScanPattern: 'classpath*:/META-INF/*.tld,/WEB-INF/tld/*.tld'
 ----
 
-Tag library descriptors are parsed with the framework's XML settings, which reject `DOCTYPE` declarations by default.  Many descriptors declare one -- `jakarta.servlet.jsp.jstl` ships several, among them `c-1_0-rt.tld`, which the default scan pattern includes -- so scanning them requires permitting declarations:
-
-[source,yaml]
-.grails-app/conf/application.yml
-----
-grails:
-    xml:
-        allowDocTypeDeclaration: true
-----
-
-Without it, resolving a JSP tag library fails with a `SAXParseException` reporting that `DOCTYPE is disallowed`.  Enabling the setting does not reopen the XXE vector; external entities and external DTDs stay refused.  See <<upgrading>> for the full description.
+Descriptors that declare a `DOCTYPE`, such as the JSP 1.2 descriptors in `jakarta.servlet.jsp.jstl`, are read without retrieving the DTD they reference.
 
 JSTL standard library is no longer added as a dependency by default. In case you are using JSTL, you should also add these dependencies to `build.gradle`:
 [source,groovy]

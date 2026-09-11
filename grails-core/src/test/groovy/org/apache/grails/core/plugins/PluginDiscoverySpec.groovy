@@ -82,6 +82,34 @@ class PluginDiscoverySpec extends Specification {
          tempDir.deleteDir()
      }
 
+    def 'reads a plugin descriptor that declares a doctype'() {
+        given: 'a grails-plugin.xml whose DOCTYPE names a DTD that does not exist, so retrieval would fail'
+        def tempDir = File.createTempDir()
+        def metaInfDir = new File(tempDir, 'META-INF').tap { mkdirs() }
+        def missingDtd = new File(tempDir, 'missing.dtd').toURI().toASCIIString()
+        new File(metaInfDir, 'grails-plugin.xml').text = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plugin SYSTEM '${missingDtd}'>
+<plugin name='test'>
+    <type>com.example.TestGrailsPlugin</type>
+    <resource>com.example.MyDomainClass</resource>
+</plugin>
+"""
+        def classLoader = new URLClassLoader([tempDir.toURI().toURL()] as URL[], (ClassLoader) null)
+
+        when: 'plugin descriptor resources are scanned'
+        def descriptors = PluginUtils.scanPluginDescriptorResources(classLoader)
+
+        then: 'the descriptor is read and the DTD is skipped rather than retrieved'
+        descriptors.size() == 1
+        with(descriptors[0]) {
+            providedPlugins == ['com.example.TestGrailsPlugin']
+            providedClasses == ['com.example.MyDomainClass']
+        }
+
+        cleanup:
+        tempDir.deleteDir()
+    }
+
     def 'ignores malformed plugin descriptor XML without failing discovery'() {
         given: 'a classloader that returns a grails-plugin.xml with invalid content'
         def badXml = '<plugin><type>valid.Class</type><broken'

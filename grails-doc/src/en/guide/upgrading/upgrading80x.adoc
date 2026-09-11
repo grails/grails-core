@@ -3576,3 +3576,18 @@ has used since Grails 3: the context path is compared case-insensitively althoug
 RFC 9110 section 4.2.3 define paths as case-sensitive, and during a `RequestDispatcher` include the included path is
 matched. Interceptors and the Spring Security matchers follow dispatch on both points because a matcher that
 disagrees with dispatch lets a request reach a controller without its interceptors or restrictions.
+
+==== 59. XML Request Bodies That Declare a DOCTYPE Are Refused
+
+XML that Grails parses on an application's behalf is now read with external entity expansion, external DTD retrieval and
+DTD grammar loading disabled. Earlier releases set these parser features under identifiers the parser did not recognise,
+so the parser's own defaults applied instead.
+
+An `application/xml`, `text/xml` or `application/hal+xml` request body, or a string passed to `XML.parse`, that declares
+a `DOCTYPE` is additionally refused rather than bound, whether or not the declaration references anything external.
+Binding such a body fails with the `invalidRequestBody` error code. There is no setting that relaxes this; a client that
+sends a declaration needs to omit it.
+
+Descriptors that Grails reads from the classpath, such as JSP tag library descriptors, `web.xml` and `grails-plugin.xml`,
+and the `response.xml` accessor in controller unit tests are not affected. They may declare a `DOCTYPE`, though the DTD
+it names is never retrieved. See <<upgrading>> for the full description of the XML parsing defaults.

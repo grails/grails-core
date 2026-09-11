@@ -42,9 +42,10 @@ public enum XmlParserFeature {
      * Rejects any document carrying a {@code DOCTYPE} declaration.
      *
      * <p>Enabling this is stricter than blocking external entities: it refuses documents whose
-     * DOCTYPE is entirely internal and harmless. Descriptors read from the classpath — JSP tag
-     * library definitions, {@code web.xml}, {@code plugin.xml} — routinely carry a DOCTYPE, so a
-     * parser shared with those callers must leave this disabled.
+     * DOCTYPE is entirely internal and harmless. It suits untrusted input such as HTTP request
+     * bodies. Descriptors read from the classpath — JSP tag library definitions, {@code web.xml},
+     * {@code grails-plugin.xml} — routinely carry a DOCTYPE, so their readers need a parser that
+     * leaves this disabled while keeping the entity and DTD features below switched off.
      */
     DISALLOW_DOCTYPE_DECL("http://apache.org/xml/features/disallow-doctype-decl"),
 

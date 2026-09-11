@@ -278,24 +278,26 @@ class XmlUtilsSpec extends Specification {
 
     void 'newXmlSlurper rejects doctype declarations with external entities'() {
         when:
-        def parsed = XmlUtils.newXmlSlurper().parseText('''<!DOCTYPE root [
- <!ENTITY ext SYSTEM "file:///not-resolved">
- ]>
+        XmlUtils.newXmlSlurper().parseText('''<!DOCTYPE root [
+<!ENTITY ext SYSTEM "file:///not-resolved">
+]>
 <root>&ext;</root>''')
 
         then:
-        thrown(SAXParseException)
+        SAXParseException e = thrown()
+        e.message.contains('DOCTYPE is disallowed')
     }
 
     void 'newXmlSlurper rejects doctype declarations with internal entities'() {
         when:
-        def parsed = XmlUtils.newXmlSlurper().parseText('''<!DOCTYPE root [
+        XmlUtils.newXmlSlurper().parseText('''<!DOCTYPE root [
 <!ENTITY msg "safe">
 ]>
 <root>&msg;</root>''')
 
         then:
-        thrown(SAXParseException)
+        SAXParseException e = thrown()
+        e.message.contains('DOCTYPE is disallowed')
     }
 
     void 'newXmlSlurper supports custom factory overrides'() {

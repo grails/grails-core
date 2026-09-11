@@ -138,7 +138,8 @@ public final class PluginUtils {
 
         try {
             Enumeration<URL> resources = classLoader.getResources(PLUGIN_XML_PATTERN);
-            SAXParser saxParser = SpringIOUtils.newSAXParser();
+            // descriptors on the classpath are trusted input and may declare a DOCTYPE
+            SAXParser saxParser = SpringIOUtils.newSAXParser(true);
 
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
