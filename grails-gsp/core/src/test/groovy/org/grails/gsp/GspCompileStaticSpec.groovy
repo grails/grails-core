@@ -238,6 +238,40 @@ Date d4=new Date(123L)
         rendered == '123-456-789-123'
     }
 
+    def "model field is applied when the model supplies the declared type"() {
+        given:
+        def template = '''@{ model="Long sampleCount"}${sampleCount}'''
+        when:
+        def rendered = renderTemplate(template, [sampleCount: 42L], true)
+        then:
+        rendered == '42'
+    }
+
+    def "a Number model field accepts every numeric type a controller may supply"() {
+        given:
+        def template = '''@{ model="Number sampleCount"}${sampleCount}'''
+        when:
+        def rendered = renderTemplate(template, [sampleCount: supplied], true)
+        then:
+        rendered == '42'
+        where:
+        // scaffolded controllers supply Long via the generated service and Integer
+        // via RestfulController.countResources()
+        supplied << [42 as Integer, 42L, 42 as Short, 42 as BigInteger]
+    }
+
+    def "a model value of the wrong type names the field and both types"() {
+        given:
+        def template = '''@{ model="Integer sampleCount"}${sampleCount}'''
+        when:
+        renderTemplate(template, [sampleCount: 42L], true)
+        then:
+        GroovyPagesException e = thrown()
+        e.message.contains("Model field 'sampleCount'")
+        e.message.contains('java.lang.Integer')
+        e.message.contains('java.lang.Long')
+    }
+
     def renderTemplate(templateSource, model, expectedCompileStaticMode, printSource = false) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         assert t.metaInfo.compilationException == null

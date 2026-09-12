@@ -179,11 +179,17 @@ public abstract class GroovyPage extends Script {
 
     private void applyModelFieldsFromBinding(Iterable<Field> modelFields) {
         for (Field field : modelFields) {
+            Object value = getProperty(field.getName());
+            if (value == null) {
+                continue;
+            }
             try {
-                Object value = getProperty(field.getName());
-                if (value != null) {
-                    field.set(this, value);
-                }
+                field.set(this, value);
+            } catch (IllegalArgumentException e) {
+                throw new GroovyPagesException("Model field '" + field.getName() + "' is declared as " +
+                        field.getType().getName() + " but the model supplied an instance of " +
+                        value.getClass().getName() + ". Declare the field with a type the model value is " +
+                        "assignable to; model values are not coerced.", e, -1, getGroovyPageFileName());
             } catch (IllegalAccessException e) {
                 throw new GroovyPagesException("Error setting model field '" + field.getName() + "'", e, -1, getGroovyPageFileName());
             }
