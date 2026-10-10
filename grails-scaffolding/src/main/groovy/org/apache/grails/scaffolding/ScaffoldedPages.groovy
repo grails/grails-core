@@ -49,7 +49,7 @@ final class ScaffoldedPages {
      * resolved from a directory named after a Java identifier, which cannot contain a hyphen, so no
      * request for a controller's view reaches a page here.
      */
-    static final String DIRECTORY = 'grails-scaffolded'
+    public static final String DIRECTORY = 'grails-scaffolded'
 
     /**
      * Bytes of the digest kept in a page's name. The name already carries the domain class and the
