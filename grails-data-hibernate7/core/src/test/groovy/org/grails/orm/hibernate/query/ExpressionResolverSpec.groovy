@@ -72,26 +72,34 @@ class ExpressionResolverSpec extends Specification {
         1 * faceJoin.get("name") >> namePath
         result == namePath
         aliasRegistry.getRealized("f") == faceJoin
-        joinTracker.getJoin("f") == faceJoin
+        resolver.resolve('f') == faceJoin
+        joinTracker.getJoin("f") == null
+        joinTracker.getJoin("face") == faceJoin
+        resolver.resolve('face') == faceJoin
     }
 
-    def "test resolve with dot notation alias.property"() {
+    def "test resolve with dot notation for alias #alias"() {
         given:
         def root = Mock(From)
         def faceJoin = Mock(Join)
         def namePath = Mock(Path)
         def aliasRegistry = new AliasRegistry()
-        aliasRegistry.define("f", new HibernateAlias("face", "f", JoinType.INNER))
+        aliasRegistry.define(alias, new HibernateAlias("face", alias, JoinType.INNER))
         def joinTracker = new JoinTracker(root)
         def resolver = new ExpressionResolver(aliasRegistry, joinTracker)
 
         when:
-        def result = resolver.resolve("f.name")
+        def result = resolver.resolve("${alias}.name")
 
         then:
         1 * root.join("face", JoinType.INNER) >> faceJoin
         1 * faceJoin.get("name") >> namePath
         result == namePath
+        joinTracker.getJoin("face") == faceJoin
+        resolver.resolve(alias) == faceJoin
+
+        where:
+        alias << ['f', 'face']
     }
 
     def "test resolve using already joined path"() {
@@ -104,6 +112,31 @@ class ExpressionResolverSpec extends Specification {
 
         expect:
         resolver.resolve("nicknames") == nicknamesJoin
+    }
+
+    def 'an alias definition takes precedence over a cached join with the same name'() {
+        given:
+        def root = Mock(From)
+        def favoriteJoin = Mock(Join)
+        def likesJoin = Mock(Join)
+        def labelPath = Mock(Path)
+        def joinTracker = new JoinTracker(root)
+        joinTracker.addJoin('favorite', favoriteJoin)
+        def aliasRegistry = new AliasRegistry()
+        aliasRegistry.define('favorite', new HibernateAlias('likes', 'favorite'))
+        def resolver = new ExpressionResolver(aliasRegistry, joinTracker)
+
+        when:
+        def result = resolver.resolve('favorite.label')
+
+        then:
+        1 * root.join('likes', JoinType.INNER) >> likesJoin
+        1 * likesJoin.get('label') >> labelPath
+        0 * favoriteJoin.get('label')
+        result == labelPath
+        resolver.resolve('favorite') == likesJoin
+        joinTracker.getOwnJoin('favorite') == favoriteJoin
+        joinTracker.getOwnJoin('likes') == likesJoin
     }
 
     def "test resolve with parent context (correlated subquery)"() {

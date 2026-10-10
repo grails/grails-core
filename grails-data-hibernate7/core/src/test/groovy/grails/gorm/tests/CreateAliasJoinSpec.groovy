@@ -1,0 +1,715 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *    https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+package grails.gorm.tests
+
+import jakarta.persistence.criteria.JoinType
+import org.hibernate.resource.jdbc.spi.StatementInspector
+import spock.lang.Issue
+import spock.lang.Shared
+
+import grails.gorm.DetachedCriteria
+import grails.gorm.annotation.Entity
+
+@Issue('https://github.com/apache/grails-core/issues/16562')
+class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
+
+    @Shared
+    CreateAliasSqlCapture sqlCapture = new CreateAliasSqlCapture()
+
+    void setupSpec() {
+        manager.grailsConfig.hibernate.session_factory.statement_inspector = sqlCapture
+        manager.registerDomainClasses(CreateAliasTeam, CreateAliasLike, CreateAliasStudent)
+    }
+
+    void setup() {
+        sqlCapture.statements.clear()
+    }
+
+    void 'a to-many alias #alias does not multiply projected rows or counts'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def team = new CreateAliasTeam(name: 'team')
+                .addToLikes(first).addToLikes(second).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('likes', alias)
+            eq("${alias}.id", first.id)
+            isNotNull("${alias}.label")
+            projections { id() }
+        }
+
+        then:
+        rows == [team.id]
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+
+        when:
+        def counts = CreateAliasTeam.withCriteria {
+            createAlias('likes', alias)
+            eq("${alias}.id", first.id)
+            projections { rowCount() }
+        }
+
+        then:
+        counts == [1L]
+
+        where:
+        alias << ['l', 'likes']
+    }
+
+    void 'an entity collection alias preserves size restrictions without multiplying rows'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        new CreateAliasTeam(name: 'two').addToLikes(first).addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'one').addToLikes(first).save(failOnError: true)
+        new CreateAliasTeam(name: 'empty').save(flush: true, failOnError: true)
+
+        when:
+        def names = CreateAliasTeam.withCriteria {
+            createAlias('likes', 'l')
+            eq('l.id', first.id)
+            sizeEq('likes', 2)
+            projections { property('name') }
+        }
+
+        then:
+        names == ['two']
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+    }
+
+    void 'a to-many alias uses a single association join when selecting entities'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def team = new CreateAliasTeam(name: 'team')
+                .addToLikes(first).addToLikes(second).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('likes', 'l')
+            eq('l.id', first.id)
+        }
+
+        then:
+        rows*.id == [team.id]
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+    }
+
+    void 'entity collection aliases #firstAlias and #secondAlias match different elements with reverse order #reverseOrder'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def team = new CreateAliasTeam(name: 'both').addToLikes(first).addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'first only').addToLikes(first).save(failOnError: true)
+        new CreateAliasTeam(name: 'second only').addToLikes(second).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('likes', firstAlias)
+            createAlias('likes', secondAlias)
+            if (reverseOrder) {
+                eq("${secondAlias}.label", 'second')
+                eq("${firstAlias}.label", 'first')
+            } else {
+                eq("${firstAlias}.label", 'first')
+                eq("${secondAlias}.label", 'second')
+            }
+            projections { id() }
+        }
+
+        then:
+        rows == [team.id]
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 2
+
+        where:
+        firstAlias | secondAlias | reverseOrder
+        'a'        | 'b'         | false
+        'a'        | 'b'         | true
+        'likes'    | 'other'     | false
+        'likes'    | 'other'     | true
+        'other'    | 'likes'     | false
+        'other'    | 'likes'     | true
+    }
+
+    void 'entity collection aliases survive pagination counts with offset #offset'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        new CreateAliasTeam(name: 'both A').addToLikes(first).addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'both B').addToLikes(first).addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'first only').addToLikes(first).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.createCriteria().list(max: 1, offset: offset) {
+            createAlias('likes', 'a')
+            createAlias('likes', 'b')
+            eq('a.label', 'first')
+            eq('b.label', 'second')
+            order('name', 'asc')
+        }
+
+        then:
+        rows*.name == expectedNames
+        rows.totalCount == 2
+        rows.totalCount == 2
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 2
+
+        where:
+        offset | expectedNames
+        0      | ['both A']
+        1      | ['both B']
+        2      | []
+    }
+
+    void 'entity collection aliases survive count with projection #projectNames'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        new CreateAliasTeam(name: 'both').addToLikes(first).addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'first only').addToLikes(first).save(flush: true, failOnError: true)
+
+        when:
+        def count = CreateAliasTeam.createCriteria().count {
+            createAlias('likes', 'a')
+            createAlias('likes', 'b')
+            eq('a.label', 'first')
+            eq('b.label', 'second')
+            if (projectNames) {
+                projections { property('name') }
+            }
+        }
+
+        then:
+        count == 1
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 2
+
+        where:
+        projectNames << [false, true]
+    }
+
+    void 'basic collection aliases survive pagination counts'() {
+        given:
+        new CreateAliasStudent(name: 'A').addToSchools('MIT').addToSchools('Harvard').save(failOnError: true)
+        new CreateAliasStudent(name: 'B').addToSchools('MIT').save(failOnError: true)
+        new CreateAliasStudent(name: 'C').addToSchools('Harvard').save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasStudent.createCriteria().list(max: 1, offset: 1) {
+            createAlias('schools', 's')
+            eq('s', 'MIT')
+            order('name', 'asc')
+        }
+
+        then:
+        rows*.name == ['B']
+        rows.totalCount == 2
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_student_schools\b/).size() == 1
+    }
+
+    void 'basic collection aliases survive count with projection #projectNames'() {
+        given:
+        new CreateAliasStudent(name: 'A').addToSchools('MIT').addToSchools('Harvard').save(failOnError: true)
+        new CreateAliasStudent(name: 'B').addToSchools('MIT').save(failOnError: true)
+        new CreateAliasStudent(name: 'C').addToSchools('Harvard').save(flush: true, failOnError: true)
+
+        when:
+        def count = CreateAliasStudent.createCriteria().count {
+            createAlias('schools', 's')
+            eq('s', 'MIT')
+            if (projectNames) {
+                projections { property('name') }
+            }
+        }
+
+        then:
+        count == 2
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_student_schools\b/).size() == 1
+
+        where:
+        projectNames << [false, true]
+    }
+
+    void 'an alias named after another association uses its declared path with reverse order #reverseOrder'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def team = new CreateAliasTeam(name: 'matching', favorite: first)
+                .addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'favorite only', favorite: first)
+                .addToLikes(first).save(failOnError: true)
+        new CreateAliasTeam(name: 'likes only', favorite: second)
+                .addToLikes(second).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f')
+            createAlias('likes', 'favorite')
+            if (reverseOrder) {
+                eq('favorite.label', 'second')
+                eq('f.label', 'first')
+            } else {
+                eq('f.label', 'first')
+                eq('favorite.label', 'second')
+            }
+            projections {
+                id()
+                property('f.label')
+                property('favorite.label')
+            }
+            order('favorite.label', 'asc')
+            order('f.label', 'asc')
+        }
+
+        then:
+        rows*.toList() == [[team.id, 'first', 'second']]
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_like\b/).size() == 2
+
+        where:
+        reverseOrder << [false, true]
+    }
+
+    void 'an alias colliding with a path works with only a projection or order: #projection'() {
+        given:
+        def x = new CreateAliasLike(label: 'x').save(failOnError: true)
+        def y = new CreateAliasLike(label: 'y').save(failOnError: true)
+        new CreateAliasTeam(name: 'T1', favorite: x).addToLikes(y).save(failOnError: true)
+        new CreateAliasTeam(name: 'T2', favorite: y).addToLikes(x).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f')
+            createAlias('likes', 'favorite')
+            eq('favorite.label', 'y')
+            if (projection) {
+                projections {
+                    property('f.label')
+                    property('name')
+                }
+            } else {
+                order('f.label', 'asc')
+            }
+        }
+
+        then:
+        if (projection) {
+            assert rows*.toList() == [['x', 'T1']]
+        } else {
+            assert rows*.name == ['T1']
+        }
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_like\b/).size() == 2
+
+        where:
+        projection << [true, false]
+    }
+
+    void 'association blocks remain path based when an alias has the same name: #projectAlias'() {
+        given:
+        def x = new CreateAliasLike(label: 'x').save(failOnError: true)
+        def y = new CreateAliasLike(label: 'y').save(failOnError: true)
+        new CreateAliasTeam(name: 'T1', favorite: x).addToLikes(y).save(failOnError: true)
+        new CreateAliasTeam(name: 'T2', favorite: y).addToLikes(y).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f')
+            createAlias('likes', 'favorite')
+            favorite {
+                eq('label', 'x')
+            }
+            eq('favorite.label', 'y')
+            if (projectAlias) {
+                projections { property('favorite.label') }
+            } else {
+                projections { property('name') }
+            }
+        }
+
+        then:
+        if (projectAlias) {
+            assert rows == ['y']
+        } else {
+            assert rows == ['T1']
+        }
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_like\b/).size() == 2
+
+        where:
+        projectAlias << [true, false]
+    }
+
+    void 'distinct aliases of a basic collection match different elements'() {
+        given:
+        def student = new CreateAliasStudent(name: 'both schools')
+                .addToSchools('MIT').addToSchools('Harvard').save(failOnError: true)
+        new CreateAliasStudent(name: 'MIT only').addToSchools('MIT').save(failOnError: true)
+        new CreateAliasStudent(name: 'Harvard only').addToSchools('Harvard').save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasStudent.withCriteria {
+            createAlias('schools', 'm')
+            createAlias('schools', 'h')
+            inList('m', ['MIT'])
+            inList('h', ['Harvard'])
+        }
+
+        then:
+        rows*.id == [student.id]
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_student_schools\b/).size() == 2
+    }
+
+    void 'basic collection membership remains independent of an element alias'() {
+        given:
+        new CreateAliasStudent(name: 'both schools')
+                .addToSchools('MIT').addToSchools('Harvard').save(failOnError: true)
+        new CreateAliasStudent(name: 'MIT only').addToSchools('MIT').save(flush: true, failOnError: true)
+
+        expect:
+        CreateAliasStudent.withCriteria {
+            createAlias('schools', 's')
+            eq('s', 'MIT')
+            inList('schools', ['Harvard'])
+            projections { property('name') }
+            order('s', 'asc')
+        } == ['both schools']
+    }
+
+    void 'basic collection aliases preserve their own join types: #firstType and #secondType'() {
+        given:
+        new CreateAliasStudent(name: 'student').addToSchools('MIT').save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasStudent.withCriteria {
+            createAlias('schools', 'm', firstType)
+            createAlias('schools', 'h', secondType)
+            projections {
+                property('m')
+                property('h')
+            }
+            order('m', 'asc')
+            order('h', 'asc')
+        }
+
+        then:
+        rows.size() == 1
+        rows[0].toList() == ['MIT', 'MIT']
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_student_schools\b/).size() == 2
+        sqlCapture.statements.last().findAll(/(?i)\bleft join create_alias_student_schools\b/).size() == 1
+
+        where:
+        firstType | secondType
+        0         | 1
+        1         | 0
+    }
+
+    void 'basic collection size remains available with an element alias resolved first: #aliasFirst'() {
+        given:
+        new CreateAliasStudent(name: 'both schools')
+                .addToSchools('MIT').addToSchools('Harvard').save(failOnError: true)
+        new CreateAliasStudent(name: 'MIT only').addToSchools('MIT').save(flush: true, failOnError: true)
+
+        when:
+        def names = CreateAliasStudent.withCriteria {
+            createAlias('schools', 's')
+            if (aliasFirst) {
+                eq('s', 'MIT')
+                sizeEq('schools', 2)
+            } else {
+                sizeEq('schools', 2)
+                eq('s', 'MIT')
+            }
+            projections { property('name') }
+            if (aliasFirst) {
+                order('s', 'asc')
+            }
+        }
+
+        then:
+        names == ['both schools']
+
+        where:
+        aliasFirst << [false, true]
+    }
+
+    void 'alias projections and ordering reuse the association join'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        new CreateAliasTeam(name: 'team')
+                .addToLikes(first).addToLikes(second).save(flush: true, failOnError: true)
+
+        expect:
+        CreateAliasTeam.withCriteria {
+            createAlias('likes', 'l')
+            projections { property('l.label') }
+            order('l.label', 'asc')
+        } == ['first', 'second']
+
+        CreateAliasTeam.withCriteria {
+            createAlias('likes', 'l')
+            eq('l.id', first.id)
+            projections { property('name') }
+            order('l.label', 'asc')
+        } == ['team']
+    }
+
+    void 'left aliases retain missing associations with alias resolved first: #aliasFirst'() {
+        given:
+        def favorite = new CreateAliasLike(label: 'favorite').save(failOnError: true)
+        new CreateAliasTeam(name: 'with favorite', favorite: favorite).save(failOnError: true)
+        new CreateAliasTeam(name: 'without favorite').save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f', 1)
+            or {
+                isNull('favorite')
+                isNotNull('f.label')
+            }
+            projections { property('name') }
+            if (aliasFirst) {
+                order('f.label', 'asc')
+            }
+        }
+
+        then:
+        rows.toSet() == ['with favorite', 'without favorite'].toSet()
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_like\b/).size() == 1
+        sqlCapture.statements.last() =~ /(?i)\bleft join create_alias_like\b/
+
+        where:
+        aliasFirst << [false, true]
+    }
+
+    void 'default and explicit inner aliases exclude missing associations'() {
+        given:
+        def favorite = new CreateAliasLike(label: 'favorite').save(failOnError: true)
+        new CreateAliasTeam(name: 'with favorite', favorite: favorite).save(failOnError: true)
+        new CreateAliasTeam(name: 'without favorite').save(flush: true, failOnError: true)
+
+        expect:
+        CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f')
+            isNotNull('f.label')
+            projections { property('name') }
+        } == ['with favorite']
+
+        CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f', 0)
+            isNotNull('f.label')
+            projections { property('name') }
+        } == ['with favorite']
+    }
+
+    void 'right aliases retain unmatched association rows'() {
+        given:
+        def favorite = new CreateAliasLike(label: 'favorite').save(failOnError: true)
+        new CreateAliasLike(label: 'unmatched').save(failOnError: true)
+        new CreateAliasTeam(name: 'team', favorite: favorite).save(flush: true, failOnError: true)
+
+        expect:
+        CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f', 2)
+            projections { property('f.label') }
+            order('f.label', 'asc')
+        } == ['favorite', 'unmatched']
+    }
+
+    void 'subquery aliases join their own root when the outer query joins the same association'() {
+        given:
+        def x = new CreateAliasLike(label: 'x').save(failOnError: true)
+        def y = new CreateAliasLike(label: 'y').save(failOnError: true)
+        new CreateAliasTeam(name: 'x', favorite: y).save(failOnError: true)
+        new CreateAliasTeam(name: 'y', favorite: y).save(failOnError: true)
+        new CreateAliasTeam(name: 'z', favorite: x).save(flush: true, failOnError: true)
+        def namesWithFavoriteY = new DetachedCriteria(CreateAliasTeam).build {
+            createAlias('favorite', 'g')
+            eq('g.label', 'y')
+            projections { property('name') }
+        }
+
+        when:
+        def names = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f')
+            inList('f.label', namesWithFavoriteY)
+            projections { property('name') }
+            order('name', 'asc')
+        }
+
+        then:
+        names == ['x', 'y', 'z']
+    }
+
+    void 'exists subquery alias #innerAlias joins its own root for the same association path'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def teamA = new CreateAliasTeam(name: 'A', favorite: first).save(failOnError: true)
+        new CreateAliasTeam(name: 'B', favorite: second).save(flush: true, failOnError: true)
+        def teamsWithSecondFavorite = new DetachedCriteria(CreateAliasTeam).build {
+            createAlias('favorite', innerAlias)
+            eq("${innerAlias}.label", 'second')
+        }
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'outside')
+            eq('outside.label', 'first')
+            exists(teamsWithSecondFavorite)
+        }
+
+        then:
+        rows*.id == [teamA.id]
+
+        where:
+        innerAlias << ['inside', 'favorite', 'outside']
+    }
+
+    void 'an implicit subquery path resolves against its own root with nested junction #nestedJunction'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def teamA = new CreateAliasTeam(name: 'A', favorite: first).save(failOnError: true)
+        new CreateAliasTeam(name: 'B', favorite: second).save(flush: true, failOnError: true)
+        def teamsWithSecondFavorite = new DetachedCriteria(CreateAliasTeam).build {
+            if (nestedJunction) {
+                and {
+                    eq('favorite.label', 'second')
+                }
+            } else {
+                eq('favorite.label', 'second')
+            }
+        }
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'outside')
+            eq('outside.label', 'first')
+            exists(teamsWithSecondFavorite)
+        }
+
+        then:
+        rows*.id == [teamA.id]
+
+        where:
+        nestedJunction << [false, true]
+    }
+
+    void 'exists subqueries can deliberately reference an outer association alias'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def teamA = new CreateAliasTeam(name: 'A', favorite: first).save(failOnError: true)
+        new CreateAliasTeam(name: 'B', favorite: second).save(flush: true, failOnError: true)
+        def matchingFavorite = new DetachedCriteria(CreateAliasLike).build {
+            eq('label', 'first')
+            eqProperty('label', 'outside.label')
+        }
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'outside')
+            isNotNull('outside.label')
+            exists(matchingFavorite)
+        }
+
+        then:
+        rows*.id == [teamA.id]
+    }
+
+    void 'detached aliases preserve the configured left join in lists and subqueries'() {
+        given:
+        def favorite = new CreateAliasLike(label: 'favorite').save(failOnError: true)
+        new CreateAliasTeam(name: 'with favorite', favorite: favorite).save(failOnError: true)
+        new CreateAliasTeam(name: 'without favorite').save(flush: true, failOnError: true)
+        def criteria = new DetachedCriteria(CreateAliasTeam).build {
+            join('favorite', JoinType.LEFT)
+            createAlias('favorite', 'f')
+            or {
+                isNull('favorite')
+                isNotNull('f.label')
+            }
+        }
+
+        expect:
+        criteria.list()*.name.toSet() == ['with favorite', 'without favorite'].toSet()
+        CreateAliasTeam.withCriteria {
+            inList('id', criteria.id())
+            projections { property('name') }
+        }.toSet() == ['with favorite', 'without favorite'].toSet()
+    }
+
+    void 'subqueries can explicitly reference an outer association alias'() {
+        given:
+        def x = new CreateAliasLike(label: 'x').save(failOnError: true)
+        def y = new CreateAliasLike(label: 'y').save(failOnError: true)
+        new CreateAliasTeam(name: 'x', favorite: y).save(failOnError: true)
+        new CreateAliasTeam(name: 'y', favorite: y).save(failOnError: true)
+        new CreateAliasTeam(name: 'z', favorite: x).save(flush: true, failOnError: true)
+        def namesMatchingOuterFavorite = new DetachedCriteria(CreateAliasTeam).build {
+            eqProperty('name', 'f.label')
+            projections { property('name') }
+        }
+
+        expect:
+        CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'f')
+            isNotNull('f.label')
+            inList('name', namesMatchingOuterFavorite)
+            projections { property('name') }
+        } == ['y']
+    }
+}
+
+@Entity
+class CreateAliasTeam {
+    String name
+    CreateAliasLike favorite
+
+    static hasMany = [likes: CreateAliasLike]
+
+    static constraints = {
+        favorite nullable: true
+    }
+}
+
+@Entity
+class CreateAliasLike {
+    String label
+}
+
+@Entity
+class CreateAliasStudent {
+    String name
+
+    static hasMany = [schools: String]
+}
+
+class CreateAliasSqlCapture implements StatementInspector {
+    final List<String> statements = []
+
+    @Override
+    String inspect(String sql) {
+        statements.add(sql)
+        sql
+    }
+}

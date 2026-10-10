@@ -256,7 +256,9 @@ class HibernateCriteriaBuilderSpec extends HibernateGormDatastoreSpec {
         when:
         def results = c.list {
             createAlias("transactions", "t")
+            createAlias('transactions', 'other')
             gt("t.amount", BigDecimal.valueOf(40))
+            gt('other.amount', BigDecimal.valueOf(40))
         }
         then:
         results.size() == 1
