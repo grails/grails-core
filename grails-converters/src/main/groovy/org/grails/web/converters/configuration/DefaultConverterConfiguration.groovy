@@ -150,7 +150,7 @@ class DefaultConverterConfiguration<C extends Converter> implements ConverterCon
     }
 
     @SuppressWarnings('rawtypes')
-    class Entry implements Comparable {
+    class Entry implements Comparable<Entry> {
 
         protected final ObjectMarshaller<C> marshaller
         private final int priority
@@ -162,8 +162,7 @@ class DefaultConverterConfiguration<C extends Converter> implements ConverterCon
             seq = MARSHALLER_SEQUENCE.incrementAndGet()
         }
 
-        int compareTo(Object o) {
-            Entry entry = (Entry) o
+        int compareTo(Entry entry) {
             return priority == entry.priority ? entry.seq - seq : entry.priority - priority
         }
 

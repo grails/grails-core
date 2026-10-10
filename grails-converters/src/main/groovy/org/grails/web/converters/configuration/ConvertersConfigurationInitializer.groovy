@@ -82,15 +82,15 @@ class ConvertersConfigurationInitializer implements ApplicationContextAware, Gra
         this.applicationContext = applicationContext
     }
 
-    public final Log log = LogFactory.getLog(ConvertersConfigurationInitializer)
+    public final Log LOG = LogFactory.getLog(ConvertersConfigurationInitializer)
 
     void afterPropertiesSet() {
         initialize()
     }
 
     void initialize() {
-        if (log.isDebugEnabled()) {
-            log.debug('Initializing Converters Default Configurations...')
+        if (LOG.isDebugEnabled()) {
+            LOG.debug('Initializing Converters Default Configurations...')
         }
         if (applicationContext != null) {
             ConvertersConfigurationHolder.setObservationRegistry(
@@ -103,8 +103,8 @@ class ConvertersConfigurationInitializer implements ApplicationContextAware, Gra
     }
 
     private void initJSONConfiguration() {
-        if (log.isDebugEnabled()) {
-            log.debug('Initializing default JSON Converters Configuration...')
+        if (LOG.isDebugEnabled()) {
+            LOG.debug('Initializing default JSON Converters Configuration...')
         }
 
         List<ObjectMarshaller<JSON>> marshallers = new ArrayList<>()
@@ -120,14 +120,14 @@ class ConvertersConfigurationInitializer implements ApplicationContextAware, Gra
         marshallers.add(new org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller<>())
 
         if ('javascript' == grailsConfig.getProperty(SETTING_CONVERTERS_JSON_DATE, String, 'default', Arrays.asList('javascript', 'default'))) {
-            if (log.isDebugEnabled()) {
-                log.debug('Using Javascript JSON Date Marshaller.')
+            if (LOG.isDebugEnabled()) {
+                LOG.debug('Using Javascript JSON Date Marshaller.')
             }
             marshallers.add(new org.grails.web.converters.marshaller.json.JavascriptDateMarshaller())
         }
         else {
-            if (log.isDebugEnabled()) {
-                log.debug('Using default JSON Date Marshaller')
+            if (LOG.isDebugEnabled()) {
+                LOG.debug('Using default JSON Date Marshaller')
             }
             // ahead of DateMarshaller, which also supports java.sql.Time
             marshallers.add(new SimpleTypeMarshaller<Time>(Time, Time::toString))
@@ -157,7 +157,7 @@ class ConvertersConfigurationInitializer implements ApplicationContextAware, Gra
         boolean includeDomainClassName = includeDomainClassProperty(grailsConfig, 'json')
         ProxyHandler proxyHandler = getProxyHandler()
         if (grailsConfig.getProperty(SETTING_CONVERTERS_JSON_DEFAULT_DEEP, Boolean, false)) {
-            log.debug('Using DeepDomainClassMarshaller as default.')
+            LOG.debug('Using DeepDomainClassMarshaller as default.')
             marshallers.add(new org.grails.web.converters.marshaller.json.DeepDomainClassMarshaller(includeDomainVersion, includeDomainClassName, proxyHandler, grailsApplication))
         }
         else {
@@ -202,7 +202,7 @@ class ConvertersConfigurationInitializer implements ApplicationContextAware, Gra
     }
 
     private void initXMLConfiguration() {
-        log.debug('Initializing default XML Converters Configuration...')
+        LOG.debug('Initializing default XML Converters Configuration...')
 
         List<ObjectMarshaller<XML>> marshallers = new ArrayList<>()
         marshallers.addAll(getPreviouslyConfiguredMarshallers(XML))
