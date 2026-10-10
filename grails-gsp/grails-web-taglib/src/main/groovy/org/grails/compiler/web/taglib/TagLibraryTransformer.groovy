@@ -66,7 +66,7 @@ class TagLibraryTransformer implements GrailsArtefactClassInjector, AnnotatedCla
 
     protected static final String GET_TAG_LIB_NAMESPACE_METHOD_NAME = '$getTagLibNamespace'
 
-    static Pattern TAGLIB_PATTERN = Pattern.compile('.+/' +
+    public static Pattern TAGLIB_PATTERN = Pattern.compile('.+/' +
             GrailsResourceUtils.GRAILS_APP_DIR + '/taglib/(.+)TagLib\\.groovy')
 
     private static final String ATTRS_ARGUMENT = 'attrs'
