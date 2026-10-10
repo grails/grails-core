@@ -16,16 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gsp.boot;
+package grails.gsp.boot
 
-import java.net.MalformedURLException;
+import groovy.transform.CompileStatic
+import org.springframework.web.servlet.View
+import org.springframework.web.servlet.view.AbstractUrlBasedView
 
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.view.AbstractUrlBasedView;
-
-import org.grails.gsp.GroovyPagesTemplateEngine;
-import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
-import org.grails.web.servlet.view.GroovyPageViewResolver;
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.servlet.view.GroovyPageViewResolver
 
 /**
  * The GSP view resolver of a Spring Boot application, which falls back to a JSP of a view's name only where
@@ -46,30 +45,31 @@ import org.grails.web.servlet.view.GroovyPageViewResolver;
  *
  * @since 8.0
  */
+@CompileStatic
 class StandaloneGroovyPageViewResolver extends GroovyPageViewResolver {
 
     StandaloneGroovyPageViewResolver(GroovyPagesTemplateEngine templateEngine,
             GrailsConventionGroovyPageLocator groovyPageLocator) {
-        super(templateEngine, groovyPageLocator);
+        super(templateEngine, groovyPageLocator)
     }
 
     @Override
     protected View createJstlView(String viewName) throws Exception {
-        View view = super.createJstlView(viewName);
+        View view = super.createJstlView(viewName)
         if (view instanceof AbstractUrlBasedView urlBasedView && !isServletContextResource(urlBasedView.getUrl())) {
-            return null;
+            return null
         }
-        return view;
+        return view
     }
 
     private boolean isServletContextResource(String url) {
         if (url == null) {
-            return false;
+            return false
         }
         try {
-            return getServletContext().getResource(url.startsWith("/") ? url : "/" + url) != null;
-        } catch (MalformedURLException e) {
-            return false;
+            return getServletContext().getResource(url.startsWith('/') ? url : "/${url}") != null
+        } catch (MalformedURLException ignored) {
+            return false
         }
     }
 

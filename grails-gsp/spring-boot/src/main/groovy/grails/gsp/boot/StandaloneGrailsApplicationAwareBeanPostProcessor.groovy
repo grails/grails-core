@@ -16,16 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gsp.boot;
+package grails.gsp.boot
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import groovy.transform.CompileStatic
+import org.springframework.beans.BeansException
+import org.springframework.beans.factory.ObjectProvider
+import org.springframework.beans.factory.config.BeanPostProcessor
 
-import grails.core.GrailsApplication;
-import grails.core.support.GrailsApplicationAware;
-import grails.core.support.GrailsConfigurationAware;
-import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
+import grails.core.GrailsApplication
+import grails.core.support.GrailsApplicationAware
+import grails.core.support.GrailsConfigurationAware
+import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 
 /**
  * Hands the {@link GrailsApplication} of the context to the beans that expect it, which for GSP are
@@ -42,22 +43,23 @@ import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
  *
  * @since 8.0
  */
+@CompileStatic
 class StandaloneGrailsApplicationAwareBeanPostProcessor implements BeanPostProcessor {
 
-    private final ObjectProvider<GrailsApplication> grailsApplication;
+    private final ObjectProvider<GrailsApplication> grailsApplication
 
     StandaloneGrailsApplicationAwareBeanPostProcessor(ObjectProvider<GrailsApplication> grailsApplication) {
-        this.grailsApplication = grailsApplication;
+        this.grailsApplication = grailsApplication
     }
 
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof GrailsApplicationAware || bean instanceof GrailsConfigurationAware) {
-            GrailsApplication application = this.grailsApplication.getIfAvailable();
+            GrailsApplication application = this.grailsApplication.getIfAvailable()
             if (application != null) {
-                GrailsApplicationAwareBeanPostProcessor.processAwareInterfaces(application, bean);
+                GrailsApplicationAwareBeanPostProcessor.processAwareInterfaces(application, bean)
             }
         }
-        return bean;
+        return bean
     }
 }
