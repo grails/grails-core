@@ -176,7 +176,7 @@ class TestController{
 class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector, CompilationUnitAware {
 
     public static final AnnotationNode DELEGATING_METHOD_ANNOATION = new AnnotationNode(ClassHelper.make(DelegatingMethod))
-    static Pattern CONTROLLER_PATTERN = Pattern.compile('.+/' +
+    public static Pattern CONTROLLER_PATTERN = Pattern.compile('.+/' +
             GrailsResourceUtils.GRAILS_APP_DIR + '/controllers/(.+)Controller\\.groovy')
     private static final String ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME = 'ALLOWED_METHODS_HANDLED'
     private static final ClassNode OBJECT_CLASS = new ClassNode(Object)
