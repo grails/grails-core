@@ -16,10 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.pages;
+package org.grails.web.pages
 
-import org.grails.gsp.GroovyPageResourceLoader;
-import org.junit.jupiter.api.Test;
+import org.grails.gsp.GroovyPageResourceLoader
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for the development ResourceLoader instance of Groovy Server Pages.
@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
  * @author Graeme Rocher
  * @since 0.5
  */
-public class GroovyPageResourceLoaderTests {
+class GroovyPageResourceLoaderTests {
 
     @Test
-    public void testGetRealLocationInProject() {
-        /*GroovyPageResourceLoader rl =*/ new GroovyPageResourceLoader();
+    void testGetRealLocationInProject() {
+        /*GroovyPageResourceLoader rl =*/ new GroovyPageResourceLoader()
     }
 }

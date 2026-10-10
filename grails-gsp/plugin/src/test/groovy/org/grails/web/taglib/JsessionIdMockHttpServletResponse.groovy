@@ -16,13 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.taglib;
+package org.grails.web.taglib
 
-import org.springframework.mock.web.MockHttpServletResponse;
+import groovy.transform.CompileStatic
+import org.springframework.mock.web.MockHttpServletResponse
 
-public class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
+@CompileStatic
+class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
     @Override
-    public String encodeURL(String url) {
-        return super.encodeURL(url + ";jsessionid=test");
+    String encodeURL(String url) {
+        return super.encodeURL(url + ';jsessionid=test')
     }
 }
