@@ -40,7 +40,7 @@ import groovy.transform.CompileStatic
 class AvailableLocaleResolver {
 
     /** The base name of an application's own message bundles ({@code messages.properties}). */
-    static final String DEFAULT_BASE_NAME = 'messages'
+    public static final String DEFAULT_BASE_NAME = 'messages'
 
     private final Supplier<EffectiveI18nDescriptors> descriptors
 

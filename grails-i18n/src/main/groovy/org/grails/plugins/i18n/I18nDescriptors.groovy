@@ -40,10 +40,10 @@ import org.apache.grails.core.plugins.PluginUtils
 final class I18nDescriptors {
 
     /** Location of the descriptor within an application or plugin artifact. */
-    static final String DESCRIPTOR_PATH = 'META-INF/grails/i18n.properties'
+    public static final String DESCRIPTOR_PATH = 'META-INF/grails/i18n.properties'
 
     /** The only descriptor format this release understands. */
-    static final String SUPPORTED_FORMAT_VERSION = '1'
+    public static final String SUPPORTED_FORMAT_VERSION = '1'
 
     private static final String FORMAT_VERSION = 'format.version'
 

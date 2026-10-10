@@ -65,13 +65,13 @@ class I18nEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered 
      * loaded, and later than {@code GrailsEnvironmentPostProcessor} so plugin configuration is in
      * place.
      */
-    static final int ORDER = Ordered.HIGHEST_PRECEDENCE + 16
+    public static final int ORDER = Ordered.HIGHEST_PRECEDENCE + 16
 
     /** Property holding the composed, ordered base-name list. */
-    static final String BASENAME_PROPERTY = 'spring.messages.basename'
+    public static final String BASENAME_PROPERTY = 'spring.messages.basename'
 
     /** Set to {@code false} to leave plugin bundles out of both resolution and native-image hints. */
-    static final String INCLUDE_PLUGIN_BUNDLES_PROPERTY = 'grails.i18n.include-plugin-bundles'
+    public static final String INCLUDE_PLUGIN_BUNDLES_PROPERTY = 'grails.i18n.include-plugin-bundles'
 
     private static final String PROPERTY_SOURCE_NAME = 'grailsI18nBasenames'
 

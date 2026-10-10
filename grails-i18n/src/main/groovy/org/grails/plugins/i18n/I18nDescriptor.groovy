@@ -37,10 +37,10 @@ package org.grails.plugins.i18n
 record I18nDescriptor(String type, String name, String version, List<String> basenames, List<String> locales) {
 
     /** An application's descriptor. At most one may be present on a classpath. */
-    static final String TYPE_APPLICATION = 'application'
+    public static final String TYPE_APPLICATION = 'application'
 
     /** A plugin's descriptor. */
-    static final String TYPE_PLUGIN = 'plugin'
+    public static final String TYPE_PLUGIN = 'plugin'
 
     I18nDescriptor {
         basenames = List.copyOf(basenames)
