@@ -185,5 +185,5 @@ It does not work with either binding, and the declaration is not a new restricti
 An application that only ran against Hibernate 5, for example one whose tests never boot the domain class, can still declare such a property.
 
 Declare the key and value types, `Map<String, String>` in the example, before you start the application on Hibernate 7.
-The key has to be a `String`.
+GORM maps are keyed by `String`.
 A map of domain classes is a `hasMany`, as before.
