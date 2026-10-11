@@ -314,12 +314,24 @@ public record HqlQueryContext(
                 depth++;
             } else if (c == ')' && depth > 0) {
                 depth--;
-            } else if (depth == 0 && i >= fromIndex && hql.startsWith(keyword, i)) {
+            } else if (depth == 0 && i >= fromIndex && hql.startsWith(keyword, i) && startsWord(hql, i)) {
                 return i;
             }
             i++;
         }
         return -1;
+    }
+
+    /**
+     * Returns whether a keyword at {@code index} starts a word, so that {@code select} in {@code preselect = 1} or in
+     * {@code b.select} is a part of a name and not the keyword. A keyword that starts with a space starts a word.
+     */
+    private static boolean startsWord(String hql, int index) {
+        if (index == 0 || hql.charAt(index) == ' ') {
+            return true;
+        }
+        char previous = hql.charAt(index - 1);
+        return !Character.isJavaIdentifierPart(previous) && previous != '.';
     }
 
     // ─── HQL normalization ────────────────────────────────────────────────────

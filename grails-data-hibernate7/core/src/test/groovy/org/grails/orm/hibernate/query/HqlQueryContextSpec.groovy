@@ -238,6 +238,66 @@ class HqlQueryContextSpec extends Specification {
         "from Book where"               | 10  | 15  | false // 'where' is keyword
         "from Book join"                | 10  | 14  | false // 'join' is keyword
     }
+
+    @Unroll
+    void "a keyword inside a longer word is not the select of the query: #hql"() {
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity, hql, [:], null, [:], [:], false, false)
+
+        then: "the query is kept as written and returns entities"
+        ctx.hql() == hql
+        ctx.targetClass() == HqlQueryContextSpecBook
+
+        where:
+        hql << [
+            "from HqlQueryContextSpecBook where preselect = 1",
+            "from HqlQueryContextSpecBook where title = 'a' and autoselect is null",
+            "from HqlQueryContextSpecBook where fromselect = 1"
+        ]
+    }
+
+    void "an escaped quote does not end a string literal that holds a select"() {
+        given:
+        String hql = "from HqlQueryContextSpecBook where title = 'it''s select x from y'"
+
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity, hql, [:], null, [:], [:], false, false)
+
+        then:
+        ctx.hql() == hql
+        ctx.targetClass() == HqlQueryContextSpecBook
+    }
+
+    void "what precedes the select, such as a with clause, is kept"() {
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity,
+                "with recent as (select b from HqlQueryContextSpecBook b) select title from HqlQueryContextSpecBook",
+                [:], null, [:], [:], false, false)
+
+        then:
+        ctx.hql() == "with recent as (select b from HqlQueryContextSpecBook b) select e.title from HqlQueryContextSpecBook e"
+        ctx.targetClass() == Object
+    }
+
+    void "a select after the from clause is the select of the query"() {
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity,
+                "from HqlQueryContextSpecBook b select b.title", [:], null, [:], [:], false, false)
+
+        then:
+        ctx.hql() == "from HqlQueryContextSpecBook b select b.title"
+        ctx.targetClass() == Object
+    }
+
+    void "a subquery in the where clause of a query that selects the root alias returns entities"() {
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity,
+                "select b from HqlQueryContextSpecBook b where b.pages in (select max(c.pages) from HqlQueryContextSpecBook c)",
+                [:], null, [:], [:], false, false)
+
+        then:
+        ctx.targetClass() == HqlQueryContextSpecBook
+    }
 }
 
 @Entity
