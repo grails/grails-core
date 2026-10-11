@@ -74,6 +74,40 @@ class DomainServiceLocatorSpec extends Specification {
         missing.message == 'No GormService bean found for domain ' + DslGadget.name + '. Scanned 2 GormService beans.'
     }
 
+    void 'a resolved service is served from the cache until it is cleared'() {
+        given:
+        GormService<DslWidget> widgetService = new GormService<DslWidget>(DslWidget, false)
+        ctx.beanFactory.registerSingleton('widgetService', widgetService)
+        ctx.refresh()
+        DomainServiceLocator.resolve(DslWidget)
+
+        when: 'the application is no longer reachable'
+        Holders.clear()
+
+        then: 'the cached service is still returned'
+        DomainServiceLocator.resolve(DslWidget).is(widgetService)
+
+        when:
+        DomainServiceLocator.clear()
+        DomainServiceLocator.resolve(DslWidget)
+
+        then:
+        thrown(Exception)
+    }
+
+    void 'a service without a resource never matches'() {
+        given:
+        GormService<DslWidget> orphan = new GormService<DslWidget>(DslWidget, false)
+        orphan.resource = null
+        GormService<DslWidget> widgetService = new GormService<DslWidget>(DslWidget, false)
+        ctx.beanFactory.registerSingleton('orphan', orphan)
+        ctx.beanFactory.registerSingleton('widgetService', widgetService)
+        ctx.refresh()
+
+        expect:
+        DomainServiceLocator.resolve(DslWidget).is(widgetService)
+    }
+
 }
 
 class DslWidget implements GormEntity<DslWidget> {
