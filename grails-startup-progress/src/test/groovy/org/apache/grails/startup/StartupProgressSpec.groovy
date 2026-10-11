@@ -125,6 +125,7 @@ class StartupProgressSpec extends Specification {
 
     void setup() {
         port = freePort()
+        browserDir.listFiles({ File file -> file.name.startsWith('opened-') } as FileFilter)*.delete()
         Gates.reset(port)
         standardError = System.err
         System.setErr(new PrintStream(new Tee(standardError, log), true, 'UTF-8'))
@@ -677,6 +678,19 @@ class StartupProgressSpec extends Specification {
         then:
         runFailure == null
         !opened.exists()
+    }
+
+    void 'records a browser launch that a later feature must not see'() {
+        when: 'a feature opens a browser, as the ones that ask for it do, on a port a later feature may be given too'
+        new File(browserDir, "opened-${port}.txt").text = "http://localhost:${port}/\n"
+
+        then:
+        new File(browserDir, "opened-${port}.txt").exists()
+    }
+
+    void 'starts each feature with no browser launch recorded by an earlier one'() {
+        expect: 'the port may repeat across features, so a stale record would pass for this feature opening a browser'
+        browserDir.list().findAll { String name -> name.startsWith('opened-') }.isEmpty()
     }
 
     void 'serves a report of the start, as a page or as data, for as long as the application runs'() {
