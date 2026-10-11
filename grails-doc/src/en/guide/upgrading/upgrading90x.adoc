@@ -175,3 +175,25 @@ class Customer implements Serializable {
 The table, its columns and its primary key are the ones the embedded version creates (`address_street` and `address_city` are the names the embedded object gives its columns), so an existing database needs no migration and its rows stay readable.
 A transient `Address getAddress()` accessor keeps `customer.address` working.
 The link:{hibernate7Guide}index.html#nativeDomainBinding-embeddedId[Native Domain Binding] chapter of the GORM for Hibernate 7 manual describes the accessor, the foreign keys to such an entity and how to switch an existing database.
+
+[[untyped-map-property]]
+===== 1.6 A `Map` Property Needs Its Element Type
+
+A `Map` property that is not a `hasMany` has to declare the type of its values:
+
+[source,groovy]
+----
+class Author {
+    String name
+
+    Map<String, String> homeLocation
+}
+----
+
+A property declared as a plain `Map` has no value type for Hibernate 7 to store.
+It does not work with either binding, and the declaration is not a new restriction of Grails {version}: Hibernate 7 has no type for a map whose values are `Object`.
+An application that only ran against Hibernate 5, for example one whose tests never boot the domain class, can still declare such a property.
+
+Declare the key and value types, `Map<String, String>` in the example, before you start the application on Hibernate 7.
+GORM maps are keyed by `String`.
+A map of domain classes is a `hasMany`, as before.
