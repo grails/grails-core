@@ -110,4 +110,17 @@ class MockClosureProxySpec extends Specification {
         proxy.getProperty('delegate').is(delegate)
     }
 
+    void 'a strict expectation accepts the demanded call and delegates to the target'() {
+        given:
+        Demand demand = new Demand()
+        demand.save(1..1) { }
+        StrictExpectation expectation = new StrictExpectation(demand)
+
+        when:
+        MockClosureProxy proxy = new MockClosureProxy({ -> 'ok' }, 'save', expectation)
+
+        then:
+        proxy.call() == 'ok'
+    }
+
 }
