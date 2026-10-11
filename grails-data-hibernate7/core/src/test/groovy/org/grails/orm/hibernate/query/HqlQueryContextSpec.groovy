@@ -140,6 +140,40 @@ class HqlQueryContextSpec extends Specification {
         "select distinct title from Book"           | "select distinct e.title from Book e"
     }
 
+    @Unroll
+    void "prepare reads the select and from of the query itself in '#hql'"() {
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity, hql, [:], null, [:], [:], false, false)
+
+        then:
+        ctx.hql() == expectedHql
+        ctx.targetClass() == expectedTarget
+
+        where:
+        hql                                                     | expectedHql                                               | expectedTarget
+        "from Book where id in (select id from Author)"         | "from Book where id in (select id from Author)"           | HqlQueryContextSpecBook
+        "from Book b where b.id in (select a.id from Author a)" | "from Book b where b.id in (select a.id from Author a)"   | HqlQueryContextSpecBook
+        "from Book where title = 'select name from Author'"     | "from Book where title = 'select name from Author'"       | HqlQueryContextSpecBook
+        "select title, (select count(*) from Author) from Book" | "select title, (select count(*) from Author) from Book e" | Object[]
+        "/* the book's (title) */ select title from Book"       | "/* the book's (title) */ select e.title from Book e"     | Object
+        "SELECT DISTINCT title FROM Book"                       | "select distinct e.title from Book e"                     | Object
+    }
+
+    @Unroll
+    void "prepare runs an update as written: '#hql'"() {
+        when:
+        def ctx = HqlQueryContext.prepare(bookEntity, hql, [:], null, [:], [:], false, true)
+
+        then:
+        ctx.hql() == hql
+        ctx.isUpdate()
+
+        where:
+        hql << ["delete from Book where title in (select name from Author)",
+                "update Book set pages = 1 where title in (select name from Author)",
+                "insert into Book (title) select name from Author"]
+    }
+
     void "GString expansion adds spaces if needed"() {
         given:
         String val = "value"
