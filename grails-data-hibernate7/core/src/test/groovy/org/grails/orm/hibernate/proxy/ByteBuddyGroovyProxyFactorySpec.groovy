@@ -25,39 +25,80 @@ import spock.lang.Specification
 
 class ByteBuddyGroovyProxyFactorySpec extends Specification {
 
-    def "factory can be instantiated"() {
+    static class FakeEntity { }
+
+    static class FakeHibernateProxy extends FakeEntity { }
+
+    void "factory can be instantiated"() {
         expect:
         new ByteBuddyGroovyProxyFactory(Mock(ByteBuddyProxyHelper)) != null
     }
 
-    def "postInstantiate configures entity name, class, and interfaces"() {
+    void "postInstantiate configures entity name, class, and interfaces"() {
         given:
         def helper = Mock(ByteBuddyProxyHelper) {
-            buildProxy(String, _ as Class[]) >> String
+            buildProxy(_, _ as Class[]) >> FakeHibernateProxy
         }
         def factory = new ByteBuddyGroovyProxyFactory(helper)
 
         when:
-        factory.postInstantiate("MyEntity", String, [] as Set, null, null, null)
+        factory.postInstantiate("FakeEntity", FakeEntity, [] as Set, null, null, null)
 
         then:
         noExceptionThrown()
     }
 
-    def "getProxy wraps instantiation failure in HibernateException"() {
-        given: "a factory where proxyClass cannot be cast to HibernateProxy"
+    void "postInstantiate wraps the Hibernate proxy class so getMetaClass() can answer before the interceptor is assigned"() {
+        given:
         def helper = Mock(ByteBuddyProxyHelper) {
-            buildProxy(String, _ as Class[]) >> String
+            buildProxy(_, _ as Class[]) >> FakeHibernateProxy
         }
         def factory = new ByteBuddyGroovyProxyFactory(helper)
-        factory.postInstantiate("MyEntity", String, [] as Set, null, null, null)
+
+        when:
+        factory.postInstantiate("FakeEntity", FakeEntity, [] as Set, null, null, null)
+
+        then: "the proxy class is a subclass of the Hibernate-built proxy that overrides getMetaClass()"
+        def proxyClass = proxyClassOf(factory)
+        proxyClass != FakeHibernateProxy
+        FakeHibernateProxy.isAssignableFrom(proxyClass)
+        proxyClass.getMethod("getMetaClass").declaringClass == proxyClass
+    }
+
+    void "postInstantiate keeps the Hibernate proxy class for non-Groovy entities"() {
+        given:
+        def helper = Mock(ByteBuddyProxyHelper) {
+            buildProxy(_, _ as Class[]) >> Object
+        }
+        def factory = new ByteBuddyGroovyProxyFactory(helper)
+
+        when:
+        factory.postInstantiate("PlainEntity", Object, [] as Set, null, null, null)
+
+        then:
+        proxyClassOf(factory) == Object
+    }
+
+    void "getProxy wraps instantiation failure in HibernateException"() {
+        given: "a factory where proxyClass cannot be cast to HibernateProxy"
+        def helper = Mock(ByteBuddyProxyHelper) {
+            buildProxy(_, _ as Class[]) >> FakeHibernateProxy
+        }
+        def factory = new ByteBuddyGroovyProxyFactory(helper)
+        factory.postInstantiate("FakeEntity", FakeEntity, [] as Set, null, null, null)
         def session = Mock(SharedSessionContractImplementor)
 
-        when: "getProxy is called — new String() cannot cast to HibernateProxy"
+        when: "getProxy is called - FakeHibernateProxy cannot be cast to HibernateProxy"
         factory.getProxy(1L, session)
 
         then:
         def e = thrown(HibernateException)
-        e.message.contains("MyEntity")
+        e.message.contains("FakeEntity")
+    }
+
+    private static Class<?> proxyClassOf(ByteBuddyGroovyProxyFactory factory) {
+        def field = ByteBuddyGroovyProxyFactory.getDeclaredField("proxyClass")
+        field.accessible = true
+        field.get(factory) as Class<?>
     }
 }

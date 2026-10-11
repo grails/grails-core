@@ -19,9 +19,17 @@
 package org.grails.orm.hibernate.proxy;
 
 import java.io.Serial;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
+import net.bytebuddy.implementation.MethodDelegation;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.internal.util.ReflectHelper;
@@ -30,10 +38,14 @@ import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyFactory;
 import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyHelper;
 import org.hibernate.type.CompositeType;
 
+import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_CLASS_ARRAY;
 
 /**
  * A ProxyFactory implementation for ByteBuddy that uses {@link ByteBuddyGroovyInterceptor}.
+ * The proxy class is wrapped in a subclass that answers {@code getMetaClass()} through
+ * {@link GroovyProxyMetaClassDispatcher} while the interceptor has not been assigned yet.
  *
  * @since 8.0
  */
@@ -81,11 +93,40 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
         this.overridesEquals = ReflectHelper.overridesEquals(persistentClass);
 
         // Build the proxy class using the helper
-        this.proxyClass = byteBuddyProxyHelper.buildProxy(persistentClass, this.interfaces);
+        this.proxyClass = buildProxyClass(persistentClass, this.interfaces);
 
         // DO NOT call super.postInstantiate(entityName, ...)
         // because it will try to initialize the standard Hibernate ProxyFactory fields
         // which might conflict with your custom getProxy() logic.
+    }
+
+    private Class<?> buildProxyClass(Class<?> persistentClass, Class<?>[] interfaces) {
+        final Class<?> hibernateProxyClass = byteBuddyProxyHelper.buildProxy(persistentClass, interfaces);
+        if (!GroovyObject.class.isAssignableFrom(persistentClass)) {
+            return hibernateProxyClass;
+        }
+
+        try {
+            return new ByteBuddy()
+                    .subclass(hibernateProxyClass, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
+                    .method(named("getMetaClass").and(returns(MetaClass.class)))
+                            .intercept(MethodDelegation.to(new GroovyProxyMetaClassDispatcher(persistentClass)))
+                    .make()
+                    .load(hibernateProxyClass.getClassLoader(), resolveClassLoadingStrategy(persistentClass))
+                    .getLoaded();
+        }
+        catch (Exception e) {
+            throw new HibernateException("Unable to generate Groovy proxy for " + entityName, e);
+        }
+    }
+
+    private static ClassLoadingStrategy<ClassLoader> resolveClassLoadingStrategy(Class<?> originalClass) {
+        try {
+            return ClassLoadingStrategy.UsingLookup.of(MethodHandles.privateLookupIn(originalClass, MethodHandles.lookup()));
+        }
+        catch (IllegalAccessException e) {
+            throw new HibernateException("Unable to access class " + originalClass.getName(), e);
+        }
     }
 
     @Override
