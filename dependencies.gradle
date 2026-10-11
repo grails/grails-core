@@ -124,6 +124,9 @@ ext {
             // Logback 1.6.5 requires 2.0.19; align the SLF4J family above Boot's managed 2.0.18.
             'slf4j.version'                 : '2.0.19',
             'spock.version'                 : '2.4-groovy-5.0',
+            // Not managed by spring-boot-dependencies. Spring AI 2.0.x is the Spring Boot 4.0 / 4.1
+            // line; grails-bom imports its BOM so applications and grails-spring-ai share one Spring AI version.
+            'spring-ai-bom.version'         : '2.0.1',
             // Not managed by spring-boot-dependencies. springdoc 3.x is the Spring Boot 4 /
             // Spring Framework 7 line; the grails-openapi module compiles against its
             // OpenApiCustomizer SPI and apps add the webmvc-ui starter for Swagger UI.
@@ -156,6 +159,7 @@ ext {
             'jackson-bom'       : "tools.jackson:jackson-bom:${bomDependencyVersions['jackson-bom.version']}",
             'slf4j-bom'         : "org.slf4j:slf4j-bom:${bomDependencyVersions['slf4j.version']}",
             'spock-bom'         : "org.spockframework:spock-bom:${bomDependencyVersions['spock.version']}",
+            'spring-ai-bom'     : "org.springframework.ai:spring-ai-bom:${bomDependencyVersions['spring-ai-bom.version']}",
     ]
 
     // Note: the name of the dependency must be the prefix of the property name so properties in the pom are resolved correctly

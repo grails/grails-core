@@ -1,0 +1,21 @@
+{
+    "groups": [
+        {
+            "name": "grails.ai.stub",
+            "description": "The stubs that stand in for the configured Spring AI provider while the AI testing support is on the classpath."
+        }
+    ],
+    "properties": [
+        {
+            "name": "grails.ai.stub.enabled",
+            "type": "java.lang.Boolean",
+            "description": "Whether a scripted chat model and a deterministic embedding model stand in for the configured provider's models, which then needs no credentials. Set to false to run tests against the real provider."
+        },
+        {
+            "name": "grails.ai.stub.embeddingDimensions",
+            "type": "java.lang.Integer",
+            "description": "The number of dimensions of the vectors the stub embedding model produces.",
+            "defaultValue": 64
+        }
+    ]
+}

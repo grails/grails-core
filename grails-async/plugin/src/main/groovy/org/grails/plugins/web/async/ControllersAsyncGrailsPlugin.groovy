@@ -21,25 +21,32 @@ package org.grails.plugins.web.async
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
+import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.function.UnaryOperator
 
 import org.springframework.beans.factory.BeanRegistrar
 import org.springframework.beans.factory.BeanRegistry
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.boot.convert.DurationStyle
 import org.springframework.core.env.Environment
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.core.task.TaskDecorator
 import org.springframework.core.task.support.CompositeTaskDecorator
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.util.ClassUtils
 
 import grails.async.PromiseFactory
 import grails.async.Promises
 import grails.plugins.Plugin
+import grails.async.web.StreamItemRenderer
 import grails.async.web.WebPromises
 import org.grails.async.factory.PromiseFactoryBuilder
 import org.grails.async.factory.future.VirtualThreadPromiseFactory
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
+import org.grails.plugins.web.async.mvc.DefaultStreamItemRenderer
+import org.grails.plugins.web.async.mvc.JacksonStreamItemRenderer
+import org.grails.plugins.web.async.mvc.PublisherActionResultTransformer
 
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
@@ -52,6 +59,10 @@ import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
 @Slf4j
 class ControllersAsyncGrailsPlugin extends Plugin {
 
+    public static final String STREAMING_ENABLED = 'grails.async.streaming.enabled'
+    public static final String STREAMING_TIMEOUT = 'grails.async.streaming.timeout'
+    private static final String JSON_MAPPER_CLASS = 'tools.jackson.databind.json.JsonMapper'
+
     def grailsVersion = '8.0.0-SNAPSHOT > *'
     def loadAfter = ['controllers']
 
@@ -59,6 +70,7 @@ class ControllersAsyncGrailsPlugin extends Plugin {
     BeanRegistrar beanRegistrar() {
         return { BeanRegistry registry, Environment environment ->
             registry.registerBean('asyncPromiseResponseActionResultTransformer', AsyncActionResultTransformer)
+            registerStreamingBeans(registry, environment)
             registry.registerBean('grailsWebRequestTaskDecorator', TaskDecorator) {
                 it.supplier { new GrailsWebRequestTaskDecorator() }
             }
@@ -104,4 +116,28 @@ class ControllersAsyncGrailsPlugin extends Plugin {
             }
         }
     }
+    /**
+     * Registers the beans that stream a {@code Publisher} returned from an action as server-sent events,
+     * unless {@code grails.async.streaming.enabled} is {@code false}.
+     */
+    private static void registerStreamingBeans(BeanRegistry registry, Environment environment) {
+        if (!environment.getProperty(STREAMING_ENABLED, Boolean, Boolean.TRUE)) {
+            return
+        }
+        registry.registerBean('defaultStreamItemRenderer', DefaultStreamItemRenderer)
+        if (ClassUtils.isPresent(JSON_MAPPER_CLASS, ControllersAsyncGrailsPlugin.classLoader)) {
+            registry.registerBean('jacksonStreamItemRenderer', JacksonStreamItemRenderer) {
+                it.supplier { context -> JacksonStreamItemRenderer.create(context) }
+            }
+        }
+        String configuredTimeout = environment.getProperty(STREAMING_TIMEOUT)
+        Duration timeout = configuredTimeout ? DurationStyle.detectAndParse(configuredTimeout) : null
+        registry.registerBean('publisherActionResultTransformer', PublisherActionResultTransformer) {
+            it.supplier { context ->
+                List<StreamItemRenderer> renderers = context.beanProvider(StreamItemRenderer).orderedStream().toList()
+                new PublisherActionResultTransformer(renderers, timeout)
+            }
+        }
+    }
+
 }
