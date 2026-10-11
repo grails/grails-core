@@ -628,9 +628,10 @@ class GrailsDomainGeneratorSpec extends HibernateGormDatastoreSpec {
         when:
         new MetadataSources(registry).addAnnotatedClass(GenNativeProbeEntity).buildMetadata().buildSessionFactory().close()
 
-        then: "GrailsNativeGenerator inherits AnnotationBasedGenerator<NativeGenerator>, which accepts only Hibernate's own annotation"
+        then: "Hibernate finds no constructor it can call, as GrailsNativeGenerator takes the JDBC environment, and the generator also inherits AnnotationBasedGenerator<NativeGenerator>, which accepts only Hibernate's own annotation"
         Exception e = thrown()
-        e.message.contains('is not assignable to')
+        e.message.contains('No appropriate constructor for id generator class')
+        e.message.contains('GrailsNativeGenerator')
 
         cleanup:
         StandardServiceRegistryBuilder.destroy(registry)
