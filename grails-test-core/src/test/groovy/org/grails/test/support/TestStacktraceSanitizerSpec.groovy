@@ -50,4 +50,13 @@ class TestStacktraceSanitizerSpec extends Specification {
         TestStacktraceSanitizer.sanitize(error).stackTrace*.className == ['com.example.MySpec']
     }
 
+    void 'an empty trace stays empty'() {
+        given:
+        RuntimeException error = new RuntimeException('boom')
+        error.stackTrace = new StackTraceElement[0]
+
+        expect:
+        TestStacktraceSanitizer.sanitize(error).stackTrace.length == 0
+    }
+
 }
