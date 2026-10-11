@@ -312,7 +312,7 @@ public class PredicateGenerator {
         From<?, ?> associationRoot = fromsByProvider.getLocalFrom(associationName);
         if (associationRoot == null) {
             HibernateAlias definition = fromsByProvider.getLocalAliasDefinition(associationName);
-            associationRoot = definition != null && definition.path() != null ?
+            associationRoot = definition != null ?
                     fromsByProvider.getRoot().join(definition.path(), definition.joinType()) :
                     fromsByProvider.getRoot().join(associationName, fromsByProvider.getLocalJoinType(associationName));
             fromsByProvider.addFrom(associationName, associationRoot);
