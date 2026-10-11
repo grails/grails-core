@@ -18,6 +18,7 @@
  */
 package org.grails.plugins.web.mapping.factory
 
+import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.support.StaticApplicationContext
 import spock.lang.Specification
@@ -66,4 +67,15 @@ class UrlMappingFactoryBeanSpec extends Specification {
         factory.getObject() == [a: 1]
     }
 
+    void 'the mappings are logged when debug logging is enabled for the factory'() {
+        given:
+        UrlMappingFactoryBean factory = new UrlMappingFactoryBean()
+        factory.applicationContext = new StaticApplicationContext()
+        factory.mappings = [a: 1, b: 2]
+        factory.afterPropertiesSet()
+
+        expect:
+        LogFactory.getLog(UrlMappingFactoryBean).debugEnabled
+        factory.getObject() == [a: 1, b: 2]
+    }
 }
