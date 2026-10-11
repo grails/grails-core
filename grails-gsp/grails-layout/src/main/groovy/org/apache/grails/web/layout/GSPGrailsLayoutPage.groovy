@@ -77,6 +77,16 @@ class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
         used = true
     }
 
+    /**
+     * Sitemesh declares {@code String getProperty(String)} while {@code GroovyObject} declares
+     * {@code Object getProperty(String)}. Without this override a dynamic call can bind to the
+     * metaclass lookup and fail with a MissingPropertyException for names like {@code meta.title}.
+     */
+    @Override
+    String getProperty(String name) {
+        return super.getProperty(name)
+    }
+
     @Override
     void writeHead(Writer out) throws IOException {
         if (headBuffer == null) {
