@@ -81,7 +81,7 @@ class PersistentEntityValidator implements CascadingValidator, ConstrainedEntity
             throw new IllegalArgumentException("Argument [$obj] is not an instance of [$targetClass] which this validator is configured for")
         }
 
-        Map<String, ConstrainedProperty> constrainedProperties = this.constrainedProperties
+        Map<String, ConstrainedProperty> constrainedProperties = getValidatedConstrainedProperties()
         Set<String> constrainedPropertyNames = new HashSet<>(constrainedProperties.keySet())
 
         def validatedObjects = new HashSet()
@@ -113,6 +113,33 @@ class PersistentEntityValidator implements CascadingValidator, ConstrainedEntity
             }
         }
 
+        validateBeyondConstraints(obj, errors)
+    }
+
+    /**
+     * The constraints this validator validates: the ones evaluated from the {@code constraints} block of the entity
+     * and the defaults. {@link #getConstrainedProperties()} exposes the same constraints, unless a subclass also
+     * describes rules it validates by other means in them, such as Bean Validation annotations.
+     *
+     * @return The constraints to validate
+     * @since 8.0.1
+     */
+    protected Map<String, ConstrainedProperty> getValidatedConstrainedProperties() {
+        return this.constrainedProperties
+    }
+
+    /**
+     * Validates the rules of the object beyond its constraints, such as the Bean Validation annotations of its
+     * class. Called after the constraints and the associations of the object: for the object being validated by
+     * {@link #validate}, and for each associated object validation cascades to by the validator of its entity, with
+     * the nested path of the errors set to the association. Does nothing by default.
+     *
+     * @param obj The object to validate
+     * @param errors The errors to report the violations to
+     * @since 8.0.1
+     */
+    protected void validateBeyondConstraints(Object obj, Errors errors) {
+        // the constraints are the only rules of a plain entity
     }
 
     /**
@@ -237,14 +264,13 @@ class PersistentEntityValidator implements CascadingValidator, ConstrainedEntity
             otherSide = association.getInverseSide()
         }
 
-        Map associatedConstrainedProperties
+        PersistentEntityValidator associatedValidator = null
+        Map<String, ConstrainedProperty> associatedConstrainedProperties = Collections.<String, ConstrainedProperty>emptyMap()
 
         def validator = mappingContext.getEntityValidator(associatedEntity)
         if (validator instanceof PersistentEntityValidator) {
-            associatedConstrainedProperties = ((PersistentEntityValidator) validator).getConstrainedProperties()
-        }
-        else {
-            associatedConstrainedProperties = Collections.<String, ConstrainedProperty>emptyMap()
+            associatedValidator = (PersistentEntityValidator) validator
+            associatedConstrainedProperties = associatedValidator.getValidatedConstrainedProperties()
         }
 
         // Invoke any beforeValidate callbacks on the associated object before validating
@@ -285,6 +311,10 @@ class PersistentEntityValidator implements CascadingValidator, ConstrainedEntity
                         (Association) associatedPersistentProperty,
                         validatedObjects)
                 }
+            }
+
+            if (associatedValidator != null) {
+                associatedValidator.validateBeyondConstraints(associatedObject, errors)
             }
         }
         finally {

@@ -18,6 +18,8 @@
  */
 package grails.gorm.validation
 
+import org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
 import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
@@ -28,6 +30,8 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormMappingConfigurationStrategy
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.grails.datastore.mapping.validation.ValidatorRegistry
+import org.springframework.context.MessageSource
+import org.springframework.context.support.StaticMessageSource
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
 import spock.lang.Issue
@@ -178,6 +182,112 @@ class PersistentEntityValidatorSpec extends Specification {
         then: "validate is not called for publisher"
         !errors.hasErrors()
         !author.dirtyPublisher.validateCalled
+    }
+
+    def "the rules beyond the constraints are validated for the object and for each associated object cascaded to, under its path"() {
+        given: "validators that record what they are asked to validate beyond the constraints"
+        MappingContext mappingContext = new KeyValueMappingContext("test")
+        mappingContext.mappingFactory = new GormKeyValueMappingFactory("test")
+        mappingContext.syntaxStrategy = new GormMappingConfigurationStrategy(mappingContext.mappingFactory)
+        PersistentEntity authorEntity = mappingContext.addPersistentEntity(Author)
+        PersistentEntity bookEntity = mappingContext.addPersistentEntity(Book)
+        mappingContext.addPersistentEntity(Publisher)
+        DefaultValidatorRegistry registry = new DefaultValidatorRegistry(mappingContext, new ConnectionSourceSettings())
+        RecordingValidator authorValidator = new RecordingValidator(authorEntity, registry.messageSource, registry.constraintsEvaluator)
+        RecordingValidator bookValidator = new RecordingValidator(bookEntity, registry.messageSource, registry.constraintsEvaluator)
+        mappingContext.addEntityValidator(authorEntity, authorValidator)
+        mappingContext.addEntityValidator(bookEntity, bookValidator)
+        Book first = new Book()
+        Book second = new Book()
+        Author author = new Author(name: 'Author', books: [first, second] as List)
+        Errors errors = new ValidationErrors(author)
+
+        when:
+        authorValidator.validate(author, errors)
+
+        then: "the author is validated after its constraints and associations"
+        authorValidator.validated == [author]
+        authorValidator.paths == ['']
+
+        and: "each book by its own validator, with the nested path of the association set"
+        bookValidator.validated == [first, second]
+        bookValidator.paths == ['books[0].', 'books[1].']
+
+        and: "what the validators report lands under that path"
+        errors.errorCount == 3
+        errors.getFieldError('name').code == 'beyond'
+        errors.getFieldError('books[0].name').code == 'beyond'
+        errors.getFieldError('books[1].name').code == 'beyond'
+
+        when: "validation does not cascade"
+        authorValidator.validated.clear()
+        bookValidator.validated.clear()
+        errors = new ValidationErrors(author)
+        authorValidator.validate(author, errors, false)
+
+        then: "only the author is validated"
+        authorValidator.validated == [author]
+        bookValidator.validated.empty
+        errors.errorCount == 1
+    }
+
+    def "the constraints validated are the evaluated ones, whatever a subclass exposes"() {
+        given: "a validator exposing a constraint it does not validate"
+        MappingContext mappingContext = new KeyValueMappingContext("test")
+        mappingContext.mappingFactory = new GormKeyValueMappingFactory("test")
+        mappingContext.syntaxStrategy = new GormMappingConfigurationStrategy(mappingContext.mappingFactory)
+        PersistentEntity authorEntity = mappingContext.addPersistentEntity(Author)
+        PersistentEntity bookEntity = mappingContext.addPersistentEntity(Book)
+        mappingContext.addPersistentEntity(Publisher)
+        DefaultValidatorRegistry registry = new DefaultValidatorRegistry(mappingContext, new ConnectionSourceSettings())
+        RecordingValidator bookValidator = new RecordingValidator(bookEntity, registry.messageSource, registry.constraintsEvaluator)
+        mappingContext.addEntityValidator(bookEntity, bookValidator)
+        mappingContext.addEntityValidator(authorEntity, registry.getValidator(authorEntity))
+        Author author = new Author(name: 'Author', books: [new Book()])
+        Errors errors = new ValidationErrors(author)
+
+        when:
+        mappingContext.getEntityValidator(authorEntity).validate(author, errors)
+
+        then: "the exposed constraints say the name of a book is required"
+        !bookValidator.constrainedProperties.name.nullable
+        bookValidator.constrainedProperties.name.maxSize == 3
+
+        and: "the book is validated with its evaluated constraints, which allow the name beforeValidate sets"
+        errors.errorCount == 1
+        errors.getFieldError('books[0].name').code == 'beyond'
+    }
+}
+
+/**
+ * Records the objects it is asked to validate beyond the constraints and rejects their name, and exposes a
+ * constraint it does not validate.
+ */
+class RecordingValidator extends PersistentEntityValidator {
+
+    final List<Object> validated = []
+    final List<String> paths = []
+
+    RecordingValidator(PersistentEntity entity, MessageSource messageSource, ConstraintsEvaluator constraintsEvaluator) {
+        super(entity, messageSource, constraintsEvaluator)
+    }
+
+    @Override
+    Map<String, ConstrainedProperty> getConstrainedProperties() {
+        Map<String, ConstrainedProperty> exposed = new LinkedHashMap<>(super.constrainedProperties)
+        DefaultConstrainedProperty name = new DefaultConstrainedProperty(targetClass, 'name', String,
+                new DefaultConstraintRegistry(new StaticMessageSource()))
+        name.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, false)
+        name.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 3)
+        exposed.name = name
+        exposed
+    }
+
+    @Override
+    protected void validateBeyondConstraints(Object obj, Errors errors) {
+        validated.add(obj)
+        paths.add(errors.nestedPath)
+        errors.rejectValue('name', 'beyond')
     }
 }
 
