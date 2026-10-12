@@ -248,7 +248,10 @@ no longer throws a `ConverterException` merely because the root is a scalar.
 
 ==== 5. Opt Into Jackson JSON Request Binding
 
-Grails 9 retains `JsonSlurper` request binding by default and logs a startup deprecation notice.
+Grails 9 retains `JsonSlurper` request binding by default and logs a startup deprecation notice. As
+in Grails 8, an application `JsonSlurper` bean, for example one using `JsonParserType.LAX`, replaces
+the default parser on that path; once Jackson parsing is enabled, configure it through
+`JsonMapperBuilderCustomizer` instead.
 Set `grails.databinding.json.jackson: true` to parse binding bodies with Boot's configured Jackson
 `JsonMapper`. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
 Mapper features installed through `JsonMapperBuilderCustomizer` then apply consistently

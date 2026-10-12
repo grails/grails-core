@@ -18,6 +18,12 @@
  */
 package org.grails.web.databinding.bindingsource.json
 
+import groovy.json.JsonParserType
+import groovy.json.JsonSlurper
+
+import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.JsonApiDataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
 import grails.web.databinding.GrailsWebDataBinder
 import grails.web.mime.MimeType
@@ -204,6 +210,44 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         body << ['{"a":1} trailing', '{"a":1,}', '{"a":01}', '{"a":"\t"}', '{"a":1}//c']
     }
 
+    void 'the legacy parsing notice is logged once however many JSON binding sources start'() {
+        given: 'a new application'
+        ShutdownOperations.runOperations()
+
+        when:
+        String output = stderrWhile {
+            [new JsonDataBindingSourceCreator(), new HalJsonDataBindingSourceCreator(),
+             new JsonApiDataBindingSourceCreator()]*.initialize()
+        }
+
+        then:
+        output.readLines().count { it.contains(LEGACY_PARSING_NOTICE) } == 1
+        output.contains('Set grails.databinding.json.jackson=true to opt into Jackson; it becomes the default in Grails 10.')
+
+        when: 'the next application opts into Jackson'
+        ShutdownOperations.runOperations()
+        output = stderrWhile { new JsonDataBindingSourceCreator(useJackson: true).initialize() }
+
+        then:
+        !output.contains(LEGACY_PARSING_NOTICE)
+    }
+
+    void 'an application JsonSlurper bean parses bodies on the legacy path, as on Grails 8'() {
+        given: 'a lax parser, which accepts unquoted keys'
+        def context = new AnnotationConfigApplicationContext()
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean(JsonSlurper) { new JsonSlurper().setType(JsonParserType.LAX) }
+        context.registerBean(JsonDataBindingSourceCreator)
+        context.refresh()
+
+        expect:
+        context.getBean(JsonDataBindingSourceCreator)
+                .createDataBindingSource(MimeType.JSON, Object, new StringReader('{name: Grails}'))['name'] == 'Grails'
+
+        cleanup:
+        context.close()
+    }
+
     void 'Jackson request parsing uses the conventional Boot mapper when two non primary mappers exist'() {
         given:
         def context = new AnnotationConfigApplicationContext()
@@ -222,6 +266,21 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
 
         cleanup:
         context.close()
+    }
+
+    private static final String LEGACY_PARSING_NOTICE = 'Legacy JSON request parsing is deprecated for removal in Grails 11.'
+
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
     }
 }
 

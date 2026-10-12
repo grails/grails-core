@@ -18,6 +18,7 @@
  */
 package org.grails.web.databinding.bindingsource
 
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
 import groovy.transform.CompileStatic
@@ -41,6 +42,7 @@ import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
 import grails.databinding.SimpleMapDataBindingSource
 import grails.web.mime.MimeType
+import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 import org.grails.web.json.JSONObject
 
@@ -72,9 +74,21 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     @Value('${grails.databinding.json.jackson:false}')
     boolean useJackson = false
 
+    /** Parses request bodies on the legacy path; an application bean replaces it, as on Grails 8. */
+    @Autowired(required = false)
+    JsonSlurper jsonSlurper = new JsonSlurper()
+
+    // The JSON, HAL and JSON API creators share the setting, so the notice is logged once per
+    // application rather than once per creator
+    private static final AtomicBoolean LEGACY_PARSING_REPORTED = new AtomicBoolean()
+
+    static {
+        ShutdownOperations.addOperation({ LEGACY_PARSING_REPORTED.set(false) } as Runnable, true)
+    }
+
     @PostConstruct
     void initialize() {
-        if (!useJackson) {
+        if (!useJackson && LEGACY_PARSING_REPORTED.compareAndSet(false, true)) {
             log.warn('Legacy JSON request parsing is deprecated for removal in Grails 11. ' +
                     'Set grails.databinding.json.jackson=true to opt into Jackson; it becomes the default in Grails 10.')
         }
@@ -163,7 +177,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     }
 
     private Object parse(Reader reader) {
-        return useJackson ? untypedReader().readValue(reader) : new JsonSlurper().parse(reader)
+        return useJackson ? untypedReader().readValue(reader) : jsonSlurper.parse(reader)
     }
 
     @Override
