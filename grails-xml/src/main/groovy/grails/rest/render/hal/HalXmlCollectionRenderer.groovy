@@ -27,7 +27,7 @@ import grails.web.mime.MimeType
  *
  * A HAL XML renderer for a collection of objects
  *
- * @deprecated Use {@link grails.rest.render.hal.HalJsonCollectionRenderer} for Grails HAL JSON, or
+ * @deprecated Scheduled for removal in Grails 11. Use {@link grails.rest.render.hal.HalJsonCollectionRenderer} for Grails HAL JSON, or
  * add the {@code spring-boot-starter-hateoas} for Spring HATEOAS integration. Keep this
  * renderer only while migrating existing HAL XML clients.
  *
@@ -35,7 +35,7 @@ import grails.web.mime.MimeType
  * @since 2.3
  */
 @CompileStatic
-@Deprecated(since = '9.0')
+@Deprecated(since = '9.0', forRemoval = true)
 class HalXmlCollectionRenderer extends HalXmlRenderer implements ContainerRenderer {
 
     final Class componentType

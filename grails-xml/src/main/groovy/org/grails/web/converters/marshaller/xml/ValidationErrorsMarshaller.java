@@ -33,13 +33,15 @@ import org.grails.web.converters.marshaller.NameAwareMarshaller;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
- * @deprecated Use {@code respond errors} with JSON content negotiation to render RFC 9457
- * Problem Details. Keep this marshaller only while migrating existing XML validation-error clients.
+ * @deprecated Scheduled for removal in Grails 11. Use {@code respond errors} with JSON content
+ * negotiation and {@code grails.web.rendering.json.spring} enabled, the default from Grails 10, to
+ * render RFC 9457 Problem Details. Keep this marshaller only while migrating existing XML
+ * validation-error clients.
  *
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-@Deprecated(since = "9.0", forRemoval = false)
+@Deprecated(since = "9.0", forRemoval = true)
 public class ValidationErrorsMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller, ApplicationContextAware {
 
     private ApplicationContext applicationContext;

@@ -65,7 +65,7 @@ beans = {
 ----
 
 The `VndErrorXmlRenderer` and legacy XML validation-error marshaller are deprecated since Grails 9.0
-and will be removed in a future major release. Keep them only for existing XML clients while migrating
+and will be removed in Grails 11. Keep them only for existing XML clients while migrating
 to Problem Details JSON. They remain available when the optional `grails-xml` module is installed.
 
 Then if you alter the client request to accept Vnd.Error you get an appropriate response:

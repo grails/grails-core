@@ -37,7 +37,7 @@ import org.grails.web.xml.XMLStreamWriter
 /**
  * Renders domain instances in HAL XML format (see http://stateless.co/hal_specification.html)
  *
- * @deprecated Use {@link grails.rest.render.hal.HalJsonRenderer} for Grails HAL JSON, or add the
+ * @deprecated Scheduled for removal in Grails 11. Use {@link grails.rest.render.hal.HalJsonRenderer} for Grails HAL JSON, or add the
  * {@code spring-boot-starter-hateoas} for Spring HATEOAS integration. Keep this renderer
  * only while migrating existing HAL XML clients.
  *
@@ -45,7 +45,7 @@ import org.grails.web.xml.XMLStreamWriter
  * @since 2.3
  */
 @CompileStatic
-@Deprecated(since = '9.0')
+@Deprecated(since = '9.0', forRemoval = true)
 class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
 
     public static final MimeType MIME_TYPE = MimeType.HAL_XML

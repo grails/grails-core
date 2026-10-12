@@ -129,7 +129,7 @@ Content-Type: application/hal+json;charset=ISO-8859-1
 }
 ----
 
-HAL XML renderers are deprecated since Grails 9.0 and will be removed in a future major release. Existing
+HAL XML renderers are deprecated since Grails 9.0 and will be removed in Grails 11. Existing
 clients can retain them temporarily by adding the optional `grails-xml` module. New development should
 use the Grails HAL JSON renderer. Spring HATEOAS models can be returned from Spring MVC controllers;
 adding `spring-boot-starter-hateoas` alone does not register a Grails renderer for those models.

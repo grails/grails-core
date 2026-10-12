@@ -41,20 +41,20 @@ import spock.lang.Specification
 
 class XmlCompatibilitySpec extends Specification {
 
-    void 'legacy XML validation error formats are deprecated for a future major release'() {
+    void 'legacy XML validation error formats are deprecated for removal in Grails 11'() {
         expect:
         VndErrorXmlRenderer.getAnnotation(Deprecated).since() == '9.0'
-        !VndErrorXmlRenderer.getAnnotation(Deprecated).forRemoval()
+        VndErrorXmlRenderer.getAnnotation(Deprecated).forRemoval()
         ValidationErrorsMarshaller.getAnnotation(Deprecated).since() == '9.0'
-        !ValidationErrorsMarshaller.getAnnotation(Deprecated).forRemoval()
+        ValidationErrorsMarshaller.getAnnotation(Deprecated).forRemoval()
     }
 
-    void 'HAL XML renderers are deprecated for a future major release'() {
+    void 'HAL XML renderers are deprecated for removal in Grails 11'() {
         expect:
         HalXmlRenderer.getAnnotation(Deprecated).since() == '9.0'
-        !HalXmlRenderer.getAnnotation(Deprecated).forRemoval()
+        HalXmlRenderer.getAnnotation(Deprecated).forRemoval()
         HalXmlCollectionRenderer.getAnnotation(Deprecated).since() == '9.0'
-        !HalXmlCollectionRenderer.getAnnotation(Deprecated).forRemoval()
+        HalXmlCollectionRenderer.getAnnotation(Deprecated).forRemoval()
     }
 
     void setup() {
