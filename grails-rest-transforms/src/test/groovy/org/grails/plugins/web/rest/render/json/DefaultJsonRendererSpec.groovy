@@ -54,7 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8
 
 class DefaultJsonRendererSpec extends Specification {
 
-    void 'an explicit ProblemDetail controls the status content type and instance'() {
+    void 'an explicit ProblemDetail controls the status content type and instance for status #status'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
@@ -63,12 +63,15 @@ class DefaultJsonRendererSpec extends Specification {
         context.resourcePath = '/books'
 
         when:
-        renderer.render(ProblemDetail.forStatus(422), context)
+        renderer.render(ProblemDetail.forStatus(status), context)
 
         then:
-        webRequest.response.status == 422
+        webRequest.response.status == status
         webRequest.response.contentType.startsWith('application/problem+json')
         webRequest.response.contentAsString.contains('"instance":"/books"')
+
+        where: 'a problem may carry a status that has no HttpStatus constant'
+        status << [422, 499, 299, 599]
     }
 
     void 'text JSON uses Jackson and preserves source converter prefixes'() {

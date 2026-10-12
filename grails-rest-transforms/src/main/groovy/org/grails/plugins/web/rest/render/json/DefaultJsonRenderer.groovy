@@ -53,6 +53,7 @@ import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
 import grails.web.render.NamedJsonRenderer
+import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
@@ -187,7 +188,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             // committed and a later content type change is silently discarded.
             if (springValue instanceof ProblemDetail) {
                 ProblemDetail problem = (ProblemDetail) springValue
-                context.setStatus(HttpStatus.valueOf(problem.status))
+                setStatus(context, problem.status)
                 if (problem.instance == null && context.resourcePath) {
                     problem.instance = URI.create(context.resourcePath)
                 }
@@ -223,6 +224,24 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
         List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get()
         return supplied ?: springHttpMessageConverters
+    }
+
+    /**
+     * A problem may carry any status code, as in Spring MVC, while {@link RenderContext} takes an
+     * {@link HttpStatus}; a code without a constant is written to the servlet response directly.
+     */
+    private static void setStatus(RenderContext context, int code) {
+        HttpStatus status = HttpStatus.resolve(code)
+        if (status != null) {
+            context.setStatus(status)
+        }
+        else if (context instanceof ServletRenderContext) {
+            ((ServletRenderContext) context).webRequest.currentResponse.setStatus(code)
+        }
+        else {
+            throw new IllegalArgumentException(
+                    "Status [${code}] has no HttpStatus constant, which ${context.getClass().name} requires.")
+        }
     }
 
     private boolean canUseSpringConverter(RenderContext context) {
