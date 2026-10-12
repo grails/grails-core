@@ -256,11 +256,38 @@ class PartitionedLookupByIdSpec extends Specification {
         thrown(DataIntegrityViolationException)
     }
 
+    void 'withCurrent with a tenant resolver that resolves the default connection source does not lift the restriction'() {
+        given:
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, ConnectionSource.DEFAULT)
+
+        expect: 'a lookup by id inside withCurrent agrees with a query'
+        Tenants.withCurrent(SimpleMapDatastore) {
+            Note.withNewSession {
+                [findById: Note.findById(ownId),
+                 get     : Note.get(ownId),
+                 read    : Note.read(otherId),
+                 exists  : Note.exists(ownId),
+                 getAll  : Note.getAll(ownId, otherId)]
+            }
+        } == [findById: null, get: null, read: null, exists: false, getAll: [null, null]]
+
+        when:
+        Tenants.withCurrent(SimpleMapDatastore) { Note.withNewSession { Note.load(ownId).title } }
+
+        then:
+        thrown(DataIntegrityViolationException)
+    }
+
     void 'a lookup by id inside withTenant is restricted to that tenant'() {
         expect:
         Note.withTenant('other') { Note.withNewSession { Note.get(otherId)?.title } } == 'Other'
         Note.withTenant('other') { Note.withNewSession { Note.get(ownId) } } == null
         Note.withTenant('other').get(ownId) == null
+
+        and: 'the tenant id DEFAULT restricts it as it restricts a query'
+        Note.withTenant(ConnectionSource.DEFAULT) {
+            Note.withNewSession { [Note.findById(ownId), Note.get(ownId), Note.getAll(ownId, otherId)] }
+        } == [null, null, [null, null]]
     }
 
     void 'a lookup by id inside withoutId is not restricted to a tenant'() {
@@ -277,12 +304,23 @@ class PartitionedLookupByIdSpec extends Specification {
         !Tenants.withoutId(datastore) { Note.withTenant('own') { Tenants.isWithoutId() } }
         !Note.withTenant('own') { Tenants.isWithoutId() }
 
+        and: 'it is restored after a nested withTenant'
+        Tenants.withoutId(datastore) {
+            Note.withTenant('own') { Tenants.isWithoutId() }
+            Tenants.isWithoutId()
+        }
+
+        and: 'the tenant id DEFAULT does not count'
+        !Tenants.withId(datastore, ConnectionSource.DEFAULT) { Tenants.isWithoutId() }
+        !Note.withTenant(ConnectionSource.DEFAULT) { Tenants.isWithoutId() }
+
         when: 'the tenant resolver resolves the default connection source'
         System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, ConnectionSource.DEFAULT)
 
         then:
         Tenants.currentId(datastore) == ConnectionSource.DEFAULT
         !Tenants.isWithoutId()
+        !Tenants.withCurrent(SimpleMapDatastore) { Tenants.isWithoutId() }
     }
 
     void 'a proxy created under a tenant is not restricted to a tenant when it is initialized inside withoutId'() {

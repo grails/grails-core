@@ -246,10 +246,37 @@ class MongoLookupByIdMultiTenancySpec extends AutoStartedMongoSpec {
         thrown(DataIntegrityViolationException)
     }
 
+    void 'withCurrent with a tenant resolver that resolves the default connection source does not lift the restriction'() {
+        given:
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, ConnectionSource.DEFAULT)
+
+        expect: 'a lookup by id inside withCurrent agrees with a query'
+        Tenants.withCurrent(MongoDatastore) {
+            Memo.withNewSession {
+                [findById: Memo.findById(ownId),
+                 get     : Memo.get(ownId),
+                 read    : Memo.read(otherId),
+                 exists  : Memo.exists(ownId),
+                 getAll  : Memo.getAll(ownId, otherId)]
+            }
+        } == [findById: null, get: null, read: null, exists: false, getAll: [null, null]]
+
+        when:
+        Tenants.withCurrent(MongoDatastore) { Memo.withNewSession { Memo.load(ownId).title } }
+
+        then:
+        thrown(DataIntegrityViolationException)
+    }
+
     void 'a lookup by id inside withTenant is restricted to that tenant'() {
         expect:
         Memo.withTenant('other') { Memo.withNewSession { Memo.get(otherId)?.title } } == 'Other'
         Memo.withTenant('other') { Memo.withNewSession { Memo.get(ownId) } } == null
+
+        and: 'the tenant id DEFAULT restricts it as it restricts a query'
+        Memo.withTenant(ConnectionSource.DEFAULT) {
+            Memo.withNewSession { [Memo.findById(ownId), Memo.get(ownId), Memo.getAll(ownId, otherId)] }
+        } == [null, null, [null, null]]
     }
 
     void 'a lookup by id inside withoutId is not restricted to a tenant'() {
