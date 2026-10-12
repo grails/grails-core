@@ -52,8 +52,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔎 Validate Actions against the ASF approved list"
         run: ./gradlew validateActions
         timeout-minutes: 10
