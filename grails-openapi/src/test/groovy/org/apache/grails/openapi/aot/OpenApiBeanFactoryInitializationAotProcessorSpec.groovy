@@ -21,9 +21,9 @@ package org.apache.grails.openapi.aot
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import org.springframework.aot.generate.NameGenerator
 import org.springframework.aot.generate.DefaultGenerationContext
 import org.springframework.aot.generate.InMemoryGeneratedFiles
+import org.springframework.aot.generate.NameGenerator
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar
