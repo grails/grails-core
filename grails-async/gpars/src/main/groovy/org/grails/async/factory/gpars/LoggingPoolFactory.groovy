@@ -40,7 +40,9 @@ import org.slf4j.LoggerFactory
  *
  * @author Graeme Rocher
  * @since 2.3
+ * @deprecated GPars is superseded by Groovy 6's {@code groovy.concurrent} toolkit; see {@link GparsPromiseFactory}.
  */
+@Deprecated(since = '9.0', forRemoval = true)
 @AutoFinal
 @CompileStatic
 class LoggingPoolFactory implements PoolFactory {
