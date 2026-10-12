@@ -17,13 +17,13 @@ specific language governing permissions and limitations
 under the License.
 ////
 
-=== Upgrade Instructions for Grails 9.0 to Grails 9.1
+=== Upgrade Instructions for Grails 8 to Grails 9
 
-This guide outlines the changes introduced in Grails 9.1 and the steps required to upgrade your application.
+This guide outlines the changes introduced in Grails 9 and the steps required to upgrade your application.
 
 ==== 1. Spring Boot 4.2 and Spring Framework 7.1
 
-Grails 9.1 moves from Spring Boot 4.1 to Spring Boot {springBootVersion} and from Spring Framework 7.0 to Spring Framework {springVersion}.
+Grails 9 moves from Spring Boot 4.1 and Spring Framework 7.0, which Grails 8 uses, to Spring Boot {springBootVersion} and Spring Framework {springVersion}.
 The managed versions that change include Spring Security 7.2, Spring Data 2026.1, Micrometer 1.18 and Reactor 2026.0.
 Review the https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.2-Release-Notes[Spring Boot 4.2 Release Notes] and the https://github.com/spring-projects/spring-framework/wiki/Spring-Framework-7.1-Release-Notes[Spring Framework 7.1 Release Notes] for the changes that affect your application.
 
