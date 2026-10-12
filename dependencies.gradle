@@ -26,12 +26,12 @@ ext {
             'asciidoctor-gradle-jvm.version': '4.0.5',
             'asciidoctorj.version'          : '3.0.1',
             'asm.version'                   : '9.10.1',
-            'asset-pipeline-gradle.version' : '5.2.0',
+            'asset-pipeline-gradle.version' : '5.2.2',
             'commons-text.version'          : '1.15.0',
             'directory-watcher.version'     : '0.19.1',
             'gradle-groovy.version'         : '4.0.33',
             'gradle-spock.version'          : '2.4-groovy-4.0',
-            'grails-publish-plugin.version' : '1.0.0-RC2',
+            'grails-publish-plugin.version' : '1.0.0',
             'javaparser-core.version'       : '3.28.2',
             // Tracks the JLine version Groovy ships (groovy-groovysh), so the framework and groovysh
             // share one terminal stack - keep in step with groovy.version.
@@ -70,7 +70,7 @@ ext {
     ]
 
     bomDependencyVersions = [
-            'asset-pipeline-bom.version'    : '5.2.0',
+            'asset-pipeline-bom.version'    : '5.2.2',
             'cas-client-core.version'       : '4.1.1',
             'bootstrap-icons.version'       : '1.13.1',
             'bootstrap.version'             : '5.3.8',
@@ -84,19 +84,29 @@ ext {
             'graphql-java.version'          : '26.1',
             'graphql-java-extended-scalars.version': '24.0',
             'groovy.version'                : '6.0.0',
-            'guava.version'                 : '33.7.1-jre',
+            // Security: 33.7.2 addresses CVE-2026-102554 (uncontrolled resource consumption).
+            'guava.version'                 : '33.7.2-jre',
             // Groovy YAML 6.0.0 depends on Jackson 2.22.2, which wins over the 2.21.6 Spring Boot 4.2
-            // manages, so the BOM must manage at least that. Jackson 2 only releases jackson-annotations
-            // on the minor, hence the separate 2.22 below.
-            'jackson-2-bom.version'         : '2.22.2',
+            // manages, so the BOM must manage at least that. 2.22.3 also fixes CVE-2026-89425,
+            // CVE-2026-89407, CVE-2026-91777 and CVE-2026-91776, which 2.21.6 does not carry. Jackson 2
+            // only releases jackson-annotations on the minor, hence the separate 2.22 below.
+            'jackson-2-bom.version'         : '2.22.3',
             'jackson2-annotations.version'  : '2.22',
+            // Security: overrides Jackson 3.1.6 from Spring Boot 4.2. The 3.2.3 BOM aligns the family
+            // and fixes CVE-2026-89425, CVE-2026-89407, CVE-2026-91777 and CVE-2026-91776.
+            'jackson-bom.version'           : '3.2.3',
             'jquery.version'                : '4.0.0',
+            // Security: overrides the 1.6.3 Spring Boot 4.2 manages. 1.6.3 strips slashes from MDC
+            // values before SiftingAppender uses them as discriminating keys (CVE-2026-19880), and
+            // 1.6.5 completes that fix (CVE-2026-104721). The 1.6.x line keeps SLF4J 2.0.x and JDK 11.
+            'logback.version'               : '1.6.5',
             // Overrides the 5.11.1 Spring Boot 4.2 manages. Pinned first as a security override of
             // Spring Boot 4.1's 5.8.1 (CVE-2026-18710, fixed in 5.9.2); kept so that moving to Spring
             // Boot 4.2 does not downgrade the driver. Drop once Spring Boot manages 5.12.0 or later.
             'mongodb.version'               : '5.12.0',
             'nimbus-jose-jwt.version'       : '10.10',
-            'pac4j.version'                 : '6.5.8',
+            // Includes the follow-up logout redirect and direct-client CSRF fixes on the 6.5.x line.
+            'pac4j.version'                 : '6.5.9',
             // Security: overrides the transitive 3.5.1. 4.0.3 fixes CVE-2025-67030 flagged against plexus-utils.
             'plexus-utils.version'          : '4.1.0',
             // Companion to plexus-utils 4.x: the org.codehaus.plexus.util.xml package (XmlStreamReader,
@@ -108,7 +118,9 @@ ext {
             'rxjava2.version'               : '2.2.21',
             'sitemesh.version'              : '2.6.0',
             'scribejava.version'            : '8.3.3',
-            'spock.version'                 : '2.4-groovy-5.0',
+            // Logback 1.6.5 requires 2.0.19; align the SLF4J family above Boot's managed 2.0.18.
+            'slf4j.version'                 : '2.0.19',
+            'spock.version'                 : '2.5-groovy-6.0',
             // Not managed by spring-boot-dependencies. springdoc 3.x is the Spring Boot 4 /
             // Spring Framework 7 line; the grails-openapi module compiles against its
             // OpenApiCustomizer SPI and apps add the webmvc-ui starter for Swagger UI.
@@ -122,6 +134,9 @@ ext {
             // grails-shell-cli SpringRetryCompilerAutoConfiguration's unversioned
             // reference resolves and consumer apps using @Retryable get a known version.
             'spring-retry.version'          : '2.0.13',
+            // Security: overrides Tomcat 11.0.24 from Spring Boot 4.1. Includes the fixes for
+            // CVE-2026-65905, CVE-2026-65182, CVE-2026-68525 and CVE-2026-65927 on the Servlet 6.1 line.
+            'tomcat.version'                : '11.0.26',
             // Undertow is no longer managed by spring-boot-dependencies: Spring Boot 4
             // removed its Undertow support before GA. Servlet 6.1 support ships as
             // undertow-core 2.4.x plus the io.undertow.ee servlet/websockets artifacts,
@@ -135,6 +150,8 @@ ext {
     bomPlatformDependencies = [
             'asset-pipeline-bom': "cloud.wondrify:asset-pipeline-bom:${bomDependencyVersions['asset-pipeline-bom.version']}",
             'groovy-bom'        : "org.apache.groovy:groovy-bom:${bomDependencyVersions['groovy.version']}",
+            'jackson-bom'       : "tools.jackson:jackson-bom:${bomDependencyVersions['jackson-bom.version']}",
+            'slf4j-bom'         : "org.slf4j:slf4j-bom:${bomDependencyVersions['slf4j.version']}",
             'spock-bom'         : "org.spockframework:spock-bom:${bomDependencyVersions['spock.version']}",
     ]
 
@@ -187,7 +204,14 @@ ext {
             'jackson-2-bom-databind'   : "com.fasterxml.jackson.core:jackson-databind:${bomDependencyVersions['jackson-2-bom.version']}",
             'jackson-2-bom-dataformat-yaml': "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${bomDependencyVersions['jackson-2-bom.version']}",
             'jackson-2-bom-datatype-jsr310': "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${bomDependencyVersions['jackson-2-bom.version']}",
+            // Security override of the 3.1.6 spring-boot-dependencies imports through
+            // tools.jackson:jackson-bom - see jackson-bom.version
+            'jackson-bom-core'         : "tools.jackson.core:jackson-core:${bomDependencyVersions['jackson-bom.version']}",
+            'jackson-bom-databind'     : "tools.jackson.core:jackson-databind:${bomDependencyVersions['jackson-bom.version']}",
             'jquery'                   : "org.webjars.npm:jquery:${bomDependencyVersions['jquery.version']}",
+            // Security override of the 1.6.3 Spring Boot 4.2 manages - see logback.version
+            'logback-classic'          : "ch.qos.logback:logback-classic:${bomDependencyVersions['logback.version']}",
+            'logback-core'             : "ch.qos.logback:logback-core:${bomDependencyVersions['logback.version']}",
             // Override of the 5.11.1 spring-boot-dependencies imports through
             // org.mongodb:mongodb-driver-bom - see mongodb.version. The whole driver family is
             // pinned so a classpath cannot end up mixing driver versions.
@@ -221,6 +245,14 @@ ext {
             'swagger-models-jakarta'   : "io.swagger.core.v3:swagger-models-jakarta:${bomDependencyVersions['swagger.version']}",
             'starter-sitemesh'         : "org.sitemesh:spring-boot-starter-sitemesh:${bomDependencyVersions['starter-sitemesh.version']}",
             'spring-webmvc-sitemesh'   : "org.sitemesh:spring-webmvc-sitemesh:${bomDependencyVersions['spring-webmvc-sitemesh.version']}",
+            // Security override of spring-boot-dependencies - see tomcat.version
+            'tomcat-annotations-api'   : "org.apache.tomcat:tomcat-annotations-api:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-jdbc'              : "org.apache.tomcat:tomcat-jdbc:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-jsp-api'           : "org.apache.tomcat:tomcat-jsp-api:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-core'        : "org.apache.tomcat.embed:tomcat-embed-core:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-el'          : "org.apache.tomcat.embed:tomcat-embed-el:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-jasper'      : "org.apache.tomcat.embed:tomcat-embed-jasper:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-websocket'   : "org.apache.tomcat.embed:tomcat-embed-websocket:${bomDependencyVersions['tomcat.version']}",
             // Not managed by spring-boot-dependencies - see undertow.version
             'undertow-core'            : "io.undertow:undertow-core:${bomDependencyVersions['undertow.version']}",
             'undertow-servlet'         : "io.undertow.ee:undertow-servlet:${bomDependencyVersions['undertow-servlet.version']}",
