@@ -30,6 +30,7 @@ import grails.web.mime.MimeType
 import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.rest.render.hal.HalXmlCollectionRenderer
 import grails.rest.render.hal.HalXmlRenderer
+import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 import org.grails.web.converters.exceptions.ConverterException
@@ -66,6 +67,21 @@ class XmlCompatibilitySpec extends Specification {
 
     void cleanup() {
         ConvertersConfigurationHolder.clear()
+    }
+
+    void 'legacy XML conversion warns once per application, naming Grails 10 and 11'() {
+        given: 'a new application'
+        ShutdownOperations.runOperations()
+        setup()
+
+        when:
+        String log = stderrWhile {
+            2.times { new XML([title: 'Grails']).toString() }
+        }
+
+        then:
+        log.readLines().count { it.contains('Legacy XML conversion is deprecated for removal in Grails 11.') } == 1
+        log.contains('XML leaves the default web starter in Grails 10')
     }
 
     void 'maps retain their entry names and nested collection shape'() {
@@ -195,6 +211,19 @@ class XmlCompatibilitySpec extends Specification {
         document.error.@field == 'label'
         document.error.'rejected-value'.text() == ''
         document.error.message.text() == 'Label is required'
+    }
+
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
     }
 }
 

@@ -45,6 +45,7 @@ import grails.util.GrailsNameUtils;
 import grails.util.GrailsWebUtil;
 import grails.web.mime.MimeType;
 import org.grails.buffer.FastStringWriter;
+import org.grails.core.lifecycle.ShutdownOperations;
 import org.grails.web.converters.AbstractConverter;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.ConverterUtil;
@@ -72,6 +73,11 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
 
     public static final Log log = LogFactory.getLog(XML.class);
     private static final AtomicBoolean LEGACY_RENDER_REPORTED = new AtomicBoolean();
+
+    static {
+        // Reported once per application
+        ShutdownOperations.addOperation(() -> LEGACY_RENDER_REPORTED.set(false), true);
+    }
 
     private static final String CACHED_XML = "org.codehaus.groovy.grails.CACHED_XML_REQUEST_CONTENT";
 

@@ -44,6 +44,7 @@ import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.util.GrailsWebMockUtil
 import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.exceptions.ConverterException
@@ -104,11 +105,12 @@ class DefaultJsonRendererSpec extends Specification {
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
-        renderer.render([title: 'Grails'], new ServletRenderContext(webRequest))
+        String log = stderrWhile { renderer.render([title: 'Grails'], new ServletRenderContext(webRequest)) }
 
         then:
         webRequest.response.contentAsString == '{"title":"Grails"}'
         renderer.legacyFallbackReported.get()
+        log.contains('Spring JSON rendering is enabled but no MVC message converters are available; using legacy JSON.')
     }
 
     void 'unknown named JSON configurations have the same error as render json'() {
@@ -491,14 +493,20 @@ class DefaultJsonRendererSpec extends Specification {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
-        when:
-        renderer.render([65, 66] as byte[], new ServletRenderContext(webRequest))
+        when: 'two responses are written'
+        String log = stderrWhile {
+            2.times { renderer.render([65, 66] as byte[], new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest())) }
+        }
 
         then:
-        webRequest.response.contentAsString == '[65,66]'
+        GrailsWebRequest.lookup().response.contentAsString == '[65,66]'
         renderer.legacyFallbackReported.get()
+
+        and: 'the deprecation is reported once, naming the release that changes the default and the one that removes it'
+        log.readLines().count { it.contains(LEGACY_RESPOND_WARNING) } == 1
+        log.contains('Migrate to Jackson serializers and set grails.web.rendering.json.spring=true. ' +
+                'Spring JSON becomes the default in Grails 10.')
     }
 
     void 'without a Spring JSON setting a registered JSON marshaller keeps the legacy converter'() {
@@ -540,6 +548,22 @@ class DefaultJsonRendererSpec extends Specification {
         setting | expected
         true    | '"title":"Grails"'
         false   | '"legacy":"Grails"'
+    }
+
+    private static final String LEGACY_RESPOND_WARNING =
+            'Legacy respond() JSON rendering is deprecated and will be removed in Grails 11.'
+
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
     }
 }
 
