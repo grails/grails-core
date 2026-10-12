@@ -91,7 +91,9 @@ The setting alone determines the default response path: registering a marshaller
 change it. `false` retains the legacy converter (with the warning); `true` uses Spring's converters
 even while legacy marshallers are registered. Migrate those representations to Jackson serializers
 before enabling it. Legacy pretty-print settings do not configure Jackson; use
-`spring.jackson.serialization.indent-output` on the Spring path.
+`spring.jackson.serialization.indent-output` on the Spring path. Renderer beans an application
+declares, such as a `JsonRenderer` or an `XmlRenderer` for one of its types, follow the same settings
+and reach the same named configurations and message converters.
 
 [source,yaml]
 .application.yml

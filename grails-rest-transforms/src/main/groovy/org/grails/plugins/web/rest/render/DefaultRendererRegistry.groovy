@@ -131,15 +131,25 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.ALL), defaultContainerHtmlRenderer)
     }
 
+    /**
+     * Applies this registry's settings to a JSON renderer: the ones it creates, and renderer beans
+     * such as an application {@code JsonRenderer}. Settings a renderer bean sets itself are kept.
+     */
     private void configureJsonRenderer(DefaultJsonRenderer renderer) {
-        renderer.useSpringJson = useSpringJson
         renderer.legacyFallbackReported = legacyJsonFallbackReported
-        renderer.namedJsonRenderer = namedJsonRenderer
-        renderer.grailsJsonMapperCustomizer = grailsJsonMapperCustomizer
-        if (validationProblemDetailFactory != null) {
+        if (renderer.useSpringJson == null) {
+            renderer.useSpringJson = useSpringJson
+        }
+        if (renderer.namedJsonRenderer == null) {
+            renderer.namedJsonRenderer = namedJsonRenderer
+        }
+        if (renderer.grailsJsonMapperCustomizer == null) {
+            renderer.grailsJsonMapperCustomizer = grailsJsonMapperCustomizer
+        }
+        if (renderer.validationProblemDetailFactory == null) {
             renderer.validationProblemDetailFactory = validationProblemDetailFactory
         }
-        if (springMessageConverters != null) {
+        if (renderer.springHttpMessageConvertersSupplier == null && springMessageConverters != null) {
             renderer.springHttpMessageConvertersSupplier = springMessageConverters::getConverters
         }
     }
@@ -153,6 +163,9 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Override
     def <T> void addRenderer(Renderer<T> renderer) {
+        if (renderer instanceof DefaultJsonRenderer) {
+            configureJsonRenderer((DefaultJsonRenderer) renderer)
+        }
         if (renderer instanceof ContainerRenderer) {
             ContainerRenderer cr = (ContainerRenderer) renderer
             addContainerRenderer(cr.componentType, cr)

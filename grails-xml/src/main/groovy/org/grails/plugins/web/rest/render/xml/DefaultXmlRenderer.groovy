@@ -33,7 +33,6 @@ import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
-import org.grails.core.artefact.DomainClassArtefactHandler
 import org.springframework.validation.Errors
 
 import grails.converters.XML
@@ -42,7 +41,9 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 
@@ -83,8 +84,13 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      */
     Supplier<List<HttpMessageConverter<?>>> springHttpMessageConvertersSupplier
 
+    /** Lets an XML renderer bean, which the plugin does not configure, reach MVC's converters. */
+    @Autowired(required = false)
+    ObjectProvider<SpringMessageConverters> springMessageConvertersProvider
+
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
-        List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get()
+        List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get() ?:
+                springMessageConvertersProvider?.getIfAvailable()?.converters
         return supplied ?: springHttpMessageConverters
     }
 

@@ -30,6 +30,7 @@ import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import grails.converters.json.NamedJsonConfigurationRegistry
+import grails.rest.render.json.JsonRenderer
 import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.validation.BeanPropertyBindingResult
 import tools.jackson.core.JsonGenerator
@@ -65,6 +66,11 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         @Bean
         JsonNamingCustomizer jsonNamingCustomizer() {
             new JsonNamingCustomizer()
+        }
+
+        @Bean
+        JsonRenderer<JsonRendererBeanBody> jsonRendererBeanBodyRenderer() {
+            new JsonRenderer<JsonRendererBeanBody>(JsonRendererBeanBody)
         }
     }
 
@@ -181,6 +187,25 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json == [title: 'Grails']
     }
 
+    void 'an application JsonRenderer bean follows the Spring JSON setting'() {
+        when: 'the bean writes with the Grails mapper, so the snake case customizer applies'
+        controller.respond(new JsonRendererBeanBody(firstName: 'Ada'))
+
+        then:
+        response.json == [first_name: 'Ada']
+
+        when: 'and it can select a registered named configuration'
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('beanUpper') {
+            it.serializer(JsonRendererBeanBody, new UpperFirstNameSerializer())
+        }
+        response.reset()
+        response.format = 'json'
+        controller.respond(new JsonRendererBeanBody(firstName: 'Ada'), jsonConfiguration: 'beanUpper')
+
+        then:
+        response.json == [firstName: 'ADA']
+    }
+
     void 'render json without a name uses the default mapper'() {
         when:
         controller.render(json: [message: "Saved ${'Grails'}"])
@@ -260,6 +285,19 @@ class JsonNamingCustomizer implements JsonMapperBuilderCustomizer {
     void customize(JsonMapper.Builder builder) {
         appliedCustomizer = grailsCustomizer
         builder.propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+    }
+}
+
+class JsonRendererBeanBody {
+    String firstName
+}
+
+class UpperFirstNameSerializer extends ValueSerializer<JsonRendererBeanBody> {
+    @Override
+    void serialize(JsonRendererBeanBody value, JsonGenerator generator, SerializationContext context) {
+        generator.writeStartObject()
+        generator.writeStringProperty('firstName', value.firstName.toUpperCase(Locale.ROOT))
+        generator.writeEndObject()
     }
 }
 

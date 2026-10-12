@@ -22,8 +22,10 @@ import grails.rest.render.AbstractRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.hal.HalJsonCollectionRenderer
+import grails.rest.render.json.JsonRenderer
 import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.web.mime.MimeType
+import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
@@ -88,6 +90,29 @@ class DefaultRendererRegistrySpec extends Specification {
         expect:
         registry.findRenderer(MimeType.XML, 'value').is(forInterface)
         registry.findRenderer(MimeType.XML, 42).is(fallback)
+    }
+
+    void 'a JSON renderer bean takes the registry settings it does not set itself'() {
+        given:
+        def holder = new SpringMessageConverters()
+        def namedRenderer = Stub(NamedJsonRenderer)
+        def registry = new DefaultRendererRegistry(useSpringJson: true, springMessageConverters: holder,
+                namedJsonRenderer: namedRenderer)
+        def bean = new JsonRenderer<String>(String)
+        def legacyBean = new DefaultJsonRenderer<Integer>(Integer).tap { useSpringJson = false }
+
+        when: 'Spring injects the renderer beans'
+        registry.setRenderers([bean, legacyBean] as Renderer[])
+        registry.initialize()
+
+        then:
+        bean.useSpringJson
+        bean.namedJsonRenderer.is(namedRenderer)
+        bean.springHttpMessageConvertersSupplier != null
+        bean.legacyFallbackReported.is(registry.findRenderer(MimeType.JSON, new Object()).legacyFallbackReported)
+
+        and: 'a renderer that chose its path keeps it'
+        !legacyBean.useSpringJson
     }
 
     void 'validation errors negotiate the problem JSON media type'() {

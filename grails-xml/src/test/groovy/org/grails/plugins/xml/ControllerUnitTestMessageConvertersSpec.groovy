@@ -28,6 +28,7 @@ import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 import grails.artefact.Artefact
+import grails.rest.render.xml.XmlRenderer
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
@@ -39,6 +40,11 @@ class ControllerUnitTestMessageConvertersSpec extends Specification implements C
 
     @Configuration
     static class ConverterConfiguration {
+
+        @Bean
+        XmlRenderer<XmlRendererBeanBody> xmlRendererBeanBodyRenderer() {
+            new XmlRenderer<XmlRendererBeanBody>(XmlRendererBeanBody)
+        }
 
         @Bean
         WebMvcConfigurer snakeCaseXml() {
@@ -69,10 +75,26 @@ class ControllerUnitTestMessageConvertersSpec extends Specification implements C
         and: 'with the converter an application WebMvcConfigurer installed'
         response.contentAsString.contains('<first_name>Ada</first_name>')
     }
+
+    void 'an application XmlRenderer bean writes through the same converters'() {
+        given:
+        response.format = 'xml'
+
+        when:
+        controller.respond(new XmlRendererBeanBody(firstName: 'Ada'))
+
+        then:
+        response.contentAsString.startsWith('<XmlRendererBeanBody>')
+        response.contentAsString.contains('<first_name>Ada</first_name>')
+    }
 }
 
 @Artefact('Controller')
 class XmlResponseController { }
+
+class XmlRendererBeanBody {
+    String firstName
+}
 
 class XmlResponseBody {
     String title

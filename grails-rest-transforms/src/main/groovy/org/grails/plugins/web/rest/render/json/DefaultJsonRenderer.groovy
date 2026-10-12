@@ -71,6 +71,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     static final MimeType PROBLEM_JSON = new MimeType('application/problem+json', 'json')
 
+    private static final ValidationProblemDetailFactory DEFAULT_PROBLEM_DETAIL_FACTORY = new ValidationProblemDetailFactory()
+
     final Class<T> targetType
     MimeType[] mimeTypes = [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
@@ -88,10 +90,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     /**
      * Whether responses are written by Spring's message converters rather than the legacy
-     * {@link JSON} converter. Grails 9 defaults to the legacy path; Grails 10 opts into Spring
-     * by default and Grails 11 removes the legacy response path.
+     * {@link JSON} converter. Left unset, the renderer registry applies
+     * {@code grails.web.rendering.json.spring}; unset outside a registry means the legacy path.
+     * Grails 9 defaults to the legacy path; Grails 10 opts into Spring by default and Grails 11
+     * removes the legacy response path.
      */
-    Boolean useSpringJson = false
+    Boolean useSpringJson
 
     /**
      * Shared by the renderers of one registry, so that falling back to the legacy converter is
@@ -106,7 +110,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
      * obtaining the converters cannot force MVC initialization during bean creation.
      */
     Supplier<List<HttpMessageConverter<?>>> springHttpMessageConvertersSupplier
-    ValidationProblemDetailFactory validationProblemDetailFactory = new ValidationProblemDetailFactory()
+    /** Left unset, the registry's factory is used, or a default one outside a registry. */
+    ValidationProblemDetailFactory validationProblemDetailFactory
     NamedJsonRenderer namedJsonRenderer
     GrailsJsonMapperCustomizer grailsJsonMapperCustomizer
 
@@ -172,7 +177,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         if (object instanceof ProblemDetail || canUseSpringConverter(context)) {
             Object springValue = object
             if (object instanceof Errors) {
-                springValue = validationProblemDetailFactory.create((Errors) object, errorsHttpStatus)
+                springValue = (validationProblemDetailFactory ?: DEFAULT_PROBLEM_DETAIL_FACTORY)
+                        .create((Errors) object, errorsHttpStatus)
             }
             MediaType mediaType = springValue instanceof ProblemDetail ?
                     MediaType.parseMediaType(PROBLEM_JSON.name) :
