@@ -110,10 +110,10 @@ public final class NamedJsonConfigurationRegistry {
 
     /**
      * Writes with a per-response include/exclude projection applied on top of the named
-     * configuration. As with the legacy converter, the projection applies to objects of the value's
-     * type, or of its elements' types when the value is a collection or array: domain objects and
-     * beans Jackson writes property by property. A value with no properties to project, such as a
-     * map or a string, is rejected before anything is written.
+     * configuration. The projection applies to objects of the value's type, or of its elements' types
+     * when the value is a collection or array, unlike the legacy converter, which projected only a
+     * single root object: domain objects and beans Jackson writes property by property. A value with
+     * no properties to project, such as a map or a string, is rejected before anything is written.
      *
      * @param name the registered configuration
      * @param output the response writer

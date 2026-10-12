@@ -188,6 +188,38 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         new JsonSlurper().parseText(output.toString()) == [name: 'main', credentials: [user: 'a', password: 'b']]
     }
 
+    void 'a projection a serializer of its own bypasses is reported'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        registry.register('custom') { it.serializer(NamedJsonValue, new NamedJsonValueSerializer()) }
+        def output = new StringWriter()
+
+        when:
+        String log = stderrWhile {
+            registry.writeValue('custom', output, new NamedJsonValue(name: 'secret'), null, ['configured'])
+        }
+
+        then:
+        output.toString() == '{"configured":"SECRET"}'
+        log.contains("JSON includes/excludes were not applied to [class ${NamedJsonValue.name}]")
+    }
+
+    void 'the elements of an Iterable that is not a Collection are written, not consumed by the projection'() {
+        given: 'an iterable that can only be iterated once'
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        Iterator<NamedJsonCredentials> elements = [new NamedJsonCredentials(user: 'a', password: 'b')].iterator()
+        Iterable<NamedJsonCredentials> once = { -> elements } as Iterable<NamedJsonCredentials>
+        def output = new StringWriter()
+
+        when:
+        String log = stderrWhile { registry.writeValue(null, output, once, null, ['password']) }
+
+        then:
+        new JsonSlurper().parseText(output.toString()) == [[user: 'a', password: 'b']]
+        log.contains('were not applied to the elements of a')
+        log.contains('which is not a Collection')
+    }
+
     void 'a projection of a value without properties fails before anything is written'() {
         given:
         def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
@@ -249,6 +281,19 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         writer.toString() == '{"title":"Projected"}'
     }
 
+
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
+    }
 }
 
 class NamedJsonValue {

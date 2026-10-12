@@ -125,7 +125,8 @@ Association identifiers use their mapped identity property name (for example `uu
 the legacy marshaller's fixed `id` key. A value that leads back to a domain object still being
 written, such as an embedded value that points at its owner, is written as the legacy converter
 writes it: `{"_ref": "..", "class": "..."}` by default, or as
-`grails.converters.json.circular.reference.behaviour` selects. A cycle made only of non-domain beans
+`grails.converters.json.circular.reference.behaviour` selects. With `IGNORE`, the property is written
+as `null` where the legacy converter left its name without a value. A cycle made only of non-domain beans
 follows Jackson's rules, as it does in a plain Spring MVC controller, and fails the response.
 
 Boot's shared mapper is not given the Grails domain serializer, so plain Spring `@RestController`
@@ -213,13 +214,14 @@ render json: book, jsonConfiguration: 'deep'
 render json: [ok: true]
 ----
 
-Both accept `includes` and `excludes`. As with the legacy converter, a projection applies to the
-properties of the type written, or of each element's type when a collection or array is written,
-whether those are domain objects or other beans; objects of other types inside them are written in
-full. Properties are named by their bean property names, and a JSON name given by a Jackson
+Both accept `includes` and `excludes`. A projection applies to the properties of the type written,
+or of each element's type when a collection or array is written, unlike the legacy converter, which
+projected only a single root object. It applies to domain objects and other beans alike; objects of
+other types inside them are written in full. Properties are named by their bean property names, and a JSON name given by a Jackson
 annotation or naming strategy matches as well. A value with no properties to project, such as a map
 or a string, throws `IllegalArgumentException` before anything is written. A type that a Jackson
-serializer of its own writes is not filtered, and a warning names it. With
+serializer of its own writes is not filtered, and a warning names it, as does an `Iterable` that is not
+a `Collection`, whose elements are not walked before writing in case it can be iterated only once. With
 `grails.web.rendering.json.spring: true`, `respond x, includes: [...]` without a configuration name
 applies projections the same way; otherwise it uses the legacy converter.
 Registered configurations are immutable: configure them inside the registration callback, and

@@ -42,8 +42,8 @@ import org.springframework.beans.BeanUtils;
  * A per-write {@code includes}/{@code excludes} projection, as the {@code render} and {@code respond}
  * arguments request it.
  *
- * <p>As with the legacy converter, it applies to the properties of objects of the written value's
- * type, or of its elements' types when the value is a collection or an array. It applies to domain
+ * <p>It applies to the properties of objects of the written value's type, or of its elements'
+ * types when the value is a collection or an array. It applies to domain
  * objects and to beans Jackson writes property by property. Values with no properties to project,
  * such as maps and strings, are rejected before anything is written.</p>
  *
@@ -60,11 +60,14 @@ public final class JsonProjection {
     private final List<String> excludes;
     private final Set<Class<?>> types;
     private final Set<Class<?>> applied = ConcurrentHashMap.newKeySet();
+    private final Class<?> unwalkedIterable;
 
-    private JsonProjection(List<String> includes, List<String> excludes, Set<Class<?>> types) {
+    private JsonProjection(List<String> includes, List<String> excludes, Set<Class<?>> types,
+            Class<?> unwalkedIterable) {
         this.includes = includes;
         this.excludes = excludes;
         this.types = types;
+        this.unwalkedIterable = unwalkedIterable;
     }
 
     /**
@@ -81,7 +84,8 @@ public final class JsonProjection {
             return null;
         }
         Set<Class<?>> types = new LinkedHashSet<>();
-        if (value instanceof Iterable<?> elements) {
+        Class<?> unwalkedIterable = null;
+        if (value instanceof Collection<?> elements) {
             elements.forEach(element -> addType(element, types));
         }
         else if (value instanceof Object[] elements) {
@@ -89,10 +93,14 @@ public final class JsonProjection {
                 addType(element, types);
             }
         }
+        else if (value instanceof Iterable<?>) {
+            // It may only be iterable once, so walking it here would leave Jackson nothing to write
+            unwalkedIterable = value.getClass();
+        }
         else {
             addType(value, types);
         }
-        return new JsonProjection(including ? includes : null, excluding ? excludes : null, types);
+        return new JsonProjection(including ? includes : null, excluding ? excludes : null, types, unwalkedIterable);
     }
 
     /**
@@ -198,6 +206,10 @@ public final class JsonProjection {
         if (!unapplied.isEmpty()) {
             LOG.warn("JSON includes/excludes were not applied to {}: a serializer of their own writes them. " +
                     "Apply the projection in that serializer, or write a DTO.", unapplied);
+        }
+        if (unwalkedIterable != null) {
+            LOG.warn("JSON includes/excludes were not applied to the elements of a {}, which is not a Collection. " +
+                    "Write a Collection or an array to project its elements.", unwalkedIterable.getName());
         }
     }
 }
