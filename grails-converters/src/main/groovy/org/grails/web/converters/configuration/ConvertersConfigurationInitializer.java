@@ -78,11 +78,17 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     public static final String SETTING_CONVERTERS_JSON_DOMAIN_JACKSON_ENABLED = "grails.converters.json.domain.jackson.enabled";
     /**
      * Whether the JSON converter renders values as Grails 8 did, with the marshallers of Grails 8 rather than the
-     * application's {@code JsonMapper}. Defaults to {@code false}.
+     * application's {@code JsonMapper}. Defaults to {@code true} in Grails 9: set it to {@code false} to render JSON
+     * through the application's {@code JsonMapper}, which Grails 10 makes the default.
      *
      * @since 9.0
      */
     public static final String SETTING_CONVERTERS_JSON_LEGACY = "grails.converters.json.legacy";
+
+    /**
+     * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9.
+     */
+    private static final boolean LEGACY_JSON_BY_DEFAULT = true;
     public static final String SETTING_CONVERTERS_ENCODING = "grails.converters.encoding";
     public static final String SETTING_CONVERTERS_CIRCULAR_REFERENCE_BEHAVIOUR = "grails.converters.default.circular.reference.behaviour";
     public static final String SETTING_CONVERTERS_JSON_CIRCULAR_REFERENCE_BEHAVIOUR = "grails.converters.json.circular.reference.behaviour";
@@ -117,7 +123,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
                     applicationContext.getBeanProvider(ObservationRegistry.class).getIfAvailable(() -> ObservationRegistry.NOOP));
             // the application's JsonMapper, or a default one when there is none, or more than one and none is primary.
             // Rendering as Grails 8 did, a default one, so that the application's Jackson settings do not change the text
-            boolean legacy = getGrailsConfig().getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, false);
+            boolean legacy = getGrailsConfig().getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT);
             ConvertersConfigurationHolder.setJsonMapper(legacy ? null : applicationContext.getBeanProvider(JsonMapper.class).getIfUnique());
         }
         initJSONConfiguration();
@@ -136,7 +142,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
         Config grailsConfig = getGrailsConfig();
         ProxyHandler proxyHandler = getProxyHandler();
-        boolean legacy = grailsConfig.getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, false);
+        boolean legacy = grailsConfig.getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT);
         ConvertersConfigurationHolder.setLegacyJson(legacy);
         if (legacy) {
             if (LOG.isDebugEnabled()) {

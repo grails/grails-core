@@ -30,8 +30,9 @@ import org.grails.web.json.JSONException;
  * JSON ObjectMarshaller which converts an OffsetDateTime to ISO-8601 format with timezone offset.
  *
  * @since 7.0
- * @deprecated no longer registered, as the converter writes {@code OffsetDateTime} values with the application's {@code JsonMapper};
- *     registered with {@code grails.converters.json.legacy}, to render JSON as Grails 8 did.
+ * @deprecated with {@code grails.converters.json.legacy} set to {@code false}, as Grails 10 does by default, the
+ *     converter writes {@code OffsetDateTime} values with the application's {@code JsonMapper}; this marshaller is registered while
+ *     it is {@code true}, the default in Grails 9, to render JSON as Grails 8 did.
  */
 @Deprecated(since = "9.0")
 public class OffsetDateTimeMarshaller implements ObjectMarshaller<JSON> {

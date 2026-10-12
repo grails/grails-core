@@ -104,6 +104,26 @@ class Grails8JsonRenderingSpec extends Specification {
         rendered == GRAILS_8_RENDER_PRETTY.collect { it.replace('\n', PrettyPrintJSONWriter.NEWLINE) }
     }
 
+    void "without the setting, the converter renders JSON as Grails 8 did, as it defaults to true in Grails 9"() {
+        given:
+        ConvertersConfigurationHolder.clear()
+        def application = new DefaultGrailsApplication()
+        application.config
+        application.initialise()
+        def mappingContext = new KeyValueMappingContext('json')
+        application.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
+        })
+        application.setMappingContext(mappingContext)
+        new ConvertersConfigurationInitializer(grailsApplication: application).initialize()
+
+        expect:
+        ConvertersConfigurationHolder.isLegacyJson()
+        (DateTimeValues.all() + other()).collect { new JSON([value: it]).toString() } == GRAILS_8_VALUES
+        pretty().collect { new JSON(it).toString(true) } == GRAILS_8_TO_STRING_PRETTY
+        Grails8DomainRendering.renderAll() == GRAILS_8_DOMAIN
+    }
+
     void "domain class instances render as Grails 8 rendered them"() {
         expect: 'associations, embedded values, proxies, includes and excludes, deep, the version and the class name'
         Grails8DomainRendering.renderAll(LEGACY) == GRAILS_8_DOMAIN

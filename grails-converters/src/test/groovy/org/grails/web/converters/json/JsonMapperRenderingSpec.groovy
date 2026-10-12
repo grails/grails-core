@@ -504,10 +504,14 @@ class JsonMapperRenderingSpec extends Specification {
         thrown(ConverterException)
     }
 
+    /**
+     * Initializes the converters to render JSON through the JsonMapper ({@code grails.converters.json.legacy: false}),
+     * unless the configuration says otherwise.
+     */
     private void initialize(Map<String, Object> config = [:], ApplicationContext applicationContext = null) {
         ConvertersConfigurationHolder.clear()
         def grailsApplication = new DefaultGrailsApplication()
-        config.each { key, value -> grailsApplication.config.setAt(key, value) }
+        (['grails.converters.json.legacy': false] + config).each { key, value -> grailsApplication.config.setAt(key, value) }
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {

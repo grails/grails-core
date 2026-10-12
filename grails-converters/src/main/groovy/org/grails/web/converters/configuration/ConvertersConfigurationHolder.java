@@ -50,7 +50,7 @@ public class ConvertersConfigurationHolder {
 
     private static volatile JsonMapperSupport jsonMapper = JsonMapperSupport.DEFAULT;
 
-    private static volatile boolean legacyJson;
+    private static volatile boolean legacyJson = true;
 
     @FunctionalInterface
     public interface ConverterAction {
@@ -90,7 +90,7 @@ public class ConvertersConfigurationHolder {
         configurationHolder.threadLocalConfiguration = createThreadLocalConfiguration();
         observationRegistry = ObservationRegistry.NOOP;
         jsonMapper = JsonMapperSupport.DEFAULT;
-        legacyJson = false;
+        legacyJson = true;
     }
 
     /**
