@@ -118,8 +118,6 @@ ext {
             'rxjava2.version'               : '2.2.21',
             'sitemesh.version'              : '2.6.0',
             'scribejava.version'            : '8.3.3',
-            // Logback 1.6.5 requires 2.0.19; align the SLF4J family above Boot's managed 2.0.18.
-            'slf4j.version'                 : '2.0.19',
             'spock.version'                 : '2.5-groovy-6.0',
             // Not managed by spring-boot-dependencies. springdoc 3.x is the Spring Boot 4 /
             // Spring Framework 7 line; the grails-openapi module compiles against its
@@ -134,9 +132,6 @@ ext {
             // grails-shell-cli SpringRetryCompilerAutoConfiguration's unversioned
             // reference resolves and consumer apps using @Retryable get a known version.
             'spring-retry.version'          : '2.0.13',
-            // Security: overrides Tomcat 11.0.24 from Spring Boot 4.1. Includes the fixes for
-            // CVE-2026-65905, CVE-2026-65182, CVE-2026-68525 and CVE-2026-65927 on the Servlet 6.1 line.
-            'tomcat.version'                : '11.0.26',
             // Undertow is no longer managed by spring-boot-dependencies: Spring Boot 4
             // removed its Undertow support before GA. Servlet 6.1 support ships as
             // undertow-core 2.4.x plus the io.undertow.ee servlet/websockets artifacts,
@@ -151,7 +146,6 @@ ext {
             'asset-pipeline-bom': "cloud.wondrify:asset-pipeline-bom:${bomDependencyVersions['asset-pipeline-bom.version']}",
             'groovy-bom'        : "org.apache.groovy:groovy-bom:${bomDependencyVersions['groovy.version']}",
             'jackson-bom'       : "tools.jackson:jackson-bom:${bomDependencyVersions['jackson-bom.version']}",
-            'slf4j-bom'         : "org.slf4j:slf4j-bom:${bomDependencyVersions['slf4j.version']}",
             'spock-bom'         : "org.spockframework:spock-bom:${bomDependencyVersions['spock.version']}",
     ]
 
@@ -245,14 +239,6 @@ ext {
             'swagger-models-jakarta'   : "io.swagger.core.v3:swagger-models-jakarta:${bomDependencyVersions['swagger.version']}",
             'starter-sitemesh'         : "org.sitemesh:spring-boot-starter-sitemesh:${bomDependencyVersions['starter-sitemesh.version']}",
             'spring-webmvc-sitemesh'   : "org.sitemesh:spring-webmvc-sitemesh:${bomDependencyVersions['spring-webmvc-sitemesh.version']}",
-            // Security override of spring-boot-dependencies - see tomcat.version
-            'tomcat-annotations-api'   : "org.apache.tomcat:tomcat-annotations-api:${bomDependencyVersions['tomcat.version']}",
-            'tomcat-jdbc'              : "org.apache.tomcat:tomcat-jdbc:${bomDependencyVersions['tomcat.version']}",
-            'tomcat-jsp-api'           : "org.apache.tomcat:tomcat-jsp-api:${bomDependencyVersions['tomcat.version']}",
-            'tomcat-embed-core'        : "org.apache.tomcat.embed:tomcat-embed-core:${bomDependencyVersions['tomcat.version']}",
-            'tomcat-embed-el'          : "org.apache.tomcat.embed:tomcat-embed-el:${bomDependencyVersions['tomcat.version']}",
-            'tomcat-embed-jasper'      : "org.apache.tomcat.embed:tomcat-embed-jasper:${bomDependencyVersions['tomcat.version']}",
-            'tomcat-embed-websocket'   : "org.apache.tomcat.embed:tomcat-embed-websocket:${bomDependencyVersions['tomcat.version']}",
             // Not managed by spring-boot-dependencies - see undertow.version
             'undertow-core'            : "io.undertow:undertow-core:${bomDependencyVersions['undertow.version']}",
             'undertow-servlet'         : "io.undertow.ee:undertow-servlet:${bomDependencyVersions['undertow-servlet.version']}",
