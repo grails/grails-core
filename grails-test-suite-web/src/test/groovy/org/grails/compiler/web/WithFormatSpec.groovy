@@ -39,13 +39,34 @@ class WithFormatSpec extends Specification implements ControllerUnitTest<MimeTyp
         then:
         format == 'xml'
     }
+
+    void 'a known format without a block of its own falls back to the Accept header'() {
+        given: 'a format the action has no block for, as on 8.0.x'
+        params.format = 'xml'
+        request.addHeader('Accept', 'text/html')
+
+        when:
+        def format = controller.htmlOrJson()
+
+        then:
+        format == 'html'
+        response.mimeTypes*.extension == ['html']
+    }
 }
+
 @Artefact('Controller')
 class MimeTypesCompiledController {
     def index() {
         withFormat {
             html { "html" }
             xml { "xml" }
+        }
+    }
+
+    def htmlOrJson() {
+        withFormat {
+            html { 'html' }
+            json { 'json' }
         }
     }
 }

@@ -75,6 +75,10 @@ class GrailsContentNegotiationStrategy implements ContentNegotiationStrategy {
         return mimeTypes
     }
 
+    /**
+     * @return the MIME types for Spring MVC: the {@code format} parameter or response format when one
+     * is set, otherwise those of the {@code Accept} header
+     */
     MimeType[] resolveMimeTypes(HttpServletRequest request) {
         String formatOverride
         if (!WebUtils.isError(request)) {
@@ -87,7 +91,15 @@ class GrailsContentNegotiationStrategy implements ContentNegotiationStrategy {
             MimeType mimeType = mimeTypes.find { MimeType candidate -> candidate.extension == formatOverride }
             return [mimeType ?: mimeTypes[0]] as MimeType[]
         }
+        return resolveAcceptedMimeTypes(request)
+    }
 
+    /**
+     * @return the MIME types of the {@code Accept} header under the {@code grails.mime} rules, without
+     * any {@code format} applied. This is what {@code response.mimeTypes}, and so {@code withFormat}
+     * when the format has no block of its own, falls back to.
+     */
+    MimeType[] resolveAcceptedMimeTypes(HttpServletRequest request) {
         String acceptHeader = resolveAcceptHeader(request)
         MimeType[] resolved = new DefaultAcceptHeaderParser(mimeTypes).parse(acceptHeader)
         if (!acceptHeader) {

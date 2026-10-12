@@ -28,7 +28,6 @@ import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.web.mime.DefaultMimeUtility
-import org.grails.web.mime.GrailsContentNegotiationStrategy
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.MapPropertySource
@@ -82,12 +81,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         def servletContext = new MockServletContext()
         def ctx = new GenericWebApplicationContext(servletContext)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
-        MimeType[] mimeTypes = buildMimeTypes()
-        ctx.beanFactory.registerSingleton("mimeUtility", new DefaultMimeUtility(mimeTypes))
-        ctx.beanFactory.registerSingleton(
-                "grailsContentNegotiationStrategy",
-                new GrailsContentNegotiationStrategy(mimeTypes, application.config)
-        )
+        ctx.beanFactory.registerSingleton("mimeUtility", new DefaultMimeUtility(buildMimeTypes()))
         ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
         ctx.refresh()
         GrailsWebMockUtil.bindMockWebRequest(ctx)

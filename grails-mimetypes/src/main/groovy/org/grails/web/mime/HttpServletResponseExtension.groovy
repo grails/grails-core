@@ -203,7 +203,7 @@ class HttpServletResponseExtension {
                 }
             }
             if (strategy != null) {
-                result = strategy.resolveMimeTypes(request)
+                result = strategy.resolveAcceptedMimeTypes(request)
                 request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS, result)
                 return result
             }
