@@ -204,7 +204,7 @@ abstract class NavigableMapConfig implements Config {
     def <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues) {
         T value = getProperty(key, targetType, defaultValue)
         if (!allowedValues.contains(value)) {
-            throw new GrailsConfigurationException('Invalid configuration value [\$value] for key [\${key}]. Possible values \$allowedValues')
+            throw new GrailsConfigurationException("Invalid configuration value [${value}] for key [${key}]. Possible values ${allowedValues}")
         }
         return value
     }
