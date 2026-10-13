@@ -65,7 +65,9 @@ rendered Markdown report to a file as well as standard output.
 
 Measure full-stack HTTP latency for `grailsIndy=false` then `grailsIndy=true` against
 `grails-test-examples` (latency, app1, gsp-layout) and compare with `:grails-test-examples-benchmarks:jmhCompare`.
-The orchestrator is a Gradle task. There is no PowerShell or shell runner.
+The orchestrator is a Gradle task. There is no PowerShell or shell runner. The `-PappBench=true` wiring
+lives in `gradle/functional-test-config.gradle`, so any example app can host an `AppBench*` spec; the
+orchestrator runs the ones listed in its `APPS` roster.
 
 [source,bash]
 ----
