@@ -20,13 +20,14 @@
 package grails.util
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 @CompileStatic
 class Triple<A, B, C> {
 
-    final A aValue
-    final B bValue
-    final C cValue
+    @PackageScope final A aValue
+    @PackageScope final B bValue
+    @PackageScope final C cValue
 
     Triple(A aValue, B bValue, C cValue) {
         this.aValue = aValue

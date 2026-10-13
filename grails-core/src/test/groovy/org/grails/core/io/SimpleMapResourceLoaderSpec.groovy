@@ -42,7 +42,7 @@ class SimpleMapResourceLoaderSpec extends Specification {
         def loader = new SimpleMapResourceLoader()
 
         expect:
-        loader.getClassLoader() == SimpleMapResourceLoader.classLoader
+        loader.getClassLoader().is(loader.getClass().getClassLoader())
     }
 
 }
