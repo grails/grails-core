@@ -26,6 +26,7 @@ import org.hibernate.mapping.Column
 import org.hibernate.mapping.Component
 import org.hibernate.mapping.KeyValue
 import org.hibernate.mapping.PersistentClass
+import org.hibernate.mapping.Property
 import org.hibernate.mapping.SimpleValue
 
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -161,8 +162,8 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
     }
 
     default String getDiscriminatorValue() {
-        DiscriminatorConfig discriminatorConfig = mappedForm?.discriminator
-        return discriminatorConfig?.value ?: javaClass.name
+        String value = mappedForm?.discriminator?.value
+        return value != null ? value : javaClass.name
     }
 
     String getDataSourceName()
@@ -275,7 +276,7 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
                 }
             }
         }
-        return result
+        return Collections.unmodifiableList(result)
     }
 
     default boolean isComponentPropertyNullable(PersistentProperty<?> embeddedProperty) {
@@ -301,12 +302,14 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
 
     default String getSchema(@Nonnull InFlightMetadataCollector mappings) {
         org.grails.orm.hibernate.cfg.Table table = mappedForm?.table
-        return table?.schema ?: NamespaceNameExtractor.getSchemaName(mappings)
+        String schema = table?.schema
+        return schema != null ? schema : NamespaceNameExtractor.getSchemaName(mappings)
     }
 
     default String getCatalog(@Nonnull InFlightMetadataCollector mappings) {
         org.grails.orm.hibernate.cfg.Table table = mappedForm?.table
-        return table?.catalog ?: NamespaceNameExtractor.getCatalogName(mappings)
+        String catalog = table?.catalog
+        return catalog != null ? catalog : NamespaceNameExtractor.getCatalogName(mappings)
     }
 
     /**
@@ -332,7 +335,8 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
 
     default String getDiscriminatorColumnName() {
         DiscriminatorConfig discriminatorConfig = rootMapping?.discriminator
-        return discriminatorConfig != null ? resolveDiscriminatorValue(discriminatorConfig) : DEFAULT_DISCRIMINATOR_COLUMN_NAME
+        String column = discriminatorConfig != null ? resolveDiscriminatorValue(discriminatorConfig) : null
+        return column != null ? column : DEFAULT_DISCRIMINATOR_COLUMN_NAME
     }
 
     default List<HibernatePersistentProperty> getHibernatePersistentProperties() {
@@ -343,7 +347,7 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
                 result.add(hp.validateProperty())
             }
         }
-        return result
+        return Collections.unmodifiableList(result)
     }
 
     default String getComment() {
@@ -386,16 +390,19 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
      * Sorts or indexes the columns of {@code value} to align with this entity's composite
      * identifier order. When the identifier is a {@link Component} with an established sort order,
      * delegates to {@link SimpleValue#sortColumns(int[])}. Otherwise assigns sequential
-     * {@link Column#setTypeIndex(int)} values so Hibernate can correlate them.
+     * {@link Column#setTypeIndex(int)} values so Hibernate can correlate them. The binder calls this
+     * once the identifier is bound, deferring the call to a second pass when this entity is bound
+     * later than the entity holding the key.
      *
      * @param value the foreign-key {@link SimpleValue} whose columns should be aligned
      */
     default void sortOrIndexForeignKeyColumns(SimpleValue value) {
         PersistentClass pc = persistentClass
         KeyValue identifier = pc != null ? pc.identifier : null
-        int[] originalOrder = identifier instanceof Component ? ((Component) identifier).sortProperties() : null
+        Component component = identifier instanceof Component ? (Component) identifier : null
+        int[] originalOrder = component != null ? component.sortProperties() : null
         if (originalOrder != null) {
-            value.sortColumns(originalOrder)
+            value.sortColumns(toColumnPermutation(originalOrder, partColumnSpans(component, originalOrder)))
         }
         else {
             List<Column> cols = value.columns
@@ -432,13 +439,61 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
         for (String name : propertyNames) {
             referencedColumns.addAll(component.getProperty(name).value.columns)
         }
-        return originalOrder != null ? sortedByPermutation(referencedColumns, originalOrder) : referencedColumns
+        if (originalOrder == null) {
+            return referencedColumns
+        }
+        int[] spans = new int[propertyNames.length]
+        for (int i = 0; i < spans.length; i++) {
+            spans[i] = component.getProperty(propertyNames[i]).value.columnSpan
+        }
+        return sortedByPermutation(referencedColumns, toColumnPermutation(originalOrder, spans))
     }
 
     private static List<Column> sortedByPermutation(List<Column> columns, int[] permutation) {
         List<Column> result = new ArrayList<>(columns)
         for (int i = 0; i < permutation.length; i++) {
             result.set(permutation[i], columns.get(i))
+        }
+        return result
+    }
+
+    /**
+     * Returns the number of columns each part of the composite identifier spans, in declared order.
+     * {@code propertyPermutation[i]} is the position of declared part {@code i} in the sorted property list.
+     */
+    private static int[] partColumnSpans(Component component, int[] propertyPermutation) {
+        List<Property> sorted = component.properties
+        int[] spans = new int[propertyPermutation.length]
+        for (int i = 0; i < spans.length; i++) {
+            spans[i] = sorted.get(propertyPermutation[i]).value.columnSpan
+        }
+        return spans
+    }
+
+    /**
+     * Expands a permutation of identifier parts into a permutation of columns. A to-one part that
+     * references a composite identifier spans several columns, so moving it to its sorted position
+     * has to move its whole column span. {@code result[c]} is the sorted position of declared column
+     * {@code c}. With one column per part the result equals {@code propertyPermutation}.
+     */
+    private static int[] toColumnPermutation(int[] propertyPermutation, int[] spans) {
+        int[] sortedStart = new int[propertyPermutation.length]
+        int[] declaredAtSortedPosition = new int[propertyPermutation.length]
+        for (int i = 0; i < propertyPermutation.length; i++) {
+            declaredAtSortedPosition[propertyPermutation[i]] = i
+        }
+        int offset = 0
+        for (int position : declaredAtSortedPosition) {
+            sortedStart[position] = offset
+            offset += spans[position]
+        }
+        int[] result = new int[offset]
+        int declaredStart = 0
+        for (int i = 0; i < spans.length; i++) {
+            for (int k = 0; k < spans[i]; k++) {
+                result[declaredStart + k] = sortedStart[i] + k
+            }
+            declaredStart += spans[i]
         }
         return result
     }

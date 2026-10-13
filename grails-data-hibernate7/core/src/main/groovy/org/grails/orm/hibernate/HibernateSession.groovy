@@ -19,6 +19,7 @@
 package org.grails.orm.hibernate
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import jakarta.persistence.FlushModeType
 import jakarta.persistence.LockModeType
 import org.hibernate.FlushMode
@@ -78,8 +79,8 @@ class HibernateSession extends AbstractAttributeStoringSession implements QueryA
     /** The hibernate template. */
     protected IHibernateTemplate hibernateTemplate
 
-    ProxyHandler proxyHandler = new HibernateProxyHandler()
-    DefaultTimestampProvider timestampProvider
+    @PackageScope ProxyHandler proxyHandler = new HibernateProxyHandler()
+    @PackageScope DefaultTimestampProvider timestampProvider
 
     HibernateSession(HibernateDatastore hibernateDatastore, SessionFactory sessionFactory) {
         datastore = hibernateDatastore

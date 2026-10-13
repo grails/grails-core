@@ -19,6 +19,8 @@
 package org.grails.orm.hibernate.query
 
 import groovy.transform.CompileStatic
+import groovy.transform.TupleConstructor
+import groovy.transform.RecordOptions
 
 /**
  * Represents a property path combined with a scalar arithmetic operand,
@@ -30,6 +32,8 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 @SuppressWarnings(['ClassStartsWithBlankLine', 'Indentation'])
+@RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+@TupleConstructor(defaults = false)
 record PropertyArithmetic(String propertyName, Operator operator, Number operand) {
 
     enum Operator {

@@ -37,7 +37,7 @@ final class MutationQueryDelegate implements HqlQueryDelegate {
 
     private final transient MutationQuery mutationQuery
 
-    MutationQueryDelegate(MutationQuery mutationQuery) {
+    @PackageScope MutationQueryDelegate(MutationQuery mutationQuery) {
         this.mutationQuery = mutationQuery
     }
 

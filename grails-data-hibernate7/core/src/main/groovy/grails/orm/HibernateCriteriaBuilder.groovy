@@ -21,7 +21,6 @@ package grails.orm
 import java.util.function.Supplier
 
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.JoinType
@@ -117,7 +116,6 @@ import org.grails.orm.hibernate.support.hibernate7.SessionHolder
  * @see HibernateQuery
  * @see grails.gorm.DetachedCriteria
  */
-@Slf4j
 @SuppressWarnings('PMD.AvoidDuplicateLiterals')
 @CompileStatic
 class HibernateCriteriaBuilder extends GroovyObjectSupport implements BuildableCriteria, ProjectionList {

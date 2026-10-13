@@ -30,7 +30,7 @@ final class SelectQueryDelegate implements HqlQueryDelegate {
 
     private final transient org.hibernate.query.Query<?> query
 
-    SelectQueryDelegate(org.hibernate.query.Query<?> query) {
+    @PackageScope SelectQueryDelegate(org.hibernate.query.Query<?> query) {
         this.query = query
     }
 
