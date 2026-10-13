@@ -35,10 +35,10 @@ class AppHttpBenchSpec extends Specification {
         System.clearProperty('app.bench.out')
         System.clearProperty('app.bench.samples')
         System.clearProperty('app.bench.warmup')
-        System.clearProperty('app.bench.forks')
+        System.clearProperty('app.bench.chunks')
         System.clearProperty('appBenchWarmup')
         System.clearProperty('appBenchSamples')
-        System.clearProperty('appBenchForks')
+        System.clearProperty('appBenchChunks')
     }
 
     void 'enabled is off by default'() {
@@ -54,14 +54,14 @@ class AppHttpBenchSpec extends Specification {
         AppHttpBench.enabled()
     }
 
-    void 'toJmhEntry reports a 95 percent t-interval over fork means'() {
+    void 'toJmhEntry reports a 95 percent t-interval over chunk means'() {
         given:
         double[] values = [10d, 20d, 30d, 40d] as double[]
 
         when:
         Map<String, Object> entry = AppHttpBench.toJmhEntry('appbench.example.httpGet', values, 2)
 
-        then:
+        then: 'two chunk means leave one degree of freedom, so the interval is 12.706 x the standard error'
         entry.benchmark == 'appbench.example.httpGet'
         entry.mode == 'avgt'
         entry.forks == 2
@@ -70,6 +70,21 @@ class AppHttpBenchSpec extends Specification {
         ((Map) entry.primaryMetric).scoreConfidence.every { double value -> Math.abs(Math.abs(value - 25d) - 127.06d) < 0.000001d }
         ((Map) entry.primaryMetric).scoreUnit == 'ns/op'
         ((List) ((Map) entry.primaryMetric).rawData).size() == 2
+    }
+
+    void 'the default chunk count narrows the interval to the JMH scale'() {
+        given: 'twenty samples split into the default ten chunks of two'
+        double[] values = (1..20).collect { int value -> (double) value } as double[]
+
+        when:
+        Map<String, Object> entry = AppHttpBench.toJmhEntry('appbench.example.httpGet', values, AppHttpBench.chunkCount())
+
+        then: 'ten chunk means 1.5, 3.5 ... 19.5 give nine degrees of freedom and a 2.262 critical value'
+        AppHttpBench.chunkCount() == 10
+        entry.forks == 10
+        ((List) ((Map) entry.primaryMetric).rawData)*.size() == [2] * 10
+        ((Map) entry.primaryMetric).score == 10.5d
+        Math.abs(((Map) entry.primaryMetric).scoreError - 4.3314d) < 0.0001d
     }
 
     void 'writeEntries replaces an existing JMH JSON array'() {
@@ -114,7 +129,7 @@ class AppHttpBenchSpec extends Specification {
         given:
         System.setProperty('app.bench.warmup', '0')
         System.setProperty('app.bench.samples', '2')
-        System.setProperty('app.bench.forks', '1')
+        System.setProperty('app.bench.chunks', '1')
         Path out = tempDir.resolve('bench.json')
 
         when:
@@ -123,6 +138,11 @@ class AppHttpBenchSpec extends Specification {
 
         then:
         parsed*.benchmark == ['appbench.example.httpGet', AppHttpBench.RULER_BENCHMARK]
+
+        and: 'every ruler sample does real work, so none collapses to the clock granularity'
+        Map ruler = (Map) parsed[1]
+        ((List) ((Map) ruler.primaryMetric).rawData).flatten().every { Object nanos -> ((Number) nanos).doubleValue() > 0d }
+        ((Map) ((Map) ruler.primaryMetric).scorePercentiles)['0.0'] > 0d
     }
 
     void 'measureAndWrite rejects a sample count below 1'() {
@@ -146,7 +166,7 @@ class AppHttpBenchSpec extends Specification {
         error.message.contains('at least one sample')
     }
 
-    void 'toJmhEntry clamps forks to the sample count'() {
+    void 'toJmhEntry clamps chunks to the sample count'() {
         given:
         double[] values = [1d, 2d, 3d] as double[]
 

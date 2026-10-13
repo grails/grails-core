@@ -37,7 +37,7 @@ class AppIndyBenchSpec extends Specification {
         options.outputDir == options.projectDir.resolve('build').resolve('app-bench')
         options.warmup == 200
         options.samples == 1000
-        options.forks == 2
+        options.chunks == 10
         options.maxWorkers == 4
     }
 
@@ -71,7 +71,7 @@ class AppIndyBenchSpec extends Specification {
                         '--output-dir', outputDir.toString(),
                         '--warmup', '80',
                         '--samples', '300',
-                        '--forks', '2',
+                        '--chunks', '10',
                         '--max-workers', '3'
                 ] as String[],
                 runner,
@@ -88,7 +88,7 @@ class AppIndyBenchSpec extends Specification {
         invocations[0].contains('-PappBench=true')
         invocations[0].contains('-PappBenchWarmup=80')
         invocations[0].contains('-PappBenchSamples=300')
-        invocations[0].contains('-PappBenchForks=2')
+        invocations[0].contains('-PappBenchChunks=10')
         invocations[0].contains('--no-daemon')
         !invocations[0].contains('--rerun-tasks')
         invocations[0].contains('--max-workers=3')
@@ -109,10 +109,10 @@ class AppIndyBenchSpec extends Specification {
             boolean indy = arguments.contains('-PgrailsIndy=true')
             String outputArgument = arguments.find { String argument -> argument.startsWith('-PappBenchOut=') }
             Path result = Path.of(outputArgument.substring('-PappBenchOut='.length()))
-            result.parent == runDir.resolve(indy ? 'indy' : 'noindy')
+            assert result.parent == runDir.resolve(indy ? 'indy' : 'noindy')
             int projectCacheIndex = arguments.indexOf('--project-cache-dir')
             Path projectCache = Path.of(arguments[projectCacheIndex + 1])
-            projectCache.startsWith(runDir.resolve('project-cache').resolve(indy ? 'indy' : 'noindy'))
+            assert projectCache.startsWith(runDir.resolve('project-cache').resolve(indy ? 'indy' : 'noindy'))
         }
         Files.isRegularFile(runDir.resolve('noindy').resolve('latency.json'))
         Files.isRegularFile(runDir.resolve('indy').resolve('latency.json'))
@@ -124,7 +124,10 @@ class AppIndyBenchSpec extends Specification {
         Files.readString(runDir.resolve('indy-vs-noindy.md')).contains('IMPROVED')
         Files.readString(outputDir.resolve('indy-vs-noindy.md')) == 'stale report'
         Files.isRegularFile(outputDir.resolve('noindy').resolve('caller-owned.json'))
-        Files.size(summary) > 0
+
+        and: 'the step summary is headed so it reads apart from a JMH report in the same job'
+        Files.readString(summary).startsWith('## App indy benchmark comparison\n\n')
+        Files.readString(summary).contains('IMPROVED')
     }
 
     void 'run continues after missing nested results and reports likely causes'() {
@@ -151,6 +154,7 @@ class AppIndyBenchSpec extends Specification {
         AppIndyBench.missingResultMessage(temporaryDirectory.resolve('missing.json')).contains('-PonlyCoreTests')
         AppIndyBench.missingResultMessage(temporaryDirectory.resolve('missing.json')).contains('app.bench')
         AppIndyBench.missingResultMessage(temporaryDirectory.resolve('missing.json')).contains('--tests filter')
+        Files.readString(summary).startsWith('## App indy benchmark comparison\n\n')
         Files.readString(summary).contains('JmhCompare could not produce an app indy benchmark comparison')
     }
 

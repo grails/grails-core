@@ -19,7 +19,7 @@
 
 // Experimental app-level indy A/B harness wiring.
 // Enable with -PappBench=true (and usually --tests '*AppBench*').
-// Optional: -PappBenchWarmup=200 -PappBenchSamples=1000 -PappBenchForks=2 -PappBenchOut=<json>
+// Optional: -PappBenchWarmup=200 -PappBenchSamples=1000 -PappBenchChunks=10 -PappBenchOut=<json>
 // Only integrationTest is wired, and only when appBench is enabled, so ordinary unit/integration
 // runs do not pick up app.bench.* system properties or -PappBenchOut as task inputs/outputs.
 
@@ -28,14 +28,14 @@ def appBenchEnabled = providers.gradleProperty('appBench').map { Boolean.parseBo
 if (appBenchEnabled.get()) {
     def appBenchWarmup = providers.gradleProperty('appBenchWarmup').orElse('200')
     def appBenchSamples = providers.gradleProperty('appBenchSamples').orElse('1000')
-    def appBenchForks = providers.gradleProperty('appBenchForks').orElse('2')
+    def appBenchChunks = providers.gradleProperty('appBenchChunks').orElse('10')
     def appBenchOut = providers.gradleProperty('appBenchOut').orElse('')
 
     tasks.named('integrationTest', Test) { Test test ->
         test.systemProperty('app.bench', 'true')
         test.systemProperty('app.bench.warmup', appBenchWarmup.get())
         test.systemProperty('app.bench.samples', appBenchSamples.get())
-        test.systemProperty('app.bench.forks', appBenchForks.get())
+        test.systemProperty('app.bench.chunks', appBenchChunks.get())
         if (appBenchOut.get()) {
             test.systemProperty('app.bench.out', appBenchOut.get())
             test.outputs.file(appBenchOut.get())

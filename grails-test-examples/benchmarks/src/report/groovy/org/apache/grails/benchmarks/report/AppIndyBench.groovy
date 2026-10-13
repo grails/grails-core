@@ -29,6 +29,9 @@ class AppIndyBench {
 
     static final String OUTPUT_DIRECTORY_NAME = 'run'
 
+    /** Heading that keeps the app comparison apart from the JMH report in a shared job step summary. */
+    static final String STEP_SUMMARY_HEADING = '## App indy benchmark comparison'
+
     static final List<App> APPS = [
             new App('latency', ':grails-test-examples-latency:integrationTest', 'latencyapp.AppBenchFastPingSpec'),
             new App('app1', ':grails-test-examples-app1:integrationTest', 'functionaltests.AppBenchInterceptorDemoSpec'),
@@ -104,13 +107,13 @@ class AppIndyBench {
                 '-PappBench=true',
                 "-PappBenchWarmup=${options.warmup}".toString(),
                 "-PappBenchSamples=${options.samples}".toString(),
-                "-PappBenchForks=${options.forks}".toString(),
+                "-PappBenchChunks=${options.chunks}".toString(),
                 "-PappBenchOut=${out.toAbsolutePath()}".toString()
         ]
     }
 
     static Options parse(String[] args) {
-        Set<String> values = ['project-dir', 'output-dir', 'warmup', 'samples', 'forks', 'max-workers'] as Set<String>
+        Set<String> values = ['project-dir', 'output-dir', 'warmup', 'samples', 'chunks', 'max-workers'] as Set<String>
         Map<String, String> options = new LinkedHashMap<>()
         for (int index = 0; index < args.length; index++) {
             String option = args[index]
@@ -139,7 +142,7 @@ class AppIndyBench {
                 outputDir,
                 parsePositiveInt(options.getOrDefault('warmup', '200'), 'warmup', true),
                 parsePositiveInt(options.getOrDefault('samples', '1000'), 'samples', false),
-                parsePositiveInt(options.getOrDefault('forks', '2'), 'forks', false),
+                parsePositiveInt(options.getOrDefault('chunks', '10'), 'chunks', false),
                 parsePositiveInt(options.getOrDefault('max-workers', '4'), 'max-workers', false)
         )
     }
@@ -164,7 +167,7 @@ class AppIndyBench {
         }
         Files.writeString(
                 Path.of(summary),
-                Files.readString(report, StandardCharsets.UTF_8),
+                "${STEP_SUMMARY_HEADING}\n\n${Files.readString(report, StandardCharsets.UTF_8)}",
                 StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.APPEND
@@ -176,7 +179,7 @@ class AppIndyBench {
         if (summary) {
             Files.writeString(
                     Path.of(summary),
-                    "## App indy benchmark comparison\n\n${message}\n",
+                    "${STEP_SUMMARY_HEADING}\n\n${message}\n",
                     StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE,
                     StandardOpenOption.APPEND
@@ -226,15 +229,15 @@ class AppIndyBench {
         final Path outputDir
         final int warmup
         final int samples
-        final int forks
+        final int chunks
         final int maxWorkers
 
-        Options(Path projectDir, Path outputDir, int warmup, int samples, int forks, int maxWorkers) {
+        Options(Path projectDir, Path outputDir, int warmup, int samples, int chunks, int maxWorkers) {
             this.projectDir = projectDir
             this.outputDir = outputDir
             this.warmup = warmup
             this.samples = samples
-            this.forks = forks
+            this.chunks = chunks
             this.maxWorkers = maxWorkers
         }
     }

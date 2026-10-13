@@ -37,18 +37,33 @@ import groovy.transform.CompileStatic
  * <ul>
  *   <li>warm up the full Spring Boot stack with {@code warmup} requests (discarded)</li>
  *   <li>collect {@code samples} timed requests as one raw series</li>
- *   <li>split the series into {@code forks} equal chunks and report a t-interval over fork means</li>
- *   <li>also emit a ruler-equivalent tight loop so runner-health gates apply</li>
+ *   <li>split the series into {@code chunks} contiguous chunks and report a 95% t-interval over the chunk
+ *       means, the way JMH reports one over its iteration means</li>
+ *   <li>also emit a CPU ruler entry that does the same work as the JMH {@code CpuRulerBenchmark} so the
+ *       runner-health gates apply</li>
  * </ul>
  *
  * <p>Enable gated specs with {@code -PappBench=true}. Optional properties:
- * {@code appBenchWarmup}, {@code appBenchSamples}, {@code appBenchForks},
+ * {@code appBenchWarmup}, {@code appBenchSamples}, {@code appBenchChunks},
  * {@code appBenchOut}, {@code appBenchOutDir}.
  */
 @CompileStatic
 final class AppHttpBench {
 
     static final String RULER_BENCHMARK = 'org.apache.grails.benchmarks.ruler.AppBenchCpu.measure'
+
+    /**
+     * Default number of chunks. JMH's PR profile produces 10 iteration means (2 forks x 5 iterations), and
+     * {@code scoreError} needs about that many for the comparator's disjointness test to be able to fire:
+     * with 2 chunks the t critical value is 12.706 and the interval swallows any realistic delta.
+     */
+    static final int DEFAULT_CHUNKS = 10
+
+    /** Rounds per ruler sample, the same as {@code CpuRulerBenchmark.integerArithmetic}. */
+    static final int RULER_ROUNDS = 1_024
+
+    /** Carried across ruler samples so the JIT cannot fold the loop into a constant. */
+    private static int rulerState = 0x13579bdf
 
     private AppHttpBench() {
     }
@@ -65,8 +80,8 @@ final class AppHttpBench {
         intProperty('app.bench.samples', 'appBenchSamples', 1000, false)
     }
 
-    static int forkCount() {
-        intProperty('app.bench.forks', 'appBenchForks', 2, false)
+    static int chunkCount() {
+        intProperty('app.bench.chunks', 'appBenchChunks', DEFAULT_CHUNKS, false)
     }
 
     static Path outputPath(String defaultFileName) {
@@ -114,24 +129,30 @@ final class AppHttpBench {
             values[i] = (double) timeNanos(request)
         }
 
-        int forks = forkCount()
+        int chunks = chunkCount()
         writeEntries(out, [
-                toJmhEntry(benchmark, values, forks),
-                toJmhEntry(RULER_BENCHMARK, rulerSamples(samples, warmup), forks)
+                toJmhEntry(benchmark, values, chunks),
+                toJmhEntry(RULER_BENCHMARK, rulerSamples(samples, warmup), chunks)
         ])
     }
 
-    static Map<String, Object> toJmhEntry(String benchmark, double[] values, int forks) {
+    /**
+     * Shape one raw series as a JMH result entry. The series is split into {@code chunks} contiguous chunks
+     * whose means play the part of JMH iteration means: {@code score} is their mean and {@code scoreError}
+     * the two-sided 95% t-interval over them. {@code rawData} is therefore {@code [chunk][sample]} where JMH
+     * has {@code [fork][iteration]}, and {@code forks} carries the chunk count.
+     */
+    static Map<String, Object> toJmhEntry(String benchmark, double[] values, int chunks) {
         if (values == null || values.length == 0) {
             throw new IllegalArgumentException('values must contain at least one sample')
         }
 
-        int forkCount = Math.min(Math.max(1, forks), values.length)
-        int perFork = Math.max(1, values.length.intdiv(forkCount))
-        List<List<Double>> rawData = new ArrayList<>(forkCount)
+        int chunkCount = Math.min(Math.max(1, chunks), values.length)
+        int perChunk = Math.max(1, values.length.intdiv(chunkCount))
+        List<List<Double>> rawData = new ArrayList<>(chunkCount)
         int offset = 0
-        for (int f = 0; f < forkCount; f++) {
-            int end = (f == forkCount - 1) ? values.length : Math.min(values.length, offset + perFork)
+        for (int c = 0; c < chunkCount; c++) {
+            int end = (c == chunkCount - 1) ? values.length : Math.min(values.length, offset + perChunk)
             List<Double> chunk = new ArrayList<>(Math.max(0, end - offset))
             for (int i = offset; i < end; i++) {
                 chunk.add(values[i])
@@ -140,12 +161,12 @@ final class AppHttpBench {
             offset = end
         }
 
-        double[] forkMeans = new double[rawData.size()]
-        for (int f = 0; f < rawData.size(); f++) {
-            forkMeans[f] = mean(rawData.get(f))
+        double[] chunkMeans = new double[rawData.size()]
+        for (int c = 0; c < rawData.size(); c++) {
+            chunkMeans[c] = mean(rawData.get(c))
         }
-        double score = mean(forkMeans)
-        double scoreError = tIntervalError(forkMeans)
+        double score = mean(chunkMeans)
+        double scoreError = tIntervalError(chunkMeans)
 
         Map<String, Object> percentiles = new LinkedHashMap<>()
         double[] sorted = Arrays.copyOf(values, values.length)
@@ -170,7 +191,7 @@ final class AppHttpBench {
         entry.put('benchmark', benchmark)
         entry.put('mode', 'avgt')
         entry.put('threads', 1)
-        entry.put('forks', forkCount)
+        entry.put('forks', chunkCount)
         entry.put('jdkVersion', System.getProperty('java.version', 'unknown'))
         entry.put('vmName', System.getProperty('java.vm.name', 'unknown'))
         entry.put('vmVersion', System.getProperty('java.vm.version', 'unknown'))
@@ -243,15 +264,18 @@ final class AppHttpBench {
         return values
     }
 
+    /**
+     * One ruler sample: the {@code CpuRulerBenchmark.integerArithmetic} recurrence, so a sample takes
+     * around a microsecond and sits well above {@code System.nanoTime()} granularity. The state is
+     * carried between samples, which keeps the loop from being folded to a constant.
+     */
     private static long rulerNanos() {
         long start = System.nanoTime()
-        long acc = 0L
-        for (int i = 0; i < 64; i++) {
-            acc += i
+        long result = rulerState
+        for (int index = 1; index <= RULER_ROUNDS; index++) {
+            result = (result * 1_103_515_245L + index) ^ (result >>> 13)
         }
-        if (acc < 0L) {
-            throw new IllegalStateException('ruler accumulator overflow')
-        }
+        rulerState = (int) result
         return System.nanoTime() - start
     }
 
@@ -271,18 +295,18 @@ final class AppHttpBench {
         return sum / (double) values.length
     }
 
-    private static double tIntervalError(double[] forkMeans) {
-        if (forkMeans.length < 2) {
+    private static double tIntervalError(double[] chunkMeans) {
+        if (chunkMeans.length < 2) {
             return 0d
         }
-        double mean = mean(forkMeans)
+        double mean = mean(chunkMeans)
         double sumSq = 0d
-        for (double value : forkMeans) {
+        for (double value : chunkMeans) {
             double delta = value - mean
             sumSq += delta * delta
         }
-        double stdev = Math.sqrt(sumSq / (double) (forkMeans.length - 1))
-        return tCritical95(forkMeans.length - 1) * stdev / Math.sqrt((double) forkMeans.length)
+        double stdev = Math.sqrt(sumSq / (double) (chunkMeans.length - 1))
+        return tCritical95(chunkMeans.length - 1) * stdev / Math.sqrt((double) chunkMeans.length)
     }
 
     /**

@@ -79,12 +79,12 @@ Optional properties:
 
 | `appBenchWarmup` | `200` | Discarded warmup requests per spec
 | `appBenchSamples` | `1000` | Timed requests per spec
-| `appBenchForks` | `2` | JMH-shaped rawData chunks
-| `appBenchOutDir` | `build/app-bench` | JSON plus `indy-vs-noindy.md` output directory
+| `appBenchChunks` | `10` | Contiguous chunks of each timed series. Their means stand in for JMH iteration means and feed the `scoreError` t-interval, so keep this near the 10 that JMH's PR profile produces
+| `appBenchOutDir` | `build/app-bench` | Output directory; a relative path resolves against the repository root. The JSON results (`noindy/`, `indy/`) and `indy-vs-noindy.md` are written to its `run/` subdirectory, which is recreated on every run
 | `appBenchMaxWorkers` | `4` | `--max-workers` for each nested Gradle invocation
 |===
 
-CI on the `performance` label uses warmup 80 / samples 300 / forks 2.
+CI on the `performance` label uses warmup 80 / samples 300 / chunks 10.
 
 == Gradle properties
 

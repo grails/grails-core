@@ -138,16 +138,20 @@ tasks.register('appIndyBench', JavaExec) {
     mainClass = 'org.apache.grails.benchmarks.report.AppIndyBench'
     def warmup = providers.gradleProperty('appBenchWarmup').orElse('200')
     def samples = providers.gradleProperty('appBenchSamples').orElse('1000')
-    def forks = providers.gradleProperty('appBenchForks').orElse('2')
+    def chunks = providers.gradleProperty('appBenchChunks').orElse('10')
     def maxWorkers = providers.gradleProperty('appBenchMaxWorkers').orElse('4')
+    // A relative -PappBenchOutDir resolves against the repository root, like the default, rather than
+    // against this project's directory, which is where the JavaExec process runs.
+    def rootDirectory = rootProject.layout.projectDirectory
     def outputDir = providers.gradleProperty('appBenchOutDir')
-            .orElse(rootProject.layout.projectDirectory.dir('build/app-bench').asFile.absolutePath)
+            .map { String path -> rootDirectory.dir(path).asFile.absolutePath }
+            .orElse(rootDirectory.dir('build/app-bench').asFile.absolutePath)
     args(
-            '--project-dir', rootProject.projectDir.absolutePath,
+            '--project-dir', rootDirectory.asFile.absolutePath,
             '--output-dir', outputDir.get(),
             '--warmup', warmup.get(),
             '--samples', samples.get(),
-            '--forks', forks.get(),
+            '--chunks', chunks.get(),
             '--max-workers', maxWorkers.get()
     )
 }
