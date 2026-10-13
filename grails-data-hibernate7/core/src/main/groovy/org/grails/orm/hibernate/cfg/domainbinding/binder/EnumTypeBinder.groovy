@@ -58,6 +58,20 @@ class EnumTypeBinder {
                 columnNameForPropertyAndPathFetcher,
                 new IndexBinder(),
                 new ColumnConfigToColumnBinder(),
+                namingStrategy)
+    }
+
+    protected EnumTypeBinder(
+            MetadataBuildingContext metadataBuildingContext,
+            ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher,
+            IndexBinder indexBinder,
+            ColumnConfigToColumnBinder columnConfigToColumnBinder,
+            PersistentEntityNamingStrategy namingStrategy) {
+        this(
+                metadataBuildingContext,
+                columnNameForPropertyAndPathFetcher,
+                indexBinder,
+                columnConfigToColumnBinder,
                 namingStrategy,
                 new CreateKeyForProps(columnNameForPropertyAndPathFetcher))
     }
