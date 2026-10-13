@@ -159,8 +159,8 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
     }
 
     default String getDiscriminatorValue() {
-        DiscriminatorConfig discriminatorConfig = mappedForm?.discriminator
-        return discriminatorConfig?.value ?: javaClass.name
+        String value = mappedForm?.discriminator?.value
+        return value != null ? value : javaClass.name
     }
 
     String getDataSourceName()
@@ -299,12 +299,14 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
 
     default String getSchema(@Nonnull InFlightMetadataCollector mappings) {
         org.grails.orm.hibernate.cfg.Table table = mappedForm?.table
-        return table?.schema ?: NamespaceNameExtractor.getSchemaName(mappings)
+        String schema = table?.schema
+        return schema != null ? schema : NamespaceNameExtractor.getSchemaName(mappings)
     }
 
     default String getCatalog(@Nonnull InFlightMetadataCollector mappings) {
         org.grails.orm.hibernate.cfg.Table table = mappedForm?.table
-        return table?.catalog ?: NamespaceNameExtractor.getCatalogName(mappings)
+        String catalog = table?.catalog
+        return catalog != null ? catalog : NamespaceNameExtractor.getCatalogName(mappings)
     }
 
     /**
@@ -330,7 +332,8 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
 
     default String getDiscriminatorColumnName() {
         DiscriminatorConfig discriminatorConfig = rootMapping?.discriminator
-        return discriminatorConfig != null ? resolveDiscriminatorValue(discriminatorConfig) : DEFAULT_DISCRIMINATOR_COLUMN_NAME
+        String column = discriminatorConfig != null ? resolveDiscriminatorValue(discriminatorConfig) : null
+        return column != null ? column : DEFAULT_DISCRIMINATOR_COLUMN_NAME
     }
 
     default List<HibernatePersistentProperty> getHibernatePersistentProperties() {
