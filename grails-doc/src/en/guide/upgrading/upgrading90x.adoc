@@ -347,6 +347,11 @@ Adding `spring-boot-starter-hateoas` alone does not register a Grails renderer f
 renderer for the desired media type.
 
 ==== 9. Grails Format Resolution and Spring MVC Content Negotiation
+Grails reads the `Accept` header with Spring's `MediaType` parser. Ordinary headers resolve as before, but
+media type names are now matched case-insensitively: `Accept: Application/JSON` resolves to `json`, where
+Grails 8 matched no configured type and resolved to `all`. A value Spring rejects, such as a quality
+value above 1, is still read as Grails 8 read it.
+
 
 Grails format resolution -- `withFormat`, `respond`, and `response.format` -- applies the `grails.mime.*`
 rules. Spring MVC keeps its own content negotiation: an `@RestController`, an actuator endpoint or any other

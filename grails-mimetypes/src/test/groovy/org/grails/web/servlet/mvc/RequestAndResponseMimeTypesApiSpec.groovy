@@ -149,6 +149,26 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             response.format == 'json'
     }
 
+    void "media type names in the Accept header are matched case-insensitively"() {
+        when: "The Accept header names a configured media type in mixed case"
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            request.addHeader('Accept', 'Application/JSON')
+
+        then:
+            webRequest.currentResponse.format == 'json'
+    }
+
+    void "an Accept header without a configured media type resolves to the all format"() {
+        when: "The Accept header names only media types that are not configured"
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            request.addHeader('Accept', 'image/avif, image/webp')
+
+        then:
+            webRequest.currentResponse.format == 'all'
+    }
+
     void "Test withFormat method with CONTENT_TYPE header only"() {
         when: "The request CONTENT_TYPE header is 'text/xml' and withFormat is used"
             final webRequest = boundMimeTypeRequest()

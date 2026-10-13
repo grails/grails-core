@@ -204,7 +204,7 @@ When this setting is active, `XMLHttpRequest`-style requests (those sending an `
 
 An accept header of '\*/\*' results in a value of `all` for the `format` property.
 
-NOTE: If the accept header is used but contains no registered content types, Grails will assume a broken browser is making the request and will set the HTML format - note that this is different from how the other content negotiation modes work as those would activate the "all" format!
+An accept header that contains no registered content types also results in `all`. Media type names in the accept header are matched case-insensitively, so `Application/JSON` results in `json`.
 
 
 
