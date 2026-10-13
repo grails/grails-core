@@ -31,6 +31,11 @@ class PairSpec extends Specification {
         pair.getbValue() == 1
     }
 
+    void 'the components are fields, not Groovy properties, so only the original accessors exist'() {
+        expect:
+        !Pair.methods.any { it.name in ['getAValue', 'getBValue', 'setAValue', 'setBValue'] }
+    }
+
     void 'two pairs with equal values are equal and share a hash code'() {
         expect:
         new Pair<>('a', 1) == new Pair<>('a', 1)

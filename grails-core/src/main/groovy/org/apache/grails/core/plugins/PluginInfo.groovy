@@ -19,6 +19,7 @@
 package org.apache.grails.core.plugins
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.springframework.core.io.Resource
 
 /**
@@ -45,6 +46,7 @@ final class PluginInfo {
      *        {@code plugin.groovy}), or {@code null} if no config file exists
      * @param dynamic {@code true} if this plugin came from dynamically supplied classes or resources
      */
+    @PackageScope
     PluginInfo(PluginDescriptor pluginDescriptor, PluginMetadata metadata, Resource configResource, boolean dynamic) {
         this.metadata = metadata
         this.pluginDescriptor = pluginDescriptor

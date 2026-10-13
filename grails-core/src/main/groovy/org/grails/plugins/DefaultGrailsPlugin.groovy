@@ -169,7 +169,9 @@ class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentApplicat
     }
 
     private void initialisePlugin(Class<?> clazz) {
-        pluginGrailsClass = new GrailsPluginClass(clazz)
+        // GrailsPluginClass is a non-static inner class of AbstractGrailsPlugin, so Groovy needs the
+        // enclosing instance spelled out (Java's implicit `this` in `new GrailsPluginClass(clazz)`)
+        pluginGrailsClass = new GrailsPluginClass(this, clazz)
         plugin = (GroovyObject) pluginGrailsClass.newInstance()
         if (plugin instanceof Plugin) {
             Plugin p = (Plugin) plugin
