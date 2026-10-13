@@ -23,9 +23,10 @@ package grails.async.web
  * as the text of a server-sent event.
  *
  * <p>Every bean of this type is consulted in {@link org.springframework.core.Ordered} order and the first
- * text wins, so a plugin teaches the stream about its own types by registering a renderer with a higher
- * precedence than the defaults. The defaults render text as-is and, when the application has Jackson,
- * anything else as JSON.</p>
+ * text wins, so a plugin teaches the stream about its own types by registering a renderer, and a
+ * renderer with a higher precedence than another takes over the types both handle. The two built-in
+ * renderers, which render text as-is and, when the application has Jackson, anything else as JSON, are
+ * always consulted last, so a renderer wins over them whether or not it is {@code Ordered}.</p>
  *
  * @since 8.1
  */

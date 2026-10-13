@@ -84,19 +84,35 @@ class GrailsSpringAiSpec extends ApplicationContextSpec implements CommandOutput
         SpringAiOllama.FEATURE_NAME      | SpringAiOllama    | 'spring-ai-starter-model-ollama'
     }
 
-    void "the #feature provider configures #key as #value"() {
+    void "the Ollama provider configures where Ollama listens"() {
         when:
-        final def output = generate(ApplicationType.WEB, new Options(DevelopmentReloading.DEVTOOLS), [feature])
+        final def output = generate(ApplicationType.WEB, new Options(DevelopmentReloading.DEVTOOLS), [SpringAiOllama.FEATURE_NAME])
         final def config = new YamlSlurper().parseText(output["grails-app/conf/application.yml"])
 
         then:
-        config[key] == value
+        config['spring.ai.ollama.base-url'] == 'http://localhost:11434'
+    }
+
+    void "the #feature provider writes no API key: Spring AI reads #variable from the environment, and an unset placeholder would be sent as the key"() {
+        when:
+        final def output = generate(ApplicationType.WEB, new Options(DevelopmentReloading.DEVTOOLS), [feature])
+        final String config = output["grails-app/conf/application.yml"]
+
+        then:
+        !config.contains('api-key')
+        !config.contains(variable)
 
         where:
-        feature                        | key                           | value
-        SpringAiOpenAi.FEATURE_NAME    | 'spring.ai.openai.api-key'    | '${OPENAI_API_KEY}'
-        SpringAiAnthropic.FEATURE_NAME | 'spring.ai.anthropic.api-key' | '${ANTHROPIC_API_KEY}'
-        SpringAiOllama.FEATURE_NAME    | 'spring.ai.ollama.base-url'   | 'http://localhost:11434'
+        feature                        | variable
+        SpringAiOpenAi.FEATURE_NAME    | 'OPENAI_API_KEY'
+        SpringAiAnthropic.FEATURE_NAME | 'ANTHROPIC_API_KEY'
+    }
+
+    void "a provider is a choice an application makes, not one a plugin imposes on its applications"() {
+        expect:
+        beanContext.getBeansOfType(SpringAiProviderFeature).every { it.supports(ApplicationType.WEB) && it.supports(ApplicationType.REST_API) }
+        beanContext.getBeansOfType(SpringAiProviderFeature).every { !it.supports(ApplicationType.PLUGIN) && !it.supports(ApplicationType.WEB_PLUGIN) }
+        beanContext.getBean(GrailsSpringAi).supports(ApplicationType.PLUGIN)
     }
 
     void "only one Spring AI provider can be selected"() {

@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit
 
 import jakarta.servlet.AsyncEvent
 import jakarta.servlet.ServletOutputStream
+import org.reactivestreams.Publisher
+import org.reactivestreams.Subscriber
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
@@ -34,6 +36,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.async.WebAsyncManager
 import org.springframework.web.context.request.async.WebAsyncUtils
+import org.springframework.web.servlet.ModelAndView
 
 import grails.async.web.StreamItemRenderer
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -108,14 +111,68 @@ class PublisherActionResultTransformerSpec extends Specification {
         response.contentAsString == 'data: 1\n\ndata: 2\n\ndata: 3\n\n' + COMPLETE
     }
 
-    void 'a publisher that emits a single item, such as a Mono, streams it as one event'() {
+    void 'a single-valued publisher, such as a Mono, is not streamed: a Map it emits is the model of the view'() {
         when:
-        transformer.transformActionResult(webRequest, '/book/index', Mono.just([title: 'Grails']))
+        Object transformed = transformer.transformActionResult(webRequest, '/book/show', Mono.just([title: 'Grails']))
 
         then:
+        transformed == null
         request.asyncStarted
-        response.contentType == 'text/event-stream;charset=UTF-8'
-        response.contentAsString == 'data: {title=Grails}\n\n' + COMPLETE
+        request.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) == true
+        !response.committed
+        response.contentType == null
+        response.contentAsString == ''
+        asyncManager.hasConcurrentResult()
+        asyncManager.concurrentResult instanceof ModelAndView
+        ((ModelAndView) asyncManager.concurrentResult).viewName == '/book/show'
+        ((ModelAndView) asyncManager.concurrentResult).model == [title: 'Grails']
+    }
+
+    void 'a single-valued publisher that emits something else, or nothing, leaves the response to what the action rendered'() {
+        given:
+        ModelAndView rendered = new ModelAndView('/book/rendered')
+        request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, rendered)
+
+        when:
+        transformer.transformActionResult(webRequest, '/book/show', publisher)
+
+        then:
+        asyncManager.hasConcurrentResult()
+        asyncManager.concurrentResult.is(rendered)
+        !response.committed
+
+        where:
+        publisher << [Mono.just('text'), Mono.empty()]
+    }
+
+    void 'a single-valued publisher that fails fails the request'() {
+        when:
+        transformer.transformActionResult(webRequest, '/book/show', Mono.error(new IllegalStateException('boom')))
+
+        then:
+        asyncManager.hasConcurrentResult()
+        asyncManager.concurrentResult instanceof IllegalStateException
+        !response.committed
+    }
+
+    void 'a single-valued publisher is resolved once the response has been committed, as a Promise is'() {
+        given:
+        response.flushBuffer()
+
+        when:
+        transformer.transformActionResult(webRequest, '/book/show', Mono.just([title: 'Grails']))
+
+        then:
+        notThrown(IllegalStateException)
+        asyncManager.concurrentResult instanceof ModelAndView
+    }
+
+    void 'which publishers are single-valued is what the reactive adapter registry says'() {
+        expect:
+        PublisherActionResultTransformer.isSingleValue(Mono.just(1))
+        !PublisherActionResultTransformer.isSingleValue(Flux.just(1))
+        !PublisherActionResultTransformer.isSingleValue(Sinks.many().unicast().onBackpressureBuffer().asFlux())
+        !PublisherActionResultTransformer.isSingleValue({ Subscriber subscriber -> } as Publisher)
     }
 
     void 'a failed stream ends with a complete event whose reason is error, and nothing of the failure reaches the client'() {
@@ -131,7 +188,7 @@ class PublisherActionResultTransformerSpec extends Specification {
         asyncManager.concurrentResult == null
     }
 
-    void 'an item that cannot be rendered ends the stream with an error event'() {
+    void 'an item that cannot be rendered ends the stream with a complete event whose reason is error'() {
         given:
         StreamItemRenderer broken = { Object item -> throw new IllegalArgumentException('cannot render') }
         PublisherActionResultTransformer withBroken = new PublisherActionResultTransformer([broken], null)
@@ -147,7 +204,7 @@ class PublisherActionResultTransformerSpec extends Specification {
         asyncManager.concurrentResult == null
     }
 
-    void 'a publisher that fails to subscribe ends the stream with an error event'() {
+    void 'a publisher that fails to subscribe ends the stream with a complete event whose reason is error'() {
         given:
         Flux<String> refusing = Flux.from { subscriber -> throw new IllegalStateException('no subscriptions') }
 
@@ -180,7 +237,7 @@ class PublisherActionResultTransformerSpec extends Specification {
         CountDownLatch release = new CountDownLatch(1)
         ByteArrayOutputStream wire = new ByteArrayOutputStream()
         OutputStream blocking = new OutputStream() {
-            private boolean first = true
+            private volatile boolean first = true
 
             @Override
             void write(int b) throws IOException {
@@ -294,9 +351,13 @@ class PublisherActionResultTransformerSpec extends Specification {
         request.asyncContext.timeout == 42000
     }
 
-    void 'without a streaming timeout the asynchronous request default applies'() {
-        expect:
+    void 'without a streaming timeout a stream has no timeout, as a Spring MVC server-sent event stream has none'() {
+        when:
+        transformer.transformActionResult(webRequest, '/book/index', Flux.never())
+
+        then:
         transformer.timeout == null
+        request.asyncContext.timeout == PublisherActionResultTransformer.NO_TIMEOUT
     }
 
     void 'refuses to stream once the response has been committed'() {

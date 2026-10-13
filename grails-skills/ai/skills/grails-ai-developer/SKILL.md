@@ -56,20 +56,12 @@ dependencies {
 }
 ```
 
-Credentials come from the environment, never from a committed file:
-
-```yaml
-# grails-app/conf/application.yml
-spring:
-    ai:
-        openai:
-            api-key: ${OPENAI_API_KEY}
-```
+Credentials come from the environment, never from a committed file: Spring AI reads `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` when `spring.ai.<provider>.api-key` is not set. Never write a placeholder such as `${OPENAI_API_KEY}` into `application.yml`: when the variable is unset the placeholder itself is sent as the key, and the call fails with a 401 instead of a clear error.
 
 A new application gets the same from the `grails-spring-ai` feature, or from `spring-ai-openai`, `spring-ai-anthropic` or `spring-ai-ollama`, which add the provider as well:
 
 ```shell
-grails create-app my-app --features spring-ai-openai
+grails -t forge create-app my-app --features spring-ai-openai
 ```
 
 Do not add a second provider starter "just in case": every provider auto-configures each kind of model it offers, and two chat models make the `ChatClient.Builder` ambiguous until `spring.ai.model.chat` names one.
@@ -208,7 +200,8 @@ source.onmessage = event => { answer.textContent += event.data; };
 source.addEventListener('complete', () => source.close());
 ```
 
-- A streamed answer can outlast the asynchronous request timeout, which is 30 seconds on Tomcat by default. Set `grails.async.streaming.timeout` to what the slowest answer may take, for example `5m`.
+- A stream has no timeout unless `grails.async.streaming.timeout` sets one; set it, for example to `5m`, to bound how long an answer may take.
+- A `Mono` returned from an action is resolved, not streamed: its value is the action's result as a `Promise`'s is. Return the `Flux` to stream.
 
 ## Configuration the Plugin Ships
 
@@ -248,7 +241,7 @@ class AnswerServiceSpec extends Specification implements ServiceUnitTest<AnswerS
 }
 ```
 
-- `respondWith('a', 'b')` scripts answers in order; `respondWith { Prompt prompt -> ... }` computes one from the prompt; with nothing scripted the model echoes the user's message, or fails when `chatModel.strict = true`.
+- `respondWith('a', 'b')` scripts answers in order; `respondWith { Prompt prompt -> ... }` computes one from the prompt; with nothing scripted the model echoes the user's message, or fails when `chatModel.strict = true` (reset with the script before every feature).
 - The stubs are registered before `setupSpec`, each only when the spec defines no bean of its type, so a spec's own `ChatModel`, `EmbeddingModel`, `ChatClient.Builder` or `VectorStore` wins; `grails.ai.stub.embeddingDimensions` set in `doWithConfig` sizes the stub embeddings.
 - A streamed call answers one word at a time, so code that assembles a stream is exercised as it would be against a real model.
 - `prompts` holds every prompt of the current feature method. The script, the prompts and the vector store are cleared before every feature method.
@@ -256,15 +249,15 @@ class AnswerServiceSpec extends Specification implements ServiceUnitTest<AnswerS
 
 ### Integration and Functional Tests
 
-While `grails-testing-support-ai` is on the test classpath, every `spring.ai.model.*` selection property and `spring.ai.vectorstore.type` default to `none`, so no provider auto-configures a chat, embedding, image, audio or moderation model, and the stubs become the primary chat and embedding models and the vector store; the test environment needs neither an API key nor a database. A provider or store the application names in its configuration is kept. Inject `org.apache.grails.testing.ai.ScriptedChatModel` into an `@Integration` spec, call `reset()` in `setup()`, and script it the same way; the in-memory `ResettableSimpleVectorStore` has `clear()`. To run against the real provider, set `grails.ai.stub.enabled: false` for the test environment.
+While `grails-testing-support-ai` is on the test classpath and the application runs in the test environment (elsewhere the stubs stay off and a warning is logged), every `spring.ai.model.*` selection property and `spring.ai.vectorstore.type` default to `none`, so no provider auto-configures a chat, embedding, image, audio or moderation model, and the stubs become the primary chat and embedding models and the vector store; the test environment needs neither an API key nor a database. A provider or store the application names in its configuration is kept, and the stubs are fallback beans, so a model or store the application defines in `resources.groovy` or `doWithSpring` is the one injected. Inject `org.apache.grails.testing.ai.ScriptedChatModel` into an `@Integration` spec, call `reset()` in `setup()`, and script it the same way; the in-memory `ResettableSimpleVectorStore` has `clear()`. To run against the real provider, set `grails.ai.stub.enabled: false` for the test environment.
 
 ## Pitfalls
 
 - Spring AI's `Document` has both `getText()` and `isText()`. Under `@CompileStatic` or `@GrailsCompileStatic`, `document.text` resolves to `isText()` and yields a boolean; call `document.getText()`.
 - `ChatClient.Builder` is a prototype bean. Inject the builder, not a shared `ChatClient`, unless the application defines one.
 - Do not wrap the fluent API in another abstraction; closures already coerce to its consumers and the Spring AI reference applies as written.
-- An action that returns a `Publisher` streams, a single-valued `Mono` included; it no longer renders its view. `grails.async.streaming.enabled: false` restores the old behaviour for an application that relied on it.
-- Bundled provider starters, hard-coded keys, or a key in `application.yml` without a placeholder are review failures.
+- An action that returns a multi-valued `Publisher` streams; it no longer renders its view. A single-valued one, such as a `Mono`, is resolved like a `Promise`. `grails.async.streaming.enabled: false` restores the old behaviour for an application that relied on it.
+- Bundled provider starters, hard-coded keys, or a key or key placeholder in `application.yml` are review failures.
 - The Spring AI line moves with the Grails version; do not pin a Spring AI version in the application.
 
 ## Verification Checklist

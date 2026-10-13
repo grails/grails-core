@@ -19,7 +19,6 @@
 package org.grails.forge.feature.ai;
 
 import jakarta.inject.Singleton;
-import org.grails.forge.application.generator.GeneratorContext;
 
 /**
  * OpenAI as the Spring AI model provider. The API key is read from the {@code OPENAI_API_KEY}
@@ -46,18 +45,12 @@ public class SpringAiOpenAi extends SpringAiProviderFeature {
 
     @Override
     public String getDescription() {
-        return "Uses OpenAI models through Spring AI, with the API key taken from the OPENAI_API_KEY environment variable.";
+        return "Uses OpenAI models through Spring AI, which reads the API key from the OPENAI_API_KEY environment variable.";
     }
 
     @Override
     protected String getStarterArtifactId() {
         return "spring-ai-starter-model-openai";
-    }
-
-    @Override
-    public void apply(GeneratorContext generatorContext) {
-        super.apply(generatorContext);
-        generatorContext.getConfiguration().put("spring.ai.openai.api-key", "${OPENAI_API_KEY}");
     }
 
     @Override

@@ -20,7 +20,10 @@ package aiapp
 
 import java.time.Duration
 
+import java.util.concurrent.Callable
+
 import grails.compiler.GrailsCompileStatic
+import grails.converters.JSON
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -55,8 +58,14 @@ class StreamController {
         Flux.concat(Flux.just('partial'), Flux.error(new IllegalStateException('boom')))
     }
 
+    /**
+     * A single-valued publisher is resolved, not streamed: what it renders is the response, as with a Promise.
+     */
     def single() {
-        Mono.just([answer: 42])
+        Mono.fromCallable({ ->
+            render([answer: 42] as JSON)
+            null
+        } as Callable)
     }
 
 }

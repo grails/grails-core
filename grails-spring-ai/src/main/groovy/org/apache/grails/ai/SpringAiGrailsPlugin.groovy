@@ -39,7 +39,7 @@ import org.apache.grails.ai.async.ChatResponseStreamItemRenderer
 @AutoConfiguration
 class SpringAiGrailsPlugin extends Plugin {
 
-    def grailsVersion = '8.1.0 > *'
+    def grailsVersion = '8.1.0-SNAPSHOT > *'
     def author = 'Apache Grails Team'
     def title = 'Grails Spring AI Plugin'
     def description = 'Integrates Spring AI with Grails applications'

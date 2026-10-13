@@ -28,7 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Primary
+import org.springframework.context.annotation.Fallback
 
 /**
  * Registers a {@link ScriptedChatModel} and a {@link StubEmbeddingModel} in place of the provider's
@@ -37,7 +37,10 @@ import org.springframework.context.annotation.Primary
  *
  * <p>A stub registers only when the matching model selection is {@code none}, the default
  * {@link AiStubEnvironmentPostProcessor} supplies, so an application that selects a provider in its
- * configuration keeps it; and only when the application defines no model of that kind itself.</p>
+ * configuration keeps it; and only when the application defines no model of that kind itself. Beans an
+ * application defines in {@code resources.groovy}, {@code doWithSpring} or its {@code beanRegistrar} are
+ * registered after these conditions are evaluated, so each stub is a fallback bean as well: such a
+ * bean is the one injected, and the stub is left alone.</p>
  *
  * @since 8.1
  */
@@ -49,7 +52,7 @@ import org.springframework.context.annotation.Primary
 class AiTestingAutoConfiguration {
 
     @Bean
-    @Primary
+    @Fallback
     @ConditionalOnMissingBean(ChatModel)
     @ConditionalOnProperty(name = AiStubEnvironmentPostProcessor.CHAT_MODEL, havingValue = AiStubEnvironmentPostProcessor.NONE)
     ScriptedChatModel chatModel() {
@@ -57,7 +60,7 @@ class AiTestingAutoConfiguration {
     }
 
     @Bean
-    @Primary
+    @Fallback
     @ConditionalOnMissingBean(EmbeddingModel)
     @ConditionalOnProperty(name = AiStubEnvironmentPostProcessor.EMBEDDING_MODEL, havingValue = AiStubEnvironmentPostProcessor.NONE)
     StubEmbeddingModel embeddingModel(AiStubProperties properties) {

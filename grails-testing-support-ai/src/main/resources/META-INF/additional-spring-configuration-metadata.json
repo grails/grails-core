@@ -9,7 +9,7 @@
         {
             "name": "grails.ai.stub.enabled",
             "type": "java.lang.Boolean",
-            "description": "Whether a scripted chat model and a deterministic embedding model stand in for the configured provider's models, which then needs no credentials. Set to false to run tests against the real provider."
+            "description": "Whether a scripted chat model and a deterministic embedding model stand in for the configured provider's models, which then needs no credentials. On by default in the test environment and off anywhere else; set to false to run tests against the real provider, or to true to use the stubs elsewhere."
         },
         {
             "name": "grails.ai.stub.embeddingDimensions",

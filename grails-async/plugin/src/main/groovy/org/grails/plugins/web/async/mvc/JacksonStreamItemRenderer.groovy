@@ -28,7 +28,7 @@ import grails.async.web.StreamItemRenderer
 
 /**
  * Renders any item that is not text as JSON, with the application's {@link JsonMapper} when it has one.
- * It is the last renderer consulted, so a renderer registered by a plugin or the application wins.
+ * It is the last renderer consulted, after every renderer a plugin or the application registers.
  *
  * @since 8.1
  */

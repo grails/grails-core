@@ -132,6 +132,26 @@ class ControllersAsyncGrailsPluginSpec extends Specification {
         response.contentAsString == 'data: HI\n\ndata: {"count":1}\n\nevent: complete\ndata: \n\n'
     }
 
+    void "a renderer that is not Ordered, registered after the plugin's beans, still wins over the built-in ones"() {
+        given:
+        def beanFactory = new DefaultListableBeanFactory()
+        def registrar = new ControllersAsyncGrailsPlugin().beanRegistrar()
+        new BeanRegistryAdapter(beanFactory, new StandardEnvironment(), registrar.getClass()).register(registrar)
+        StreamItemRenderer unordered = { Object item -> item instanceof Map ? 'a map' : null } as StreamItemRenderer
+        beanFactory.registerSingleton('applicationStreamItemRenderer', unordered)
+        def request = new MockHttpServletRequest(new MockServletContext())
+        request.asyncSupported = true
+        def response = new MockHttpServletResponse()
+        def webRequest = new GrailsWebRequest(request, response, request.servletContext)
+
+        when:
+        PublisherActionResultTransformer transformer = beanFactory.getBean('publisherActionResultTransformer', PublisherActionResultTransformer)
+        transformer.transformActionResult(webRequest, '/stream/index', Flux.just([count: 1], 'text', 7))
+
+        then: 'the map goes to the application renderer, the rest to the built-in ones'
+        response.contentAsString == 'data: a map\n\ndata: text\n\ndata: 7\n\nevent: complete\ndata: \n\n'
+    }
+
     static class ShoutingStreamItemRenderer implements StreamItemRenderer, Ordered {
 
         @Override

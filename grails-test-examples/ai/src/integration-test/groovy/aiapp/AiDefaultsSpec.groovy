@@ -22,6 +22,7 @@ import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.Environment
 import spock.lang.Specification
 
@@ -68,6 +69,12 @@ class AiDefaultsSpec extends Specification {
         applicationContext.getBean(ChatModel) instanceof ScriptedChatModel
         applicationContext.getBean(EmbeddingModel) instanceof StubEmbeddingModel
         applicationContext.getBeanNamesForType(Class.forName('org.springframework.ai.ollama.OllamaChatModel')).length == 0
+    }
+
+    void 'the stubs are fallback beans, so a model the application defines would be the one injected'() {
+        expect:
+        ((ConfigurableApplicationContext) applicationContext).beanFactory.getBeanDefinition('chatModel').fallback
+        ((ConfigurableApplicationContext) applicationContext).beanFactory.getBeanDefinition('embeddingModel').fallback
     }
 
 }

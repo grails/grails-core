@@ -67,9 +67,13 @@ public abstract class SpringAiProviderFeature implements OneOfFeature {
                 .implementation());
     }
 
+    /**
+     * A provider is an application's choice: a plugin that carried a starter would impose it on every
+     * application that uses the plugin.
+     */
     @Override
     public boolean supports(ApplicationType applicationType) {
-        return true;
+        return applicationType == ApplicationType.WEB || applicationType == ApplicationType.REST_API;
     }
 
     @Override

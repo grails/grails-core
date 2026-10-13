@@ -27,6 +27,8 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.reactivestreams.Publisher
 
+import org.springframework.core.ReactiveAdapter
+import org.springframework.core.ReactiveAdapterRegistry
 import org.springframework.web.context.request.async.DeferredResult
 import org.springframework.web.context.request.async.WebAsyncManager
 import org.springframework.web.context.request.async.WebAsyncUtils
@@ -43,10 +45,12 @@ import org.grails.web.util.GrailsApplicationAttributes
  * <p>The request is handled asynchronously through Spring MVC, as a returned {@code Promise} is, so the
  * container thread is released while the stream produces. The response is committed as
  * {@code text/event-stream} before the first item, and each item is written as soon as it is emitted,
- * formatted by a {@link ServerSentEventFormatter}. Any {@code Publisher} streams, one that emits a single
- * item, such as a Reactor {@code Mono}, included. The stream honours {@code grails.async.streaming.timeout}
- * or, when that is not set, the same timeout as any other asynchronous request; a timeout ends the
- * stream with a {@code complete} event, since the response is already committed.</p>
+ * formatted by a {@link ServerSentEventFormatter}. A publisher that emits at most one item, such as a
+ * Reactor {@code Mono}, is not streamed: as Spring MVC does, Grails resolves it and treats its value as
+ * the action's result, the way a returned {@code Promise}'s value is; which publishers are single-valued
+ * is what Spring's {@link ReactiveAdapterRegistry} says. A stream has no timeout, as Spring MVC's
+ * server-sent event streams have none, unless {@code grails.async.streaming.timeout} sets one; a timeout
+ * ends the stream with a {@code complete} event, since the response is already committed.</p>
  *
  * @since 8.1
  */
@@ -56,12 +60,17 @@ class PublisherActionResultTransformer implements ActionResultTransformer {
 
     public static final String CONTENT_TYPE = 'text/event-stream'
 
+    /**
+     * The asynchronous request timeout that means none, which a stream gets unless one is configured.
+     */
+    public static final long NO_TIMEOUT = -1L
+
     private final ServerSentEventFormatter formatter
     private final Long timeoutMillis
 
     /**
      * @param renderers the renderers that turn items into event text, in the order they are consulted
-     * @param timeout how long a stream may stay open, or {@code null} for the asynchronous request default
+     * @param timeout how long a stream may stay open, or {@code null} for no timeout
      */
     PublisherActionResultTransformer(List<StreamItemRenderer> renderers, Duration timeout) {
         this.formatter = new ServerSentEventFormatter(renderers)
@@ -73,17 +82,62 @@ class PublisherActionResultTransformer implements ActionResultTransformer {
         if (!(actionResult instanceof Publisher)) {
             return actionResult
         }
+        Publisher<Object> publisher = (Publisher<Object>) actionResult
         HttpServletRequest request = webRequest.currentRequest
         WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request)
         if (AsyncRequestSupport.isComplete(webRequest) || asyncManager.asyncWebRequest?.isAsyncComplete()) {
-            throw new IllegalStateException('Cannot stream a Publisher once asynchronous request processing has completed')
+            throw new IllegalStateException('Cannot process a Publisher once asynchronous request processing has completed')
         }
-        if (webRequest.currentResponse.committed) {
+        boolean singleValue = isSingleValue(publisher)
+        if (!singleValue && webRequest.currentResponse.committed) {
             throw new IllegalStateException('Cannot stream a Publisher once the response has been committed')
         }
         if (!asyncManager.isConcurrentHandlingStarted()) {
             asyncManager.asyncWebRequest = AsyncRequestSupport.create(webRequest)
         }
+        if (singleValue) {
+            resolve(publisher, request, viewName, asyncManager)
+            return null
+        }
+        stream(publisher, request, viewName, webRequest, asyncManager)
+        return null
+    }
+
+    /**
+     * @return how long a stream may stay open, or {@code null} for no timeout
+     */
+    Duration getTimeout() {
+        timeoutMillis == null ? null : Duration.ofMillis(timeoutMillis)
+    }
+
+    /**
+     * @return whether the publisher emits at most one item, as Spring's adapter registry knows it, so that
+     * its value is the action's result rather than a stream
+     */
+    static boolean isSingleValue(Publisher<?> publisher) {
+        ReactiveAdapter adapter = ReactiveAdapterRegistry.sharedInstance.getAdapter(publisher.getClass())
+        adapter != null && !adapter.multiValue
+    }
+
+    /**
+     * Resolves a single-valued publisher the way a returned {@code Promise} is resolved.
+     */
+    private static void resolve(Publisher<Object> publisher, HttpServletRequest request, String viewName,
+                                WebAsyncManager asyncManager) {
+        DeferredResult<Object> deferredResult = new DeferredResult<Object>()
+        asyncManager.startDeferredResultProcessing(deferredResult)
+        request.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
+        SingleValueSubscriber subscriber = new SingleValueSubscriber(request, viewName, deferredResult)
+        try {
+            publisher.subscribe(subscriber)
+        }
+        catch (Throwable failure) {
+            subscriber.onError(failure)
+        }
+    }
+
+    private void stream(Publisher<Object> publisher, HttpServletRequest request, String viewName,
+                        GrailsWebRequest webRequest, WebAsyncManager asyncManager) {
         // The asynchronous request's own response refuses a write once the request has completed, which
         // turns a late emission into the failed write the subscriber already handles.
         HttpServletResponse response = asyncManager.asyncWebRequest.getNativeResponse(HttpServletResponse)
@@ -91,7 +145,7 @@ class PublisherActionResultTransformer implements ActionResultTransformer {
         // A timed-out stream completes with no result instead of an AsyncRequestTimeoutException: the
         // response is committed, so there is no status left to report a timeout with.
         Supplier<Object> timeoutResult = { -> null }
-        DeferredResult<Object> deferredResult = new DeferredResult<Object>(timeoutMillis, timeoutResult)
+        DeferredResult<Object> deferredResult = new DeferredResult<Object>(timeoutMillis ?: NO_TIMEOUT, timeoutResult)
         ServerSentEventSubscriber subscriber = new ServerSentEventSubscriber(response, formatter, deferredResult)
         deferredResult.onTimeout { -> subscriber.timeout() }
         deferredResult.onError { Throwable failure -> subscriber.cancel() }
@@ -110,22 +164,14 @@ class PublisherActionResultTransformer implements ActionResultTransformer {
             log.debug('Client went away before a streamed response began', failure)
             subscriber.cancel()
             deferredResult.setResult(null)
-            return null
+            return
         }
         try {
-            ((Publisher<Object>) actionResult).subscribe(subscriber)
+            publisher.subscribe(subscriber)
         }
         catch (Throwable failure) {
             subscriber.fail(failure)
         }
-        return null
-    }
-
-    /**
-     * @return how long a stream may stay open, or {@code null} for the asynchronous request default
-     */
-    Duration getTimeout() {
-        timeoutMillis == null ? null : Duration.ofMillis(timeoutMillis)
     }
 
 }

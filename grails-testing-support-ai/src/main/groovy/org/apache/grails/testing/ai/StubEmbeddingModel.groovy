@@ -31,8 +31,9 @@ import org.springframework.ai.embedding.EmbeddingResponse
  *
  * <p>The vector is deterministic, so the same text always embeds the same way, and it is a unit vector
  * built from the words of the text by feature hashing, so texts that share words are closer than texts
- * that share none. Text without a word embeds to a fixed unit vector, since a vector store cannot
- * compare a zero vector. That is enough for a vector store in a unit test to find what was added to it.</p>
+ * that share none. The vector is never zero, since a vector store cannot compare a zero vector: text
+ * without a word, and text whose words happen to cancel one another out, embed to a fixed unit vector.
+ * That is enough for a vector store in a unit test to find what was added to it.</p>
  *
  * @since 8.1
  */
@@ -78,25 +79,23 @@ class StubEmbeddingModel implements EmbeddingModel {
     @Override
     float[] embed(String text) {
         float[] vector = new float[dimensions]
-        boolean empty = true
         for (String word : text.toLowerCase(Locale.ROOT).split('(?U)\\W+')) {
             if (word) {
                 addWord(vector, word)
-                empty = false
             }
-        }
-        if (empty) {
-            vector[0] = 1
         }
         double length = 0
         for (float component : vector) {
             length += component * component
         }
-        if (length > 0) {
-            float norm = (float) Math.sqrt(length)
-            for (int i = 0; i < vector.length; i++) {
-                vector[i] = (float) (vector[i] / norm)
-            }
+        if (length == 0) {
+            // no words, or words whose hashed components cancelled out: a fixed unit vector, never a zero one
+            vector[0] = 1
+            return vector
+        }
+        float norm = (float) Math.sqrt(length)
+        for (int i = 0; i < vector.length; i++) {
+            vector[i] = (float) (vector[i] / norm)
         }
         vector
     }

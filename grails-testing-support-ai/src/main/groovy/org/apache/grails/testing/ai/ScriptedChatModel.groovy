@@ -74,6 +74,7 @@ class ScriptedChatModel implements ChatModel {
 
     /**
      * Whether a prompt that arrives when no scripted response is left is a failure rather than echoed.
+     * {@link #reset()} turns it off again, so a test that sets it affects no other.
      */
     void setStrict(boolean strict) {
         this.strict = strict
@@ -107,11 +108,12 @@ class ScriptedChatModel implements ChatModel {
     }
 
     /**
-     * Forgets the scripted responses and the received prompts; whether the model is strict is kept.
+     * Forgets the scripted responses and the received prompts, and turns strictness off.
      */
     void reset() {
         responses.clear()
         prompts.clear()
+        strict = false
     }
 
     @Override

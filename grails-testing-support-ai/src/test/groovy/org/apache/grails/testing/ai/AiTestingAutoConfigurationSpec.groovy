@@ -24,9 +24,18 @@ import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.SimpleVectorStore
 import org.springframework.ai.vectorstore.VectorStore
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+import org.springframework.beans.factory.support.BeanDefinitionRegistry
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
+import org.springframework.beans.factory.support.RootBeanDefinition
+import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigurations
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.test.context.FilteredClassLoader
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
+import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.annotation.Bean
+import org.springframework.context.support.GenericApplicationContext
 
 import spock.lang.Specification
 
@@ -127,6 +136,41 @@ class AiTestingAutoConfigurationSpec extends Specification {
                 }
     }
 
+    void 'a model or store the application registers after the conditions were evaluated, as resources.groovy beans are, wins over the stub'() {
+        given: 'beans registered by a post-processor that runs after the auto-configuration conditions, as the Grails one does'
+        ChatModel ownChatModel = new ScriptedChatModel()
+        EmbeddingModel ownEmbeddingModel = new StubEmbeddingModel(3)
+        VectorStore ownVectorStore = SimpleVectorStore.builder(ownEmbeddingModel).build()
+
+        expect:
+        contextRunner().withPropertyValues(NO_PROVIDER)
+                .withInitializer { ConfigurableApplicationContext context ->
+                    ((GenericApplicationContext) context).registerBean('lateApplicationBeans', LateApplicationBeans,
+                            { -> new LateApplicationBeans(ownChatModel: ownChatModel, ownEmbeddingModel: ownEmbeddingModel, ownVectorStore: ownVectorStore) })
+                }
+                .run { context ->
+                    assert context.containsBean('chatModel') && context.containsBean('embeddingModel') && context.containsBean('vectorStore')
+                    assert context.beanFactory.getBeanDefinition('chatModel').fallback
+                    assert context.beanFactory.getBeanDefinition('embeddingModel').fallback
+                    assert context.beanFactory.getBeanDefinition('vectorStore').fallback
+                    assert context.getBean(ChatModel).is(ownChatModel)
+                    assert context.getBean(EmbeddingModel).is(ownEmbeddingModel)
+                    assert context.getBean(VectorStore).is(ownVectorStore)
+                }
+    }
+
+    void 'the stub vector store is built over an embedding model a provider auto-configuration supplies later in the order'() {
+        expect: 'the stub store sorts after a provider auto-configuration that declares no order, so the model exists for its condition'
+        contextRunner().withConfiguration(AutoConfigurations.of(ProviderEmbeddingAutoConfiguration))
+                .withPropertyValues('spring.ai.model.chat=none', 'spring.ai.model.embedding=provider', 'spring.ai.vectorstore.type=none')
+                .run { context ->
+                    assert !context.containsBean('embeddingModel')
+                    assert context.getBean(EmbeddingModel).is(ProviderEmbeddingAutoConfiguration.MODEL)
+                    assert context.getBean(VectorStore) instanceof ResettableSimpleVectorStore
+                    assert context.getBean(ResettableSimpleVectorStore).embeddingModel.is(ProviderEmbeddingAutoConfiguration.MODEL)
+                }
+    }
+
     void 'no vector store is registered without the vector store module'() {
         expect:
         contextRunner().withPropertyValues(NO_PROVIDER).withClassLoader(new FilteredClassLoader(SimpleVectorStore))
@@ -134,6 +178,45 @@ class AiTestingAutoConfigurationSpec extends Specification {
                     assert context.getBean(ChatModel) instanceof ScriptedChatModel
                     assert !context.getBeanNamesForType(VectorStore)
                 }
+    }
+
+    /**
+     * Registers beans the way GrailsApplicationPostProcessor registers an application's own: from a
+     * post-processor that is neither PriorityOrdered nor Ordered, after the configuration classes.
+     */
+    static class LateApplicationBeans implements BeanDefinitionRegistryPostProcessor {
+
+        ChatModel ownChatModel
+        EmbeddingModel ownEmbeddingModel
+        VectorStore ownVectorStore
+
+        @Override
+        void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
+            registry.registerBeanDefinition('ownChatModel', new RootBeanDefinition(ChatModel, { -> ownChatModel }))
+            registry.registerBeanDefinition('ownEmbeddingModel', new RootBeanDefinition(EmbeddingModel, { -> ownEmbeddingModel }))
+            registry.registerBeanDefinition('ownVectorStore', new RootBeanDefinition(VectorStore, { -> ownVectorStore }))
+        }
+
+        @Override
+        void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        }
+
+    }
+
+    /**
+     * A provider's embedding auto-configuration: no order of its own, and a name that sorts after the stubs'.
+     */
+    @AutoConfiguration
+    @ConditionalOnProperty(name = 'spring.ai.model.embedding', havingValue = 'provider')
+    static class ProviderEmbeddingAutoConfiguration {
+
+        static final EmbeddingModel MODEL = new StubEmbeddingModel(8)
+
+        @Bean
+        EmbeddingModel providerEmbeddingModel() {
+            MODEL
+        }
+
     }
 
 }

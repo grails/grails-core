@@ -71,9 +71,14 @@ class StreamingFunctionalSpec extends Specification implements HttpClientSupport
         response.body() == 'data: partial\n\nevent: complete\ndata: error\n\n'
     }
 
-    void 'a single-valued publisher streams its one item'() {
-        expect:
-        http('/stream/single').assertStatus(200).body() == 'data: {"answer":42}\n\n' + COMPLETE
+    void 'a single-valued publisher is resolved rather than streamed, so what it rendered is the response'() {
+        when:
+        def response = http('/stream/single')
+
+        then:
+        response.assertStatus(200)
+        response.contentType.startsWith('application/json')
+        response.body() == '{"answer":42}'
     }
 
 }

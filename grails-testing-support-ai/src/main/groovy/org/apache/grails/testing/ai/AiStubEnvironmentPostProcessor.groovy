@@ -19,7 +19,9 @@
 package org.apache.grails.testing.ai
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
+import org.springframework.ai.model.SpringAIModelProperties
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.EnvironmentPostProcessor
 import org.springframework.core.Ordered
@@ -33,21 +35,29 @@ import org.springframework.core.env.MapPropertySource
  * {@code none}. The defaults sit below every other property source, so an application that names a
  * provider in its configuration keeps it, and the stub for that kind of model then backs off.
  *
+ * <p>The stubs are meant for the test environment and are enabled there by default. Outside it, the
+ * module is on the classpath by mistake more often than on purpose, so the stubs stay off unless
+ * {@code grails.ai.stub.enabled} is set to {@code true} explicitly, and a warning says the module was
+ * found; a production application never has its model replaced quietly by one that echoes the prompt.</p>
+ *
  * @since 8.1
  */
 @CompileStatic
+@Slf4j
 class AiStubEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     public static final String PROPERTY_SOURCE_NAME = 'grailsAiStubDefaults'
     public static final String STUB_ENABLED = AiStubProperties.PREFIX + '.enabled'
-    public static final String CHAT_MODEL = 'spring.ai.model.chat'
-    public static final String EMBEDDING_MODEL = 'spring.ai.model.embedding'
-    public static final String TEXT_EMBEDDING_MODEL = 'spring.ai.model.embedding.text'
-    public static final String MULTIMODAL_EMBEDDING_MODEL = 'spring.ai.model.embedding.multimodal'
-    public static final String IMAGE_MODEL = 'spring.ai.model.image'
-    public static final String AUDIO_TRANSCRIPTION_MODEL = 'spring.ai.model.audio.transcription'
-    public static final String AUDIO_SPEECH_MODEL = 'spring.ai.model.audio.speech'
-    public static final String MODERATION_MODEL = 'spring.ai.model.moderation'
+    public static final String GRAILS_ENVIRONMENT = 'grails.env'
+    public static final String TEST_ENVIRONMENT = 'test'
+    public static final String CHAT_MODEL = SpringAIModelProperties.CHAT_MODEL
+    public static final String EMBEDDING_MODEL = SpringAIModelProperties.EMBEDDING_MODEL
+    public static final String TEXT_EMBEDDING_MODEL = SpringAIModelProperties.TEXT_EMBEDDING_MODEL
+    public static final String MULTIMODAL_EMBEDDING_MODEL = SpringAIModelProperties.MULTI_MODAL_EMBEDDING_MODEL
+    public static final String IMAGE_MODEL = SpringAIModelProperties.IMAGE_MODEL
+    public static final String AUDIO_TRANSCRIPTION_MODEL = SpringAIModelProperties.AUDIO_TRANSCRIPTION_MODEL
+    public static final String AUDIO_SPEECH_MODEL = SpringAIModelProperties.AUDIO_SPEECH_MODEL
+    public static final String MODERATION_MODEL = SpringAIModelProperties.MODERATION_MODEL
     public static final String VECTOR_STORE = 'spring.ai.vectorstore.type'
     public static final String NONE = 'none'
 
@@ -61,10 +71,20 @@ class AiStubEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordere
 
     @Override
     void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        if (!environment.getProperty(STUB_ENABLED, Boolean, Boolean.TRUE)) {
+        if (environment.propertySources.contains(PROPERTY_SOURCE_NAME)) {
             return
         }
-        if (environment.propertySources.contains(PROPERTY_SOURCE_NAME)) {
+        Boolean enabled = environment.getProperty(STUB_ENABLED, Boolean)
+        if (enabled == null) {
+            if (!isTestEnvironment(environment)) {
+                log.warn('grails-testing-support-ai is on the classpath outside the test environment; its stubs stay off ' +
+                        'and the configured provider is used. Set {} to true to use the stubs here.', STUB_ENABLED)
+                environment.propertySources.addLast(new MapPropertySource(PROPERTY_SOURCE_NAME,
+                        [(STUB_ENABLED): false] as Map<String, Object>))
+                return
+            }
+        }
+        else if (!enabled) {
             return
         }
         Map<String, Object> defaults = [:]
@@ -72,6 +92,19 @@ class AiStubEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordere
             defaults[property] = NONE
         }
         environment.propertySources.addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, defaults))
+    }
+
+    /**
+     * @return whether the application runs in the Grails test environment: {@code grails.env} is
+     * {@code test}, which the Grails Gradle plugin sets for every test task, or {@code test} is an active
+     * Spring profile, which Grails adds for its environment
+     */
+    static boolean isTestEnvironment(ConfigurableEnvironment environment) {
+        String grailsEnvironment = environment.getProperty(GRAILS_ENVIRONMENT)
+        if (grailsEnvironment) {
+            return grailsEnvironment == TEST_ENVIRONMENT
+        }
+        TEST_ENVIRONMENT in environment.activeProfiles
     }
 
     @Override

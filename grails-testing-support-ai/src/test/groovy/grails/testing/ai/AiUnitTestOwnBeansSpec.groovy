@@ -18,8 +18,11 @@
  */
 package grails.testing.ai
 
+import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.document.Document
 import org.springframework.ai.embedding.EmbeddingModel
+import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.beans.factory.BeanRegistrar
 import org.springframework.beans.factory.BeanRegistry
@@ -32,53 +35,63 @@ import org.apache.grails.testing.ai.StubEmbeddingModel
 import spock.lang.Specification
 
 /**
- * The beans a specification defines itself, and the configuration it sets, win over the stubs.
+ * Every bean a specification defines itself, of each type the stubs cover, is used instead of the stub.
  */
 class AiUnitTestOwnBeansSpec extends Specification implements ServiceUnitTest<AnswerService>, AiUnitTest {
 
     static final ScriptedChatModel OWN_CHAT_MODEL = new ScriptedChatModel()
+    static final StubEmbeddingModel OWN_EMBEDDING_MODEL = new StubEmbeddingModel(8)
+    static final ResettableSimpleVectorStore OWN_VECTOR_STORE = new ResettableSimpleVectorStore(OWN_EMBEDDING_MODEL)
+    static final ChatClient.Builder OWN_BUILDER = ChatClient.builder(OWN_CHAT_MODEL)
 
     @Override
     BeanRegistrar beanRegistrar() {
         return { BeanRegistry registry, Environment environment ->
             registry.registerBean('ownChatModel', ScriptedChatModel) { it.supplier { OWN_CHAT_MODEL } }
+            registry.registerBean('ownEmbeddingModel', StubEmbeddingModel) { it.supplier { OWN_EMBEDDING_MODEL } }
+            registry.registerBean('ownVectorStore', ResettableSimpleVectorStore) { it.supplier { OWN_VECTOR_STORE } }
+            // under the name an application's services are autowired by, as an application defines it
+            registry.registerBean('chatClientBuilder', ChatClient.Builder) { it.supplier { OWN_BUILDER } }
         } as BeanRegistrar
     }
 
-    @Override
-    Closure doWithConfig() {
-        { config -> config['grails.ai.stub.embeddingDimensions'] = 16 }
+    void 'no stub is registered when the specification defines a bean of every type'() {
+        expect:
+        !applicationContext.containsBean('chatModel')
+        !applicationContext.containsBean('embeddingModel')
+        !applicationContext.containsBean('vectorStore')
+        applicationContext.getBean('chatClientBuilder').is(OWN_BUILDER)
+        applicationContext.getBeansOfType(ChatModel).keySet() == ['ownChatModel'] as Set
+        applicationContext.getBeansOfType(EmbeddingModel).keySet() == ['ownEmbeddingModel'] as Set
+        applicationContext.getBeansOfType(VectorStore).keySet() == ['ownVectorStore'] as Set
+        applicationContext.getBeansOfType(ChatClient.Builder).keySet() == ['chatClientBuilder'] as Set
     }
 
-    void 'a chat model the specification defines is used instead of the stub'() {
+    void 'the trait and the service under test use the specification-defined beans'() {
         given:
         respondWith('mine')
 
         expect:
         chatModel.is(OWN_CHAT_MODEL)
-        applicationContext.getBeansOfType(ChatModel).keySet() == ['ownChatModel'] as Set
-        !applicationContext.containsBean('chatModel')
+        embeddingModel.is(OWN_EMBEDDING_MODEL)
+        embeddingModel.dimensions() == 8
         chatClient.prompt().user('whose?').call().content() == 'mine'
         service.answer('and the service?') == 'and the service?'
         OWN_CHAT_MODEL.prompts*.contents == ['whose?', 'and the service?']
     }
 
-    void 'the specification-defined model is reset before every feature method too'() {
+    void 'the specification-defined store holds what a feature adds'() {
+        given:
+        OWN_VECTOR_STORE.add([new Document('Grails is a web framework')])
+
+        expect:
+        applicationContext.getBean(VectorStore).similaritySearch(SearchRequest.builder().query('web framework').topK(1).build()).size() == 1
+    }
+
+    void 'the specification-defined model and store are reset before every feature method too'() {
         expect:
         OWN_CHAT_MODEL.prompts.empty
-    }
-
-    void 'the stub embedding model takes its dimensions from the configuration'() {
-        expect:
-        embeddingModel.dimensions() == 16
-        applicationContext.getBean(EmbeddingModel).dimensions() == 16
-        embeddingModel.embed('a few words').length == 16
-    }
-
-    void 'the stubs the specification does not define are still registered'() {
-        expect:
-        applicationContext.getBean(EmbeddingModel) instanceof StubEmbeddingModel
-        applicationContext.getBean(VectorStore) instanceof ResettableSimpleVectorStore
+        OWN_VECTOR_STORE.similaritySearch(SearchRequest.builder().query('web framework').topK(1).build()).empty
     }
 
 }

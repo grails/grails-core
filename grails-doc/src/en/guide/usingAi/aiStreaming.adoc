@@ -50,7 +50,7 @@ source.onmessage = event => { answer.textContent += event.data; };
 source.addEventListener('complete', () => source.close());
 ----
 
-This is the general streaming support of Grails, which any Reactive Streams `Publisher` returned from an action gets; the <<asyncStreaming,Streaming Responses>> section of the asynchronous programming chapter describes the event format, how other kinds of item are rendered and the `grails.async.streaming` settings. A streamed answer can take longer than an ordinary request, so set `grails.async.streaming.timeout` to what the slowest answer may take:
+This is the general streaming support of Grails, which any Reactive Streams `Publisher` returned from an action gets; the <<asyncStreaming,Streaming Responses>> section of the asynchronous programming chapter describes the event format, how other kinds of item are rendered and the `grails.async.streaming` settings. A stream has no timeout unless `grails.async.streaming.timeout` sets one, so a slow or reasoning model that takes minutes to answer is not cut off; set it to bound how long an answer may take:
 
 [source,yaml]
 .grails-app/conf/application.yml
@@ -60,3 +60,5 @@ grails:
         streaming:
             timeout: 5m
 ----
+
+A `Mono`, such as `stream().content().collect(...)` or the result of a single call, is not streamed: it is resolved, and its value is the action's result as a returned `Promise`'s value is.

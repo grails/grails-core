@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
-A controller action can return a https://www.reactive-streams.org/[Reactive Streams] `Publisher`, such as a Reactor `Flux`, and Grails streams every item it emits to the client as a https://html.spec.whatwg.org/multipage/server-sent-events.html[server-sent event]. Any `Publisher` streams, one that emits a single item, such as a Reactor `Mono`, included; an action that returns one no longer renders its view. The request is handled asynchronously, as a returned `Promise` is, so the container thread is released while the stream produces; the response is committed as `text/event-stream` before the first item, and each item is written as soon as it is emitted:
+A controller action can return a https://www.reactive-streams.org/[Reactive Streams] `Publisher`, such as a Reactor `Flux`, and Grails streams every item it emits to the client as a https://html.spec.whatwg.org/multipage/server-sent-events.html[server-sent event]. An action that returns one no longer renders its view. The request is handled asynchronously, as a returned `Promise` is, so the container thread is released while the stream produces; the response is committed as `text/event-stream` before the first item, and each item is written as soon as it is emitted:
 
 [source,groovy]
 ----
@@ -33,6 +33,8 @@ class ClockController {
     }
 }
 ----
+
+A publisher that emits at most one item, such as a Reactor `Mono`, is not streamed. As Spring MVC does, Grails resolves it and treats its value as the action's result, the way a returned `Promise`'s value is: a `Map` is the model of the view, anything else leaves the response to what the action rendered, and a failure fails the request. Which publishers are single-valued is what Spring's `ReactiveAdapterRegistry` knows, so a Reactor `Mono`, a `CompletableFuture` adapted to one or an RxJava `Single` all resolve rather than stream.
 
 A browser reads the events with `EventSource`:
 
@@ -58,7 +60,7 @@ ServerSentEvent.builder([price: 42.5])
         .build()
 ----
 
-A plugin or an application teaches the stream about its own types by registering a bean implementing `grails.async.web.StreamItemRenderer`. Renderers are consulted in `Ordered` order and the first that returns text wins, so a renderer with a higher precedence than the defaults takes over its types and leaves the rest to them. The <<usingAi,Using AI in Your Application>> chapter's streaming support is one: it renders the chat responses a model streams as the text they carry.
+A plugin or an application teaches the stream about its own types by registering a bean implementing `grails.async.web.StreamItemRenderer`. Renderers are consulted in `Ordered` order and the first that returns text wins; the two built-in renderers are always consulted last, so a renderer takes over its types whether or not it is `Ordered`, and leaves the rest to them. The <<usingAi,Using AI in Your Application>> chapter's streaming support is one: it renders the chat responses a model streams as the text they carry.
 
 ==== Completion, Failures and Timeouts
 
@@ -83,7 +85,7 @@ source.addEventListener('complete', event => {
 
 A client that disconnects cancels the stream.
 
-A stream honours `grails.async.streaming.timeout` or, when that is not set, `spring.mvc.async.request-timeout` and then the Servlet container's default, which is normally 30 seconds. A timeout cancels the stream and ends it with a `complete` event whose data is `timeout`. Set the streaming timeout to what the longest stream may take:
+A stream has no timeout unless `grails.async.streaming.timeout` sets one, as a Spring MVC server-sent event stream has none; neither `spring.mvc.async.request-timeout` nor the Servlet container's asynchronous request timeout applies to it. A timeout cancels the stream and ends it with a `complete` event whose data is `timeout`. Set it to bound how long a stream may stay open:
 
 [source,yaml]
 .grails-app/conf/application.yml
@@ -104,5 +106,5 @@ grails:
 
 | `grails.async.streaming.timeout`
 |
-| How long a stream may stay open. When not set, the asynchronous request timeout applies.
+| How long a stream may stay open. When not set, a stream has no timeout.
 |===

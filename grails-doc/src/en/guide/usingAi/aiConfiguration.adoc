@@ -71,4 +71,4 @@ The plugin selects no provider and no credential; the starter the application ad
 
 Which model a provider uses, and with what options, is set under the provider's own prefix, for example `spring.ai.openai.chat.model` and `spring.ai.openai.chat.temperature`, or `spring.ai.anthropic.chat.model`; each provider's page in the Spring AI reference lists them with their defaults.
 
-Streaming is configured under `grails.async.streaming`, see <<aiStreaming,Streaming Responses>>, and the test stubs under `grails.ai.stub`, see <<aiTesting,Testing>>.
+Streaming is configured under `grails.async.streaming`, see <<aiStreaming,Streaming Model Responses>>, and the test stubs under `grails.ai.stub`, see <<aiTesting,Testing>>.

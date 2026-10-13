@@ -38,9 +38,9 @@ import org.springframework.util.ClassUtils
 
 import grails.async.PromiseFactory
 import grails.async.Promises
-import grails.plugins.Plugin
 import grails.async.web.StreamItemRenderer
 import grails.async.web.WebPromises
+import grails.plugins.Plugin
 import org.grails.async.factory.PromiseFactoryBuilder
 import org.grails.async.factory.future.VirtualThreadPromiseFactory
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
@@ -61,6 +61,8 @@ class ControllersAsyncGrailsPlugin extends Plugin {
 
     public static final String STREAMING_ENABLED = 'grails.async.streaming.enabled'
     public static final String STREAMING_TIMEOUT = 'grails.async.streaming.timeout'
+    public static final String DEFAULT_RENDERER = 'defaultStreamItemRenderer'
+    public static final String JACKSON_RENDERER = 'jacksonStreamItemRenderer'
     private static final String JSON_MAPPER_CLASS = 'tools.jackson.databind.json.JsonMapper'
 
     def grailsVersion = '8.0.0-SNAPSHOT > *'
@@ -116,17 +118,21 @@ class ControllersAsyncGrailsPlugin extends Plugin {
             }
         }
     }
+
     /**
      * Registers the beans that stream a {@code Publisher} returned from an action as server-sent events,
-     * unless {@code grails.async.streaming.enabled} is {@code false}.
+     * unless {@code grails.async.streaming.enabled} is {@code false}. The renderers a plugin or the
+     * application registers are consulted first, in {@code Ordered} order, and the two built-in ones last,
+     * so a renderer wins over them for its types whether or not it is {@code Ordered}.
      */
     private static void registerStreamingBeans(BeanRegistry registry, Environment environment) {
         if (!environment.getProperty(STREAMING_ENABLED, Boolean, Boolean.TRUE)) {
             return
         }
-        registry.registerBean('defaultStreamItemRenderer', DefaultStreamItemRenderer)
-        if (ClassUtils.isPresent(JSON_MAPPER_CLASS, ControllersAsyncGrailsPlugin.classLoader)) {
-            registry.registerBean('jacksonStreamItemRenderer', JacksonStreamItemRenderer) {
+        registry.registerBean(DEFAULT_RENDERER, DefaultStreamItemRenderer)
+        boolean jackson = ClassUtils.isPresent(JSON_MAPPER_CLASS, ControllersAsyncGrailsPlugin.classLoader)
+        if (jackson) {
+            registry.registerBean(JACKSON_RENDERER, JacksonStreamItemRenderer) {
                 it.supplier { context -> JacksonStreamItemRenderer.create(context) }
             }
         }
@@ -134,7 +140,14 @@ class ControllersAsyncGrailsPlugin extends Plugin {
         Duration timeout = configuredTimeout ? DurationStyle.detectAndParse(configuredTimeout) : null
         registry.registerBean('publisherActionResultTransformer', PublisherActionResultTransformer) {
             it.supplier { context ->
-                List<StreamItemRenderer> renderers = context.beanProvider(StreamItemRenderer).orderedStream().toList()
+                List<StreamItemRenderer> builtIn = [context.bean(DEFAULT_RENDERER, StreamItemRenderer)]
+                if (jackson) {
+                    builtIn << context.bean(JACKSON_RENDERER, StreamItemRenderer)
+                }
+                List<StreamItemRenderer> renderers = context.beanProvider(StreamItemRenderer).orderedStream()
+                        .filter { StreamItemRenderer renderer -> builtIn.every { StreamItemRenderer own -> renderer !== own } }
+                        .toList()
+                renderers.addAll(builtIn)
                 new PublisherActionResultTransformer(renderers, timeout)
             }
         }

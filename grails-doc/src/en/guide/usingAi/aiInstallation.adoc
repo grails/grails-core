@@ -33,18 +33,11 @@ The plugin provides the chat client and the auto-configuration every provider sh
 
 The provider's credentials go in its own properties, such as `spring.ai.openai.api-key`. Read them from the environment rather than committing them:
 
-[source,yaml]
-.grails-app/conf/application.yml
-----
-spring:
-    ai:
-        openai:
-            api-key: ${OPENAI_API_KEY}
-----
+Credentials come from the environment: Spring AI reads the key from the provider's environment variable, `OPENAI_API_KEY` here, `ANTHROPIC_API_KEY` for Anthropic, when the configuration sets none. An application that gets the key from elsewhere sets `spring.ai.openai.api-key` itself; do not set it to a placeholder such as `${OPENAI_API_KEY}`, which is sent as the key, and fails as one, when the variable is unset.
 
 A new application gets all of this from the `grails-spring-ai` feature, or from one of the `spring-ai-openai`, `spring-ai-anthropic` and `spring-ai-ollama` features, which add the provider's starter and its configuration as well. The provider features exclude one another, since a second starter would auto-configure a second chat model with nothing to choose between them:
 
 [source,console]
 ----
-$ grails create-app my-app --features spring-ai-openai
+$ grails -t forge create-app my-app --features spring-ai-openai
 ----

@@ -134,10 +134,16 @@ class ScriptedChatModelSpec extends Specification {
         model.prompts*.contents == ['x', 'x']
     }
 
-    void 'concurrent calls each get the response scripted for their turn'() {
-        given:
+    void 'concurrent calls pair each recorded prompt with the response scripted for its turn'() {
+        given: 'responders that record the prompt they answer'
         int calls = 200
-        model.respondWith((1..calls).collect { "answer ${it}".toString() } as String[])
+        List<Prompt> answered = Collections.synchronizedList(new ArrayList<Prompt>(Collections.nCopies(calls, (Prompt) null)))
+        (0..<calls).each { int turn ->
+            model.respondWith { Prompt prompt ->
+                answered[turn] = prompt
+                "answer ${turn}".toString()
+            }
+        }
         ExecutorService executor = Executors.newFixedThreadPool(8)
 
         when:
@@ -147,9 +153,10 @@ class ScriptedChatModelSpec extends Specification {
         List<String> texts = answers*.get()
         executor.shutdown()
 
-        then: 'every scripted answer was used once and the prompts were all recorded'
-        texts.toSet() == (1..calls).collect { "answer ${it}".toString() }.toSet()
+        then: 'the prompt recorded at each position is the one the responder for that position answered'
+        texts.toSet() == (0..<calls).collect { "answer ${it}".toString() }.toSet()
         model.prompts.size() == calls
+        (0..<calls).every { int turn -> model.prompts[turn].is(answered[turn]) }
     }
 
     void 'a strict model fails when the script runs out instead of echoing'() {
@@ -170,16 +177,27 @@ class ScriptedChatModelSpec extends Specification {
         model.prompts*.contents == ['one', 'two']
     }
 
-    void 'a strict model stays strict across a reset'() {
+    void 'a strict model fails on a streamed call too'() {
+        given:
+        model.strict = true
+
+        when:
+        model.stream(new Prompt('nothing scripted')).blockLast()
+
+        then:
+        thrown(IllegalStateException)
+    }
+
+    void 'reset turns strictness off, so a test that set it affects no other'() {
         given:
         model.strict = true
 
         when:
         model.reset()
-        model.stream(new Prompt('nothing scripted')).blockLast()
 
         then:
-        thrown(IllegalStateException)
+        !model.strict
+        model.call(new Prompt('echoed again')).result.output.text == 'echoed again'
     }
 
     void 'reset forgets the script and the prompts'() {

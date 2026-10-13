@@ -36,7 +36,8 @@ class AiStubProperties {
 
     /**
      * Whether a scripted chat model and a deterministic embedding model stand in for the configured
-     * provider, which then needs no credentials. Set to false to run tests against the real provider.
+     * provider, which then needs no credentials. On by default in the test environment and off anywhere
+     * else; set to false to run tests against the real provider, or to true to use the stubs elsewhere.
      */
     boolean enabled = true
 

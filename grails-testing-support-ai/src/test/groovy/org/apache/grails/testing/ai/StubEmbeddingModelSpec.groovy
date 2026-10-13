@@ -137,4 +137,18 @@ class StubEmbeddingModelSpec extends Specification {
         product
     }
 
+    void 'words whose hashed components cancel out still embed to a unit vector, never a zero one'() {
+        given: 'one dimension, where every word lands on the same component with a weight of its own, so pairs of opposite sign and equal weight cancel'
+        StubEmbeddingModel narrow = new StubEmbeddingModel(1)
+        List<String> words = (1..40).collect { "word${it}".toString() }
+        List<List<String>> pairs = [words, words].combinations().findAll { List<String> pair -> pair[0] < pair[1] }
+
+        expect: 'both signs occur, so some pairs cancel'
+        words.any { narrow.embed(it)[0] == 1f }
+        words.any { narrow.embed(it)[0] == -1f }
+
+        and: 'every pair, the cancelling ones included, is a unit vector'
+        pairs.every { List<String> pair -> narrow.embed(pair.join(' '))[0] in [1f, -1f] }
+    }
+
 }
