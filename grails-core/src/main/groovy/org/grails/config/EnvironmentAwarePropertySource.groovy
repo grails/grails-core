@@ -20,6 +20,7 @@
 package org.grails.config
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.springframework.core.env.EnumerablePropertySource
 import org.springframework.core.env.PropertySource
 import org.springframework.core.env.PropertySources
@@ -36,6 +37,7 @@ import grails.util.Environment
 @CompileStatic
 class EnvironmentAwarePropertySource extends EnumerablePropertySource<PropertySources> {
 
+    @PackageScope
     EnvironmentAwarePropertySource(PropertySources source) {
         super('grails.environment', source)
     }

@@ -82,4 +82,44 @@ class DefaultResourceLoaderSpec extends Specification {
         loader.getClassLoader().is(custom)
     }
 
+    void 'the default class loader falls back to this library when the thread has none'() {
+        given:
+        ClassLoader original = Thread.currentThread().contextClassLoader
+
+        when:
+        Thread.currentThread().contextClassLoader = null
+
+        then:
+        DefaultResourceLoader.defaultClassLoader.is(DefaultResourceLoader.classLoader)
+
+        cleanup:
+        Thread.currentThread().contextClassLoader = original
+    }
+
+    void 'a loader whose class loader was cleared uses the default class loader again'() {
+        given:
+        DefaultResourceLoader loader = new DefaultResourceLoader(new URLClassLoader(new URL[0]))
+
+        when:
+        loader.classLoader = null
+
+        then:
+        loader.classLoader.is(DefaultResourceLoader.defaultClassLoader)
+    }
+
+    void 'plain path resources resolve relative to their own location'() {
+        given:
+        Resource resource = new DefaultResourceLoader().getResource('org/grails/io/support/ClassPathResourceSpec.class')
+
+        when:
+        Resource sibling = resource.createRelative('DefaultResourceLoaderSpec.class')
+
+        then:
+        resource.exists()
+        resource.pathWithinContext == 'org/grails/io/support/ClassPathResourceSpec.class'
+        sibling.exists()
+        sibling.filename == 'DefaultResourceLoaderSpec.class'
+        sibling.pathWithinContext == 'org/grails/io/support/DefaultResourceLoaderSpec.class'
+    }
+
 }
