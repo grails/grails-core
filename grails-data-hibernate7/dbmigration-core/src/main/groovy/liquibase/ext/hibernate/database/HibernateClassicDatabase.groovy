@@ -1,6 +1,7 @@
 package liquibase.ext.hibernate.database
 
 import groovy.transform.CompileStatic
+import groovy.transform.stc.POJO
 import liquibase.database.DatabaseConnection
 import liquibase.exception.DatabaseException
 import org.hibernate.boot.Metadata
@@ -16,6 +17,7 @@ import org.hibernate.service.ServiceRegistry
  * Database implementation for "classic" hibernate configurations.
  */
 @CompileStatic
+@POJO // see HibernateDatabase
 class HibernateClassicDatabase extends HibernateDatabase {
 
     protected Configuration configuration

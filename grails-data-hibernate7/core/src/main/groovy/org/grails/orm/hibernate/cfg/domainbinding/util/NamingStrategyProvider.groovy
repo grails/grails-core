@@ -18,6 +18,8 @@
  */
 package org.grails.orm.hibernate.cfg.domainbinding.util
 
+import java.lang.reflect.InvocationTargetException
+
 import groovy.transform.CompileStatic
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy
 import org.hibernate.boot.model.naming.PhysicalNamingStrategySnakeCaseImpl
@@ -82,12 +84,25 @@ class NamingStrategyProvider {
         return strategy.class
     }
 
+    /**
+     * Instantiates the strategy the way {@code Class.newInstance()} did: a class without a no-arg constructor is an
+     * {@link InstantiationException}, and an exception thrown by the constructor reaches the caller itself, not
+     * wrapped in an {@link java.lang.reflect.InvocationTargetException}.
+     */
     private Object getStrategyInstance(Object strategy, Class<?> strategyClass)
-            throws ReflectiveOperationException {
+            throws InstantiationException, IllegalAccessException {
         if (strategy instanceof PhysicalNamingStrategy) {
             return strategy
         }
-        return strategyClass.getDeclaredConstructor().newInstance()
+        try {
+            return strategyClass.getDeclaredConstructor().newInstance()
+        }
+        catch (NoSuchMethodException e) {
+            throw (InstantiationException) new InstantiationException(strategyClass.name).initCause(e)
+        }
+        catch (InvocationTargetException e) {
+            throw e.cause ?: e
+        }
     }
 
     PhysicalNamingStrategy getPhysicalNamingStrategy(String sessionFactoryBeanName) {
