@@ -35,10 +35,12 @@ import org.cyclonedx.model.OrganizationalEntity
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.file.CopySpec
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.java.archives.Manifest
+import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.bundling.Jar
 
@@ -130,7 +132,7 @@ class SbomPlugin implements Plugin<Project> {
             'pkg:maven/org.jline/jline-terminal-jni@3.30.16?type=jar'          : 'BSD-3-Clause',
             'pkg:maven/org.jruby/jzlib@1.1.5?type=jar'                        : 'BSD-3-Clause', // https://web.archive.org/web/20240822213507/http://www.jcraft.com/jzlib/LICENSE.txt shows it's a 3 clause
             'pkg:maven/org.liquibase.ext/liquibase-hibernate5@4.27.0?type=jar': 'Apache-2.0', // maps incorrectly because of https://github.com/liquibase/liquibase/issues/2445 & the base pom does not define a license
-            'pkg:maven/org.json/json@20251224?type=jar'                       : 'Public-Domain', // required due to jedis, https://issues.apache.org/jira/browse/LEGAL-666 approves this usage
+            'pkg:maven/org.json/json@20260719?type=jar'                       : 'Public-Domain', // required due to jedis, https://issues.apache.org/jira/browse/LEGAL-666 approves this usage
             // Bouncy Castle Licence is the MIT license (https://www.bouncycastle.org/licence.html); pulled in transitively by the CAS client
             'pkg:maven/org.bouncycastle/bcpkix-jdk18on@1.84?type=jar'         : 'MIT',
             'pkg:maven/org.bouncycastle/bcprov-jdk18on@1.84?type=jar'         : 'MIT',
@@ -307,7 +309,8 @@ class SbomPlugin implements Plugin<Project> {
                 Provider<String> sbomComponent = componentName
                 Provider<Boolean> isReproducibleBuildProvider = project.provider { lookupProperty(project, 'isReproducibleBuild') as boolean }
                 Provider<ZonedDateTime> buildDateProvider = project.provider { lookupProperty(project, 'buildDate') as ZonedDateTime }
-                doLast {
+                doLast { Task t ->
+                    Logger logger = t.logger
                     // json schema is documented here: https://cyclonedx.org/docs/1.6/json/
                     def rewriteSbom = { File f ->
                         def bom = new JsonSlurper().parse(f)
@@ -449,10 +452,10 @@ class SbomPlugin implements Plugin<Project> {
                 manifest.attributes('Sbom-Location': 'META-INF/sbom.json')
                 manifest.attributes('Sbom-Format': 'CycloneDX')
             }
-            jar.doFirst {
+            jar.doFirst { Task t ->
                 if (!publishesJavaComponent.get()) {
-                    jar.manifest.attributes.remove('Sbom-Location')
-                    jar.manifest.attributes.remove('Sbom-Format')
+                    ((Jar) t).manifest.attributes.remove('Sbom-Location')
+                    ((Jar) t).manifest.attributes.remove('Sbom-Format')
                 }
             }
         }

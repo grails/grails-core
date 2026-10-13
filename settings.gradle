@@ -41,13 +41,9 @@ plugins {
 
 apply from: file('gradle/dependency-analysis.settings.gradle')
 
-// NOTE: Known Gradle deprecation warnings (scheduled for removal in Gradle 10):
-// 1. StartParameter.isConfigurationCacheRequested - from org.asciidoctor.jvm.convert plugin (4.0.5)
-//    Fix available in asciidoctor-gradle-plugin 5.0.0+ (currently alpha)
-//    Tracking: https://github.com/asciidoctor/asciidoctor-gradle-plugin/issues/756
-
 def isCI = System.getenv().containsKey('CI')
 def isLocal = !isCI
+def hasDevelocityAccessKey = System.getenv('DEVELOCITY_ACCESS_KEY') != null
 def isReproducibleBuild = System.getenv('SOURCE_DATE_EPOCH') != null
 if (isReproducibleBuild) {
     gradle.settingsEvaluated {
@@ -58,6 +54,7 @@ if (isReproducibleBuild) {
 
 develocity {
     server = 'https://develocity.apache.org'
+    projectId = 'grails'
     buildScan {
         tag('grails')
         tag('grails-core')
@@ -69,7 +66,7 @@ develocity {
 buildCache {
     local { enabled = (isLocal && !isReproducibleBuild) || (isCI && isReproducibleBuild) }
     remote(develocity.buildCache) {
-        push = isCI
+        push = hasDevelocityAccessKey
         enabled = !isReproducibleBuild
     }
 }
@@ -106,6 +103,7 @@ include(
         'grails-services',
         'grails-shell-cli',
         'grails-spring',
+        'grails-startup-progress',
         'grails-test-core',
         'grails-undertow',
         'grails-undertow-spring-boot',
@@ -596,6 +594,7 @@ include(
         'grails-test-examples-undertow',
         'grails-test-examples-views-functional-tests',
         'grails-test-examples-views-functional-tests-plugin',
+        'grails-test-examples-startup-progress',
         'grails-test-examples-welcome-page',
         'grails-test-examples-welcome-page-jetty',
 )
@@ -647,6 +646,7 @@ project(':grails-test-examples-views-functional-tests-plugin').projectDir = file
 project(':grails-test-examples-test-phases').projectDir = file('grails-test-examples/test-phases')
 project(':grails-test-examples-jetty').projectDir = file('grails-test-examples/jetty')
 project(':grails-test-examples-undertow').projectDir = file('grails-test-examples/undertow')
+project(':grails-test-examples-startup-progress').projectDir = file('grails-test-examples/startup-progress')
 project(':grails-test-examples-welcome-page').projectDir = file('grails-test-examples/welcome-page')
 project(':grails-test-examples-welcome-page-jetty').projectDir = file('grails-test-examples/welcome-page-jetty')
 project(':grails-test-examples-latency').projectDir = file('grails-test-examples/latency')

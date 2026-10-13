@@ -29,6 +29,8 @@ import org.grails.datastore.mapping.query.Query
 import org.hibernate.query.criteria.JpaCriteriaQuery
 import org.grails.orm.hibernate.query.JpaCriteriaQueryCreator
 import org.grails.orm.hibernate.query.JpaQueryContext
+import org.grails.orm.hibernate.query.SqlGroupProjection
+import org.grails.orm.hibernate.query.SqlProjection
 import org.springframework.core.convert.support.DefaultConversionService
 import grails.gorm.annotation.Entity
 import org.grails.datastore.gorm.GormEntity
@@ -142,6 +144,98 @@ class JpaCriteriaQueryCreatorSpec extends HibernateGormDatastoreSpec {
         then:
         query != null
         query.resultType == String
+    }
+
+    def "test createQuery orders and groups by the column alias of a SQL projection"() {
+        given:
+        var entity = getPersistentEntity(JpaCriteriaQueryCreatorSpecPerson)
+        var detachedCriteria = new DetachedCriteria(JpaCriteriaQueryCreatorSpecPerson)
+        detachedCriteria.order(Query.Order.desc("total"))
+        detachedCriteria.eq("lastName", "Smith")
+        var projections = new Query.ProjectionList()
+        projections.add(new SqlGroupProjection("NAME"))
+        projections.add(new SqlProjection("upper(last_name)", "name", String))
+        projections.add(new SqlProjection("count(*)", "total", Long))
+        var creator = new JpaCriteriaQueryCreator(projections, criteriaBuilder, entity, detachedCriteria, new DefaultConversionService())
+
+        when:
+        JpaCriteriaQuery<?> query = creator.createQuery()
+        var selections = query.selection.compoundSelectionItems
+
+        then:
+        query.resultType == jakarta.persistence.Tuple
+        selections*.alias == ["name", "total"]
+        query.groupList.size() == 1
+        query.groupList[0].arguments[0].literalValue == "upper(last_name)"
+        query.orderList.size() == 1
+        query.orderList[0].expression.is(selections[1])
+    }
+
+    def "test createQuery groups by the SQL a quoted column alias names"() {
+        given:
+        var entity = getPersistentEntity(JpaCriteriaQueryCreatorSpecPerson)
+        var detachedCriteria = new DetachedCriteria(JpaCriteriaQueryCreatorSpecPerson)
+        detachedCriteria.order(Query.Order.desc("total count"))
+        var projections = new Query.ProjectionList()
+        projections.add(new SqlGroupProjection('"full name"'))
+        SqlProjection.of('upper(last_name) as "full name", count(*) as [total count]', ["full name", "total count"],
+                [String, Long]).each { projections.add(it) }
+        var creator = new JpaCriteriaQueryCreator(projections, criteriaBuilder, entity, detachedCriteria, new DefaultConversionService())
+
+        when:
+        JpaCriteriaQuery<?> query = creator.createQuery()
+        var selections = query.selection.compoundSelectionItems
+
+        then:
+        selections*.alias == ["full name", "total count"]
+        query.groupList.size() == 1
+        query.groupList[0].arguments[0].literalValue == "upper(last_name)"
+        query.orderList.size() == 1
+        query.orderList[0].expression.is(selections[1])
+    }
+
+    def "test createQuery matches a group by name #groupBy to a column alias case sensitively only in double quotes"() {
+        given:
+        var entity = getPersistentEntity(JpaCriteriaQueryCreatorSpecPerson)
+        var detachedCriteria = new DetachedCriteria(JpaCriteriaQueryCreatorSpecPerson)
+        var projections = new Query.ProjectionList()
+        projections.add(new SqlGroupProjection(groupBy))
+        projections.add(new SqlProjection("upper(last_name)", "fullName", String))
+        projections.add(new SqlProjection("count(*)", "total", Long))
+        var creator = new JpaCriteriaQueryCreator(projections, criteriaBuilder, entity, detachedCriteria, new DefaultConversionService())
+
+        when:
+        JpaCriteriaQuery<?> query = creator.createQuery()
+
+        then:
+        query.groupList.size() == 1
+        query.groupList[0].arguments[0].literalValue == groupedBy
+
+        where:
+        groupBy      | groupedBy
+        'FULLNAME'   | 'upper(last_name)'
+        '`FULLNAME`' | 'upper(last_name)'
+        '[FULLNAME]' | 'upper(last_name)'
+        '"fullName"' | 'upper(last_name)'
+        '"FULLNAME"' | '"FULLNAME"'
+    }
+
+    def "test createQuery keeps a quoted group by name that is no column alias"() {
+        given:
+        var entity = getPersistentEntity(JpaCriteriaQueryCreatorSpecPerson)
+        var detachedCriteria = new DetachedCriteria(JpaCriteriaQueryCreatorSpecPerson)
+        var projections = new Query.ProjectionList()
+        projections.add(new SqlGroupProjection('"last_name"'))
+        projections.add(new SqlProjection("upper(last_name)", "name", String))
+        projections.add(new SqlProjection("count(*)", "total", Long))
+        var creator = new JpaCriteriaQueryCreator(projections, criteriaBuilder, entity, detachedCriteria, new DefaultConversionService())
+
+        when:
+        JpaCriteriaQuery<?> query = creator.createQuery()
+
+        then:
+        query.groupList.size() == 1
+        query.groupList[0].arguments[0].literalValue == '"last_name"'
     }
 
     def "test populateSubquery"() {

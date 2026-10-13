@@ -15,6 +15,7 @@
  */
 package org.grails.orm.hibernate.query
 
+import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.From
 import jakarta.persistence.criteria.Join
 import jakarta.persistence.criteria.JoinType
@@ -225,6 +226,31 @@ class JpaQueryContextSpec extends Specification {
         then:
         parentContext.getParameterValues() == [(parentParameter): 'outer', (subParameter): 'inner']
         subContext.getParameterValues() == parentContext.getParameterValues()
+    }
+
+    def "test a selection alias names the selection but does not resolve a property path"() {
+        given:
+        def root = Mock(From)
+        def context = new JpaQueryContext(root)
+        def nested = new JpaQueryContext(context, Mock(From))
+        def selection = Mock(Expression)
+        def heightPath = Mock(Path)
+
+        when:
+        context.registerSelectionAlias('height', selection)
+
+        then:
+        context.getSelectionAlias('height') == selection
+        context.getSelectionAlias('other') == null
+        nested.getSelectionAlias('height') == null
+        !context.hasAlias('height')
+
+        when:
+        def resolved = context.getFullyQualifiedExpression('height')
+
+        then:
+        1 * root.get('height') >> heightPath
+        resolved == heightPath
     }
 
     def "test parameter values cannot be changed through the returned map"() {

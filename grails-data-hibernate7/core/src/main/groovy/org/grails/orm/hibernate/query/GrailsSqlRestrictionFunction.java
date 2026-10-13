@@ -95,7 +95,7 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
         sqlAppender.append(')');
     }
 
-    private static String tableAlias(SqlAstNode column) {
+    static String tableAlias(SqlAstNode column) {
         SqlAstNode node = column instanceof SqlTuple tuple ? tuple.getExpressions().get(0) : column;
         ColumnReference columnReference = node instanceof Expression expression ? expression.getColumnReference() : null;
         if (columnReference != null && columnReference.getQualifier() != null) {
