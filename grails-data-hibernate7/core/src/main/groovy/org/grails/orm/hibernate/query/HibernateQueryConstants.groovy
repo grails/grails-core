@@ -18,9 +18,12 @@
  */
 package org.grails.orm.hibernate.query
 
+import groovy.transform.CompileStatic
+
 /**
  * @deprecated Use {@link HibernateQueryArgument} instead.
  */
+@CompileStatic
 @Deprecated(since = '8.0', forRemoval = true)
 @SuppressWarnings('PMD.ConstantsInInterface')
 interface HibernateQueryConstants {

@@ -191,7 +191,7 @@ class GrailsHibernateTemplate implements IHibernateTemplate {
     }
 
     /** Maps a Hibernate {@link FlushMode} to one of the {@code FLUSH_*} constants of this class. */
-    static int hibernateFlushModeToConstant(FlushMode mode) {
+    private static int hibernateFlushModeToConstant(FlushMode mode) {
         switch (mode) {
             case FlushMode.MANUAL:
                 return FLUSH_NEVER
@@ -563,7 +563,7 @@ class GrailsHibernateTemplate implements IHibernateTemplate {
      *
      * @param query the Query object to prepare
      */
-    void prepareQuery(org.hibernate.query.Query<?> query) {
+    protected void prepareQuery(org.hibernate.query.Query<?> query) {
         internalQuery(query)
     }
 
@@ -585,7 +585,7 @@ class GrailsHibernateTemplate implements IHibernateTemplate {
      *
      * @param jpaQuery the Query object to prepare
      */
-    <T> void prepareCriteria(Query<T> jpaQuery) {
+    protected <T> void prepareCriteria(Query<T> jpaQuery) {
         internalQuery(jpaQuery)
     }
 

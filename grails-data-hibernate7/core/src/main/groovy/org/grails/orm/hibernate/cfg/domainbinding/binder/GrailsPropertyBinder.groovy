@@ -91,8 +91,7 @@ class GrailsPropertyBinder {
             value = foreignKeyOneToOneBinder.bind((HibernateOneToOneProperty) currentGrailsProp, path)
         } else if (currentGrailsProp instanceof HibernateManyToOneProperty) {
             value = manyToOneBinder.bindManyToOne((HibernateManyToOneProperty) currentGrailsProp, table, path)
-        } else if (currentGrailsProp instanceof HibernateToManyProperty &&
-                !currentGrailsProp.isSerializableType()) {
+        } else if (HibernateToManyProperty.isBoundAsCollection(currentGrailsProp)) {
             value = collectionBinder.bindCollection((HibernateToManyProperty) currentGrailsProp, path)
         } else if (currentGrailsProp instanceof HibernateEmbeddedProperty) {
             value = componentBinder.bindComponent((HibernateEmbeddedProperty) currentGrailsProp, path)

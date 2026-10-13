@@ -250,12 +250,8 @@ class HibernateConnectionSourceFactory
         applyResources(hibernateSettings.configLocations,
                 { Resource r -> configuration.configure(r.URL) } as ResourceConfigurer)
         applyResources(hibernateSettings.mappingLocations, { Resource r ->
-            InputStream is = r.inputStream
-            try {
+            try (InputStream is = r.inputStream) {
                 configuration.addInputStream(is)
-            }
-            finally {
-                is.close()
             }
         } as ResourceConfigurer)
         applyResources(hibernateSettings.cacheableMappingLocations,

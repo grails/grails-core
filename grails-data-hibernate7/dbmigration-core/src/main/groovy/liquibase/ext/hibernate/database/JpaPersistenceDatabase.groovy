@@ -3,6 +3,7 @@ package liquibase.ext.hibernate.database
 import jakarta.persistence.spi.PersistenceUnitInfo
 
 import groovy.transform.CompileStatic
+import groovy.transform.stc.POJO
 import liquibase.database.DatabaseConnection
 import liquibase.ext.hibernate.database.connection.HibernateDriver
 import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl
@@ -14,6 +15,7 @@ import org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager
  * This supports passing a JPA persistence XML file reference.
  */
 @CompileStatic
+@POJO // see HibernateDatabase
 class JpaPersistenceDatabase extends HibernateEjb3Database {
 
     @Override

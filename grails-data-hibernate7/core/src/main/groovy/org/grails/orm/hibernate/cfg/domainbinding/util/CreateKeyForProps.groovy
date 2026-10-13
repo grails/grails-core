@@ -26,6 +26,7 @@ import org.hibernate.mapping.Table
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
 
 @CompileStatic
 @SuppressWarnings('PMD.DataflowAnomalyAnalysis')
@@ -47,6 +48,13 @@ class CreateKeyForProps {
     }
 
     void createKeyForProps(HibernatePersistentProperty grailsProp, String path, Table table, String columnName) {
+        if (HibernateToManyProperty.isBoundAsCollection(grailsProp)) {
+            // The column of a bound collection lives in the collection table, which does not hold the columns
+            // of the other properties of the group, so a unique group has no key to create there. A to-many
+            // mapped with a user type or as serializable is a plain column of the owner table, so it keeps its
+            // key. The condition is the one GrailsPropertyBinder routes by.
+            return
+        }
         PropertyConfig mappedForm = grailsProp.mappedForm
 
         if (mappedForm.isUnique() && mappedForm.isUniqueWithinGroup()) {

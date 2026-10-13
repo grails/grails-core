@@ -19,6 +19,8 @@
 package org.grails.orm.hibernate.cfg.domainbinding.collectionType
 
 import groovy.transform.CompileStatic
+import groovy.transform.TupleConstructor
+import groovy.transform.RecordOptions
 import org.hibernate.boot.spi.MetadataBuildingContext
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
@@ -26,6 +28,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyPrope
 /** Collection holder. */
 @CompileStatic
 @SuppressWarnings(['ClassStartsWithBlankLine', 'Indentation'])
+@RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+@TupleConstructor(defaults = false)
 record CollectionHolder(Map<Class<?>, CollectionType> map) {
 
     /** Creates a new {@link CollectionHolder} instance. */
