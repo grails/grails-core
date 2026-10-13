@@ -273,7 +273,7 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
                 }
             }
         }
-        return result
+        return Collections.unmodifiableList(result)
     }
 
     default boolean isComponentPropertyNullable(PersistentProperty<?> embeddedProperty) {
@@ -344,7 +344,7 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
                 result.add(hp.validateProperty())
             }
         }
-        return result
+        return Collections.unmodifiableList(result)
     }
 
     default String getComment() {

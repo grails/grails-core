@@ -129,7 +129,7 @@ class HibernateMappingContext extends AbstractMappingContext {
                 result.add(entity)
             }
         }
-        return result
+        return Collections.unmodifiableList(result)
     }
 
 }

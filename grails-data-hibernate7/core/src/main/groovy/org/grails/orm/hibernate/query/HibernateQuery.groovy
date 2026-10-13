@@ -91,7 +91,7 @@ class HibernateQuery extends Query {
         super(session, entity)
         this.detachedCriteria = new DetachedCriteria<>(entity.javaClass)
         this.jpaProjectionList = new JpaProjectionList()
-        this.projections = jpaProjectionList
+        this.@projections = jpaProjectionList
     }
 
     GrailsHibernateTemplate getHibernateTemplate() {
@@ -767,6 +767,9 @@ class HibernateQuery extends Query {
 
     protected class JpaProjectionList extends ProjectionList {
 
+        protected JpaProjectionList() {
+        }
+
         @Override
         ProjectionList add(Projection p) {
             super.add(p)
@@ -847,7 +850,7 @@ class HibernateQuery extends Query {
 
     @Override
     Query maxResults(int maxResults) {
-        this.max = maxResults
+        this.@max = maxResults
         return this
     }
 

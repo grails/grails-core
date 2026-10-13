@@ -19,6 +19,8 @@
 package org.grails.orm.hibernate.query
 
 import groovy.transform.CompileStatic
+import groovy.transform.TupleConstructor
+import groovy.transform.RecordOptions
 import jakarta.persistence.LockModeType
 import jakarta.persistence.Parameter
 import jakarta.persistence.Tuple
@@ -32,6 +34,8 @@ import org.grails.datastore.mapping.proxy.ProxyHandler
 
 @CompileStatic
 @SuppressWarnings(['ClassStartsWithBlankLine', 'Indentation'])
+@RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+@TupleConstructor(defaults = false)
 record HibernateQueryExecutor(
         Integer offset,
         Integer maxResults,
