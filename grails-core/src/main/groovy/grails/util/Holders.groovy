@@ -201,7 +201,9 @@ class Holders {
     static void reset() {
         setPluginManager(null)
         setGrailsApplication(null)
-        setServletContext(null)
+        if (servletContexts != null) {
+            setServletContext(null)
+        }
         setPluginManager(null)
         setPluginManagerInCreation(false)
         setConfig(null)

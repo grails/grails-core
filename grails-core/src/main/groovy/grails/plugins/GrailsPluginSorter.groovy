@@ -21,6 +21,7 @@ package grails.plugins
 import java.util.function.Function
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 /**
  * Canonical topological sort for Grails plugins based on {@code loadAfter}
@@ -78,6 +79,7 @@ final class GrailsPluginSorter {
      *                          if the named plugin is not present)
      * @return a new list with the plugins in topological order
      */
+    @PackageScope
     static <T> List<T> sortPlugins(
             List<T> plugins,
             Function<T, String[]> loadAfterExtractor,

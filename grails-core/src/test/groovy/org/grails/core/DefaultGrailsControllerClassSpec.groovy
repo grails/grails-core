@@ -106,6 +106,60 @@ class DefaultGrailsControllerClassSpec extends Specification {
 
         expect: "the action is invoked on the correct controller instance, not miscast"
         controllerClass.invoke(controller, 'sayHello') == 'hello from ActionController'
+
+        and: "a null action name dispatches to the default action, which is the only action here"
+        controllerClass.invoke(controller, null) == 'hello from ActionController'
+    }
+
+    void "test invoke dispatches an action inherited from a parent controller and one returning a non-String"() {
+        given:
+        System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
+        def controllerClass = new DefaultGrailsControllerClass(ChildController)
+        def controller = new ChildController()
+
+        expect:
+        controllerClass.invoke(controller, 'sayHello') == 'hello from ActionController'
+        controllerClass.invoke(controller, 'model') == [child: true]
+        controllerClass.invoke(controller, 'nothing') == null
+    }
+
+    void "test invoke repeats cheaply and sees per-instance state on every dispatch"() {
+        given:
+        System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
+        def controllerClass = new DefaultGrailsControllerClass(CountingController)
+        def controller = new CountingController()
+
+        when:
+        5.times { controllerClass.invoke(controller, 'count') }
+
+        then:
+        controller.invocations == 5
+        controllerClass.invoke(new CountingController(), 'count') == 1
+    }
+
+    void "test invoke rejects an unknown action name"() {
+        given:
+        def controllerClass = new DefaultGrailsControllerClass(ActionController)
+
+        when:
+        controllerClass.invoke(new ActionController(), 'missing')
+
+        then:
+        IllegalArgumentException e = thrown()
+        e.message == 'Invalid action name: missing'
+    }
+
+    void "test invoke propagates the exception an action throws"() {
+        given:
+        System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
+        def controllerClass = new DefaultGrailsControllerClass(ChildController)
+
+        when:
+        controllerClass.invoke(new ChildController(), 'fail')
+
+        then:
+        IllegalStateException e = thrown()
+        e.message == 'boom'
     }
 
     class NotSpecifiedController {
@@ -120,6 +174,35 @@ class DefaultGrailsControllerClassSpec extends Specification {
         @Action
         String sayHello() {
             return 'hello from ActionController'
+        }
+
+    }
+
+    class ChildController extends ActionController {
+
+        @Action
+        Map model() {
+            return [child: true]
+        }
+
+        @Action
+        void nothing() {
+        }
+
+        @Action
+        Object fail() {
+            throw new IllegalStateException('boom')
+        }
+
+    }
+
+    class CountingController {
+
+        int invocations
+
+        @Action
+        int count() {
+            return ++invocations
         }
 
     }
