@@ -54,6 +54,7 @@ class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass impleme
     public static final Object[] EMPTY_ARGS = new Object[0]
     public static final String SCOPE = 'scope'
     public static final String SCOPE_SINGLETON = 'singleton'
+    private static final MethodType METHOD_HANDLE_INVOKER_TYPE = MethodType.methodType(Object, Object)
     private String scope
     private Map<String, ActionInvoker> actions = new HashMap<>()
     private String defaultActionName
@@ -218,12 +219,17 @@ class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass impleme
         private final MethodHandle handle
 
         MethodHandleInvoker(MethodHandle handle) {
-            this.handle = handle
+            // Groovy compiles every call to the signature-polymorphic MethodHandle.invoke/invokeExact with the
+            // descriptor (Object[])Object, so the action handle, whose type is (ControllerType)ReturnType, is
+            // adapted once here to exactly that shape: erase both types to Object, then spread the single-element
+            // Object[] that Groovy passes onto the receiver argument. invoke() below is then an exact, direct
+            // invocation on every dispatch instead of the allocating and boxing invokeWithArguments() path.
+            this.handle = handle.asType(METHOD_HANDLE_INVOKER_TYPE).asSpreader(Object[], 1)
         }
 
         @Override
         Object invoke(Object controller) throws Throwable {
-            return handle.invokeWithArguments(controller)
+            return handle.invokeExact(controller)
         }
     }
 

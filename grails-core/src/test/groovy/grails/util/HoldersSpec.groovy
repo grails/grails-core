@@ -21,16 +21,21 @@ package grails.util
 import grails.config.Config
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPluginManager
+import org.grails.core.io.support.GrailsFactoriesLoader
 import org.grails.core.support.GrailsApplicationDiscoveryStrategy
 import spock.lang.Specification
 
 class HoldersSpec extends Specification {
 
     void cleanup() {
-        // clear(), unlike reset(), guards its servlet-context write and is therefore safe to call
-        // outside a servlet environment (grails-core has no grails.web.context.WebRequestServletHolder
-        // on its classpath, so Holders.servletContexts is never populated here)
+        // clear() is the only public way to drop a strategy a feature method registered, but it also drops the
+        // strategies Holders loaded from grails.factories when it initialised. Test forks are shared between
+        // specs, so re-register those from the same source Holders used to leave later specs the discovery
+        // chain they would have seen without this one.
         Holders.clear()
+        GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy, Holders.classLoader).each {
+            Holders.addApplicationDiscoveryStrategy(it)
+        }
     }
 
     void 'getConfig returns whatever was set with setConfig'() {
@@ -112,15 +117,44 @@ class HoldersSpec extends Specification {
         Holders.findApplication() == null
     }
 
-    void 'reset unconditionally touches the servlet context holder and fails outside a servlet environment'() {
-        // documents existing (surprising) behaviour rather than exercising the servlet code path:
-        // reset() calls setServletContext(null) unguarded, unlike clear(), so it NPEs whenever the
-        // servlet context holder was never created (e.g. grails-core's own unit tests)
+    void 'reset clears the config, plugin manager and application and is safe outside a servlet environment'() {
+        given:
+        Holders.setConfig(Stub(Config))
+        Holders.setPluginManager(Stub(GrailsPluginManager))
+        Holders.setGrailsApplication(Stub(GrailsApplication))
+
+        when: 'grails-core has no servlet context holder on its classpath, so the servlet write has to be skipped'
+        Holders.reset()
+
+        then:
+        Holders.getConfig() == null
+        Holders.getPluginManager() == null
+        Holders.findApplication() == null
+    }
+
+    void 'reset ends a plugin manager creation phase so getPluginManager no longer waits for it'() {
+        given:
+        Holders.setPluginManagerInCreation(true)
+
         when:
         Holders.reset()
 
         then:
-        thrown(NullPointerException)
+        Holders.getPluginManager() == null
+    }
+
+    void 'reset keeps the registered discovery strategies, unlike clear'() {
+        given:
+        GrailsApplication fromStrategy = Stub(GrailsApplication)
+        Holders.addApplicationDiscoveryStrategy(Stub(GrailsApplicationDiscoveryStrategy) {
+            findGrailsApplication() >> fromStrategy
+        })
+
+        when:
+        Holders.reset()
+
+        then:
+        Holders.findApplication().is(fromStrategy)
     }
 
     void 'getFlatConfig returns an empty map rather than null when no config has been set'() {
