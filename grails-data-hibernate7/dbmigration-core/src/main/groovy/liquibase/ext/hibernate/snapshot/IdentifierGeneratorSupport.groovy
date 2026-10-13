@@ -19,6 +19,7 @@
 package liquibase.ext.hibernate.snapshot
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import liquibase.Scope
 import org.hibernate.boot.model.naming.Identifier
 import org.hibernate.boot.model.relational.QualifiedName
@@ -33,6 +34,7 @@ import org.hibernate.mapping.SimpleValue
  * Shared helpers for the snapshot generators that inspect identifier generators.
  */
 @CompileStatic
+@PackageScope
 final class IdentifierGeneratorSupport {
 
     private IdentifierGeneratorSupport() {

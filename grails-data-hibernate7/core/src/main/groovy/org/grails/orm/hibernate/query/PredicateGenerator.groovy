@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
@@ -497,7 +498,7 @@ class PredicateGenerator {
      * Returns the first arguments of a function that renders native SQL: the SQL as a literal and, if it contains
      * {@code {alias}}, a column of the entity's own table whose table alias replaces it.
      */
-    static List<Expression<?>> nativeSqlArguments(
+    @PackageScope static List<Expression<?>> nativeSqlArguments(
             CriteriaBuilder criteriaBuilder, String sql, From<?, ?> root, GrailsHibernatePersistentEntity entity) {
         List<Expression<?>> arguments = []
         arguments.add(criteriaBuilder.literal(sql))

@@ -52,13 +52,8 @@ class HibernateConnectionSource
     @Override
     void close() throws IOException {
         super.close()
-        // matches the reverse-declaration-order closing of the original try-with-resources
-        // (SessionFactory sf = getSource(); ConnectionSource ds = this.dataSource;)
-        try {
-            dataSource?.close()
-        }
-        finally {
-            getSource()?.close()
+        try (SessionFactory sf = getSource(); ConnectionSource<DataSource, DataSourceSettings> ds = this.dataSource) {
+            // closed by try-with-resources
         }
     }
 

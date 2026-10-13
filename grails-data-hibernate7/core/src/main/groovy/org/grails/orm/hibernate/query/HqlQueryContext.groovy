@@ -19,6 +19,9 @@
 package org.grails.orm.hibernate.query
 
 import groovy.transform.CompileStatic
+import groovy.transform.TupleConstructor
+import groovy.transform.RecordOptions
+import groovy.transform.PackageScope
 import jakarta.annotation.Nonnull
 import jakarta.annotation.Nullable
 import org.hibernate.jpa.AvailableHints
@@ -48,6 +51,8 @@ import static org.grails.orm.hibernate.query.HqlQueryMethods.convertValue
     'ClassStartsWithBlankLine',
     'Indentation'
 ])
+@RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+@TupleConstructor(defaults = false)
 record HqlQueryContext(
         String hql,
         Class<?> targetClass,
@@ -58,19 +63,9 @@ record HqlQueryContext(
         boolean mutating,
         boolean nativeQuery) {
 
-    // A native Groovy record does not generate an accessor under the JavaBean "isX" convention —
-    // the accessor is always named exactly after the component (confirmed via javap). Naming the
-    // components themselves `isUpdate`/`isNative` therefore produces real isUpdate()/isNative()
-    // accessor methods at the bytecode level, but @CompileStatic's type checker fails to resolve
-    // them from another class in the same compilation unit (confirmed with an isolated repro) —
-    // apparently it double-applies "is"-prefix convention logic and doesn't see the synthesized
-    // method. Components are named plainly here instead, with explicit wrapper methods below.
-    // The boolean component must also avoid a name that itself collides with the JavaBean "isX"
-    // convention of its own wrapper: naming it `update` (paired with a manually-declared isUpdate())
-    // silently suppressed the record's own update() accessor at compile time (Groovy assumed
-    // isUpdate() already served as property "update"'s getter) - confirmed via javap showing
-    // update() simply absent from the compiled class, causing a runtime NoSuchMethodError. Hence
-    // `mutating`, which shares no JavaBean-convention name with `isUpdate`.
+    // The components are `mutating` and `nativeQuery`, not `isUpdate` and `isNative`: under @CompileStatic a record
+    // component named `isX` cannot be called as `isX()` from another class (Groovy 6.0.0), so the Java accessors
+    // are kept as explicit methods instead.
     boolean isUpdate() {
         return mutating()
     }
@@ -153,7 +148,7 @@ record HqlQueryContext(
     // ─── HQL resolution ──────────────────────────────────────────────────────
 
     @Nullable
-    static String resolveHql(
+    @PackageScope static String resolveHql(
             CharSequence queryCharseq, boolean isNative, Map<String, Object> namedParams) {
         String raw
         if (queryCharseq instanceof GString) {
@@ -166,7 +161,7 @@ record HqlQueryContext(
     }
 
     @Nullable
-    static String resolveHql(
+    @PackageScope static String resolveHql(
             CharSequence queryCharseq, boolean isNative, Collection<Object> positionalParams) {
         String raw
         if (queryCharseq instanceof GString) {
@@ -185,7 +180,7 @@ record HqlQueryContext(
      * or the SELECT is the root alias, {@code Object.class} for any other single projection, such as a
      * property, a joined alias or a function, or {@code Object[].class} for multiple projections.
      */
-    static Class<?> getTarget(CharSequence hql, Class<?> clazz) {
+    @PackageScope static Class<?> getTarget(CharSequence hql, Class<?> clazz) {
         String normalized = normalizeNonAliasedSelect(hql == null ? null : hql.toString())
         int count = countHqlProjections(normalized)
         if (count == 0) {
@@ -205,7 +200,7 @@ record HqlQueryContext(
     }
 
     @Nullable
-    static String getSingleProjectionClause(CharSequence hql) {
+    @PackageScope static String getSingleProjectionClause(CharSequence hql) {
         if (hql == null) {
             return null
         }
@@ -219,7 +214,7 @@ record HqlQueryContext(
     }
 
     @Nonnull
-    static String extractSelectClause(String s, int selectIdx, int fromIdx) {
+    @PackageScope static String extractSelectClause(String s, int selectIdx, int fromIdx) {
         String clause = s.substring(
                         selectIdx + HibernateQueryArgument.HQL_SELECT.value().length(),
                         fromIdx < 0 ? s.length() : fromIdx)
@@ -242,7 +237,7 @@ record HqlQueryContext(
      *
      * <p>Commas inside parentheses or string literals are ignored.
      */
-    static int countHqlProjections(CharSequence hql) {
+    @PackageScope static int countHqlProjections(CharSequence hql) {
         if (hql == null || hql.length() == 0) {
             return 0
         }
@@ -277,7 +272,7 @@ record HqlQueryContext(
         return commas == 0 ? 1 : 2
     }
 
-    static int getCommas(String sel) {
+    @PackageScope static int getCommas(String sel) {
         int depth = 0
         int commas = 0
         boolean inSingle = false
@@ -318,7 +313,7 @@ record HqlQueryContext(
      * {@code "select Person from Person"} → {@code "select e from Person e"}
      */
     @Nullable
-    static String normalizeNonAliasedSelect(String hql) {
+    @PackageScope static String normalizeNonAliasedSelect(String hql) {
         if (hql == null) {
             return null
         }
@@ -443,7 +438,7 @@ record HqlQueryContext(
 
     /** The alias of the entity named first after FROM, or {@code null} if it has none. */
     @Nullable
-    static String getRootAlias(@Nullable String hql) {
+    @PackageScope static String getRootAlias(@Nullable String hql) {
         if (hql == null) {
             return null
         }

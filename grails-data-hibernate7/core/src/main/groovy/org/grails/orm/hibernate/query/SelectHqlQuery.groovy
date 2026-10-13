@@ -30,22 +30,21 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersi
 class SelectHqlQuery extends Query implements HqlQueryMethods, Serializable {
 
     protected final transient HqlQueryContext queryContext
-    // Named queryDelegate, not delegate: a bare `delegate` reference inside a closure resolves to
-    // Closure.getDelegate() (which defaults to the closure's owner, i.e. this instance), not this field.
-    protected final transient HqlQueryDelegate queryDelegate
+    // Read as this.@delegate: a bare `delegate` inside a closure resolves to Closure.getDelegate(), not this field.
+    protected final transient HqlQueryDelegate delegate
 
-    protected SelectHqlQuery(HibernateSession session, GrailsHibernatePersistentEntity entity, HqlQueryContext queryContext, HqlQueryDelegate queryDelegate) {
+    protected SelectHqlQuery(HibernateSession session, GrailsHibernatePersistentEntity entity, HqlQueryContext queryContext, HqlQueryDelegate delegate) {
         super(session, entity)
         this.queryContext = queryContext
-        this.queryDelegate = queryDelegate
+        this.@delegate = delegate
     }
 
     @Override
     List<?> list() {
         GrailsHibernateTemplate template = (GrailsHibernateTemplate) hibernateTemplate
         return template.execute({ Object __ ->
-            applyQuerySettings(queryDelegate)
-            return queryDelegate.list()
+            applyQuerySettings(this.@delegate)
+            return this.@delegate.list()
         })
     }
 
@@ -53,8 +52,8 @@ class SelectHqlQuery extends Query implements HqlQueryMethods, Serializable {
     Object singleResult() {
         GrailsHibernateTemplate template = (GrailsHibernateTemplate) hibernateTemplate
         return template.execute({ Object __ ->
-            applyQuerySettings(queryDelegate)
-            List<?> results = queryDelegate.list()
+            applyQuerySettings(this.@delegate)
+            List<?> results = this.@delegate.list()
             return results.isEmpty() ? null : results.first
         })
     }
@@ -92,7 +91,7 @@ class SelectHqlQuery extends Query implements HqlQueryMethods, Serializable {
     }
 
     org.hibernate.query.Query<?> selectQuery() {
-        return queryDelegate.selectQuery()
+        return this.@delegate.selectQuery()
     }
 
     @Override

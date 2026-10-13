@@ -19,6 +19,7 @@
 package org.grails.orm.hibernate.cfg.domainbinding.binder
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.hibernate.boot.spi.InFlightMetadataCollector
 import org.hibernate.boot.spi.MetadataBuildingContext
 import org.hibernate.mapping.Collection
@@ -70,7 +71,7 @@ class CollectionBinder {
     private final CollectionHolder collectionHolder
     private final ListSecondPassBinder listSecondPassBinder
     private final CollectionSecondPassBinder collectionSecondPassBinder
-    final MapSecondPassBinder mapSecondPassBinder
+    @PackageScope final MapSecondPassBinder mapSecondPassBinder
     private final InFlightMetadataCollector mappings
     private final TableForManyCalculator tableForManyCalculator
     private final ManyToManyOwnerValidator manyToManyOwnerValidator = new ManyToManyOwnerValidator()

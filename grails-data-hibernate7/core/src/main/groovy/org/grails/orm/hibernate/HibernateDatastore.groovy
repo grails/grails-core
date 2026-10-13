@@ -792,9 +792,7 @@ class HibernateDatastore extends AbstractDatastore
 
         Action schemaAutoTooling = Action.interpretHbm2ddlSetting(dbCreate)
         if (schemaAutoTooling != Action.VALIDATE && schemaAutoTooling != Action.NONE) {
-            Connection connection = null
-            try {
-                connection = defaultConnectionSource.dataSource.connection
+            try (Connection connection = defaultConnectionSource.dataSource.connection) {
                 try {
                     schemaHandler.useSchema(connection, schemaName)
                 } catch (Exception e) {
@@ -804,8 +802,6 @@ class HibernateDatastore extends AbstractDatastore
             } catch (SQLException e) {
                 throw new DatastoreConfigurationException(
                         String.format('Failed to create schema for name [%s]', schemaName), e)
-            } finally {
-                connection?.close()
             }
         }
 

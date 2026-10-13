@@ -27,7 +27,15 @@ import org.hibernate.mapping.PersistentClass
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsPropertyResolver
 
-/** Links bidirectional one-to-many associations by copying columns. */
+/**
+ * Links bidirectional one-to-many associations by copying columns. The foreign key of the
+ * association belongs to the to-one side, which always creates it: Hibernate's
+ * {@link org.hibernate.mapping.ToOne#createForeignKey()} for a simple identifier, the composite
+ * identifier binder, with the referenced identifier columns, for a composite one. The inverse
+ * collection key therefore creates no positional key of its own. For a simple identifier the two
+ * keys were the same key already; for a composite identifier they differ, share the implicit name,
+ * and only the first one registered reached the schema.
+ */
 @CompileStatic
 class BidirectionalOneToManyLinker {
 
@@ -45,6 +53,7 @@ class BidirectionalOneToManyLinker {
             DependantValue key,
             HibernatePersistentProperty otherSide) {
         collection.inverse = true
+        key.disableForeignKey()
 
         for (Column column : grailsPropertyResolver.getProperty(associatedClass, otherSide.name).value.columns) {
             Column mappingColumn = new Column()

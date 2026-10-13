@@ -24,7 +24,6 @@ import java.lang.reflect.Modifier
 import jakarta.persistence.criteria.JoinType
 import org.hibernate.Session
 import spock.lang.Specification
-import spock.lang.Unroll
 
 import grails.orm.HibernateCriteriaBuilder
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
@@ -48,7 +47,6 @@ import org.grails.orm.hibernate.support.hibernate7.support.OpenSessionInViewInte
  */
 class JavaFacingApiSpec extends Specification {
 
-    @Unroll
     void '#name of #type.simpleName is a public static final field'() {
         when:
         Field field = type.getField(name)
@@ -84,10 +82,15 @@ class JavaFacingApiSpec extends Specification {
     }
 
     void 'every deprecated query argument constant of GrailsHibernateUtil is a public field'() {
-        expect:
-        GrailsHibernateUtil.declaredFields.findAll { it.name.startsWith('ARGUMENT_') || it.name.startsWith('ORDER_') }
-                .every { Modifier.isPublic(it.modifiers) }
-        GrailsHibernateUtil.ARGUMENT_MAX == 'max'
+        when:
+        List<Field> constants = GrailsHibernateUtil.declaredFields.findAll {
+            it.name.startsWith('ARGUMENT_') || it.name.startsWith('ORDER_')
+        }
+
+        then:
+        !constants.isEmpty()
+        constants.every { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) }
+        GrailsHibernateUtil.getField('ARGUMENT_MAX').get(null) == 'max'
     }
 
     void 'the two argument HibernateAlias constructor joins with INNER'() {
@@ -106,7 +109,6 @@ class JavaFacingApiSpec extends Specification {
         CollectionHolder.recordComponents*.name == ['map']
     }
 
-    @Unroll
     void '#type.simpleName configureNamingStrategy keeps declaring its checked exceptions'() {
         when:
         List<Class<?>> declared = type.getMethod('configureNamingStrategy', String, Object).exceptionTypes as List
@@ -118,7 +120,6 @@ class JavaFacingApiSpec extends Specification {
         type << [GrailsDomainBinder, NamingStrategyProvider]
     }
 
-    @Unroll
     void '#method of #type.simpleName keeps its Nullable result'() {
         when:
         List<String> annotations = type.getMethod(method, parameters as Class[]).annotatedReturnType.annotations*.annotationType()*.name

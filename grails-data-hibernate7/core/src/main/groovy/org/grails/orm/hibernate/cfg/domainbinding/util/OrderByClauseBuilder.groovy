@@ -19,6 +19,7 @@
 package org.grails.orm.hibernate.cfg.domainbinding.util
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.hibernate.boot.model.internal.BinderHelper
 import org.hibernate.mapping.PersistentClass
 import org.hibernate.mapping.Property
@@ -122,8 +123,8 @@ class OrderByClauseBuilder {
 
     private static class SortEntry {
 
-        final String property
-        String direction
+        @PackageScope final String property
+        @PackageScope String direction
 
         SortEntry(String property) {
             this.property = property

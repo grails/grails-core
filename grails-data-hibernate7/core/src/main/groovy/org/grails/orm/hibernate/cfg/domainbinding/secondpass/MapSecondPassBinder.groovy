@@ -19,6 +19,7 @@
 package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import jakarta.annotation.Nonnull
 import org.hibernate.MappingException
 import org.hibernate.boot.spi.MetadataBuildingContext
@@ -93,7 +94,7 @@ class MapSecondPassBinder {
         map.inverse = false
     }
 
-    ColumnConfig getSingleColumnConfig(PropertyConfig propertyConfig) {
+    @PackageScope ColumnConfig getSingleColumnConfig(PropertyConfig propertyConfig) {
         if (propertyConfig != null) {
             List<ColumnConfig> columns = propertyConfig.columns
             if (columns != null && !columns.isEmpty()) {
