@@ -29,13 +29,6 @@ plugins {
 version = '0.1'
 group = 'nativei18n'
 
-grails {
-    // The Grails Gradle plugin already sets this as a convention for any application that applies
-    // GraalVM's plugin, so the native half would get it anyway. It is set here so the JVM half is
-    // compiled the same way as the image, rather than being a second dialect of the same fixture.
-    indy = true
-}
-
 dependencies {
     implementation platform("org.apache.grails:grails-bom:$projectVersion")
     implementation project(':native-i18n-plugin')
