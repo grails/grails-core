@@ -31,17 +31,20 @@ import grails.async.web.StreamItemRenderer
  * other item becomes the data of an unnamed event. The data text comes from the first
  * {@link StreamItemRenderer} that handles the item, or from {@code String.valueOf} when none does.
  * Every line of the text is sent as its own {@code data:} line, so a client assembles exactly the text
- * that was emitted, line breaks included. The end of a stream is an event named {@code complete}, and a
- * failure one named {@code error}.</p>
+ * that was emitted, line breaks included. Every stream ends with an event named {@code complete} whose
+ * data says why: empty when the publisher completed, {@link #TIMEOUT_REASON} when the request timed out
+ * and {@link #ERROR_REASON} when the stream failed. The event name is not {@code error}, which an
+ * {@code EventSource} also dispatches for its own connection failures, and a failure's details stay in
+ * the server log.</p>
  *
  * @since 8.1
  */
 @CompileStatic
 class ServerSentEventFormatter {
 
-    public static final String ERROR_EVENT = 'error'
     public static final String COMPLETE_EVENT = 'complete'
     public static final String TIMEOUT_REASON = 'timeout'
+    public static final String ERROR_REASON = 'error'
 
     private final List<StreamItemRenderer> renderers
 
@@ -83,17 +86,8 @@ class ServerSentEventFormatter {
     }
 
     /**
-     * @return an {@code error} event naming the failure's type, which is all a client is told
-     */
-    String formatError(Throwable failure) {
-        StringBuilder out = new StringBuilder()
-        out.append('event: ').append(ERROR_EVENT).append('\n')
-        appendData(out, failure.getClass().name)
-        out.append('\n').toString()
-    }
-
-    /**
-     * @param reason why the stream ended: empty when it completed, {@link #TIMEOUT_REASON} when it timed out
+     * @param reason why the stream ended: empty when the publisher completed, {@link #TIMEOUT_REASON} when
+     * the request timed out, {@link #ERROR_REASON} when the stream failed
      * @return the {@code complete} event that tells a client to stop listening instead of reconnecting
      */
     String formatCompletion(String reason) {

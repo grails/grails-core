@@ -40,7 +40,7 @@ class ChatController {
 }
 ----
 
-Grails handles the request asynchronously, commits the response as `text/event-stream` and writes every item the `Flux` emits to the client as a server-sent event, so the text of the answer arrives as the model produces it, and ends the response with an event named `complete` that the client closes on. Returning `stream().chatResponse()` works as well: the plugin renders each chat response as the text it carries. A browser reads the events with `EventSource`:
+Grails handles the request asynchronously, commits the response as `text/event-stream` and writes every item the `Flux` emits to the client as a server-sent event, so the text of the answer arrives as the model produces it, and ends the response with an event named `complete` that the client closes on; should the model fail part way, the stream still ends with that event, its data then being `error`. Returning `stream().chatResponse()` works as well: the plugin renders each chat response as the text it carries. A browser reads the events with `EventSource`:
 
 [source,javascript]
 ----
@@ -48,7 +48,6 @@ const answer = document.getElementById('answer');
 const source = new EventSource('/chat/ask?question=' + encodeURIComponent(question));
 source.onmessage = event => { answer.textContent += event.data; };
 source.addEventListener('complete', () => source.close());
-source.addEventListener('error', () => source.close());
 ----
 
 This is the general streaming support of Grails, which any Reactive Streams `Publisher` returned from an action gets; the <<asyncStreaming,Streaming Responses>> section of the asynchronous programming chapter describes the event format, how other kinds of item are rendered and the `grails.async.streaming` settings. A streamed answer can take longer than an ordinary request, so set `grails.async.streaming.timeout` to what the slowest answer may take:

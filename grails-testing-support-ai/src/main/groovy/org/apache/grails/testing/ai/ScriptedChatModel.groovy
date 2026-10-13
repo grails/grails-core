@@ -38,8 +38,11 @@ import org.springframework.ai.chat.prompt.Prompt
  *
  * <p>Responses are consumed in the order they were scripted; a response may be fixed text or a function
  * of the prompt. When none is left, the model echoes the text of the last user message, so a test that
- * does not care about the answer still gets one. A streamed call answers in chunks of one word each, so
- * code that assembles a stream is exercised as it would be against a real model.</p>
+ * does not care about the answer still gets one; a {@link #setStrict strict} model fails instead, for a
+ * test that must not run out of script unnoticed. A streamed call answers in chunks of one word each,
+ * so code that assembles a stream is exercised as it would be against a real model. The answer of a
+ * streamed call is taken when the {@code Flux} is subscribed, not when it is created, so a stream that
+ * is never subscribed consumes nothing and a retried one answers afresh.</p>
  *
  * @since 8.1
  */
@@ -48,6 +51,7 @@ class ScriptedChatModel implements ChatModel {
 
     private final Deque<Function<Prompt, String>> responses = new ConcurrentLinkedDeque<>()
     private final List<Prompt> prompts = Collections.synchronizedList(new ArrayList<Prompt>())
+    private volatile boolean strict
 
     /**
      * Scripts the next responses, in order.
@@ -66,6 +70,17 @@ class ScriptedChatModel implements ChatModel {
     ScriptedChatModel respondWith(Function<Prompt, String> responder) {
         responses.add(responder)
         this
+    }
+
+    /**
+     * Whether a prompt that arrives when no scripted response is left is a failure rather than echoed.
+     */
+    void setStrict(boolean strict) {
+        this.strict = strict
+    }
+
+    boolean isStrict() {
+        strict
     }
 
     /**
@@ -92,7 +107,7 @@ class ScriptedChatModel implements ChatModel {
     }
 
     /**
-     * Forgets the scripted responses and the received prompts.
+     * Forgets the scripted responses and the received prompts; whether the model is strict is kept.
      */
     void reset() {
         responses.clear()
@@ -106,8 +121,7 @@ class ScriptedChatModel implements ChatModel {
 
     @Override
     Flux<ChatResponse> stream(Prompt prompt) {
-        String text = answer(prompt)
-        Flux.fromIterable(chunk(text)).map { String chunkText -> response(chunkText) }
+        Flux.defer { -> Flux.fromIterable(chunk(answer(prompt))) }.map { String chunkText -> response(chunkText) }
     }
 
     @Override
@@ -123,10 +137,23 @@ class ScriptedChatModel implements ChatModel {
         text.split('(?<=\\s)').toList()
     }
 
+    /**
+     * Records the prompt and takes the response that answers it as one step, so concurrent calls pair
+     * each prompt with the response scripted for its turn.
+     */
     private String answer(Prompt prompt) {
-        prompts.add(prompt)
-        Function<Prompt, String> responder = responses.poll()
-        responder ? responder.apply(prompt) : (prompt.userMessage.text ?: '')
+        Function<Prompt, String> responder
+        synchronized (prompts) {
+            prompts.add(prompt)
+            responder = responses.poll()
+        }
+        if (responder != null) {
+            return responder.apply(prompt)
+        }
+        if (strict) {
+            throw new IllegalStateException("No scripted response is left for prompt ${prompts.size()}: ${prompt.userMessage?.text}")
+        }
+        prompt.userMessage.text ?: ''
     }
 
     private static ChatResponse response(String text) {

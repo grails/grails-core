@@ -28,9 +28,10 @@ import org.springframework.core.env.MapPropertySource
 
 /**
  * Turns the provider auto-configurations off while the stubs are enabled, so a test environment needs
- * neither credentials nor a database: {@code spring.ai.model.chat}, {@code spring.ai.model.embedding}
- * and {@code spring.ai.vectorstore.type} default to {@code none}. The defaults sit below every other property source, so an application that names a
- * provider in its configuration keeps it, and the stubs then back off.
+ * neither credentials nor a database: every {@code spring.ai.model.*} selection property, the chat,
+ * embedding, image, audio and moderation models', and {@code spring.ai.vectorstore.type} default to
+ * {@code none}. The defaults sit below every other property source, so an application that names a
+ * provider in its configuration keeps it, and the stub for that kind of model then backs off.
  *
  * @since 8.1
  */
@@ -41,8 +42,22 @@ class AiStubEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordere
     public static final String STUB_ENABLED = AiStubProperties.PREFIX + '.enabled'
     public static final String CHAT_MODEL = 'spring.ai.model.chat'
     public static final String EMBEDDING_MODEL = 'spring.ai.model.embedding'
+    public static final String TEXT_EMBEDDING_MODEL = 'spring.ai.model.embedding.text'
+    public static final String MULTIMODAL_EMBEDDING_MODEL = 'spring.ai.model.embedding.multimodal'
+    public static final String IMAGE_MODEL = 'spring.ai.model.image'
+    public static final String AUDIO_TRANSCRIPTION_MODEL = 'spring.ai.model.audio.transcription'
+    public static final String AUDIO_SPEECH_MODEL = 'spring.ai.model.audio.speech'
+    public static final String MODERATION_MODEL = 'spring.ai.model.moderation'
     public static final String VECTOR_STORE = 'spring.ai.vectorstore.type'
     public static final String NONE = 'none'
+
+    /**
+     * Every selection property Spring AI reads: one per kind of model, and the vector store's. Each is
+     * defaulted to {@code none}, so no provider auto-configures a model that would need credentials.
+     */
+    public static final List<String> SELECTION_PROPERTIES = List.of(
+            CHAT_MODEL, EMBEDDING_MODEL, TEXT_EMBEDDING_MODEL, MULTIMODAL_EMBEDDING_MODEL, IMAGE_MODEL,
+            AUDIO_TRANSCRIPTION_MODEL, AUDIO_SPEECH_MODEL, MODERATION_MODEL, VECTOR_STORE)
 
     @Override
     void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -52,7 +67,10 @@ class AiStubEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordere
         if (environment.propertySources.contains(PROPERTY_SOURCE_NAME)) {
             return
         }
-        Map<String, Object> defaults = [(CHAT_MODEL): NONE, (EMBEDDING_MODEL): NONE, (VECTOR_STORE): NONE] as Map<String, Object>
+        Map<String, Object> defaults = [:]
+        for (String property : SELECTION_PROPERTIES) {
+            defaults[property] = NONE
+        }
         environment.propertySources.addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, defaults))
     }
 

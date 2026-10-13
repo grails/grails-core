@@ -62,13 +62,18 @@ class StreamingFunctionalSpec extends Specification implements HttpClientSupport
         http('/stream/events').assertStatus(200).body() == 'id: 1\nevent: status\ndata: ready\n\n' + COMPLETE
     }
 
-    void 'a failed stream ends with an error event'() {
+    void 'a failed stream ends with a complete event whose reason is error'() {
         when:
         def response = http('/stream/failing')
 
         then:
         response.assertStatus(200)
-        response.body() == 'data: partial\n\nevent: error\ndata: java.lang.IllegalStateException\n\n'
+        response.body() == 'data: partial\n\nevent: complete\ndata: error\n\n'
+    }
+
+    void 'a single-valued publisher streams its one item'() {
+        expect:
+        http('/stream/single').assertStatus(200).body() == 'data: {"answer":42}\n\n' + COMPLETE
     }
 
 }

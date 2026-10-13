@@ -22,10 +22,12 @@ import groovy.transform.CompileStatic
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 
+import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 
 import grails.testing.ai.AiUnitTest
 import org.apache.grails.testing.ai.AiTestBeans
+import org.apache.grails.testing.ai.ScriptedChatModel
 import org.apache.grails.testing.ai.SimpleVectorStoreBeans
 
 /**
@@ -40,9 +42,12 @@ class AiSetupInterceptor implements IMethodInterceptor {
     @Override
     void intercept(IMethodInvocation invocation) throws Throwable {
         AiUnitTest test = (AiUnitTest) invocation.instance
-        test.chatModel.reset()
+        ApplicationContext context = test.applicationContext
+        for (ScriptedChatModel chatModel : context.getBeansOfType(ScriptedChatModel).values()) {
+            chatModel.reset()
+        }
         if (ClassUtils.isPresent(AiTestBeans.SIMPLE_VECTOR_STORE, AiSetupInterceptor.classLoader)) {
-            SimpleVectorStoreBeans.reset(test.applicationContext)
+            SimpleVectorStoreBeans.reset(context)
         }
         invocation.proceed()
     }

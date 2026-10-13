@@ -199,14 +199,13 @@ class ChatController {
 
 - Return the `Flux`; do not `render` it, collect it, or `block()` on it.
 - `stream().chatResponse()` works too: the plugin renders each `ChatResponse` as its text. Any other item is sent as text or JSON, and a `org.springframework.http.codec.ServerSentEvent` is written with its id, event name and retry.
-- A failed stream ends with an event named `error` whose data is the failure's type; the response is already committed, so no error status is possible.
-- A browser client closes on `complete`, or `EventSource` reconnects and runs the action again:
+- Every stream ends with the `complete` event, whose data is empty, `timeout` or `error`; the response is already committed when a model fails, so no error status is possible and nothing of the failure reaches the client. There is no event named `error`, which `EventSource` uses for its own connection failures.
+- A browser client closes on `complete`, or `EventSource` reconnects and runs the action again, paying for another model call each time:
 
 ```javascript
 const source = new EventSource('/chat/ask?question=' + encodeURIComponent(question));
 source.onmessage = event => { answer.textContent += event.data; };
 source.addEventListener('complete', () => source.close());
-source.addEventListener('error', () => source.close());
 ```
 
 - A streamed answer can outlast the asynchronous request timeout, which is 30 seconds on Tomcat by default. Set `grails.async.streaming.timeout` to what the slowest answer may take, for example `5m`.
@@ -249,21 +248,22 @@ class AnswerServiceSpec extends Specification implements ServiceUnitTest<AnswerS
 }
 ```
 
-- `respondWith('a', 'b')` scripts answers in order; `respondWith { Prompt prompt -> ... }` computes one from the prompt; with nothing scripted the model echoes the user's message.
+- `respondWith('a', 'b')` scripts answers in order; `respondWith { Prompt prompt -> ... }` computes one from the prompt; with nothing scripted the model echoes the user's message, or fails when `chatModel.strict = true`.
+- The stubs are registered before `setupSpec`, each only when the spec defines no bean of its type, so a spec's own `ChatModel`, `EmbeddingModel`, `ChatClient.Builder` or `VectorStore` wins; `grails.ai.stub.embeddingDimensions` set in `doWithConfig` sizes the stub embeddings.
 - A streamed call answers one word at a time, so code that assembles a stream is exercised as it would be against a real model.
 - `prompts` holds every prompt of the current feature method. The script, the prompts and the vector store are cleared before every feature method.
 - `vectorStore.add([new Document('...')])` followed by `similaritySearch` finds documents by the words they share with the query; that is enough to test retrieval code.
 
 ### Integration and Functional Tests
 
-While `grails-testing-support-ai` is on the test classpath, the stubs become the primary models, `spring.ai.model.chat`, `spring.ai.model.embedding` and `spring.ai.vectorstore.type` default to `none`, and the provider backs off, so the test environment needs neither an API key nor a database. Inject `org.apache.grails.testing.ai.ScriptedChatModel` into an `@Integration` spec, call `reset()` in `setup()`, and script it the same way. To run against the real provider, set `grails.ai.stub.enabled: false` for the test environment.
+While `grails-testing-support-ai` is on the test classpath, every `spring.ai.model.*` selection property and `spring.ai.vectorstore.type` default to `none`, so no provider auto-configures a chat, embedding, image, audio or moderation model, and the stubs become the primary chat and embedding models and the vector store; the test environment needs neither an API key nor a database. A provider or store the application names in its configuration is kept. Inject `org.apache.grails.testing.ai.ScriptedChatModel` into an `@Integration` spec, call `reset()` in `setup()`, and script it the same way; the in-memory `ResettableSimpleVectorStore` has `clear()`. To run against the real provider, set `grails.ai.stub.enabled: false` for the test environment.
 
 ## Pitfalls
 
 - Spring AI's `Document` has both `getText()` and `isText()`. Under `@CompileStatic` or `@GrailsCompileStatic`, `document.text` resolves to `isText()` and yields a boolean; call `document.getText()`.
 - `ChatClient.Builder` is a prototype bean. Inject the builder, not a shared `ChatClient`, unless the application defines one.
 - Do not wrap the fluent API in another abstraction; closures already coerce to its consumers and the Spring AI reference applies as written.
-- An action that returns a `Publisher` streams; it no longer renders its view. `grails.async.streaming.enabled: false` restores the old behaviour for an application that relied on it.
+- An action that returns a `Publisher` streams, a single-valued `Mono` included; it no longer renders its view. `grails.async.streaming.enabled: false` restores the old behaviour for an application that relied on it.
 - Bundled provider starters, hard-coded keys, or a key in `application.yml` without a placeholder are review failures.
 - The Spring AI line moves with the Grails version; do not pin a Spring AI version in the application.
 

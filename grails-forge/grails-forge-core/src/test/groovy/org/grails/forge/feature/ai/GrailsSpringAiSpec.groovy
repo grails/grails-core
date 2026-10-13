@@ -99,6 +99,24 @@ class GrailsSpringAiSpec extends ApplicationContextSpec implements CommandOutput
         SpringAiOllama.FEATURE_NAME    | 'spring.ai.ollama.base-url'   | 'http://localhost:11434'
     }
 
+    void "only one Spring AI provider can be selected"() {
+        when:
+        getFeatures([SpringAiOpenAi.FEATURE_NAME, SpringAiAnthropic.FEATURE_NAME])
+
+        then:
+        IllegalArgumentException failure = thrown()
+        failure.message.contains('There can only be one of the following features selected')
+        failure.message.contains(SpringAiOpenAi.FEATURE_NAME)
+        failure.message.contains(SpringAiAnthropic.FEATURE_NAME)
+    }
+
+    void "every provider is one of the same group"() {
+        expect:
+        beanContext.getBeansOfType(SpringAiProviderFeature)*.name.toSet() ==
+                [SpringAiOpenAi.FEATURE_NAME, SpringAiAnthropic.FEATURE_NAME, SpringAiOllama.FEATURE_NAME].toSet()
+        beanContext.getBeansOfType(SpringAiProviderFeature).every { it.featureClass == SpringAiProviderFeature }
+    }
+
     void "a provider is selected once even when grails-spring-ai is selected as well"() {
         when:
         final String template = new BuildBuilder(beanContext)

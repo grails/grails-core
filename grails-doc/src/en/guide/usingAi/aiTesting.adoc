@@ -42,11 +42,13 @@ class AnswerServiceSpec extends Specification implements ServiceUnitTest<AnswerS
 }
 ----
 
-Scripted answers are consumed in order; an answer may also be a closure that receives the `Prompt` and returns the text. When no answer is left, the model echoes the user's message. A streamed call answers one word at a time, so code that assembles a stream is exercised as it would be against a real model. The script, the recorded prompts and the contents of the vector store are cleared before every feature method.
+Scripted answers are consumed in order; an answer may also be a closure that receives the `Prompt` and returns the text. When no answer is left, the model echoes the user's message, so a test that does not care about the answer needs no script; set `chatModel.strict = true` for a test that must fail instead when the script runs out. A streamed call answers one word at a time, so code that assembles a stream is exercised as it would be against a real model. The script, the recorded prompts and the contents of the vector store are cleared before every feature method.
+
+The stubs are registered before the specification's `setupSpec`, once the beans of its `doWithSpring()` and `beanRegistrar()` exist, and each only when the context holds no bean of its type, so a chat model, embedding model, chat client builder or vector store the specification defines is used instead. The chat model then has to be a `ScriptedChatModel` for `chatModel` and `respondWith` to find it. The stub embedding model honours `grails.ai.stub.embeddingDimensions` set through `doWithConfig`.
 
 ==== Integration and Functional Tests
 
-While `grails-testing-support-ai` is on the test classpath, the scripted chat model and the stub embedding model stand in for the provider's models, the provider's auto-configuration is turned off, and so is that of a vector store starter, so the test environment needs neither an API key nor a database. The `ScriptedChatModel` bean can be injected into a test and scripted the same way.
+While `grails-testing-support-ai` is on the test classpath, every `spring.ai.model.*` selection property and `spring.ai.vectorstore.type` default to `none`, so no provider auto-configures a chat, embedding, image, audio or moderation model and no vector store starter needs a database, and the scripted chat model, the stub embedding model and an in-memory vector store stand in for the chat model, the embedding model and the store. The test environment then needs neither an API key nor a database. A provider or store the application names in its configuration is kept, and the stub for that kind of model backs off, as it does for a bean the application defines. The `org.apache.grails.testing.ai.ScriptedChatModel` bean can be injected into a test and scripted the same way; the in-memory store is a `ResettableSimpleVectorStore`, whose `clear()` empties it between tests that share a context.
 
 To run tests against the real provider instead, disable the stubs for the test environment and configure the provider as usual:
 

@@ -28,27 +28,45 @@ class AiStubEnvironmentPostProcessorSpec extends Specification {
     AiStubEnvironmentPostProcessor postProcessor = new AiStubEnvironmentPostProcessor()
     StandardEnvironment environment = new StandardEnvironment()
 
-    void 'selects no provider for the chat and embedding models and the vector store by default'() {
+    void 'selects no provider for any kind of model, nor a vector store, by default'() {
         when:
         postProcessor.postProcessEnvironment(environment, null)
 
         then:
         environment.getProperty('spring.ai.model.chat') == 'none'
         environment.getProperty('spring.ai.model.embedding') == 'none'
+        environment.getProperty('spring.ai.model.embedding.text') == 'none'
+        environment.getProperty('spring.ai.model.embedding.multimodal') == 'none'
+        environment.getProperty('spring.ai.model.image') == 'none'
+        environment.getProperty('spring.ai.model.audio.transcription') == 'none'
+        environment.getProperty('spring.ai.model.audio.speech') == 'none'
+        environment.getProperty('spring.ai.model.moderation') == 'none'
         environment.getProperty('spring.ai.vectorstore.type') == 'none'
         environment.propertySources.stream().toList().last().name == AiStubEnvironmentPostProcessor.PROPERTY_SOURCE_NAME
     }
 
+    void 'the selection properties are exactly those Spring AI reads'() {
+        expect:
+        AiStubEnvironmentPostProcessor.SELECTION_PROPERTIES.toSet() == [
+                'spring.ai.model.chat', 'spring.ai.model.embedding', 'spring.ai.model.embedding.text',
+                'spring.ai.model.embedding.multimodal', 'spring.ai.model.image', 'spring.ai.model.audio.transcription',
+                'spring.ai.model.audio.speech', 'spring.ai.model.moderation', 'spring.ai.vectorstore.type'
+        ].toSet()
+    }
+
     void 'a provider the application selects wins over the default'() {
         given:
-        environment.propertySources.addFirst(new MapPropertySource('application', ['spring.ai.model.chat': 'openai', 'spring.ai.vectorstore.type': 'pgvector']))
+        environment.propertySources.addFirst(new MapPropertySource('application',
+                ['spring.ai.model.chat': 'openai', 'spring.ai.model.image': 'openai', 'spring.ai.vectorstore.type': 'pgvector']))
 
         when:
         postProcessor.postProcessEnvironment(environment, null)
 
         then:
         environment.getProperty('spring.ai.model.chat') == 'openai'
+        environment.getProperty('spring.ai.model.image') == 'openai'
         environment.getProperty('spring.ai.model.embedding') == 'none'
+        environment.getProperty('spring.ai.model.moderation') == 'none'
         environment.getProperty('spring.ai.vectorstore.type') == 'pgvector'
     }
 

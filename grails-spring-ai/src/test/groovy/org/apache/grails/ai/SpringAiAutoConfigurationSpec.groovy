@@ -30,7 +30,7 @@ import org.apache.grails.ai.async.ChatResponseStreamItemRenderer
 import org.grails.plugins.web.async.mvc.DefaultStreamItemRenderer
 import spock.lang.Specification
 
-class AiAutoConfigurationSpec extends Specification {
+class SpringAiAutoConfigurationSpec extends Specification {
 
     private ApplicationContextRunner contextRunner() {
         new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(SpringAiAutoConfiguration))

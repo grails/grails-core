@@ -42,7 +42,7 @@ spring:
             api-key: ${OPENAI_API_KEY}
 ----
 
-A new application gets all of this from the `grails-spring-ai` feature, or from one of the `spring-ai-openai`, `spring-ai-anthropic` and `spring-ai-ollama` features, which add the provider's starter and its configuration as well:
+A new application gets all of this from the `grails-spring-ai` feature, or from one of the `spring-ai-openai`, `spring-ai-anthropic` and `spring-ai-ollama` features, which add the provider's starter and its configuration as well. The provider features exclude one another, since a second starter would auto-configure a second chat model with nothing to choose between them:
 
 [source,console]
 ----

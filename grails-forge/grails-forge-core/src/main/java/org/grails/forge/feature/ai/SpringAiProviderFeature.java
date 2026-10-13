@@ -22,14 +22,15 @@ import org.grails.forge.application.ApplicationType;
 import org.grails.forge.application.generator.GeneratorContext;
 import org.grails.forge.build.dependencies.Dependency;
 import org.grails.forge.feature.Category;
-import org.grails.forge.feature.Feature;
 import org.grails.forge.feature.FeatureContext;
+import org.grails.forge.feature.OneOfFeature;
 
 /**
  * A Spring AI model provider: adds the provider's starter, whose version the Grails BOM manages, and
- * the Grails Spring AI plugin the application uses it through.
+ * the Grails Spring AI plugin the application uses it through. An application selects one provider at
+ * most.
  */
-public abstract class SpringAiProviderFeature implements Feature {
+public abstract class SpringAiProviderFeature implements OneOfFeature {
 
     private final GrailsSpringAi grailsSpringAi;
 
@@ -41,6 +42,15 @@ public abstract class SpringAiProviderFeature implements Feature {
      * @return the {@code spring-ai-starter-model-*} artifact of the provider
      */
     protected abstract String getStarterArtifactId();
+
+    /**
+     * One provider per application: a second starter would auto-configure a second {@code ChatModel},
+     * and nothing selects between them for the {@code ChatClient.Builder}.
+     */
+    @Override
+    public Class<?> getFeatureClass() {
+        return SpringAiProviderFeature.class;
+    }
 
     @Override
     public void processSelectedFeatures(FeatureContext featureContext) {

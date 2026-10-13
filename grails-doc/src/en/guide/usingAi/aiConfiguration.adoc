@@ -40,7 +40,7 @@ environments:
 ----
 
 * Spring AI retries a failed model call ten times, backing off for up to three minutes. A web request cannot wait that long, so the plugin retries three times. Set `spring.ai.retry.max-attempts` to change it.
-* Spring AI logs neither prompts nor completions. In the development environment the plugin turns both on, along with the logging of errors from the model, so a developer sees what was sent and what came back; in test and production nothing is logged.
+* Spring AI logs neither prompts nor completions. In the development environment the plugin turns both on, along with the logging of errors from the model, so a developer sees what was sent and what came back; in test and production nothing is logged. Spring AI logs through Micrometer observations, which need an `ObservationRegistry` bean; the plugin brings Spring Boot's auto-configuration of one, so the logging works without the actuator.
 
 ==== Choosing the Provider and the Model
 

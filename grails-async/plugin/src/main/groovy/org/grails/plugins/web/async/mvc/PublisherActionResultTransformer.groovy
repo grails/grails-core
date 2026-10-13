@@ -43,7 +43,8 @@ import org.grails.web.util.GrailsApplicationAttributes
  * <p>The request is handled asynchronously through Spring MVC, as a returned {@code Promise} is, so the
  * container thread is released while the stream produces. The response is committed as
  * {@code text/event-stream} before the first item, and each item is written as soon as it is emitted,
- * formatted by a {@link ServerSentEventFormatter}. The stream honours {@code grails.async.streaming.timeout}
+ * formatted by a {@link ServerSentEventFormatter}. Any {@code Publisher} streams, one that emits a single
+ * item, such as a Reactor {@code Mono}, included. The stream honours {@code grails.async.streaming.timeout}
  * or, when that is not set, the same timeout as any other asynchronous request; a timeout ends the
  * stream with a {@code complete} event, since the response is already committed.</p>
  *

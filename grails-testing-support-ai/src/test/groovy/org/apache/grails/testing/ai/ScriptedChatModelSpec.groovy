@@ -18,6 +18,13 @@
  */
 package org.apache.grails.testing.ai
 
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+
+import reactor.core.publisher.Flux
+
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.prompt.Prompt
 
@@ -95,6 +102,84 @@ class ScriptedChatModelSpec extends Specification {
         chatClient.prompt().user('What is six times seven?').call().content() == '42'
         model.lastUserText == 'What is six times seven?'
         chatClient.prompt().user('again').stream().content().collectList().block() == ['again']
+    }
+
+    void 'a streamed answer is taken when the stream is subscribed, not when it is created'() {
+        given:
+        model.respondWith('first', 'second')
+
+        when: 'a stream is created but never subscribed'
+        model.stream(new Prompt('unsubscribed'))
+
+        then: 'nothing was recorded or consumed'
+        model.prompts.empty
+        model.call(new Prompt('one')).result.output.text == 'first'
+    }
+
+    void 'a retried stream answers afresh instead of replaying the first answer'() {
+        given:
+        model.respondWith('first', 'second')
+        int attempts = 0
+
+        when:
+        List<String> chunks = model.stream(new Prompt('x'))
+                .doOnSubscribe { attempts++ }
+                .flatMap { response -> attempts == 1 ? Flux.error(new IllegalStateException('flaky')) : Flux.just(response.result.output.text) }
+                .retry(1)
+                .collectList()
+                .block()
+
+        then:
+        chunks == ['second']
+        model.prompts*.contents == ['x', 'x']
+    }
+
+    void 'concurrent calls each get the response scripted for their turn'() {
+        given:
+        int calls = 200
+        model.respondWith((1..calls).collect { "answer ${it}".toString() } as String[])
+        ExecutorService executor = Executors.newFixedThreadPool(8)
+
+        when:
+        List<Future<String>> answers = (1..calls).collect { int call ->
+            executor.submit({ -> model.call(new Prompt("prompt ${call}".toString())).result.output.text } as Callable<String>)
+        }
+        List<String> texts = answers*.get()
+        executor.shutdown()
+
+        then: 'every scripted answer was used once and the prompts were all recorded'
+        texts.toSet() == (1..calls).collect { "answer ${it}".toString() }.toSet()
+        model.prompts.size() == calls
+    }
+
+    void 'a strict model fails when the script runs out instead of echoing'() {
+        given:
+        model.strict = true
+        model.respondWith('only')
+
+        expect:
+        model.call(new Prompt('one')).result.output.text == 'only'
+
+        when:
+        model.call(new Prompt('two'))
+
+        then:
+        IllegalStateException failure = thrown()
+        failure.message.contains('prompt 2')
+        failure.message.contains('two')
+        model.prompts*.contents == ['one', 'two']
+    }
+
+    void 'a strict model stays strict across a reset'() {
+        given:
+        model.strict = true
+
+        when:
+        model.reset()
+        model.stream(new Prompt('nothing scripted')).blockLast()
+
+        then:
+        thrown(IllegalStateException)
     }
 
     void 'reset forgets the script and the prompts'() {

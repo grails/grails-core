@@ -31,9 +31,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 
 /**
- * Registers an in-memory {@link SimpleVectorStore} over the embedding model while the stubs are enabled
- * and the application has no vector store of its own, so code that retrieves documents can be tested
- * without a database.
+ * Registers an in-memory vector store over the stub embedding model when Spring AI's vector store
+ * module is on the classpath, no vector store is selected and the application defines none, so code
+ * that stores and searches documents can be tested without a database. The store is a
+ * {@link ResettableSimpleVectorStore}, which a test that shares a context clears between features.
+ *
+ * <p>The guard on {@code spring.ai.vectorstore.type} matters because this auto-configuration is evaluated
+ * before Spring AI's own: without it, the stub would be registered first and a store the application
+ * selected, such as PgVector, would back off.</p>
  *
  * @since 8.1
  */
@@ -46,8 +51,9 @@ class AiTestingVectorStoreAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(VectorStore)
     @ConditionalOnBean(EmbeddingModel)
-    SimpleVectorStore vectorStore(EmbeddingModel embeddingModel) {
-        SimpleVectorStore.builder(embeddingModel).build()
+    @ConditionalOnProperty(name = AiStubEnvironmentPostProcessor.VECTOR_STORE, havingValue = AiStubEnvironmentPostProcessor.NONE)
+    ResettableSimpleVectorStore vectorStore(EmbeddingModel embeddingModel) {
+        new ResettableSimpleVectorStore(embeddingModel)
     }
 
 }

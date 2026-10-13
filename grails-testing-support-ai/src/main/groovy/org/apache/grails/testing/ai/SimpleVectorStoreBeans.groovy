@@ -21,8 +21,9 @@ package org.apache.grails.testing.ai
 import groovy.transform.CompileStatic
 
 import org.springframework.ai.embedding.EmbeddingModel
-import org.springframework.beans.factory.BeanFactory
+import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.beans.factory.BeanRegistry
+import org.springframework.beans.factory.ListableBeanFactory
 
 /**
  * Registers and resets the in-memory vector store a unit test gets. Kept apart from {@link AiTestBeans}
@@ -40,10 +41,19 @@ class SimpleVectorStoreBeans {
     }
 
     /**
-     * Empties the vector store, when the context has one.
+     * @return whether the context holds no vector store, of any kind
      */
-    static void reset(BeanFactory beanFactory) {
-        beanFactory.getBeanProvider(ResettableSimpleVectorStore).ifAvailable { ResettableSimpleVectorStore store -> store.clear() }
+    static boolean isMissing(ListableBeanFactory beanFactory) {
+        beanFactory.getBeanNamesForType(VectorStore).length == 0
+    }
+
+    /**
+     * Empties every resettable vector store the context holds.
+     */
+    static void reset(ListableBeanFactory beanFactory) {
+        for (ResettableSimpleVectorStore store : beanFactory.getBeansOfType(ResettableSimpleVectorStore).values()) {
+            store.clear()
+        }
     }
 
 }

@@ -19,10 +19,13 @@
 package org.grails.plugins.web.async.mvc
 
 import java.time.Duration
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 import jakarta.servlet.AsyncEvent
 import jakarta.servlet.ServletOutputStream
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 
 import org.springframework.mock.web.DelegatingServletOutputStream
@@ -40,6 +43,7 @@ import spock.lang.Specification
 class PublisherActionResultTransformerSpec extends Specification {
 
     private static final String COMPLETE = 'event: complete\ndata: \n\n'
+    private static final String FAILED = 'event: complete\ndata: error\n\n'
 
     private MockHttpServletRequest request
     private MockHttpServletResponse response
@@ -104,13 +108,25 @@ class PublisherActionResultTransformerSpec extends Specification {
         response.contentAsString == 'data: 1\n\ndata: 2\n\ndata: 3\n\n' + COMPLETE
     }
 
-    void 'reports a failed stream as an error event and completes the request'() {
+    void 'a publisher that emits a single item, such as a Mono, streams it as one event'() {
         when:
-        transformer.transformActionResult(webRequest, '/book/index',
-                Flux.concat(Flux.just('partial'), Flux.error(new IllegalStateException('boom'))))
+        transformer.transformActionResult(webRequest, '/book/index', Mono.just([title: 'Grails']))
 
         then:
-        response.contentAsString == 'data: partial\n\nevent: error\ndata: java.lang.IllegalStateException\n\n'
+        request.asyncStarted
+        response.contentType == 'text/event-stream;charset=UTF-8'
+        response.contentAsString == 'data: {title=Grails}\n\n' + COMPLETE
+    }
+
+    void 'a failed stream ends with a complete event whose reason is error, and nothing of the failure reaches the client'() {
+        when:
+        transformer.transformActionResult(webRequest, '/book/index',
+                Flux.concat(Flux.just('partial'), Flux.error(new IllegalStateException('secret details'))))
+
+        then:
+        response.contentAsString == 'data: partial\n\n' + FAILED
+        !response.contentAsString.contains('IllegalStateException')
+        !response.contentAsString.contains('secret')
         asyncManager.hasConcurrentResult()
         asyncManager.concurrentResult == null
     }
@@ -125,7 +141,7 @@ class PublisherActionResultTransformerSpec extends Specification {
         withBroken.transformActionResult(webRequest, '/book/index', Flux.just('a', 'b').doOnCancel { cancelled = true })
 
         then:
-        response.contentAsString == 'event: error\ndata: java.lang.IllegalArgumentException\n\n'
+        response.contentAsString == FAILED
         cancelled
         asyncManager.hasConcurrentResult()
         asyncManager.concurrentResult == null
@@ -139,7 +155,7 @@ class PublisherActionResultTransformerSpec extends Specification {
         transformer.transformActionResult(webRequest, '/book/index', refusing)
 
         then:
-        response.contentAsString == 'event: error\ndata: java.lang.IllegalStateException\n\n'
+        response.contentAsString == FAILED
         asyncManager.hasConcurrentResult()
     }
 
@@ -156,6 +172,51 @@ class PublisherActionResultTransformerSpec extends Specification {
         asyncManager.hasConcurrentResult()
         asyncManager.concurrentResult == null
         response.contentAsString == 'event: complete\ndata: timeout\n\n'
+    }
+
+    void 'a timeout reported while an item is being written does not interleave with it'() {
+        given: 'a response whose first byte blocks until the test releases it'
+        CountDownLatch writing = new CountDownLatch(1)
+        CountDownLatch release = new CountDownLatch(1)
+        ByteArrayOutputStream wire = new ByteArrayOutputStream()
+        OutputStream blocking = new OutputStream() {
+            private boolean first = true
+
+            @Override
+            void write(int b) throws IOException {
+                if (first) {
+                    first = false
+                    writing.countDown()
+                    release.await(10, TimeUnit.SECONDS)
+                }
+                wire.write(b)
+            }
+        }
+        response = new MockHttpServletResponse() {
+            @Override
+            ServletOutputStream getOutputStream() {
+                new DelegatingServletOutputStream(blocking)
+            }
+        }
+        webRequest = new GrailsWebRequest(request, response, request.servletContext)
+        Sinks.Many<String> sink = Sinks.many().unicast().onBackpressureBuffer()
+        transformer.transformActionResult(webRequest, '/book/index', sink.asFlux())
+
+        when: 'an item is written on the publisher thread while the container reports a timeout'
+        Thread emitter = new Thread({ -> sink.tryEmitNext('slow item') })
+        emitter.start()
+        writing.await(10, TimeUnit.SECONDS)
+        Thread timer = new Thread({ -> asyncManager.asyncWebRequest.onTimeout(new AsyncEvent(request.asyncContext)) })
+        timer.start()
+        timer.join(500)
+        boolean timeoutWaited = timer.alive
+        release.countDown()
+        emitter.join(10_000)
+        timer.join(10_000)
+
+        then: 'the timeout waited for the item, so the events follow one another on the wire'
+        timeoutWaited
+        wire.toString('UTF-8') == 'data: slow item\n\nevent: complete\ndata: timeout\n\n'
     }
 
     void 'items emitted after the request has completed are dropped'() {

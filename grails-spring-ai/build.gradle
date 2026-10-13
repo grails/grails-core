@@ -60,6 +60,9 @@ dependencies {
     runtimeOnly 'org.springframework.ai:spring-ai-autoconfigure-model-chat-memory' // ChatMemory
     runtimeOnly 'org.springframework.ai:spring-ai-autoconfigure-model-tool' // ToolCallingManager
     runtimeOnly 'org.springframework.ai:spring-ai-autoconfigure-retry' // RetryTemplate shared by the model clients
+    // Spring AI logs prompts and completions through observation handlers, which only an ObservationRegistry
+    // bean invokes; Boot's auto-configuration of one lives here, so the development defaults log without the actuator
+    runtimeOnly 'org.springframework.boot:spring-boot-micrometer-observation'
 
     compileOnly project(':grails-core'), { // Provided as this is a Grails plugin
         // api: Plugin
@@ -74,13 +77,14 @@ dependencies {
 
     testImplementation project(':grails-async')
     testImplementation project(':grails-core')
+    testImplementation testFixtures(project(':grails-core')) // LogCapture, with Logback as the test logging binding
     testImplementation 'org.apache.groovy:groovy-yaml'
     testImplementation 'org.spockframework:spock-core'
     testImplementation 'org.springframework:spring-test'
+    testImplementation 'org.springframework.ai:spring-ai-autoconfigure-model-chat-client' // ChatClientAutoConfiguration
     testImplementation 'org.springframework.boot:spring-boot-autoconfigure'
+    testImplementation 'org.springframework.boot:spring-boot-micrometer-observation' // ObservationAutoConfiguration
     testImplementation 'org.springframework.boot:spring-boot-test'
-
-    testCompileOnly 'org.slf4j:slf4j-nop' // Prevents warning about missing slf4j implementation during compilation
 
     testRuntimeOnly 'org.assertj:assertj-core' // required by the spring-boot-test context runners
 }

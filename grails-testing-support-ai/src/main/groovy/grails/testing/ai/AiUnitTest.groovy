@@ -25,7 +25,6 @@ import groovy.transform.CompileStatic
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.prompt.Prompt
 
-import org.apache.grails.testing.ai.AiTestBeans
 import org.apache.grails.testing.ai.ScriptedChatModel
 import org.apache.grails.testing.ai.StubEmbeddingModel
 import org.grails.testing.GrailsUnitTest
@@ -40,6 +39,14 @@ import org.grails.testing.GrailsUnitTest
  * get the real ones. Script the answers with {@link #respondWith(String...)} and assert on
  * {@link #getPrompts()}. The script, the prompts and the vector store are cleared before every feature
  * method.</p>
+ *
+ * <p>The stubs are registered before the specification's {@code setupSpec}, after the beans of its
+ * {@code doWithSpring()} and {@code beanRegistrar()} have been created, and each only when the context
+ * holds no bean of its type: a chat model, embedding model, chat client builder or vector store the
+ * specification defines is used instead. The chat model then has to be a {@code ScriptedChatModel} for
+ * {@link #getChatModel()} and {@link #respondWith(String...)} to find it. A bean defined in
+ * {@code doWithSpring()} that needs the builder at creation should take it from the context lazily, or
+ * be defined in {@code setupSpec} with {@code defineBeans}.</p>
  *
  * <pre>
  * class AnswerServiceSpec extends Specification implements ServiceUnitTest&lt;AnswerService&gt;, AiUnitTest {
@@ -64,21 +71,21 @@ trait AiUnitTest extends GrailsUnitTest {
      * @return the scripted chat model the test context holds
      */
     ScriptedChatModel getChatModel() {
-        applicationContext.getBean(AiTestBeans.CHAT_MODEL, ScriptedChatModel)
+        applicationContext.getBean(ScriptedChatModel)
     }
 
     /**
      * @return the stub embedding model the test context holds
      */
     StubEmbeddingModel getEmbeddingModel() {
-        applicationContext.getBean(AiTestBeans.EMBEDDING_MODEL, StubEmbeddingModel)
+        applicationContext.getBean(StubEmbeddingModel)
     }
 
     /**
-     * @return a chat client over the scripted model, built from the context's {@code chatClientBuilder}
+     * @return a chat client over the chat model, built from the context's {@code ChatClient.Builder}
      */
     ChatClient getChatClient() {
-        applicationContext.getBean(AiTestBeans.CHAT_CLIENT_BUILDER, ChatClient.Builder).build()
+        applicationContext.getBean(ChatClient.Builder).build()
     }
 
     /**

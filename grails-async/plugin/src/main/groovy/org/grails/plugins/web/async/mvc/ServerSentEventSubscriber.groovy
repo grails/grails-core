@@ -35,11 +35,16 @@ import org.springframework.web.context.request.async.DeferredResult
  * the deferred result that holds the request open when the stream ends.
  *
  * <p>Items are requested one by one, so a publisher that honours back-pressure produces no faster
- * than the response is written. A stream that ends is announced to the client with a {@code complete}
- * event, so an {@code EventSource} can close instead of reconnecting. A failed stream, or an item that
- * cannot be rendered, is reported as an {@code error} event and then completed, since the response was
- * committed when streaming began and cannot carry an error status any more. A client that disconnects
- * is detected by the failed write and the stream is cancelled.</p>
+ * than the response is written. Every stream ends with a {@code complete} event, so an
+ * {@code EventSource} can close instead of reconnecting: its data is empty when the publisher completed,
+ * {@code timeout} when the container timed the request out and {@code error} when the publisher failed
+ * or an item could not be rendered, since the response was committed when streaming began and cannot
+ * carry an error status any more. The failure itself is logged on the server and nothing of it reaches
+ * the client. A client that disconnects is detected by the failed write and the stream is cancelled.</p>
+ *
+ * <p>The publisher emits on its own thread while the container reports a timeout on another, so every
+ * write to the response, and the check that the stream is still open before it, happens under one
+ * lock; two events can never interleave on the wire.</p>
  *
  * @since 8.1
  */
@@ -51,6 +56,7 @@ class ServerSentEventSubscriber implements Subscriber<Object> {
     private final ServerSentEventFormatter formatter
     private final DeferredResult<Object> deferredResult
     private final AtomicBoolean done = new AtomicBoolean()
+    private final Object lock = new Object()
     private volatile Subscription subscription
 
     /**
@@ -80,25 +86,31 @@ class ServerSentEventSubscriber implements Subscriber<Object> {
 
     @Override
     void onNext(Object item) {
-        if (done.get()) {
-            return
+        boolean written = false
+        synchronized (lock) {
+            if (done.get()) {
+                return
+            }
+            String event
+            try {
+                event = formatter.format(item)
+            }
+            catch (Throwable failure) {
+                end(failure)
+                return
+            }
+            try {
+                write(event)
+                written = true
+            }
+            catch (IOException failure) {
+                log.debug('Client went away while a response was being streamed', failure)
+                subscription.cancel()
+                finish()
+            }
         }
-        String event
-        try {
-            event = formatter.format(item)
-        }
-        catch (Throwable failure) {
-            fail(failure)
-            return
-        }
-        try {
-            write(event)
+        if (written) {
             subscription.request(1)
-        }
-        catch (IOException failure) {
-            log.debug('Client went away while a response was being streamed', failure)
-            subscription.cancel()
-            finish()
         }
     }
 
@@ -109,35 +121,28 @@ class ServerSentEventSubscriber implements Subscriber<Object> {
 
     @Override
     void onComplete() {
-        if (done.get()) {
-            return
+        synchronized (lock) {
+            if (done.get()) {
+                return
+            }
+            try {
+                write(formatter.formatCompletion(''))
+            }
+            catch (IOException failure) {
+                log.debug('Client went away before the end of a streamed response could be reported', failure)
+            }
+            finish()
         }
-        try {
-            write(formatter.formatCompletion(''))
-        }
-        catch (IOException failure) {
-            log.debug('Client went away before the end of a streamed response could be reported', failure)
-        }
-        finish()
     }
 
     /**
      * Ends the stream after a failure of the publisher, of a renderer or of the subscription itself: the
-     * client gets an {@code error} event and the request completes.
+     * client gets a {@code complete} event whose data is {@code error}, and the request completes.
      */
     void fail(Throwable failure) {
-        if (!done.compareAndSet(false, true)) {
-            return
+        synchronized (lock) {
+            end(failure)
         }
-        log.error('Streamed response failed', failure)
-        subscription?.cancel()
-        try {
-            write(formatter.formatError(failure))
-        }
-        catch (IOException ignored) {
-            log.debug('Client went away before the failure of a streamed response could be reported', ignored)
-        }
-        deferredResult.setResult(null)
     }
 
     /**
@@ -145,15 +150,17 @@ class ServerSentEventSubscriber implements Subscriber<Object> {
      * complete, with {@code timeout} as the reason; the deferred result completes itself.
      */
     void timeout() {
-        if (!done.compareAndSet(false, true)) {
-            return
-        }
-        subscription?.cancel()
-        try {
-            write(formatter.formatCompletion(ServerSentEventFormatter.TIMEOUT_REASON))
-        }
-        catch (IOException ignored) {
-            log.debug('Client went away before the timeout of a streamed response could be reported', ignored)
+        synchronized (lock) {
+            if (!done.compareAndSet(false, true)) {
+                return
+            }
+            subscription?.cancel()
+            try {
+                write(formatter.formatCompletion(ServerSentEventFormatter.TIMEOUT_REASON))
+            }
+            catch (IOException ignored) {
+                log.debug('Client went away before the timeout of a streamed response could be reported', ignored)
+            }
         }
     }
 
@@ -170,6 +177,21 @@ class ServerSentEventSubscriber implements Subscriber<Object> {
      */
     boolean isDone() {
         done.get()
+    }
+
+    private void end(Throwable failure) {
+        if (!done.compareAndSet(false, true)) {
+            return
+        }
+        log.error('Streamed response failed', failure)
+        subscription?.cancel()
+        try {
+            write(formatter.formatCompletion(ServerSentEventFormatter.ERROR_REASON))
+        }
+        catch (IOException ignored) {
+            log.debug('Client went away before the failure of a streamed response could be reported', ignored)
+        }
+        deferredResult.setResult(null)
     }
 
     private void finish() {

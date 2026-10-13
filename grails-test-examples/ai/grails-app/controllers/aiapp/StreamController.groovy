@@ -22,6 +22,7 @@ import java.time.Duration
 
 import grails.compiler.GrailsCompileStatic
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 import org.springframework.http.codec.ServerSentEvent
 
@@ -52,6 +53,10 @@ class StreamController {
 
     def failing() {
         Flux.concat(Flux.just('partial'), Flux.error(new IllegalStateException('boom')))
+    }
+
+    def single() {
+        Mono.just([answer: 42])
     }
 
 }

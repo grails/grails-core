@@ -106,17 +106,18 @@ class ServerSentEventFormatterSpec extends Specification {
         formatter.format(ServerSentEvent.builder().comment('ping').build()) == ':ping\n\n'
     }
 
-    void 'an error event names only the type of the failure'() {
-        expect:
-        formatter.formatError(new IllegalStateException('secret details')) ==
-                'event: error\ndata: java.lang.IllegalStateException\n\n'
-    }
-
     void 'a complete event carries the reason the stream ended'() {
         expect:
         formatter.formatCompletion('') == 'event: complete\ndata: \n\n'
         formatter.formatCompletion(null) == 'event: complete\ndata: \n\n'
         formatter.formatCompletion(ServerSentEventFormatter.TIMEOUT_REASON) == 'event: complete\ndata: timeout\n\n'
+        formatter.formatCompletion(ServerSentEventFormatter.ERROR_REASON) == 'event: complete\ndata: error\n\n'
+    }
+
+    void 'no event is named error, which an EventSource dispatches for its own connection failures'() {
+        expect:
+        ServerSentEventFormatter.COMPLETE_EVENT != 'error'
+        !formatter.formatCompletion(ServerSentEventFormatter.ERROR_REASON).contains('event: error')
     }
 
     private static String assemble(String wire) {

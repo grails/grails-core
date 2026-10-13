@@ -18,6 +18,7 @@
  */
 package grails.testing.ai
 
+import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.document.Document
@@ -73,11 +74,25 @@ class AiUnitTestSpec extends Specification implements ServiceUnitTest<AnswerServ
         chatModel.lastUserText == 'Capital of France?'
     }
 
-    void 'the stubs are the primary models of the test context'() {
+    void 'the stubs are the primary models of the test context, under the names an application uses'() {
         expect:
         applicationContext.getBean(ChatModel).is(chatModel)
         applicationContext.getBean(EmbeddingModel).is(embeddingModel)
+        applicationContext.getBean('chatModel').is(chatModel)
+        applicationContext.getBean('embeddingModel').is(embeddingModel)
+        applicationContext.getBean('chatClientBuilder') instanceof ChatClient.Builder
         embeddingModel.dimensions() == StubEmbeddingModel.DEFAULT_DIMENSIONS
+    }
+
+    void 'the model can be made strict for a test that must not run out of script'() {
+        given:
+        chatModel.strict = true
+
+        when:
+        chatClient.prompt().user('nothing scripted').call().content()
+
+        then:
+        thrown(IllegalStateException)
     }
 
     void 'an in-memory vector store is available when the vector store module is on the classpath'() {

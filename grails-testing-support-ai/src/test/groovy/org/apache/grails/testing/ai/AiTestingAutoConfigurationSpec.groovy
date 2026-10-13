@@ -19,7 +19,9 @@
 package org.apache.grails.testing.ai
 
 import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.document.Document
 import org.springframework.ai.embedding.EmbeddingModel
+import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.SimpleVectorStore
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.boot.autoconfigure.AutoConfigurations
@@ -30,7 +32,7 @@ import spock.lang.Specification
 
 class AiTestingAutoConfigurationSpec extends Specification {
 
-    private static final String[] NO_PROVIDER = ['spring.ai.model.chat=none', 'spring.ai.model.embedding=none']
+    private static final String[] NO_PROVIDER = ['spring.ai.model.chat=none', 'spring.ai.model.embedding=none', 'spring.ai.vectorstore.type=none']
 
     private ApplicationContextRunner contextRunner() {
         new ApplicationContextRunner()
@@ -43,7 +45,36 @@ class AiTestingAutoConfigurationSpec extends Specification {
             assert context.getBean(ChatModel) instanceof ScriptedChatModel
             assert context.getBean(EmbeddingModel) instanceof StubEmbeddingModel
             assert context.getBean(EmbeddingModel).dimensions() == StubEmbeddingModel.DEFAULT_DIMENSIONS
-            assert context.getBean(VectorStore) instanceof SimpleVectorStore
+            assert context.getBean(VectorStore) instanceof ResettableSimpleVectorStore
+        }
+    }
+
+    void 'the stub vector store backs off when the application selects a vector store'() {
+        expect: 'the store the application selected, evaluated later, is not pre-empted by the stub'
+        contextRunner().withPropertyValues('spring.ai.model.chat=none', 'spring.ai.model.embedding=none', 'spring.ai.vectorstore.type=pgvector')
+                .run { context ->
+                    assert context.getBean(ChatModel) instanceof ScriptedChatModel
+                    assert context.getBean(EmbeddingModel) instanceof StubEmbeddingModel
+                    assert !context.getBeanNamesForType(VectorStore)
+                }
+    }
+
+    void 'the stub vector store backs off without the vector store selection property'() {
+        expect:
+        contextRunner().withPropertyValues('spring.ai.model.chat=none', 'spring.ai.model.embedding=none')
+                .run { context ->
+                    assert !context.getBeanNamesForType(VectorStore)
+                }
+    }
+
+    void 'the stub vector store can be emptied between tests that share a context'() {
+        expect:
+        contextRunner().withPropertyValues(NO_PROVIDER).run { context ->
+            ResettableSimpleVectorStore store = context.getBean(ResettableSimpleVectorStore)
+            store.add([new Document('Grails is a web framework')])
+            assert store.similaritySearch(SearchRequest.builder().query('web framework').topK(1).build()).size() == 1
+            store.clear()
+            assert store.similaritySearch(SearchRequest.builder().query('web framework').topK(1).build()).empty
         }
     }
 

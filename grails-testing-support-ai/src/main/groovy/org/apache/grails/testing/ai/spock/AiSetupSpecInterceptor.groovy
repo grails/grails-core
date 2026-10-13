@@ -26,7 +26,10 @@ import grails.testing.ai.AiUnitTest
 import org.apache.grails.testing.ai.AiTestBeans
 
 /**
- * Registers the stub beans in the test application context, the way a plugin's registrar would.
+ * Registers the stub beans in the test application context, the way a plugin's registrar would, before
+ * the specification's own {@code setupSpec}. Beans the specification defines through
+ * {@code doWithSpring()} or {@code beanRegistrar()} exist by then and are kept; the stubs fill in what
+ * is missing.
  *
  * @since 8.1
  */
@@ -36,7 +39,7 @@ class AiSetupSpecInterceptor implements IMethodInterceptor {
     @Override
     void intercept(IMethodInvocation invocation) throws Throwable {
         AiUnitTest test = (AiUnitTest) invocation.instance
-        test.defineBeans(AiTestBeans.registrar())
+        test.defineBeans(AiTestBeans.registrar(test.applicationContext))
         invocation.proceed()
     }
 
