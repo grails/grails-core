@@ -218,8 +218,8 @@ class ClassPathResource extends AbstractFileResolvingResource {
         if (obj instanceof ClassPathResource) {
             ClassPathResource otherRes = (ClassPathResource) obj
             return (path.equals(otherRes.path) &&
-                    nullSafeEquals(classLoader, otherRes.classLoader) &&
-                    nullSafeEquals(clazz, otherRes.clazz))
+                    nullSafeEquals(classLoader, otherRes.@classLoader) &&
+                    nullSafeEquals(clazz, otherRes.@clazz))
         }
         return false
     }
