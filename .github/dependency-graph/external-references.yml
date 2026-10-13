@@ -87,6 +87,7 @@ references:
   - purl: pkg:maven/org.apache.grails.data/grails-datamapping-tck-base
   - purl: pkg:maven/org.apache.grails.data/grails-datamapping-tck-domains
   - purl: pkg:maven/org.apache.grails.data/grails-datamapping-tck-tests
+  - purl: pkg:maven/org.apache.grails.async/grails-async-groovy-concurrent
   - purl: pkg:maven/org.apache.grails.data/grails-datamapping-validation
   - purl: pkg:maven/org.apache.grails.data/grails-datastore-async
   - purl: pkg:maven/org.apache.grails.data/grails-datastore-core
@@ -94,6 +95,7 @@ references:
   - purl: pkg:maven/org.apache.grails.databinding/grails-databinding-core
   - purl: pkg:maven/org.apache.grails.events/grails-events-core
   - purl: pkg:maven/org.apache.grails.events/grails-events-gpars
+  - purl: pkg:maven/org.apache.grails.events/grails-events-groovy-concurrent
   - purl: pkg:maven/org.apache.grails.events/grails-events-spring
   - purl: pkg:maven/org.apache.grails.events/grails-events-transforms
   - purl: pkg:maven/org.apache.grails.i18n/grails-i18n
