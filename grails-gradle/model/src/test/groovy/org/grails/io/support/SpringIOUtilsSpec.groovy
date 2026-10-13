@@ -311,4 +311,148 @@ class SpringIOUtilsSpec extends Specification {
         SpringIOUtils.addAll(['a', 'b'] as String[], ['c', 'd'] as String[]) == ['a', 'b', 'c', 'd']
     }
 
+    void 'addAll rejects an array whose type cannot hold the other arrays elements'() {
+        when:
+        SpringIOUtils.addAll(['a'] as String[], [1] as Integer[])
+
+        then:
+        IllegalArgumentException e = thrown()
+        e.message == 'Cannot store java.lang.Integer in an array of java.lang.String'
+    }
+
+    void 'copyAll copies every resource below the base into the target directory'() {
+        given:
+        File source = new File(tempFileDir, 'src')
+        source.mkdirs()
+        new File(source, 'a.txt').text = 'A'
+        new File(source, 'b.txt').text = 'B'
+        File target = new File(tempFileDir, 'target')
+        target.mkdirs()
+
+        when:
+        SpringIOUtils.copyAll(new FileSystemResource(source), [new FileSystemResource(new File(source, 'a.txt')),
+                                                              new FileSystemResource(new File(source, 'b.txt'))] as Resource[], target)
+
+        then:
+        new File(target, 'a.txt').text == 'A'
+        new File(target, 'b.txt').text == 'B'
+    }
+
+    void 'copy(Resource, File) writes the resource to the file and reports the size'() {
+        given:
+        File in = new File(tempFileDir, 'in.txt')
+        in.text = 'resource'
+        File out = new File(tempFileDir, 'out.txt')
+
+        expect:
+        SpringIOUtils.copy(new FileSystemResource(in), out) == 8
+        out.text == 'resource'
+    }
+
+    void 'copy(File, File) reports the number of bytes copied'() {
+        given:
+        File in = new File(tempFileDir, 'in2.txt')
+        in.text = 'twelve bytes'
+        File out = new File(tempFileDir, 'out2.txt')
+
+        expect:
+        SpringIOUtils.copy(in, out) == 12
+    }
+
+    void 'copy(InputStream, OutputStream) copies, flushes and closes both streams'() {
+        given:
+        boolean inClosed = false
+        boolean outClosed = false
+        InputStream input = new ByteArrayInputStream('payload'.bytes) {
+            @Override
+            void close() {
+                inClosed = true
+            }
+        }
+        ByteArrayOutputStream output = new ByteArrayOutputStream() {
+            @Override
+            void close() {
+                outClosed = true
+            }
+        }
+
+        expect:
+        SpringIOUtils.copy(input, output) == 7
+        output.toString() == 'payload'
+        inClosed
+        outClosed
+    }
+
+    void 'copy(InputStream, OutputStream) still closes the streams when they fail to close'() {
+        given:
+        InputStream input = new ByteArrayInputStream('x'.bytes) {
+            @Override
+            void close() {
+                throw new IOException('in')
+            }
+        }
+        OutputStream output = new ByteArrayOutputStream() {
+            @Override
+            void close() {
+                throw new IOException('out')
+            }
+        }
+
+        expect:
+        SpringIOUtils.copy(input, output) == 1
+    }
+
+    void 'copy(byte[], OutputStream) writes and closes the stream even when closing fails'() {
+        given:
+        ByteArrayOutputStream output = new ByteArrayOutputStream() {
+            @Override
+            void close() {
+                throw new IOException('out')
+            }
+        }
+
+        when:
+        SpringIOUtils.copy('bytes'.bytes, (OutputStream) output)
+
+        then:
+        output.toString() == 'bytes'
+    }
+
+    void 'copyToByteArray(InputStream) reads everything and closes the stream'() {
+        expect:
+        SpringIOUtils.copyToByteArray(new ByteArrayInputStream('abc'.bytes)) == 'abc'.bytes
+    }
+
+    void 'copy(Reader, Writer) copies characters and closes both'() {
+        given:
+        StringWriter writer = new StringWriter()
+
+        expect:
+        SpringIOUtils.copy(new StringReader('chars'), writer) == 5
+        writer.toString() == 'chars'
+    }
+
+    void 'copy methods refuse missing arguments'() {
+        when:
+        action()
+
+        then:
+        thrown(AssertionError)
+
+        where:
+        action << [
+            { SpringIOUtils.copy((File) null, new File('x')) },
+            { SpringIOUtils.copy(new File('x'), (File) null) },
+            { SpringIOUtils.copy((Resource) null, new File('x')) },
+            { SpringIOUtils.copy(new FileSystemResource('x'), (File) null) },
+            { SpringIOUtils.copy((byte[]) null, new File('x')) },
+            { SpringIOUtils.copy('x'.bytes, (File) null) },
+            { SpringIOUtils.copy((InputStream) null, new ByteArrayOutputStream()) },
+            { SpringIOUtils.copy(new ByteArrayInputStream(new byte[0]), (OutputStream) null) },
+            { SpringIOUtils.copy((byte[]) null, (OutputStream) new ByteArrayOutputStream()) },
+            { SpringIOUtils.copy('x'.bytes, (OutputStream) null) },
+            { SpringIOUtils.copyToByteArray((File) null) }
+        ]
+    }
+
 }

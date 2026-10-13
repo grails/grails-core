@@ -19,6 +19,7 @@
 package org.apache.grails.core.plugins
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
 
@@ -28,6 +29,7 @@ import org.xml.sax.helpers.DefaultHandler
  * fully-qualified names.
  */
 @CompileStatic
+@PackageScope
 class PluginXmlHandler extends DefaultHandler {
 
     private enum ParseState { IDLE, TYPE, RESOURCE }

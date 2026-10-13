@@ -21,6 +21,7 @@ package org.grails.core.io
 import java.util.concurrent.ConcurrentHashMap
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.FileSystemResourceLoader
@@ -164,7 +165,7 @@ class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, Pl
         if (pluginManager != null) {
             String fullPluginName = info.pluginName
             for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
-                if (plugin.getFileSystemName() == fullPluginName && (plugin instanceof BinaryGrailsPlugin)) {
+                if (plugin.getFileSystemName().equals(fullPluginName) && (plugin instanceof BinaryGrailsPlugin)) {
                     return ((BinaryGrailsPlugin) plugin).getResource(info.uri)
                 }
             }
@@ -240,10 +241,11 @@ class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, Pl
         this.pluginManager = pluginManager
     }
 
+    @PackageScope
     class PluginResourceInfo {
 
-        String pluginName
-        String uri
+        @PackageScope String pluginName
+        @PackageScope String uri
 
     }
 
