@@ -85,4 +85,18 @@ class CollectionUtilsSpec extends Specification {
         CollectionUtils.getOrCreateChildMap(parent, 'foo') == [:]
     }
 
+    void 'the utility class cannot be instantiated'() {
+        given:
+        def constructor = CollectionUtils.getDeclaredConstructor()
+
+        expect:
+        java.lang.reflect.Modifier.isPrivate(constructor.modifiers)
+
+        when:
+        constructor.accessible = true
+
+        then:
+        constructor.newInstance() != null
+    }
+
 }
