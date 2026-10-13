@@ -19,6 +19,7 @@
 package org.apache.grails.core.plugins
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 import grails.plugins.exceptions.PluginException
 import grails.util.Environment
@@ -201,6 +202,7 @@ final class PluginMetadata {
      *
      * @return {@code true} if the plugin is enabled and supports the current environment
      */
+    @PackageScope
     boolean canRegisterPlugin() {
         Environment environment = Environment.getCurrent()
         return enabled && supportsEnvironment(environment)
@@ -212,6 +214,7 @@ final class PluginMetadata {
      * @param environment the environment to test
      * @return {@code true} if the plugin is enabled for the supplied environment
      */
+    @PackageScope
     boolean supportsEnvironment(Environment environment) {
         return PluginUtils.supportsValueInIncludeExcludeMap(environments, environment.getName())
     }
