@@ -198,6 +198,23 @@ class HibernateCriteriaBuilderNestedJoinTypeSpec extends Specification {
     }
 
     @Rollback
+    void 'a path through a nested block resolves to its join when an outer criterion went through the same name'() {
+        given:
+        savePets()
+
+        expect: 'face.name in the owner block is the name of the face of the owner, not of the face of the pet'
+        Pet.createCriteria().list {
+            eq('face.name', 'Santa')
+            owner {
+                face {
+                    isNotNull('id')
+                }
+                eq('face.name', 'Homer')
+            }
+        }*.name == ['Lucky']
+    }
+
+    @Rollback
     void 'an association block of a subquery joins from the root of the subquery'() {
         given:
         savePets()

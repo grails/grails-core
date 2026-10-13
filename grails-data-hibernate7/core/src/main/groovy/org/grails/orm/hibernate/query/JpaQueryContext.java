@@ -141,7 +141,7 @@ public class JpaQueryContext implements Cloneable {
     /**
      * Records the join type of an association joined from this context's root. Unlike
      * {@link #registerAlias(String, HibernateAlias)}, the association does not become an alias, so a property
-     * criterion on the association's name still resolves to the property.
+     * criterion on the association's name that comes before the association's block still resolves to the property.
      *
      * @param path the association's path from this context's root
      * @param joinType the join type of the association

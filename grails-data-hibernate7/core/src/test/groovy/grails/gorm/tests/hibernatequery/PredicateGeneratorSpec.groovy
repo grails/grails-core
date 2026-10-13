@@ -29,7 +29,10 @@ import jakarta.persistence.criteria.JoinType
 import jakarta.persistence.criteria.Root
 import jakarta.persistence.criteria.Predicate
 import org.hibernate.query.criteria.JpaExpression
+import org.hibernate.query.sqm.tree.domain.SqmPath
+import org.hibernate.query.sqm.tree.predicate.SqmComparisonPredicate
 import org.hibernate.query.sqm.tree.predicate.SqmInListPredicate
+import org.hibernate.query.sqm.tree.predicate.SqmJunctionPredicate
 import org.hibernate.query.sqm.tree.select.SqmSubQuery
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.query.Query
@@ -679,6 +682,31 @@ class PredicateGeneratorSpec extends HibernateGormDatastoreSpec {
         petsJoin.joins*.attribute*.name == ["face"]
     }
 
+    def "test getPredicates resolves a path through a nested association block to its join when an outer context realized the same alias"() {
+        given: "the face of the person, realized as an alias the way a criterion on face.name of the person realizes it"
+        From personFace = root.join("face")
+        fromProvider.addFrom("face", personFace)
+        fromProvider.registerAlias("face", personFace)
+        List criteria = new DetachedCriteria(PredicateGeneratorSpecPerson).build {
+            pets {
+                face {
+                    eq("name", "Happy")
+                }
+                eq("face.name", "Happy")
+            }
+        }.criteria
+
+        when:
+        def predicates = predicateGenerator.getPredicates(query, root, criteria, fromProvider, personEntity)
+        From petsJoin = root.joins.find { it.attribute.name == "pets" }
+        From petFace = petsJoin.joins.first()
+
+        then: "both criteria on the name of a face restrict the face of the pets"
+        predicates.length == 1
+        comparedPaths(predicates[0]).size() == 2
+        comparedPaths(predicates[0]).every { it.lhs.is(petFace) }
+    }
+
     def "test getPredicates joins an association block of a subquery from the root of the subquery"() {
         given: "the outer query already joined pets"
         fromProvider.addFrom("pets", root.join("pets"))
@@ -701,6 +729,16 @@ class PredicateGeneratorSpec extends HibernateGormDatastoreSpec {
         predicates.length == 1
         root.joins.size() == 1
         subqueryRoot.joins*.attribute*.name == ["pets"]
+    }
+
+    /**
+     * Returns the path on the left of each comparison in the predicate.
+     */
+    private static List<SqmPath> comparedPaths(Predicate predicate) {
+        if (predicate instanceof SqmJunctionPredicate) {
+            return predicate.predicates.collectMany { comparedPaths(it) }
+        }
+        predicate instanceof SqmComparisonPredicate ? [predicate.leftHandExpression as SqmPath] : []
     }
 }
 

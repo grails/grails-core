@@ -316,6 +316,10 @@ public class PredicateGenerator {
                     fromsByProvider.getRoot().join(definition.path(), definition.joinType()) :
                     fromsByProvider.getRoot().join(associationName, fromsByProvider.getLocalJoinType(associationName));
             fromsByProvider.addFrom(associationName, associationRoot);
+            // A later path through the association, such as face.name in
+            // eq('face.name', 'Santa') owner { face { ... } eq('face.name', 'Homer') }, is resolved against the aliases
+            // realized by the outer contexts before the joins of this one, so the join is realized as an alias of this
+            // context too.
             fromsByProvider.registerAlias(associationName, associationRoot);
         }
 
@@ -323,8 +327,8 @@ public class PredicateGenerator {
         JpaQueryContext nestedContext = new JpaQueryContext(fromsByProvider, null, associationRoot);
         // The join type of an association block nested in this one, such as the LEFT of face in
         // owner(LEFT) { face(LEFT) { ... } }, is recorded on this block's criteria. It is registered as a join type,
-        // not as an alias, so a criterion on the property of the same name, such as isNotEmpty('pets') next to
-        // pets { ... }, still resolves to the property rather than to the join.
+        // not as an alias, so a criterion on the property of the same name that comes before the block, such as
+        // isNotEmpty('pets') ahead of pets { ... }, still resolves to the property rather than to the join.
         associationCriteria.getJoinTypes().forEach(nestedContext::registerJoinType);
 
         GrailsHibernatePersistentEntity associatedEntity = (GrailsHibernatePersistentEntity) associationCriteria.getAssociation().getAssociatedEntity();
