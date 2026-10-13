@@ -18,87 +18,125 @@
  */
 package org.grails.orm.hibernate.proxy
 
+import grails.gorm.annotation.Entity
+import groovy.transform.CompileStatic
+
+import org.grails.orm.hibernate.HibernateDatastore
 import org.hibernate.HibernateException
 import org.hibernate.engine.spi.SharedSessionContractImplementor
+import org.hibernate.proxy.HibernateProxy
+import org.hibernate.proxy.LazyInitializer
 import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyHelper
+import spock.lang.AutoCleanup
+import spock.lang.Shared
 import spock.lang.Specification
 
 class ByteBuddyGroovyProxyFactorySpec extends Specification {
 
-    static class FakeEntity { }
+    @Shared @AutoCleanup HibernateDatastore datastore = new HibernateDatastore(GroovyProxyFactoryEntity)
 
-    static class FakeHibernateProxy extends FakeEntity { }
+    ByteBuddyProxyHelper helper = new GrailsBytecodeProvider().getByteBuddyProxyHelper()
 
     void "factory can be instantiated"() {
         expect:
         new ByteBuddyGroovyProxyFactory(Mock(ByteBuddyProxyHelper)) != null
     }
 
-    void "postInstantiate configures entity name, class, and interfaces"() {
-        given:
-        def helper = Mock(ByteBuddyProxyHelper) {
-            buildProxy(_, _ as Class[]) >> FakeHibernateProxy
-        }
-        def factory = new ByteBuddyGroovyProxyFactory(helper)
-
-        when:
-        factory.postInstantiate("FakeEntity", FakeEntity, [] as Set, null, null, null)
-
-        then:
-        noExceptionThrown()
-    }
-
     void "postInstantiate wraps the Hibernate proxy class so getMetaClass() can answer before the interceptor is assigned"() {
         given:
-        def helper = Mock(ByteBuddyProxyHelper) {
-            buildProxy(_, _ as Class[]) >> FakeHibernateProxy
-        }
         def factory = new ByteBuddyGroovyProxyFactory(helper)
 
         when:
-        factory.postInstantiate("FakeEntity", FakeEntity, [] as Set, null, null, null)
+        factory.postInstantiate('GroovyProxyFactoryEntity', GroovyProxyFactoryEntity, [HibernateProxy] as Set, null, null, null)
 
-        then: "the proxy class is a subclass of the Hibernate-built proxy that overrides getMetaClass()"
+        then: 'the proxy class is a subclass of the Hibernate-built proxy that overrides getMetaClass()'
         def proxyClass = proxyClassOf(factory)
-        proxyClass != FakeHibernateProxy
-        FakeHibernateProxy.isAssignableFrom(proxyClass)
-        proxyClass.getMethod("getMetaClass").declaringClass == proxyClass
+        def stock = helper.buildProxy(GroovyProxyFactoryEntity, [HibernateProxy] as Class[])
+        proxyClass != stock
+        stock.isAssignableFrom(proxyClass)
+        proxyClass.getMethod('getMetaClass').declaringClass == proxyClass
     }
 
-    void "postInstantiate keeps the Hibernate proxy class for non-Groovy entities"() {
+    void "postInstantiate fails when the generated proxy class cannot take an interceptor, naming the entity"() {
         given:
-        def helper = Mock(ByteBuddyProxyHelper) {
-            buildProxy(_, _ as Class[]) >> Object
+        def stockHelper = Mock(ByteBuddyProxyHelper) {
+            buildProxy(Object, _ as Class[]) >> String
         }
+        def factory = new ByteBuddyGroovyProxyFactory(stockHelper)
+
+        when:
+        factory.postInstantiate('PlainEntity', Object, [] as Set, null, null, null)
+
+        then: 'it fails when the factory is set up, not on the first lazy load'
+        HibernateException e = thrown()
+        e.message.contains('PlainEntity')
+    }
+
+    void "postInstantiate fails when the entity has no default constructor, naming the entity"() {
+        given:
         def factory = new ByteBuddyGroovyProxyFactory(helper)
 
         when:
-        factory.postInstantiate("PlainEntity", Object, [] as Set, null, null, null)
+        factory.postInstantiate('GroovyProxyNoDefaultConstructorEntity', GroovyProxyNoDefaultConstructorEntity, [HibernateProxy] as Set, null, null, null)
 
         then:
-        proxyClassOf(factory) == Object
+        HibernateException e = thrown()
+        e.message.contains('GroovyProxyNoDefaultConstructorEntity')
     }
 
-    void "getProxy wraps instantiation failure in HibernateException"() {
-        given: "a factory where proxyClass cannot be cast to HibernateProxy"
-        def helper = Mock(ByteBuddyProxyHelper) {
-            buildProxy(_, _ as Class[]) >> FakeHibernateProxy
-        }
+    void "getProxy returns a proxy with the Groovy interceptor installed"() {
+        given:
         def factory = new ByteBuddyGroovyProxyFactory(helper)
-        factory.postInstantiate("FakeEntity", FakeEntity, [] as Set, null, null, null)
-        def session = Mock(SharedSessionContractImplementor)
+        factory.postInstantiate(GroovyProxyFactoryEntity.name, GroovyProxyFactoryEntity, [HibernateProxy] as Set,
+                GroovyProxyFactoryEntity.getMethod('getId'), GroovyProxyFactoryEntity.getMethod('setId', Long), null)
+        def session = datastore.sessionFactory.openSession() as SharedSessionContractImplementor
 
-        when: "getProxy is called - FakeHibernateProxy cannot be cast to HibernateProxy"
-        factory.getProxy(1L, session)
+        when:
+        HibernateProxy proxy = factory.getProxy(1L, session)
 
         then:
-        def e = thrown(HibernateException)
-        e.message.contains("FakeEntity")
+        proxy instanceof GroovyProxyFactoryEntity
+        proxy.getClass().interfaces.contains(HibernateProxy)
+        lazyInitializerOf(proxy) instanceof ByteBuddyGroovyInterceptor
+        lazyInitializerOf(proxy).identifier == 1L
+        lazyInitializerOf(proxy).entityName == GroovyProxyFactoryEntity.name
+
+        cleanup:
+        session?.close()
+    }
+
+    void "getProxy wraps a failure in HibernateException"() {
+        given: 'a factory that was never set up, so it has no proxy class to instantiate'
+        def factory = new ByteBuddyGroovyProxyFactory(helper)
+
+        when:
+        factory.getProxy(1L, Mock(SharedSessionContractImplementor))
+
+        then:
+        thrown(HibernateException)
+    }
+
+    @CompileStatic
+    private static LazyInitializer lazyInitializerOf(HibernateProxy proxy) {
+        proxy.getHibernateLazyInitializer()
     }
 
     private static Class<?> proxyClassOf(ByteBuddyGroovyProxyFactory factory) {
-        def field = ByteBuddyGroovyProxyFactory.getDeclaredField("proxyClass")
+        def field = ByteBuddyGroovyProxyFactory.getDeclaredField('proxyClass')
         field.accessible = true
         field.get(factory) as Class<?>
+    }
+}
+
+@Entity
+class GroovyProxyFactoryEntity {
+    Long id
+}
+
+class GroovyProxyNoDefaultConstructorEntity {
+    Long id
+
+    GroovyProxyNoDefaultConstructorEntity(Long id) {
+        this.id = id
     }
 }

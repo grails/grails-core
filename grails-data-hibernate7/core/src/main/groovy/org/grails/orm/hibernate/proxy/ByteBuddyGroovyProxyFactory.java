@@ -19,33 +19,26 @@
 package org.grails.orm.hibernate.proxy;
 
 import java.io.Serial;
-import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
-import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
-import net.bytebuddy.implementation.MethodDelegation;
 import org.hibernate.HibernateException;
+import org.hibernate.bytecode.internal.bytebuddy.ByteBuddyState;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.ProxyConfiguration;
 import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyFactory;
 import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyHelper;
 import org.hibernate.type.CompositeType;
 
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_CLASS_ARRAY;
 
 /**
  * A ProxyFactory implementation for ByteBuddy that uses {@link ByteBuddyGroovyInterceptor}.
- * The proxy class is wrapped in a subclass that answers {@code getMetaClass()} through
- * {@link GroovyProxyMetaClassDispatcher} while the interceptor has not been assigned yet.
+ * The proxy class comes from {@link GroovyProxyClassBuilder}, and is generated and checked once, in
+ * {@link #postInstantiate}, so {@link #getProxy} has nothing left to fail on but the instantiation itself.
  *
  * @since 8.0
  */
@@ -54,7 +47,7 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final transient ByteBuddyProxyHelper byteBuddyProxyHelper;
+    private final transient GroovyProxyClassBuilder proxyClassBuilder;
     private Class<?> persistentClass;
     private String entityName;
     private Class<?>[] interfaces;
@@ -63,6 +56,7 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
     private transient CompositeType componentIdType;
     private boolean overridesEquals;
     private Class<?> proxyClass;
+    private transient Constructor<?> proxyConstructor;
     private final boolean lazyToString;
 
     public ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper) {
@@ -70,8 +64,16 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
     }
 
     public ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, boolean lazyToString) {
+        this(byteBuddyProxyHelper, new ByteBuddyState(), lazyToString);
+    }
+
+    /**
+     * @param byteBuddyState the state the proxy classes are loaded through, so the Groovy wrapper is cached and
+     * tracked with the proxy class {@code byteBuddyProxyHelper} builds
+     */
+    public ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, ByteBuddyState byteBuddyState, boolean lazyToString) {
         super(byteBuddyProxyHelper);
-        this.byteBuddyProxyHelper = byteBuddyProxyHelper;
+        this.proxyClassBuilder = new GroovyProxyClassBuilder(byteBuddyProxyHelper, byteBuddyState);
         this.lazyToString = lazyToString;
     }
 
@@ -92,40 +94,21 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
         this.componentIdType = componentIdType;
         this.overridesEquals = ReflectHelper.overridesEquals(persistentClass);
 
-        // Build the proxy class using the helper
-        this.proxyClass = buildProxyClass(persistentClass, this.interfaces);
+        this.proxyClass = proxyClassBuilder.build(entityName, persistentClass, this.interfaces);
+        this.proxyConstructor = resolveConstructor(entityName, proxyClass);
 
         // DO NOT call super.postInstantiate(entityName, ...)
         // because it will try to initialize the standard Hibernate ProxyFactory fields
         // which might conflict with your custom getProxy() logic.
     }
 
-    private Class<?> buildProxyClass(Class<?> persistentClass, Class<?>[] interfaces) {
-        final Class<?> hibernateProxyClass = byteBuddyProxyHelper.buildProxy(persistentClass, interfaces);
-        if (!GroovyObject.class.isAssignableFrom(persistentClass)) {
-            return hibernateProxyClass;
-        }
-
+    private static Constructor<?> resolveConstructor(String entityName, Class<?> proxyClass) {
         try {
-            return new ByteBuddy()
-                    .subclass(hibernateProxyClass, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
-                    .method(named("getMetaClass").and(returns(MetaClass.class)))
-                            .intercept(MethodDelegation.to(new GroovyProxyMetaClassDispatcher(persistentClass)))
-                    .make()
-                    .load(hibernateProxyClass.getClassLoader(), resolveClassLoadingStrategy(persistentClass))
-                    .getLoaded();
+            return proxyClass.getDeclaredConstructor();
         }
-        catch (Exception e) {
-            throw new HibernateException("Unable to generate Groovy proxy for " + entityName, e);
-        }
-    }
-
-    private static ClassLoadingStrategy<ClassLoader> resolveClassLoadingStrategy(Class<?> originalClass) {
-        try {
-            return ClassLoadingStrategy.UsingLookup.of(MethodHandles.privateLookupIn(originalClass, MethodHandles.lookup()));
-        }
-        catch (IllegalAccessException e) {
-            throw new HibernateException("Unable to access class " + originalClass.getName(), e);
+        catch (NoSuchMethodException e) {
+            throw new HibernateException("Unable to generate proxy for " + entityName +
+                    ": the entity needs a default constructor", e);
         }
     }
 
@@ -144,16 +127,8 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
                     overridesEquals,
                     lazyToString);
 
-            // 1. Create the instance
-            final HibernateProxy hibernateProxy =
-                    (HibernateProxy) proxyClass.getDeclaredConstructor().newInstance();
-
-            // 2. Cast to ProxyConfiguration to set the custom interceptor
-            // Hibernate 7 proxies implement ProxyConfiguration
-            if (hibernateProxy instanceof org.hibernate.proxy.ProxyConfiguration instance) {
-                instance.$$_hibernate_set_interceptor(interceptor);
-            }
-
+            final HibernateProxy hibernateProxy = (HibernateProxy) proxyConstructor.newInstance();
+            ((ProxyConfiguration) hibernateProxy).$$_hibernate_set_interceptor(interceptor);
             return hibernateProxy;
         } catch (Exception e) {
             throw new HibernateException("Unable to generate proxy for " + entityName, e);

@@ -33,6 +33,12 @@ class GrailsBytecodeProviderSpec extends Specification {
         provider.proxyHelper != null
     }
 
+    def "exposes the ByteBuddyState its proxy helper loads proxy classes through"() {
+        expect:
+        provider.byteBuddyState != null
+        provider.byteBuddyState.is(provider.byteBuddyState)
+    }
+
     def "getProxyFactoryFactory returns GrailsProxyFactoryFactory"() {
         expect:
         provider.getProxyFactoryFactory() instanceof GrailsProxyFactoryFactory
