@@ -28,7 +28,7 @@ import spock.lang.TempDir
 
 /**
  * Runs {@code validateDependencyVersions} on a library whose direct dependency upgrades a version
- * its {@code grails-bom} manages.
+ * its {@code grails-bom} manages, and on one whose dependency requests a version range.
  */
 class ValidateDependencyVersionsTaskSpec extends Specification {
 
@@ -48,6 +48,53 @@ class ValidateDependencyVersionsTaskSpec extends Specification {
 </project>
 """
         }
+        // lib-b requires lib-a as a range, the shape ehcache gives jaxb-runtime
+        File rangePom = testProjectDir.resolve('repo/test/lib-b/1.0/lib-b-1.0.pom').toFile()
+        rangePom.parentFile.mkdirs()
+        rangePom.text = """<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>test</groupId>
+    <artifactId>lib-b</artifactId>
+    <version>1.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>test</groupId>
+            <artifactId>lib-a</artifactId>
+            <version>[1,2)</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+</project>
+"""
+        // lib-c constrains lib-a to a range through Gradle module metadata, the shape hibernate-core
+        // gives log4j-core; the POM marker makes Gradle read the .module file
+        write('repo/test/lib-c/1.0/lib-c-1.0.pom', """<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <!-- do_not_remove: published-with-gradle-metadata -->
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>test</groupId>
+    <artifactId>lib-c</artifactId>
+    <version>1.0</version>
+</project>
+""")
+        write('repo/test/lib-c/1.0/lib-c-1.0.module', """{
+  "formatVersion": "1.1",
+  "component": { "group": "test", "module": "lib-c", "version": "1.0" },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": { "org.gradle.category": "library", "org.gradle.libraryelements": "jar", "org.gradle.usage": "java-api" },
+      "dependencyConstraints": [ { "group": "test", "module": "lib-a", "version": { "strictly": "[1,2)", "requires": "[1,2)" } } ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": { "org.gradle.category": "library", "org.gradle.libraryelements": "jar", "org.gradle.usage": "java-runtime" },
+      "dependencyConstraints": [ { "group": "test", "module": "lib-a", "version": { "strictly": "[1,2)", "requires": "[1,2)" } } ]
+    }
+  ]
+}
+""")
         testProjectDir.resolve('settings.gradle').toFile().text = """
 rootProject.name = 'root'
 include 'grails-bom', 'lib'
@@ -75,6 +122,76 @@ dependencies {
         then:
         result.output.contains("Dependency version validation failed for project 'lib'")
         result.output.contains('test:lib-a - resolved 1.1, expected 1.0')
+    }
+
+    def "fails when a transitive dependency is requested with a dynamic version"() {
+        given: "a dependency whose own dependency is a range, although the BOM decides the version"
+        writeLibrary('', "implementation 'test:lib-b:1.0'")
+
+        when:
+        BuildResult result = runner([]).buildAndFail()
+
+        then:
+        result.output.contains("Dependency version validation failed for project 'lib'")
+        result.output.contains('requested with a dynamic version')
+        result.output.contains('test:lib-b:1.0 -> test:lib-a:[1,2)')
+    }
+
+    def "fails when the build script itself requests a dynamic version"() {
+        given:
+        writeLibrary('', "implementation 'test:lib-a:1.+'")
+
+        when:
+        BuildResult result = runner([]).buildAndFail()
+
+        then:
+        result.output.contains("project ':lib'${BomDependencyGraph.BUILD_SCRIPT_MARKER} -> test:lib-a:1.+")
+        result.output.contains('pin the version in that build script')
+    }
+
+    def "fails when a transitive dependency constraint requests a dynamic version"() {
+        given: "a module whose published constraint on lib-a is a range, which no exclusion can remove"
+        writeLibrary('', """
+    implementation 'test:lib-c:1.0'
+    implementation 'test:lib-a'
+""")
+
+        when:
+        BuildResult result = runner([]).buildAndFail()
+
+        then:
+        result.output.contains("test:lib-c:1.0${BomDependencyGraph.CONSTRAINT_MARKER} -> test:lib-a:[1,2)")
+        result.output.contains('component metadata rule')
+    }
+
+    def "allowedDynamicVersions tolerates a listed request"() {
+        given: "the range also wins the version, which the override exemption covers"
+        writeLibrary("""
+ext.allowedDynamicVersions = ['test:lib-a']
+ext.allowedBomOverrides = ['test:lib-a']
+""", "implementation 'test:lib-b:1.0'")
+
+        when:
+        BuildResult result = runner([]).build()
+
+        then:
+        result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
+    }
+
+    def "passes when the dynamic dependency is excluded and the BOM-managed version declared in its place"() {
+        given:
+        writeLibrary('', """
+    implementation 'test:lib-b:1.0', {
+        exclude group: 'test', module: 'lib-a'
+    }
+    runtimeOnly 'test:lib-a'
+""")
+
+        when:
+        BuildResult result = runner([]).build()
+
+        then:
+        result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
     }
 
     def "skipDependencyValidation opts the project out: #optOut"() {
@@ -115,7 +232,7 @@ dependencies {
                 .withPluginClasspath()
     }
 
-    private void writeLibrary(String extra = '') {
+    private void writeLibrary(String extra = '', String dependencies = "implementation 'test:lib-a:1.1'") {
         write('lib/build.gradle', """
 plugins {
     id 'java'
@@ -128,7 +245,7 @@ repositories {
 
 dependencies {
     implementation platform(project(':grails-bom'))
-    implementation 'test:lib-a:1.1'
+    ${dependencies}
 }
 
 ${extra}

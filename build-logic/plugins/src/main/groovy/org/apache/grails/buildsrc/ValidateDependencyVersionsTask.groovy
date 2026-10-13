@@ -62,11 +62,41 @@ abstract class ValidateDependencyVersionsTask extends DefaultTask {
     @Input
     abstract SetProperty<String> getAllowedOverrides()
 
+    /**
+     * {@code "group:name:version"} of every request made with a dynamic version to the declarers of
+     * that request; see {@link BomDependencyGraph#dynamicVersionRequests}.
+     */
+    @Input
+    abstract MapProperty<String, String> getDynamicVersionRequests()
+
+    /** {@code "group:name"} keys whose dynamic version requests are tolerated. */
+    @Input
+    abstract SetProperty<String> getAllowedDynamicVersions()
+
     @TaskAction
     void validate() {
         String bom = bomPath.get()
         if (!bom) {
             return
+        }
+
+        Set<String> allowedDynamic = allowedDynamicVersions.get()
+        Map<String, String> dynamic = dynamicVersionRequests.get().findAll { String request, String declarers ->
+            !allowedDynamic.any { String allowed -> request.startsWith(allowed + ':') }
+        }
+        if (!dynamic.isEmpty()) {
+            List<String> lines = dynamic.collect { String request, String declarers -> "  ${declarers} -> ${request}" as String }
+            throw new GradleException(
+                    "Dependency version validation failed for project '${projectName.get()}'.\n" +
+                            'The following dependencies are requested with a dynamic version (a range, a prefix such as 1.+, or latest.*):\n\n' +
+                            lines.join('\n') + '\n\n' +
+                            'A dynamic version makes every resolution list the versions available in the repository once the listing cache expires,\n' +
+                            'so the build depends on the repository answering even when every artifact is cached, and the selected version moves over time.\n' +
+                            'To fix a request' + BomDependencyGraph.BUILD_SCRIPT_MARKER + ', pin the version in that build script or use the BOM-managed coordinate.\n' +
+                            'To fix a request made by a published module, exclude the module from that dependency and declare the BOM-managed coordinate next to it.\n' +
+                            'An exclusion does not remove a request' + BomDependencyGraph.CONSTRAINT_MARKER + ': rewrite it with a component metadata rule\n' +
+                            '(components.withModule(...) { allVariants { withDependencyConstraints { ... } } }).\n' +
+                            "For a dynamic version that must stay, add its 'group:name' to project.ext.${GrailsDependencyValidatorPlugin.ALLOWED_DYNAMIC_VERSIONS_EXT} with the reason.")
         }
 
         Map<String, String> managed = bomVersions.get()
