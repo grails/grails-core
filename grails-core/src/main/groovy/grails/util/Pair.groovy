@@ -20,12 +20,13 @@
 package grails.util
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 @CompileStatic
 class Pair<A, B> {
 
-    final A aValue
-    final B bValue
+    @PackageScope final A aValue
+    @PackageScope final B bValue
 
     Pair(A aValue, B bValue) {
         this.aValue = aValue
