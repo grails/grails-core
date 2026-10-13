@@ -17,6 +17,7 @@
 package org.grails.plugins
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
@@ -476,6 +477,7 @@ abstract class AbstractGrailsPluginManager implements GrailsPluginManager {
         informOfClassChange(file, cls)
     }
 
+    @PackageScope
     static ConfigSlurper getConfigSlurper(GrailsApplication application) {
         String environment = Environment.getCurrent().getName()
         ConfigSlurper configSlurper = new ConfigSlurper(environment)

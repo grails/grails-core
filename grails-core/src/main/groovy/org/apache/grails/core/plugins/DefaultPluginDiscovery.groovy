@@ -19,6 +19,7 @@
 package org.apache.grails.core.plugins
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.runtime.IOGroovyMethods
 import org.slf4j.Logger
@@ -267,6 +268,7 @@ class DefaultPluginDiscovery implements PluginDiscovery {
      * @param environment the environment used to resolve a filter when necessary
      * @return the filtered plugins in their original encounter order
      */
+    @PackageScope
     List<PluginInfo> filterPlugins(List<PluginInfo> plugins, Environment environment) {
         if (pluginFilter == null) {
             pluginFilter = filterRetriever.getPluginFilter(environment)
@@ -292,6 +294,7 @@ class DefaultPluginDiscovery implements PluginDiscovery {
      *
      * @param environment the environment used to determine plugin filtering and load order
      */
+    @PackageScope
     void populatePlugins(Environment environment) {
         var classLoader = resolveClassLoader()
         List<PluginInfo> classpathPlugins

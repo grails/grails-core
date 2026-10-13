@@ -68,7 +68,7 @@ class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformatio
         AnnotationNode node = (AnnotationNode) astNodes[0]
 
         if (!(node instanceof AnnotationNode) || !(parent instanceof AnnotatedNode)) {
-            throw new RuntimeException('Internal error: wrong types: \$node.class / \$parent.class')
+            throw new RuntimeException("Internal error: wrong types: ${node.getClass()} / ${parent.getClass()}")
         }
 
         if (!isArtefactAnnotationNode(node) || !(parent instanceof ClassNode)) {

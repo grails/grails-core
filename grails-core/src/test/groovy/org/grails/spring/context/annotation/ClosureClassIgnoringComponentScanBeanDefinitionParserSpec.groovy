@@ -18,86 +18,112 @@
  */
 package org.grails.spring.context.annotation
 
-import java.lang.reflect.Field
+import java.nio.charset.StandardCharsets
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
-import org.springframework.beans.factory.xml.XmlReaderContext
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.core.type.filter.TypeFilter
+import org.springframework.core.type.filter.AssignableTypeFilter
 import spock.lang.Specification
 
 import grails.plugins.GrailsPluginManager
+import org.grails.spring.context.annotation.fixture.ScanFixtureNestedHolder
+import org.grails.spring.context.annotation.fixture.ScanFixtureUnannotated
 
 /**
- * {@link #configureScanner} and its resource-pattern $-exclusion logic are exercised
- * end-to-end, using real Spring collaborators, via {@link GrailsComponentScanPostProcessorSpec},
- * whose {@code resourcePatternResolver()} builds the identical anonymous {@code AntPathMatcher}.
- * Real {@code ParserContext}/{@code Element} XML-parsing collaborators are heavy to construct
- * here without also driving a full namespace-handler parse, so this spec focuses on
- * {@link #createScanner}, the plugin-manager type-filter wiring specific to this class.
+ * Exercises the parser the way an application does: through a {@code <grails:component-scan>}
+ * element parsed by {@link XmlBeanDefinitionReader}, which resolves the Grails namespace via
+ * {@code META-INF/spring.handlers} to {@link GrailsContextNamespaceHandler} and from there to this parser.
  */
 class ClosureClassIgnoringComponentScanBeanDefinitionParserSpec extends Specification {
 
-    ClosureClassIgnoringComponentScanBeanDefinitionParser parser = new ClosureClassIgnoringComponentScanBeanDefinitionParser()
+    static final String FIXTURE_PACKAGE = 'org.grails.spring.context.annotation.fixture'
 
-    private static XmlReaderContext readerContextFor(DefaultListableBeanFactory registry) {
-        new XmlBeanDefinitionReader(registry).createReaderContext(new ByteArrayResource(new byte[0]))
+    static DefaultListableBeanFactory scanWith(DefaultListableBeanFactory registry) {
+        String xml = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:grails="http://grails.org/schema/context">
+    <grails:component-scan base-package="${FIXTURE_PACKAGE}"/>
+</beans>
+"""
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(registry)
+        // the Grails schema is not on the classpath, so parse namespace-aware without XSD validation
+        reader.validating = false
+        reader.namespaceAware = true
+        reader.loadBeanDefinitions(new ByteArrayResource(xml.getBytes(StandardCharsets.UTF_8)))
+        registry
     }
 
-    private static List<TypeFilter> includeFiltersOf(ClassPathBeanDefinitionScanner scanner) {
-        Field field = ClassPathScanningCandidateComponentProvider.getDeclaredField('includeFilters')
-        field.accessible = true
-        (List<TypeFilter>) field.get(scanner)
-    }
-
-    void 'createScanner adds no include filters when there is no plugin manager to source them from'() {
-        given:
-        XmlReaderContext readerContext = readerContextFor(new DefaultListableBeanFactory())
-        int defaultFilterCount = includeFiltersOf(parser.createScanner(readerContext, false)).size()
-
-        when:
-        ClassPathBeanDefinitionScanner scanner = parser.createScanner(readerContext, false)
-
-        then: 'no plugin-manager filters are contributed beyond whatever the default scanner already carries'
-        includeFiltersOf(scanner).size() == defaultFilterCount
-    }
-
-    void 'createScanner adds every type filter the plugin manager contributes'() {
-        given:
-        TypeFilter first = Stub(TypeFilter)
-        TypeFilter second = Stub(TypeFilter)
-        GrailsPluginManager pluginManager = Stub(GrailsPluginManager) {
-            getTypeFilters() >> [first, second]
-        }
-        int defaultFilterCount = includeFiltersOf(parser.createScanner(readerContextFor(new DefaultListableBeanFactory()), false)).size()
-
+    static DefaultListableBeanFactory registryWithPluginManager(GrailsPluginManager pluginManager) {
         DefaultListableBeanFactory parent = new DefaultListableBeanFactory()
         parent.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
-        DefaultListableBeanFactory registry = new DefaultListableBeanFactory(parent)
-
-        when:
-        ClassPathBeanDefinitionScanner scanner = parser.createScanner(readerContextFor(registry), false)
-        List<TypeFilter> includeFilters = includeFiltersOf(scanner)
-
-        then:
-        includeFilters.size() == defaultFilterCount + 2
-        includeFilters.containsAll([first, second])
+        new DefaultListableBeanFactory(parent)
     }
 
-    void 'createScanner ignores a bean factory hierarchy with no plugin manager registered'() {
-        given:
-        DefaultListableBeanFactory parent = new DefaultListableBeanFactory()
-        DefaultListableBeanFactory registry = new DefaultListableBeanFactory(parent)
-        int defaultFilterCount = includeFiltersOf(parser.createScanner(readerContextFor(registry), false)).size()
+    static boolean registersClass(DefaultListableBeanFactory registry, Class<?> type) {
+        registry.beanDefinitionNames.any { registry.getBeanDefinition(it).beanClassName == type.name }
+    }
 
+    void 'the grails component-scan element registers stereotyped components like Spring does'() {
         when:
-        ClassPathBeanDefinitionScanner scanner = parser.createScanner(readerContextFor(registry), false)
+        DefaultListableBeanFactory registry = scanWith(new DefaultListableBeanFactory())
 
         then:
-        includeFiltersOf(scanner).size() == defaultFilterCount
+        registry.containsBeanDefinition('scanFixtureComponent')
+        !registersClass(registry, ScanFixtureUnannotated)
+    }
+
+    void 'class files whose name contains a dollar sign are skipped even when Spring would register them'() {
+        given: 'a control: the stock Spring scanner does register the static nested component'
+        DefaultListableBeanFactory plainSpring = new DefaultListableBeanFactory()
+        new ClassPathBeanDefinitionScanner(plainSpring).scan(FIXTURE_PACKAGE)
+
+        when:
+        DefaultListableBeanFactory registry = scanWith(new DefaultListableBeanFactory())
+
+        then:
+        registersClass(plainSpring, ScanFixtureNestedHolder.Nested)
+        !registersClass(registry, ScanFixtureNestedHolder.Nested)
+        registry.containsBeanDefinition('scanFixtureComponent')
+    }
+
+    void 'type filters contributed by the plugin manager in the parent bean factory widen the scan'() {
+        given:
+        GrailsPluginManager pluginManager = Stub(GrailsPluginManager) {
+            getTypeFilters() >> [new AssignableTypeFilter(ScanFixtureUnannotated)]
+        }
+
+        when:
+        DefaultListableBeanFactory registry = scanWith(registryWithPluginManager(pluginManager))
+
+        then:
+        registry.containsBeanDefinition('scanFixtureUnannotated')
+        registry.containsBeanDefinition('scanFixtureComponent')
+    }
+
+    void 'a plugin manager without type filters leaves the scan unchanged'() {
+        given:
+        GrailsPluginManager pluginManager = Stub(GrailsPluginManager) {
+            getTypeFilters() >> []
+        }
+
+        when:
+        DefaultListableBeanFactory registry = scanWith(registryWithPluginManager(pluginManager))
+
+        then:
+        registry.containsBeanDefinition('scanFixtureComponent')
+        !registersClass(registry, ScanFixtureUnannotated)
+    }
+
+    void 'a bean factory hierarchy with no plugin manager registered is ignored'() {
+        when:
+        DefaultListableBeanFactory registry = scanWith(new DefaultListableBeanFactory(new DefaultListableBeanFactory()))
+
+        then:
+        registry.containsBeanDefinition('scanFixtureComponent')
+        !registersClass(registry, ScanFixtureUnannotated)
     }
 
 }
