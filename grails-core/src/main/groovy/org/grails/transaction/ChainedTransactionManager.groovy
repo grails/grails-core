@@ -19,6 +19,7 @@
 package org.grails.transaction
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.transaction.CannotCreateTransactionException
@@ -73,6 +74,7 @@ class ChainedTransactionManager implements PlatformTransactionManager {
      * @param synchronizationManager must not be {@literal null}.
      * @param transactionManagers must not be {@literal null} or empty.
      */
+    @PackageScope
     ChainedTransactionManager(SynchronizationManager synchronizationManager,
             PlatformTransactionManager... transactionManagers) {
 

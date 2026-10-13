@@ -62,4 +62,38 @@ class HolderSpec extends Specification {
         holder.get(true) == 'hello'
     }
 
+    void 'a secondary lookup is consulted before the singleton'() {
+        given:
+        Holder<String> holder = new Holder<String>('secondary') {
+            @Override
+            protected String lookupSecondary() {
+                'from-secondary'
+            }
+        }
+        holder.set('stored')
+
+        expect:
+        holder.get() == 'stored'
+
+        when:
+        holder.set(null)
+
+        then:
+        holder.get() == 'from-secondary'
+        holder.get(true) == 'from-secondary'
+    }
+
+    void 'values are keyed by the current class loader of the holder'() {
+        given:
+        Holder<String> first = new Holder<>('first')
+        Holder<String> second = new Holder<>('second')
+
+        when:
+        first.set('one')
+
+        then:
+        first.get() == 'one'
+        second.get() == null
+    }
+
 }
