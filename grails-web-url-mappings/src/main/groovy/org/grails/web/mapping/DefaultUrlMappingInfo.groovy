@@ -246,17 +246,17 @@ class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
         DefaultUrlMappingInfo that = (DefaultUrlMappingInfo) o
 
-        if (actionName != null ? !actionName.equals(that.actionName) : that.actionName != null) return false
-        if (controllerName != null ? !controllerName.equals(that.controllerName) : that.controllerName != null)
+        if (actionName != null ? !actionName.equals(that.@actionName) : that.@actionName != null) return false
+        if (controllerName != null ? !controllerName.equals(that.@controllerName) : that.@controllerName != null)
             return false
-        if (httpMethod != null ? !httpMethod.equals(that.httpMethod) : that.httpMethod != null) return false
-        if (id != null ? !id.equals(that.id) : that.id != null) return false
-        if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false
-        if (pluginName != null ? !pluginName.equals(that.pluginName) : that.pluginName != null) return false
-        if (redirectInfo != null ? !redirectInfo.equals(that.redirectInfo) : that.redirectInfo != null) return false
-        if (uri != null ? !uri.equals(that.uri) : that.uri != null) return false
-        if (version != null ? !version.equals(that.version) : that.version != null) return false
-        if (viewName != null ? !viewName.equals(that.viewName) : that.viewName != null) return false
+        if (httpMethod != null ? !httpMethod.equals(that.@httpMethod) : that.@httpMethod != null) return false
+        if (id != null ? !id.equals(that.@id) : that.@id != null) return false
+        if (namespace != null ? !namespace.equals(that.@namespace) : that.@namespace != null) return false
+        if (pluginName != null ? !pluginName.equals(that.@pluginName) : that.@pluginName != null) return false
+        if (redirectInfo != null ? !redirectInfo.equals(that.@redirectInfo) : that.@redirectInfo != null) return false
+        if (uri != null ? !uri.equals(that.@uri) : that.@uri != null) return false
+        if (version != null ? !version.equals(that.@version) : that.@version != null) return false
+        if (viewName != null ? !viewName.equals(that.@viewName) : that.@viewName != null) return false
 
         return true
     }
