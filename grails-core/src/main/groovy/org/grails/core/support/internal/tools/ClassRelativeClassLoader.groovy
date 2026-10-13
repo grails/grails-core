@@ -20,6 +20,7 @@
 package org.grails.core.support.internal.tools
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.springframework.core.io.FileSystemResource
 
 import grails.io.IOUtils
@@ -34,6 +35,7 @@ import grails.util.BuildSettings
  * @since 3.1.13
  */
 @CompileStatic
+@PackageScope
 class ClassRelativeClassLoader extends URLClassLoader {
 
     ClassRelativeClassLoader(Class targetClass) {

@@ -19,6 +19,8 @@
 
 package org.grails.transaction
 
+import groovy.transform.PackageScope
+
 /**
  * Strategy interface to allow providing a dedicated synchronization mechanism.
  *
@@ -27,6 +29,7 @@ package org.grails.transaction
  * @see SpringTransactionSynchronizationManager
  * @since 2.3.6
  */
+@PackageScope
 interface SynchronizationManager {
 
     void initSynchronization()

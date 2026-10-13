@@ -18,28 +18,80 @@
  */
 package org.grails.spring.context.annotation
 
-import java.lang.reflect.Field
+import java.nio.charset.StandardCharsets
 
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport
+import javax.xml.parsers.DocumentBuilderFactory
+
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
+import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate
+import org.springframework.beans.factory.xml.DefaultNamespaceHandlerResolver
+import org.springframework.beans.factory.xml.NamespaceHandler
+import org.springframework.beans.factory.xml.ParserContext
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
+import org.springframework.beans.factory.xml.XmlReaderContext
+import org.springframework.core.io.ByteArrayResource
+import org.w3c.dom.Element
 import spock.lang.Specification
 
 class GrailsContextNamespaceHandlerSpec extends Specification {
 
-    void 'init registers a component-scan parser that ignores Groovy closure classes'() {
-        given:
-        GrailsContextNamespaceHandler handler = new GrailsContextNamespaceHandler()
+    static final String GRAILS_CONTEXT_NAMESPACE = 'http://grails.org/schema/context'
 
+    void 'META-INF/spring.handlers maps the Grails context namespace to this handler'() {
         when:
-        handler.init()
+        NamespaceHandler handler = new DefaultNamespaceHandlerResolver(GrailsContextNamespaceHandler.classLoader)
+                .resolve(GRAILS_CONTEXT_NAMESPACE)
 
         then:
-        registeredParsers(handler)['component-scan'] instanceof ClosureClassIgnoringComponentScanBeanDefinitionParser
+        handler instanceof GrailsContextNamespaceHandler
     }
 
-    private static Map registeredParsers(NamespaceHandlerSupport handler) {
-        Field field = NamespaceHandlerSupport.getDeclaredField('parsers')
-        field.accessible = true
-        (Map) field.get(handler)
+    void 'an initialised handler parses component-scan with the closure-ignoring parser'() {
+        given:
+        GrailsContextNamespaceHandler handler = new GrailsContextNamespaceHandler()
+        handler.init()
+
+        DefaultListableBeanFactory registry = new DefaultListableBeanFactory()
+        ByteArrayResource resource = new ByteArrayResource(new byte[0])
+        XmlReaderContext readerContext = new XmlBeanDefinitionReader(registry).createReaderContext(resource)
+        ParserContext parserContext = new ParserContext(readerContext, new BeanDefinitionParserDelegate(readerContext))
+
+        when:
+        handler.parse(componentScanElement('org.grails.spring.context.annotation.fixture'), parserContext)
+
+        then: 'the fixture component is registered'
+        registry.containsBeanDefinition('scanFixtureComponent')
+
+        and: 'the Grails-specific exclusion applies, so the parser was the closure-ignoring one, not Spring\'s'
+        !registry.beanDefinitionNames.any { registry.getBeanDefinition(it).beanClassName?.contains('\$') }
+    }
+
+    void 'an element the handler does not know is rejected'() {
+        given:
+        GrailsContextNamespaceHandler handler = new GrailsContextNamespaceHandler()
+        handler.init()
+
+        DefaultListableBeanFactory registry = new DefaultListableBeanFactory()
+        XmlReaderContext readerContext = new XmlBeanDefinitionReader(registry).createReaderContext(new ByteArrayResource(new byte[0]))
+        ParserContext parserContext = new ParserContext(readerContext, new BeanDefinitionParserDelegate(readerContext))
+
+        when:
+        handler.parse(element('<grails:unknown xmlns:grails="' + GRAILS_CONTEXT_NAMESPACE + '"/>'), parserContext)
+
+        then:
+        thrown(Exception)
+    }
+
+    private static Element componentScanElement(String basePackage) {
+        element('<grails:component-scan xmlns:grails="' + GRAILS_CONTEXT_NAMESPACE + '" base-package="' + basePackage + '"/>')
+    }
+
+    private static Element element(String xml) {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance()
+        factory.namespaceAware = true
+        factory.newDocumentBuilder()
+                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))
+                .documentElement
     }
 
 }
