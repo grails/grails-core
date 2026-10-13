@@ -113,4 +113,49 @@ class FileSystemResourceSpec extends Specification {
         relative.getFilename() == 'bar.txt'
     }
 
+    void 'readable is true for a file and false for a directory or a missing file'() {
+        given:
+        File file = File.createTempFile('fsr', '.txt')
+        file.deleteOnExit()
+
+        expect:
+        new FileSystemResource(file).readable
+        !new FileSystemResource(file.parentFile).readable
+        !new FileSystemResource(new File(file.parentFile, 'does-not-exist-' + System.nanoTime())).readable
+    }
+
+    void 'the resource exposes the underlying file as a URL, URI and File'() {
+        given:
+        File file = File.createTempFile('fsr', '.txt')
+        file.deleteOnExit()
+        file.text = 'abcd'
+        FileSystemResource resource = new FileSystemResource(file)
+
+        expect:
+        resource.URL == file.toURI().toURL()
+        resource.URI == file.toURI()
+        resource.file == file
+        resource.contentLength() == 4
+        resource.lastModified() == file.lastModified()
+        resource.description == "file [${file.absolutePath}]".toString()
+        resource.toString() == file.toString()
+        resource.hashCode() == new FileSystemResource(file).hashCode()
+        resource.path == GrailsResourceUtils.cleanPath(file.path)
+    }
+
+    void 'writable and output stream operate on the underlying file'() {
+        given:
+        File file = File.createTempFile('fsr', '.txt')
+        file.deleteOnExit()
+        FileSystemResource resource = new FileSystemResource(file)
+
+        when:
+        resource.outputStream.withCloseable { it.write('written'.bytes) }
+
+        then:
+        resource.writable
+        !new FileSystemResource(file.parentFile).writable
+        file.text == 'written'
+    }
+
 }

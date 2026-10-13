@@ -214,7 +214,7 @@ class DefaultGrailsApplication extends AbstractGrailsApplication implements Bean
      * @since 8.0
      */
     void setApplicationClass(GrailsApplicationClass applicationClass) {
-        if (this.applicationClass != null && this.applicationClass != applicationClass) {
+        if (this.applicationClass != null && !this.applicationClass.is(applicationClass)) {
             throw new IllegalStateException('The application class has already been set and cannot be changed')
         }
         this.applicationClass = applicationClass

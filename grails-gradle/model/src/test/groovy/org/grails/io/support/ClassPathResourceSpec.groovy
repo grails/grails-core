@@ -102,4 +102,70 @@ class ClassPathResourceSpec extends Specification {
         ((ClassPathResource) relative).getPath() == 'org/grails/bar.txt'
     }
 
+    void 'a resource relative to a class resolves against the class package'() {
+        given:
+        ClassPathResource resource = new ClassPathResource('ClassPathResourceSpec.class', ClassPathResourceSpec)
+
+        expect:
+        resource.exists()
+        resource.path == 'ClassPathResourceSpec.class'
+        resource.classLoader.is(ClassPathResourceSpec.classLoader)
+        resource.description == 'class path resource [org/grails/io/support/ClassPathResourceSpec.class]'
+        resource.inputStream.withCloseable { it.read() } != -1
+        resource.URL.toString().endsWith('org/grails/io/support/ClassPathResourceSpec.class')
+        resource.createRelative('UrlResourceSpec.class').exists()
+    }
+
+    void 'a missing resource cannot be resolved to a URL'() {
+        when:
+        new ClassPathResource('missing.txt', ClassPathResourceSpec).URL
+
+        then:
+        FileNotFoundException e = thrown()
+        e.message.contains('cannot be resolved to URL because it does not exist')
+    }
+
+    void 'a class relative missing resource does not exist and cannot be opened'() {
+        given:
+        ClassPathResource resource = new ClassPathResource('missing.txt', ClassPathResourceSpec)
+
+        expect:
+        !resource.exists()
+
+        when:
+        resource.inputStream
+
+        then:
+        thrown(FileNotFoundException)
+    }
+
+    void 'a class path file resolves to a File and URI'() {
+        given:
+        ClassPathResource resource = new ClassPathResource('org/grails/io/support/ClassPathResourceSpec.class')
+
+        expect:
+        resource.file.exists()
+        resource.URI == resource.file.toURI()
+        resource.contentLength() == resource.file.length()
+        resource.lastModified() == resource.file.lastModified()
+        resource.readable
+    }
+
+    void 'the description of a class loader resource names only the path'() {
+        expect:
+        new ClassPathResource('a/b.txt').description == 'class path resource [a/b.txt]'
+    }
+
+    void 'resources with the same class and path are equal and share a hash code'() {
+        given:
+        ClassPathResource first = new ClassPathResource('a.txt', ClassPathResourceSpec)
+        ClassPathResource second = new ClassPathResource('a.txt', ClassPathResourceSpec)
+
+        expect:
+        first == second
+        first.hashCode() == second.hashCode()
+        first != new ClassPathResource('a.txt', UrlResourceSpec)
+        first != new ClassPathResource('a.txt')
+    }
+
 }

@@ -19,6 +19,7 @@
 package org.apache.grails.core.aot
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.jspecify.annotations.Nullable
@@ -134,6 +135,7 @@ class GrailsClosureRuntimeHints implements RuntimeHintsRegistrar {
      * test with Spock has no {@code spock.lang.Specification} for the image to read, which fails the
      * build rather than the closure.</p>
      */
+    @PackageScope
     boolean enclosingLoads(String className, ClassLoader loader) {
         int closure = className.indexOf('\$_')
         if (closure < 0) {

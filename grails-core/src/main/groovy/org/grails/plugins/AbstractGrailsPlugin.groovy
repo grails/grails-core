@@ -19,6 +19,7 @@
 package org.grails.plugins
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import groovy.transform.stc.POJO
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -70,7 +71,8 @@ abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements Grail
      */
     @POJO
     @CompileStatic
-    static class GrailsPluginClass extends AbstractGrailsClass {
+    @PackageScope
+    class GrailsPluginClass extends AbstractGrailsClass {
         GrailsPluginClass(Class<?> clazz) {
             super(clazz, TRAILING_NAME)
         }
@@ -223,8 +225,8 @@ abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements Grail
 
         AbstractGrailsPlugin that = (AbstractGrailsPlugin) o
 
-        if (!pluginClass.equals(that.pluginClass)) return false
-        if (!version.equals(that.version)) return false
+        if (!pluginClass.equals(that.@pluginClass)) return false
+        if (!version.equals(that.@version)) return false
 
         return true
     }
