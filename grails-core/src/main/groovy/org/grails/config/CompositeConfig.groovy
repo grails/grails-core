@@ -83,7 +83,7 @@ class CompositeConfig implements Config {
     def <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues) {
         T v = getProperty(key, targetType, defaultValue)
         if (!allowedValues.contains(v)) {
-            throw new GrailsConfigurationException('Invalid configuration value [\$value] for key [\${key}]. Possible values \$allowedValues')
+            throw new GrailsConfigurationException("Invalid configuration value [${v}] for key [${key}]. Possible values ${allowedValues}")
         }
         return v
     }
@@ -237,7 +237,7 @@ class CompositeConfig implements Config {
     String getRequiredProperty(String key) throws IllegalStateException {
         String value = getProperty(key)
         if (GrailsStringUtils.isBlank(value)) {
-            throw new IllegalStateException('Value for key [\$key] cannot be resolved')
+            throw new IllegalStateException("Value for key [${key}] cannot be resolved")
         }
         return value
     }
@@ -246,7 +246,7 @@ class CompositeConfig implements Config {
     def <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
         T value = getProperty(key, targetType)
         if (value == null) {
-            throw new IllegalStateException('Value for key [\$key] cannot be resolved')
+            throw new IllegalStateException("Value for key [${key}] cannot be resolved")
         }
         return value
     }
