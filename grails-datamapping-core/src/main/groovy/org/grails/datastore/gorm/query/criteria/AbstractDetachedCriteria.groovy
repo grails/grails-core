@@ -26,7 +26,6 @@ import groovy.transform.TypeCheckingMode
 import jakarta.persistence.FetchType
 import jakarta.persistence.criteria.JoinType
 
-import org.grails.datastore.gorm.finders.DynamicFinder
 import org.grails.datastore.gorm.finders.FinderMethod
 import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -52,7 +51,7 @@ abstract class AbstractDetachedCriteria<T> implements Criteria, Cloneable {
     protected List<Query.Order> orders = []
     protected List<Query.Projection> projections = []
     protected Class targetClass
-    protected List<DynamicFinder> dynamicFinders
+    protected List<FinderMethod> dynamicFinders
     protected Integer defaultOffset
     protected Integer defaultMax
 

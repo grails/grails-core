@@ -36,15 +36,14 @@ plugins {
     id 'com.gradle.develocity' version '4.5.0'
     id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.4.0'
     id 'org.apache.grails.buildsrc.repo'
+    id 'com.autonomousapps.build-health' version '3.19.2' apply false
 }
 
-// NOTE: Known Gradle deprecation warnings (scheduled for removal in Gradle 10):
-// 1. StartParameter.isConfigurationCacheRequested - from org.asciidoctor.jvm.convert plugin (4.0.5)
-//    Fix available in asciidoctor-gradle-plugin 5.0.0+ (currently alpha)
-//    Tracking: https://github.com/asciidoctor/asciidoctor-gradle-plugin/issues/756
+apply from: file('gradle/dependency-analysis.settings.gradle')
 
 def isCI = System.getenv().containsKey('CI')
 def isLocal = !isCI
+def hasDevelocityAccessKey = System.getenv('DEVELOCITY_ACCESS_KEY') != null
 def isReproducibleBuild = System.getenv('SOURCE_DATE_EPOCH') != null
 if (isReproducibleBuild) {
     gradle.settingsEvaluated {
@@ -55,6 +54,7 @@ if (isReproducibleBuild) {
 
 develocity {
     server = 'https://develocity.apache.org'
+    projectId = 'grails'
     buildScan {
         tag('grails')
         tag('grails-core')
@@ -66,7 +66,7 @@ develocity {
 buildCache {
     local { enabled = (isLocal && !isReproducibleBuild) || (isCI && isReproducibleBuild) }
     remote(develocity.buildCache) {
-        push = isCI
+        push = hasDevelocityAccessKey
         enabled = !isReproducibleBuild
     }
 }
@@ -103,6 +103,7 @@ include(
         'grails-services',
         'grails-shell-cli',
         'grails-spring',
+        'grails-startup-progress',
         'grails-test-core',
         'grails-undertow',
         'grails-undertow-spring-boot',
@@ -141,6 +142,7 @@ include(
         'grails-events-core',
         'grails-events-transforms',
         'grails-events-gpars',
+        'grails-events-groovy-concurrent',
         'grails-events-spring',
         'grails-events-rxjava',
         'grails-events-rxjava2',
@@ -150,6 +152,7 @@ include(
         // async
         'grails-async-core',
         'grails-async-gpars',
+        'grails-async-groovy-concurrent',
         'grails-async-rxjava',
         'grails-async-rxjava2',
         'grails-async-rxjava3',
@@ -242,6 +245,7 @@ project(':grails-neo4j-bom').projectDir = file('grails-bom/neo4j')
 project(':grails-events-core').projectDir = file('grails-events/core')
 project(':grails-events-transforms').projectDir = file('grails-events/transforms')
 project(':grails-events-gpars').projectDir = file('grails-events/gpars')
+project(':grails-events-groovy-concurrent').projectDir = file('grails-events/groovy-concurrent')
 project(':grails-events-spring').projectDir = file('grails-events/spring')
 project(':grails-events-rxjava').projectDir = file('grails-events/rxjava')
 project(':grails-events-rxjava2').projectDir = file('grails-events/rxjava2')
@@ -250,6 +254,7 @@ project(':grails-events').projectDir = file('grails-events/plugin')
 
 project(':grails-async-core').projectDir = file('grails-async/core')
 project(':grails-async-gpars').projectDir = file('grails-async/gpars')
+project(':grails-async-groovy-concurrent').projectDir = file('grails-async/groovy-concurrent')
 project(':grails-async-rxjava').projectDir = file('grails-async/rxjava')
 project(':grails-async-rxjava2').projectDir = file('grails-async/rxjava2')
 project(':grails-async-rxjava3').projectDir = file('grails-async/rxjava3')
@@ -584,6 +589,8 @@ include(
         'grails-test-examples-plugins-loadfirst',
         'grails-test-examples-plugins-loadsecond',
         'grails-test-examples-config-report',
+        'grails-test-examples-context-hierarchy',
+        'grails-test-examples-context-hierarchy-cli',
         'grails-test-examples-quartz',
         'grails-test-examples-scaffolding',
         'grails-test-examples-scaffolding-fields',
@@ -591,6 +598,9 @@ include(
         'grails-test-examples-undertow',
         'grails-test-examples-views-functional-tests',
         'grails-test-examples-views-functional-tests-plugin',
+        'grails-test-examples-startup-progress',
+        'grails-test-examples-welcome-page',
+        'grails-test-examples-welcome-page-jetty',
 )
 project(':grails-test-examples-async-events-pubsub-demo').projectDir = file('grails-test-examples/async-events-pubsub-demo')
 project(':grails-test-examples-benchmarks').projectDir = file('grails-test-examples/benchmarks')
@@ -631,6 +641,8 @@ project(':grails-test-examples-issue-10279').projectDir = file('grails-test-exam
 project(':grails-test-examples-plugins-exploded').projectDir = file('grails-test-examples/plugins/exploded')
 project(':grails-test-examples-cache').projectDir = file('grails-test-examples/cache')
 project(':grails-test-examples-config-report').projectDir = file('grails-test-examples/config-report')
+project(':grails-test-examples-context-hierarchy').projectDir = file('grails-test-examples/context-hierarchy')
+project(':grails-test-examples-context-hierarchy-cli').projectDir = file('grails-test-examples/context-hierarchy-cli')
 project(':grails-test-examples-scaffolding').projectDir = file('grails-test-examples/scaffolding')
 project(':grails-test-examples-scaffolding-fields').projectDir = file('grails-test-examples/scaffolding-fields')
 project(':grails-test-examples-views-functional-tests').projectDir = file('grails-test-examples/views-functional-tests')
@@ -638,6 +650,9 @@ project(':grails-test-examples-views-functional-tests-plugin').projectDir = file
 project(':grails-test-examples-test-phases').projectDir = file('grails-test-examples/test-phases')
 project(':grails-test-examples-jetty').projectDir = file('grails-test-examples/jetty')
 project(':grails-test-examples-undertow').projectDir = file('grails-test-examples/undertow')
+project(':grails-test-examples-startup-progress').projectDir = file('grails-test-examples/startup-progress')
+project(':grails-test-examples-welcome-page').projectDir = file('grails-test-examples/welcome-page')
+project(':grails-test-examples-welcome-page-jetty').projectDir = file('grails-test-examples/welcome-page-jetty')
 project(':grails-test-examples-latency').projectDir = file('grails-test-examples/latency')
 project(':grails-test-examples-openapi').projectDir = file('grails-test-examples/openapi')
 project(':grails-test-examples-openapi-rest-api').projectDir = file('grails-test-examples/openapi-rest-api')

@@ -32,6 +32,12 @@ Notable new features are included below.
 Grails {grailsMajorVersion} raises the standard build and runtime baseline to Java 21 and uses Gradle {gradleVersion}.
 The standard Grails BOM uses Groovy {groovyVersion} and Spock {spockVersion}.
 
+==== Gradle Configuration Cache
+
+Starting with Grails 8.0, the Grails Gradle plugins support the https://docs.gradle.org/{gradleVersion}/userguide/configuration_cache.html[Gradle configuration cache], and new applications and plugins turn it on in their `gradle.properties`.
+A build that runs the same tasks again skips configuring the project, so repeated runs of tasks such as `bootRun` and `test` start faster.
+See xref:commandLine#gradleConfigurationCache[Using the Gradle Configuration Cache] for how to enable it in an existing project and what it asks of build scripts.
+
 ==== Grails Micronaut Repository
 
 Grails Micronaut is maintained and released from the https://github.com/apache/grails-micronaut[Apache Grails Micronaut repository] and consumes published Grails Core artifacts.
@@ -110,6 +116,22 @@ See the xref:upgrading#upgrading80x[upgrade guide] for details.
 
 Unit tests get the same hooks: a test declares its beans in a `beans` block, as an application or plugin does, or overrides `beanRegistrar()`, or declares a static nested `@Configuration` class — and `doWithSpring()` on the testing traits is deprecated to match.
 See <<unitTesting,Unit Testing>>.
+
+==== Fluent Application Builder with Context Hierarchies
+
+`GrailsAppBuilder` is now a complete counterpart of Spring Boot's `SpringApplicationBuilder`. Every builder method returns the Grails builder, the application it runs is a `GrailsApp` with the Grails startup defaults, and a parent/child context hierarchy built with `child()`, `parent()` and `sibling()` starts a `GrailsApp` in every context:
+
+[source,groovy]
+----
+new GrailsAppBuilder(SharedConfiguration)
+        .child(Application)
+        .run(args)
+----
+
+The Grails plugin lifecycle runs in the one context of the hierarchy whose sources include the `Application` class; the other contexts are plain Spring contexts that share the Grails beans through the parent chain, and a second Grails application in the same hierarchy is refused at startup.
+As in Spring Boot, the parent cannot host a web server, so a web application is the child of a shared parent, while a Grails application that serves no web requests, such as a command-line tool built without the web plugins, can be the parent of plain Spring children.
+A Grails application without a web server no longer prints a `Grails application running at ...` line when it starts.
+See <<applicationBuilder,Building the Application>>.
 
 ==== CLI Commands Move to Companion `-cli` Artifacts
 
@@ -241,7 +263,18 @@ grails {
 }
 ----
 
-All three options are disabled by default and independent, or `compileStatic { all = true }` can be used as a shortcut to enable all of them. Any class that declares its own `@CompileDynamic` (or `@GrailsCompileStatic`/`@CompileStatic`/`@GrailsTypeChecked`/`@TypeChecked`) annotation keeps that setting, so the opt-in never overrides an explicit per-class choice. Tag libraries that still declare tags as closure fields (the deprecated form) are skipped automatically by the `tagLibs` opt-in and left dynamically compiled with a build warning, so define tags as methods to opt them in. See the xref:staticTypeCheckingAndCompilation/grailsCompileStatic[GrailsCompileStatic] section for details.
+All three options are disabled by default and independent, or `compileStatic { all = true }` can be used as a shortcut to enable all of them. Any class that declares its own `@CompileDynamic` (or `@GrailsCompileStatic`/`@CompileStatic`/`@GrailsTypeChecked`/`@TypeChecked`) annotation keeps that setting, so the opt-in never overrides an explicit per-class choice. Tag libraries that still declare tags as closure fields (the deprecated form) are skipped automatically by the `tagLibs` opt-in and left dynamically compiled with a build warning, so define tags as methods to opt them in. See the <<grailsCompileStatic,GrailsCompileStatic>> section for details.
+
+==== Generate an Application That Compiles Statically
+
+Grails Forge has a new `grails-compile-static` feature that generates the `compileStatic` block with `controllers`, `services` and `tagLibs` enabled, adding `gsp = true` when the application uses GSP, so the generated controllers, services, tag libraries and views all compile statically:
+
+[source,console]
+----
+grails -t forge create-app --features=grails-compile-static com.example.demo
+----
+
+See <<gspStaticCompilation,Static Compilation>> for what static compilation asks of a GSP page.
 
 ==== GORM Domain Classes Can Take Their Identity Type from the Datastore
 
@@ -431,7 +464,7 @@ requests randomly take longer. Slower responses widen the window in which timing
 flaky functional tests — assertions that race a navigation, missing waits, ordering assumptions — into deterministic
 failures. The module is inert until `grails.testing.latency.enabled` is set to `true`, and the delay range, the
 fraction of requests affected, and the url patterns are all configurable. See the
-xref:testing/functionalTesting[Functional Testing] section for details.
+<<functionalTesting,Functional Testing>> section for details.
 
 ==== GORM for MongoDB: TTL, Text, and Reconciled Indexes
 
@@ -455,6 +488,14 @@ A single property can likewise declare a `$text` index — or another special ty
 When the options of an already-created index change between restarts, GORM now reconciles the difference instead of only
 logging a conflict. A changed TTL is applied in place with MongoDB's `collMod` command — no drop, no rebuild — while any
 other option change is applied by declaring `indexAttributes: [recreateOnConflict: true]`.
+
+GORM still never drops an index by itself. `MongoDatastore.findUndeclaredIndexes()` lists the indexes on mapped
+collections whose keys no domain class declares any longer, and `dropUndeclaredIndexes()` drops them, as a deliberate
+step once every instance runs the release that declares the indexes to keep. See the
+link:{mongodb5Guide}index.html#undeclaredIndexes[Finding and Dropping Undeclared Indexes] section of the GORM for MongoDB
+guide. `findMissingIndexes()` lists the declared indexes their collections do not have, which shows when a build has
+been forgotten with `buildIndexes` off, and `buildIndexAsync()` runs the index build in the background and returns a
+`CompletableFuture` of its result, for a caller that needs to know when the build finished and what it applied.
 
 ==== GORM for MongoDB and Spring Data MongoDB Interoperability
 
@@ -481,6 +522,18 @@ be enabled (`grails.mongodb.transactional = true`). Spring Data repositories are
 session are shared, and the two object-mapping models stay separate. See the
 link:{mongodb5Guide}index.html#springDataInterop[Spring Data MongoDB Interoperability] section of the GORM for MongoDB
 guide for details.
+
+==== GORM for MongoDB: Checkpoint and Restore with CRaC
+
+An application using GORM for MongoDB can be checkpointed with https://openjdk.org/projects/crac/[CRaC] and restored,
+both while it is running and as its application context refreshes (`-Dspring.context.checkpoint=onRefresh`). GORM opens
+no connection to MongoDB until the application context starts its datastore, which is also when the declared indexes are
+built, and around a checkpoint it stops the client of every connection and starts it again after the restore. The
+`MongoClient` it hands out, the `mongo` bean among them, stays the same object throughout, so code holding it keeps
+working after a restore. In a Spring Boot application GORM now declares the `MongoClient` bean itself, built from Spring
+Boot's settings the way Spring Boot builds its own, so that client takes part as well. An embedded MongoDB is started
+with the application context when the process is checkpointed as the context refreshes. See the link:{mongodb5Guide}index.html#advancedConfig[Advanced Configuration]
+section of the GORM for MongoDB guide.
 
 ==== Read-Only Transactions Do Not Flush the Session
 
@@ -524,7 +577,7 @@ AOT processing is also what a GraalVM native image requires: Spring Boot refuses
 build-time generated initializer. Reachability metadata for the application's own artefacts and compiled pages is
 written from the build output, and `traceNativeMetadata` records what the framework reflects on along a request path.
 
-See the xref:deployment/deploymentAot[Ahead-of-Time Processing] section for what it changes at runtime and what it
+See the <<deploymentAot,Ahead-of-Time Processing>> section for what it changes at runtime and what it
 does not yet cover.
 
 ==== Ahead-of-Time Caching
@@ -543,8 +596,25 @@ grails {
 }
 ----
 
-See the xref:deployment/deploymentAotCache[Ahead-of-Time Caching] section, which includes measured figures and the
+See the <<deploymentAotCache,Ahead-of-Time Caching>> section, which includes measured figures and the
 conditions under which a JVM will decline a cache.
+
+==== Startup Progress Page
+
+With the new `grails-startup-progress` module, which Forge offers as a feature of the same name,
+`./gradlew bootRun` no longer leaves port 8080 closed while the application starts. From the moment the
+application context is prepared, a browser opening the application sees a progress page: the stage the start
+has reached, how many beans have been created and which one is being created now, and the beans that have
+taken longest so far. The page reloads into the application once it is ready, after `BootStrap` has run, and
+shows the exception if the start fails. It is on by default in development mode and can be turned on
+elsewhere with `grails.startup.progress.enabled`. With `grails.startup.progress.openBrowser`, which `bootRun`
+also takes as a Gradle property, for example `./gradlew bootRun -Pgrails.startup.progress.openBrowser`, a
+browser opens on the page as the application starts. Bean names and failures are shown only to a browser signed
+in with the address the application logs, which the browser it opens is. Once the application is running, the
+same view is a report of how long each stage of the start took, at `/__grails/startup`, and a client sending
+`Accept: application/json` gets it as data. Work done during the start can report its own progress with
+`grails.boot.StartupTask`, which the database migration plugin uses to show how many change sets are left to
+run. See <<startupProgress,Watching the Application Start>>.
 
 ==== Banner Colour, Container Version and Start Mark
 
@@ -557,7 +627,7 @@ underneath: a version shown by default that cannot be determined is left out rat
 an application without Spring Security says nothing about it instead of saying it does not know. One asked for
 by name still reads `unknown`, because saying nothing about what was asked for reads as the option having been
 ignored. See
-xref:conf/applicationClass/customizing[Customizing the Application Class] for the full set of banner options, and the
+<<customizing,Customizing the Application Class>> for the full set of banner options, and the
 xref:upgrading#upgrading80x[upgrade guide] for how to restore the previous output.
 
 ==== Message Bundles Resolved by Spring Boot
@@ -674,3 +744,23 @@ The controller and action captured from the URL are validated as they are for an
 mapping. Because the controller is not known until a request is matched, the URL must capture it and
 child resources cannot be nested within the mapping. See
 link:theWebLayer.html#restfulMappings[Mapping to REST resources].
+
+==== Separate Recipient and Sender Overrides for Mail
+
+The Mail plugin can now override the recipients and the sender of outgoing mail separately.
+`grails.mail.overrideToAddress` replaces every `to`, `cc` and `bcc` address and keeps the sender the
+application sets, and `grails.mail.overrideFromAddress` replaces the sender without redirecting the
+recipients:
+
+[source,yaml]
+.application-test.yml
+----
+grails:
+    mail:
+        overrideToAddress: test-inbox@example.com
+----
+
+`grails.mail.overrideAddress` still replaces both, and the two new properties take precedence over it when
+both are set. It now also replaces a `from` set in the `sendMail` closure. See
+link:mail.html#mailConfiguration[Mail Configuration], and the link:upgrading.html#upgrading80x[upgrade guide]
+for what this means for an application that sets `overrideAddress`.

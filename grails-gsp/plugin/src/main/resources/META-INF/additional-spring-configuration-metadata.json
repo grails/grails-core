@@ -33,7 +33,8 @@
     {
       "name": "grails.views.gsp.htmlcodec",
       "type": "java.lang.String",
-      "description": "Selects the HTML escaping style for GSP output. When not set (or when the value does not start with `xml` or equal (ignoring case) `xhtml`), a legacy HTML4-compatible encoder is used. Set to `xml` or `xhtml` to use the XML-safe encoder."
+      "description": "Selects the HTML escaping style of the HTML codec. By default the XML-safe encoder is used. Set to `html4` (ignoring case) to use the legacy HTML4 encoder, which converts non-ASCII characters to named entities.",
+      "defaultValue": "xml"
     },
     {
       "name": "grails.views.gsp.codecs.expression",

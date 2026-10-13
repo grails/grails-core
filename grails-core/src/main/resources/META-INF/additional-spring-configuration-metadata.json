@@ -59,10 +59,6 @@
         {
             "name": "grails.gorm.multiTenancy",
             "description": "GORM"
-        },
-        {
-            "name": "dataSource",
-            "description": "DataSource"
         }
     ],
     "properties": [
@@ -251,90 +247,6 @@
             "type": "java.lang.String",
             "description": "Fully qualified class name of the TenantResolver implementation.",
             "defaultValue": "required when mode is not NONE"
-        },
-        {
-            "name": "dataSource.driverClassName",
-            "type": "java.lang.String",
-            "description": "The JDBC driver class name.",
-            "defaultValue": "org.h2.Driver"
-        },
-        {
-            "name": "dataSource.username",
-            "type": "java.lang.String",
-            "description": "The database username.",
-            "defaultValue": "sa"
-        },
-        {
-            "name": "dataSource.password",
-            "type": "java.lang.String",
-            "description": "The database password.",
-            "defaultValue": ""
-        },
-        {
-            "name": "dataSource.url",
-            "type": "java.lang.String",
-            "description": "The JDBC connection URL.",
-            "defaultValue": "jdbc:h2:mem:devDb"
-        },
-        {
-            "name": "dataSource.dbCreate",
-            "type": "java.lang.String",
-            "description": "The schema generation strategy: create-drop, create, update, validate, or none, use none in production with a migration tool.",
-            "defaultValue": "create-drop (dev), none (prod)"
-        },
-        {
-            "name": "dataSource.pooled",
-            "type": "java.lang.Boolean",
-            "description": "Whether to use a connection pool.",
-            "defaultValue": true
-        },
-        {
-            "name": "dataSource.logSql",
-            "type": "java.lang.Boolean",
-            "description": "Whether to log SQL statements to stdout.",
-            "defaultValue": false
-        },
-        {
-            "name": "dataSource.formatSql",
-            "type": "java.lang.Boolean",
-            "description": "Whether to format logged SQL for readability.",
-            "defaultValue": false
-        },
-        {
-            "name": "dataSource.dialect",
-            "type": "java.lang.String",
-            "description": "The Hibernate dialect class name or class.",
-            "defaultValue": "auto-detected from driver"
-        },
-        {
-            "name": "dataSource.readOnly",
-            "type": "java.lang.Boolean",
-            "description": "Whether the DataSource is read-only (calls setReadOnly(true) on connections).",
-            "defaultValue": false
-        },
-        {
-            "name": "dataSource.transactional",
-            "type": "java.lang.Boolean",
-            "description": "For additional datasources, whether to include in the chained transaction manager.",
-            "defaultValue": true
-        },
-        {
-            "name": "dataSource.persistenceInterceptor",
-            "type": "java.lang.Boolean",
-            "description": "For additional datasources, whether to wire up the persistence interceptor (the default datasource is always wired).",
-            "defaultValue": false
-        },
-        {
-            "name": "dataSource.jmxExport",
-            "type": "java.lang.Boolean",
-            "description": "Whether to register JMX MBeans for the DataSource.",
-            "defaultValue": true
-        },
-        {
-            "name": "dataSource.type",
-            "type": "java.lang.String",
-            "description": "The connection pool implementation class when multiple are on the classpath.",
-            "defaultValue": "com.zaxxer.hikari.HikariDataSource"
         },
         {
             "name": "grails.banner.art.display",

@@ -51,7 +51,7 @@ class HibernateDatastoreSpringInitializer extends AbstractDatastoreInitializer {
     public static final String TEST_DB_URL = 'jdbc:h2:mem:grailsDb;LOCK_TIMEOUT=10000;DB_CLOSE_DELAY=-1'
 
     String defaultDataSourceBeanName = ConnectionSource.DEFAULT
-    Set<String> dataSources = [defaultDataSourceBeanName] as Set<String>
+    Set<String> dataSources = new LinkedHashSet<String>([defaultDataSourceBeanName])
     boolean enableReload = false
 
     HibernateDatastoreSpringInitializer(PropertyResolver configuration, Collection<Class> persistentClasses) {
@@ -82,20 +82,14 @@ class HibernateDatastoreSpringInitializer extends AbstractDatastoreInitializer {
     @CompileStatic
     void configureDataSources(PropertyResolver config) {
 
-        Set<String> dataSourceNames = new HashSet<String>()
+        // The datastore always creates the default connection source, whether or not it is configured
+        Set<String> dataSourceNames = new LinkedHashSet<String>([defaultDataSourceBeanName])
 
-        if (config == null) {
-            dataSourceNames = [defaultDataSourceBeanName] as Set
-        }
-        else {
+        if (config != null) {
             Map dataSources = config.getProperty(DATA_SOURCES, Map, Collections.emptyMap())
 
             if (dataSources != null && !dataSources.isEmpty()) {
                 dataSourceNames.addAll(AbstractConnectionSources.toValidConnectionSourceNames(dataSources))
-            }
-            Map dataSource = (Map) config.getProperty(DEFAULT_DATA_SOURCE_NAME, Map, Collections.emptyMap())
-            if (dataSource != null && !dataSource.isEmpty()) {
-                dataSourceNames.add(defaultDataSourceBeanName)
             }
         }
         this.dataSources = dataSourceNames

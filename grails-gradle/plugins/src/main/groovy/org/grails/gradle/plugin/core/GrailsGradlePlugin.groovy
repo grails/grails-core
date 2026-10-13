@@ -56,7 +56,9 @@ import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.AbstractCopyTask
+import org.gradle.api.tasks.GroovySourceDirectorySet
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
@@ -108,10 +110,7 @@ class GrailsGradlePlugin implements Plugin<Project> {
 
     private static final String SPRING_BOOT_PLUGIN = 'org.springframework.boot'
 
-    private static final String ASSET_COMPILE_TASK = 'assetCompile'
-
-    /** Where an executable jar reads its classpath from, and so where assets have to be to be found. */
-    private static final String CLASSPATH_ASSETS_PATH = 'BOOT-INF/classes/assets'
+    private static final String ASSET_PIPELINE_PLUGIN = 'cloud.wondrify.asset-pipeline'
 
     private static final int TRAINING_PORT = 18080
 
@@ -230,16 +229,14 @@ class GrailsGradlePlugin implements Plugin<Project> {
         }
     }
 
+    /**
+     * The main class the {@code findMainClass} task found. The value is read from the task's output when it is
+     * queried, so the configuration cache keeps it lazy instead of storing whatever the file held before the task ran.
+     */
     protected static Provider<String> getMainClassProvider(Project project) {
-        Provider<FindMainClassTask> findMainClassTask = project.tasks.named('findMainClass', FindMainClassTask)
-        project.provider {
-            File cacheFile = findMainClassTask.get().mainClassCacheFile.orNull?.asFile
-            if (!cacheFile?.exists()) {
-                return null
-            }
-
-            cacheFile?.text
-        }
+        project.tasks.named('findMainClass', FindMainClassTask)
+                .flatMap { FindMainClassTask task -> task.mainClassCacheFile }
+                .map { RegularFile cacheFile -> cacheFile.asFile.exists() ? cacheFile.asFile.text : null }
     }
 
     private void configureGroovyCompiler(Project project) {
@@ -989,67 +986,27 @@ ${importStatements}
     }
 
     protected void configureAssetCompilation(Project project) {
-        configureAssetPipelineLayout(project)
-        configureAssetsOnTheClasspath(project)
-    }
-
-    /**
-     * Only the asset pipeline's own extension and task need dynamic dispatch, as the plugin is not
-     * a compile-time dependency. Calls to this plugin's own private methods stay out of here: on a
-     * reused daemon Gradle replaces the meta class of the applied plugin class with one that
-     * dispatches on the runtime class alone, so under Gradle 8 a private method of this class is
-     * not found when the applied plugin is a subclass.
-     */
-    @CompileDynamic
-    private static void configureAssetPipelineLayout(Project project) {
-        if (project.extensions.findByName('assets')) {
-            project.assets {
-                assetsPath = project.layout.projectDirectory.dir('grails-app/assets')
-            }
-            project.tasks.named('assetCompile').configure {
-                it.destinationDirectory = project.layout.buildDirectory.dir('assetCompile/assets')
-            }
+        // Whenever the asset pipeline is applied, not only if it already has been: an application
+        // applies this plugin first, before the pipeline has created its extension.
+        project.pluginManager.withPlugin(ASSET_PIPELINE_PLUGIN) {
+            configureAssetPipelineLayout(project)
         }
     }
 
     /**
-     * Packages the compiled assets where an executable jar can read them.
+     * Only the asset pipeline's own extension needs dynamic dispatch, as the plugin is not a
+     * compile-time dependency. Calls to this plugin's own private methods stay out of here: on a
+     * reused daemon Gradle replaces the meta class of the applied plugin class with one that
+     * dispatches on the runtime class alone, so under Gradle 8 a private method of this class is
+     * not found when the applied plugin is a subclass.
      *
-     * <p>The asset pipeline plugin puts them at the root of whatever archive is built, which is
-     * where a war serves its web content from and is therefore right for a war. An executable jar
-     * has no web content: it serves assets by reading them off the classpath, and its classpath is
-     * {@code BOOT-INF/classes} -- so the same assets, at the same place, in a jar rather than a war,
-     * are packaged but unreachable, and every asset a page asks for is a 404 while the page itself
-     * renders. Adding them under the classpath directory is what makes them found.</p>
-     *
-     * <p>Only for {@code bootJar}. A war already serves them from the root, and putting them on its
-     * classpath as well would ship the same bytes twice.</p>
+     * <p>The pipeline only defaults to {@code grails-app/assets} if this plugin was applied before
+     * it. Its compiled assets keep the pipeline's own location, {@code build/assets}.</p>
      */
-    private void configureAssetsOnTheClasspath(Project project) {
-        project.pluginManager.withPlugin(SPRING_BOOT_PLUGIN) {
-            // Asked for by name when the archive needs it, rather than matched out of the task
-            // container in advance.
-            //
-            // A matching {} collection is live. Handed to project.files() it became part of
-            // bootJar's input files, so the container was reachable from the archive's state -- and
-            // resolving those inputs ran the predicate against every task registered, realizing all
-            // of them to find the one. Asking the names costs nothing and realizes nothing; only
-            // the task that is actually there is then looked up, and the file collection it returns
-            // carries the dependency on it.
-            //
-            // Still by name rather than by the plugin that registers it: the pipeline's plugin id
-            // has changed once already and the task name has not, and an application is free to
-            // register the task itself.
-            FileCollection compiledAssets = project.files(project.provider {
-                project.tasks.names.contains(ASSET_COMPILE_TASK)
-                        ? project.tasks.named(ASSET_COMPILE_TASK).get().outputs.files
-                        : project.files()
-            })
-            project.tasks.named('bootJar', AbstractCopyTask).configure { AbstractCopyTask task ->
-                task.from(compiledAssets) { CopySpec spec ->
-                    spec.into(CLASSPATH_ASSETS_PATH)
-                }
-            }
+    @CompileDynamic
+    private static void configureAssetPipelineLayout(Project project) {
+        project.assets {
+            assetsPath = project.layout.projectDirectory.dir('grails-app/assets')
         }
     }
 
@@ -1072,11 +1029,21 @@ ${importStatements}
             // Use a CommandLineArgumentProvider so that the absolute project directory path
             // is normalized for build cache relocatability (PathSensitivity.RELATIVE).
             task.jvmArgumentProviders.add(new GrailsAppBaseDirProvider(project.projectDir))
+            // Where development reloading compiles a changed class and copies a changed message bundle, and where
+            // the application reads resources from: the build's own directories, wherever the build directory is, not
+            // the build/classes/groovy/main and build/resources/main BuildSettings falls back to
+            task.jvmArgumentProviders.add(new GrailsProjectOutputDirProvider(BuildSettings.PROJECT_CLASSES_DIR,
+                    project.projectDir, mainGroovyClassesDir(project), task.systemProperties))
+            task.jvmArgumentProviders.add(new GrailsProjectOutputDirProvider(BuildSettings.PROJECT_RESOURCES_DIR,
+                    project.projectDir, mainResourcesDir(project), task.systemProperties))
             // The application compiles a page again when it changes, so the page opt-in has to reach
             // the JVM running it as well as the one the build compiles pages in.
             task.jvmArgumentProviders.add(new GrailsGspCompileStaticProvider(
                     project.extensions.getByType(GrailsExtension).compileStatic))
-            task.systemProperty(BuildSettings.PROJECT_TARGET_DIR, project.layout.buildDirectory.get().asFile.name)
+            // The build directory itself, where development keeps its restart marker (.grailspid): passed as a
+            // path relative to the project, not its name, so that two instances of one checkout have one each
+            task.jvmArgumentProviders.add(new GrailsProjectOutputDirProvider(BuildSettings.PROJECT_TARGET_DIR,
+                    project.projectDir, project.layout.buildDirectory, task.systemProperties))
             task.systemProperty(Environment.KEY, defaultGrailsEnv)
             task.systemProperty(Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: '')
             if (task.minHeapSize == null) {
@@ -1103,6 +1070,26 @@ ${importStatements}
         tasks.withType(JavaExec).configureEach(systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.DEVELOPMENT.getName()))
 
         configureToolchainForForkTasks(project)
+    }
+
+    /**
+     * The main source set's Groovy classes directory, which the application's development reloading compiles a
+     * changed class into (see {@link GrailsProjectOutputDirProvider}). The plugin applies the {@code groovy} plugin,
+     * so the main source set and its Groovy classes directory are always there.
+     */
+    private static Provider<Directory> mainGroovyClassesDir(Project project) {
+        project.extensions.getByType(SourceSetContainer).named(SourceSet.MAIN_SOURCE_SET_NAME).flatMap { SourceSet main ->
+            main.extensions.getByType(GroovySourceDirectorySet).classesDirectory
+        }
+    }
+
+    /**
+     * The main source set's resources directory, which the application reads resources from in development and the
+     * i18n plugin copies a changed message bundle into (see {@link GrailsProjectOutputDirProvider}).
+     */
+    private static Provider<Directory> mainResourcesDir(Project project) {
+        project.layout.dir(project.extensions.getByType(SourceSetContainer).named(SourceSet.MAIN_SOURCE_SET_NAME)
+                .map { SourceSet main -> main.output.resourcesDir })
     }
 
     /**
@@ -1355,24 +1342,19 @@ ${importStatements}
                 def extraProperties = project.extensions.getByType(ExtraPropertiesExtension)
                 def overriddenMainClass = propertyMainClassName ?: springBootMainClassName
                 if (!overriddenMainClass) {
-                    // the findMainClass task needs to set these values
-                    extraProperties.set('mainClassName', project.provider {
-                        File cacheFile = findMainClassTask.get().mainClassCacheFile.orNull?.asFile
-                        if (!cacheFile?.exists()) {
-                            return null
-                        }
-
-                        cacheFile?.text
-                    })
-
-                    springBootExtension.mainClass.set(project.provider {
-                        File cacheFile = findMainClassTask.get().mainClassCacheFile.orNull?.asFile
-                        if (!cacheFile?.exists()) {
-                            return null
-                        }
-
-                        cacheFile?.text
-                    })
+                    // A mapped task output rejects configuration-time reads. Each flatMap query instead creates
+                    // a fresh value source: an early read cannot memoize null (or an earlier build's class) for
+                    // execution, and the configuration cache stores an unread source for the task to query later.
+                    ProviderFactory providers = project.providers
+                    Provider<String> foundMainClass = findMainClassTask
+                            .flatMap { FindMainClassTask task -> task.mainClassCacheFile }
+                            .flatMap { RegularFile cacheFile ->
+                                providers.of(FoundMainClassValueSource) {
+                                    it.parameters.mainClassCacheFile.set(cacheFile)
+                                }
+                            }
+                    extraProperties.set('mainClassName', foundMainClass)
+                    springBootExtension.mainClass.set(foundMainClass)
                 } else {
                     // we need to set the overridden value on both
                     extraProperties.set('mainClass', overriddenMainClass)
@@ -1394,6 +1376,10 @@ ${importStatements}
                 // internally (return !OS_NAME.contains("win")), so legacy Windows consoles never receive
                 // raw ANSI escapes, while macOS/Linux and modern terminals get colored bootRun output.
                 it.systemProperty('spring.output.ansi.console-available', 'true')
+                // startup progress settings a developer keeps as Gradle properties, such as opening a browser,
+                // reach the application under their own names
+                it.jvmArgumentProviders.add(new GrailsStartupProgressProvider(
+                        project.providers.gradlePropertiesPrefixedBy(GrailsStartupProgressProvider.PREFIX)))
             }
 
             project.tasks.withType(ResolveMainClassName).configureEach {
@@ -1729,10 +1715,8 @@ ${importStatements}
             it.inputs.dir(src)
             it.outputs.dir(dest)
 
-            def antBuilder = it.ant
-
-            it.doLast {
-                antBuilder.native2ascii(src: src, dest: dest,
+            it.doLast { Task task ->
+                task.ant.native2ascii(src: src, dest: dest,
                         includes: '**/*.properties', encoding: 'UTF-8')
             }
         }

@@ -35,6 +35,9 @@ limitations under the License.
 # Style check
 ./gradlew codeStyle
 
+# Dependency health (duplicate classes on a classpath fail the build)
+./gradlew buildHealth
+
 # Repository conventions
 ./gradlew validateRepositoryConventions
 
@@ -112,10 +115,10 @@ These human-review concerns are intentionally not mechanized; `validateRepositor
 | Component | Version |
 |-----------|---------|
 | JDK | 21+ (baseline 21) |
-| Groovy | 5.1.x |
+| Groovy | 6.0.x |
 | Spring Boot | 4.1.x |
 | Spring Framework | 7.0.x |
-| Spock | 2.4-groovy-5.0 |
+| Spock | 2.5-groovy-6.0 |
 | Gradle | 9.8.x |
 | Jakarta EE | 10 |
 
@@ -144,6 +147,7 @@ All managed dependency versions live in `dependencies.gradle` (the single source
 - **Prefer inheriting from the Spring Boot BOM.** Do not re-pin a coordinate that `spring-boot-dependencies` (4.1.x) already manages unless you are intentionally overriding it to a newer version (e.g. a security fix); note the reason inline.
 - **An override of a Spring Boot managed version must use Spring Boot's property name, and must change the version.** `validateBomProperties` (plugin `org.apache.grails.buildsrc.bom-property-validator`, run in its own CI job) checks the POM each Grails BOM publishes against `spring-boot-dependencies` (`parentBoms` in `dependencies.gradle`). It fails when a pin is declared under a different property than the one Boot controls it with - for a module Boot manages through an imported BOM, that is the import's property (`jackson-bom.version`, not `jackson3.version`) - and when a pin repeats Boot's version. Rename the version key (and the dependency keys that must prefix it) or drop the pin.
 - **Every version key must be used.** The same task (opt out with `-PskipBomPropertyValidation`, not `skipDependencyValidation`) fails when a version property a BOM owns (`bomVersionProperties` in each BOM's build script) is used by no entry of its published POM - a key no dependency references, or one whose dependency keys do not reduce to it. Delete the key or add the dependency that should use it. The few deliberate exceptions to these rules live, each with its reason, in `bomUnusedVersionExemptions` / `bomPropertyNameExemptions` / `bomRedundantVersionExemptions` in `dependencies.gradle`.
+- **No two dependencies may provide the same class.** The `buildHealth` task (the `com.autonomousapps.build-health` settings plugin, configured in `gradle/dependency-analysis.settings.gradle`, which applies it to a build only when one of its tasks is requested by full name, so a plain build never pays for it) fails when two dependencies on a classpath provide the same fully qualified class name that the module's own code references, because compile and runtime behavior then depend on classpath order. The Build Health workflow runs it on every push and pull request, alongside the code style checks. Resolve a report by removing or excluding the redundant dependency; its other categories (unused or transitive dependencies, wrong configurations) are advice only.
 
 ## Key Modules
 
@@ -274,6 +278,7 @@ Call `enableSpotbugs()` in the same extension to opt that module into SpotBugs. 
 | Single feature | `./gradlew :module:test --tests "pkg.MySpec.feature name"` |
 | Force rerun | `./gradlew :module:test --rerun-tasks` |
 | Style check | `./gradlew codeStyle` |
+| Dependency health | `./gradlew buildHealth` |
 | Build docs | `./gradlew :grails-doc:publishGuide -x aggregateGroovydoc` |
 | Debug | `./gradlew bootRun --debug-jvm` |
 
@@ -307,10 +312,11 @@ Rules:
 1. **Fork & branch** from the target release branch (e.g., `7.0.x`)
 2. **Run tests** before submitting: `./gradlew build --rerun-tasks`
 3. **Run code style checks**: `./gradlew codeStyle`
-4. **Clean violations**: Before committing, run `./gradlew clean aggregateViolations` from the root. Ensure the Checkstyle, CodeNarc, and `REPOSITORY_CONVENTIONS` reports have no issues, and ensure PMD and SpotBugs reports have no issues for their enabled projects. Enable PMD and SpotBugs per project through `grailsCodeAnalysis` in each module's `build.gradle`; the `-Pgrails.code-analysis.enabled.pmd[.projects]` and `-Pgrails.code-analysis.enabled.spotbugs[.projects]` properties are overrides. Disabled tools report their disabled status, not a clean result.
-5. **Verify test coverage**: Ensure any touched class is covered by tests verifying all behavior. You must run ALL tests in the affected module(s) and ensure they pass before submission.
-6. **Squash commits** into a single meaningful commit message
-7. **Reference issues** in PR description (e.g., "Fixes #1234")
+4. **Run dependency health checks**: `./gradlew buildHealth`
+5. **Clean violations**: Before committing, run `./gradlew clean aggregateViolations` from the root. Ensure the Checkstyle, CodeNarc, and `REPOSITORY_CONVENTIONS` reports have no issues, and ensure PMD and SpotBugs reports have no issues for their enabled projects. Enable PMD and SpotBugs per project through `grailsCodeAnalysis` in each module's `build.gradle`; the `-Pgrails.code-analysis.enabled.pmd[.projects]` and `-Pgrails.code-analysis.enabled.spotbugs[.projects]` properties are overrides. Disabled tools report their disabled status, not a clean result.
+6. **Verify test coverage**: Ensure any touched class is covered by tests verifying all behavior. You must run ALL tests in the affected module(s) and ensure they pass before submission.
+7. **Squash commits** into a single meaningful commit message
+8. **Reference issues** in PR description (e.g., "Fixes #1234")
 
 ### Review Process
 

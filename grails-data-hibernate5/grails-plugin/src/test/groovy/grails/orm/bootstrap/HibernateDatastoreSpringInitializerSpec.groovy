@@ -18,8 +18,11 @@
  */
 package grails.orm.bootstrap
 
+import javax.sql.DataSource
+
 import grails.gorm.annotation.Entity
 import org.grails.datastore.mapping.core.DatastoreUtils
+import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.orm.hibernate.HibernateDatastore
 import org.hibernate.Session
 import org.hibernate.SessionFactory
@@ -31,8 +34,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.PlatformTransactionManager
 import spock.lang.AutoCleanup
 import spock.lang.Specification
-
-import javax.sql.DataSource
+import spock.lang.Unroll
 
 /**
  * Created by graemerocher on 29/01/14.
@@ -216,6 +218,79 @@ class HibernateDatastoreSpringInitializerSpec extends Specification{
 
         then:
         !applicationContext.containsBean('openSessionInViewInterceptor')
+    }
+
+    @Unroll
+    void "the default connection source is the first of the data sources when #configured"() {
+        when: 'an initializer is created'
+        def datastoreInitializer = new HibernateDatastoreSpringInitializer(config, Person)
+
+        then: 'the default connection source comes first, followed by the additional data sources in configuration order'
+        datastoreInitializer.dataSources instanceof LinkedHashSet
+        datastoreInitializer.dataSources as List == expected
+
+        where:
+        configured                        | config                                                 || expected
+        'nothing is configured'           | [:]                                                    || [ConnectionSource.DEFAULT]
+        'only dataSource is configured'   | ['dataSource.url': 'jdbc:h2:mem:orderDefault']         || [ConnectionSource.DEFAULT]
+        'only dataSources are configured' | ['dataSources.books.url': 'jdbc:h2:mem:books',
+                                             'dataSources.moreBooks.url': 'jdbc:h2:mem:moreBooks'] || [ConnectionSource.DEFAULT, 'books', 'moreBooks']
+        'both are configured'             | ['dataSources.books.url': 'jdbc:h2:mem:books',
+                                             'dataSource.url': 'jdbc:h2:mem:orderDefault',
+                                             'dataSources.moreBooks.url': 'jdbc:h2:mem:moreBooks'] || [ConnectionSource.DEFAULT, 'books', 'moreBooks']
+    }
+
+    void "the default data source is registered as the dataSource bean when no dataSource is configured"() {
+        given: 'an initializer without dataSource configuration'
+        def datastoreInitializer = new HibernateDatastoreSpringInitializer([:], Person)
+
+        when: 'the application is configured'
+        def applicationContext = (ConfigurableApplicationContext) datastoreInitializer.configure()
+        def hibernateDatastore = applicationContext.getBean(HibernateDatastore)
+
+        then: 'the data source GORM uses is available by name and by type'
+        applicationContext.getBeansOfType(DataSource).keySet() == ['dataSource'] as Set
+        applicationContext.getBean('dataSource', DataSource).is(hibernateDatastore.dataSource)
+        applicationContext.getBean('dataSource', DataSource).connection.withCloseable { it.metaData.URL } ==
+                'jdbc:h2:mem:grailsDB'
+
+        cleanup:
+        applicationContext?.close()
+    }
+
+    void "the default data source is registered as the dataSource bean when only additional data sources are configured"() {
+        given: 'an initializer configuring only an additional data source'
+        def datastoreInitializer = new HibernateDatastoreSpringInitializer([
+                'dataSources.books.url': 'jdbc:h2:mem:defaultDataSourceBeanBooks;LOCK_TIMEOUT=10000'
+        ], Person)
+
+        when: 'the application is configured'
+        def applicationContext = (ConfigurableApplicationContext) datastoreInitializer.configure()
+
+        then: 'both the default and the additional data source are beans'
+        applicationContext.getBeansOfType(DataSource).keySet() == ['dataSource', 'dataSource_books'] as Set
+        applicationContext.getBean('dataSource', DataSource).connection.withCloseable { it.metaData.URL } ==
+                'jdbc:h2:mem:grailsDB'
+        applicationContext.getBean('dataSource_books', DataSource).connection.withCloseable { it.metaData.URL } ==
+                'jdbc:h2:mem:defaultDataSourceBeanBooks'
+
+        cleanup:
+        applicationContext?.close()
+    }
+
+    void "the data source passed to configureForDataSource remains the dataSource bean"() {
+        given: 'a data source and an initializer without dataSource configuration'
+        def dataSource = new DriverManagerDataSource('jdbc:h2:mem:configureForDataSource;LOCK_TIMEOUT=10000')
+        def datastoreInitializer = new HibernateDatastoreSpringInitializer([:], Person)
+
+        when: 'the application is configured for that data source'
+        def applicationContext = (ConfigurableApplicationContext) datastoreInitializer.configureForDataSource(dataSource)
+
+        then: 'the dataSource bean is the given data source'
+        applicationContext.getBean('dataSource', DataSource).is(dataSource)
+
+        cleanup:
+        applicationContext?.close()
     }
 }
 @Entity

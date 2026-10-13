@@ -42,6 +42,9 @@ class PerTestRecordingSpec extends ContainerGebSpec {
         when: 'visiting the home page'
         to(HomePage)
 
+        and: 'pausing so the recording captures more than its first frames'
+        Thread.sleep(500)
+
         then: 'the page loads correctly'
         title == 'Welcome to Grails'
     }
@@ -96,7 +99,8 @@ class PerTestRecordingSpec extends ContainerGebSpec {
         // WebDriverContainerHolder#restartVncRecordingContainer) is guaranteed to have
         // connected, but not to have captured more than a frame or two by the time a fast
         // iteration finishes. Two such near-blank captures can encode to identical bytes,
-        // which would fail the difference check below without saying why.
+        // which would fail the difference check below without saying why. Both setup
+        // iterations pause for this reason.
         firstRecording.length() > MIN_MEANINGFUL_RECORDING_BYTES
         secondRecording.length() > MIN_MEANINGFUL_RECORDING_BYTES
 

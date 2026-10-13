@@ -21,6 +21,7 @@ package grails.plugin.hibernate
 import grails.core.DefaultGrailsApplication
 import grails.gorm.annotation.Entity
 import org.grails.config.PropertySourcesConfig
+import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
@@ -78,6 +79,20 @@ class HibernateGrailsPluginSpec extends Specification {
 
         and: "the config can now resolve a String value as a Class"
         config.getProperty('some.class', Class) == PluginSpecBook
+
+        and: "the plugin recorded the configured data source names"
+        (grailsPlugin.instance as HibernateGrailsPlugin).dataSourceNames.contains(ConnectionSource.DEFAULT)
+    }
+
+    void "onChange is a no-op"() {
+        given:
+        HibernateGrailsPlugin plugin = new HibernateGrailsPlugin()
+
+        when:
+        plugin.onChange([:])
+
+        then:
+        noExceptionThrown()
     }
 }
 

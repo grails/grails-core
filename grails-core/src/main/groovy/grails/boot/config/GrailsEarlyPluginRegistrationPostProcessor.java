@@ -32,13 +32,13 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.BeanRegistryAdapter;
 import org.springframework.beans.factory.support.DefaultSingletonBeanRegistry;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.io.Resource;
 import org.springframework.util.ClassUtils;
 
 import grails.core.DefaultGrailsApplication;
@@ -50,7 +50,6 @@ import grails.plugins.GrailsPluginManager;
 import grails.util.Environment;
 import grails.util.Holders;
 import org.apache.grails.core.plugins.PluginDiscovery;
-import org.grails.config.NavigableMap;
 import org.grails.config.PropertySourcesConfig;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
@@ -90,6 +89,13 @@ import org.grails.spring.RuntimeSpringConfiguration;
  * the bean factory together with the {@link #EARLY_REGISTRATION_COMPLETE_BEAN_NAME} marker, so
  * {@link GrailsApplicationPostProcessor} reuses them instead of rebuilding and skips the already-drained
  * plugin runtime configuration.
+ *
+ * <p>In a parent/child context hierarchy, such as {@link grails.boot.GrailsAppBuilder} builds, exactly one
+ * context is the Grails application. The lifecycle keeps state that is JVM-wide — {@link Holders}, the
+ * {@link Environment#isInitializing() initializing} flag, the shutdown operations — which a second
+ * application in the same hierarchy would overwrite and then clear when it closed, so a context whose
+ * parent chain already holds a {@code grailsApplication} refuses to start as another one. The other
+ * contexts of the hierarchy are plain Spring contexts and reach the Grails beans through their parent.
  *
  * @since 8.0
  */
@@ -139,6 +145,12 @@ public class GrailsEarlyPluginRegistrationPostProcessor
         if (!launchedByGrails && !containsApplicationClass(applicationSources)) {
             LOG.debug("Not a Grails application — the plugin lifecycle does not run for this context");
             return;
+        }
+        ApplicationContext parent = applicationContext.getParent();
+        if (parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
+            throw new IllegalStateException("A Grails application already exists in the parent hierarchy of this context. " +
+                    "Only one context in a hierarchy can be the Grails application; the other contexts share its beans " +
+                    "through their parent, so leave the Grails application class out of their sources.");
         }
 
         // The initializing flag is a system property, so a leak on failure poisons every subsequent
@@ -299,20 +311,18 @@ public class GrailsEarlyPluginRegistrationPostProcessor
 
     /**
      * Builds the {@link PropertySourcesConfig} that backs {@code grailsApplication.config} in this
-     * phase, registering the same conversion-service converters that
-     * {@code GrailsApplicationPostProcessor.loadApplicationConfig} registers for the main lifecycle.
+     * phase, registering the same conversion-service converters ({@link GrailsConversionServiceConverters})
+     * that {@code GrailsApplicationPostProcessor.loadApplicationConfig} registers for the main lifecycle.
      * This gives {@code doWithSpring} closures parity when reading config — null-safe navigation of
-     * missing paths and {@code String -> Resource} coercion — not just scalar
-     * {@code getProperty(...)} access.
+     * missing paths and {@code String -> Resource} and pattern-expanding {@code Resource[]} coercion —
+     * not just scalar {@code getProperty(...)} access.
      */
     private PropertySourcesConfig buildConfig() {
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
         ConfigurableConversionService conversionService = null;
         if (environment instanceof AbstractEnvironment) {
             conversionService = ((AbstractEnvironment) environment).getConversionService();
-            conversionService.addConverter(String.class, Resource.class, applicationContext::getResource);
-            conversionService.addConverter(NavigableMap.NullSafeNavigator.class, String.class, source -> null);
-            conversionService.addConverter(NavigableMap.NullSafeNavigator.class, Object.class, source -> null);
+            GrailsConversionServiceConverters.register(conversionService, applicationContext);
         }
         PropertySourcesConfig config = new PropertySourcesConfig(environment.getPropertySources());
         if (conversionService != null) {
