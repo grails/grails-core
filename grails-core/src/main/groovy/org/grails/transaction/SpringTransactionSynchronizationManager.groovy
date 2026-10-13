@@ -19,6 +19,7 @@
 package org.grails.transaction
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since 2.3.6
  */
 @CompileStatic
+@PackageScope
 enum SpringTransactionSynchronizationManager implements SynchronizationManager {
 
     INSTANCE

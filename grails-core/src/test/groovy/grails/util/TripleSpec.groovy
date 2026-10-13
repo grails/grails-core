@@ -32,6 +32,11 @@ class TripleSpec extends Specification {
         triple.getcValue() == true
     }
 
+    void 'the components are fields, not Groovy properties, so only the original accessors exist'() {
+        expect:
+        !Triple.methods.any { it.name in ['getAValue', 'getBValue', 'getCValue', 'setAValue', 'setBValue', 'setCValue'] }
+    }
+
     void 'two triples with equal values are equal and share a hash code'() {
         expect:
         new Triple<>('a', 1, true) == new Triple<>('a', 1, true)
