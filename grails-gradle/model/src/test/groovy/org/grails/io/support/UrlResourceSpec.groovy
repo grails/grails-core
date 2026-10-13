@@ -106,4 +106,63 @@ class UrlResourceSpec extends Specification {
         resource.toString() == resource.getDescription()
     }
 
+    void 'a resource can be created from a URI, a URL string or a URL'() {
+        given:
+        URI uri = new File('/tmp/x.txt').toURI()
+
+        expect:
+        new UrlResource(uri).URL == uri.toURL()
+        new UrlResource(uri).URI.is(uri) || new UrlResource(uri).URI == uri
+        new UrlResource(uri.toString()).URL == uri.toURL()
+        new UrlResource(uri) == new UrlResource(uri.toURL())
+    }
+
+    void 'getURI derives the URI from the file when none was given'() {
+        given:
+        File file = new File('/tmp/derived.txt')
+
+        expect:
+        new UrlResource(file.toURI().toURL()).URI == file.toURI()
+    }
+
+    void 'getFile resolves through the URI when the resource was created from one'() {
+        given:
+        File file = new File('/tmp/viauri.txt')
+
+        expect:
+        new UrlResource(file.toURI()).file == file
+    }
+
+    void 'createRelative drops a leading slash and returns null for an unusable path'() {
+        given:
+        UrlResource base = new UrlResource('http://example.com/a/b.txt')
+
+        expect:
+        base.createRelative('/c.txt').URL.toString() == 'http://example.com/a/c.txt'
+        base.createRelative('foo:bar') == null
+    }
+
+    void 'hashCode is consistent with equals'() {
+        expect:
+        new UrlResource('http://example.com/a/../b').hashCode() == new UrlResource('http://example.com/b').hashCode()
+    }
+
+    void 'getInputStream reads a file resource'() {
+        given:
+        File file = File.createTempFile('url-resource', '.txt')
+        file.deleteOnExit()
+        file.text = 'content'
+
+        expect:
+        new UrlResource(file.toURI().toURL()).inputStream.text == 'content'
+    }
+
+    void 'getInputStream fails for a resource that does not exist'() {
+        when:
+        new UrlResource(new File('/no/such/file.txt').toURI().toURL()).inputStream
+
+        then:
+        thrown(IOException)
+    }
+
 }
