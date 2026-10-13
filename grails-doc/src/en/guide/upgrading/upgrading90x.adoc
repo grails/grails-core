@@ -174,15 +174,8 @@ Controller unit tests use Boot's Jackson configuration and the same setting. Sup
 `JsonMapperBuilderCustomizer` from a nested Spring `@Configuration` class, so Boot can see it before
 evaluating its conditional beans. A mapper registered by the deprecated `doWithSpring` callback is too
 late to make Boot back off. Named JSON
-configurations work through `render` and `respond` in `ControllerUnitTest`. The optional `grails-xml`
-beans are contributed by web test traits when present, without loading the XML plugin's dependency
-graph. Web traits automatically include `restResponder`, even when a test overrides
-`getIncludePlugins()`, and provide JSON conversion beans and Boot's mapper configuration.
-They do not automatically load the controllers, URL mappings or i18n plugins; link generation retains
-the curated unit-test setup. Plain `GrailsUnitTest` and `ServiceUnitTest` do not load XML or the web
-plugin graph simply because that module is on the classpath.
-Web unit tests build Spring MVC's message converters from the test classpath and configuration; see
-<<unitTesting,Unit Testing>>.
+configurations work through `render` and `respond` in `ControllerUnitTest`. Section 10 covers the
+other changes to web unit tests.
 
 ==== 4. JSON Converter Customization Moves to Jackson
 
@@ -347,17 +340,17 @@ Adding `spring-boot-starter-hateoas` alone does not register a Grails renderer f
 renderer for the desired media type.
 
 ==== 9. Grails Format Resolution and Spring MVC Content Negotiation
-Grails reads the `Accept` header with Spring's `MediaType` parser. Ordinary headers resolve as before, but
-media type names are now matched case-insensitively: `Accept: Application/JSON` resolves to `json`, where
-Grails 8 matched no configured type and resolved to `all`. A value Spring rejects, such as a quality
-value above 1, is still read as Grails 8 read it.
-
 
 Grails format resolution -- `withFormat`, `respond`, and `response.format` -- applies the `grails.mime.*`
 rules. Spring MVC keeps its own content negotiation: an `@RestController`, an actuator endpoint or any other
 Spring handler continues to match `produces` against the `Accept` header exactly as in a plain Spring
 Boot application, and still answers `406 Not Acceptable` for a media type it cannot produce. The
 `spring.mvc.contentnegotiation.*` properties therefore continue to work.
+
+Grails reads the `Accept` header with Spring's `MediaType` parser. Ordinary headers resolve as before, but
+media type names are now matched case-insensitively: `Accept: Application/JSON` resolves to `json`, where
+Grails 8 matched no configured type and resolved to `all`. A value Spring rejects, such as a quality
+value above 1, is still read as Grails 8 read it.
 
 The data-format extensions `json`, `xml`, `hal`, `atom`, `rss`, `csv` and `text` declared in
 `grails.mime.types` are additionally registered with Spring as format aliases. Spring MVC negotiates
@@ -367,3 +360,16 @@ upgrade `?format=json` still does not change what a Spring MVC endpoint returns.
 as `html` and `js` are not registered, preserving Spring's reflected-file-download protection.
 Application media types are preferred for aliases with multiple names, and Boot's
 `spring.mvc.contentnegotiation.media-types.*` overrides these defaults. Invalid names are skipped.
+
+==== 10. Web Unit Tests Set Up More of the Web Layer
+
+Web test traits such as `ControllerUnitTest` and `TagLibUnitTest` now always include the
+`restResponder` plugin, even when a spec overrides `getIncludePlugins()`. They also provide JSON
+conversion beans with Boot's Jackson configuration, build Spring MVC's message converters from the
+test classpath, and add the `grails-xml` beans when that module is on the test classpath, without
+loading the XML plugin's dependency graph. A spec that overrides `getIncludePlugins()` or asserts on
+the beans in its application context sees these additions.
+
+The traits still do not load the controllers, URL mappings or i18n plugins; link generation keeps the
+curated unit-test setup. `GrailsUnitTest` and `ServiceUnitTest` do not load XML or the web plugins
+just because those modules are on the classpath. See <<unitTesting,Unit Testing>>.
