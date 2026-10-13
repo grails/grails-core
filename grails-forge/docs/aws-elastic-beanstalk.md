@@ -89,6 +89,8 @@ Create one environment stack for each row. The seven listener priorities must re
 
 `HostName` supplies both the host-header condition and the application's `HOSTNAME` setting. Do not use a path rule or the listener default rule for a slot. `next-snapshot` currently serves `8.0.0-SNAPSHOT` from `8.0.x`. `older` currently serves `7.0.6` from `7.0.x`.
 
+The Grails-based API uses `https://<HOSTNAME>` as the base for its response links and plain-text usage URLs, even without an `X-Forwarded-Proto` header. An explicit `grails.forge.url` overrides it. When neither is configured, the API derives the base URL from the request, including forwarded headers.
+
 ## Stack Deployment Order
 
 Deploy `grails-forge/infrastructure/shared.yaml` first. Its exact required parameters are `VpcId`, `PublicSubnets`, `CertificateArn`, and `GitHubOidcProviderArn`; `ApplicationName` defaults to `grails-forge` and may be supplied explicitly. The workflow derives each environment name as `<ApplicationName>-<slot>`. Do not use `StackPrefix` or `PublicSubnetIds`.
@@ -170,6 +172,16 @@ curl --fail --show-error --silent \
 ```
 
 Repeat for all seven hostnames. Success proves certificate selection, SNI, the host rule, and target reachability. Public DNS already CNAMEs these hostnames to the ALB, so the same check works without `--connect-to`.
+
+## API Compatibility
+
+The Grails-based hosted API preserves the contracts used by the Forge UI and existing shared links:
+
+- Generation endpoints reject explicitly supplied invalid options with HTTP 400; omitted options retain their defaults.
+- Error responses expose the reason in `message` and `_embedded.errors[0].message`.
+- Feature-listing filters remain lenient, ignoring unrecognized option values.
+- `/select-options` retains uppercase option enum names for compatibility with stored UI selections and shared links.
+- GET endpoints also accept HEAD with the same status and content type and no response body. For example, `HEAD /versions` returns 200, and `HEAD /create/web/demo` returns 201.
 
 ## Cloudflare DNS
 

@@ -55,6 +55,8 @@ Use `-PskipForgeTests` to skip Forge tests and their local-Maven publication pre
 
 The CLI is a Java application distributed with Grails for Windows, Linux and macOS. Download it from the [releases page](https://github.com/apache/grails-core/releases). For installation see the [Grails documentation](https://grails.apache.org/docs/latest/guide/index.html#buildCLI).
 
+The Forge CLI defaults to classpath application configuration (`spring.config.location=classpath:/`), so local `application.yml` and `config/` files are not loaded into the generator's context.
+
 If you prefer not to install an application to create Grails applications you can do so with `curl` directly from the API:
 
 ```bash

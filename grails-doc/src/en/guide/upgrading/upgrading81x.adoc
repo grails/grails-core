@@ -25,10 +25,6 @@ As with `contentType`, codecs and `compileStatic`, the last value of a preproces
 
 The new `trimLogicLines` setting is opt-in. See link:#pageDirectives[Page Directives] for its supported syntax and line-ending behavior.
 
-=== Forge generation and API compatibility
+=== Forge project generation
 
 Default projects consistently include Mockito with Spock. When both Grails Data for MongoDB and the synchronous MongoDB driver are selected, Grails Data owns the MongoDB URLs: development and test use embedded databases, while production uses the configured external server.
-
-Forge generation endpoints reject explicitly supplied invalid options with HTTP 400; omitted options retain their defaults. Error responses expose the reason in `message` and `_embedded.errors[0].message`. Feature-listing filters remain lenient. Option enum values retain their uppercase names for compatibility with existing UI selections and shared links, and GET endpoints also accept HEAD.
-
-The Forge CLI loads its application configuration from the classpath rather than from the project being generated. The hosted API continues to use `HOSTNAME` as its HTTPS link base when set; an explicit `grails.forge.url` overrides it.
