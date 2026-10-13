@@ -21,6 +21,7 @@ package org.grails.compiler.injection
 import java.util.concurrent.ConcurrentHashMap
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import groovy.transform.stc.POJO
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport
 import org.codehaus.groovy.ast.ClassNode
@@ -44,6 +45,7 @@ import org.grails.io.support.Resource
  * @since 3.0
  */
 @CompileStatic
+@PackageScope
 class PluginAstReader {
 
     private BasicGrailsPluginInfo pluginInfo
@@ -52,6 +54,7 @@ class PluginAstReader {
         this.pluginInfo = new BasicGrailsPluginInfo()
     }
 
+    @PackageScope
     GrailsPluginInfo getPluginInfo() {
         return this.pluginInfo
     }
