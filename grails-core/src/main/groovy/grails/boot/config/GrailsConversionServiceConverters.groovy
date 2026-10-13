@@ -19,6 +19,7 @@
 package grails.boot.config
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.springframework.context.ApplicationContext
 import org.springframework.core.convert.TypeDescriptor
 import org.springframework.core.convert.converter.ConditionalGenericConverter
@@ -47,6 +48,7 @@ import org.grails.config.NavigableMap
  * @since 8.0
  */
 @CompileStatic
+@PackageScope
 final class GrailsConversionServiceConverters {
 
     private GrailsConversionServiceConverters() {
@@ -65,7 +67,7 @@ final class GrailsConversionServiceConverters {
 
     private static boolean isRegistered(ConfigurableConversionService conversionService, ApplicationContext applicationContext) {
         return conversionService.canConvert(RegistrationMarker, ApplicationContext) &&
-                conversionService.convert(RegistrationMarker.INSTANCE, ApplicationContext) == applicationContext
+                conversionService.convert(RegistrationMarker.INSTANCE, ApplicationContext).is(applicationContext)
     }
 
     /**

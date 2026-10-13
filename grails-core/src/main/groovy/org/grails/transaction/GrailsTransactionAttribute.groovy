@@ -104,7 +104,7 @@ class GrailsTransactionAttribute extends RuleBasedTransactionAttribute {
 
     private void copyGrailsState(TransactionDefinition other) {
         if (other instanceof GrailsTransactionAttribute) {
-            this.inheritRollbackOnly = ((GrailsTransactionAttribute) other).inheritRollbackOnly
+            this.inheritRollbackOnly = ((GrailsTransactionAttribute) other).@inheritRollbackOnly
         }
     }
 

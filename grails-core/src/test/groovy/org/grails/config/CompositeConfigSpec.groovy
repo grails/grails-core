@@ -22,6 +22,8 @@ import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
 import spock.lang.Specification
 
+import org.grails.core.exceptions.GrailsConfigurationException
+
 class CompositeConfigSpec extends Specification {
 
     private PropertySourcesConfig configOf(Map values, String name = 'test') {
@@ -113,13 +115,44 @@ class CompositeConfigSpec extends Specification {
         composite.getRequiredProperty('missing')
 
         then:
-        thrown(IllegalStateException)
+        IllegalStateException e = thrown()
+        e.message == 'Value for key [missing] cannot be resolved'
+
+        when:
+        composite.getRequiredProperty('missing', Integer)
+
+        then:
+        e = thrown()
+        e.message == 'Value for key [missing] cannot be resolved'
 
         when:
         String value = composite.getRequiredProperty('a')
 
         then:
         value == '1'
+    }
+
+    void 'getProperty with allowed values returns a permitted value or the default'() {
+        given:
+        def composite = new CompositeConfig()
+        composite.addFirst(configOf([mode: 'fast']))
+
+        expect:
+        composite.getProperty('mode', String, 'slow', ['fast', 'slow']) == 'fast'
+        composite.getProperty('missing', String, 'slow', ['fast', 'slow']) == 'slow'
+    }
+
+    void 'getProperty with allowed values rejects a value outside the list and names the key, value and choices'() {
+        given:
+        def composite = new CompositeConfig()
+        composite.addFirst(configOf([mode: 'fast']))
+
+        when:
+        composite.getProperty('mode', String, 'slow', ['slow', 'medium'])
+
+        then:
+        GrailsConfigurationException e = thrown()
+        e.message == 'Invalid configuration value [fast] for key [mode]. Possible values [slow, medium]'
     }
 
     void 'mutating methods are unsupported since a composite cannot be modified'() {
