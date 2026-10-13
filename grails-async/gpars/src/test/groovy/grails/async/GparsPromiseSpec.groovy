@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 /**
- * @author Graeme Rocher
  * @since 2.3
  */
 class GparsPromiseSpec extends Specification {

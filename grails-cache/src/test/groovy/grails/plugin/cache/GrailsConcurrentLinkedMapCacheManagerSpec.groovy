@@ -22,9 +22,6 @@ import groovy.concurrent.ParallelScope
 
 import spock.lang.Specification
 
-/**
- * @author Jakob Drangmeister
- */
 class GrailsConcurrentLinkedMapCacheManagerSpec extends Specification {
 
     private final GrailsConcurrentLinkedMapCacheManager manager = new GrailsConcurrentLinkedMapCacheManager()

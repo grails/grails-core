@@ -38,7 +38,6 @@ import org.grails.events.bus.ExecutorEventBus
 /**
  * Factory bean for usage within Spring
  *
- * @author Graeme Rocher
  * @since 3.3
  */
 @Slf4j

@@ -39,7 +39,6 @@ import static groovyx.gpars.actor.Actors.actor
 /**
  * A event bus that uses GPars actors
  *
- * @author Graeme Rocher
  * @since 3.3
  * @deprecated GPars is superseded by Groovy 6's {@code groovy.concurrent} toolkit. Replace the
  * {@code grails-events-gpars} dependency with {@code grails-events-groovy-concurrent}, which provides

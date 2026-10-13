@@ -36,7 +36,6 @@ import grails.async.factory.AbstractPromiseFactory
 /**
  * GPars implementation of the {@link grails.async.PromiseFactory} interface
  *
- * @author Graeme Rocher
  * @since 2.3
  * @deprecated GPars is superseded by Groovy 6's {@code groovy.concurrent} toolkit. Replace the
  * {@code grails-async-gpars} dependency with {@code grails-async-groovy-concurrent}, which provides
