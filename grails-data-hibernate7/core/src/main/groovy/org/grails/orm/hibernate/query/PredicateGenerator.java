@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.criteria.AbstractQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.JoinType;
@@ -456,7 +457,7 @@ public class PredicateGenerator {
     }
 
     /**
-     * Returns a column of the entity's own table, whose table alias replaces {@code {alias}} in a SQL restriction:
+     * Returns a column of the entity's own table, whose table alias replaces {@code {alias}} in native SQL:
      * its identifier column, or the first one of a composite identifier. An identifier that is an association
      * stands for its foreign key columns, which are resolved the same way from the associated entity.
      */
@@ -466,7 +467,7 @@ public class PredicateGenerator {
         while (true) {
             PersistentProperty<?> identity = firstIdentifierProperty(current);
             if (identity == null) {
-                throw new ConfigurationException("Cannot use sqlRestriction with {alias} on class [" + entity.getJavaClass().getName() + "] without an identifier");
+                throw new ConfigurationException("Cannot use {alias} in native SQL on class [" + entity.getJavaClass().getName() + "] without an identifier");
             }
             path = path.get(identity.getName());
             if (!(identity instanceof Association<?> association) || association.getAssociatedEntity() == null) {
@@ -484,12 +485,22 @@ public class PredicateGenerator {
         return compositeIdentity == null || compositeIdentity.length == 0 ? null : compositeIdentity[0];
     }
 
-    private Predicate handleSqlRestriction(From<?, ?> root, JpaQueryContext context, GrailsHibernatePersistentEntity entity, SqlRestriction restriction) {
+    /**
+     * Returns the first arguments of a function that renders native SQL: the SQL as a literal and, if it contains
+     * {@code {alias}}, a column of the entity's own table whose table alias replaces it.
+     */
+    static List<Expression<?>> nativeSqlArguments(
+            CriteriaBuilder criteriaBuilder, String sql, From<?, ?> root, GrailsHibernatePersistentEntity entity) {
         List<Expression<?>> arguments = new ArrayList<>();
-        arguments.add(criteriaBuilder.literal(restriction.sql()));
-        if (restriction.sql().contains(GrailsSqlRestrictionFunction.ALIAS_PLACEHOLDER)) {
+        arguments.add(criteriaBuilder.literal(sql));
+        if (sql.contains(GrailsSqlRestrictionFunction.ALIAS_PLACEHOLDER)) {
             arguments.add(aliasColumn(root, entity));
         }
+        return arguments;
+    }
+
+    private Predicate handleSqlRestriction(From<?, ?> root, JpaQueryContext context, GrailsHibernatePersistentEntity entity, SqlRestriction restriction) {
+        List<Expression<?>> arguments = nativeSqlArguments(criteriaBuilder, restriction.sql(), root, entity);
         for (Object value : restriction.values()) {
             ParameterExpression<?> parameter = criteriaBuilder.parameter(value.getClass());
             context.bindParameter(parameter, value);

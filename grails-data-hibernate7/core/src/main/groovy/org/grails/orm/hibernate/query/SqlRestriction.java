@@ -106,7 +106,7 @@ public record SqlRestriction(String sql, List<?> values) implements Query.Criter
      * Returns the index after the quoted text starting at {@code start}, where a doubled quote stands for the quote
      * itself.
      */
-    private static int skipQuoted(String sql, int start, char quote) {
+    static int skipQuoted(String sql, int start, char quote) {
         int i = start + 1;
         while (i < sql.length()) {
             if (sql.charAt(i) == quote) {
@@ -121,7 +121,7 @@ public record SqlRestriction(String sql, List<?> values) implements Query.Criter
         return i;
     }
 
-    private static int endOfLine(String sql, int start) {
+    static int endOfLine(String sql, int start) {
         for (int i = start; i < sql.length(); i++) {
             char c = sql.charAt(i);
             if (c == '\n' || c == '\r') {
