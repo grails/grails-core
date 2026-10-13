@@ -165,6 +165,25 @@ class GrailsContentNegotiationStrategySpec extends Specification {
         manager.allFileExtensions.disjoint(['html', 'js', 'css', 'pdf', 'form', 'multipartform'])
     }
 
+    void 'the format aliases do not steer Spring MVC while parameter negotiation is off'() {
+        given:
+        def grailsConfigurer = new GrailsMimeTypesWebMvcConfigurer(strategy())
+        def mvc = new WebMvcConfigurationSupport() {
+            @Override
+            protected void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+                grailsConfigurer.configureContentNegotiation(configurer)
+            }
+        }
+        def manager = mvc.mvcContentNegotiationManager()
+        def request = new MockHttpServletRequest()
+        request.setParameter('format', 'xml')
+        request.addHeader('Accept', MediaType.APPLICATION_JSON_VALUE)
+
+        expect: 'the alias is registered, but Spring answers the Accept header and ignores the format parameter'
+        manager.mediaTypeMappings['xml'] == MediaType.APPLICATION_XML
+        manager.resolveMediaTypes(new ServletWebRequest(request)) == [MediaType.APPLICATION_JSON]
+    }
+
     void 'an alias configured by Boot or the application overrides the Grails one'() {
         given:
         def context = new AnnotationConfigWebApplicationContext()

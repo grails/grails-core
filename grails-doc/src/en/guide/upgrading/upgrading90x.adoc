@@ -360,7 +360,10 @@ Boot application, and still answers `406 Not Acceptable` for a media type it can
 `spring.mvc.contentnegotiation.*` properties therefore continue to work.
 
 The data-format extensions `json`, `xml`, `hal`, `atom`, `rss`, `csv` and `text` declared in
-`grails.mime.types` are additionally registered with Spring as format aliases. Browser formats such
+`grails.mime.types` are additionally registered with Spring as format aliases. Spring MVC negotiates
+with them only when the application enables parameter negotiation with
+`spring.mvc.contentnegotiation.favor-parameter: true`. Spring Boot leaves it disabled, so after the
+upgrade `?format=json` still does not change what a Spring MVC endpoint returns. Browser formats such
 as `html` and `js` are not registered, preserving Spring's reflected-file-download protection.
 Application media types are preferred for aliases with multiple names, and Boot's
 `spring.mvc.contentnegotiation.media-types.*` overrides these defaults. Invalid names are skipped.

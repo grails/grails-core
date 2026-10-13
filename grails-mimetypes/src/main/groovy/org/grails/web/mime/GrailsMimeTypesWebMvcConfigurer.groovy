@@ -22,15 +22,16 @@ import groovy.transform.CompileStatic
 
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-
-import grails.web.mime.MimeType
-
 import org.springframework.http.MediaType
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
+import grails.web.mime.MimeType
+
 /**
- * Installs Grails format negotiation as the Spring MVC content negotiation strategy.
+ * Registers the configured Grails data formats with Spring MVC as format aliases, which Spring
+ * uses only when parameter negotiation is enabled, and holds the strategy Grails' own format
+ * resolution uses.
  */
 @CompileStatic
 @Order(Ordered.HIGHEST_PRECEDENCE)
