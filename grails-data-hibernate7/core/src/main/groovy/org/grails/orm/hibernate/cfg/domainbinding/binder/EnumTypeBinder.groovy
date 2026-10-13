@@ -32,6 +32,7 @@ import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEnumProperty
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
+import org.grails.orm.hibernate.cfg.domainbinding.util.CreateKeyForProps
 import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsEnumType
 
 import static org.grails.orm.hibernate.cfg.domainbinding.binder.GrailsDomainBinder.ENUM_CLASS_PROP
@@ -46,6 +47,7 @@ class EnumTypeBinder {
     private final IndexBinder indexBinder
     private final ColumnConfigToColumnBinder columnConfigToColumnBinder
     private final PersistentEntityNamingStrategy namingStrategy
+    private final CreateKeyForProps createKeyForProps
 
     EnumTypeBinder(
             MetadataBuildingContext metadataBuildingContext,
@@ -56,7 +58,8 @@ class EnumTypeBinder {
                 columnNameForPropertyAndPathFetcher,
                 new IndexBinder(),
                 new ColumnConfigToColumnBinder(),
-                namingStrategy)
+                namingStrategy,
+                new CreateKeyForProps(columnNameForPropertyAndPathFetcher))
     }
 
     protected EnumTypeBinder(
@@ -64,12 +67,14 @@ class EnumTypeBinder {
             ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher,
             IndexBinder indexBinder,
             ColumnConfigToColumnBinder columnConfigToColumnBinder,
-            PersistentEntityNamingStrategy namingStrategy) {
+            PersistentEntityNamingStrategy namingStrategy,
+            CreateKeyForProps createKeyForProps) {
         this.metadataBuildingContext = metadataBuildingContext
         this.columnNameForPropertyAndPathFetcher = columnNameForPropertyAndPathFetcher
         this.indexBinder = indexBinder
         this.columnConfigToColumnBinder = columnConfigToColumnBinder
         this.namingStrategy = namingStrategy
+        this.createKeyForProps = createKeyForProps
     }
 
     BasicValue bindEnumType(@Nonnull HibernateEnumProperty property, String path) {
@@ -98,6 +103,7 @@ class EnumTypeBinder {
         Table t = simpleValue.table
         t.addColumn(column)
         simpleValue.addColumn(column)
+        createKeyForProps.createKeyForProps(property, path, t, columnName)
 
         if (!pc.columns.isEmpty()) {
             ColumnConfig columnConfig = pc.columns.get(0)
