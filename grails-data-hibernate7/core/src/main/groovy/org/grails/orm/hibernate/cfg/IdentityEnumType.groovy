@@ -204,7 +204,7 @@ class IdentityEnumType implements UserType<Object>, ParameterizedType, Serializa
         private final Map keyToEnum
         private final Class keyType
 
-        BidiEnumMap(Class<? extends Enum<?>> enumClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        private BidiEnumMap(Class<? extends Enum<?>> enumClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
             EnumMap enumToKey = new EnumMap(enumClass)
             HashMap keyToEnum = new HashMap()
 

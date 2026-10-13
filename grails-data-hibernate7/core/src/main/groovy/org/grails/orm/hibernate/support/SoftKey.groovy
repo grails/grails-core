@@ -19,6 +19,7 @@
 package org.grails.orm.hibernate.support
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 import java.lang.ref.SoftReference
 
@@ -30,7 +31,7 @@ import java.lang.ref.SoftReference
 @CompileStatic
 class SoftKey<T> extends SoftReference<T> {
 
-    final int hash
+    @PackageScope final int hash
 
     SoftKey(T referent) {
         super(referent)

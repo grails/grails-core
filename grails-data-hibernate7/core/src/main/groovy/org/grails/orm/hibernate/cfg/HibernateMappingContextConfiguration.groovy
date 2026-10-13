@@ -19,6 +19,7 @@
 package org.grails.orm.hibernate.cfg
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import jakarta.annotation.Nullable
 import jakarta.persistence.Embeddable
 import jakarta.persistence.Entity
@@ -360,7 +361,7 @@ class HibernateMappingContextConfiguration extends Configuration
         return sessionFactory
     }
 
-    ClassLoader resolveSessionFactoryClassLoader() {
+    @PackageScope ClassLoader resolveSessionFactoryClassLoader() {
         Object classLoaderObject = properties.get(AvailableSettings.CLASSLOADERS)
         ClassLoader storedClassLoader = classLoaderObject instanceof ClassLoader ?
                 (ClassLoader) classLoaderObject : getClass().classLoader

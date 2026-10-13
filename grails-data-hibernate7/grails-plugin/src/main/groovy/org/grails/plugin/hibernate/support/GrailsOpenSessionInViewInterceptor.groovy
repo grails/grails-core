@@ -19,6 +19,7 @@
 package org.grails.plugin.hibernate.support
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.hibernate.FlushMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
@@ -56,9 +57,9 @@ class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterceptor {
 
     private static class AdditionalSessionFactoryConfig {
 
-        final String connectionName
-        final SessionFactory sessionFactory
-        final FlushMode flushMode
+        @PackageScope final String connectionName
+        @PackageScope final SessionFactory sessionFactory
+        @PackageScope final FlushMode flushMode
 
         AdditionalSessionFactoryConfig(String connectionName, SessionFactory sessionFactory, FlushMode flushMode) {
             this.connectionName = connectionName

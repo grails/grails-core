@@ -21,6 +21,7 @@ package org.grails.orm.hibernate.query
 import java.util.function.Predicate
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 import org.grails.datastore.mapping.query.Query
 
@@ -47,7 +48,7 @@ class ProjectionPredicate implements Predicate<Query.Projection> {
             { Query.Projection projection -> projection instanceof Query.PropertyProjection } as Predicate<Query.Projection>
 
     @SuppressWarnings('unchecked')
-    Predicate<Query.Projection>[] projectionPredicates = [
+    @PackageScope Predicate<Query.Projection>[] projectionPredicates = [
         idProjectionPredicate,
         propertyProjectionPredicate,
         countProjectionPredicate,
