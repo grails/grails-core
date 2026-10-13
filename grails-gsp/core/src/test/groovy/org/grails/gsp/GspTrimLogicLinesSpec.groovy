@@ -132,6 +132,78 @@ ${DayOfWeek.FRIDAY}
 ''', [:]) == 'FRIDAY\n'
     }
 
+    void "the last page directive supplying trimLogicLines takes precedence"() {
+        expect:
+        render('<%@ page import="java.time.DayOfWeek" %>\n' +
+                "<%@ page trimLogicLines=\"${first}\" %>\n" +
+                "<%@ page trimLogicLines=\"${!first}\" %>\n" +
+                '<% if (true) { %>\nline\n<% } %>\n', [:]) == expected
+
+        where:
+        first | expected
+        true  | '\n\n\n\nline\n\n'
+        false | 'line\n'
+    }
+
+    void 'preprocessing ignores directives inside either GSP comment syntax'() {
+        expect:
+        render("${opening} <%@ page trimLogicLines=\"true\" %> ${closing}\n" +
+                '<% if (true) { %>\nx\n<% } %>\n', [:]) == '\n\nx\n\n'
+
+        where:
+        opening | closing
+        '%{--'  | '--}%'
+        '<%--'  | '--%>'
+    }
+
+    void 'preprocessing settings ignore case and surrounding value whitespace'() {
+        expect:
+        render('<%@ page trimLogicLines="false" %>\n' +
+                '<%@ page TRIMLOGICLINES=" true " GRAILSLAYOUTPREPROCESS=" false " %>\n' +
+                '<head><title>Example</title></head>\n', [:]) == '<head><title>Example</title></head>\n'
+    }
+
+    void 'short-form directives do not enable logic-line trimming'() {
+        expect:
+        render('@{ page trimLogicLines="true" }\n<% if (true) { %>\nx\n<% } %>\n', [:]) == '\n\nx\n\n'
+    }
+
+    void 'short-form directives and GSP tags keep their surrounding line breaks'() {
+        expect:
+        render('<%@ page trimLogicLines="true" %>\n' +
+                '@{ page import="java.time.DayOfWeek" }\n' +
+                '<g:if test="${true}">\nx\n</g:if>\n', [:]) == '\n\nx\n\n'
+    }
+
+    void "a lone carriage return does not end a logic line"() {
+        expect:
+        render('<%@ page trimLogicLines="true" %>\r<% if (true) { %>\rone\r<% } %>\rtwo\r', [:]) == '\r\rone\r\rtwo\r'
+    }
+
+    void "a later page directive disables layout preprocessing without trimming logic lines"() {
+        expect:
+        render('<%@ page import="java.time.DayOfWeek" %>\n' +
+                '<%@ page grailsLayoutPreprocess="true" %>\n' +
+                '<%@ page grailsLayoutPreprocess="false" %>\n' +
+                '<html><head><title>Example</title></head><body>content</body></html>', [:]) ==
+                '\n\n\n<html><head><title>Example</title></head><body>content</body></html>'
+    }
+
+    void "later page directives still replace content type codec and compilation settings"() {
+        when:
+        GroovyPageTemplate template = (GroovyPageTemplate) engine.createTemplate(
+                '<%@ page contentType="text/html" defaultCodec="html" compileStatic="true" %>' +
+                        '<%@ page contentType="text/plain" defaultCodec="none" compileStatic="false" %>${value}',
+                'later_directives')
+        StringWriter output = new StringWriter()
+        template.make([value: '<example>']).writeTo(output)
+
+        then:
+        template.metaInfo.contentType == 'text/plain'
+        !template.metaInfo.compileStaticMode
+        output.toString() == '<example>'
+    }
+
     void "text that looks like logic inside an expression is written as it is"() {
         expect:
         render('''<%@ page trimLogicLines="true" expressionCodec="none" %>

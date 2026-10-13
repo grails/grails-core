@@ -72,16 +72,28 @@ class ForgeRequestSupport {
     }
 
     /**
-     * The options of a generation: each option a request gives, or its default.
+     * The options of a generation: defaults apply only to omitted options. An invalid selection
+     * is a client error, unlike an unknown filter on a feature listing.
      */
     static Options options(String reloading, String gorm, String servlet, String javaVersion, OperatingSystem operatingSystem) {
         new Options(
-                parseEnum(DevelopmentReloading, reloading) ?: DevelopmentReloading.DEFAULT_OPTION,
-                GormImpl.parse(gorm) ?: GormImpl.DEFAULT_OPTION,
-                parseEnum(ServletImpl, servlet) ?: ServletImpl.DEFAULT_OPTION,
-                parseJdk(javaVersion) ?: JdkVersion.DEFAULT_OPTION,
+                selection('development reloading', reloading, parseEnum(DevelopmentReloading, reloading), DevelopmentReloading.DEFAULT_OPTION),
+                selection('Grails Data implementation', gorm, GormImpl.parse(gorm), GormImpl.DEFAULT_OPTION),
+                selection('servlet container', servlet, parseEnum(ServletImpl, servlet), ServletImpl.DEFAULT_OPTION),
+                selection('JDK version', javaVersion, parseJdk(javaVersion), JdkVersion.DEFAULT_OPTION),
                 operatingSystem
         )
+    }
+
+    static Map<String, Object> error(String message) {
+        [message: message, _embedded: [errors: [[message: message]]]]
+    }
+
+    private static <T> T selection(String label, String raw, T parsed, T defaultValue) {
+        if (raw != null && parsed == null) {
+            throw new IllegalArgumentException("Invalid ${label} selection: ${raw}")
+        }
+        parsed ?: defaultValue
     }
 
     /**
@@ -146,7 +158,7 @@ class ForgeRequestSupport {
     }
 
     static BuildTool parseBuild(String raw) {
-        parseEnum(BuildTool, raw)
+        selection('build tool', raw, parseEnum(BuildTool, raw), BuildTool.DEFAULT_OPTION)
     }
 
     /**

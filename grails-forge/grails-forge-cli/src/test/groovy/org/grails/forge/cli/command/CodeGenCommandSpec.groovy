@@ -35,9 +35,14 @@ class CodeGenCommandSpec extends Specification {
 
     void "test all codegen commands can be created"() {
         CodeGenConfig codeGenConfig = new CodeGenConfig()
+        Set<Class<? extends CodeGenCommand>> commandTypes = new Reflections(CodeGenCommand.packageName).getSubTypesOf(CodeGenCommand)
+
+        expect:
+        commandTypes.containsAll([CreateControllerCommand, CreateServiceCommand, CreateDomainClassCommand,
+                                  CreateTagLibCommand, CreateInterceptorCommand, CreateJobCommand, AddPropertyCommand])
 
         when:
-        new Reflections(CodeGenCommand.packageName).getSubTypesOf(CodeGenCommand).each { commandType ->
+        commandTypes.each { commandType ->
             CodeGenCommand command = commandType.getConstructor(CodeGenConfig).newInstance(codeGenConfig)
             beanContext.autowireCapableBeanFactory.autowireBean(command)
         }

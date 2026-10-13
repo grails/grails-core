@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,7 +97,7 @@ public class GroovyPageParser implements Tokens {
     private static final String TAGLIB_DIRECTIVE = "taglib";
 
     private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*(?!" + TAGLIB_DIRECTIVE + " )(.*?)\\s*%>", Pattern.DOTALL);
-    private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?%>", Pattern.DOTALL);
+    private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?--%>|%\\{--.*?--}%", Pattern.DOTALL);
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final Pattern NON_WHITESPACE_PATTERN = Pattern.compile("\\S");
     private static final Pattern IMPORT_SEMICOLON_PATTERN = Pattern.compile(";");
@@ -224,7 +225,7 @@ public class GroovyPageParser implements Tokens {
      * The page directive by which a page asks that the lines holding only directives, scriptlets and
      * comments write nothing, for a page rendering text in which every line break counts.
      */
-    public static final String TRIM_LOGIC_LINES_DIRECTIVE = "trimLogicLines";
+    private static final String TRIM_LOGIC_LINES_DIRECTIVE = "trimLogicLines";
 
     private String pluginAnnotation;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
@@ -426,26 +427,19 @@ public class GroovyPageParser implements Tokens {
     }
 
     private Map<String, String> parseDirectives(String gspSource) {
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         // strip gsp comments
         String input = PRESCAN_COMMENT_PATTERN.matcher(gspSource).replaceAll("");
         // find page directives
         Matcher m = PRESCAN_PAGE_DIRECTIVE_PATTERN.matcher(input);
-        boolean first = true;
         while (m.find()) {
             Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(m.group(1));
             while (mat.find()) {
                 String name = mat.group(1);
-                String value = mat.group(3);
-                // the first page directive is read as it always was, a later one only adds what it
-                // names that the ones before it do not
-                if (first) {
-                    result.put(name, value);
-                } else {
-                    result.putIfAbsent(name, value);
-                }
+                String value = mat.group(3).trim();
+                // Match directPage: later settings replace earlier ones.
+                result.put(name, value);
             }
-            first = false;
         }
         return result;
     }

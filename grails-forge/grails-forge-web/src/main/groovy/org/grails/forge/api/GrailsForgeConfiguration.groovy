@@ -19,6 +19,8 @@
 package org.grails.forge.api
 
 import groovy.transform.CompileStatic
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 import jakarta.annotation.Nullable
@@ -40,6 +42,17 @@ class GrailsForgeConfiguration {
     private URL url
     private String path
     private String redirectUrl = DEFAULT_REDIRECT_URL
+
+    GrailsForgeConfiguration() {
+        this('')
+    }
+
+    @Autowired
+    GrailsForgeConfiguration(@Value('${HOSTNAME:}') String hostname) {
+        if (hostname) {
+            url = URI.create("https://${hostname}").toURL()
+        }
+    }
 
     /**
      * @return The URI to redirect to when visiting via the browser

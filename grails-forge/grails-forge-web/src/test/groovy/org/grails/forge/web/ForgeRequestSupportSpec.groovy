@@ -51,9 +51,9 @@ class ForgeRequestSupportSpec extends Specification {
         filter.javaVersion == null
     }
 
-    void "options default every option a request leaves out or gets wrong"() {
+    void "options default every option a request leaves out"() {
         when:
-        Options options = ForgeRequestSupport.options(null, 'invalid', null, '21', OperatingSystem.LINUX)
+        Options options = ForgeRequestSupport.options(null, null, null, '21', OperatingSystem.LINUX)
 
         then:
         options.developmentReloading == DevelopmentReloading.DEFAULT_OPTION
@@ -61,6 +61,32 @@ class ForgeRequestSupportSpec extends Specification {
         options.servletImpl == ServletImpl.DEFAULT_OPTION
         options.javaVersion == JdkVersion.JDK_21
         options.operatingSystem == OperatingSystem.LINUX
+    }
+
+    void 'generation rejects an invalid #label selection'() {
+        when:
+        ForgeRequestSupport.options(reloading, gorm, servlet, jdk, OperatingSystem.LINUX)
+
+        then:
+        IllegalArgumentException error = thrown()
+        error.message.contains("Invalid ${label} selection")
+
+        where:
+        label                       | reloading | gorm       | servlet | jdk
+        'development reloading'     | 'invalid' | null       | null    | null
+        'Grails Data implementation' | null      | 'invalid'  | null    | null
+        'Grails Data implementation' | null      | ''         | null    | null
+        'servlet container'          | null      | null       | 'FOO'   | null
+        'JDK version'                | null      | null       | null    | 'JDK_99'
+    }
+
+    void 'generation rejects an invalid build tool'() {
+        when:
+        ForgeRequestSupport.parseBuild('invalid')
+
+        then:
+        IllegalArgumentException error = thrown()
+        error.message.contains('Invalid build tool selection')
     }
 
     void "parseJdk accepts JDK_21 and numeric 21"() {

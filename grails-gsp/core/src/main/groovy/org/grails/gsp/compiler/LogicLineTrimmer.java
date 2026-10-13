@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 /**
  * Removes the lines of a page that hold only template logic, for a page declaring
- * {@code trimLogicLines="true"}: a line holding nothing but page directives, scriptlets and comments,
+ * {@code trimLogicLines="true"}: a line holding nothing but {@code <%@ %>} directives, scriptlets and comments,
  * besides spaces and tabs, writes neither its indentation nor its line break. A line holding text, an
  * expression, a declaration or a tag is left as it is.
  *
@@ -33,8 +33,9 @@ import java.util.regex.Pattern;
  * whatever it looks like.</p>
  *
  * <p>The line break of a removed line is moved inside the line's last construct, just after its
- * opening delimiter, rather than dropped, so that every line of the page keeps its number in the
- * compiled page and in the errors reported against it.</p>
+ * opening delimiter, rather than dropped, to retain source line breaks. Existing scanner limitations
+ * around comments can still affect reported line numbers. LF and CRLF are recognized as line endings;
+ * a lone CR is not.</p>
  */
 final class LogicLineTrimmer {
 

@@ -34,9 +34,7 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputDirectories
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -97,7 +95,7 @@ abstract class WriteGrailsVersionInfoTask extends DefaultTask {
         }
 
         TreeMap<String, String> props = []
-        props.put("grails.version", getProjectVersion().get())
+        props.put('grails.version', getProjectVersion().get())
         if (endOfSupport.present) {
             String date = endOfSupport.get().trim()
             try {
@@ -105,16 +103,16 @@ abstract class WriteGrailsVersionInfoTask extends DefaultTask {
             } catch (DateTimeParseException e) {
                 throw new GradleException("grailsEndOfSupport must be an ISO date (yyyy-MM-dd) but was: ${date}", e)
             }
-            props.put("grails.endOfSupport", date)
+            props.put('grails.endOfSupport', date)
         }
-        ((GPathResult) pom.getProperty("properties")).children().forEach(child -> {
+        ((GPathResult) pom.getProperty('properties')).children().forEach(child -> {
             NodeChild node = (NodeChild) child
             props.put(node.name(), node.text())
         })
 
         try (OutputStream out = Files.newOutputStream(versions.toPath())) {
             for (Map.Entry<String, String> entry : props.entrySet()) {
-                getLogger().info("Writing version property: {} => {}", entry.getKey(), entry.getValue())
+                getLogger().info('Writing version property: {} => {}', entry.getKey(), entry.getValue())
                 String line = "${entry.getKey()}=${entry.getValue()}\n" as String
                 out.write(line.getBytes(StandardCharsets.ISO_8859_1))
             }

@@ -49,9 +49,11 @@ framework is visible here without publishing. Specs that build generated applica
 run `./gradlew :grails-forge-web:bootRun`; to run the CLI from this build, `./gradlew :grails-cli:installDist`
 and use `grails-cli/build/install/apache-grails-bin/bin/grails-forge-cli`.
 
+Use `-PskipForgeTests` to skip Forge tests and their local-Maven publication prerequisites.
+
 ## Installation
 
-The CLI application comes in various flavours from a universal Java applications to native applications for Windows, Linux and OS X. These are available for direct download on the [releases page](https://github.com/apache/grails-core/releases). For installation see the [Grails documentation](https://grails.apache.org/docs/latest/guide/index.html#buildCLI).
+The CLI is a Java application distributed with Grails for Windows, Linux and macOS. Download it from the [releases page](https://github.com/apache/grails-core/releases). For installation see the [Grails documentation](https://grails.apache.org/docs/latest/guide/index.html#buildCLI).
 
 If you prefer not to install an application to create Grails applications you can do so with `curl` directly from the API:
 
@@ -105,4 +107,3 @@ The API hosts are `latest.grails.org`, `snapshot.grails.org`, `next.grails.org`,
 Deployments package the Grails 8 `grails-forge-web` Tomcat `bootJar` as `app.jar` in the `grails-forge-web-aws.zip` source bundle. The bundle also contains `Procfile` and `start.sh`. Analytics is not deployed.
 
 For deployment, rollback, monitoring, and GCP decommissioning, see [AWS Elastic Beanstalk Deployment Runbook](docs/aws-elastic-beanstalk.md).
-

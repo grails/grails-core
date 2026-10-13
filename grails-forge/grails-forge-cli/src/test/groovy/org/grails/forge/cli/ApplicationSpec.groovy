@@ -1,25 +1,31 @@
 /*
- * Copyright 2017-2024 original authors
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *    https://www.apache.org/licenses/LICENSE-2.0
  *
- * https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
  */
 package org.grails.forge.cli
+
+import java.util.concurrent.TimeUnit
 
 import org.springframework.boot.web.server.context.WebServerApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.TempDir
 
 import grails.boot.GrailsApp
 import grails.core.GrailsApplication
@@ -35,6 +41,9 @@ import org.grails.forge.cli.command.CreateAppCommand
  * the core and Forge plugins and nothing else, with the commands as prototype beans.
  */
 class ApplicationSpec extends Specification {
+
+    @TempDir
+    File projectDir
 
     @Shared
     @AutoCleanup
@@ -73,6 +82,29 @@ class ApplicationSpec extends Specification {
         expect:
         Environment.current != Environment.DEVELOPMENT
         !Environment.current.reloadEnabled
+    }
+
+    void 'the CLI ignores application configuration in the working directory and its config directory'() {
+        given:
+        new File(projectDir, 'application.yml').text = 'spring:\n  main:\n    web-application-type: invalid\n'
+        File config = new File(projectDir, 'config')
+        config.mkdirs()
+        new File(config, 'application.yml').text = 'spring:\n  config:\n    import: file:missing-required-configuration.yml\n'
+        String classpath = System.getProperty('java.class.path')
+        File output = new File(projectDir, 'cli.log')
+
+        when:
+        Process process = new ProcessBuilder(new File(System.getProperty('java.home'), 'bin/java').absolutePath,
+                '-cp', classpath, Application.name, '--help')
+                .directory(projectDir).redirectErrorStream(true).redirectOutput(output).start()
+
+        then:
+        process.waitFor(90, TimeUnit.SECONDS)
+        assert process.exitValue() == 0: output.text
+        output.text.contains('Usage:')
+
+        cleanup:
+        process?.destroyForcibly()
     }
 
 }

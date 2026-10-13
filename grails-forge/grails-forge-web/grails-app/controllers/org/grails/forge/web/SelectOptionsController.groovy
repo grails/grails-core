@@ -35,7 +35,7 @@ import tools.jackson.databind.json.JsonMapper
 @Tag(name = 'options', description = 'The options of the generator')
 class SelectOptionsController {
 
-    static allowedMethods = [index: 'GET']
+    static allowedMethods = [index: ['GET', 'HEAD']]
 
     @Autowired
     MessageSource messageSource

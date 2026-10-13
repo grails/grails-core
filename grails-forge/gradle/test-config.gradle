@@ -48,7 +48,7 @@ tasks.withType(Test).configureEach { Test testTask ->
     outputs.cacheIf { cacheTests }
     outputs.upToDateWhen { cacheTests }
 
-    boolean skipped = project.hasProperty('skipTests')
+    boolean skipped = !forgeTestsEnabled
     onlyIf { !skipped }
     testLogging {
         events('passed', 'skipped', 'failed')

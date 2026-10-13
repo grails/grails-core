@@ -47,7 +47,7 @@ import tools.jackson.databind.json.JsonMapper
 @Tag(name = 'preview', description = 'Previewing the files of an application before generating it')
 class PreviewController {
 
-    static allowedMethods = [previewApp: 'GET']
+    static allowedMethods = [previewApp: ['GET', 'HEAD']]
 
     @Autowired
     ProjectGenerator projectGenerator
@@ -70,7 +70,7 @@ class PreviewController {
                    @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         ApplicationType applicationType = ForgeRequestSupport.parseType(type)
         if (applicationType == null || !ForgeRequestSupport.validName(name, ForgeRequestSupport.CREATE_NAME_PATTERN)) {
-            render status: 400
+            badRequest(applicationType == null ? "Unknown application type: ${type}" : "Invalid application name: ${name}")
             return
         }
         RequestInfo requestInfo = ForgeRequestSupport.info(request, grailsForgeConfiguration)
@@ -86,13 +86,17 @@ class PreviewController {
                     outputHandler,
                     ConsoleOutput.NOOP
             )
-        } catch (IllegalArgumentException ignored) {
-            render status: 400
+        } catch (IllegalArgumentException e) {
+            badRequest(e.message)
             return
         }
         PreviewDTO previewDTO = new PreviewDTO(outputHandler.project)
         previewDTO.addLink(Relationship.CREATE, requestInfo.link(Relationship.CREATE, applicationType))
         previewDTO.addLink(Relationship.SELF, requestInfo.self())
         render text: jsonMapper.writeValueAsString(previewDTO), contentType: 'application/json'
+    }
+
+    private void badRequest(String message) {
+        render status: 400, text: jsonMapper.writeValueAsString(ForgeRequestSupport.error(message)), contentType: 'application/json'
     }
 }

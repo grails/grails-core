@@ -22,8 +22,16 @@ import grails.testing.mixin.integration.Integration
 import grails.web.mapping.cors.GrailsCorsConfiguration
 import groovy.json.JsonSlurper
 import org.grails.forge.util.VersionInfo
+import org.grails.forge.template.GspView
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.support.AbstractResourceBasedMessageSource
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestAttributes
+import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
 import java.net.http.HttpClient
@@ -32,6 +40,7 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.LocalDate
+import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 @Integration(applicationClass = Application)
@@ -42,6 +51,9 @@ class ForgeApiIntegrationSpec extends Specification {
 
     @Autowired
     GrailsCorsConfiguration grailsCorsConfiguration
+
+    @Autowired
+    AbstractResourceBasedMessageSource messageSource
 
     void "GET /versions returns version map"() {
         when:
@@ -116,13 +128,17 @@ class ForgeApiIntegrationSpec extends Specification {
 
     void "GET /create/web/:name returns a named zip archive"() {
         when:
-        Map response = get('/create/web/forge-contract?features=gorm-mongodb&gorm=mongodb')
+        Map response = get('/create/web/forge-contract?features=gorm-mongodb&gorm=mongodb&reloading=devtools')
 
         then:
         response.status == 201
         response.contentType.startsWith('application/zip')
         response.contentDisposition.contains('forge-contract.zip')
         isZip(response.body as byte[])
+        zipText(response.body as byte[], 'forge-contract/build.gradle').contains('org.apache.grails:grails-data-mongodb')
+        zipText(response.body as byte[], 'forge-contract/build.gradle').contains('spring-boot-devtools')
+        zipText(response.body as byte[], 'forge-contract/grails-app/init/forge/contract/Application.groovy')
+        zipEntries(response.body as byte[]).every { it.startsWith('forge-contract/') }
     }
 
     void "GET /:name.zip returns a zip archive for the default application type"() {
@@ -134,6 +150,21 @@ class ForgeApiIntegrationSpec extends Specification {
         response.contentType.startsWith('application/zip')
         response.contentDisposition.contains('forge-default-contract.zip')
         isZip(response.body as byte[])
+    }
+
+    void "GET /create preserves the application name and package in a qualified name ending in #appName"() {
+        when:
+        Map response = get("/create/web/com.example.${appName}?features=gradle-settings-file")
+
+        then:
+        response.status == 201
+        response.contentType.startsWith('application/zip')
+        response.contentDisposition == "attachment; filename=${appName}.zip"
+        zipText(response.body as byte[], "${appName}/settings.gradle").contains("rootProject.name = \"${appName}\"")
+        zipText(response.body as byte[], "${appName}/grails-app/init/com/example/Application.groovy").contains('package com.example')
+
+        where:
+        appName << ['demo', 'json']
     }
 
     void "GET /preview/:type/:name returns generated project contents as JSON"() {
@@ -164,6 +195,36 @@ class ForgeApiIntegrationSpec extends Specification {
         featureDiff.contains('+## Feature gorm-mongodb documentation')
     }
 
+    void "GET /preview preserves the application name and package in a qualified name ending in #appName"() {
+        when:
+        Map response = get("/preview/web/com.example.${appName}?features=gradle-settings-file")
+        Map preview = json(response)
+
+        then:
+        response.status == 200
+        response.contentType.startsWith('application/json')
+        preview.contents['settings.gradle'].contains("rootProject.name = \"${appName}\"")
+        preview.contents['grails-app/init/com/example/Application.groovy'].contains('package com.example')
+
+        where:
+        appName << ['demo', 'json']
+    }
+
+    void "GET /diff preserves the application name in a qualified name ending in #appName"() {
+        when:
+        Map response = get("/diff/web/com.example.${appName}?features=gradle-settings-file")
+        String diff = text(response)
+
+        then:
+        response.status == 200
+        response.contentType.startsWith('text/plain')
+        diff.contains('+++ settings.gradle')
+        diff.contains("+rootProject.name = \"${appName}\"")
+
+        where:
+        appName << ['demo', 'json']
+    }
+
     void "GET /select-options exposes every supported option group"() {
         when:
         Map response = get('/select-options')
@@ -177,6 +238,9 @@ class ForgeApiIntegrationSpec extends Specification {
             group instanceof Map && group.options && group.defaultOption
         }
         options.type.options.any { it.name == 'web' }
+        (options.reloading.options*.value as Set) == (['DEVTOOLS', 'JREBEL', 'NONE'] as Set)
+        options.lang.options*.value == ['GROOVY']
+        options.type.options*.value.containsAll(['WEB', 'REST_API', 'PLUGIN', 'WEB_PLUGIN'])
     }
 
     void "GET / returns the plain text API description"() {
@@ -187,6 +251,8 @@ class ForgeApiIntegrationSpec extends Specification {
         response.status == 200
         response.contentType.startsWith('text/plain')
         text(response).contains('/application-types')
+        text(response).contains('/v3/api-docs')
+        text(response).contains('/swagger-ui/index.html')
     }
 
     void "JSON responses expose HAL _links and nothing of the Groovy objects behind them"() {
@@ -206,6 +272,132 @@ class ForgeApiIntegrationSpec extends Specification {
         exchange('POST', '/versions').status == 405
     }
 
+    void 'HEAD #path returns the GET status and content type without a body'() {
+        when:
+        Map response = exchange('HEAD', path)
+
+        then:
+        response.status == status
+        response.contentType.startsWith(contentType)
+        response.body.length == 0
+
+        where:
+        path                                      | status | contentType
+        '/versions'                               | 200    | 'application/json'
+        '/application-types'                      | 200    | 'application/json'
+        '/application-types/web'                  | 200    | 'application/json'
+        '/application-types/web/features'         | 200    | 'application/json'
+        '/application-types/web/features/default' | 200    | 'application/json'
+        '/select-options'                         | 200    | 'application/json'
+        '/preview/web/demo'                       | 200    | 'application/json'
+        '/diff/web/demo?features=gradle-settings-file' | 200 | 'text/plain'
+        '/diff/web/feature/gorm-mongodb'           | 200    | 'text/plain'
+        '/'                                       | 200    | 'text/plain'
+        '/create/web/demo'                        | 201    | 'application/zip'
+        '/demo.zip'                               | 201    | 'application/zip'
+    }
+
+    void 'generation endpoint #path rejects invalid #query instead of using a default'() {
+        when:
+        Map response = get("${path}?${query}")
+        Map error = json(response)
+
+        then:
+        response.status == 400
+        response.contentType.startsWith('application/json')
+        error.message.startsWith('Invalid ')
+        error._embedded.errors[0].message == error.message
+
+        where:
+        [path, query] << [
+                ['/create/web/demo', '/demo.zip', '/preview/web/demo', '/diff/web/demo', '/diff/web/feature/gorm-mongodb'],
+                ['gorm=invalid', 'gorm=hibernate6', 'gorm=', 'servlet=FOO', 'reloading=FOO', 'javaVersion=JDK_99']
+        ].combinations()
+    }
+
+    void 'create endpoint #path rejects an invalid build tool'() {
+        when:
+        Map response = get("${path}?build=invalid")
+
+        then:
+        response.status == 400
+        json(response).message.contains('Invalid build tool selection')
+
+        where:
+        path << ['/create/web/demo', '/demo.zip']
+    }
+
+    void 'generation endpoint #path explains conflicting features'() {
+        when:
+        Map response = get("${path}?features=mysql,postgres")
+        Map error = json(response)
+
+        then:
+        response.status == 400
+        error.message.contains('There can only be one of the following features selected')
+        error.message.contains('mysql')
+        error.message.contains('postgres')
+        error._embedded.errors[0].message == error.message
+
+        where:
+        path << ['/create/web/demo', '/demo.zip', '/preview/web/demo', '/diff/web/demo']
+    }
+
+    void 'plugin defaults include Mockito and Spock and feature listings hide internal features'() {
+        when:
+        Map defaults = json(get('/application-types/plugin/features/default'))
+        Map available = json(get('/application-types/plugin/features'))
+
+        then:
+        defaults.features*.name.containsAll(['mockito', 'spock'])
+        !available.features*.name.contains('base')
+        !json(get('/application-types/plugin')).features*.name.contains('base')
+    }
+
+    void 'Accept-Language selects localized application and feature descriptions'() {
+        given:
+        String[] originalBasenames = messageSource.basenameSet as String[]
+        messageSource.addBasenames('api-test-messages')
+
+        when:
+        Map type = json(get('/application-types/web', ['Accept-Language': 'fr']))
+        Map options = json(get('/select-options', ['Accept-Language': 'fr']))
+
+        then:
+        type.description == 'Application web de test'
+        type.features.find { it.name == 'grails-quartz' }.description == 'Planification de test'
+        options.type.options.find { it.name == 'web' }.description == 'Application web de test'
+        json(get('/application-types/web', ['Accept-Language': 'en'])).description != type.description
+
+        cleanup:
+        messageSource.setBasenames(originalBasenames)
+    }
+
+    void 'generator pages neither inherit the HTTP request model nor replace its writer'() {
+        given:
+        RequestAttributes previous = RequestContextHolder.getRequestAttributes()
+        MockHttpServletRequest request = new MockHttpServletRequest()
+        request.setAttribute('serverURL', 'https://request-only.example')
+        request.addParameter('grailsVersion', 'request-only-version')
+        request.getSession().setAttribute('serverURL', 'https://session-only.example')
+        GrailsWebRequest webRequest = new GrailsWebRequest(request, new MockHttpServletResponse(), new MockServletContext())
+        StringWriter writer = new StringWriter()
+        webRequest.out = writer
+        RequestContextHolder.setRequestAttributes(webRequest)
+
+        when:
+        String rendered = GspView.of('/forge/template/api/grailsForgeApi.gsp', [:]).render()
+
+        then:
+        !rendered.contains('request-only')
+        !rendered.contains('session-only')
+        GrailsWebRequest.lookup().out.is(writer)
+        writer.toString().empty
+
+        cleanup:
+        RequestContextHolder.setRequestAttributes(previous)
+    }
+
     void "CORS allows the Forge UI origin"() {
         expect:
         grailsCorsConfiguration.enabled
@@ -220,18 +412,37 @@ class ForgeApiIntegrationSpec extends Specification {
         ]
     }
 
-    void "unknown application types are client errors"() {
-        expect:
-        get('/application-types/not-a-type').status == 400
-        get('/create/web/bad!').status == 400
-        get('/create/web/forge-unknown?features=not-a-real-feature').status == 400
-        get('/preview/web/forge-unknown?features=not-a-real-feature').status == 400
-        get('/diff/web/forge-unknown?features=not-a-real-feature').status == 400
-        get('/create/web/micronaut').status == 400
-        get('/preview/web/micronaut').status == 400
-        get('/diff/web/micronaut').status == 400
-        get('/diff/web/bad!').status == 400
-        get('/diff/web/feature/gorm-mongodb?name=micronaut').status == 400
+    void 'client errors from #path explain the rejected request'() {
+        when:
+        Map response = get(path)
+        Map error = json(response)
+
+        then:
+        response.status == 400
+        response.contentType.startsWith('application/json')
+        error.message.contains(reason)
+        error._embedded.errors[0].message == error.message
+
+        where:
+        path                                                  | reason
+        '/application-types/not-a-type'                        | 'Unknown application type'
+        '/application-types/not-a-type/features'               | 'Unknown application type'
+        '/application-types/not-a-type/features/default'       | 'Unknown application type'
+        '/create/web/bad!'                                     | 'Invalid application name'
+        '/preview/web/bad!'                                    | 'Invalid application name'
+        '/diff/web/bad!'                                       | 'Invalid application name'
+        '/create/web/demo?features=not-a-real-feature'          | 'requested feature does not exist'
+        '/preview/web/demo?features=not-a-real-feature'         | 'requested feature does not exist'
+        '/diff/web/demo?features=not-a-real-feature'            | 'requested feature does not exist'
+        '/create/web/micronaut'                                | 'not a valid app name'
+        '/preview/web/micronaut'                               | 'not a valid app name'
+        '/diff/web/micronaut'                                  | 'not a valid app name'
+        '/diff/web/feature/gorm-mongodb?name=micronaut'          | 'not a valid app name'
+        '/diff/web/feature/gorm-mongodb?name=bad!'               | 'Invalid application name'
+        '/create/not-a-type/demo'                              | 'Unknown application type'
+        '/preview/not-a-type/demo'                             | 'Unknown application type'
+        '/diff/not-a-type/demo'                                | 'Unknown application type'
+        '/demo.zip?type=not-a-type'                            | 'Unknown application type'
     }
 
     void "generated links honor X-Forwarded-Proto"() {
@@ -376,6 +587,29 @@ class ForgeApiIntegrationSpec extends Specification {
         }
         finally {
             zip.close()
+        }
+    }
+
+    private static String zipText(byte[] body, String path) {
+        new ZipInputStream(new ByteArrayInputStream(body)).withCloseable { ZipInputStream zip ->
+            ZipEntry entry
+            while ((entry = zip.nextEntry) != null) {
+                if (entry.name == path) {
+                    return new String(zip.readAllBytes(), StandardCharsets.UTF_8)
+                }
+            }
+            return null
+        }
+    }
+
+    private static List<String> zipEntries(byte[] body) {
+        new ZipInputStream(new ByteArrayInputStream(body)).withCloseable { ZipInputStream zip ->
+            List<String> entries = []
+            ZipEntry entry
+            while ((entry = zip.nextEntry) != null) {
+                entries.add(entry.name)
+            }
+            entries
         }
     }
 }

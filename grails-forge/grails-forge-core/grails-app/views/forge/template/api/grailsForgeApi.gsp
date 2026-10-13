@@ -54,6 +54,9 @@ To view the possible features and their descriptions visit:
 
 ${serverURL}/application-types/{type}/features
 
+The OpenAPI description is available at ${serverURL}/v3/api-docs.
+Explore the API in Swagger UI at ${serverURL}/swagger-ui/index.html.
+
 === Examples
 
 To create a default application:

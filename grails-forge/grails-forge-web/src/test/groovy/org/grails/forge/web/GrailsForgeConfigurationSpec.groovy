@@ -24,6 +24,28 @@ import spock.lang.Specification
 
 class GrailsForgeConfigurationSpec extends Specification {
 
+    void 'the deployment hostname supplies HTTPS links unless an explicit URL overrides it'() {
+        given:
+        GrailsForgeConfiguration config = new GrailsForgeConfiguration('forge.example')
+
+        expect:
+        config.url.get().toString() == 'https://forge.example'
+
+        when:
+        config.url = URI.create('https://custom.example').toURL()
+
+        then:
+        config.url.get().toString() == 'https://custom.example'
+    }
+
+    void 'without a deployment hostname links use the request'() {
+        expect:
+        !new GrailsForgeConfiguration(hostname).url.present
+
+        where:
+        hostname << [null, '']
+    }
+
     void "redirectUrl is exposed as a redirect URI without a redirectUri setter"() {
         given:
         GrailsForgeConfiguration config = new GrailsForgeConfiguration()

@@ -69,6 +69,7 @@ class Application extends GrailsAutoConfiguration {
                 .bannerMode(Banner.Mode.OFF)
                 .logStartupInfo(false)
                 .addCommandLineProperties(false)
+                .properties('spring.config.location': 'classpath:/')
                 .addBootstrapRegistryInitializer(Application::declarePlugins)
     }
 

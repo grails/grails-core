@@ -37,6 +37,9 @@ spring:
   jackson:
     # the JSON of the API leaves out what a DTO does not carry
     default-property-inclusion: non_empty
+    datatype:
+      enum:
+        write-enums-using-to-string: false
 server:
   port: ${PORT:8080}
   forward-headers-strategy: framework

@@ -25,8 +25,10 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
 import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.GroovyPageTemplate
 import org.grails.gsp.io.DefaultGroovyPageLocator
 import org.grails.gsp.io.GroovyPageScriptSource
+import org.grails.taglib.encoder.DefaultOutputContextLookup
 
 /**
  * Renders the generator's pages: the GSPs of {@code grails-app/views/forge}, compiled when the module
@@ -78,7 +80,8 @@ final class ForgePages {
                 throw new IllegalArgumentException("No compiled page ${key}: a page of the generator lives " +
                         'under grails-app/views/forge of a module compiling its pages')
             }
-            engine.createTemplate(source)
+            GroovyPageTemplate template = (GroovyPageTemplate) engine.createTemplate(source)
+            new GroovyPageTemplate(template.metaInfo, new DefaultOutputContextLookup())
         }
     }
 

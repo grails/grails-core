@@ -20,10 +20,12 @@ package org.grails.forge.api
 
 import groovy.transform.CompileStatic
 import org.grails.forge.application.ApplicationType
-import org.grails.forge.feature.DefaultFeature
+import org.grails.forge.application.generator.ProjectGenerator
 import org.grails.forge.feature.Feature
 import org.grails.forge.feature.FeatureRegistry
+import org.grails.forge.io.ConsoleOutput
 import org.grails.forge.options.Options
+import org.grails.forge.util.NameUtils
 import org.springframework.context.MessageSource
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors
@@ -34,10 +36,12 @@ class FeatureService implements FeatureOperations {
 
     private final FeatureRegistry featureRegistry
     private final MessageSource messageSource
+    private final ProjectGenerator projectGenerator
 
-    FeatureService(FeatureRegistry featureRegistry, MessageSource messageSource) {
+    FeatureService(FeatureRegistry featureRegistry, MessageSource messageSource, ProjectGenerator projectGenerator) {
         this.featureRegistry = featureRegistry
         this.messageSource = messageSource
+        this.projectGenerator = projectGenerator
     }
 
     @Override
@@ -50,26 +54,26 @@ class FeatureService implements FeatureOperations {
 
     @Override
     List<FeatureDTO> getFeatures(Locale locale, ApplicationType type, Options options) {
+        Set<Feature> defaults = defaultFeatures(type, options)
         return featureRegistry.availableFeatures(type)
                 .getFeatures()
-                .filter(f -> !shouldApplyDefaultFeature(type, f, options))
+                .filter(f -> !defaults.contains(f))
                 .map(feature -> new FeatureDTO(feature, messageSource, locale))
                 .sorted(Comparator.comparing(FeatureDTO::getName))
                 .collect(Collectors.toList())
     }
 
-    private static boolean shouldApplyDefaultFeature(ApplicationType type, Feature f, Options options) {
-        return f instanceof DefaultFeature &&
-                ((DefaultFeature) f).shouldApply(type, options, new HashSet<>())
+    private Set<Feature> defaultFeatures(ApplicationType type, Options options) {
+        projectGenerator.createGeneratorContext(type, NameUtils.parse('example'), options,
+                options.operatingSystem, [], ConsoleOutput.NOOP).features.features
     }
 
     @Override
     List<FeatureDTO> getDefaultFeatures(Locale locale, ApplicationType type, Options options) {
+        Set<Feature> defaults = defaultFeatures(type, options)
         return featureRegistry.availableFeatures(type)
                 .getFeatures()
-                .filter(f -> f instanceof DefaultFeature)
-                .map { (DefaultFeature) it }
-                .filter(f -> f.shouldApply(type, options, new HashSet<>()))
+                .filter(f -> defaults.contains(f))
                 .map(feature -> new FeatureDTO(feature, messageSource, locale))
                 .sorted(Comparator.comparing(FeatureDTO::getName))
                 .collect(Collectors.toList())

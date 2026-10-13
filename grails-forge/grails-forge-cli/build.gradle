@@ -114,7 +114,6 @@ dependencies {
     testFixturesImplementation "info.picocli:picocli:$picocliVersion"
 
     testImplementation "org.reflections:reflections:$reflectionsVersion"
-    testImplementation "org.testcontainers:spock:$testcontainersVersion"
     testImplementation 'org.apache.groovy:groovy'
     testImplementation 'org.spockframework:spock-core', {
         exclude group: 'org.apache.groovy', module: 'groovy-all'

@@ -43,12 +43,12 @@ import tools.jackson.databind.json.JsonMapper
 class ForgeApplicationController {
 
     static allowedMethods = [
-            home: 'GET',
-            versions: 'GET',
-            list: 'GET',
-            getType: 'GET',
-            features: 'GET',
-            defaultFeatures: 'GET'
+            home: ['GET', 'HEAD'],
+            versions: ['GET', 'HEAD'],
+            list: ['GET', 'HEAD'],
+            getType: ['GET', 'HEAD'],
+            features: ['GET', 'HEAD'],
+            defaultFeatures: ['GET', 'HEAD']
     ]
 
     @Autowired
@@ -92,7 +92,7 @@ class ForgeApplicationController {
     def getType(@Parameter(description = ForgeRequestSupport.TYPE_PARAMETER) String type) {
         ApplicationType applicationType = ForgeRequestSupport.parseType(type)
         if (applicationType == null) {
-            render status: 400
+            badRequest("Unknown application type: ${type}")
             return
         }
         renderJson(forgeApplicationService.getType(applicationType, requestInfo()))
@@ -108,7 +108,7 @@ class ForgeApplicationController {
                  @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         ApplicationType applicationType = ForgeRequestSupport.parseType(type)
         if (applicationType == null) {
-            render status: 400
+            badRequest("Unknown application type: ${type}")
             return
         }
         renderJson(forgeApplicationService.features(applicationType, requestInfo(),
@@ -125,7 +125,7 @@ class ForgeApplicationController {
                         @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         ApplicationType applicationType = ForgeRequestSupport.parseType(type)
         if (applicationType == null) {
-            render status: 400
+            badRequest("Unknown application type: ${type}")
             return
         }
         renderJson(forgeApplicationService.defaultFeatures(applicationType, requestInfo(),
@@ -138,5 +138,9 @@ class ForgeApplicationController {
 
     private void renderJson(Object body) {
         render text: jsonMapper.writeValueAsString(body), contentType: 'application/json'
+    }
+
+    private void badRequest(String message) {
+        render status: 400, text: jsonMapper.writeValueAsString(ForgeRequestSupport.error(message)), contentType: 'application/json'
     }
 }

@@ -69,10 +69,23 @@ class ContextFactory {
             .withGormImpl(determineGormImpl(options.getGormImpl()))
             .withServletImpl(determineServletImpl(options.getServletImpl()))
 
-        availableFeatures.getAllFeatures()
-            .filter(f -> f instanceof DefaultFeature)
-            .filter(f -> ((DefaultFeature) f).shouldApply(applicationType, newOptions, features))
-            .forEach(features::add)
+        List<DefaultFeature> defaults = availableFeatures.getAllFeatures()
+                .filter { it instanceof DefaultFeature }
+                .map { (DefaultFeature) it }
+                .sorted(Comparator.comparing(Feature::getName))
+                .toList()
+        // A default can depend on another default, such as Mockito on Spock. Resolve the
+        // complete set before processing it, independently of component registration order.
+        boolean added
+        do {
+            added = false
+            for (DefaultFeature feature : defaults) {
+                if (!features.contains(feature) && feature.shouldApply(applicationType, newOptions, features)) {
+                    features.add(feature)
+                    added = true
+                }
+            }
+        } while (added)
 
         featureValidator.validatePreProcessing(newOptions, applicationType, features)
 

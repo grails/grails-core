@@ -39,13 +39,14 @@ import org.grails.forge.diff.FeatureDiffer
 import org.grails.forge.io.ConsoleOutput
 import org.grails.forge.util.NameUtils
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.databind.json.JsonMapper
 
 @Controller
 @GrailsCompileStatic
 @Tag(name = 'diff', description = 'What features change in a generated application')
 class DiffController {
 
-    static allowedMethods = [diffFeature: 'GET', diffApp: 'GET']
+    static allowedMethods = [diffFeature: ['GET', 'HEAD'], diffApp: ['GET', 'HEAD']]
 
     private static final String DEFAULT_NAME = 'example'
 
@@ -58,6 +59,9 @@ class DiffController {
     @Autowired
     GrailsForgeConfiguration grailsForgeConfiguration
 
+    @Autowired
+    JsonMapper jsonMapper
+
     @Operation(summary = 'Diff a feature', description = 'What a feature adds to an application of the type given, as a unified diff.')
     @ApiResponse(responseCode = '200', description = 'The diff', content = @Content(mediaType = 'text/plain', schema = @Schema(type = 'string')))
     @ApiResponse(responseCode = '400', description = ForgeRequestSupport.CLIENT_ERROR)
@@ -69,10 +73,10 @@ class DiffController {
                     @Parameter(description = ForgeRequestSupport.SERVLET_PARAMETER) String servlet,
                     @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         if (name != null && !ForgeRequestSupport.validName(name, ForgeRequestSupport.CREATE_NAME_PATTERN)) {
-            render status: 400
+            badRequest("Invalid application name: ${name}")
             return
         }
-        renderDiff(produceDiff(type, name ?: DEFAULT_NAME, [feature], reloading, gorm, servlet, javaVersion))
+        renderDiff { produceDiff(type, name ?: DEFAULT_NAME, [feature], reloading, gorm, servlet, javaVersion) }
     }
 
     @Operation(summary = 'Diff an application', description = 'What the features requested add to an application of the type and name given, as a unified diff.')
@@ -86,53 +90,53 @@ class DiffController {
                 @Parameter(description = ForgeRequestSupport.SERVLET_PARAMETER) String servlet,
                 @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         if (!ForgeRequestSupport.validName(name, ForgeRequestSupport.CREATE_NAME_PATTERN)) {
-            render status: 400
+            badRequest("Invalid application name: ${name}")
             return
         }
         List<String> features = ForgeRequestSupport.featureList((List<String>) params.list('features'))
-        renderDiff(produceDiff(type, name, features, reloading, gorm, servlet, javaVersion))
+        renderDiff { produceDiff(type, name, features, reloading, gorm, servlet, javaVersion) }
     }
 
-    private void renderDiff(String diff) {
-        if (diff == null) {
-            render status: 400
-            return
+    private void renderDiff(Closure<String> producer) {
+        try {
+            render text: producer.call(), contentType: 'text/plain'
+        } catch (IllegalArgumentException e) {
+            badRequest(e.message)
         }
-        render text: diff, contentType: 'text/plain'
+    }
+
+    private void badRequest(String message) {
+        render status: 400, text: jsonMapper.writeValueAsString(ForgeRequestSupport.error(message)), contentType: 'application/json'
     }
 
     private String produceDiff(String type, String name, List<String> features,
                                String reloading, String gorm, String servlet, String javaVersion) {
         ApplicationType applicationType = ForgeRequestSupport.parseType(type)
         if (applicationType == null) {
-            return null
+            throw new IllegalArgumentException("Unknown application type: ${type}")
         }
         RequestInfo requestInfo = ForgeRequestSupport.info(request, grailsForgeConfiguration)
-        try {
-            GeneratorContext generatorContext = projectGenerator.createGeneratorContext(
-                    applicationType,
-                    NameUtils.parse(name),
-                    ForgeRequestSupport.options(reloading, gorm, servlet, javaVersion, OperatingSystem.DEFAULT),
-                    UserAgentParser.getOperatingSystem(requestInfo.userAgent),
-                    features,
-                    ConsoleOutput.NOOP
-            )
-            StringBuilder builder = new StringBuilder()
-            featureDiffer.produceDiff(projectGenerator, generatorContext, new ConsoleOutput() {
-                @Override
-                void out(String message) { builder.append(message).append(System.lineSeparator()) }
-                @Override
-                void err(String message) { }
-                @Override
-                void warning(String message) { }
-                @Override
-                boolean showStacktrace() { false }
-                @Override
-                boolean verbose() { false }
-            })
-            return builder.toString()
-        } catch (IllegalArgumentException ignored) {
-            return null
-        }
+        GeneratorContext generatorContext = projectGenerator.createGeneratorContext(
+                applicationType,
+                NameUtils.parse(name),
+                ForgeRequestSupport.options(reloading, gorm, servlet, javaVersion, OperatingSystem.DEFAULT),
+                UserAgentParser.getOperatingSystem(requestInfo.userAgent),
+                features,
+                ConsoleOutput.NOOP
+        )
+        StringBuilder builder = new StringBuilder()
+        featureDiffer.produceDiff(projectGenerator, generatorContext, new ConsoleOutput() {
+            @Override
+            void out(String message) { builder.append(message).append(System.lineSeparator()) }
+            @Override
+            void err(String message) { }
+            @Override
+            void warning(String message) { }
+            @Override
+            boolean showStacktrace() { false }
+            @Override
+            boolean verbose() { false }
+        })
+        return builder.toString()
     }
 }

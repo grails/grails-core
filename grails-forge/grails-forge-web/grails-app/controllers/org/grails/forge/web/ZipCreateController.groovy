@@ -30,22 +30,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.grails.forge.api.create.CreateProjectService
 import org.grails.forge.application.ApplicationType
+import org.grails.forge.application.OperatingSystem
 import org.grails.forge.application.generator.GeneratorContext
 import org.grails.forge.io.ZipOutputHandler
-import org.grails.forge.options.DevelopmentReloading
-import org.grails.forge.options.GormImpl
-import org.grails.forge.options.ServletImpl
+import org.grails.forge.options.Options
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.databind.json.JsonMapper
 
 @Controller
 @GrailsCompileStatic
 @Tag(name = 'generation', description = 'Generating an application as a zip archive')
 class ZipCreateController {
 
-    static allowedMethods = [createApp: 'GET', createZip: 'GET']
+    static allowedMethods = [createApp: ['GET', 'HEAD'], createZip: ['GET', 'HEAD']]
 
     @Autowired
     CreateProjectService createProjectService
+
+    @Autowired
+    JsonMapper jsonMapper
 
     @Operation(summary = 'Generate an application', description = 'The application, of the type and name given, generated with the features and options requested, as a zip archive.')
     @Parameter(name = 'features', in = ParameterIn.QUERY, description = ForgeRequestSupport.FEATURES_PARAMETER, array = @ArraySchema(schema = @Schema(type = 'string')))
@@ -60,7 +63,7 @@ class ZipCreateController {
                   @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         ApplicationType applicationType = ForgeRequestSupport.parseType(type)
         if (applicationType == null || !ForgeRequestSupport.validName(name, ForgeRequestSupport.CREATE_NAME_PATTERN)) {
-            render status: 400
+            badRequest(applicationType == null ? "Unknown application type: ${type}" : "Invalid application name: ${name}")
             return
         }
         writeZip(applicationType, name, build, reloading, gorm, servlet, javaVersion)
@@ -79,7 +82,7 @@ class ZipCreateController {
                   @Parameter(description = ForgeRequestSupport.JDK_PARAMETER) String javaVersion) {
         ApplicationType applicationType = type ? ForgeRequestSupport.parseType(type) : ApplicationType.DEFAULT_OPTION
         if (applicationType == null || !ForgeRequestSupport.validName(name, ForgeRequestSupport.ZIP_NAME_PATTERN)) {
-            render status: 400
+            badRequest(applicationType == null ? "Unknown application type: ${type}" : "Invalid application name: ${name}")
             return
         }
         writeZip(applicationType, name, build, reloading, gorm, servlet, javaVersion)
@@ -88,19 +91,20 @@ class ZipCreateController {
     private void writeZip(ApplicationType type, String name, String build, String reloading, String gorm, String servlet, String javaVersion) {
         GeneratorContext generatorContext
         try {
+            Options options = ForgeRequestSupport.options(reloading, gorm, servlet, javaVersion, OperatingSystem.DEFAULT)
             generatorContext = createProjectService.createProjectGeneratorContext(
                     type,
                     name,
                     ForgeRequestSupport.featureList((List<String>) params.list('features')),
                     ForgeRequestSupport.parseBuild(build),
-                    ForgeRequestSupport.parseEnum(DevelopmentReloading, reloading),
-                    GormImpl.parse(gorm),
-                    ForgeRequestSupport.parseEnum(ServletImpl, servlet),
-                    ForgeRequestSupport.parseJdk(javaVersion),
+                    options.developmentReloading,
+                    options.gormImpl,
+                    options.servletImpl,
+                    options.javaVersion,
                     request.getHeader('User-Agent')
             )
-        } catch (IllegalArgumentException ignored) {
-            render status: 400
+        } catch (IllegalArgumentException e) {
+            badRequest(e.message)
             return
         }
         String filename = generatorContext.project.name + '.zip'
@@ -120,5 +124,9 @@ class ZipCreateController {
             log.error("Error generating application ${generatorContext.project.name}: ${e.message}", e)
             throw e
         }
+    }
+
+    private void badRequest(String message) {
+        render status: 400, text: jsonMapper.writeValueAsString(ForgeRequestSupport.error(message)), contentType: 'application/json'
     }
 }

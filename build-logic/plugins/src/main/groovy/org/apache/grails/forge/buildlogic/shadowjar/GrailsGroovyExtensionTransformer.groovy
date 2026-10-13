@@ -17,8 +17,6 @@
 package org.apache.grails.forge.buildlogic.shadowjar
 
 import java.nio.charset.StandardCharsets
-import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.regex.Pattern
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.Transformer
@@ -101,7 +99,6 @@ class GrailsGroovyExtensionTransformer implements Transformer {
         entry.time = TransformerContext.getEntryTimestamp(preserveFileTimestamps, entry.time)
         os.putNextEntry(entry)
 
-        os.write()
         try (InputStream inputStream = toInputStream(module)) {
             inputStream.transferTo(os)
         }
@@ -123,16 +120,10 @@ class GrailsGroovyExtensionTransformer implements Transformer {
         ByteArrayOutputStream toWrite = new ByteArrayOutputStream()
         toWrite.withWriter(StandardCharsets.ISO_8859_1.name()) { Writer writer ->
             BufferedWriter bufferedWriter = new BufferedWriter(writer)
-            String sourceDateEpoch = System.getenv('SOURCE_DATE_EPOCH') ?:
-                    LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).toEpochSecond().toString()
-            boolean dateReplaced = false
             lines.each { String line ->
-                if (!dateReplaced && TIME_REGEX.matcher(line).matches()) {
-                    dateReplaced = true
-                    bufferedWriter.writeLine("# SOURCE_DATE_EPOCH = $sourceDateEpoch")
-                    return
+                if (!TIME_REGEX.matcher(line).matches()) {
+                    bufferedWriter.writeLine(line)
                 }
-                bufferedWriter.writeLine(line)
             }
             bufferedWriter.flush()
         }

@@ -113,4 +113,22 @@ class ForgeGrailsPluginSpec extends Specification {
         output.project['grails-app/init/example/grails/Application.groovy']
     }
 
+    void 'default #type projects include Mockito after resolving Spock'() {
+        given:
+        MapOutputHandler output = new MapOutputHandler()
+        Options options = new Options()
+
+        when:
+        context.getBean(ProjectGenerator).generate(type, NameUtils.parse('example.demo'),
+                options, options.operatingSystem, [], output, ConsoleOutput.NOOP)
+
+        then:
+        output.project['build.gradle'].contains('testImplementation "org.mockito:mockito-core"')
+        output.project['grails-forge-cli.yml'].contains('mockito')
+        output.project['README.md'].contains('## Feature mockito documentation')
+
+        where:
+        type << ApplicationType.values()
+    }
+
 }
