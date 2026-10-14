@@ -29,31 +29,32 @@ class ExtendedMenuSpec extends ContainerGebSpec {
 		go('')
 
 		then:
-			pageSource.contains('Spring Security Management Console')
+		with(pageSource) {
+			contains('Spring Security Management Console')
 
-			pageSource.contains('Users')
+			contains('Users')
 
-			pageSource.contains('Roles')
+			contains('Roles')
 
-			pageSource.contains('Requestmaps')
+			contains('Requestmaps')
 
-			pageSource.contains('Registration Code')
+			contains('Registration Code')
 
-			pageSource.contains('Configuration')
-			pageSource.contains('Mappings')
-			pageSource.contains('Current Authentication')
-			pageSource.contains('User Cache')
-			pageSource.contains('Filter Chains')
-			pageSource.contains('Logout Handlers')
-			pageSource.contains('Voters')
-			pageSource.contains('Authentication Providers')
-			pageSource.contains('Profile Questions')
-			pageSource.contains('Persistent Logins')
+			contains('Configuration')
+			contains('Mappings')
+			contains('Current Authentication')
+			contains('User Cache')
+			contains('Filter Chains')
+			contains('Logout Handlers')
+			contains('Voters')
+			contains('Authentication Providers')
+			contains('Profile Questions')
+			contains('Persistent Logins')
 
-			pageSource.contains('ACL')
-			pageSource.contains('SID')
-			pageSource.contains('OID')
-			pageSource.contains('Entry')
-
+			contains('ACL')
+			contains('SID')
+			contains('OID')
+			contains('Entry')
+		}
 	}
 }

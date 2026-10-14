@@ -53,9 +53,10 @@ class AclSidSpec extends SecurityUISpec {
 
 		then:
 		page.assertResults(1, 2, 2)
-			pageSource.contains('user1')
-			pageSource.contains('user2')
-
+		with(pageSource) {
+			contains('user1')
+			contains('user2')
+		}
 	}
 
 	void testFindByPrincipal() {
@@ -67,10 +68,11 @@ class AclSidSpec extends SecurityUISpec {
 		)
 
 		then:
-			pageSource.contains('user1')
-			pageSource.contains('user2')
-			pageSource.contains('admin')
-
+		with(pageSource) {
+			contains('user1')
+			contains('user2')
+			contains('admin')
+		}
 	}
 
 	void testUniqueName() {

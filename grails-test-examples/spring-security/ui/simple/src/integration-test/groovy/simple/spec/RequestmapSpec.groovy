@@ -41,13 +41,14 @@ class RequestmapSpec extends SecurityUISpec {
 
 		then:
 		page.assertResults(1, 3, 3)
-			pageSource.contains('/secure/**')
-			pageSource.contains('ROLE_ADMIN')
-			pageSource.contains('/j_spring_security_switch_user')
-			pageSource.contains('ROLE_RUN_AS')
-			pageSource.contains('/**')
-			pageSource.contains('permitAll')
-
+		with(pageSource) {
+			contains('/secure/**')
+			contains('ROLE_ADMIN')
+			contains('/j_spring_security_switch_user')
+			contains('ROLE_RUN_AS')
+			contains('/**')
+			contains('permitAll')
+		}
 	}
 
 	void testFindByConfigAttribute() {
@@ -60,9 +61,10 @@ class RequestmapSpec extends SecurityUISpec {
 
 		then:
 		page.assertResults(1, 1, 1)
-			pageSource.contains('/j_spring_security_switch_user')
-			pageSource.contains('ROLE_RUN_AS')
-
+		with(pageSource) {
+			contains('/j_spring_security_switch_user')
+			contains('ROLE_RUN_AS')
+		}
 	}
 
 	void testFindByUrl() {
@@ -75,9 +77,10 @@ class RequestmapSpec extends SecurityUISpec {
 
 		then:
 		page.assertResults(1, 1, 1)
-			pageSource.contains('/secure/**')
-			pageSource.contains('ROLE_ADMIN')
-
+		with(pageSource) {
+			contains('/secure/**')
+			contains('ROLE_ADMIN')
+		}
 	}
 
 	void testUniqueUrl() {

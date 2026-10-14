@@ -42,10 +42,11 @@ class RegisterSpec extends SecurityUISpec {
 				.submitRegister(RegisterPage)
 
 		then:
-			pageSource.contains('Username is required')
-			pageSource.contains('Email is required')
-			pageSource.contains('Password is required')
-
+		with(pageSource) {
+			contains('Username is required')
+			contains('Email is required')
+			contains('Password is required')
+		}
 
 		when:
 		page = page.submitRegister(
@@ -59,11 +60,12 @@ class RegisterSpec extends SecurityUISpec {
 		)
 
 		then:
-			pageSource.contains('The username is taken')
-			pageSource.contains('Please provide a valid email address')
-			pageSource.contains('Password must have at least one letter, number, and special character: !@#$%^&')
-			pageSource.contains('Passwords do not match')
-
+		with(pageSource) {
+			contains('The username is taken')
+			contains('Please provide a valid email address')
+			contains('Password must have at least one letter, number, and special character: !@#$%^&')
+			contains('Passwords do not match')
+		}
 
 		when:
 		page.submitRegister(
@@ -183,9 +185,10 @@ class RegisterSpec extends SecurityUISpec {
 		)
 
 		then:
-			pageSource.contains('Password must have at least one letter, number, and special character: !@#$%^&')
-			pageSource.contains('Passwords do not match')
-
+		with(pageSource) {
+			contains('Password must have at least one letter, number, and special character: !@#$%^&')
+			contains('Passwords do not match')
+		}
 
 		when:
 		to(ResetPasswordPage, code).enterNewPassword(

@@ -35,14 +35,16 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/config')
 
 		then:
-			pageSource.contains('adh.ajaxErrorPage')
-			pageSource.contains('/login/ajaxDenied')
-
+		with(pageSource) {
+			contains('adh.ajaxErrorPage')
+			contains('/login/ajaxDenied')
+		}
 
 		and: 'the full config table is rendered (no client-side pagination)'
-			pageSource.contains('securityConfigType')
-			pageSource.contains('userLookup.userDomainClassName')
-
+		with(pageSource) {
+			contains('securityConfigType')
+			contains('userLookup.userDomainClassName')
+		}
 	}
 
 	void testMappings() {
@@ -54,10 +56,11 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 				'ROLE_RUN_AS, IS_AUTHENTICATED_FULLY',
 				'IS_AUTHENTICATED_FULLY, ROLE_RUN_AS'
 		)
-			pageSource.contains('/j_spring_security_switch_user')
-			pageSource.contains('/secure/**')
-			pageSource.contains('ROLE_ADMIN')
-
+		with(pageSource) {
+			contains('/j_spring_security_switch_user')
+			contains('/secure/**')
+			contains('ROLE_ADMIN')
+		}
 	}
 
 	void testCurrentAuth() {
@@ -65,9 +68,10 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/currentAuth')
 
 		then:
-			pageSource.contains('WebAuthenticationDetails')
-			pageSource.contains('__grails.anonymous.user__')
-
+		with(pageSource) {
+			contains('WebAuthenticationDetails')
+			contains('__grails.anonymous.user__')
+		}
 	}
 
 	void testUserCache() {
@@ -80,9 +84,10 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/usercache')
 
 		then:
-			pageSource.contains('UserCache class: org.ehcache.jsr107.Eh107Cache')
-			pageSource.contains('testuser')
-
+		with(pageSource) {
+			contains('UserCache class: org.ehcache.jsr107.Eh107Cache')
+			contains('testuser')
+		}
 
 		cleanup:
 		userCache.removeUserFromCache('testuser')
@@ -93,9 +98,10 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/usercache')
 
 		then:
-			pageSource.contains('UserCache class: org.ehcache.jsr107.Eh107Cache')
-			!pageSource.contains('testuser')
-
+		with(pageSource) {
+			contains('UserCache class: org.ehcache.jsr107.Eh107Cache')
+			!contains('testuser')
+		}
 	}
 
 	void testFilterChains() {
@@ -103,28 +109,29 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/filterChains')
 
 		then:
-			pageSource.contains('/assets/**')
-			pageSource.contains('/**/js/**')
-			pageSource.contains('/**/css/**')
-			pageSource.contains('/**/images/**')
-			pageSource.contains('/**/favicon.ico')
-			pageSource.contains('/**')
-			pageSource.contains('grails.plugin.springsecurity.web.SecurityRequestHolderFilter')
-			pageSource.contains('org.springframework.security.web.access.channel.ChannelProcessingFilter')
-			pageSource.contains('org.springframework.security.web.context.SecurityContextPersistenceFilter')
-			pageSource.contains('org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter')
-			pageSource.contains('grails.plugin.springsecurity.web.filter.GrailsRememberMeAuthenticationFilter')
-			pageSource.contains('grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter')
+		with(pageSource) {
+			contains('/assets/**')
+			contains('/**/js/**')
+			contains('/**/css/**')
+			contains('/**/images/**')
+			contains('/**/favicon.ico')
+			contains('/**')
+			contains('grails.plugin.springsecurity.web.SecurityRequestHolderFilter')
+			contains('org.springframework.security.web.access.channel.ChannelProcessingFilter')
+			contains('org.springframework.security.web.context.SecurityContextPersistenceFilter')
+			contains('org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter')
+			contains('grails.plugin.springsecurity.web.filter.GrailsRememberMeAuthenticationFilter')
+			contains('grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter')
 
-			pageSource.contains('org.springframework.security.web.access.intercept.FilterSecurityInterceptor')
-			pageSource.contains('grails.plugin.springsecurity.web.authentication.logout.MutableLogoutFilter')
-			pageSource.contains('grails.plugin.springsecurity.web.authentication.GrailsUsernamePasswordAuthenticationFilter')
-			pageSource.contains('org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter')
-			pageSource.contains('grails.plugin.springsecurity.web.filter.GrailsRememberMeAuthenticationFilter')
-			pageSource.contains('grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter')
-			pageSource.contains('org.springframework.security.web.access.intercept.FilterSecurityInterceptor')
-			pageSource.contains('org.springframework.security.web.authentication.switchuser.SwitchUserFilter')
-
+			contains('org.springframework.security.web.access.intercept.FilterSecurityInterceptor')
+			contains('grails.plugin.springsecurity.web.authentication.logout.MutableLogoutFilter')
+			contains('grails.plugin.springsecurity.web.authentication.GrailsUsernamePasswordAuthenticationFilter')
+			contains('org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter')
+			contains('grails.plugin.springsecurity.web.filter.GrailsRememberMeAuthenticationFilter')
+			contains('grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter')
+			contains('org.springframework.security.web.access.intercept.FilterSecurityInterceptor')
+			contains('org.springframework.security.web.authentication.switchuser.SwitchUserFilter')
+		}
 	}
 
 	void testLogoutHandlers() {
@@ -132,9 +139,10 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/logoutHandlers')
 
 		then:
-			pageSource.contains('org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices')
-			pageSource.contains('org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler')
-
+		with(pageSource) {
+			contains('org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices')
+			contains('org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler')
+		}
 	}
 
 	void testVoters() {
@@ -142,10 +150,11 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/voters')
 
 		then:
-			pageSource.contains('org.springframework.security.access.vote.AuthenticatedVoter')
-			pageSource.contains('org.springframework.security.access.vote.RoleHierarchyVoter')
-			pageSource.contains('grails.plugin.springsecurity.web.access.expression.WebExpressionVoter')
-
+		with(pageSource) {
+			contains('org.springframework.security.access.vote.AuthenticatedVoter')
+			contains('org.springframework.security.access.vote.RoleHierarchyVoter')
+			contains('grails.plugin.springsecurity.web.access.expression.WebExpressionVoter')
+		}
 	}
 
 	void testProviders() {
@@ -153,9 +162,10 @@ class ExtendedSecurityInfoSpec extends SecurityUISpec {
 		go('securityInfo/providers')
 
 		then:
-			pageSource.contains('org.springframework.security.authentication.dao.DaoAuthenticationProvider')
-			pageSource.contains('grails.plugin.springsecurity.authentication.GrailsAnonymousAuthenticationProvider')
-			pageSource.contains('org.springframework.security.authentication.RememberMeAuthenticationProvider')
-
+		with(pageSource) {
+			contains('org.springframework.security.authentication.dao.DaoAuthenticationProvider')
+			contains('grails.plugin.springsecurity.authentication.GrailsAnonymousAuthenticationProvider')
+			contains('org.springframework.security.authentication.RememberMeAuthenticationProvider')
+		}
 	}
 }
