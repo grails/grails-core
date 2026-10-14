@@ -295,7 +295,7 @@ jobs:
       - name: "Run app-level indy A/B benches"
         timeout-minutes: 180
         continue-on-error: true
-        run: ./gradlew --no-daemon :grails-test-examples-benchmarks:appIndyBench -PappBenchWarmup=2000 -PappBenchSamples=2000 -PappBenchChunks=10 -PappBenchOutDir="$RESULT_DIR" --max-workers=4
+        run: ./gradlew --no-daemon :grails-test-examples-benchmarks:appIndyBench -PappBenchWarmup=30000 -PappBenchSamples=10000 -PappBenchChunks=10 -PappBenchOutDir="$RESULT_DIR" --max-workers=4
       - name: "Upload app benchmark artifacts"
         if: always()
         uses: actions/upload-artifact@v7.0.1
