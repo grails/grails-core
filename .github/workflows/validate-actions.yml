@@ -52,8 +52,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔎 Validate Actions against the ASF approved list"
         run: ./gradlew validateActions
