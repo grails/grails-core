@@ -840,8 +840,7 @@ class GrailsDomainGenerator {
      * Decides the indexes and multi-column unique keys the domain binder puts on the table the entity owns. The binder's own
      * {@code IndexBinder} and {@code CreateKeyForProps} run, on a scratch table with the entity's table name, for every column
      * the binder passes through {@code ColumnBinder} (a simple property, the identifier, the version, a to-one foreign key, each
-     * leaf of an embedded type) or {@code EnumTypeBinder} (an enum, which only gets an index from the binder and a unique group
-     * from the generator), in the order the binder binds them, so the names ({@code <table>_<column>_idx}, {@code UK} and a hash) and the column order are the binder's. The
+     * leaf of an embedded type) or {@code EnumTypeBinder} (an enum), in the order the binder binds them, so the names ({@code <table>_<column>_idx}, {@code UK} and a hash) and the column order are the binder's. The
      * single-table subclasses of a hierarchy share the table of the root, so their columns are part of the root's constraints.
      *
      * @param entity an entity that owns its table: a root, or a joined or table-per-class subclass
@@ -850,13 +849,12 @@ class GrailsDomainGenerator {
         org.hibernate.mapping.Table table = new org.hibernate.mapping.Table('grails', entityFacets(entity).tableName().replace('`', ''))
         List<GrailsHibernatePersistentEntity> contributors = [entity]
         collectSharingSubclasses(entity, contributors)
-        Set<String> unbound = new HashSet<String>()
         for (GrailsHibernatePersistentEntity contributor : contributors) {
             List<ConstraintSite> identity = []
             List<ConstraintSite> version = []
             List<ConstraintSite> properties = []
             collectConstraintSites(contributor, identity, version, properties)
-            applyConstraintSites(table, identity + version, unbound)
+            applyConstraintSites(table, identity + version)
             if (contributor.isRoot()) {
                 // RootPersistentClassCommonValuesBinder creates the primary key after the identifier and the version, and
                 // Hibernate then drops a unique key that repeats exactly the columns of the primary key
@@ -864,28 +862,23 @@ class GrailsDomainGenerator {
                 identity.each { ConstraintSite site -> primaryKey.addColumn(new Column(site.columnName)) }
                 table.primaryKey = primaryKey
             }
-            applyConstraintSites(table, properties, unbound)
+            applyConstraintSites(table, properties)
         }
         return new ConstraintFacets(
                 table.indexes.values().collect { org.hibernate.mapping.Index index ->
                     new IndexFacets(index.name, index.columns*.name)
                 },
                 table.uniqueKeys.values().collect { org.hibernate.mapping.UniqueKey key ->
-                    new UniqueKeyFacets(key.name, key.columns*.name, !unbound.contains(key.name))
+                    new UniqueKeyFacets(key.name, key.columns*.name)
                 },
                 table.primaryKey?.orderingUniqueKey?.columns*.name)
     }
 
-    private void applyConstraintSites(org.hibernate.mapping.Table table, List<ConstraintSite> sites, Set<String> unbound) {
+    private void applyConstraintSites(org.hibernate.mapping.Table table, List<ConstraintSite> sites) {
         for (ConstraintSite site : sites) {
             Column column = new Column(site.columnName)
             indexBinder.bindIndex(site.columnName, column, site.columnConfig, table)
-            Set<String> before = new HashSet<String>(table.uniqueKeys.keySet())
             keyForProps.createKeyForProps(site.property, site.path, table, site.columnName)
-            if (site.enumeration) {
-                // EnumTypeBinder never calls CreateKeyForProps: the key is the mapping's, not the binder's
-                unbound.addAll(table.uniqueKeys.keySet() - before)
-            }
         }
     }
 
@@ -935,7 +928,7 @@ class GrailsDomainGenerator {
             String name = enumeration ?
                     ((HibernateEnumProperty) property).resolveEnumColumnName(namingStrategy, columnNames, path) :
                     columnNames.getColumnNameForPropertyAndPath(property, path, columnConfig)
-            sites << new ConstraintSite(property, path, name, columnConfig, enumeration)
+            sites << new ConstraintSite(property, path, name, columnConfig)
         }
     }
 
@@ -946,15 +939,12 @@ class GrailsDomainGenerator {
         final String path
         final String columnName
         final ColumnConfig columnConfig
-        final boolean enumeration
 
-        ConstraintSite(
-                HibernatePersistentProperty property, String path, String columnName, ColumnConfig columnConfig, boolean enumeration) {
+        ConstraintSite(HibernatePersistentProperty property, String path, String columnName, ColumnConfig columnConfig) {
             this.property = property
             this.path = path
             this.columnName = columnName
             this.columnConfig = columnConfig
-            this.enumeration = enumeration
         }
     }
 

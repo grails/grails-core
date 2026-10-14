@@ -235,17 +235,11 @@ Some bugs of classic binding are not copied by native binding. Native binding do
 | A custom collection type (a `UserCollectionType` class) as the `type` of a `hasMany` of domain classes, for example `books type: MyCollectionType`.
 | Classic binding boots with the same schema but never uses the class: it keeps Hibernate's own collection and does not even create an instance of your type. Native binding applies the type, so Hibernate creates, wraps and loads the collection with your class. If you map a custom collection type that has never been exercised, test it before you switch. On a `hasMany` of basic values neither binding supports it.
 
-| A `unique` group that includes an enum property.
-| Classic binding drops the group. Native binding creates the unique constraint. With `dbCreate: update` the constraint is added to an existing table, and fails if the table holds duplicates.
-
 | An owner with two or more unidirectional `hasMany` collections that use a join table.
 | Classic binding can fail to write the join table rows of such a collection. Native binding writes them.
 
 | The `nullable: false` constraint on the element column of a map of values.
 | Classic binding leaves the column nullable. Native binding makes it `not null`.
-
-| A `unique` group on the property of a collection (`hasMany`).
-| The group names columns of the owner's table, which the table of the collection does not have. Classic binding tries to create a unique key over them and the statement fails when the schema is created, so the database has no such key. Native binding creates no key. The `index` option on the same property works in both bindings: the index is created over the key column of the collection table (and over the element column of a collection of enums), with the name the mapping gives it.
 
 | A `hasMany` inside a class listed in `static embedded` (basic values, enums or domain classes) when more than one embedded property of the application embeds that class: two domain classes, or one domain class with two properties of that type.
 | Classic binding names the table and the key column after the embedded class, so all the owners share one table. Its foreign key points at the owner that was bound first, so the collection of any other owner cannot be stored (the insert violates the key), the elements of two properties of one owner are mixed up, and the application fails to start when the properties have the same name. Native binding gives every owner a collection table of its own. The first owner, in the order of the entity name and then the property path, keeps the table and the key column of classic binding, so an existing database is not disturbed. The other owners get names that start with the table of the owner and the path of the embedded property, for example `author_address_phones` and `author_address_id`.
@@ -296,14 +290,6 @@ The schema of 765 groups of related domain classes was created with both binding
 | No unused extra nullable column on the table of a map of values.
 | Classic binding creates a column such as `attributes_java_lang_string` that nothing uses.
 | The column stays in an existing database. It does no harm.
-
-| A unique constraint over the columns of a `unique` group that includes an enum.
-| See <<nativeDomainBinding-behavior,Differences in Behavior>>.
-| `update` adds the constraint.
-
-| No unique key on the table of a collection for a `unique` group mapped on the collection property.
-| See <<nativeDomainBinding-behavior,Differences in Behavior>>.
-| The key never existed in a database created by classic binding: the statement that creates it fails.
 
 | An extra collection table, with a key column named after the owner and the embedded property, for every owner after the first of an embedded class that has a `hasMany`.
 | See <<nativeDomainBinding-behavior,Differences in Behavior>>. Classic binding shares one table between the owners.

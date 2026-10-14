@@ -92,15 +92,14 @@ class GrailsDomainGeneratorUniqueGroupSpec extends GrailsDomainGeneratorSupport 
         readConstraints(metadata.getEntityBinding(classes[entity(GenUqJoinedChild)].name)) == boundConstraints(GenUqJoinedChild)
     }
 
-    void "a unique group on an enum property is stated, although the binder never creates the key"() {
+    void "a unique group on an enum property is stated, as the binder creates the key"() {
         when:
         Map<GrailsHibernatePersistentEntity, Class<?>> classes = generateGroup(GenUqEnum)
-        ConstraintFacets facets = newGenerator().constraintFacets(entity(GenUqEnum))
 
-        then: "EnumTypeBinder never calls CreateKeyForProps, which the mapping does not mean: the generator states the key and says the binder does not"
+        then: "EnumTypeBinder calls CreateKeyForProps, so the key the binder bound is the one the generator states"
         generatedConstraints(classes[entity(GenUqEnum)]).values().toList() == [['other', 'state']]
-        facets.uniqueKeys()*.bound() == [false]
-        entity(GenUqEnum).persistentClass.table.uniqueKeys.values().every { it.columns.size() < 2 }
+        newGenerator().constraintFacets(entity(GenUqEnum)).uniqueKeys()*.columns() == [['other', 'state']]
+        boundConstraints(GenUqEnum).values().toList() == [['other', 'state']]
     }
 
     void "a unique group over the columns of a composite identifier states the order of its primary key, as the binder gives it"() {
