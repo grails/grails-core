@@ -100,6 +100,12 @@ Abstract bean definitions — templates that exist only to be inherited through 
 
 AOT processing on its own does not make an application ready for a native image. A native image additionally requires reachability metadata covering the resources and reflection an application performs at runtime.
 
+==== Invokedynamic in a native image
+
+A native image needs every Groovy class compiled with invokedynamic. A classic call site defines a class the first time it runs, which a native image cannot do, so an image built from such classes compiles and then fails on the first dynamic call that reaches one. Invokedynamic is the Groovy compiler's default, and Grails leaves it in place unless `grails { indy }` is set.
+
+An application that applies GraalVM's plugin compiles every Groovy class with invokedynamic, including a compile task its build script set to classic call sites. Setting `grails { indy = false }` in such an application fails the build with the reason, rather than building an image that fails on its first dynamic call.
+
 ==== Recording reflection for a native image
 
 Some of that metadata is written for you. The build reads its own output — the compiled artefacts, and the manifest naming each compiled page — and registers them, so a controller, a domain class or a GSP survives into an image without anything having to run.

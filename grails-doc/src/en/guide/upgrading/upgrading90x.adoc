@@ -51,7 +51,9 @@ NOTE: Groovy 6 marks the concurrency toolkit as incubating. The Grails modules t
 
 Grails 8 compiles every Groovy source set of an application without invokedynamic (`grails { indy = false }` was the default). Grails 9 leaves the setting unset, so the Groovy compiler's own default applies, and on Groovy 6 that is invokedynamic. An application that set `grails { indy = true }` can remove the line.
 
-An application that has to keep classic call sites, for example while it measures the difference, sets the property explicitly:
+An application that has to keep classic call sites, for example while it measures the difference, sets the property explicitly. An application that applies GraalVM's native image plugin cannot: the build fails with the reason, because an image needs invokedynamic.
+
+To keep classic call sites:
 
 [source,groovy]
 .build.gradle

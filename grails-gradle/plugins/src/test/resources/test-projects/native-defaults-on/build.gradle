@@ -3,6 +3,19 @@ plugins {
     id 'org.graalvm.buildtools.native' version '1.1.7'
 }
 
+// -PfixtureIndy=false stands in for grails { indy = false }; -PfixtureTaskIndy=false for a build script
+// that sets the option on the compile tasks directly, which the grails block never sees
+if (providers.gradleProperty('fixtureIndy').present) {
+    grails {
+        indy = providers.gradleProperty('fixtureIndy').get().toBoolean()
+    }
+}
+if (providers.gradleProperty('fixtureTaskIndy').present) {
+    tasks.withType(GroovyCompile).configureEach {
+        groovyOptions.optimizationOptions.indy = providers.gradleProperty('fixtureTaskIndy').get().toBoolean()
+    }
+}
+
 tasks.register('inspectDefaults') {
     def indyOption = providers.provider {
         Map<String, Boolean> options = project.tasks.named('compileGroovy', GroovyCompile).get().groovyOptions.optimizationOptions

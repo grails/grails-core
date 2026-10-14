@@ -1123,15 +1123,28 @@ ${importStatements}
     /**
      * What a Grails application needs of a native image that an image cannot work out for itself.
      *
-     * <p>An image needs calls resolved through invokedynamic, because the classic call site defines
-     * a class as it runs and an image has no way to define one. That is the Groovy compiler's own
-     * default, which the plugin leaves in place unless the application sets {@code grails { indy }},
-     * so an image needs nothing from here for it.</p>
+     * <p>Applications resolve calls through invokedynamic here, because the classic call site
+     * defines a class as it runs and an image has no way to define one. The framework is built the
+     * same way. This is a convention, so it also wins over a compile task a build script set to
+     * classic call sites, which the plugin overwrites with the extension's value; an application
+     * that sets {@code grails { indy = false }} itself fails the build instead, with the reason,
+     * rather than building an image that fails on its first dynamic call.</p>
      *
      * <p>Nothing here runs unless the application applies GraalVM's plugin, which is what asks for
      * an image in the first place. An application that never builds one is untouched.</p>
      */
     protected void configureNativeImage(Project project) {
+        project.pluginManager.withPlugin(NATIVE_IMAGE_PLUGIN) {
+            GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
+            grailsExt.indy.convention(true)
+            project.afterEvaluate {
+                if (!grailsExt.indy.get()) {
+                    throw new GradleException('A native image needs every Groovy class compiled with invokedynamic: ' +
+                            'a classic call site defines a class at run time, which a native image cannot do. ' +
+                            "Remove grails { indy = false } from a project that applies ${NATIVE_IMAGE_PLUGIN}.")
+                }
+            }
+        }
         configureNativeMetadataTrace(project)
     }
 

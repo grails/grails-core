@@ -19,6 +19,7 @@
 package org.grails.gradle.plugin.core
 
 import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
 
 /**
  * Covers what an application gets for building a native image, and what it does not get for not
@@ -66,8 +67,31 @@ class GrailsNativeImageDefaultsSpec extends GradleSpecification {
         when:
             BuildResult result = executeTask('inspectDefaults')
 
-        then: 'a classic call site defines a class as it runs, which an image has no way to do, and nothing replaces the invokedynamic default'
-            result.output.contains('INDY_OPTION=unset')
+        then: 'a classic call site defines a class as it runs, which an image has no way to do'
+            result.output.contains('INDY_OPTION=true')
+    }
+
+    void 'an application that builds an image and turns invokedynamic off fails the build with the reason'() {
+        given:
+            GradleRunner runner = setupTestResourceProject('native-defaults-on')
+
+        when:
+            BuildResult result = runner.withArguments(['inspectDefaults', '-PfixtureIndy=false', '--stacktrace']).forwardOutput().buildAndFail()
+
+        then: 'rather than building an image that fails on its first dynamic call'
+            result.output.contains('A native image needs every Groovy class compiled with invokedynamic')
+            result.output.contains('Remove grails { indy = false }')
+    }
+
+    void 'a compile task a build script set to classic call sites is compiled with invokedynamic when the application builds an image'() {
+        given:
+            setupTestResourceProject('native-defaults-on')
+
+        when:
+            BuildResult result = executeTask('inspectDefaults', ['-PfixtureTaskIndy=false'])
+
+        then: 'the plugin applies the invokedynamic convention to every Groovy compile task after the build script'
+            result.output.contains('INDY_OPTION=true')
     }
 
     void 'the pages are recorded after they are compiled, not before'() {
