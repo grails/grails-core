@@ -697,8 +697,9 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
-      - name: "🗄️ Cache the mongod the embedded server runs"
-        uses: actions/cache@v6.1.0
+      - name: "🗄️ Restore the mongod the embedded server runs"
+        id: embedmongo-cache
+        uses: actions/cache/restore@v6.1.0
         with:
           # Outside the Gradle User Home that setup-gradle caches: this holds an immutable download from
           # fastdl.mongodb.org - the archive and the binary extracted out of it - and no database,
@@ -729,6 +730,14 @@ jobs:
           -PonlyMongodbTests
           -PmongodbContainerVersion=${{ matrix.mongodb-version }}
           -PskipCodeStyle
+      - name: "🗄️ Save the mongod the embedded server runs"
+        # The download is the same on every branch, and every branch can restore the default branch's entries,
+        # so only a push to the default branch saves it; other branches and pull requests only restore it.
+        if: ${{ success() && github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch && steps.embedmongo-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.embedmongo
+          key: ${{ steps.embedmongo-cache.outputs.cache-primary-key }}
   hibernate5Functional:
     if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
     name: "Hibernate5 Functional Tests (Java ${{ matrix.java }}, indy=${{ matrix.indy }})"

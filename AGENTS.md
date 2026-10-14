@@ -307,6 +307,7 @@ GitHub keeps about 10 GB of Actions cache per repository and evicts the least re
 - Every `setup-gradle` step is preceded by the local action `.github/actions/gradle-cache-policy` and takes `cache-read-only` from its `read-only` output. Do not write `true` or `false` there: the policy lives in that action, so changing it means editing one file on the oldest release branch and merging up.
 - Only the core build job (`build` in `gradle.yml`) passes `cache-writer`, from the one matrix entry per OS flagged `cache_writer: true`. A new job or workflow never passes it.
 - The action lets a writer save only on a push or dispatch, only on a branch whose major version is at least the default branch's, and, for Windows and macOS, only on that major's first branch (`x.0.x`). With 8.0.x as the default branch, 7.x never writes, Linux writes on every 8.x and 9.x branch, and Windows and macOS write on 8.0.x and 9.0.x. The rule follows the default branch: when a new one is promoted, older majors stop writing without an edit.
+- A cache whose content is the same on every branch, such as the mongod download the embedded MongoDB tests run, is restored everywhere but saved only by a push to the default branch, whose entries every branch can read. Use separate `actions/cache/restore` and `actions/cache/save` steps for it, never the combined `actions/cache` step, which saves on every branch and pull request.
 
 Why it is this way:
 

@@ -140,8 +140,9 @@ jobs:
         with:
           java-version: 21
           distribution: liberica
-      - name: "🗄️ Cache the mongod the embedded server runs"
-        uses: actions/cache@v6.1.0
+      - name: "🗄️ Restore the mongod the embedded server runs"
+        id: embedmongo-cache
+        uses: actions/cache/restore@v6.1.0
         with:
           # Outside the Gradle User Home that setup-gradle caches, for the reasons given on the same
           # step in gradle.yml. The version is the one -PmongodbContainerVersion asks for below.
@@ -182,3 +183,11 @@ jobs:
           -PmongodbContainerVersion=8.0
         env:
           GRAILS_INCLUDE_MAVEN_LOCAL: true
+      - name: "🗄️ Save the mongod the embedded server runs"
+        # The download is the same on every branch, and every branch can restore the default branch's entries,
+        # so only a push to the default branch saves it; other branches and pull requests only restore it.
+        if: ${{ success() && github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch && steps.embedmongo-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.embedmongo
+          key: ${{ steps.embedmongo-cache.outputs.cache-primary-key }}
