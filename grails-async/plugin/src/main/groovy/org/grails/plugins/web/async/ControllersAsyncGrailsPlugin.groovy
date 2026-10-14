@@ -144,9 +144,11 @@ class ControllersAsyncGrailsPlugin extends Plugin {
                 if (jackson) {
                     builtIn << context.bean(JACKSON_RENDERER, StreamItemRenderer)
                 }
-                List<StreamItemRenderer> renderers = context.beanProvider(StreamItemRenderer).orderedStream()
+                // a copy, because the built-in renderers are added to it: Groovy 6 compiles toList() to the
+                // JDK's Stream.toList(), whose list is unmodifiable, where Groovy 5 used its own mutable one
+                List<StreamItemRenderer> renderers = new ArrayList<>(context.beanProvider(StreamItemRenderer).orderedStream()
                         .filter { StreamItemRenderer renderer -> builtIn.every { StreamItemRenderer own -> renderer !== own } }
-                        .toList()
+                        .toList())
                 renderers.addAll(builtIn)
                 new PublisherActionResultTransformer(renderers, timeout)
             }
