@@ -110,8 +110,8 @@ class GrailsSpringAiSpec extends ApplicationContextSpec implements CommandOutput
 
     void "a provider is a choice an application makes, not one a plugin imposes on its applications"() {
         expect:
-        beanContext.getBeansOfType(SpringAiProviderFeature).every { it.supports(ApplicationType.WEB) && it.supports(ApplicationType.REST_API) }
-        beanContext.getBeansOfType(SpringAiProviderFeature).every { !it.supports(ApplicationType.PLUGIN) && !it.supports(ApplicationType.WEB_PLUGIN) }
+        beanContext.getBeansOfType(SpringAiProviderFeature).values().every { it.supports(ApplicationType.WEB) && it.supports(ApplicationType.REST_API) }
+        beanContext.getBeansOfType(SpringAiProviderFeature).values().every { !it.supports(ApplicationType.PLUGIN) && !it.supports(ApplicationType.WEB_PLUGIN) }
         beanContext.getBean(GrailsSpringAi).supports(ApplicationType.PLUGIN)
     }
 
@@ -128,9 +128,9 @@ class GrailsSpringAiSpec extends ApplicationContextSpec implements CommandOutput
 
     void "every provider is one of the same group"() {
         expect:
-        beanContext.getBeansOfType(SpringAiProviderFeature)*.name.toSet() ==
+        beanContext.getBeansOfType(SpringAiProviderFeature).values()*.name.toSet() ==
                 [SpringAiOpenAi.FEATURE_NAME, SpringAiAnthropic.FEATURE_NAME, SpringAiOllama.FEATURE_NAME].toSet()
-        beanContext.getBeansOfType(SpringAiProviderFeature).every { it.featureClass == SpringAiProviderFeature }
+        beanContext.getBeansOfType(SpringAiProviderFeature).values().every { it.featureClass == SpringAiProviderFeature }
     }
 
     void "a provider is selected once even when grails-spring-ai is selected as well"() {
