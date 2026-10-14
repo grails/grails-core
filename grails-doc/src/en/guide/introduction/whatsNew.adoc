@@ -42,14 +42,13 @@ See xref:commandLine#gradleConfigurationCache[Using the Gradle Configuration Cac
 
 Grails Micronaut is maintained and released from the https://github.com/apache/grails-micronaut[Apache Grails Micronaut repository] and consumes published Grails Core artifacts.
 
-==== Groovy invokedynamic enabled by default
+==== Groovy's invokedynamic default applies again
 
-Grails 7 disabled Groovy invokedynamic for `GroovyCompile` tasks because of performance regressions on Groovy 4 (https://github.com/apache/grails-core/issues/15293[#15293]).
-Grails 9 turns invokedynamic back on by default for generated apps (`grails { indy }`) and published framework modules (`CompilePlugin`).
-You do not need to set `grails { indy = true }`.
-That matches Groovy 6's preferred dispatch. CI can still compile without indy via `-PgrailsIndy=false`.
+Grails 7 and 8 compile every Groovy source set of an application without invokedynamic, because Groovy 4 and 5 ran dynamic code markedly slower with it (https://github.com/apache/grails-core/issues/15293[#15293]).
+Grails 9 runs on Groovy 6 and no longer overrides the compiler: unless the build sets `grails { indy }`, each Groovy compile task keeps the Groovy compiler's own default, which is invokedynamic.
+Grails' own published modules are compiled with invokedynamic as well.
 
-To keep classic callsite bytecode:
+To keep compiling classic call sites, set it in `build.gradle`:
 
 [source,groovy]
 .build.gradle
@@ -59,7 +58,7 @@ grails {
 }
 ----
 
-Non-indy builds on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath. The Grails BOM already manages that coordinate.
+On Groovy 6, classic call sites need `org.apache.groovy:groovy-callsite` on the classpath. A Grails application already receives it through its Grails dependencies, at the version the Grails BOM manages.
 
 ==== Spring Boot 4.1 and Spring Framework 7
 

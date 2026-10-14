@@ -4,8 +4,11 @@ plugins {
 }
 
 tasks.register('inspectDefaults') {
-    def indy = providers.provider { project.extensions.getByName('grails').indy.get() }
+    def indyOption = providers.provider {
+        Map<String, Boolean> options = project.tasks.named('compileGroovy', GroovyCompile).get().groovyOptions.optimizationOptions
+        options.containsKey('indy') ? String.valueOf(options.indy) : 'unset'
+    }
     doLast {
-        println "INDY=${indy.get()}"
+        println "INDY_OPTION=${indyOption.get()}"
     }
 }

@@ -273,11 +273,14 @@ class GrailsGradlePlugin implements Plugin<Project> {
         // Configure indy and log status after evaluation so user's grails { } block has been applied
         GrailsExtension grailsExtension = project.extensions.findByType(GrailsExtension)
         project.afterEvaluate {
-            boolean indyEnabled = grailsExtension.indy.getOrElse(true)
+            Boolean indy = grailsExtension.indy.getOrNull()
             Boolean preserveParameterNames = grailsExtension.preserveParameterNames.getOrNull()
 
             project.tasks.withType(GroovyCompile).configureEach { GroovyCompile c ->
-                c.groovyOptions.optimizationOptions.indy = indyEnabled
+                // unset leaves the task at the Groovy compiler's own default, invokedynamic
+                if (indy != null) {
+                    c.groovyOptions.optimizationOptions.indy = indy
+                }
 
                 if (preserveParameterNames != null) {
                     project.logger.info('Grails: Configuring Groovy compilation to preserve parameter names: {}', preserveParameterNames)
@@ -285,9 +288,11 @@ class GrailsGradlePlugin implements Plugin<Project> {
                 }
             }
 
-            if (indyEnabled) {
-                project.logger.info('Grails: Groovy invokedynamic (indy) is enabled (Grails 9 default).')
-                project.logger.info('        To disable invokedynamic: grails { indy = false } in build.gradle')
+            if (indy == null) {
+                project.logger.info("Grails: Groovy invokedynamic (indy) is left at the Groovy compiler's default.")
+                project.logger.info('        To compile classic call sites: grails { indy = false } in build.gradle')
+            } else if (indy) {
+                project.logger.info('Grails: Groovy invokedynamic (indy) is enabled.')
             } else {
                 project.logger.info('Grails: Groovy invokedynamic (indy) is disabled.')
                 project.logger.info('        Non-indy Groovy 6 builds need org.apache.groovy:groovy-callsite on the classpath.')
@@ -1118,19 +1123,15 @@ ${importStatements}
     /**
      * What a Grails application needs of a native image that an image cannot work out for itself.
      *
-     * <p>Applications resolve calls through invokedynamic here, because the classic call site
-     * defines a class as it runs and an image has no way to define one. The framework has to be
-     * built the same way. This is a convention, so an application that has said otherwise keeps
-     * what it said.</p>
+     * <p>An image needs calls resolved through invokedynamic, because the classic call site defines
+     * a class as it runs and an image has no way to define one. That is the Groovy compiler's own
+     * default, which the plugin leaves in place unless the application sets {@code grails { indy }},
+     * so an image needs nothing from here for it.</p>
      *
      * <p>Nothing here runs unless the application applies GraalVM's plugin, which is what asks for
      * an image in the first place. An application that never builds one is untouched.</p>
      */
     protected void configureNativeImage(Project project) {
-        project.pluginManager.withPlugin('org.graalvm.buildtools.native') {
-            GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
-            grailsExt.indy.convention(true)
-        }
         configureNativeMetadataTrace(project)
     }
 

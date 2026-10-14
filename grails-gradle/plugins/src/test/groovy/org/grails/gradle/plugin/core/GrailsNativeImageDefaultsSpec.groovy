@@ -41,8 +41,8 @@ class GrailsNativeImageDefaultsSpec extends GradleSpecification {
         when:
             BuildResult result = executeTask('inspectDefaults')
 
-        then: 'invokedynamic stays off, as it is for every application that did not ask for it'
-            result.output.contains('INDY=false')
+        then: 'the compiler keeps its own default, invokedynamic, as it does for every application that set no other'
+            result.output.contains('INDY_OPTION=unset')
 
         and: 'and nothing an image would want has been added'
             result.output.contains('HAS_NATIVE_EXTENSION=false')
@@ -66,8 +66,8 @@ class GrailsNativeImageDefaultsSpec extends GradleSpecification {
         when:
             BuildResult result = executeTask('inspectDefaults')
 
-        then: 'a classic call site defines a class as it runs, which an image has no way to do'
-            result.output.contains('INDY=true')
+        then: 'a classic call site defines a class as it runs, which an image has no way to do, and nothing replaces the invokedynamic default'
+            result.output.contains('INDY_OPTION=unset')
     }
 
     void 'the pages are recorded after they are compiled, not before'() {

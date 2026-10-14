@@ -46,3 +46,20 @@ The Groovy actor event bus delivers each event to its subscribers in publication
 Applications that use GPars directly, for example `GParsPool.withPool { list.eachParallel { } }`, should move to the Groovy equivalents: the parallel collection methods are available on every `Collection` without a pool, and `groovy.concurrent.ParallelScope.withPool(n) { scope -> list.eachParallel { } }` runs them on a pool of a chosen size. Once the deprecated modules are removed, Grails will no longer bring GPars onto the classpath, so an application that still needs it must declare `org.codehaus.gpars:gpars` itself.
 
 NOTE: Groovy 6 marks the concurrency toolkit as incubating. The Grails modules that build on it expose only the Grails `Promise` and `EventBus` contracts, so changes to the Groovy API in later Groovy releases are absorbed by Grails rather than by application code.
+
+==== 2. Groovy Code Is Compiled with invokedynamic
+
+Grails 8 compiles every Groovy source set of an application without invokedynamic (`grails { indy = false }` was the default). Grails 9 leaves the setting unset, so the Groovy compiler's own default applies, and on Groovy 6 that is invokedynamic. An application that set `grails { indy = true }` can remove the line.
+
+An application that has to keep classic call sites, for example while it measures the difference, sets the property explicitly:
+
+[source,groovy]
+.build.gradle
+----
+grails {
+    indy = false
+}
+----
+
+Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath, which a Grails application receives through its Grails dependencies. A source set that does not see the application's dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin, needs that dependency declared for it as well when `indy` is `false`.
+

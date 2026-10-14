@@ -1,0 +1,22 @@
+plugins {
+    id 'org.apache.grails.gradle.grails-app'
+}
+
+// -PfixtureIndy=<true|false> stands in for an application that sets grails { indy }
+if (providers.gradleProperty('fixtureIndy').present) {
+    grails {
+        indy = providers.gradleProperty('fixtureIndy').get().toBoolean()
+    }
+}
+
+tasks.register('inspectIndy') {
+    def options = providers.provider {
+        project.tasks.withType(GroovyCompile).collect { GroovyCompile task ->
+            Map<String, Boolean> optimization = task.groovyOptions.optimizationOptions
+            "${task.name}=${optimization.containsKey('indy') ? optimization.indy : 'unset'}".toString()
+        }.sort()
+    }
+    doLast {
+        options.get().each { println it }
+    }
+}
