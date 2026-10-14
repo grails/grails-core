@@ -83,8 +83,9 @@ jobs:
       - name: "Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # A dispatched run is on a branch and writes like a push; a pull request only reads its base branch's entries.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
 
       - name: "Map deployment slot"

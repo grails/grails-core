@@ -43,8 +43,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Core Projects"
         # build-logic is an included build, so its own health task is invoked through the root build.
@@ -83,8 +84,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Gradle Plugin Projects"
         working-directory: grails-gradle
@@ -121,8 +123,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Forge Projects"
         working-directory: grails-forge

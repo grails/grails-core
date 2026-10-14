@@ -39,8 +39,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Validate grails-core dependency versions"
         run: >
@@ -73,8 +74,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -105,6 +107,7 @@ jobs:
         include:
           - os: ubuntu-latest
             java: 17
+            cache_writer: true
           - os: ubuntu-latest
             java: 21
           - os: ubuntu-latest
@@ -113,6 +116,7 @@ jobs:
             java: 21
           - os: windows-latest
             java: 25
+            cache_writer: true
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -127,8 +131,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # On a branch push only the matrix entries flagged cache_writer save, one per OS, which keeps every
+          # release branch's entries within GitHub's 10 GB cache; a pull request only reads its base branch's.
+          cache-read-only: ${{ github.event_name == 'pull_request' || !matrix.cache_writer }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -163,8 +168,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -196,8 +202,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -256,8 +263,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -301,8 +309,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -340,8 +349,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -376,8 +386,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -412,8 +423,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
         env:
@@ -447,8 +459,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
         env:
@@ -477,8 +490,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -532,8 +546,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -588,8 +603,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
@@ -689,8 +705,9 @@ jobs:
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
+          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
+          cache-read-only: true
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔨 Build Snapshot Documentation"
         run: >
