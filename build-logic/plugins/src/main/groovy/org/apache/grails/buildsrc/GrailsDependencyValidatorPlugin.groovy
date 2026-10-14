@@ -137,6 +137,7 @@ class GrailsDependencyValidatorPlugin implements Plugin<Project> {
                 task.bomVersions.set(graph.map { BomDependencyGraph it -> it.bomVersions })
                 task.resolvedVersions.set(graph.map { BomDependencyGraph it -> it.resolvedVersions })
                 task.dynamicVersionRequests.set(graph.map { BomDependencyGraph it -> it.dynamicVersionRequests })
+                task.resolutionWarnings.set(graph.map { BomDependencyGraph it -> it.resolutionWarnings })
                 task.allowedOverrides.set(project.provider { GradleUtils.extStrings(project, ALLOWED_OVERRIDES_EXT) })
                 task.allowedDynamicVersions.set(project.provider { GradleUtils.extStrings(project, ALLOWED_DYNAMIC_VERSIONS_EXT) })
         }

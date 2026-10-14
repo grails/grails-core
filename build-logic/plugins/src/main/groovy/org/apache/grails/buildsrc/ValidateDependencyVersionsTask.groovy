@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
@@ -75,8 +76,20 @@ abstract class ValidateDependencyVersionsTask extends DefaultTask {
     @Input
     abstract SetProperty<String> getAllowedDynamicVersions()
 
+    /**
+     * What the walk of the configurations could not resolve, and therefore never checked; see
+     * {@link BomDependencyGraph#resolutionWarnings}. Logged here rather than where it was found, so a
+     * run that reuses the configuration cache entry still shows it.
+     */
+    @Input
+    abstract ListProperty<String> getResolutionWarnings()
+
     @TaskAction
     void validate() {
+        for (String warning : resolutionWarnings.get()) {
+            logger.warn(warning)
+        }
+
         String bom = bomPath.get()
         if (!bom) {
             return

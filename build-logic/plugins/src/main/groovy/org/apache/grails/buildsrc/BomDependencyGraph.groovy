@@ -30,8 +30,6 @@ import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolutionResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
-import org.gradle.api.logging.Logger
-import org.gradle.api.logging.Logging
 
 /**
  * What {@code validateDependencyVersions} checks, collected in one walk of a project's BOM-bearing
@@ -46,15 +44,13 @@ import org.gradle.api.logging.Logging
 class BomDependencyGraph {
 
     /** The graph of a project that has no BOM to validate against. */
-    static final BomDependencyGraph NONE = new BomDependencyGraph('', [:], [:], [:])
+    static final BomDependencyGraph NONE = new BomDependencyGraph('', [:], [:], [:], [])
 
     /** Marks a declarer that is a build script of this build rather than a published module. */
     static final String BUILD_SCRIPT_MARKER = ' (declared in a build script)'
 
     /** Marks a request that is a dependency constraint, which an exclusion cannot remove. */
     static final String CONSTRAINT_MARKER = ' (constraint)'
-
-    private static final Logger LOGGER = Logging.getLogger(BomDependencyGraph)
 
     /** Path of the BOM in use, or empty when there is none. */
     final String bomPath
@@ -71,12 +67,20 @@ class BomDependencyGraph {
      */
     final Map<String, String> dynamicVersionRequests
 
-    private BomDependencyGraph(String bomPath, Map<String, String> bomVersions,
-                               Map<String, String> resolvedVersions, Map<String, String> dynamicVersionRequests) {
+    /**
+     * One message per configuration or dependency the walk could not resolve, so part of the graph was
+     * never checked. The task logs them at warn level from its action, so they show on every run and
+     * not only on the one that computed the inputs and stored the configuration cache entry.
+     */
+    final List<String> resolutionWarnings
+
+    private BomDependencyGraph(String bomPath, Map<String, String> bomVersions, Map<String, String> resolvedVersions,
+                               Map<String, String> dynamicVersionRequests, List<String> resolutionWarnings) {
         this.bomPath = bomPath
         this.bomVersions = bomVersions
         this.resolvedVersions = resolvedVersions
         this.dynamicVersionRequests = dynamicVersionRequests
+        this.resolutionWarnings = resolutionWarnings
     }
 
     /**
@@ -86,13 +90,14 @@ class BomDependencyGraph {
      *
      * <p>Resolution does not fail the build here. A configuration whose resolution throws is skipped,
      * and a dependency that does not resolve, as every one in a repository Gradle disabled after an
-     * earlier error does, is walked no further, so nothing below it is checked. Both are logged at
-     * warn level with the configuration's name, so a validation that passed only because part of the
-     * graph was never seen says so.</p>
+     * earlier error does, is walked no further, so nothing below it is checked. Both are recorded in
+     * {@link #resolutionWarnings} with the configuration's name, so a validation that passed only
+     * because part of the graph was never seen says so.</p>
      */
     static BomDependencyGraph collect(String projectPath, String bomPath, Set<Configuration> configurations) {
         Map<String, String> resolved = new LinkedHashMap<>()
         Map<String, Set<String>> dynamic = new TreeMap<>()
+        List<String> warnings = []
         for (Configuration config : configurations) {
             try {
                 ResolutionResult result = config.incoming.resolutionResult
@@ -104,9 +109,8 @@ class BomDependencyGraph {
                 }
                 for (DependencyResult dependency : result.allDependencies) {
                     if (dependency instanceof UnresolvedDependencyResult) {
-                        LOGGER.warn("validateDependencyVersions could not resolve {} in configuration '{}' of project '{}', " +
-                                'so its dependencies were not checked: {}',
-                                dependency.requested.displayName, config.name, projectPath, firstLine(dependency.failure))
+                        warnings.add("Could not resolve ${dependency.requested.displayName} in configuration '${config.name}' " +
+                                "of project '${projectPath}', so its dependencies were not checked: ${firstLine(dependency.failure)}" as String)
                     }
                     String request = dynamicRequest(dependency)
                     if (request != null) {
@@ -114,20 +118,20 @@ class BomDependencyGraph {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.warn("validateDependencyVersions skipped configuration '{}' of project '{}' because it failed to resolve: {}",
-                        config.name, projectPath, firstLine(e))
+                warnings.add("Skipped configuration '${config.name}' of project '${projectPath}' " +
+                        "because it failed to resolve: ${firstLine(e)}" as String)
             }
         }
         Map<String, String> requests = new LinkedHashMap<>()
         for (Map.Entry<String, Set<String>> entry : dynamic.entrySet()) {
             requests.put(entry.key, entry.value.join(', '))
         }
-        new BomDependencyGraph(bomPath, [:], resolved, requests)
+        new BomDependencyGraph(bomPath, [:], resolved, requests, warnings)
     }
 
     /** This graph with the versions the BOM manages, probed from the modules the walk resolved. */
     BomDependencyGraph withBomVersions(Map<String, String> bomVersions) {
-        new BomDependencyGraph(bomPath, bomVersions, resolvedVersions, dynamicVersionRequests)
+        new BomDependencyGraph(bomPath, bomVersions, resolvedVersions, dynamicVersionRequests, resolutionWarnings)
     }
 
     /**

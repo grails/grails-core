@@ -210,17 +210,27 @@ ext.allowedBomOverrides = ['test:lib-a']
         result.output.contains('test:lib-a - resolved 1.1, expected 1.0')
     }
 
-    def "warns about a dependency it could not resolve instead of passing silently"() {
+    def "warns about a dependency it could not resolve on every run, including a configuration cache hit"() {
         given: "a module no repository has, so nothing below it can be checked"
         writeLibrary('', "implementation 'test:lib-missing:1.0'")
+        String warning = "Could not resolve test:lib-missing:1.0 in configuration 'compileClasspath' of project ':lib'"
 
-        when:
-        BuildResult result = runner([]).build()
+        when: "the run that computes the task inputs and stores the entry"
+        BuildResult stored = runner(['--configuration-cache']).build()
+
+        and: "the run that reuses the entry and never computes them"
+        BuildResult reused = runner(['--configuration-cache']).build()
 
         then:
-        result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
-        result.output.contains("could not resolve test:lib-missing:1.0 in configuration 'compileClasspath' of project ':lib'")
-        result.output.contains('Could not find test:lib-missing:1.0')
+        stored.output.contains('Configuration cache entry stored.')
+        stored.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
+        stored.output.contains(warning)
+        stored.output.contains('Could not find test:lib-missing:1.0')
+
+        and: "the warning is logged by the task, so the reused run shows it too"
+        reused.output.contains('Reusing configuration cache.')
+        reused.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
+        reused.output.contains(warning)
     }
 
     def "warns about a configuration it could not resolve instead of passing silently"() {
@@ -236,7 +246,7 @@ configurations.configureEach {
 
         then:
         result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
-        result.output.contains("skipped configuration 'compileClasspath' of project ':lib' because it failed to resolve: repository metadata unavailable")
+        result.output.contains("Skipped configuration 'compileClasspath' of project ':lib' because it failed to resolve: repository metadata unavailable")
     }
 
     def "skipDependencyValidation opts the project out: #optOut"() {
