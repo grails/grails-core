@@ -102,8 +102,9 @@ class GrailsDependencyValidatorPlugin implements Plugin<Project> {
      * <p>Inspecting the dependency graph needs the project, so it happens while the task's inputs are
      * computed - after the build scripts have run, and before any task executes - rather than from a
      * {@code doLast} block. The BOM is detected and its configurations found, resolved and walked once,
-     * in a memoized provider of a {@link BomDependencyGraph}; every task input is mapped off that one
-     * result. The task itself then only compares the values it was given.</p>
+     * in a memoized provider of a {@link BomDependencyGraph}; the modules that walk resolved are what
+     * the BOM probing starts from, and every task input is mapped off that one result. The task itself
+     * then only compares the values it was given.</p>
      *
      * <p>The provider short-circuits when the project opts out, so a skipped project never pays for
      * the resolution or the BOM probing.</p>
@@ -123,7 +124,8 @@ class GrailsDependencyValidatorPlugin implements Plugin<Project> {
             if (configurations.isEmpty()) {
                 return BomDependencyGraph.NONE
             }
-            BomDependencyGraph.collect(bomPath, collectBomVersions(project, bomPath, configurations), configurations)
+            BomDependencyGraph walked = BomDependencyGraph.collect(project.path, bomPath, configurations)
+            walked.withBomVersions(collectBomVersions(project, bomPath, walked.resolvedVersions.keySet()))
         }.memoize())
 
         project.tasks.register(VALIDATE_TASK_NAME, ValidateDependencyVersionsTask) {
@@ -227,10 +229,11 @@ class GrailsDependencyValidatorPlugin implements Plugin<Project> {
      * Collects all BOM-managed dependency versions in two phases:
      * <ol>
      *   <li>Direct constraints from the BOM project's {@code api} configuration</li>
-     *   <li>Inherited platform constraints (e.g., spring-boot-dependencies) via per-module probing</li>
+     *   <li>Inherited platform constraints (e.g., spring-boot-dependencies) via per-module probing of
+     *   the {@code "group:name"} keys the BOM-bearing configurations resolved</li>
      * </ol>
      */
-    private static Map<String, String> collectBomVersions(Project project, String bomPath, Set<Configuration> bomConfigurations) {
+    private static Map<String, String> collectBomVersions(Project project, String bomPath, Set<String> resolvedModules) {
         Map<String, String> bomVersions = new LinkedHashMap<>()
 
         // Phase 1: Direct constraints from BOM
@@ -250,7 +253,6 @@ class GrailsDependencyValidatorPlugin implements Plugin<Project> {
         }
 
         // Phase 2: Probe inherited platform constraints for modules not in direct constraints
-        Set<String> resolvedModules = collectAllResolvedModuleKeys(bomConfigurations)
         Set<String> toProbe = new LinkedHashSet<>(resolvedModules)
         toProbe.removeAll(bomVersions.keySet())
 
@@ -331,22 +333,5 @@ class GrailsDependencyValidatorPlugin implements Plugin<Project> {
             }
         }
         false
-    }
-
-    private static Set<String> collectAllResolvedModuleKeys(Set<Configuration> configurations) {
-        Set<String> modules = new LinkedHashSet<>()
-        for (Configuration config : configurations) {
-            try {
-                for (ResolvedComponentResult component : config.incoming.resolutionResult.allComponents) {
-                    if (component.id instanceof ModuleComponentIdentifier) {
-                        ModuleComponentIdentifier mid = (ModuleComponentIdentifier) component.id
-                        modules.add("${mid.group}:${mid.module}" as String)
-                    }
-                }
-            } catch (Exception ignored) {
-                // Skip
-            }
-        }
-        return modules
     }
 }

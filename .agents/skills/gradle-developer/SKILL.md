@@ -188,7 +188,7 @@ Also keep `gradlew.bat` LF line endings on this line (PR #15709). Comment at top
 | `projectVersion` | framework version |
 | `slf4jPreventExclusion` | `true` - Grails Gradle plugin POM behavior |
 
-CI vs local behavior is branched on `System.getenv('CI')`, `GITHUB_EVENT_NAME` (a `pull_request` run keeps the 24 hour dynamic-version and changing-module cache that push and release runs set to zero) and `SOURCE_DATE_EPOCH` (reproducible builds disable remote cache).
+CI vs local behavior is branched on `System.getenv('CI')`, `GITHUB_EVENT_NAME` (a `pull_request` run keeps the 24 hour dynamic-version and changing-module cache that push and release runs set to zero, so it sees the snapshot the base branch last resolved; push to the base branch or run with `--refresh-dependencies` for a newer one) and `SOURCE_DATE_EPOCH` (reproducible builds disable remote cache).
 
 `groovydocMaxHeapSize` and `guideMaxHeapSize` are **not** keys in `gradle.properties` - do not add
 them. Each documentation JVM carries its own default (1g per groovydoc task, raised to 3g/2g by the

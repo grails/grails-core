@@ -30,9 +30,11 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Fails when a transitive dependency resolves to a version other than the one the BOM manages.
+ * Fails when a transitive dependency resolves to a version other than the one the BOM manages, or
+ * when any dependency is requested with a dynamic version. Both checks run before the task fails, so
+ * one failure reports everything there is to fix.
  *
- * <p>The task compares two maps of {@code "group:name" -> version} and nothing more. Both are supplied
+ * <p>The task compares maps of {@code "group:name" -> version} and nothing more. They are supplied
  * as providers by {@link GrailsDependencyValidatorPlugin}, so the dependency graph is inspected while
  * the task's inputs are computed rather than from inside the task action - the task holds no reference
  * to the project and stays compatible with the configuration cache.</p>
@@ -80,31 +82,37 @@ abstract class ValidateDependencyVersionsTask extends DefaultTask {
             return
         }
 
-        Set<String> allowedDynamic = allowedDynamicVersions.get()
-        Map<String, String> dynamic = dynamicVersionRequests.get().findAll { String request, String declarers ->
-            !allowedDynamic.any { String allowed -> request.startsWith(allowed + ':') }
-        }
+        List<String> reports = []
+        Map<String, String> dynamic = dynamicRequests()
         if (!dynamic.isEmpty()) {
-            List<String> lines = dynamic.collect { String request, String declarers -> "  ${declarers} -> ${request}" as String }
-            throw new GradleException(
-                    "Dependency version validation failed for project '${projectName.get()}'.\n" +
-                            'The following dependencies are requested with a dynamic version (a range, a prefix such as 1.+, or latest.*):\n\n' +
-                            lines.join('\n') + '\n\n' +
-                            'A dynamic version makes every resolution list the versions available in the repository once the listing cache expires,\n' +
-                            'so the build depends on the repository answering even when every artifact is cached, and the selected version moves over time.\n' +
-                            'To fix a request' + BomDependencyGraph.BUILD_SCRIPT_MARKER + ', pin the version in that build script or use the BOM-managed coordinate.\n' +
-                            'To fix a request made by a published module, exclude the module from that dependency and declare the BOM-managed coordinate next to it.\n' +
-                            'An exclusion does not remove a request' + BomDependencyGraph.CONSTRAINT_MARKER + ': rewrite it with a component metadata rule\n' +
-                            '(components.withModule(...) { allVariants { withDependencyConstraints { ... } } }).\n' +
-                            "For a dynamic version that must stay, add its 'group:name' to project.ext.${GrailsDependencyValidatorPlugin.ALLOWED_DYNAMIC_VERSIONS_EXT} with the reason.")
+            reports.add(dynamicVersionReport(dynamic))
         }
 
         Map<String, String> managed = bomVersions.get()
         if (managed.isEmpty()) {
-            logger.warn('No BOM versions collected for project \'{}\'. Skipping validation.', projectName.get())
-            return
+            logger.warn('No BOM versions collected for project \'{}\'. Skipping the comparison against the BOM.', projectName.get())
+        } else {
+            List<String> violations = bomViolations(managed)
+            if (!violations.isEmpty()) {
+                reports.add(bomMismatchReport(bom, violations))
+            }
         }
 
+        if (!reports.isEmpty()) {
+            throw new GradleException("Dependency version validation failed for project '${projectName.get()}'.\n" + reports.join('\n\n'))
+        }
+    }
+
+    /** The dynamic version requests that no {@link #getAllowedDynamicVersions} entry tolerates. */
+    private Map<String, String> dynamicRequests() {
+        Set<String> allowedDynamic = allowedDynamicVersions.get()
+        dynamicVersionRequests.get().findAll { String request, String declarers ->
+            !allowedDynamic.any { String allowed -> request.startsWith(allowed + ':') }
+        }
+    }
+
+    /** The resolved versions that differ from the BOM's, except the {@link #getAllowedOverrides}. */
+    private List<String> bomViolations(Map<String, String> managed) {
         Set<String> allowed = allowedOverrides.get()
         List<String> violations = []
         for (Map.Entry<String, String> entry : resolvedVersions.get().entrySet()) {
@@ -116,15 +124,27 @@ abstract class ValidateDependencyVersionsTask extends DefaultTask {
                 violations.add("  ${entry.key} - resolved ${entry.value}, expected ${bomVersion}" as String)
             }
         }
+        violations
+    }
 
-        if (!violations.isEmpty()) {
-            throw new GradleException(
-                    "Dependency version validation failed for project '${projectName.get()}'.\n" +
-                            "The following dependencies resolved to versions different from the BOM (${bom}):\n\n" +
-                            violations.join('\n') + '\n\n' +
-                            'A transitive dependency is upgrading these versions.\n' +
-                            'To fix, update the dependency version in dependencies.gradle or add an exclusion in the build file.\n' +
-                            "For intentional overrides, add the coordinate to project.ext.${GrailsDependencyValidatorPlugin.ALLOWED_OVERRIDES_EXT} (e.g. as a Set<String> of 'group:name' keys).")
-        }
+    private static String dynamicVersionReport(Map<String, String> dynamic) {
+        List<String> lines = dynamic.collect { String request, String declarers -> "  ${declarers} -> ${request}" as String }
+        'The following dependencies are requested with a dynamic version (a range, a prefix such as 1.+, or latest.*):\n\n' +
+                lines.join('\n') + '\n\n' +
+                'A dynamic version makes every resolution list the versions available in the repository once the listing cache expires,\n' +
+                'so the build depends on the repository answering even when every artifact is cached, and the selected version moves over time.\n' +
+                'To fix a request' + BomDependencyGraph.BUILD_SCRIPT_MARKER + ', pin the version in that build script or use the BOM-managed coordinate.\n' +
+                'To fix a request made by a published module, exclude the module from that dependency and declare the BOM-managed coordinate next to it.\n' +
+                'An exclusion does not remove a request' + BomDependencyGraph.CONSTRAINT_MARKER + ': rewrite it with a component metadata rule\n' +
+                '(components.withModule(...) { allVariants { withDependencyConstraints { ... } } }).\n' +
+                "For a dynamic version that must stay, add its 'group:name' to project.ext.${GrailsDependencyValidatorPlugin.ALLOWED_DYNAMIC_VERSIONS_EXT} with the reason."
+    }
+
+    private static String bomMismatchReport(String bom, List<String> violations) {
+        "The following dependencies resolved to versions different from the BOM (${bom}):\n\n" +
+                violations.join('\n') + '\n\n' +
+                'A transitive dependency is upgrading these versions.\n' +
+                'To fix, update the dependency version in dependencies.gradle or add an exclusion in the build file.\n' +
+                "For intentional overrides, add the coordinate to project.ext.${GrailsDependencyValidatorPlugin.ALLOWED_OVERRIDES_EXT} (e.g. as a Set<String> of 'group:name' keys)."
     }
 }

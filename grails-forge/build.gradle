@@ -92,6 +92,11 @@ subprojects {
             // Push and release runs always refetch dynamic versions and snapshots so they test what the
             // repositories serve now. A pull request run reuses metadata the base branch resolved within
             // the last day, so a repository that is down or slow does not fail the run at configuration time.
+            // No dependency uses a dynamic version, so in practice the cache covers only the snapshots this
+            // build consumes between releases: a pull request sees the snapshot the base branch last
+            // resolved, for up to a day. To test a newer snapshot sooner, push to the base branch, which
+            // refetches it and saves the Gradle user home that pull request runs restore, or run the build
+            // with --refresh-dependencies.
             def cacheHours = (isCiBuild && !isPullRequestBuild) || isReproducibleBuild ? 0 : 24
             cacheDynamicVersionsFor(cacheHours, 'hours')
             cacheChangingModulesFor(cacheHours, 'hours')

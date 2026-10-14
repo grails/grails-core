@@ -28,7 +28,8 @@ import spock.lang.TempDir
 
 /**
  * Runs {@code validateDependencyVersions} on a library whose direct dependency upgrades a version
- * its {@code grails-bom} manages, and on one whose dependency requests a version range.
+ * its {@code grails-bom} manages, on one whose dependency requests a version range, and on ones
+ * whose graph cannot be resolved in full.
  */
 class ValidateDependencyVersionsTaskSpec extends Specification {
 
@@ -192,6 +193,50 @@ ext.allowedBomOverrides = ['test:lib-a']
 
         then:
         result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
+    }
+
+    def "reports a dynamic version and a BOM mismatch in one failure"() {
+        given: "a direct upgrade past the BOM and a transitive range in the same graph"
+        writeLibrary('', """
+    implementation 'test:lib-a:1.1'
+    implementation 'test:lib-b:1.0'
+""")
+
+        when:
+        BuildResult result = runner([]).buildAndFail()
+
+        then: "the second report is not held back until the first is fixed"
+        result.output.contains('test:lib-b:1.0 -> test:lib-a:[1,2)')
+        result.output.contains('test:lib-a - resolved 1.1, expected 1.0')
+    }
+
+    def "warns about a dependency it could not resolve instead of passing silently"() {
+        given: "a module no repository has, so nothing below it can be checked"
+        writeLibrary('', "implementation 'test:lib-missing:1.0'")
+
+        when:
+        BuildResult result = runner([]).build()
+
+        then:
+        result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
+        result.output.contains("could not resolve test:lib-missing:1.0 in configuration 'compileClasspath' of project ':lib'")
+        result.output.contains('Could not find test:lib-missing:1.0')
+    }
+
+    def "warns about a configuration it could not resolve instead of passing silently"() {
+        given: "a resolve hook that fails before the graph is built, so the configuration has no graph at all"
+        writeLibrary("""
+configurations.configureEach {
+    incoming.beforeResolve { throw new GradleException('repository metadata unavailable') }
+}
+""")
+
+        when:
+        BuildResult result = runner([]).build()
+
+        then:
+        result.task(':lib:validateDependencyVersions').outcome == TaskOutcome.SUCCESS
+        result.output.contains("skipped configuration 'compileClasspath' of project ':lib' because it failed to resolve: repository metadata unavailable")
     }
 
     def "skipDependencyValidation opts the project out: #optOut"() {
