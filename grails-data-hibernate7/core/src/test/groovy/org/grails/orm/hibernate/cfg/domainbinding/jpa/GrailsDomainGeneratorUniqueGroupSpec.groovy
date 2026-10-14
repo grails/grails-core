@@ -117,14 +117,14 @@ class GrailsDomainGeneratorUniqueGroupSpec extends GrailsDomainGeneratorSupport 
         newGenerator().constraintFacets(entity(GenUqTarget)).primaryKeyOrder() == null
     }
 
-    void "a unique group on a collection property states no key, since the key the binder makes names columns the collection table does not have"() {
+    void "a unique group on a collection property states no key, and the binder makes none that names a column the collection table does not have"() {
         when:
         Map<GrailsHibernatePersistentEntity, Class<?>> classes = generateGroup(GenUqCollection)
         CollectionTable table = classes[entity(GenUqCollection)].getDeclaredField('tags').getAnnotation(CollectionTable)
 
-        then: "the binder's key names a column of the owner's table, so it cannot be created; the generated collection has none"
-        entity(GenUqCollection).persistentClass.getProperty('tags').value.collectionTable.uniqueKeys.values().any {
-            it.columns*.name.contains('x')
+        then: "the binder creates no key over a column of the owner's table on the collection table, and the generated collection has none"
+        entity(GenUqCollection).persistentClass.getProperty('tags').value.collectionTable.uniqueKeys.values().every {
+            !it.columns*.name.contains('x')
         }
         table.uniqueConstraints().length == 0
         newGenerator().collectionFacets((HibernateBasicProperty) entity(GenUqCollection).getPropertyByName('tags')).indexes().isEmpty()
