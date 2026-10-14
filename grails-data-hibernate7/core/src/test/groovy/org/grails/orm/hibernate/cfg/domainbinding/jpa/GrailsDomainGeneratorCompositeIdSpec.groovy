@@ -282,9 +282,9 @@ class GrailsDomainGeneratorCompositeIdSpec extends GrailsDomainGeneratorSupport 
         Map<GrailsHibernatePersistentEntity, Class<?>> classes = generateGroup(GenCidRefNested, GenCidNested, GenCidSimple)
         JoinColumns target = classes[entity(GenCidRefNested)].getDeclaredField('target').getAnnotation(JoinColumns)
 
-        then: "the columns are named after the part and the identifier property of the part, and each points at the column the part has in the key"
-        target.value()*.name() == ['gen_cid_nested_parent_last', 'gen_cid_nested_parent_age', 'gen_cid_nested_name']
-        target.value()*.referencedColumnName() == ['gen_cid_simple_last', 'gen_cid_simple_age', 'name']
+        then: "the columns are named after the part and the identifier property of the part, in the name order Hibernate sorts the identifier in, and each points at the column the part has in the key"
+        target.value()*.name() == ['gen_cid_nested_parent_age', 'gen_cid_nested_parent_last', 'gen_cid_nested_name']
+        target.value()*.referencedColumnName() == ['gen_cid_simple_age', 'gen_cid_simple_last', 'name']
     }
 
     void "Hibernate's annotation binder reads a composite identifier with such a part, and a foreign key to it, as the binder bound them"() {

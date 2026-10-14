@@ -23,7 +23,6 @@ import grails.gorm.tests.HibernateGormDatastoreSpec
 import org.hibernate.mapping.Collection as HibernateCollection
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.Table
-import spock.lang.PendingFeature
 
 /**
  * Pins defects of the domain binder found while auditing which mapping options {@link GrailsDomainGenerator} drops. The
@@ -72,7 +71,6 @@ class GrailsDomainBinderOptionDefectSpec extends HibernateGormDatastoreSpec {
         DefectReadOnlyColumns.get(row.id).updated == 'b'
     }
 
-    @PendingFeature(reason = 'EnumTypeBinder never calls CreateKeyForProps, so a unique group on an enum property makes no unique key')
     void "a unique group on an enum property is unique in the database"() {
         given:
         new DefectEnumGroup(state: DefectState.ON, other: 'a').save(flush: true, failOnError: true)
@@ -96,7 +94,6 @@ class GrailsDomainBinderOptionDefectSpec extends HibernateGormDatastoreSpec {
         column.customWrite == 'upper(?)'
     }
 
-    @PendingFeature(reason = 'CollectionKeyBinder runs ColumnBinder on the collection property, so a unique group becomes a unique key of the collection table that names a column of the owner\'s table')
     void "the unique key of a collection table names only columns of that table"() {
         given:
         Table table = ((HibernateCollection) getPersistentEntity(DefectCollectionGroup).persistentClass.getProperty('tags').value).collectionTable
