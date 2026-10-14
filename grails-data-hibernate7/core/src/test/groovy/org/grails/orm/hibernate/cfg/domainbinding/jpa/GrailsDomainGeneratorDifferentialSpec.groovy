@@ -581,9 +581,8 @@ class GrailsDomainGeneratorDifferentialSpec extends HibernateGormDatastoreSpec {
         } as Map<String, List<String>>
         Map<String, List<String>> boundKeys = tableKeysWithoutNaturalId(classic[entity.name], naturalKeySets(generator, entity))
         Map<String, List<String>> generatedIndexes = facets.indexes().collectEntries { IndexFacets index -> [(index.name()): index.columns()] } as Map<String, List<String>>
-        Map<String, List<String>> generatedKeys = facets.uniqueKeys().findAll { UniqueKeyFacets key -> key.bound() }
+        Map<String, List<String>> generatedKeys = facets.uniqueKeys()
                 .collectEntries { UniqueKeyFacets key -> [(key.name()): key.columns()] } as Map<String, List<String>>
-        constraints['unique keys the binder does not create'] += facets.uniqueKeys().count { UniqueKeyFacets key -> !key.bound() }
         constraints['indexes'] += boundIndexes.size()
         constraints['unique keys'] += boundKeys.size()
         List<String> found = []
@@ -1683,11 +1682,7 @@ class GrailsDomainGeneratorDifferentialSpec extends HibernateGormDatastoreSpec {
             found << "${where} indexes: generator=${annotatedIndexes} binder=${boundIndexes}".toString()
         }
         Map<String, List<String>> boundKeys = tableKeysWithoutNaturalId(bound, naturalKeys)
-        // a key the mapping asks for and the binder does not create is stated by the generator, so Hibernate reads it too
-        Set<String> unbound = facets.uniqueKeys().findAll { UniqueKeyFacets key -> !key.bound() }*.name().toSet()
-        Map<String, List<String>> annotatedKeys = tableKeysWithoutNaturalId(annotated, naturalKeys).findAll { String name, List<String> columns ->
-            !unbound.contains(name)
-        } as Map<String, List<String>>
+        Map<String, List<String>> annotatedKeys = tableKeysWithoutNaturalId(annotated, naturalKeys)
         if (boundKeys != annotatedKeys) {
             found << "${where} uniqueKeys: generator=${annotatedKeys} binder=${boundKeys}".toString()
         }
