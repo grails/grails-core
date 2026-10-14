@@ -40,12 +40,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 17
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Only the core build job writes the cache (see its "Decide whether this job writes the Gradle cache" step);
-          # this job restores the newest entry for its OS from this branch or the default branch.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Core Projects"
         # build-logic is an included build, so its own health task is invoked through the root build.
@@ -81,12 +83,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 17
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Only the core build job writes the cache (see its "Decide whether this job writes the Gradle cache" step);
-          # this job restores the newest entry for its OS from this branch or the default branch.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Gradle Plugin Projects"
         working-directory: grails-gradle
@@ -120,12 +124,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 17
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # Only the core build job writes the cache (see its "Decide whether this job writes the Gradle cache" step);
-          # this job restores the newest entry for its OS from this branch or the default branch.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Forge Projects"
         working-directory: grails-forge
