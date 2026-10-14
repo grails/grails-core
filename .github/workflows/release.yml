@@ -80,12 +80,14 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # A release runs on its tag, which reads the default branch's entries; what it wrote would serve only
-          # a re-run of the same release, so it writes nothing.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "⚙️ Run pre-release"
         uses: apache/grails-github-actions/pre-release@asf
@@ -603,12 +605,14 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # A release runs on its tag, which reads the default branch's entries; what it wrote would serve only
-          # a re-run of the same release, so it writes nothing.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "📖 Generate Documentation"
         run: ./gradlew grails-doc:build -PgithubBranch=${TARGET_BRANCH}
@@ -644,12 +648,14 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          # A release runs on its tag, which reads the default branch's entries; what it wrote would serve only
-          # a re-run of the same release, so it writes nothing.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔎 Determine SDKMAN release type"
         id: sdkman-release
