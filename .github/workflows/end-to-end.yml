@@ -74,12 +74,14 @@ jobs:
           java-version: |
             ${{ steps.jdks.outputs.fixture-java }}
             ${{ steps.jdks.outputs.build-java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Only the core build writes, one job per OS, which keeps every release branch's entries within GitHub's
-          # 10 GB cache; this job restores the newest entry for its OS and downloads whatever that lacks.
-          cache-read-only: true
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "📦 Setup: publish grails-gradle to the local repository the tests resolve from"
         # Both builds publish into the same build/local-maven, and both are needed: the Grails BOM
