@@ -20,7 +20,7 @@
 package org.grails.forge.build.gradle
 
 import groovy.util.logging.Slf4j
-import io.micronaut.context.ApplicationContext
+import org.grails.forge.ForgeContexts
 import org.grails.forge.application.ApplicationType
 import org.grails.forge.fixture.CommandOutputFixture
 import org.grails.forge.fixture.ContextFixture
@@ -28,6 +28,7 @@ import org.grails.forge.fixture.ProjectFixture
 import org.grails.forge.options.DevelopmentReloading
 import org.grails.forge.options.Options
 import org.grails.forge.options.TestFramework
+import org.springframework.context.ApplicationContext
 import spock.lang.Specification
 
 @Slf4j
@@ -36,7 +37,7 @@ class GradleSpec extends Specification implements ProjectFixture, ContextFixture
     ApplicationContext beanContext
 
     void setup() {
-        beanContext = ApplicationContext.run()
+        beanContext = ForgeContexts.create()
     }
 
     void cleanup() {
@@ -54,6 +55,17 @@ class GradleSpec extends Specification implements ProjectFixture, ContextFixture
         gradleProps.contains("org.gradle.daemon=true")
         gradleProps.contains("org.gradle.parallel=true")
         gradleProps.contains("org.gradle.jvmargs=-Dfile.encoding=UTF-8 -Xmx1024M")
+    }
+
+    void "a generated #applicationType project uses the configuration cache"() {
+        given:
+        final def output = generate(applicationType, new Options(DevelopmentReloading.DEVTOOLS))
+
+        expect:
+        output["gradle.properties"].contains("org.gradle.configuration-cache=true")
+
+        where:
+        applicationType << ApplicationType.values()
     }
 
     void "test build gradle"() {

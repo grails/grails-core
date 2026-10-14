@@ -76,14 +76,11 @@ configurations.configureEach {
     }
 }
 
-tasks.withType(GroovyCompile).configureEach {
-    options.forkOptions.jvmArgs += ['-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true']
-}
-
 List<String> debugArguments = [
         '-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
         '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
 ]
+boolean cacheTests = !doNotCacheTests
 tasks.withType(Test).configureEach { Test task ->
     boolean isHibernate5 = project.name.startsWith('grails-test-examples-hibernate5')
     boolean isHibernate7 = project.name.startsWith('grails-test-examples-hibernate7')
@@ -94,10 +91,10 @@ tasks.withType(Test).configureEach { Test task ->
 
     // Honor DO_NOT_CACHE_TESTS=1 so developers can repeatedly invoke the same test command
     // without --rerun-tasks (and without recompiling everything else).
-    task.outputs.cacheIf { !doNotCacheTests }
-    task.outputs.upToDateWhen { !doNotCacheTests }
+    task.outputs.cacheIf { cacheTests }
+    task.outputs.upToDateWhen { cacheTests }
 
-    onlyIf {
+    boolean enabled = {
         if (['skipFunctionalTests', 'onlyCoreTests', 'skipTests'].any { project.hasProperty(it) }) {
             return false
         }
@@ -151,7 +148,8 @@ tasks.withType(Test).configureEach { Test task ->
         }
 
         return true
-    }
+    }()
+    onlyIf { enabled }
 
     if (isMongo && project.hasProperty('serializeMongoTests')) {
         // if the developer decides to run a local mongo instance, the tests must be serialized instead of launching containers as needed
@@ -212,4 +210,31 @@ tasks.withType(Test).configureEach { Test task ->
 tasks.named('groovydoc').configure {
     // We don't need to generate docs for test projects
     enabled = false
+}
+
+// App-level indy A/B benches (grails-test-examples/benchmarks/README.adoc). Enabled with -PappBench=true,
+// normally by the appIndyBench orchestrator; optional -PappBenchWarmup, -PappBenchSamples, -PappBenchChunks
+// and -PappBenchOut. Only integrationTest is wired, and only when appBench is enabled, so ordinary runs do not
+// pick up app.bench.* system properties or -PappBenchOut as task inputs and outputs.
+def appBenchEnabled = providers.gradleProperty('appBench').map { Boolean.parseBoolean(it) }.orElse(false)
+if (appBenchEnabled.get()) {
+    def appBenchWarmup = providers.gradleProperty('appBenchWarmup').orElse('200')
+    def appBenchSamples = providers.gradleProperty('appBenchSamples').orElse('1000')
+    def appBenchChunks = providers.gradleProperty('appBenchChunks').orElse('10')
+    def appBenchOut = providers.gradleProperty('appBenchOut').orElse('')
+
+    pluginManager.withPlugin('org.apache.grails.gradle.grails-integration-test') {
+        tasks.named('integrationTest', Test) { Test test ->
+            test.systemProperty('app.bench', 'true')
+            test.systemProperty('app.bench.warmup', appBenchWarmup.get())
+            test.systemProperty('app.bench.samples', appBenchSamples.get())
+            test.systemProperty('app.bench.chunks', appBenchChunks.get())
+            if (appBenchOut.get()) {
+                test.systemProperty('app.bench.out', appBenchOut.get())
+                test.outputs.file(appBenchOut.get())
+            }
+            test.outputs.upToDateWhen { false }
+            test.outputs.cacheIf { false }
+        }
+    }
 }

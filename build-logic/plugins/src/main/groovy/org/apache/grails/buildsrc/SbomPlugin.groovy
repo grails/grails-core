@@ -35,10 +35,12 @@ import org.cyclonedx.model.OrganizationalEntity
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.file.CopySpec
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.java.archives.Manifest
+import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.bundling.Jar
 
@@ -107,6 +109,10 @@ class SbomPlugin implements Plugin<Project> {
             'pkg:maven/jline/jline@2.14.6?type=jar'                           : 'BSD-2-Clause', // legacy jline:jline group, BSD-2; maps incorrectly because of https://github.com/CycloneDX/cyclonedx-core-java/issues/205
             'pkg:maven/opensymphony/sitemesh@2.6.0?type=jar'                  : 'OpenSymphony', // custom license approved by legal LEGAL-707
             'pkg:maven/org.antlr/antlr4-runtime@4.7.2?type=jar'               : 'BSD-3-Clause', // maps incorrectly because of https://github.com/CycloneDX/cyclonedx-core-java/issues/205
+            // StringTemplate and the ANTLR 3 runtime it uses, which Spring AI's prompt templates bring in, declare
+            // "The BSD License" / "BSD licence" with http://www.antlr.org/license.html or http://antlr.org/license.html as the URL: the 3-clause text.
+            'pkg:maven/org.antlr/ST4@4.3.4?type=jar'                          : 'BSD-3-Clause',
+            'pkg:maven/org.antlr/antlr-runtime@3.5.3?type=jar'                : 'BSD-3-Clause',
             // mongo-java-server declares only "The BSD License" so it maps to BSD-4-Clause for the same
             // reason as the org.jline group below. https://github.com/bwaldvogel/mongo-java-server/blob/main/LICENSE
             // has three numbered clauses and no advertising clause, making it BSD-3-Clause.
@@ -307,7 +313,8 @@ class SbomPlugin implements Plugin<Project> {
                 Provider<String> sbomComponent = componentName
                 Provider<Boolean> isReproducibleBuildProvider = project.provider { lookupProperty(project, 'isReproducibleBuild') as boolean }
                 Provider<ZonedDateTime> buildDateProvider = project.provider { lookupProperty(project, 'buildDate') as ZonedDateTime }
-                doLast {
+                doLast { Task t ->
+                    Logger logger = t.logger
                     // json schema is documented here: https://cyclonedx.org/docs/1.6/json/
                     def rewriteSbom = { File f ->
                         def bom = new JsonSlurper().parse(f)
@@ -449,10 +456,10 @@ class SbomPlugin implements Plugin<Project> {
                 manifest.attributes('Sbom-Location': 'META-INF/sbom.json')
                 manifest.attributes('Sbom-Format': 'CycloneDX')
             }
-            jar.doFirst {
+            jar.doFirst { Task t ->
                 if (!publishesJavaComponent.get()) {
-                    jar.manifest.attributes.remove('Sbom-Location')
-                    jar.manifest.attributes.remove('Sbom-Format')
+                    ((Jar) t).manifest.attributes.remove('Sbom-Location')
+                    ((Jar) t).manifest.attributes.remove('Sbom-Format')
                 }
             }
         }

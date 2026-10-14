@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,7 +97,7 @@ public class GroovyPageParser implements Tokens {
     private static final String TAGLIB_DIRECTIVE = "taglib";
 
     private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*(?!" + TAGLIB_DIRECTIVE + " )(.*?)\\s*%>", Pattern.DOTALL);
-    private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?%>", Pattern.DOTALL);
+    private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?--%>|%\\{--.*?--}%", Pattern.DOTALL);
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final Pattern NON_WHITESPACE_PATTERN = Pattern.compile("\\S");
     private static final Pattern IMPORT_SEMICOLON_PATTERN = Pattern.compile(";");
@@ -220,6 +221,11 @@ public class GroovyPageParser implements Tokens {
     private static final String OUT_CODEC_DIRECTIVE = OutputEncodingSettings.OUT_CODEC_NAME + CODEC_DIRECTIVE_POSTFIX;
     private static final String TAGLIB_CODEC_DIRECTIVE = OutputEncodingSettings.TAGLIB_CODEC_NAME + CODEC_DIRECTIVE_POSTFIX;
     private static final String GRAILS_LAYOUT_PREPROCESS_DIRECTIVE = "grailsLayoutPreprocess";
+    /**
+     * The page directive by which a page asks that the lines holding only directives, scriptlets and
+     * comments write nothing, for a page rendering text in which every line break counts.
+     */
+    private static final String TRIM_LOGIC_LINES_DIRECTIVE = "trimLogicLines";
 
     private String pluginAnnotation;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
@@ -257,20 +263,6 @@ public class GroovyPageParser implements Tokens {
 
     /** Whether what a page never declared fails the compilation rather than resolving at render time. */
     private boolean compileStaticStrict;
-
-    /**
-     * Matches the {@code var} and {@code status} attributes of a namespaced tag, which is how a page
-     * names something it introduces: {@code <g:set var="total"/>}, {@code <g:each var="book"
-     * status="i">}, {@code <g:eachError var="error">}.
-     *
-     * <p>Read from the page source rather than from the parsed attributes because attributes are
-     * parsed only on the pass that writes the class, by which point the annotation carrying these
-     * names has already been written. Matching a name that turns out not to be a page scope variable
-     * costs only that the name resolves dynamically, so the pattern errs towards matching.</p>
-     */
-    private static final Pattern PAGE_SCOPE_VARIABLE_PATTERN = Pattern.compile(
-            "<\\w+:(?:[^>\"']|\"[^\"]*\"|'[^']*')*?\\b(?:var|status)\\s*=\\s*[\"']([A-Za-z_$][\\w$]*)[\"']",
-            Pattern.DOTALL);
 
     public String getContentType() {
         return contentType;
@@ -334,6 +326,9 @@ public class GroovyPageParser implements Tokens {
         applyCompileStaticSystemProperty();
 
         Map<String, String> directives = parseDirectives(gspSource);
+        if (GrailsStringUtils.toBoolean(directives.get(TRIM_LOGIC_LINES_DIRECTIVE))) {
+            gspSource = LogicLineTrimmer.trim(gspSource);
+        }
         if (isGrailsLayoutPreprocessingEnabled(directives.get(GRAILS_LAYOUT_PREPROCESS_DIRECTIVE))) {
             // GSP preprocessing for direct grails layout integration: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
             gspSource = grailsLayoutPreprocessor.addGspGrailsLayoutCapturing(gspSource);
@@ -354,10 +349,7 @@ public class GroovyPageParser implements Tokens {
      * @param gspSource the page source
      */
     private void collectPageScopeVariables(String gspSource) {
-        Matcher matcher = PAGE_SCOPE_VARIABLE_PATTERN.matcher(gspSource);
-        while (matcher.find()) {
-            pageScopeVariables.add(matcher.group(1));
-        }
+        PageScopeVariableScanner.collect(gspSource, pageScopeVariables);
     }
 
     /**
@@ -435,16 +427,17 @@ public class GroovyPageParser implements Tokens {
     }
 
     private Map<String, String> parseDirectives(String gspSource) {
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         // strip gsp comments
         String input = PRESCAN_COMMENT_PATTERN.matcher(gspSource).replaceAll("");
         // find page directives
         Matcher m = PRESCAN_PAGE_DIRECTIVE_PATTERN.matcher(input);
-        if (m.find()) {
+        while (m.find()) {
             Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(m.group(1));
             while (mat.find()) {
                 String name = mat.group(1);
-                String value = mat.group(3);
+                String value = mat.group(3).trim();
+                // Match directPage: later settings replace earlier ones.
                 result.put(name, value);
             }
         }

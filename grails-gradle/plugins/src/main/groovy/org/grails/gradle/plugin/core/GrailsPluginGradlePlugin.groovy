@@ -26,6 +26,7 @@ import groovy.transform.CompileStatic
 
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Copy
@@ -183,6 +184,9 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             it.from(sourceSets.ast.output)
             it.into(project.layout.buildDirectory.dir('classes/groovy/main'))
         }
+        // The AST classes are copied into the main classes directory, so every task that reads the main
+        // classes directories (not only the ones wired through 'classes') must run after the copy.
+        (sourceSets.main.output.classesDirs as ConfigurableFileCollection).builtBy(copyAstClasses)
 
         project.tasks.named('findMainClass', FindMainClassTask).configure {
             it.dependsOn(copyAstClasses)
@@ -195,11 +199,12 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             it.classpath += sourceSets.ast.output
         }
 
-        taskContainer.whenTaskAdded {
-            if (it.name == 'compileWebappGroovyPages') {
-                it.configure {
-                    it.dependsOn(copyAstClasses)
-                }
+        // configureEach, not whenTaskAdded: the eager hook realizes every registered task at this point,
+        // processResources among them, and the resource processing then reads the grails extension
+        // before the build script has configured it (native2ascii, for one)
+        taskContainer.configureEach { Task task ->
+            if (task.name == 'compileWebappGroovyPages') {
+                task.dependsOn(copyAstClasses)
             }
         }
 
