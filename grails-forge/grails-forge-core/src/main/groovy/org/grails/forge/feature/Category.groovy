@@ -29,6 +29,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class Category {
 
+    public static final String AI                   = 'AI'
     public static final String API                  = 'API'
     public static final String BPM                  = 'BPM'
     public static final String CACHE                = 'Cache'

@@ -275,6 +275,7 @@ async:
     asyncServerSentEvents: Server Sent Events
     asyncRxGorm: RxGORM
   asyncRequests: Asynchronous Request Handling
+  asyncStreaming: Streaming Responses
   asyncServletApi: Servlet 3.0 Async
 validation:
   title: Validation
@@ -375,6 +376,14 @@ redis:
   redisMemoizationAnnotations: Memoization Annotations
   redisMultipleServers: Multiple Redis Servers
   redisUsefulLinks: Useful Links
+usingAi:
+  title: Using AI in Your Application
+  aiInstallation: Installation
+  aiProviders: Model Providers
+  aiConfiguration: Configuration
+  aiChatClient: Using the Chat Client
+  aiStreaming: Streaming Model Responses
+  aiTesting: Testing
 plugins:
   title: Plugins
   creatingAndInstallingPlugins: Creating and Installing Plugins
