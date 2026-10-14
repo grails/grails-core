@@ -92,14 +92,14 @@ class GrailsDomainGeneratorUniqueGroupSpec extends GrailsDomainGeneratorSupport 
         readConstraints(metadata.getEntityBinding(classes[entity(GenUqJoinedChild)].name)) == boundConstraints(GenUqJoinedChild)
     }
 
-    void "a unique group on an enum property is stated, although classic binding never created the key"() {
+    void "a unique group on an enum property is stated, and native binding creates the same key"() {
         when:
         Map<GrailsHibernatePersistentEntity, Class<?>> classes = generateGroup(GenUqEnum)
         ConstraintFacets facets = newGenerator().constraintFacets(entity(GenUqEnum))
 
-        then: "classic binding never created the key of an enum property, which the mapping does not mean: the generator states the key and says so"
+        then: "native binding creates the key of an enum property, and the generator states the same key"
         generatedConstraints(classes[entity(GenUqEnum)]).values().toList() == [['other', 'state']]
-        facets.uniqueKeys()*.bound() == [false]
+        facets.uniqueKeys()*.columns() == [['other', 'state']]
         entity(GenUqEnum).persistentClass.table.uniqueKeys.values().any { it.columns*.name == ['other', 'state'] }
     }
 

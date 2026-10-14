@@ -221,17 +221,11 @@ Some bugs of the classic binding of Grails 8 are not copied by native binding. N
 | A custom collection type (a `UserCollectionType` class) as the `type` of a `hasMany` of domain classes, for example `books type: MyCollectionType`.
 | The classic binding booted with the same schema but never used the class: it kept Hibernate's own collection and did not even create an instance of your type. Native binding applies the type, so Hibernate creates, wraps and loads the collection with your class. If you map a custom collection type that has never been exercised, test it before you upgrade. On a `hasMany` of basic values it is not supported (the classic binding did not boot it either).
 
-| A `unique` group that includes an enum property.
-| The classic binding dropped the group. Native binding creates the unique constraint. With `dbCreate: update` the constraint is added to an existing table, and fails if the table holds duplicates.
-
 | An owner with two or more unidirectional `hasMany` collections that use a join table.
 | The classic binding could fail to write the join table rows of such a collection. Native binding writes them.
 
 | The `nullable: false` constraint on the element column of a map of values.
 | The classic binding left the column nullable. Native binding makes it `not null`.
-
-| A `unique` group on the property of a collection (`hasMany`).
-| The group names columns of the owner's table, which the table of the collection does not have. The classic binding tried to create a unique key over them and the statement failed when the schema was created, so the database has no such key. Native binding creates no key. The `index` option on the same property works as it did: the index is created over the key column of the collection table (and over the element column of a collection of enums), with the name the mapping gives it.
 
 | A `hasMany` inside a class listed in `static embedded` (basic values, enums or domain classes) when more than one embedded property of the application embeds that class: two domain classes, or one domain class with two properties of that type.
 | The classic binding named the table and the key column after the embedded class, so all the owners shared one table. Its foreign key pointed at the owner that was bound first, so the collection of any other owner could not be stored (the insert violated the key), the elements of two properties of one owner were mixed up, and the application failed to start when the properties had the same name. Native binding gives every owner a collection table of its own. The first owner, in the order of the entity name and then the property path, keeps the table and the key column of the classic binding, so an existing database is not disturbed. The other owners get names that start with the table of the owner and the path of the embedded property, for example `author_address_phones` and `author_address_id`.
@@ -282,14 +276,6 @@ The schema of 766 groups of related domain classes was created with the classic 
 | No unused extra nullable column on the table of a map of values.
 | The classic binding created a column such as `attributes_java_lang_string` that nothing uses.
 | The column stays in an existing database. It does no harm.
-
-| A unique constraint over the columns of a `unique` group that includes an enum.
-| See <<nativeDomainBinding-behavior,Changes in Behavior from Grails 8>>.
-| `update` adds the constraint.
-
-| No unique key on the table of a collection for a `unique` group mapped on the collection property.
-| See <<nativeDomainBinding-behavior,Changes in Behavior from Grails 8>>.
-| The key never existed in a database created by the classic binding: the statement that created it failed.
 
 | An extra collection table, with a key column named after the owner and the embedded property, for every owner after the first of an embedded class that has a `hasMany`.
 | See <<nativeDomainBinding-behavior,Changes in Behavior from Grails 8>>. The classic binding shared one table between the owners.
