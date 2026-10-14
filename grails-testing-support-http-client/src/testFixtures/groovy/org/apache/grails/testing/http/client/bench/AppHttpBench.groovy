@@ -62,6 +62,13 @@ final class AppHttpBench {
     /** Rounds per ruler sample, the same as {@code CpuRulerBenchmark.integerArithmetic}. */
     static final int RULER_ROUNDS = 1_024
 
+    /**
+     * Ruler calls discarded before sampling, independent of {@code appBenchWarmup}. The HTTP warm-up is sized
+     * for millisecond requests; a microsecond loop needs tens of thousands of calls before C2 has compiled it,
+     * and sampling earlier records the JIT transition as a runner-health deviation.
+     */
+    static final int RULER_WARMUP = 50_000
+
     /** Carried across ruler samples so the JIT cannot fold the loop into a constant. */
     private static int rulerState = 0x13579bdf
 
@@ -130,9 +137,10 @@ final class AppHttpBench {
         }
 
         int chunks = chunkCount()
+        int rulerWarmup = Math.max(warmup, RULER_WARMUP)
         writeEntries(out, [
                 toJmhEntry(benchmark, values, chunks),
-                toJmhEntry(RULER_BENCHMARK, rulerSamples(samples, warmup), chunks)
+                toJmhEntry(RULER_BENCHMARK, rulerSamples(samples, rulerWarmup), chunks, "${rulerWarmup} calls")
         ])
     }
 
@@ -143,6 +151,10 @@ final class AppHttpBench {
      * has {@code [fork][iteration]}, and {@code forks} carries the chunk count.
      */
     static Map<String, Object> toJmhEntry(String benchmark, double[] values, int chunks) {
+        return toJmhEntry(benchmark, values, chunks, "${warmupCount()} reqs")
+    }
+
+    static Map<String, Object> toJmhEntry(String benchmark, double[] values, int chunks, CharSequence warmupTime) {
         if (values == null || values.length == 0) {
             throw new IllegalArgumentException('values must contain at least one sample')
         }
@@ -196,7 +208,7 @@ final class AppHttpBench {
         entry.put('vmName', System.getProperty('java.vm.name', 'unknown'))
         entry.put('vmVersion', System.getProperty('java.vm.version', 'unknown'))
         entry.put('warmupIterations', 1)
-        entry.put('warmupTime', "${warmupCount()} reqs")
+        entry.put('warmupTime', warmupTime.toString())
         entry.put('measurementIterations', values.length)
         entry.put('measurementTime', '1 req')
         entry.put('primaryMetric', primary)

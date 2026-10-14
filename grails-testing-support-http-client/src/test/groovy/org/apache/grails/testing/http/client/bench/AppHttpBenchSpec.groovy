@@ -143,6 +143,10 @@ class AppHttpBenchSpec extends Specification {
         Map ruler = (Map) parsed[1]
         ((List) ((Map) ruler.primaryMetric).rawData).flatten().every { Object nanos -> ((Number) nanos).doubleValue() > 0d }
         ((Map) ((Map) ruler.primaryMetric).scorePercentiles)['0.0'] > 0d
+
+        and: 'the ruler warms up on its own terms while the HTTP entry reports the configured warm-up'
+        ((Map) parsed[0]).warmupTime == '0 reqs'
+        ruler.warmupTime == "${AppHttpBench.RULER_WARMUP} calls"
     }
 
     void 'measureAndWrite rejects a sample count below 1'() {

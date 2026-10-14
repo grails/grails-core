@@ -301,7 +301,9 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: app-bench-results
-          path: app-bench-results/
+          path: |
+            app-bench-results/
+            !app-bench-results/run/project-cache/
           if-no-files-found: warn
 
   report:

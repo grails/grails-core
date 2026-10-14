@@ -86,7 +86,9 @@ Optional properties:
 | `appBenchMaxWorkers` | `4` | `--max-workers` for each nested Gradle invocation
 |===
 
-CI on the `performance` label uses warmup 80 / samples 300 / chunks 10.
+CI on the `performance` label uses warmup 80 / samples 300 / chunks 10. The CPU ruler written next to each
+HTTP entry discards at least 50,000 calls of its own before sampling, whatever `appBenchWarmup` says, so the
+runner-health check compares two JIT-settled loops rather than two JVMs caught mid-compilation.
 
 == Gradle properties
 
