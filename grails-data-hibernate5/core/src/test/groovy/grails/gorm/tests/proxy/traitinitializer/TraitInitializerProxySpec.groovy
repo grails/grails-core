@@ -20,6 +20,7 @@ package grails.gorm.tests.proxy.traitinitializer
 
 import grails.gorm.annotation.Entity
 import org.hibernate.Hibernate
+import org.hibernate.proxy.HibernateProxy
 import org.grails.orm.hibernate.HibernateDatastore
 import spock.lang.AutoCleanup
 import spock.lang.Issue
@@ -43,21 +44,65 @@ class TraitInitializerProxySpec extends Specification {
 
     @Shared @AutoCleanup HibernateDatastore datastore = new HibernateDatastore(getClass().getPackage())
 
-    void "load() of an entity whose trait declares default values creates the proxy"() {
+    void "load() of an entity whose trait declares default values returns a proxy that initializes on use"() {
         given: "a persisted entity whose trait declares fields with default values"
         Long id = null
         InitializedTraitEntity.withTransaction {
             id = new InitializedTraitEntity(name: 'seed').save(flush: true, failOnError: true).id
         }
 
-        when: "a lazy proxy is requested in a new session"
+        when: "the proxy is initialized through dynamic dispatch"
         InitializedTraitEntity proxy = null
-        InitializedTraitEntity.withTransaction { proxy = InitializedTraitEntity.load(id) }
+        boolean uninitializedBefore = false
+        String name = null
+        String createdBy = null
+        Class<?> unwrapped = null
+        InitializedTraitEntity.withTransaction {
+            proxy = InitializedTraitEntity.load(id)
+            uninitializedBefore = !Hibernate.isInitialized(proxy)
+            name = proxy.name
+            createdBy = proxy.createdBy
+            unwrapped = datastore.mappingContext.proxyHandler.unwrap(proxy).getClass()
+        }
 
-        then: "the proxy is built without triggering the trait initializer through the interceptor"
-        noExceptionThrown()
-        proxy != null
-        !Hibernate.isInitialized(proxy)
+        then:
+        proxy instanceof HibernateProxy
+        proxy instanceof InitializedTrait
+        uninitializedBefore
+        proxy.id == id
+        name == 'seed'
+        createdBy == 'N/A'
+        Hibernate.isInitialized(proxy)
+        unwrapped == InitializedTraitEntity
+    }
+
+    void "a lazy many-to-one to an entity whose trait declares default values loads through the proxy"() {
+        given: "a persisted owner with an association to the entity"
+        Long ownerId = null
+        TraitOwnerEntity.withTransaction {
+            InitializedTraitEntity target =
+                    new InitializedTraitEntity(name: 'seed').save(flush: true, failOnError: true)
+            ownerId = new TraitOwnerEntity(target: target).save(flush: true, failOnError: true).id
+        }
+
+        when: "the owner is loaded in a new session"
+        TraitOwnerEntity owner = null
+        boolean uninitializedBefore = false
+        String name = null
+        String createdBy = null
+        TraitOwnerEntity.withTransaction {
+            owner = TraitOwnerEntity.get(ownerId)
+            uninitializedBefore = !Hibernate.isInitialized(owner.target)
+            name = owner.target.name
+            createdBy = owner.target.createdBy
+        }
+
+        then: "the association was a lazy proxy and reading through it works"
+        uninitializedBefore
+        owner.target instanceof HibernateProxy
+        name == 'seed'
+        createdBy == 'N/A'
+        Hibernate.isInitialized(owner.target)
     }
 
     void "control: load() of an entity whose trait declares no initializer creates the proxy"() {
@@ -86,6 +131,11 @@ trait InitializedTrait {
 @Entity
 class InitializedTraitEntity implements InitializedTrait {
     String name
+}
+
+@Entity
+class TraitOwnerEntity {
+    InitializedTraitEntity target
 }
 
 trait PlainTrait {
