@@ -35,11 +35,10 @@ class GroovyProxyClassBuilderSpec extends Specification {
     void "a Groovy entity gets a wrapper around the Hibernate proxy class that overrides getMetaClass()"() {
         when:
         Class<?> proxyClass = builder.build('GroovyProxyBuilderEntity', GroovyProxyBuilderEntity, INTERFACES)
-        Class<?> stock = helper.buildProxy(GroovyProxyBuilderEntity, INTERFACES)
+        Class<?> stock = proxyClass.superclass
 
-        then:
-        proxyClass != stock
-        stock.isAssignableFrom(proxyClass)
+        then: 'the wrapper subclasses a Hibernate proxy class and overrides getMetaClass()'
+        HibernateProxy.isAssignableFrom(stock)
         GroovyProxyBuilderEntity.isAssignableFrom(proxyClass)
         proxyClass.getMethod('getMetaClass').declaringClass == proxyClass
     }
@@ -62,6 +61,20 @@ class GroovyProxyClassBuilderSpec extends Specification {
 
         then:
         proxy.getMetaClass() == InvokerHelper.getMetaClass(GroovyProxyBuilderEntity)
+    }
+
+    void "the wrapper is cached, so a second builder for the same entity reuses this one"() {
+        given: 'a second builder with its own proxy helper, as a second SessionFactory would have'
+        def otherHelper = new GrailsBytecodeProvider().getByteBuddyProxyHelper()
+        def otherBuilder = new GroovyProxyClassBuilder(otherHelper)
+
+        when:
+        Class<?> first = builder.build('GroovyProxyBuilderEntity', GroovyProxyBuilderEntity, INTERFACES)
+        Class<?> second = otherBuilder.build('GroovyProxyBuilderEntity', GroovyProxyBuilderEntity, INTERFACES)
+
+        then: 'the wrapper is defined once, although each provider has its own randomly named stock class'
+        first.is(second)
+        otherHelper.buildProxy(GroovyProxyBuilderEntity, INTERFACES) != first.superclass
     }
 
     void "an entity that is not a Groovy object keeps the Hibernate proxy class"() {

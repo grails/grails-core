@@ -49,11 +49,11 @@ class ByteBuddyGroovyProxyFactorySpec extends Specification {
         when:
         factory.postInstantiate('GroovyProxyFactoryEntity', GroovyProxyFactoryEntity, [HibernateProxy] as Set, null, null, null)
 
-        then: 'the proxy class is a subclass of the Hibernate-built proxy that overrides getMetaClass()'
+        then: 'the proxy class subclasses the Hibernate proxy class and overrides getMetaClass()'
         def proxyClass = proxyClassOf(factory)
-        def stock = helper.buildProxy(GroovyProxyFactoryEntity, [HibernateProxy] as Class[])
-        proxyClass != stock
-        stock.isAssignableFrom(proxyClass)
+        def stock = proxyClass.superclass
+        HibernateProxy.isAssignableFrom(stock)
+        GroovyProxyFactoryEntity.isAssignableFrom(proxyClass)
         proxyClass.getMethod('getMetaClass').declaringClass == proxyClass
     }
 
