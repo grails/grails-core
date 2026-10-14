@@ -2054,8 +2054,9 @@ class GrailsDomainGenerator {
             HibernatePersistentProperty[] nested = referenced instanceof HibernateToOneProperty ?
                     ((HibernateToOneProperty) referenced).hibernateAssociatedEntity.compositeIdentity : null
             if (nested != null && nested.length > 0) {
-                // a part that refers to an entity with a composite identifier: one column for each of its identifier properties
-                for (HibernatePersistentProperty inner : nested) {
+                // a part that refers to an entity with a composite identifier: one column for each of its identifier properties,
+                // in the name order Hibernate sorts that identifier in, which is the order the binder names them in
+                for (HibernatePersistentProperty inner : nested.toList().sort { HibernatePersistentProperty part -> part.name }) {
                     generated << new ColumnConfig(name: foreignKeyColumnName(
                             prefix, namingStrategy.resolveColumnName(propertyName), defaultColumnNames.getDefaultColumnName(inner)))
                 }
@@ -2086,8 +2087,14 @@ class GrailsDomainGenerator {
         for (String propertyName : root.hibernateCompositeIdentity.get().propertyNames) {
             HibernatePersistentProperty part = root.getHibernatePropertyByName(propertyName)
             if (part instanceof HibernateToOneProperty) {
-                // a part that refers to an entity with a composite identifier has one column for each of its identifier properties
-                referenced.addAll(toOneColumnsFacets((HibernateToOneProperty) part)*.name())
+                // a part that refers to an entity with a composite identifier has one column for each of its identifier properties,
+                // in the name order of those properties, which is the order the binder names the foreign key columns of the part in
+                List<String> columns = toOneColumnsFacets((HibernateToOneProperty) part)*.name()
+                HibernatePersistentProperty[] inner = ((HibernateToOneProperty) part).hibernateAssociatedEntity.compositeIdentity
+                if (inner != null && inner.length == columns.size()) {
+                    columns = (0..<columns.size()).sort(false) { int i -> inner[i].name }.collect { int i -> columns[i] }
+                }
+                referenced.addAll(columns)
             } else {
                 referenced << columnFacets(part).name()
             }
