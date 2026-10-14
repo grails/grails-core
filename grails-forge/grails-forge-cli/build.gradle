@@ -110,6 +110,10 @@ dependencies {
     // CliRunner, the fixture the specs run one command bean with
     testFixturesImplementation platform("org.apache.grails:grails-bom:$projectVersion")
     testFixturesImplementation 'org.apache.groovy:groovy'
+    // GROOVY-11158: the Grails plugin compiles every Groovy source set without invokedynamic, which
+    // Groovy 6 supports only with groovy-callsite on the classpath. The application's own source sets
+    // get it through grails-common; the fixtures see none of the application's implementation dependencies.
+    testFixturesImplementation 'org.apache.groovy:groovy-callsite'
     testFixturesImplementation 'org.springframework:spring-context'
     testFixturesImplementation "info.picocli:picocli:$picocliVersion"
 
