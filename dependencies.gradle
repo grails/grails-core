@@ -72,7 +72,7 @@ ext {
     bomDependencyVersions = [
             'asset-pipeline-bom.version'    : '5.2.2',
             'cas-client-core.version'       : '4.1.1',
-            'bootstrap-icons.version'       : '1.13.1',
+            'bootstrap-icons.version'       : '1.13.2',
             'bootstrap.version'             : '5.3.8',
             // Overrides the 1.18.11 Spring Boot 4.1 manages, on every classpath, so the BOM manages the
             // version Selenium 4.49.0 pulls in transitively - see selenium.version. Can return to Boot's
