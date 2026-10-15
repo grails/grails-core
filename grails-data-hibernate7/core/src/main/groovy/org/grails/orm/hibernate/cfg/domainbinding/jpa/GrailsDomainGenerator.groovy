@@ -122,6 +122,7 @@ import org.hibernate.usertype.UserType
 import org.springframework.core.GenericTypeResolver
 import org.springframework.util.ClassUtils
 
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.Association
@@ -151,6 +152,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateBasicProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateCustomProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedCollectionProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedPersistentEntity
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEnumProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToManyProperty
@@ -338,14 +340,17 @@ class GrailsDomainGenerator {
         Set<String> shared = new HashSet<String>()
         Map<String, String> qualifiers = new HashMap<String, String>()
         for (Map.Entry<String, List<EmbeddedUse>> entry : uses.entrySet()) {
-            if (entry.value.size() < 2) {
+            // an embedded type that is an entity too has a collection of its own, bound under the binder's names, so every embedded use is qualified
+            String typeName = entry.key.substring(0, entry.key.indexOf('#'))
+            boolean ownedByEntity = entities.any { GrailsHibernatePersistentEntity entity -> entity.javaClass.name == typeName }
+            if (entry.value.size() < 2 && !ownedByEntity) {
                 continue
             }
             shared << entry.key
             List<EmbeddedUse> ordered = entry.value.sort(false) { EmbeddedUse a, EmbeddedUse b ->
                 a.owner.name <=> b.owner.name ?: a.path <=> b.path
             }
-            for (EmbeddedUse use : ordered.drop(1)) {
+            for (EmbeddedUse use : ownedByEntity ? ordered : ordered.drop(1)) {
                 qualifiers.put(embeddedUseKey(use.owner, use.path, use.collection), embeddedQualifier(use))
             }
         }
@@ -3208,7 +3213,11 @@ class GrailsDomainGenerator {
         // name, and retries a failed check without end. It finds the class generated for an entity under the entity's name, which has
         // no getters to check, but would find the real class of an embedded type with its getters and the generated class of the
         // entity as the element type, so the embeddable that holds such a collection takes the name of the embedded type like an entity.
-        boolean holdsEntities = peers.any { HibernatePersistentProperty peer -> peer instanceof HibernateToManyEntityProperty }
+        // An embedded type that is an entity too has its own generated class under that name, which has no getters either, so its
+        // embeddable keeps a name of its own: it would otherwise take the name of the entity class and replace it.
+        PersistentEntity boundEntity = type.mappingContext.getPersistentEntity(type.javaClass.name)
+        boolean isEntityToo = boundEntity != null && !(boundEntity instanceof HibernateEmbeddedPersistentEntity)
+        boolean holdsEntities = !isEntityToo && peers.any { HibernatePersistentProperty peer -> peer instanceof HibernateToManyEntityProperty }
         String base = holdsEntities ? type.javaClass.name : generatedEmbeddableName(type)
         String name = base
         int variant = 1

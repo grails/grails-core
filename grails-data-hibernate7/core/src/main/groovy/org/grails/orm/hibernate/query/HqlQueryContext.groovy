@@ -118,9 +118,11 @@ record HqlQueryContext(
         }
         filteredHints = Collections.unmodifiableMap(filteredHints)
 
-        String resolvedHql = positionalParamsCopy.isEmpty() ?
-                resolveHql(queryCharseq, isNative, namedParamsCopy) :
+        String resolved = positionalParamsCopy.isEmpty() ?
+                resolveHql(queryCharseq, namedParamsCopy) :
                 resolveHql(queryCharseq, isNative, positionalParamsCopy)
+        // the result type of a native query or an update is not read from its select, so it is run as written
+        String resolvedHql = isNative || isUpdate ? resolved : normalizeNonAliasedSelect(resolved)
         String hql = (resolvedHql != null && !resolvedHql.trim().isEmpty()) ? resolvedHql : "from ${entity.name}".toString()
 
         for (Map.Entry<String, Object> entry : namedParamsCopy.entrySet()) {
@@ -148,16 +150,14 @@ record HqlQueryContext(
     // ─── HQL resolution ──────────────────────────────────────────────────────
 
     @Nullable
-    @PackageScope static String resolveHql(
-            CharSequence queryCharseq, boolean isNative, Map<String, Object> namedParams) {
+    @PackageScope static String resolveHql(CharSequence queryCharseq, Map<String, Object> namedParams) {
         String raw
         if (queryCharseq instanceof GString) {
             raw = buildNamedParameterQueryFromGString((GString) queryCharseq, namedParams)
         } else {
             raw = queryCharseq != null ? queryCharseq.toString() : ''
         }
-        String normalized = normalizeMultiLineQueryString(raw)
-        return isNative ? normalized : normalizeNonAliasedSelect(normalized)
+        return normalizeMultiLineQueryString(raw)
     }
 
     @Nullable
@@ -169,8 +169,7 @@ record HqlQueryContext(
         } else {
             raw = queryCharseq != null ? queryCharseq.toString() : ''
         }
-        String normalized = normalizeMultiLineQueryString(raw)
-        return isNative ? normalized : normalizeNonAliasedSelect(normalized)
+        return normalizeMultiLineQueryString(raw)
     }
 
     // ─── Projection analysis ─────────────────────────────────────────────────
@@ -205,11 +204,11 @@ record HqlQueryContext(
             return null
         }
         String s = hql.toString().toLowerCase(Locale.ROOT).trim()
-        int selectIdx = s.indexOf("${HibernateQueryArgument.HQL_SELECT.value()} ".toString())
+        int selectIdx = indexOfSelect(s)
         if (selectIdx < 0) {
             return null
         }
-        int fromIdx = s.indexOf(" ${HibernateQueryArgument.HQL_FROM.value()} ".toString(), selectIdx)
+        int fromIdx = indexOfFrom(s, selectIdx)
         return extractSelectClause(s, selectIdx, fromIdx)
     }
 
@@ -243,12 +242,12 @@ record HqlQueryContext(
         }
         String s = hql.toString().trim()
         String lower = s.toLowerCase(Locale.ROOT)
-        int selectIdx = lower.indexOf(HibernateQueryArgument.HQL_SELECT.value() + ' ')
+        int selectIdx = indexOfSelect(lower)
         if (selectIdx < 0) {
             return 0
         }
 
-        int fromIdx = lower.indexOf(" ${HibernateQueryArgument.HQL_FROM.value()} ".toString(), selectIdx)
+        int fromIdx = indexOfFrom(lower, selectIdx)
         String sel = s.substring(
                         selectIdx + HibernateQueryArgument.HQL_SELECT.value().length(),
                         fromIdx < 0 ? s.length() : fromIdx)
@@ -303,11 +302,72 @@ record HqlQueryContext(
         return commas
     }
 
+    /** Returns the index of the {@code select} of the query itself, not of a subquery, or -1 if it has none. */
+    private static int indexOfSelect(String lowerHql) {
+        return indexOfTopLevel(lowerHql, HibernateQueryArgument.HQL_SELECT.value() + ' ', 0)
+    }
+
+    /**
+     * Returns the index of the space before the {@code from} of the query itself, not of a subquery, at or after
+     * {@code fromIndex}, or -1 if it has none.
+     */
+    private static int indexOfFrom(String lowerHql, int fromIndex) {
+        return indexOfTopLevel(lowerHql, ' ' + HibernateQueryArgument.HQL_FROM.value() + ' ', fromIndex)
+    }
+
+    /**
+     * Returns the index of {@code keyword} in the HQL at or after {@code fromIndex}, outside string literals, quoted
+     * identifiers, comments and parentheses. Inside parentheses is a subquery or the arguments of a function, and the
+     * {@code select} and {@code from} of a subquery are not those of the query. The keyword is matched as written, so
+     * the HQL is passed in lower case.
+     *
+     * @return the index, or -1 if the keyword is not at the top level of the HQL
+     */
+    private static int indexOfTopLevel(String hql, String keyword, int fromIndex) {
+        int depth = 0
+        int i = 0
+        while (i < hql.length()) {
+            char c = hql.charAt(i)
+            if (c == ('\'' as char) || c == ('"' as char) || c == ('`' as char)) {
+                i = SqlRestriction.skipQuoted(hql, i, c)
+                continue
+            }
+            if (hql.startsWith('/*', i)) {
+                int commentEnd = hql.indexOf('*/', i + 2)
+                i = commentEnd < 0 ? hql.length() : commentEnd + 2
+                continue
+            }
+            if (c == ('(' as char)) {
+                depth++
+            } else if (c == (')' as char) && depth > 0) {
+                depth--
+            } else if (depth == 0 && i >= fromIndex && hql.startsWith(keyword, i) && startsWord(hql, i)) {
+                return i
+            }
+            i++
+        }
+        return -1
+    }
+
+    /**
+     * Returns whether a keyword at {@code index} starts a word, so that {@code select} in {@code preselect = 1} or in
+     * {@code b.select} is a part of a name and not the keyword. A keyword that starts with a space starts a word.
+     */
+    private static boolean startsWord(String hql, int index) {
+        if (index == 0 || hql.charAt(index) == (' ' as char)) {
+            return true
+        }
+        char previous = hql.charAt(index - 1)
+        return !Character.isJavaIdentifierPart(previous) && previous != ('.' as char)
+    }
+
     // ─── HQL normalization ────────────────────────────────────────────────────
 
     /**
      * Injects a synthetic alias {@code "e"} into unaliased SELECT queries so that projection
-     * detection works uniformly. The FROM remainder is left intact.
+     * detection works uniformly. The FROM remainder is left intact. Only the SELECT and FROM of the
+     * query itself are read, not those of a subquery, and what precedes the SELECT, such as a comment
+     * or the {@code with} clause of a common table expression, is kept.
      *
      * <p>Examples: {@code "select name from Person"} → {@code "select e.name from Person e"}<br>
      * {@code "select Person from Person"} → {@code "select e from Person e"}
@@ -323,12 +383,12 @@ record HqlQueryContext(
         }
 
         String lower = s.toLowerCase()
-        int selectIdx = lower.indexOf(HibernateQueryArgument.HQL_SELECT.value() + ' ')
+        int selectIdx = indexOfSelect(lower)
         if (selectIdx < 0) {
             return s // no SELECT clause — nothing to normalize
         }
 
-        int fromIdx = lower.indexOf(" ${HibernateQueryArgument.HQL_FROM.value()} ".toString(), selectIdx)
+        int fromIdx = indexOfFrom(lower, selectIdx)
         if (fromIdx < 0) {
             return s // malformed — leave as-is
         }
@@ -388,7 +448,7 @@ record HqlQueryContext(
         // Qualify the projection with the synthetic alias
         String adjusted = getAdjusted(projLower, entityName, projOrig)
 
-        return "${HibernateQueryArgument.HQL_SELECT.value()} ${prefix}${adjusted} ${HibernateQueryArgument.HQL_FROM.value()} ${entityName} e${s.substring(entityEnd)}".toString()
+        return "${s.substring(0, selectIdx)}${HibernateQueryArgument.HQL_SELECT.value()} ${prefix}${adjusted} ${HibernateQueryArgument.HQL_FROM.value()} ${entityName} e${s.substring(entityEnd)}".toString()
     }
 
     private static String getAdjusted(String projLower, String entityName, String projOrig) {
@@ -444,8 +504,7 @@ record HqlQueryContext(
         }
         String s = hql.trim()
         String lower = s.toLowerCase(Locale.ROOT)
-        int selectIdx = lower.indexOf(HibernateQueryArgument.HQL_SELECT.value() + ' ')
-        int fromIdx = lower.indexOf(" ${HibernateQueryArgument.HQL_FROM.value()} ".toString(), Math.max(selectIdx, 0))
+        int fromIdx = indexOfFrom(lower, Math.max(indexOfSelect(lower), 0))
         if (fromIdx < 0) {
             return null
         }

@@ -42,6 +42,20 @@ class ScannedDomainClasses {
             'grails.orm',
     ]
 
+    /**
+     * Entities whose schema the differential specs cannot compare. An entity that is embedded in another and holds a collection of
+     * entities is bound twice, as a component and as an entity, and both bindings claim the same collection table, so which
+     * foreign key and index columns the table ends up with is the binder's order of binding and not a fact the generator can
+     * reproduce. The generated classes boot and persist them (see {@code EmbeddedEntityCollectionKindsSpec}).
+     */
+    private static final Set<String> NOT_COMPARABLE = [
+            'grails.gorm.tests.EmbKindsHolder',
+            'grails.gorm.tests.EmbKindsListOwner',
+            'grails.gorm.tests.EmbKindsMapOwner',
+            'grails.gorm.tests.EmbKindsMember',
+            'grails.gorm.tests.EmbKindsSetOwner',
+    ] as Set<String>
+
     static List<Class<?>> findEntities() {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false) {
             @Override
@@ -53,7 +67,9 @@ class ScannedDomainClasses {
         Set<Class<?>> found = new TreeSet<>({ Class a, Class b -> a.name <=> b.name } as Comparator<Class<?>>)
         for (String basePackage : PACKAGES) {
             for (def definition : scanner.findCandidateComponents(basePackage)) {
-                found << Class.forName(definition.beanClassName)
+                if (!NOT_COMPARABLE.contains(definition.beanClassName)) {
+                    found << Class.forName(definition.beanClassName)
+                }
             }
         }
         return found as List<Class<?>>

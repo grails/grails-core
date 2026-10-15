@@ -25,6 +25,11 @@ import java.lang.annotation.Target
 import java.lang.reflect.Field
 
 import grails.gorm.annotation.Entity
+import grails.gorm.tests.EmbKindsHolder
+import grails.gorm.tests.EmbKindsListOwner
+import grails.gorm.tests.EmbKindsMapOwner
+import grails.gorm.tests.EmbKindsMember
+import grails.gorm.tests.EmbKindsSetOwner
 import grails.gorm.tests.HibernateGormDatastoreSpec
 import grails.unbootable.EmbeddedCollectionHolder
 import grails.unbootable.EmbeddedCollectionOwnerA
@@ -1170,6 +1175,30 @@ class GrailsDomainGeneratorSpec extends HibernateGormDatastoreSpec {
         e.message.contains('Embedded property [bad] of [' + GenEmbedBadHolder.name + ']')
         e.message.contains('ref')
         !newGenerator().supports(unbound(GenEmbedBadHolder).getHibernatePropertyByName('bad'))
+    }
+
+    void "an embedded type that is an entity too keeps its entity class and gets an embeddable of its own"() {
+        given:
+        Class<?>[] domains = [EmbKindsHolder, EmbKindsSetOwner, EmbKindsListOwner, EmbKindsMapOwner, EmbKindsMember] as Class[]
+        HibernateMappingContext context = new HibernateMappingContext(new HibernateConnectionSourceSettings(), (Object) null, domains)
+
+        when:
+        GrailsDomainGenerator generator = newGenerator()
+        Map<GrailsHibernatePersistentEntity, Class<?>> generated = generator.generateAll(
+                domains.collect { Class<?> domain -> (GrailsHibernatePersistentEntity) context.getPersistentEntity(domain.name) },
+                getClass().classLoader)
+        Class<?> setOwner = generated.values().find { Class<?> type -> type.name == EmbKindsSetOwner.name }
+        Class<?> holder = generated.values().find { Class<?> type -> type.name == EmbKindsHolder.name }
+
+        then:
+        setOwner.isAnnotationPresent(jakarta.persistence.Entity)
+        !setOwner.isAnnotationPresent(Embeddable)
+        holder.getDeclaredField('setOwner').type.isAnnotationPresent(Embeddable)
+        holder.getDeclaredField('setOwner').type != setOwner
+
+        and: "the collection of the embedded use gets a table of its own, as the entity's own collection keeps the binder's names"
+        GrailsHibernatePersistentEntity holderEntity = (GrailsHibernatePersistentEntity) context.getPersistentEntity(EmbKindsHolder.name)
+        generator.embeddedCollectionQualifier(holderEntity, 'setOwner', 'members') == 'emb_kinds_holder_set_owner'
     }
 
     void "a collection of basic values is an @ElementCollection with its table, key column and element column"() {
