@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -79,7 +80,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     /**
      * Whether the JSON converter renders values as Grails 8 did, with the marshallers of Grails 8 rather than the
      * application's {@code JsonMapper}. Defaults to {@code true} in Grails 9: set it to {@code false} to render JSON
-     * through the application's {@code JsonMapper}, which Grails 10 makes the default.
+     * through the application's {@code JsonMapper}, which a later release makes the default.
      *
      * @since 9.0
      */
@@ -89,6 +90,13 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
      * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9.
      */
     private static final boolean LEGACY_JSON_BY_DEFAULT = true;
+
+    /**
+     * Whether the notice that {@link #SETTING_CONVERTERS_JSON_LEGACY} is not set has been logged, so that it is logged
+     * once, however many times converters are initialized.
+     */
+    static final AtomicBoolean LEGACY_JSON_DEFAULT_LOGGED = new AtomicBoolean();
+
     public static final String SETTING_CONVERTERS_ENCODING = "grails.converters.encoding";
     public static final String SETTING_CONVERTERS_CIRCULAR_REFERENCE_BEHAVIOUR = "grails.converters.default.circular.reference.behaviour";
     public static final String SETTING_CONVERTERS_JSON_CIRCULAR_REFERENCE_BEHAVIOUR = "grails.converters.json.circular.reference.behaviour";
@@ -144,6 +152,12 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         ProxyHandler proxyHandler = getProxyHandler();
         boolean legacy = grailsConfig.getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT);
         ConvertersConfigurationHolder.setLegacyJson(legacy);
+        if (!grailsConfig.containsProperty(SETTING_CONVERTERS_JSON_LEGACY) && LEGACY_JSON_DEFAULT_LOGGED.compareAndSet(false, true)) {
+            LOG.warn(SETTING_CONVERTERS_JSON_LEGACY + " is not set, so the JSON converter renders JSON as Grails 8 did. " +
+                    "A later release renders JSON through the application's JsonMapper by default. Set it to true to keep " +
+                    "the Grails 8 rendering, or to false to render through the JsonMapper now; see \"Rendering JSON As " +
+                    "Grails 8 Did\" in the upgrade guide.");
+        }
         if (legacy) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Using the JSON marshallers of Grails 8 (" + SETTING_CONVERTERS_JSON_LEGACY + ").");

@@ -52,8 +52,8 @@ NOTE: Groovy 6 marks the concurrency toolkit as incubating. The Grails modules t
 In Grails 9, `render ... as JSON`, `respond` for a JSON request and every other use of `grails.converters.JSON` still
 render JSON as Grails 8 did, by default (see <<renderingJsonAsGrails8,Rendering JSON As Grails 8 Did>>). Setting
 `grails.converters.json.legacy` to `false` makes the JSON converter write JSON through the application's Jackson
-`JsonMapper`, the one Spring Boot auto-configures, so that it renders values as a Spring Boot application does. Grails 10
-makes that the default, so check your application's JSON with the setting before you upgrade to Grails 10:
+`JsonMapper`, the one Spring Boot auto-configures, so that it renders values as a Spring Boot application does. A later
+release makes that the default, so check your application's JSON with the setting before you upgrade to it:
 
 [source,yaml]
 ----
@@ -62,6 +62,9 @@ grails:
         json:
             legacy: false
 ----
+
+While `grails.converters.json.legacy` is not set, Grails logs a warning once at startup that the default will change.
+Setting it to either value turns the warning off.
 
 With the setting `false`, the mapper writes the JSON text (numbers and pretty printing), and writes every single value
 that it has a dedicated serializer for: dates and times, `Month`, `UUID`, `Locale`, `byte[]`, types with a `@JsonValue`,
@@ -167,14 +170,15 @@ With the setting `false`, the following values render differently than in Grails
 
 The other default date and time formats are the same as Grails 8.0.0's, which already renders `Date`, `Calendar`,
 `java.sql.Date` and `java.sql.Timestamp` with millisecond precision and supports the additional date and time types.
-Map keys use the mapper's key serializers, instead of Grails' fixed date formats or the key's `toString()`: a `Date`
-or `Calendar` key is written in the mapper's configured date format and time zone, a `ZonedDateTime` or `OffsetDateTime`
-key keeps its own offset, as before, a `Class` key is its name (`"java.lang.String"`, where Grails 8 wrote
-`"class java.lang.String"`), and the key of a type with a `@JsonValue` is that value.
+With the setting `false`, map keys use the mapper's key serializers, instead of Grails' fixed date formats or the key's
+`toString()`: a `Date` or `Calendar` key is written in the mapper's configured date format and time zone, a
+`ZonedDateTime` or `OffsetDateTime` key keeps its own offset, as before, a `Class` key is its name
+(`"java.lang.String"`, where Grails 8 wrote `"class java.lang.String"`), and the key of a type with a `@JsonValue` is
+that value.
 
-`JSON#toString(false)` does not indent the JSON when `grails.converters.json.pretty.print` is `true`; Grails 8 ignored
-the argument. JSON that is not pretty printed is not indented either when the application's `JsonMapper` indents its
-output (`spring.jackson.serialization.indent-output`).
+With the setting `false`, `JSON#toString(false)` does not indent the JSON when `grails.converters.json.pretty.print` is
+`true`; Grails 8 ignored the argument. JSON that is not pretty printed is not indented either when the application's
+`JsonMapper` indents its output (`spring.jackson.serialization.indent-output`).
 
 With the setting `false`, the JSON marshallers that rendered these values are not registered. They are deprecated:
 `DateMarshaller`, `CalendarMarshaller`, `ToStringBeanMarshaller`, `ByteArrayMarshaller`,
@@ -201,9 +205,10 @@ public methods instead.
 The JavaCC JSON parser in `org.grails.web.json.parser` (`JSONParser`), which Grails does not use, is deprecated. Use
 `JSON.parse` or `new JSONObject(String)`.
 
-With the `PATH` circular reference behaviour (`grails.converters.json.circular.reference.behaviour`), an object with a
-`null` property, or a single value, now renders instead of failing, and a reference that follows a number property now
-has the right path.
+Whatever the setting, with the `PATH` circular reference behaviour (`grails.converters.json.circular.reference.behaviour`),
+an object with a `null` property, or a single value, now renders instead of failing, and a reference that follows a
+number now has the right path: `"root.x.other"` where Grails 8 wrote `"root.x.n"`, after a property `n` that is a
+number.
 
 JSON views, the XML converter and the HAL renderer are not changed.
 
@@ -215,8 +220,10 @@ domain classes, with the marshallers of Grails 8, formats map keys and indents p
 writes with a default `JsonMapper`, so that the application's `spring.jackson.*` settings and Jackson modules do not
 change the text: `render ... as JSON` and `JSON#toString` return the same text as in Grails 8. What Grails 8 failed to
 render, or rendered as invalid JSON, such as a single value, `NaN`, or a to-many association whose value is a `Map` with
-other than one entry, renders as it does with the setting `false`. Grails 10 makes `false` the default; setting
-`grails.converters.json.legacy` to `true` explicitly keeps the Grails 8 rendering. With
+other than one entry, renders as it does with the setting `false`. A reference that the `PATH` circular reference
+behaviour writes after a number also has the right path, as described above, where Grails 8 wrote a wrong one. A later
+release makes `false` the default; setting `grails.converters.json.legacy` to `true` explicitly keeps the Grails 8
+rendering, and turns off the warning that Grails logs while it is not set. With
 `grails.converters.json.domain.jackson.enabled` set to `true` as well, the JSON converter still renders as Grails 8 did,
 and the application's `JsonMapper` renders domain classes with the module, as described below.
 

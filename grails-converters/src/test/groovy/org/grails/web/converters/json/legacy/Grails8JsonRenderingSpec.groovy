@@ -159,6 +159,20 @@ class Grails8JsonRenderingSpec extends Specification {
         pretty().collect { new JSON(it).toString(true) } == GRAILS_8_TO_STRING_PRETTY
     }
 
+    void "with the PATH circular reference behaviour, a reference that follows a number has the right path, where Grails 8 wrote a wrong one"() {
+        given:
+        grailsApplication.config.setAt('grails.converters.json.circular.reference.behaviour', 'PATH')
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
+        def child = new Link(n: 2)
+        child.other = child
+
+        expect: 'Grails 8.0.x wrote "root.x.n" and "root.a.x"'
+        new JSON([x: new Link(n: 1, other: child)]).toString() ==
+                '{"x":{"n":1,"other":{"n":2,"other":{"ref":"root.x.other","class":"' + Link.name + '"}}}}'
+        new JSON([a: 5, x: [7, child]]).toString() ==
+                '{"a":5,"x":[7,{"n":2,"other":{"ref":"root.x[1]","class":"' + Link.name + '"}}]}'
+    }
+
     private static JsonMapper configuredMapper() {
         JsonMapper.builder()
                 .enable(SerializationFeature.INDENT_OUTPUT)
@@ -375,4 +389,9 @@ class Holder {
     Date created
     Role role
     BigDecimal amount
+}
+
+class Link {
+    int n
+    Link other
 }

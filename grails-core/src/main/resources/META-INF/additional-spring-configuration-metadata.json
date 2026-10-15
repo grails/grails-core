@@ -167,7 +167,7 @@
         {
             "name": "grails.converters.json.legacy",
             "type": "java.lang.Boolean",
-            "description": "Whether the JSON converter renders JSON as Grails 8 did, with the marshallers and pretty-print layouts of Grails 8, rather than with the application's Jackson JsonMapper. Set it to false to render JSON through the JsonMapper, which Grails 10 makes the default.",
+            "description": "Whether the JSON converter renders JSON as Grails 8 did, with the marshallers and pretty-print layouts of Grails 8, rather than with the application's Jackson JsonMapper. Set it to false to render JSON through the JsonMapper, which a later release makes the default.",
             "defaultValue": true
         },
         {
