@@ -16,6 +16,7 @@
 package org.grails.orm.hibernate.query;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class JpaQueryContext implements Cloneable {
     private final JoinTracker joinTracker;
     private final ExpressionResolver resolver;
     private final Map<ParameterExpression<?>, Object> parameterValues = new LinkedHashMap<>();
+    private final Map<String, Expression<?>> selectionAliases = new HashMap<>();
     private JpaQueryContext parent;
 
     public JpaQueryContext() {
@@ -126,6 +128,28 @@ public class JpaQueryContext implements Cloneable {
 
     public void registerAlias(String alias, HibernateAlias definition) {
         aliasRegistry.define(alias, definition);
+    }
+
+    /**
+     * Records a selection of the query under its alias, by which an order of the query refers to it. Unlike
+     * {@link #registerAlias(String, Expression)}, the alias does not resolve a property path, in this context or a
+     * nested one, so a restriction on a property with the same name still restricts the property.
+     *
+     * @param alias the alias of the selection
+     * @param selection the selection
+     */
+    public void registerSelectionAlias(String alias, Expression<?> selection) {
+        selectionAliases.put(alias, selection);
+    }
+
+    /**
+     * Returns the selection recorded under an alias by {@link #registerSelectionAlias(String, Expression)}.
+     *
+     * @param alias the alias of the selection
+     * @return the selection, or {@code null} if no selection of this query has the alias
+     */
+    public Expression<?> getSelectionAlias(String alias) {
+        return selectionAliases.get(alias);
     }
 
     public void registerAliasFromPath(String path) {
