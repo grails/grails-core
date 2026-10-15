@@ -28,7 +28,7 @@ class HackController {
 	def userCache
 
 	def getSessionValue(String name) {
-		def value = session.getAttribute(name)
+		def value = session[name]
 		render value ? value.toString() : ''
 	}
 
