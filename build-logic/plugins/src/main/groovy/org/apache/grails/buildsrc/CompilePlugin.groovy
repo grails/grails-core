@@ -44,6 +44,9 @@ import static org.apache.grails.buildsrc.GradleUtils.lookupPropertyByType
 @CompileStatic
 class CompilePlugin implements Plugin<Project> {
 
+    /** Root project names of the builds whose code runs inside Gradle; see {@link #configureCallSiteModule}. */
+    private static final Set<String> GRADLE_SIDE_BUILDS = ['build-logic-root', 'grails-gradle'].toSet()
+
     static final String AUTO_CONFIGURATION_IMPORTS_PATH =
             'src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports'
     private static final String AUTO_CONFIGURATION_IMPORTS_INPUT_REGISTERED =
@@ -79,13 +82,14 @@ class CompilePlugin implements Plugin<Project> {
      * does. The version is named outright, read from the map in {@code dependencies.gradle}, because the
      * ast source set the Grails plugin gives a plugin project has no platform on its configurations.</p>
      *
-     * <p>Only the build that was invoked. The property reaches the included builds too, but build-logic
-     * and the Grails Gradle plugins run inside Gradle on its own Groovy, where the Groovy 6 module's
-     * copies of the call-site classes collide with Gradle's; those builds are never compiled classic.</p>
+     * <p>Not in the build-logic and grails-gradle builds, whether invoked or included: the property reaches
+     * every included build, but their code runs inside Gradle on its own Groovy, where the Groovy 6
+     * module's copies of the call-site classes collide with Gradle's, and they are never compiled classic.
+     * grails-core itself is injected wherever it is built, including as a build Forge includes.</p>
      */
     private static void configureCallSiteModule(Project project) {
         Boolean indy = lookupPropertyByType(project, 'grailsIndy', Boolean)
-        if (indy == null || indy || project.gradle.parent != null) {
+        if (indy == null || indy || project.gradle.rootProject.name in GRADLE_SIDE_BUILDS) {
             return
         }
         project.plugins.withId('java-base') {

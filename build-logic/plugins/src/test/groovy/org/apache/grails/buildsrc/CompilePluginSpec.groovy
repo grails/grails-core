@@ -140,6 +140,23 @@ class CompilePluginSpec extends Specification {
         ['-PgrailsIndy=false']  | '[org.apache.groovy:groovy-callsite:6.0.0]'
     }
 
+    def "declares no groovy-callsite in the #build build, whose code runs inside Gradle"() {
+        given:
+        testProjectDir.resolve('settings.gradle').toFile().text = "rootProject.name = '${build}'"
+        testProjectDir.resolve('build.gradle').toFile().append('''
+            ext.bomDependencyVersions = ['groovy.version': '6.0.0']
+        ''')
+
+        when:
+        def result = run(['printCallSiteModule', '-PgrailsIndy=false'])
+
+        then:
+        result.output.contains('CALL_SITE_MODULE=[main=[], test=[]]')
+
+        where:
+        build << ['build-logic-root', 'grails-gradle']
+    }
+
     def "keeps invokedynamic on when grailsIndy is false"() {
         when:
         def result = runPrintIndy('-PgrailsIndy=false')
