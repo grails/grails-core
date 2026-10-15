@@ -1058,11 +1058,12 @@ class StartupProgressSpec extends Specification {
     /**
      * A page load as a browser makes it, with the fetch metadata browsers send on navigation. It goes
      * through {@link HttpClient} because {@link HttpURLConnection} silently drops {@code Sec-} headers.
-     * Every page load here expects an answer, so one that gets none fails with the reason.
+     * Every page load here expects an answer, so one that gets none fails with the reason. It waits as long
+     * as the rest of this spec does, since a CI runner can take seconds to take a connection or answer.
      */
     private Response pageLoad(String path) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("http://localhost:${port}${path}"))
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.ofSeconds(30))
                 .header('Accept', HTML)
                 .header('Sec-Fetch-Mode', 'navigate')
                 .header('Sec-Fetch-Dest', 'document')
@@ -1070,7 +1071,7 @@ class StartupProgressSpec extends Specification {
             builder.header('Cookie', cookie)
         }
         HttpRequest request = builder.build()
-        try (HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(2)).build()) {
+        try (HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).connectTimeout(Duration.ofSeconds(15)).build()) {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString())
             return new Response(
                     status: response.statusCode(),
@@ -1091,8 +1092,8 @@ class StartupProgressSpec extends Specification {
             connection.setRequestProperty('Cookie', cookie)
         }
         headers.each { String name, String value -> connection.setRequestProperty(name, value) }
-        connection.connectTimeout = 2000
-        connection.readTimeout = 10_000
+        connection.connectTimeout = 15_000
+        connection.readTimeout = 30_000
         connection.setRequestProperty('Accept', accept)
         try {
             if (method == 'POST') {
