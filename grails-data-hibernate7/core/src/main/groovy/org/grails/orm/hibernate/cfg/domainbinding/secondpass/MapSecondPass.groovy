@@ -31,15 +31,28 @@ class MapSecondPass implements SecondPass, GrailsSecondPass, Serializable {
     private static final long serialVersionUID = -3244991685626409031L
 
     protected final HibernateToManyProperty property
+    private final org.hibernate.mapping.Collection collection
     private final MapSecondPassBinder mapSecondPassBinder
 
     MapSecondPass(MapSecondPassBinder mapSecondPassBinder, HibernateToManyProperty property) {
+        this(mapSecondPassBinder, property, null)
+    }
+
+    /**
+     * @param collection the collection this pass binds. The same property can be bound more than once, for instance
+     * when its owner is an entity that is also embedded in another, and each binding has its own collection.
+     */
+    MapSecondPass(MapSecondPassBinder mapSecondPassBinder, HibernateToManyProperty property, org.hibernate.mapping.Collection collection) {
         this.mapSecondPassBinder = mapSecondPassBinder
         this.property = property
+        this.collection = collection
     }
 
     @Override
     void doSecondPass(Map persistentClasses) throws MappingException {
+        if (collection != null) {
+            property.hibernateCollection = collection
+        }
         mapSecondPassBinder.bindMapSecondPass(property)
         createCollectionKeys(property.collection)
     }
