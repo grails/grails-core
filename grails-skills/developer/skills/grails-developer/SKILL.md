@@ -567,6 +567,15 @@ dependencies {
 
 Without the dependency the Groovy compiler stops and names the module. An application that applies GraalVM's native image plugin cannot opt out: a classic call site defines a class at run time, which an image cannot do, so the build fails with the reason.
 
+One more case needs the module whatever the application's own setting: a library compiled with classic call sites, which Groovy 6 can load only with it. The symptom is `NoClassDefFoundError: org.codehaus.groovy.runtime.callsite.CallSiteArray` when the class is first used. Spock 2.5, Geb 8 and the Asset Pipeline 5.2 are fine; `org.testcontainers:testcontainers-spock` is not, so declare the module next to it, in the configuration that library is in:
+
+```groovy
+dependencies {
+    testImplementation 'org.testcontainers:testcontainers-spock'
+    testRuntimeOnly 'org.apache.groovy:groovy-callsite'
+}
+```
+
 ### application.yml
 ```yaml
 grails:

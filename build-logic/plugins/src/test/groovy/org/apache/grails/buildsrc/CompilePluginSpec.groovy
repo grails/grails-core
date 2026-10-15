@@ -75,6 +75,19 @@ class CompilePluginSpec extends Specification {
                 mavenCentral()
             }
 
+            tasks.register('printCallSiteModule') {
+                def declared = provider {
+                    sourceSets.collect { ss ->
+                        "\${ss.name}=" + configurations[ss.implementationConfigurationName].dependencies
+                                .findAll { it.group == 'org.apache.groovy' && it.name == 'groovy-callsite' }
+                                .collect { "\${it.group}:\${it.name}:\${it.version}" }
+                    }
+                }
+                doLast {
+                    println "CALL_SITE_MODULE=\${declared.get()}"
+                }
+            }
+
             tasks.register('printIndy') {
                 def compileTask = tasks.named('compileGroovy', org.gradle.api.tasks.compile.GroovyCompile)
                 def testCompileTask = tasks.named('compileTestGroovy', org.gradle.api.tasks.compile.GroovyCompile)
@@ -107,6 +120,26 @@ class CompilePluginSpec extends Specification {
         result.output.contains('MAIN_JOINT_JAVAC_ARGS=[-parameters]')
     }
 
+    def "declares groovy-callsite on every source set only when grailsIndy is false"() {
+        given: 'the version the BOM projects publish, as dependencies.gradle sets it on the root'
+        testProjectDir.resolve('build.gradle').toFile().append('''
+            ext.bomDependencyVersions = ['groovy.version': '6.0.0']
+        ''')
+
+        when:
+        def result = run(['printCallSiteModule'] + arguments)
+
+        then:
+        result.task(':printCallSiteModule').outcome == TaskOutcome.SUCCESS
+        result.output.contains("CALL_SITE_MODULE=[main=${expected}, test=${expected}]")
+
+        where:
+        arguments               | expected
+        []                      | '[]'
+        ['-PgrailsIndy=true']   | '[]'
+        ['-PgrailsIndy=false']  | '[org.apache.groovy:groovy-callsite:6.0.0]'
+    }
+
     def "keeps invokedynamic on when grailsIndy is false"() {
         when:
         def result = runPrintIndy('-PgrailsIndy=false')
@@ -115,6 +148,14 @@ class CompilePluginSpec extends Specification {
         result.task(':printIndy').outcome == TaskOutcome.SUCCESS
         result.output.contains('MAIN_INDY=true')
         result.output.contains('TEST_INDY=true')
+    }
+
+    private def run(List<String> arguments) {
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withArguments(arguments + ['--stacktrace'])
+                .withPluginClasspath()
+                .build()
     }
 
     private def runPrintIndy(String... extraArgs) {

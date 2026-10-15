@@ -68,7 +68,7 @@ dependencies {
 }
 ----
 
-An application that keeps the default never ships the module.
+An application that keeps the default never ships the module. The same dependency is needed, whatever the application's own setting, for a library that was compiled with classic call sites, because Groovy 6 can load such a class only with the module: `org.testcontainers:testcontainers-spock` is one, so declare the module as `testRuntimeOnly` next to it.
 
 ==== Spring Boot 4.1 and Spring Framework 7
 

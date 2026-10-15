@@ -28,7 +28,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -60,7 +63,52 @@ class CompilePlugin implements Plugin<Project> {
         configureJavaVersion(project)
         configureJars(project)
         configureCompiler(project)
+        configureCallSiteModule(project)
         configureReproducible(project)
+    }
+
+    /**
+     * Declares {@code org.apache.groovy:groovy-callsite} on every source set when the build runs with
+     * {@code -PgrailsIndy=false}, the CI lane that compiles the Grails plugin modules and example apps
+     * with classic call sites.
+     *
+     * <p>Grails does not carry the module: an application that opts out of invokedynamic declares it
+     * itself. The lane stands in for such an application across the whole build, so every project needs
+     * it, on every source set: the ones compiled classic need it to compile, and every other one may load
+     * a classic-compiled class from them, as a test compiling against a plugin module's test fixtures
+     * does. The version is named outright, read from the map in {@code dependencies.gradle}, because the
+     * ast source set the Grails plugin gives a plugin project has no platform on its configurations.</p>
+     *
+     * <p>Only the build that was invoked. The property reaches the included builds too, but build-logic
+     * and the Grails Gradle plugins run inside Gradle on its own Groovy, where the Groovy 6 module's
+     * copies of the call-site classes collide with Gradle's; those builds are never compiled classic.</p>
+     */
+    private static void configureCallSiteModule(Project project) {
+        Boolean indy = lookupPropertyByType(project, 'grailsIndy', Boolean)
+        if (indy == null || indy || project.gradle.parent != null) {
+            return
+        }
+        project.plugins.withId('java-base') {
+            // A provider, so the version is read once the build scripts have run and the root's map exists.
+            Provider<String> module = project.provider { callSiteModule(project) }
+            project.extensions.getByType(SourceSetContainer).configureEach { SourceSet sourceSet ->
+                project.dependencies.addProvider(sourceSet.implementationConfigurationName, module)
+            }
+        }
+    }
+
+    private static String callSiteModule(Project project) {
+        Project root = project.rootProject
+        if (!root.extensions.extraProperties.has('bomDependencyVersions')) {
+            File versions = root.layout.projectDirectory.file('dependencies.gradle').asFile
+            if (versions.file) {
+                root.apply(from: versions)
+            }
+        }
+        Object version = root.extensions.extraProperties.has('bomDependencyVersions')
+                ? ((Map) root.extensions.extraProperties.get('bomDependencyVersions')).get('groovy.version')
+                : null
+        version ? "org.apache.groovy:groovy-callsite:${version}" as String : 'org.apache.groovy:groovy-callsite'
     }
 
     private static void configureJavaVersion(Project project) {

@@ -65,3 +65,5 @@ grails {
 
 Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that sets `indy` to `false` declares `implementation 'org.apache.groovy:groovy-callsite'` itself, at the version the Grails BOM manages, and again for every source set that does not see its implementation dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin. Without it the Groovy compiler stops with a message naming the module.
 
+A library compiled with classic call sites needs the module too, whatever the application's own setting, because Groovy 6 loads such a class only with it; the failure is a `NoClassDefFoundError` naming `org.codehaus.groovy.runtime.callsite.CallSiteArray`. Spock 2.5, Geb 8 and the Asset Pipeline 5.2 are compiled with invokedynamic, but `org.testcontainers:testcontainers-spock` is not, so an application that uses it declares `testRuntimeOnly 'org.apache.groovy:groovy-callsite'` next to it.
+
