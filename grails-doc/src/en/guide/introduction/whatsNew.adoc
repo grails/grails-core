@@ -58,7 +58,17 @@ grails {
 }
 ----
 
-On Groovy 6, classic call sites need `org.apache.groovy:groovy-callsite` on the classpath. A Grails application already receives it through its Grails dependencies, at the version the Grails BOM manages.
+On Groovy 6, classic call sites need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that opts out declares it, at the version the Grails BOM manages:
+
+[source,groovy]
+.build.gradle
+----
+dependencies {
+    implementation 'org.apache.groovy:groovy-callsite'
+}
+----
+
+An application that keeps the default never ships the module.
 
 ==== Spring Boot 4.1 and Spring Framework 7
 

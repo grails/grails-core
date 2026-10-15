@@ -63,5 +63,5 @@ grails {
 }
 ----
 
-Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath, which a Grails application receives through its Grails dependencies. A source set that does not see the application's dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin, needs that dependency declared for it as well when `indy` is `false`.
+Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that sets `indy` to `false` declares `implementation 'org.apache.groovy:groovy-callsite'` itself, at the version the Grails BOM manages, and again for every source set that does not see its implementation dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin. Without it the Groovy compiler stops with a message naming the module.
 

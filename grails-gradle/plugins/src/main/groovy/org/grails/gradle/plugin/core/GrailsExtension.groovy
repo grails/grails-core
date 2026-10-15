@@ -245,8 +245,8 @@ class GrailsExtension {
      * Whether Groovy compiles dynamic calls with the JVM's invokedynamic instruction (indy) or with classic
      * call sites. Unset by default: the Grails plugin then leaves every Groovy compile task at the Groovy
      * compiler's own default, which is invokedynamic. Set it to {@code false} to compile classic call sites;
-     * on Groovy 6 those need {@code org.apache.groovy:groovy-callsite} on the classpath, which a Grails
-     * application receives through its Grails dependencies. A value set here is applied to every
+     * on Groovy 6 those need {@code org.apache.groovy:groovy-callsite} on the classpath, which the
+     * application declares itself, at the version the Grails BOM manages. A value set here is applied to every
      * {@code GroovyCompile} task after the build script has run.
      */
     final Property<Boolean> indy

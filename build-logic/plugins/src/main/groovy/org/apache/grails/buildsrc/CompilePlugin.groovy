@@ -121,8 +121,8 @@ class CompilePlugin implements Plugin<Project> {
                 // bytecode into the optional groovy-callsite module (GROOVY-11158), which the
                 // framework's library modules do not carry, so they never opt out. -PgrailsIndy
                 // (see grails-extension-gradle-config.gradle) still governs the Grails plugin
-                // modules, which get groovy-callsite through grails-common, and applications
-                // opt out with grails { indy = false }.
+                // modules, which that script gives groovy-callsite when the lane turns indy off,
+                // and applications opt out with grails { indy = false } plus that dependency.
                 it.groovyOptions.optimizationOptions.put('indy', true)
                 // encoding needs to be the same since it's different across platforms
                 it.options.encoding = StandardCharsets.UTF_8.name()

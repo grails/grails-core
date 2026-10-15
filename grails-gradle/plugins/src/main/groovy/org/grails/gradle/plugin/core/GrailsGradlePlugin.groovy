@@ -298,7 +298,7 @@ class GrailsGradlePlugin implements Plugin<Project> {
                 project.logger.info('Grails: Groovy invokedynamic (indy) is enabled.')
             } else {
                 project.logger.info('Grails: Groovy invokedynamic (indy) is disabled.')
-                project.logger.info('        Non-indy Groovy 6 builds need org.apache.groovy:groovy-callsite on the classpath.')
+                project.logger.info('        Non-indy Groovy 6 builds need org.apache.groovy:groovy-callsite on the classpath: declare it as a dependency.')
             }
         }
     }

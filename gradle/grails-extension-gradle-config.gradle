@@ -40,3 +40,20 @@ grails {
         indy = project.property('grailsIndy').toString().trim().toBoolean()
     }
 }
+
+// GROOVY-11158: Groovy 6 generates classic (non-invokedynamic) call sites only with the optional
+// groovy-callsite module on the classpath. Grails does not carry it: an application that opts out with
+// grails { indy = false } declares it itself, so an application that keeps the default never ships it.
+// The -PgrailsIndy=false CI lane compiles every source set of this project that way, so it declares the
+// module here for each of them. The version is named outright, read from the map in dependencies.gradle
+// that the BOM projects publish, because the ast source set the Grails plugin gives a plugin project has
+// no platform on its configurations to supply one.
+if (project.hasProperty('grailsIndy') && !project.property('grailsIndy').toString().trim().toBoolean()) {
+    if (!rootProject.ext.has('bomDependencyVersions')) {
+        rootProject.apply from: rootProject.layout.projectDirectory.file('dependencies.gradle')
+    }
+    String callSiteModule = "org.apache.groovy:groovy-callsite:${rootProject.ext.bomDependencyVersions['groovy.version']}"
+    sourceSets.configureEach { SourceSet sourceSet ->
+        dependencies.add(sourceSet.implementationConfigurationName, callSiteModule)
+    }
+}
