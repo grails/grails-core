@@ -62,6 +62,7 @@ export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4G"
 13. **Mandatory test coverage** - Any class touched in a commit MUST be covered with tests that verify all behavior. You must run ALL tests in the affected module(s) and ensure they pass before committing.
 14. **The BOM must manage the latest version** - `validateDependencyVersions` enforces that the BOM (`dependencies.gradle`) manages a version `>=` every transitively-resolved version. When it fails, **bump the version in `dependencies.gradle`** so the BOM wins — never silence it with `allowedBomOverrides` or an exclusion unless there is an explicit, documented conflict or an agreed-upon workaround. See [Dependency Management](#dependency-management).
 15. **GitHub Actions must use ASF-approved references** - Every third-party action SHA must appear in the ASF allowlist; `actions/*` use the full tag of their latest release and `apache/*` use version or branch references, never SHAs. See [GitHub Actions](#github-actions).
+16. **Workflows cache Gradle through one policy** - Every `setup-gradle` step takes `cache-read-only` from `.github/actions/gradle-cache-policy`; never write `true` or `false` there, never cache `~/.gradle` with `actions/cache`, and never pass `cache-writer` outside the core build. See [Gradle caching](#gradle-caching).
 
 ## Available Skills
 
@@ -299,6 +300,23 @@ Rules:
 - `actions/*` and `apache/*` (including our own `apache/grails-github-actions`) are allowed by namespace, so every version is approved. Reference `actions/*` by the full tag of the latest release (for example `actions/checkout@v7.0.1`, not `@v7`), and our own actions by branch (for example `apache/grails-github-actions/pre-release@asf`). Never pin either by SHA; `validateRepositoryConventions` rejects SHA pins for these namespaces and `actions/*` references that are not a full `vX.Y.Z` tag.
 - Do not use a newer third-party SHA, tag, or major version until it is on the allowlist. If you need a new pin, open a PR against `apache/infrastructure-actions` (`actions.yml`, not the generated `approved_patterns.yml`).
 - Before adding or bumping a third-party `uses:` line, search `approved_patterns.yml` for that action and copy an approved SHA.
+
+### Gradle caching
+
+GitHub keeps about 10 GB of Actions cache per repository and evicts the least recently used entries. A run can restore entries only from its own branch and the default branch, and a pull request also from its base branch. The workflows are arranged around those two limits:
+
+- The Gradle User Home is cached only by `gradle/actions/setup-gradle`, with its default provider. Do not add an `actions/cache` step for `~/.gradle`, `cache-disabled`, or `cache-provider: basic`; release verification is the one job left uncached on purpose.
+- Every `setup-gradle` step is preceded by the local action `.github/actions/gradle-cache-policy` and takes `cache-read-only` from its `read-only` output. A job that fetches this repository with a sparse checkout must list `.github/actions` in it, or the action is not there to run. Do not write `true` or `false` there: the policy lives in that action, so changing it means editing one file on the oldest release branch and merging up.
+- Only the core build job (`build` in `gradle.yml`) passes `cache-writer`, from the one matrix entry per OS flagged `cache_writer: true`. A new job or workflow never passes it.
+- The action lets a writer save only on a push or dispatch, only on a branch whose major version is at least the default branch's, and, for Windows and macOS, only on that major's first branch (`x.0.x`). With 8.0.x as the default branch, 7.x never writes, Linux writes on every 8.x and 9.x branch, and Windows and macOS write on 8.0.x and 9.0.x. The rule follows the default branch: when a new one is promoted, older majors stop writing without an edit.
+- A cache whose content is the same on every branch, such as the mongod download the embedded MongoDB tests run, is restored everywhere but saved only by a push to the default branch, whose entries every branch can read. Use separate `actions/cache/restore` and `actions/cache/save` steps for it, never the combined `actions/cache` step, which saves on every branch and pull request.
+
+Why it is this way:
+
+- When every job saved on every push (about 25 entries and 3.5 GiB per push on 8.x), the cache stayed over its limit and evicted entries within hours. Jobs then started with an empty Gradle User Home and downloaded everything, and a single transient "Could not find" from Maven Central or the Gradle plugin portal failed them. Gradle does not retry a "not found".
+- Minor branches cannot read their major's entries, only the default branch's, so an older major's entries serve only the branch that wrote them. Writing them took space the active lines needed.
+- `setup-gradle` restores the newest entry whose key starts with the job's id before it falls back to the newest entry for the OS. With many writers, the core `build` job restored the `buildForge` job's entry and lacked artifacts only the core build uses. One writer per OS leaves one candidate.
+- A writer saves about 0.9 GiB per OS and branch, so the rule keeps the cache near 7 GiB.
 
 ## Branch Naming (Auto-Labels PRs)
 
