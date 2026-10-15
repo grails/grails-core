@@ -546,6 +546,27 @@ class BookTagLib {
 
 ## Configuration
 
+### Groovy Call Sites (invokedynamic)
+
+Grails 9 compiles Groovy with invokedynamic, the Groovy 6 compiler's default, and does not ship the `groovy-callsite` module. There is nothing to configure, so the default is to **remove** what Grails 7 and 8 builds carried for the old classic-call-site default:
+
+- `grails { indy = true }` (now redundant) and any `tasks.withType(GroovyCompile) { groovyOptions.optimizationOptions.indy = ... }` block
+- an `org.apache.groovy:groovy-callsite` dependency
+
+Offer classic call sites only as the alternative, for an application that has measured a difference and wants them. It opts out and declares the module itself, at the version the Grails BOM manages, once per source set that does not see `implementation` (for example the test fixtures of `java-test-fixtures`):
+
+```groovy
+grails {
+    indy = false
+}
+
+dependencies {
+    implementation 'org.apache.groovy:groovy-callsite'
+}
+```
+
+Without the dependency the Groovy compiler stops and names the module. An application that applies GraalVM's native image plugin cannot opt out: a classic call site defines a class at run time, which an image cannot do, so the build fails with the reason.
+
 ### application.yml
 ```yaml
 grails:

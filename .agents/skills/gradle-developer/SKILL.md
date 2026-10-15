@@ -416,6 +416,13 @@ Plugin IDs (implementation under `build-logic/plugins/…/buildsrc/`):
 - Reproducible archives: no timestamps, fixed order, unix 0644/0755
 - Groovy `configurationScript` → `gradle/groovy-compile-configscript.groovy` (annotation member order / GROOVY-12146 workaround, PR #15963)
 
+### Groovy invokedynamic and `groovy-callsite`
+
+- Library modules always compile with invokedynamic: `CompilePlugin` sets `indy = true` on every `GroovyCompile` task and ignores `-PgrailsIndy`. They never carry `groovy-callsite`, and **`grails-common` must not declare it**: an application that keeps the default would ship it, and the decision is that only an application opting out with `grails { indy = false }` declares the module itself.
+- The Grails Gradle plugin leaves `grails { indy }` unset, so applications and the framework's Grails plugin modules get the Groovy compiler's default, invokedynamic. CI's `functional`, `mongodbFunctional`, `hibernate5Functional`, `hibernate7Functional`, `neo4jFunctional` and `sitemesh2` lanes pass `-PgrailsIndy=false`, which `gradle/grails-extension-gradle-config.gradle` turns into `grails { indy = false }` for the 108 plugin modules and example apps that apply it; the same script then declares `groovy-callsite` for every source set of those projects, because the `ast` source set the Grails plugin gives every plugin project has no BOM platform on its configurations. The version comes from `dependencies.gradle`, applied to the root project once in that lane (the build-logic builds apply it the same way); only the BOM projects apply it otherwise, so `rootProject.findProperty('bomDependencyVersions')` is `null` on a plain build.
+- Forge's modules do not apply that script, so `-PgrailsIndy` has no effect on the Forge build.
+- A project that applies `org.graalvm.buildtools.native` keeps an `indy` convention of `true`, fails at evaluation if it sets `grails { indy = false }`, and fails any Groovy compile task whose `indy` option is `false` when it starts.
+
 ### Published Grails Gradle plugins (`grails-gradle`)
 
 Use the **fully qualified** plugin IDs in `plugins { id '…' }` blocks. Most are registered in `grails-gradle/plugins/build.gradle`. `org.apache.grails.gradle.grails-publish` is supplied by the external `grails-publish-plugin` implementation dependency (not listed in that file's `gradlePlugin {}` block) but is still the correct ID for publishing.
