@@ -21,6 +21,7 @@ package org.grails.datastore.mapping.simple
 import grails.gorm.annotation.Entity
 
 import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.model.ValueGenerator
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
@@ -31,7 +32,41 @@ import spock.lang.Specification
 class SimpleMapIdentifierSpec extends Specification {
 
     @AutoCleanup
-    SimpleMapDatastore datastore = new SimpleMapDatastore(IdThing, IdParent, IdChild, IdInteger)
+    SimpleMapDatastore datastore = new SimpleMapDatastore(IdThing, IdParent, IdChild, IdInteger, IdCustomGenerator, IdAssigned)
+
+    void 'a datastore-specific generator does not prevent simple map persistence'() {
+        given:
+        def mapping = datastore.mappingContext.getPersistentEntity(IdCustomGenerator.name).mapping.identifier
+        IdCustomGenerator thing = new IdCustomGenerator(name: 'custom')
+
+        when:
+        withSession { Session session ->
+            session.persist(thing)
+            session.flush()
+        }
+
+        then:
+        mapping.generator == ValueGenerator.CUSTOM
+        mapping.mappedForm.generator == 'example.CustomIdentifierGenerator'
+        thing.id != null
+        withSession { Session session -> session.retrieve(IdCustomGenerator, thing.id)?.name } == 'custom'
+    }
+
+    void 'built-in assigned generators retain their strategy and supplied identifier'() {
+        given:
+        IdAssigned thing = new IdAssigned(id: 'supplied-id', name: 'assigned')
+
+        when:
+        withSession { Session session ->
+            session.persist(thing)
+            session.flush()
+        }
+
+        then:
+        datastore.mappingContext.getPersistentEntity(IdAssigned.name).mapping.identifier.generator == ValueGenerator.ASSIGNED
+        thing.id == 'supplied-id'
+        withSession { Session session -> session.retrieve(IdAssigned, 'supplied-id')?.name } == 'assigned'
+    }
 
     void 'two sessions open at once give their inserts different identifiers'() {
         given:
@@ -160,4 +195,24 @@ class IdChild extends IdParent {
 class IdInteger {
     Integer id
     String name
+}
+
+@Entity
+class IdCustomGenerator {
+    String id
+    String name
+
+    static mapping = {
+        id generator: 'example.CustomIdentifierGenerator'
+    }
+}
+
+@Entity
+class IdAssigned {
+    String id
+    String name
+
+    static mapping = {
+        id generator: 'assigned'
+    }
 }

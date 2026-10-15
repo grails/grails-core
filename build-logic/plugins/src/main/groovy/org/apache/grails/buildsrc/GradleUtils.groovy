@@ -139,6 +139,44 @@ class GradleUtils {
         findProperty(project, name) as T
     }
 
+    /**
+     * Returns true when the project opts out of a validation through the given property: a project
+     * property present with no value or set to {@code true} ({@code -PskipDependencyValidation}), or
+     * an extra property of the same name ({@code ext.skipDependencyValidation = true}).
+     */
+    static boolean isOptedOut(Project project, String property) {
+        if (!project.hasProperty(property)) {
+            return false
+        }
+        Object value = project.findProperty(property)
+        // a -P property given without a value arrives as an empty string, and counts as opting out
+        value == null || value.toString().isEmpty() || Boolean.parseBoolean(value.toString())
+    }
+
+    /**
+     * Returns the strings held by one of the project's own extra properties, as a
+     * {@link Collection} or a single {@link CharSequence}. Anything else is silently ignored.
+     */
+    static Set<String> extStrings(Project project, String name) {
+        if (!project.extensions.extraProperties.has(name)) {
+            return Collections.emptySet()
+        }
+        Object raw = project.extensions.extraProperties.get(name)
+        if (raw instanceof CharSequence) {
+            return Collections.singleton(raw.toString())
+        }
+        if (raw instanceof Collection) {
+            Set<String> result = new LinkedHashSet<>()
+            for (Object item : (Collection<?>) raw) {
+                if (item != null) {
+                    result.add(item.toString())
+                }
+            }
+            return result
+        }
+        Collections.emptySet()
+    }
+
     static Object findProperty(Project project, String name) {
         def property = project.findProperty(name)
         if (property != null) {

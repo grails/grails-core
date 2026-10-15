@@ -43,11 +43,9 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.core.convert.converter.Converter
 import org.springframework.core.convert.support.ConfigurableConversionService
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
-import org.springframework.core.io.Resource
 
 import grails.boot.GrailsApp
 import grails.config.Settings
@@ -61,7 +59,6 @@ import grails.plugins.GrailsPluginManager
 import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
-import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
@@ -214,24 +211,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if (environment instanceof ConfigurableEnvironment) {
             if (environment instanceof AbstractEnvironment) {
                 conversionService = environment.getConversionService()
-                conversionService.addConverter(new Converter<String, Resource>() {
-                    @Override
-                    Resource convert(String source) {
-                        return applicationContext.getResource(source)
-                    }
-                })
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
-                    @Override
-                    String convert(NavigableMap.NullSafeNavigator source) {
-                        return null
-                    }
-                })
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
-                    @Override
-                    Object convert(NavigableMap.NullSafeNavigator source) {
-                        return null
-                    }
-                })
+                GrailsConversionServiceConverters.register(conversionService, applicationContext)
             }
             def propertySources = environment.getPropertySources()
             def config = new PropertySourcesConfig(propertySources)

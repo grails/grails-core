@@ -38,7 +38,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.io.Resource;
 import org.springframework.util.ClassUtils;
 
 import grails.core.DefaultGrailsApplication;
@@ -50,7 +49,6 @@ import grails.plugins.GrailsPluginManager;
 import grails.util.Environment;
 import grails.util.Holders;
 import org.apache.grails.core.plugins.PluginDiscovery;
-import org.grails.config.NavigableMap;
 import org.grails.config.PropertySourcesConfig;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
@@ -299,20 +297,18 @@ public class GrailsEarlyPluginRegistrationPostProcessor
 
     /**
      * Builds the {@link PropertySourcesConfig} that backs {@code grailsApplication.config} in this
-     * phase, registering the same conversion-service converters that
-     * {@code GrailsApplicationPostProcessor.loadApplicationConfig} registers for the main lifecycle.
+     * phase, registering the same conversion-service converters ({@link GrailsConversionServiceConverters})
+     * that {@code GrailsApplicationPostProcessor.loadApplicationConfig} registers for the main lifecycle.
      * This gives {@code doWithSpring} closures parity when reading config — null-safe navigation of
-     * missing paths and {@code String -> Resource} coercion — not just scalar
-     * {@code getProperty(...)} access.
+     * missing paths and {@code String -> Resource} and pattern-expanding {@code Resource[]} coercion —
+     * not just scalar {@code getProperty(...)} access.
      */
     private PropertySourcesConfig buildConfig() {
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
         ConfigurableConversionService conversionService = null;
         if (environment instanceof AbstractEnvironment) {
             conversionService = ((AbstractEnvironment) environment).getConversionService();
-            conversionService.addConverter(String.class, Resource.class, applicationContext::getResource);
-            conversionService.addConverter(NavigableMap.NullSafeNavigator.class, String.class, source -> null);
-            conversionService.addConverter(NavigableMap.NullSafeNavigator.class, Object.class, source -> null);
+            GrailsConversionServiceConverters.register(conversionService, applicationContext);
         }
         PropertySourcesConfig config = new PropertySourcesConfig(environment.getPropertySources());
         if (conversionService != null) {

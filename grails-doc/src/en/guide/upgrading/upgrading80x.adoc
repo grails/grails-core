@@ -100,6 +100,7 @@ Notable module changes:
 * Web MVC auto-configuration classes moved to `org.springframework.boot:spring-boot-webmvc`
 * Servlet auto-configuration classes moved to `org.springframework.boot:spring-boot-servlet`
 * MongoDB auto-configuration classes moved to `org.springframework.boot:spring-boot-mongodb`
+* Spring Integration auto-configuration moved to `org.springframework.boot:spring-boot-integration`. An application that depends on `spring-integration-core` alone no longer gets Spring Boot's `integrationGlobalProperties` bean or its `spring.integration.*` properties; add `spring-boot-starter-integration`, or `spring-boot-integration` alongside your Spring Integration modules, to keep them.
 
 For example, if your code imports `MongoAutoConfiguration`:
 
@@ -562,6 +563,27 @@ If you require Spring DM's "BOM wins always" behaviour for the default managed v
 An *explicit* property override (`ext['…']` or `gradle.properties`) is applied as a strict constraint and always wins - including when it downgrades a version - so overrides behave as they did under Spring DM.
 Overriding a property that selects an imported BOM's version (for example `spring-boot.version`) re-imports that BOM at the overridden version and applies its updated managed set.
 
+**Grails BOMs now follow the upstream BOM property names.**
+Where a Grails BOM overrides a version that an upstream BOM also manages - `spring-boot-dependencies`, or a BOM Spring Boot imports - it declares the override under the upstream BOM's own property name.
+One property therefore sets the version in both BOMs, and the property names in the Spring Boot documentation work unchanged in a Grails build.
+For a module Spring Boot manages through an imported BOM, that is the property Spring Boot imports the BOM with: `jackson-bom.version` moves every Jackson 3 module, whether `grails-bom` pins it or not.
+
+An override under a property name no BOM declares is silently ignored, so rename any Grails-specific property your build sets in `gradle.properties` or `ext['…']`, along with a Jackson 2 version set under Spring Boot 3's property name:
+
+[cols="1,2", options="header"]
+|===
+| Grails 7 property
+| Grails 8 property
+
+| `jackson.version`
+| `jackson-2-bom.version` for Jackson 2 (`com.fasterxml.jackson.*`). Jackson 3 (`tools.jackson.*`), the new default, is set by `jackson-bom.version`.
+
+| `jackson-bom.version` (Spring Boot 3's name for Jackson 2)
+| `jackson-2-bom.version`. In Grails 8, `jackson-bom.version` sets Jackson 3, so a Jackson 2 version there makes dependency resolution fail.
+|===
+
+Builds that adopted a Grails 8 milestone or release candidate should rename `jackson2.version` to `jackson-2-bom.version`, `jackson3.version` to `jackson-bom.version`, and, with `grails-neo4j-bom`, `neo4j-driver.version` to `neo4j-java-driver.version`.
+
 **Selecting or opting out of the auto-applied BOM.**
 The Grails Gradle plugin applies a single Grails BOM automatically, selected by the `grails.bom` property. Its value is the BOM artifact name within the `org.apache.grails` group, which the plugin resolves as `org.apache.grails:$bom:$grailsVersion`.
 It defaults to `grails-bom`, which preserves the Grails 7 behaviour and is the right choice for the vast majority of applications.
@@ -807,8 +829,19 @@ If your application contributed `HttpMessageConverter` beans through this class,
 Spring Framework 7 deprecated `org.springframework.lang.Nullable` and `org.springframework.lang.NonNull` in favor of the JSpecify annotations (`org.jspecify.annotations.Nullable`, `org.jspecify.annotations.NonNull`).
 The Spring annotations still work, so this is non-blocking, but new code should prefer the JSpecify equivalents.
 
+* **`Resource[]` values expand location patterns.**
+A `classpath*:` or other location pattern converted to `Resource[]` now resolves to every matching resource, or to an empty array when nothing matches, as it does in a plain Spring application. Previously Grails' conversion of a `String` to a `Resource` also handled `Resource[]` values one element at a time, so `classpath*:META-INF/spring.integration.properties` became a single resource with the pattern as its path, and loading it failed when it was opened. This applies to `Resource[]` properties of beans declared in `resources.groovy`, `doWithSpring`, XML, or by a library, whether the value is a single pattern, a comma-delimited String, or a list or array of locations, to `@Value` injection into a `Resource[]` field, and to `config.getProperty(name, Resource[])`, including list-valued configuration entries. Placeholders in the pattern are resolved from the environment. A `Resource` value still resolves a single location.
+A list or array of locations is also collected into a set, as Spring does: a list that names the same location twice now gives one resource instead of two, while a comma-delimited String keeps both. A `null` element in a list or array now fails the conversion instead of becoming a `null` entry, so a bean property given such a list fails at startup.
+
+* **Configuration lists are exposed as indexed properties.**
+Non-empty lists loaded from `application.yml` or `application.groovy` are exposed to Spring's `Environment` through indexed names such as `app.names[0]`. This lets Spring Boot bind each element to its declared type and resolve placeholders inside scalar lists. Code that reads a whole list using `environment.getProperty('app.names', List)` should instead bind it with `@ConfigurationProperties` or `Binder.get(environment).bind('app.names', Bindable.listOf(String)).orElse([])`, using `Binder` and `Bindable` from `org.springframework.boot.context.properties.bind`. `Binder` only accepts a name in Spring Boot's canonical form (lowercase, dot-separated, kebab-case); when the name is built from a value such as the environment name, pass `ConfigurationPropertyName.adapt(name, '.' as char)` from `org.springframework.boot.context.properties.source` instead of the string. Whole-list access through `grailsApplication.config.getProperty('app.names', List)` remains supported.
+The list itself is no longer a property of the `Environment`: `environment.getProperty('app.names', String[])` returns `null` and `environment.containsProperty('app.names')` returns `false`. A `@Value('${app.names}')` placeholder can no longer read the list either. Without a default, the application fails to start with `Could not resolve placeholder 'app.names'`; with a default, the placeholder resolves to the default, or to a single value of the same name from a lower-priority source, and the list is ignored. Bind such a list instead, or write it as one comma-separated string. Grails' own list settings, `grails.plugin.fields.exclusions.input`, `grails.plugin.fields.exclusions.display`, `grails.plugin.fields.exclusions.list`, `grails.gsp.tldScanPattern` and `spring.gsp.templateRoots`, are bound and accept either form.
+
 * **Namespaced link generation is namespace-aware.**
-When a link, form action, pagination link, sortable column link, redirect, chain, or include targets a controller without an explicit `namespace`, Grails now resolves the namespace automatically. In the normal case, where only one controller has the target name, `controller` and `action` generate the correct namespaced or non-namespaced URL. Ambiguity only occurs when multiple controllers share the same name. In that case, specify `namespace` to choose the target explicitly. Pass `namespace: null` from Groovy code or `namespace=""` in a GSP tag to target the non-namespaced controller explicitly.
+When a link, form action, pagination link, sortable column link, redirect, chain, or include targets a controller without an explicit `namespace`, Grails now resolves the namespace automatically. The name is resolved nearest scope first: the current request's namespace if it defines a controller with that name, then the non-namespaced controller, then the namespace of the only controller with that name. `controller` and `action` therefore generate the correct namespaced or non-namespaced URL, and a link rendered from a namespace stays in it when that namespace defines the target. A name defined only in namespaces other than the default and the current one is ambiguous: Grails logs a warning and the link must specify `namespace` to choose the target explicitly. A name no registered controller has stays in the namespace the link is made from, where a link previously dropped the namespace; a redirect to such a name has always stayed in it. A page rendered by a controller in the `admin` namespace that links with `controller: 'other', action: 'list'` now generates `/admin/other/list` when no `OtherController` is registered, and so does a unit test that sets `webRequest.controllerNamespace` itself; a `ControllerUnitTest`, which leaves the request namespace unset, still generates `/other/list`. Pass `namespace` to target another namespace. A redirect naming no namespace is resolved exactly as a link is, from the namespace of the controller issuing it; previously it was forced into that namespace, so a redirect to a controller defined only in another namespace produced a URL for a controller that does not exist. Pass `namespace: null` from Groovy code or `namespace=""` in a GSP tag to target the non-namespaced controller explicitly.
+
+* **A resource link targets the most specific controller serving its domain class.**
+A link, form or redirect built from a domain instance, such as `<g:link resource="${book}">`, `redirect book`, or the `self` link of a HAL, Atom or JSON:API response, previously always targeted the controller named after the domain class, even when that controller did not exist. It now targets the nearest controller serving the domain class, a controller serving it when it is named after it or extends `RestfulController` parameterised on it, such as `PeopleController extends RestfulController<Person>` or a controller scaffolded with `@Scaffold(Person)`, and defines the action the link targets: the controller handling the request when it serves it, then the one serving it in the request's namespace, then in the default namespace, then in any namespace, the one named after the domain class settling a tie within a namespace. An application with one controller per domain class is unaffected. Where two controllers serve the same domain class, a link to it rendered by one of them now stays in that controller rather than moving to the one named after the domain class. Pass the `controller` attribute where a link should leave the current controller. See link:theWebLayer.html#restfulMappings[Mapping to REST resources]. Controllers generated by `generate-controller` and `generate-async-controller` now redirect a form save or update with `redirect action: "show", id: book.id` rather than `redirect book`, so a generated controller that is renamed still redirects to itself; a controller generated earlier and since renamed can be changed the same way.
 
 * **A read-only transaction no longer flushes the session.**
 A read-only transaction (`@ReadOnly`, `@Transactional(readOnly = true)`) commits without flushing the session on every GORM datastore. Hibernate, Neo4j and the simple map datastore already behaved this way; GORM for MongoDB flushed the session when a read-only transaction committed, and no longer does.
@@ -838,8 +871,17 @@ A GORM datastore implementation outside the Grails repository whose transaction 
 * **`bindData` can clear omitted included fields.**
 `bindData(target, source, [include: [...], clearMissing: true])` now clears included properties that are absent from the binding source. The behavior is opt-in, requires an `include` list, and does not apply globally. Existing `bindData` calls without `clearMissing: true` keep omitted fields unchanged.
 
+* **GORM for MongoDB builds its indexes when the datastore starts, not when it is created.**
+Creating a `MongoDatastore` no longer connects to MongoDB or builds the declared indexes, whichever constructor creates it, including one given an application's own `MongoClient`. In an application Spring starts the datastore before `BootStrap` runs, so nothing changes there; code that creates a `MongoDatastore` itself and expects its indexes once the constructor returns has to call `start()`, although the first GORM query or save on a datastore nothing has started also starts it. See link:{mongodb5Guide}index.html#upgradeNotes[Upgrade Notes] in the GORM for MongoDB guide.
+
 * **GORM for MongoDB rejects Map criterion values that contain `$` keys.**
 `findWhere`, `findAllWhere`, criteria queries, the `where` DSL and dynamic finders now throw `InvalidDataAccessResourceUsageException` when a `Map` passed as a criterion value contains a key starting with `$` at any level, on any property type including enums. MongoDB interprets such a value document as an operator expression rather than as a value. Maps without such keys are still sent as literal subdocument comparisons, so exact matches on `Map` properties, dotted paths and array elements are unchanged, and geospatial criteria are exempt. Code that deliberately passed an operator document through a criteria value should use the native `find(Bson)` API instead.
+
+* **GORM for MongoDB no longer ends the index build on a `unique` index over duplicate values.**
+A declared `unique` index that could not be built because documents already shared a value ended the index build with a `DuplicateKeyException`: the indexes declared after it were not built, and with the default synchronous build the application did not start. It is now counted as a failed declaration like any other index the server refuses, logged at `ERROR`, and the build goes on; the application starts without that index. Remove the duplicates and build the index again to create it. See link:{mongodb5Guide}index.html#upgradeNotes[Upgrade Notes] in the GORM for MongoDB guide.
+
+* **GORM for MongoDB builds only the indexes of the domain classes mapped to each connection.**
+The index build of a named connection also created the indexes of classes mapped only to another connection, in its own database. Each connection now builds the indexes of the classes mapped to it, including those mapped to `ConnectionSource.ALL`. Indexes already created elsewhere are left in place. See link:{mongodb5Guide}index.html#upgradeNotes[Upgrade Notes] in the GORM for MongoDB guide.
 
 ==== 21. Tag Library Test Cleanup Changes
 
@@ -1380,6 +1422,33 @@ Declaring all three names prevents the naming strategy from changing the mapping
 
 Separately, the element column of a *basic (non-enum) collection* (e.g. `static hasMany = [items: String]`) is now resolved through the naming strategy's *column* naming rules instead of its *table* naming rules for the property-name prefix, producing a `<property>_<element-type identifier>` column name. An enum collection is unaffected: its element column has no property-name prefix and already used the column naming rules before this change. Most naming strategies apply the same transformation to both, so this only matters if your custom `PhysicalNamingStrategy` implements `toPhysicalColumnName` and `toPhysicalTableName` differently.
 
+===== 26.10 Table-per-Hierarchy Discriminator Defaults
+
+A table-per-hierarchy tree with no discriminator mapping uses the same defaults as Grails 7: a column named `class` that stores the fully qualified name of each class. Tables created by Grails 7 need no change.
+
+8.0.0-RC1 and 8.0.0-RC2 named the column `DTYPE` and stored the simple name of each subclass, for example `com.example.Vehicle`, `Car` and `SportsCar`. A table created by either release candidate now fails `dbCreate: 'validate'` with `missing column [class]`, and its subclass rows no longer match. To keep that layout without migrating the data, map the column on the root class and the simple name on each subclass:
+
+[source,groovy]
+----
+class Vehicle {
+    static mapping = {
+        discriminator column: 'DTYPE'    // the root value stays the fully qualified class name
+    }
+}
+
+class Car extends Vehicle {
+    static mapping = {
+        discriminator 'Car'
+    }
+}
+
+class SportsCar extends Car {
+    static mapping = {
+        discriminator 'SportsCar'
+    }
+}
+----
+
 ==== 27. GORM Properties Are Nullable by Default
 
 Grails 8 changes the validation default so that an *unconstrained persistent (domain) property is nullable by default* rather than required.
@@ -1407,6 +1476,9 @@ schema migration or diff tools.
 
 Command objects are unaffected: Validateable command-object properties remain non-nullable by default, except for collections and maps, which remain nullable by default.
 
+The exception is a property that a command object imports with `importFrom` from a domain class that declares no `nullable` constraint for it.
+It gets the domain class's nullable default, so it is nullable unless you restore the required-by-default behaviour (below).
+
 To restore the legacy required-by-default behaviour for an entire application, set the new `grails.gorm.default.nullable` property to `false`:
 
 [source,yaml]
@@ -1425,6 +1497,21 @@ The existing `grails.gorm.default.constraints` wildcard form also works:
 ----
 grails.gorm.default.constraints = {
     '*'(nullable: false)
+}
+----
+
+Domains mocked with `DataTest` or `DomainUnitTest` use the same settings as the running application.
+They are read from `application.yml` or `application.groovy`.
+A specification can also set them in `doWithConfig`:
+
+[source,groovy]
+----
+class BookSpec extends Specification implements DomainUnitTest<Book> {
+
+    @Override
+    Closure doWithConfig() {{ config ->
+        config.grails.gorm.default.nullable = false
+    }}
 }
 ----
 
@@ -1500,7 +1587,8 @@ Two methods changed as a result:
 |===
 
 The same change applies to the `attrs` map passed to a GSP tag, whose internal implementation renames `isGspTagSyntaxCall()` to `gspTagSyntaxCall()`.
-Its setter is retained, so assigning `attrs.gspTagSyntaxCall` still invokes that setter rather than storing an attribute - as in Grails 7. Store an attribute of that name with `attrs.put('gspTagSyntaxCall', value)`.
+Its setter is retained, so assigning `attrs.gspTagSyntaxCall` still invokes that setter rather than storing an attribute - as in Grails 7.
+Subscript assignment, `attrs['gspTagSyntaxCall'] = value`, now stores an attribute of that name, as `attrs.put('gspTagSyntaxCall', value)` does; in Grails 7 it invoked the setter.
 
 NOTE: When adding a class that extends `grails.util.TypeConvertingMap`, do not declare a no-argument `getX()` or `isX()` method on it, or the entry `x` becomes unreachable for the same reason. Statically compiled callers bind directly to the accessor, so the collision cannot be corrected at runtime.
 
@@ -1784,11 +1872,11 @@ def vulnerable() {
 
 This is flagged because passing the `GString` *directly* to `executeQuery` is safe — GORM binds the interpolated value as a query parameter — but assigning it to a `String`-typed local first causes Groovy to coerce it to a plain `String` at that point, silently discarding the safe binding; the interpolated value is then embedded as raw, unescaped query text. See <<sqlInjection,SQL injection>> for the full explanation and examples.
 
-If your application has this pattern, fix it by keeping the query a `GString` all the way to the call, or by using named/positional parameters instead. For a call site that has been reviewed and is genuinely safe, add `@SuppressWarnings("GormUnsafeQueryString")` to the enclosing method rather than restructuring the code.
+If the interpolated expressions are values, fix it by keeping the query a `GString` all the way to the call, or by using named/positional parameters instead. If they are HQL fragments — restrictions or an `order by` clause chosen at runtime — do *not* switch to a `GString`: GORM would bind the fragment as a parameter value and the query would no longer work. Interpolating or appending *constant* text (string literals, `static final` constants, ternaries over them, and locals that only ever hold such text) is recognized as safe and is not flagged, so the usual dynamic-restriction idioms, including `query += " and ..."`, compile unchanged. For a call site that has been reviewed and is genuinely safe, add `@SuppressWarnings("GormUnsafeQueryString")` to the declaration of the variable that holds the query text, or to the enclosing method, rather than restructuring the code. See <<sqlInjection,SQL injection>> for the details of what counts as constant text.
 
-This check runs automatically wherever `grails-datamapping-core` is on the compile classpath, with no opt-in configuration required. If it produces a false positive with no workaround, the whole check can be disabled by setting the `protectSqlInjectionAttacks` system property to `false` (it defaults to `true`) — this is a last-resort, build-wide kill switch, not a substitute for the per-call-site `@SuppressWarnings` above.
+This check runs automatically wherever `grails-datamapping-core` is on the compile classpath, with no opt-in configuration required. If it produces a false positive with no workaround, the whole check can be disabled by setting the `protectSqlInjectionAttacks` system property to `false` (it defaults to `true`) — this is a last-resort, build-wide kill switch, not a substitute for the per-declaration or per-method `@SuppressWarnings` above.
 
-The same check also emits (non-build-breaking) **compile-time warnings**, not errors, for two related but lower-confidence patterns: a `String`-typed field assigned an interpolated `GString` and later read through `this.field` in a query call, and query text built with `+` concatenation from a non-constant value with no `GString` involved. Neither of these fails the build, but both are worth reviewing — see <<sqlInjection,SQL injection>> for examples of both.
+The same check also emits (non-build-breaking) **compile-time warnings**, not errors, for two related but lower-confidence patterns: a `String`-typed field assigned an interpolated `GString` and later read through `this.field` in a query call, and query text built with `+` concatenation from a non-constant value (constant text is never flagged) with no `GString` involved. Neither of these fails the build, but both are worth reviewing — see <<sqlInjection,SQL injection>> for examples of both.
 
 **Most applications and plugins need no action.** Behavior only changes where a plugin bean and a conditional Boot bean competed for the same name or type — the plugin bean now wins, which is almost always the intended outcome.
 
@@ -4434,3 +4522,219 @@ is still bound as midnight by `yyyy-MM-dd`, losing the time. Add a format that r
 such as `yyyy-MM-dd HH:mm`, to keep the time.
 
 The date scalars of GraphQL, which read `grails.databinding.dateFormats` too, are not changed.
+
+==== 79. Asset Pipeline Wildcards Stand for One Directory
+
+Grails 8 uses asset-pipeline 5.2, which resolves a `%` or `*` component of an asset path, in a `require`
+directive, an `<asset:...>` tag or a Sass import, the same way wherever the asset is found: as exactly one
+directory.
+
+In Grails 7, which used asset-pipeline 5.0, a `%` could stand for any number of directories when the asset
+was in a jar, as the files of every webjar are, and in the manifest that a packaged application serves its
+assets from. `webjars/%/dist/jquery.js` found `webjars/jquery/3.7.1/dist/jquery.js`, and now finds nothing,
+since one `%` cannot stand for both `jquery` and `3.7.1`.
+
+Write a `%` in place of each directory, as applications generated by `create-app` do for the version
+directory of each webjar, or use the new `%%` (or `**`), which stands for zero or more directories:
+
+[source,javascript]
+.grails-app/assets/javascripts/application.js
+----
+//= require webjars/jquery/%/dist/jquery.js
+//= require webjars/%%/dist/js/bootstrap.bundle.js
+----
+
+In a CSS `require` block, write `%` and `%%` rather than `+*+` and `+**+`, because `*/` ends the comment the
+block is written in. A path with one `%` for each directory, including every path `create-app` has
+generated, resolves as before, unless more than one directory matches (see below).
+
+When several directories match, the highest version is used: `5.1.2` over `4.3.0`, `10.0.0` over `9.0.0`,
+and a release over its own pre-releases. Before, the first match found was used, in the order of the file
+system, the jars on the classpath or the manifest. Where `%%` can match at more than one depth, the match with
+the fewest directories wins, so a copy of a library that another webjar bundles further down is not picked
+up. Hidden directories, whose names start with `.`, are never matched, and a wildcard inside a file name,
+such as `jquery-%.js`, no longer resolves in a packaged application, as it never resolved in development.
+
+A path that no longer resolves does not fail the build: `assetCompile` logs `Unable to Locate Asset: <path>`
+and leaves the file out, and an `<asset:...>` tag renders the path unchanged, which the browser then fails to
+load. Check the `assetCompile` output for that warning after upgrading.
+
+NOTE: The `includes` and `excludes` patterns of the `assets` block in `build.gradle`, which select the files
+`assetCompile` processes, are not changed.
+
+==== 80. Stricter Closure Typing for GORM Criteria Closures
+
+GORM's criteria closure methods (`where`, `whereLazy`, `build`, `buildLazy`, `projections`,
+`and`, `or`, `not`, `find`, `get`, `list`, `count`, `asBoolean` and the closure subquery forms
+of `in`, `inList`, `notIn`, `eqAll`, `gtAll`, `ltAll`, `geAll`, `leAll`, `gtSome`, `geSome`,
+`ltSome` and `leSome`) now declare
+`strategy = Closure.DELEGATE_FIRST` in their `@DelegatesTo` annotations. This matches the
+resolve strategy GORM already applies at runtime and fixes a `@CompileStatic` bug where the
+restrictions of a criteria closure nested inside another criteria closure were added to the
+enclosing criteria instead of the new one. Projection blocks resolved against the enclosing
+criteria for the same reason, silently dropping their projections. See
+https://github.com/apache/grails-core/issues/16425[Issue #16425].
+
+Statically compiled applications can be affected in two ways.
+
+**Forwarding a `Closure` parameter to one of these methods no longer compiles.** A method
+`Closure` parameter with the default `OWNER_FIRST` strategy cannot be passed to a
+`DELEGATE_FIRST` parameter:
+
+[source,groovy]
+----
+@CompileStatic
+static DetachedCriteria<Book> withExtra(Closure extra) {
+    new DetachedCriteria<Book>(Book).where(extra)
+    // [Static type checking] - Closure parameter with resolve strategy OWNER_FIRST
+    // passed to method with resolve strategy DELEGATE_FIRST
+}
+----
+
+Declare the same strategy on your parameter, or cast the argument:
+
+[source,groovy]
+----
+static DetachedCriteria<Book> withExtra(
+        @DelegatesTo(value = DetachedCriteria, strategy = Closure.DELEGATE_FIRST) Closure extra) {
+    new DetachedCriteria<Book>(Book).where(extra)
+}
+
+// or
+new DetachedCriteria<Book>(Book).where((Closure) extra)
+----
+
+**Name resolution inside a criteria closure now prefers the criteria delegate**, which is
+what dynamic code already did. A property or method that exists both on the enclosing class
+and on the criteria now resolves to the criteria:
+
+[source,groovy]
+----
+@CompileStatic
+class BookQueries {
+    List<Order> getOrders() { ... }
+
+    DetachedCriteria<Book> query() {
+        new DetachedCriteria<Book>(Book).where {
+            inList 'name', orders    // now reads the criteria's orders, not getOrders()
+        }
+    }
+}
+----
+
+==== 81. XML-Safe HTML Escaping Is the Default
+
+When `grails.views.gsp.htmlcodec` is not set, the HTML codec, which GSP uses to escape `${}` expressions and
+which `encodeAsHTML()` applies, now uses the XML-safe escaping that applications generated by `create-app`
+and Grails Forge have selected with `htmlcodec: xml` since Grails 2.3. Before, it used HTML4 style escaping.
+New applications no longer have the setting, since it is now the default.
+
+Applications that set `htmlcodec: xml` are not affected, and can keep or remove the setting. Applications
+without the setting now get different escaped output:
+
+* Non-ASCII characters are written as they are instead of as named entities: `Gösta` is no longer escaped
+as `G&ouml;sta`.
+* `@`, the backslash and the backtick are escaped as `&#64;`, `&#92;` and `&#96;`, the non breaking space and
+the line and paragraph separators as numeric character references, and control characters other than tab,
+line feed and carriage return are dropped.
+
+Tests that compare escaped markup exactly may need to be updated. An application that serves pages in a
+character set that cannot represent every character, such as ISO-8859-1, and relies on the named entities,
+can restore HTML4 style escaping:
+
+[source,yaml]
+.application.yml
+----
+grails:
+    views:
+        gsp:
+            htmlcodec: html4
+----
+
+See link:security.html#codecs[Encoding and Decoding Objects].
+
+==== 82. Mail Plugin: `overrideAddress` Also Replaces an Explicit Sender
+
+`grails.mail.overrideAddress` now also replaces a `from` set in the `sendMail` closure. In Grails 7, it replaced every `to`, `cc` and `bcc` address and the default sender, and an explicit `from` was kept.
+
+To keep the sender your application sets, while still redirecting every recipient, use the new `grails.mail.overrideToAddress` in place of `overrideAddress`:
+
+[source,yaml]
+.application-development.yml
+----
+grails:
+    mail:
+        overrideToAddress: test-inbox@example.com   # redirect all recipients (to, cc, bcc) only
+----
+
+To set a fixed sender without redirecting recipients, use the new `grails.mail.overrideFromAddress`. See link:mail.html#mailConfiguration[Mail Configuration] for how the three properties interact.
+
+==== 83. GORM Dynamic Finder Classes Replaced
+
+The dynamic finder implementations in the `org.grails.datastore.gorm.finders` package no longer form an inheritance hierarchy. The following public classes have been removed:
+
+* `AbstractFinder`
+* `AbstractFindByFinder`
+* `FindByFinder`
+* `FindByBooleanFinder`
+* `FindAllByFinder`
+* `FindAllByBooleanFinder`
+* `FindOrCreateByFinder`
+* `FindOrSaveByFinder`
+* `CountByFinder`
+
+`DynamicFinder` is now a concrete class that only parses a finder method name and builds its query criteria. It no longer implements `FinderMethod`, has no `invoke` or `doInvokeInternal` methods, and its constructor takes a method pattern, the junction operators, a `MappingContext` and a boolean-clause flag. Finder execution lives in three classes that compose a `DynamicFinder` instead of extending it and are created through static factory methods:
+
+[source,groovy]
+----
+import org.grails.datastore.gorm.finders.CountFinder
+import org.grails.datastore.gorm.finders.ListResultFinder
+import org.grails.datastore.gorm.finders.SingleResultFinder
+
+SingleResultFinder.findBy(datastoreResolver, mappingContext)          // findBy*
+SingleResultFinder.findByBoolean(datastoreResolver, mappingContext)   // find<Boolean>By*
+SingleResultFinder.findOrCreateBy(datastoreResolver, mappingContext)  // findOrCreateBy*
+SingleResultFinder.findOrSaveBy(datastoreResolver, mappingContext)    // findOrSaveBy*
+ListResultFinder.findAllBy(datastoreResolver, mappingContext)         // findAllBy*
+ListResultFinder.findAllByBoolean(datastoreResolver, mappingContext)  // findAll<Boolean>By*
+CountFinder.countBy(datastoreResolver, mappingContext)                // countBy*
+----
+
+Each factory also accepts a `Datastore`, or only a `MappingContext` for a finder that parses method names without executing queries. `ListOrderByFinder` keeps its constructors but no longer extends `AbstractFinder`, and the list of finders a `DetachedCriteria` consults is now typed as `List<FinderMethod>`.
+
+Applications are unaffected: dynamic finders such as `Book.findByTitle('The Stand')` behave as before. A GORM datastore implementation or plugin outside the Grails repository that extends one of the removed classes, or that calls `new FindByFinder(...)` and its siblings when building its finder list, must switch to the factory methods above. Code that only holds finders as `FinderMethod` compiles unchanged.
+
+==== 84. Interceptors Can Read the Model of a Template Render
+
+The `model` property of an interceptor now returns the map that an action passed to
+`render(template: ..., model: ...)`. Before, it returned `null` for a template render, because a template render
+produces no `ModelAndView`. Responses rendered from a view are not affected.
+
+The template has already been rendered when `after()` runs, so the model can be inspected but not changed. Review
+interceptors that check `model != null`, or use `model?.`, before changing the model, since that code now also runs
+for template renders:
+
+* Changes to the map have no effect on the response, and they change the map that the action passed.
+* If the action passed an immutable map, such as one created with `Map.of(...)`, changing it throws an
+`UnsupportedOperationException`. Before, `model?.foo = 'bar'` did nothing.
+
+Objects passed with `bean` or `collection` are not part of `model`. See
+link:theWebLayer.html#definingInterceptors[Defining Interceptors].
+
+==== 85. Gradle Configuration Cache
+
+The Grails Gradle plugins of Grails 8.0, and the Asset Pipeline and Grails Publish plugins in the versions the Grails 8.0 BOM manages, support the https://docs.gradle.org/{gradleVersion}/userguide/configuration_cache.html[Gradle configuration cache].
+Applications and plugins created with Grails 8.0 enable it in `gradle.properties`.
+
+An application or plugin upgraded to Grails 8.0 can enable it by adding the same property, once it uses the Grails 8.0 Gradle plugins and BOM:
+
+[source,properties]
+.gradle.properties
+----
+org.gradle.configuration-cache=true
+----
+
+When upgrading from an earlier Grails 8 milestone or release candidate, update the Grails Gradle plugins and BOM before enabling the configuration cache.
+
+With the configuration cache, task actions such as `doFirst` and `doLast` closures may not use `project`, other tasks or build script properties while they run, and Gradle fails the build when a build script or another Gradle plugin does.
+See xref:commandLine#gradleConfigurationCache[Using the Gradle Configuration Cache] for how to adapt build scripts and what to do about plugins that do not support it.

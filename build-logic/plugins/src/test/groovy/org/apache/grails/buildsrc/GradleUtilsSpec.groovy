@@ -128,6 +128,56 @@ class GradleUtilsSpec extends Specification {
         exception.message == "Task name 'pmd-main' cannot be used in an analysis report file name"
     }
 
+    def "isOptedOut is #expected for a skip property set to #value"() {
+        given:
+        Project project = ProjectBuilder.builder().withName('opt-out').build()
+        project.extensions.extraProperties.set('skipSomething', value)
+
+        expect:
+        GradleUtils.isOptedOut(project, 'skipSomething') == expected
+
+        where: "an empty string is what a -P property given without a value arrives as"
+        value   | expected
+        ''      | true
+        'true'  | true
+        true    | true
+        null    | true
+        'false' | false
+        false   | false
+    }
+
+    def "isOptedOut is false when the skip property is absent"() {
+        given:
+        Project project = ProjectBuilder.builder().withName('opt-in').build()
+
+        expect:
+        !GradleUtils.isOptedOut(project, 'skipSomething')
+    }
+
+    def "extStrings reads #value as #expected"() {
+        given:
+        Project project = ProjectBuilder.builder().withName('ext-strings').build()
+        project.extensions.extraProperties.set('someStrings', value)
+
+        expect:
+        GradleUtils.extStrings(project, 'someStrings') == expected as Set
+
+        where:
+        value                  | expected
+        'one'                  | ['one']
+        ['one', null, 'two']   | ['one', 'two']
+        ['same', 'same']       | ['same']
+        42                     | []
+    }
+
+    def "extStrings is empty when the project declares no such extra property"() {
+        given:
+        Project project = ProjectBuilder.builder().withName('ext-absent').build()
+
+        expect:
+        GradleUtils.extStrings(project, 'someStrings').isEmpty()
+    }
+
     private Project projectAt(String path) {
         Project project = ProjectBuilder.builder().withProjectDir(testProjectDir.toFile()).build()
         path.split(':').findAll().each { String name ->

@@ -786,7 +786,7 @@ implementation 'org.apache.grails.plugins:grails-async:7.0.0'
 implementation 'org.apache.grails.plugins:grails-fields:7.0.0'
 
 // Asset Pipeline
-runtimeOnly 'com.bertramlabs.plugins:asset-pipeline-grails:5.0.8'
+runtimeOnly 'cloud.wondrify:asset-pipeline-grails'
 ```
 
 ### Spring Security Configuration

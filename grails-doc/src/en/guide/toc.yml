@@ -86,6 +86,7 @@ commandLine:
     gradleDependencies: Defining Dependencies with Gradle
     gradleTasks: Working with Gradle Tasks
     gradlePlugins: Grails plugins for Gradle
+    gradleConfigurationCache: Using the Gradle Configuration Cache
 profiles:
   title: Application Profiles
   standardProfiles:
@@ -413,8 +414,9 @@ cache:
 deployment:
   title: Deployment
   deploymentStandalone: Standalone
-  deploymentContainer: Container Deployment (e.g. Tomcat)
-  deploymentTasks: Deployment Configuration Tasks
+  deploymentContainer: External Servlet Container Deployment
+  deploymentLayeredBuilds: OCI Images and Layered Builds
+  deploymentTasks: Production Configuration
   deploymentAot: Ahead-of-Time Processing
   deploymentAotCache: Ahead-of-Time Caching
 contributing:

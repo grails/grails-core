@@ -74,22 +74,15 @@ jobs:
           java-version: |
             ${{ steps.jdks.outputs.fixture-java }}
             ${{ steps.jdks.outputs.build-java }}
-      - name: "🗄️ Restore dependency jar cache"
-        uses: actions/cache@v6.1.0
-        with:
-          # Cache only downloaded dependency jars and wrapper distributions, never Grails build outputs.
-          # Keyed by branch version so each release branch maintains its own warm cache.
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper
-          key: gradle-deps-${{ runner.os }}-${{ github.base_ref || github.ref_name }}-${{ hashFiles('**/dependencies.gradle', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-deps-${{ runner.os }}-${{ github.base_ref || github.ref_name }}-
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          cache-disabled: true # dependency jars are cached by the explicit branch-keyed step above
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY  }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "📦 Setup: publish grails-gradle to the local repository the tests resolve from"
         # Both builds publish into the same build/local-maven, and both are needed: the Grails BOM
         # constrains org.apache.grails.gradle artifacts. grails-forge depends on this same pair of
@@ -133,7 +126,7 @@ jobs:
           echo "class-file major version: ${actual_major} (expected ${expected_major} for Java ${fixture_java})"
           [ "$actual_major" -eq "$expected_major" ]
       - name: "🔍 Setup TestLens"
-        uses: testlens-app/setup-testlens@3f82d2dc6cd5c03f02ce5f7885a21195d85f8d14 # v1.9.3
+        uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
       - name: "🧪 Run the end-to-end tests"
         # Only the end-to-end build. grails-core's own unit and functional suites are the CI
         # workflow's job; nothing here re-runs them. The publish steps above are setup, not tests.

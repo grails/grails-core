@@ -85,6 +85,8 @@ Each property override is applied as a *strict* dependency constraint, so it win
 This strict behaviour applies to *explicit overrides only*. The BOM's default (non-overridden) managed versions are contributed by a regular `platform()` and still participate in Gradle's standard highest-version-wins conflict resolution, so a transitive dependency can pull a non-overridden managed version higher than the BOM default. To make the BOM's default versions win unconditionally as well, declare `enforcedPlatform(grails-bom)` on the relevant configuration.
 
 Overriding a property that selects an imported BOM's version (for example `spring-boot.version`, which selects the `spring-boot-dependencies` BOM that `grails-bom` imports) re-imports that BOM at the overridden version and applies its updated managed set.
+
+Where `grails-bom` overrides a version that Spring Boot also manages, it declares the override under Spring Boot's own property name, so one property sets the version in both BOMs. For example, `jackson-bom.version` moves both the Jackson 3 artifacts `grails-bom` pins and the rest of the Jackson 3 family that Spring Boot's imported `jackson-bom` manages. Use the property names from the Spring Boot documentation for these.
 ====
 
 ==== Applying the BOM in Different Project Types

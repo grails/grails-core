@@ -169,6 +169,37 @@ class EarlyPluginRegistrationOrderingSpec extends Specification {
             Environment.setInitializing(false)
     }
 
+    void 'a plain child beneath a Grails application does not run the lifecycle again'() {
+        given: 'a parent context standing for a running Grails application'
+            def parent = new AnnotationConfigApplicationContext()
+            parent.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+            parent.refresh()
+
+        and: 'a child beneath it with plugin discovery promoted but no Grails application class of its own'
+            def ctx = new AnnotationConfigApplicationContext()
+            ctx.parent = parent
+            ctx.register(EarlyOrderingAutoConfigLikeConfig)
+            promoteDiscovery(ctx, earlyOrderingPluginClass)
+            new GrailsPluginLifecycleInitializer().initialize(ctx)
+
+        when:
+            ctx.refresh()
+
+        then: 'the conditional default is created, as the plugin contributed nothing here'
+            ctx.getBean('myResolver') instanceof EarlyOrderingBootDefaultResolver
+            !ctx.beanFactory.containsSingleton(GrailsApplication.APPLICATION_ID)
+            !ctx.beanFactory.containsSingleton(GrailsPluginManager.BEAN_NAME)
+
+        and: 'the Grails application it sees is the one of the parent'
+            ctx.getBean(GrailsApplication.APPLICATION_ID).is(parent.getBean(GrailsApplication.APPLICATION_ID))
+
+        cleanup:
+            ctx.close()
+            parent.close()
+            Holders.clear()
+            Environment.setInitializing(false)
+    }
+
     void 'a plugin beanRegistrar bean registered early makes a @ConditionalOnMissingBean auto-config bean defer'() {
         given: 'a context whose configuration would, by itself, register a conditional myResolver'
             def ctx = new AnnotationConfigApplicationContext()

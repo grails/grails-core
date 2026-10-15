@@ -662,7 +662,17 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         return iterable;
     }
 
-    private Document getClassFieldDocument(final PersistentEntity entity) {
+    /**
+     * Creates the query that restricts the collection of an inheritance hierarchy to the documents
+     * of the given entity and its subclasses.
+     *
+     * @param entity The entity
+     * @return The query, which is empty for a root entity
+     */
+    public static Document createClassFieldQuery(final PersistentEntity entity) {
+        if (entity.isRoot()) {
+            return new Document();
+        }
         Object classFieldValue;
         Collection<PersistentEntity> childEntities = entity.getMappingContext().getChildEntities(entity);
         if (childEntities.size() > 0) {
@@ -681,13 +691,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     }
 
     protected Document createQueryObject(PersistentEntity persistentEntity) {
-        Document query;
-        if (persistentEntity.isRoot()) {
-            query = new Document();
-        } else {
-            query = getClassFieldDocument(persistentEntity);
-        }
-        return query;
+        return createClassFieldQuery(persistentEntity);
     }
 
     public static void populateMongoQuery(final AbstractMongoSession session, Document query, Junction criteria, final PersistentEntity entity) {

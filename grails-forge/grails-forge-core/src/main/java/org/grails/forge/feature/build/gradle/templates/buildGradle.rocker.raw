@@ -120,6 +120,19 @@ tasks.withType(Test).configureEach {
 
 @gradleBuild.renderExtensions()
 
+@if (features.contains("grails-compile-static")) {
+grails {
+    compileStatic {
+        controllers = true
+        services = true
+        tagLibs = true
+@if (features.contains("gsp")) {
+        gsp = true
+}
+    }
+}
+
+}
 @if(features.contains("asset-pipeline-grails")) {
 assets {
 @if (applicationType == ApplicationType.WEB_PLUGIN) {

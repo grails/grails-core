@@ -20,6 +20,7 @@ plugins {
     id 'org.apache.grails.gradle.grails-ij-formatter'
     id 'org.apache.grails.gradle.grails-validate-actions'
     id 'org.apache.grails.buildsrc.test-task-sharding'
+    id 'org.apache.grails.buildsrc.vulnerability-scan-report'
 }
 
 import java.lang.management.ManagementFactory
@@ -45,6 +46,9 @@ ext {
             DateTimeFormatter.ISO_DATE.format(LocalDate.ofInstant(buildInstant as Instant, ZoneOffset.UTC))
     buildDate = (buildInstant as Instant).atZone(ZoneOffset.UTC) // for reproducible builds
     isCiBuild = System.getenv().get('CI') as Boolean
+    // GitHub Actions sets GITHUB_EVENT_NAME on every step; a pull request run restores the Gradle
+    // user home read-only from the base branch, so it reuses whatever that branch last resolved
+    isPullRequestBuild = System.getenv('GITHUB_EVENT_NAME') == 'pull_request'
     // Set DO_NOT_CACHE_TESTS=1 to force test tasks to re-run on every invocation without
     // needing --rerun-tasks. Useful for repeatedly running the same test command while
     // chasing flaky tests across runs.
@@ -169,7 +173,15 @@ subprojects {
 
     configurations.configureEach {
         resolutionStrategy {
-            def cacheHours = isCiBuild || isReproducibleBuild ? 0 : 24
+            // Push and release runs always refetch dynamic versions and snapshots so they test what the
+            // repositories serve now. A pull request run reuses metadata the base branch resolved within
+            // the last day, so a repository that is down or slow does not fail the run at configuration time.
+            // validateDependencyVersions rejects dynamic versions, so in practice the cache covers only the
+            // snapshots in dependencies.gradle (Asset Pipeline, SiteMesh, grails-publish between releases):
+            // a pull request sees the snapshot the base branch last resolved, for up to a day. To test a
+            // newer snapshot sooner, push to the base branch, which refetches it and saves the Gradle user
+            // home that pull request runs restore, or run the build with --refresh-dependencies.
+            def cacheHours = (isCiBuild && !isPullRequestBuild) || isReproducibleBuild ? 0 : 24
             cacheDynamicVersionsFor(cacheHours, 'hours')
             cacheChangingModulesFor(cacheHours, 'hours')
         }
@@ -184,14 +196,15 @@ tasks.register('publishAllToMavenLocal') {
     group = 'publishing'
 
     def execSupport = objects.newInstance(ExecSupport)
+    // read while configuring: the build script's layout and logger are not available while a task runs
+    File projectRoot = layout.projectDirectory.asFile
 
-    doLast {
-        def projectRoot = layout.projectDirectory.asFile
+    doLast { Task task ->
         def javaHome = System.getProperty('java.home')
         def gradlew = Os.isFamily(Os.FAMILY_WINDOWS) ? 'gradlew.bat' : 'gradlew'
 
         def runPublish = { File workingDir, String label ->
-            logger.lifecycle("--- Publishing ${label} to Maven Local ---")
+            task.logger.lifecycle("--- Publishing ${label} to Maven Local ---")
             execSupport.process.exec { ExecSpec exec ->
                 exec.environment('JAVA_HOME', javaHome)
                 exec.workingDir = workingDir
