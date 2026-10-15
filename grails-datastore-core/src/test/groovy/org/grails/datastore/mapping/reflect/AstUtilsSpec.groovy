@@ -33,6 +33,34 @@ import spock.lang.Specification
  */
 class AstUtilsSpec extends Specification {
 
+    void 'domain parent selection stops at a plain superclass'() {
+        given:
+        def plain = new ClassNode('SharedDetails', Modifier.PUBLIC, ClassHelper.OBJECT_TYPE)
+        def root = new ClassNode('RootEntity', Modifier.PUBLIC, plain)
+        root.addAnnotation(new AnnotationNode(ClassHelper.make(annotationName)))
+        def child = new ClassNode('ChildEntity', Modifier.PUBLIC, root)
+
+        expect:
+        AstUtils.getFurthestUnresolvedDomainParent(child).is(root)
+        AstUtils.getFurthestUnresolvedDomainParent(root).is(root)
+        AstUtils.getFurthestUnresolvedParent(child).is(plain)
+
+        where:
+        annotationName << [
+            'grails.persistence.Entity',
+            'grails.gorm.annotation.Entity',
+            'jakarta.persistence.Entity'
+        ]
+    }
+
+    void 'domain parent selection does not modify a resolved superclass'() {
+        given:
+        def child = new ClassNode('ChildEntity', Modifier.PUBLIC, ClassHelper.make(Object))
+
+        expect:
+        AstUtils.getFurthestUnresolvedDomainParent(child).is(child)
+    }
+
     void "test implements interface"() {
         given:
         ClassNode node = ClassHelper.make("Test")

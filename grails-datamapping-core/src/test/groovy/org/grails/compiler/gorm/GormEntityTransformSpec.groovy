@@ -36,6 +36,67 @@ import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
  */
 class GormEntityTransformSpec extends Specification{
 
+    void 'generated fields do not leak into a shared non-domain superclass'() {
+        given:
+        def loader = new GroovyClassLoader()
+        loader.parseClass("""
+            import grails.gorm.annotation.Entity
+
+            $declarations
+
+            abstract class SharedDetails {
+                String name
+            }
+
+            class PlainCommand extends SharedDetails { }
+        """)
+
+        when:
+        def root = loader.loadClass('RootEntity')
+        def child = loader.loadClass('ChildEntity')
+        def command = loader.loadClass('PlainCommand').getDeclaredConstructor().newInstance()
+
+        then:
+        root.getDeclaredField('id').type == Long
+        root.getDeclaredField('version').type == Long
+        child.getMethod('getId').declaringClass == root
+        child.getMethod('getVersion').declaringClass == root
+        !child.declaredFields*.name.contains('id')
+        !child.declaredFields*.name.contains('version')
+        command.hasProperty('id') == null
+        command.hasProperty('version') == null
+
+        cleanup:
+        loader.close()
+
+        where:
+        declarations << [
+            '@Entity abstract class RootEntity extends SharedDetails { }; @Entity class ChildEntity extends RootEntity { }',
+            '@Entity class ChildEntity extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }'
+        ]
+    }
+
+    void 'separately compiled plain superclasses are not modified'() {
+        given:
+        def loader = new GroovyClassLoader()
+        def base = loader.parseClass('abstract class CompiledDetails { String name }')
+        def entity = loader.parseClass('''
+            import grails.gorm.annotation.Entity
+
+            @Entity
+            class CompiledEntity extends CompiledDetails { }
+        ''')
+
+        expect:
+        entity.getDeclaredField('id').type == Long
+        entity.getDeclaredField('version').type == Long
+        !base.declaredFields*.name.contains('id')
+        !base.declaredFields*.name.contains('version')
+
+        cleanup:
+        loader.close()
+    }
+
     void 'test parse named queries'() {
         when:
         def bookClass = new GroovyClassLoader().parseClass('''

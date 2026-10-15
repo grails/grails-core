@@ -633,6 +633,23 @@ class AstUtils {
         return null
     }
 
+    /**
+     * Finds the highest uncompiled domain class in the contiguous domain hierarchy.
+     * Plain superclasses may be shared with non-persistent classes and must not receive
+     * generated persistence properties.
+     *
+     * @param classNode the domain class being enhanced
+     * @return the domain class that should declare generated persistence properties
+     */
+    static ClassNode getFurthestUnresolvedDomainParent(ClassNode classNode) {
+        ClassNode parent = classNode.getSuperClass()
+        while (parent != null && !parent.isResolved() && isDomainClass(parent)) {
+            classNode = parent
+            parent = parent.getSuperClass()
+        }
+        return classNode
+    }
+
     static ClassNode getFurthestUnresolvedParent(ClassNode classNode) {
         ClassNode parent = classNode.getSuperClass()
 

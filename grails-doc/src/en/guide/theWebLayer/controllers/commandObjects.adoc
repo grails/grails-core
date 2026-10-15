@@ -59,6 +59,39 @@ class AuthorSearchCommand implements grails.validation.Validateable {
 In this example, both `name` and `age` will allow null values during validation.
 
 
+==== Sharing Properties With Domain Classes
+
+A command object and a domain class can extend the same non-domain superclass to share properties.
+Keep that superclass in `src/main/groovy`, outside `grails-app/domain`, and do not annotate it as an entity.
+
+[source,groovy]
+----
+abstract class PersonDetails {
+    String name
+}
+
+@grails.persistence.Entity
+class Person extends PersonDetails {
+    static constraints = {
+        name blank: false
+    }
+}
+
+class PersonCommand extends PersonDetails implements grails.validation.Validateable {
+    static constraints = {
+        name blank: false
+    }
+}
+----
+
+Grails adds the generated `id` and `version` properties to the domain class, not to the shared non-domain superclass.
+Consequently, `PersonCommand` validates `name` without acquiring persistence properties from `Person`.
+When domain classes extend other domain classes, generated persistence properties remain on the domain superclass.
+Properties explicitly declared on a superclass are still inherited normally.
+
+After upgrading an application affected by persistence properties being added to a shared non-domain superclass, run a clean build to regenerate the affected classes.
+
+
 ==== Using Command Objects
 
 
