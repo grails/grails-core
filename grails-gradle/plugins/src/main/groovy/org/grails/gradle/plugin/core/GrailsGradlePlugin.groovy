@@ -30,6 +30,7 @@ import org.apache.grails.gradle.common.PropertyFileUtils
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.DefaultTask
+import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -104,6 +105,8 @@ import javax.inject.Inject
 class GrailsGradlePlugin implements Plugin<Project> {
 
     private static final String NATIVE_IMAGE_PLUGIN = 'org.graalvm.buildtools.native'
+    private static final String NATIVE_IMAGE_NEEDS_INDY = 'A native image needs every Groovy class compiled with ' +
+            'invokedynamic: a classic call site defines a class at run time, which a native image cannot do. '
 
     /** The plugin that compiles the pages, which are half of what a native image has to be told about. */
     private static final String GSP_PLUGIN = 'org.apache.grails.gradle.grails-gsp'
@@ -1125,24 +1128,47 @@ ${importStatements}
      *
      * <p>Applications resolve calls through invokedynamic here, because the classic call site
      * defines a class as it runs and an image has no way to define one. The framework is built the
-     * same way. This is a convention, so it also wins over a compile task a build script set to
-     * classic call sites, which the plugin overwrites with the extension's value; an application
-     * that sets {@code grails { indy = false }} itself fails the build instead, with the reason,
-     * rather than building an image that fails on its first dynamic call.</p>
+     * same way. This is a convention, which the plugin applies to every Groovy compile task after
+     * the build script has run; an application that sets {@code grails { indy = false }} itself
+     * fails the build as soon as it is evaluated, with the reason, rather than building an image
+     * that fails on its first dynamic call. A build script can still reach a compile task after
+     * the plugin does, for example from its own {@code afterEvaluate}, so each compile task also
+     * checks its own option as it starts.</p>
      *
      * <p>Nothing here runs unless the application applies GraalVM's plugin, which is what asks for
      * an image in the first place. An application that never builds one is untouched.</p>
      */
+    /**
+     * Refuses to compile classic call sites in a project that builds a native image. A class of its own,
+     * holding nothing, so the configuration cache can store it with the task.
+     */
+    @CompileStatic
+    private static class VerifyNativeImageIndy implements Action<Task> {
+
+        @Override
+        void execute(Task task) {
+            GroovyCompile compile = (GroovyCompile) task
+            if (compile.groovyOptions.optimizationOptions.get('indy') == Boolean.FALSE) {
+                throw new GradleException(GrailsGradlePlugin.NATIVE_IMAGE_NEEDS_INDY +
+                        "${task.path} is configured to compile classic call sites; remove the indy = false " +
+                        "compiler option set on it in a project that applies ${GrailsGradlePlugin.NATIVE_IMAGE_PLUGIN}.")
+            }
+        }
+    }
+
     protected void configureNativeImage(Project project) {
         project.pluginManager.withPlugin(NATIVE_IMAGE_PLUGIN) {
             GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
             grailsExt.indy.convention(true)
             project.afterEvaluate {
                 if (!grailsExt.indy.get()) {
-                    throw new GradleException('A native image needs every Groovy class compiled with invokedynamic: ' +
-                            'a classic call site defines a class at run time, which a native image cannot do. ' +
+                    throw new GradleException(NATIVE_IMAGE_NEEDS_INDY +
                             "Remove grails { indy = false } from a project that applies ${NATIVE_IMAGE_PLUGIN}.")
                 }
+            }
+            project.tasks.withType(GroovyCompile).configureEach { GroovyCompile compile ->
+                // The task's own option, read as it runs: the last word of whatever configured it.
+                compile.doFirst('verifyNativeImageIndy', new VerifyNativeImageIndy())
             }
         }
         configureNativeMetadataTrace(project)

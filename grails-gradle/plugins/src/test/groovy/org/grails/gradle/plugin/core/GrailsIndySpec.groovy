@@ -41,6 +41,23 @@ class GrailsIndySpec extends GradleSpecification {
             result.output.contains('compileTestGroovy=unset')
     }
 
+    void 'the compiled bytecode uses #callSites call sites when indy is #setting'() {
+        given:
+            setupTestResourceProject('indy-settings')
+
+        when:
+            BuildResult result = executeTask('inspectBytecode', arguments)
+
+        then: 'what the compiler produced, not what the task was told'
+            result.output.contains("CALL_SITES=${callSites}")
+
+        where:
+            setting  | arguments               | callSites
+            'unset'  | []                      | 'indy'
+            'true'   | ['-PfixtureIndy=true']  | 'indy'
+            'false'  | ['-PfixtureIndy=false'] | 'classic'
+    }
+
     void 'indy = #indy is applied to every Groovy compile task'() {
         given:
             setupTestResourceProject('indy-settings')
