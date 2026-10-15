@@ -50,12 +50,15 @@ jobs:
         #     the canary build reuses our Develocity / build-cache settings.
         # Both paths must be listed here; otherwise the init-script step fails
         # with "The specified initialization script ... does not exist."
+        #   - .github/actions: the local gradle-cache-policy action the Setup Gradle
+        #     step runs first; without it the job fails before building anything.
         uses: actions/checkout@v7.0.1
         with:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             dependencies.gradle
             .github/scripts/groovy-snapshot-canary-build.init.gradle
+            .github/actions
       - name: "📝 Derive matching Apache Groovy branch from dependencies.gradle"
         id: groovy-branch
         run: |
