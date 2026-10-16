@@ -57,7 +57,7 @@ class JSONTokenerApiSpec extends Specification {
         error.message == "Expected 'z' and instead saw 'a'. at character 1 of abc"
 
         when:
-        new JSONTokener('abc').next(3)
+        new JSONTokener('abc').next(4)
 
         then:
         def bounds = thrown(JSONException)
