@@ -65,7 +65,7 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
     private static final String PARENT = 'parent'
     private static final String BY_TYPE = 'byType'
     private static final String BY_CONSTRUCTOR = 'constructor'
-    private static final List<String> DYNAMIC_PROPS = Arrays.asList(
+    private static final List<String> DYNAMIC_PROPS = [
         AUTOWIRE,
         CONSTRUCTOR_ARGS,
         DESTROY_METHOD,
@@ -74,7 +74,7 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
         INIT_METHOD,
         BY_NAME,
         BY_TYPE,
-        BY_CONSTRUCTOR)
+        BY_CONSTRUCTOR]
 
     private String parentName
 
@@ -85,7 +85,7 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
         if (wrapper.isReadableProperty(property)) {
             return wrapper.getPropertyValue(property)
         }
-        if (DYNAMIC_PROPS.contains(property)) {
+        if (property in DYNAMIC_PROPS) {
             return null
         }
         return super.getProperty(property)
@@ -93,61 +93,61 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
 
     @Override
     void setProperty(String property, Object newValue) {
-        if (PARENT.equals(property)) {
-            this.setParent(newValue)
+        if (property == PARENT) {
+            setParent(newValue)
             return
         }
 
         AbstractBeanDefinition bd = getBeanDefinition()
-        if (AUTOWIRE.equals(property)) {
-            if (BY_NAME.equals(newValue)) {
-                bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME)
+        if (property == AUTOWIRE) {
+            if (newValue == BY_NAME) {
+                bd.autowireMode = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
             }
-            else if (BY_TYPE.equals(newValue)) {
-                bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE)
+            else if (newValue == BY_TYPE) {
+                bd.autowireMode = AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE
             }
-            else if (Boolean.TRUE.equals(newValue)) {
-                bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME)
+            else if (newValue == Boolean.TRUE) {
+                bd.autowireMode = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
             }
-            else if (BY_CONSTRUCTOR.equals(newValue)) {
-                bd.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR)
+            else if (newValue == BY_CONSTRUCTOR) {
+                bd.autowireMode = AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR
             }
         }
         // constructorArgs
-        else if (CONSTRUCTOR_ARGS.equals(property) && newValue instanceof List<?>) {
+        else if (property == CONSTRUCTOR_ARGS && newValue instanceof List<?>) {
             ConstructorArgumentValues cav = new ConstructorArgumentValues()
             for (Object e in (List<?>) newValue) {
                 cav.addGenericArgumentValue(e)
             }
-            bd.setConstructorArgumentValues(cav)
+            bd.constructorArgumentValues = cav
         }
         // destroyMethod
-        else if (DESTROY_METHOD.equals(property)) {
+        else if (property == DESTROY_METHOD) {
             if (newValue != null) {
-                bd.setDestroyMethodName(newValue.toString())
+                bd.destroyMethodName = newValue.toString()
             }
         }
         // factoryBean
-        else if (FACTORY_BEAN.equals(property)) {
+        else if (property == FACTORY_BEAN) {
             if (newValue != null) {
-                bd.setFactoryBeanName(newValue.toString())
+                bd.factoryBeanName = newValue.toString()
             }
         }
         // factoryMethod
-        else if (FACTORY_METHOD.equals(property)) {
+        else if (property == FACTORY_METHOD) {
             if (newValue != null) {
-                bd.setFactoryMethodName(newValue.toString())
+                bd.factoryMethodName = newValue.toString()
             }
         }
         // initMethod
-        else if (INIT_METHOD.equals(property)) {
+        else if (property == INIT_METHOD) {
             if (newValue != null) {
-                bd.setInitMethodName(newValue.toString())
+                bd.initMethodName = newValue.toString()
             }
         }
         // singleton property
-        else if (SINGLETON.equals(property)) {
-            bd.setScope(Boolean.TRUE.equals(newValue) ? BeanDefinition.SCOPE_SINGLETON : BeanDefinition.SCOPE_PROTOTYPE)
+        else if (property == SINGLETON) {
+            bd.scope = newValue == Boolean.TRUE ? BeanDefinition.SCOPE_SINGLETON : BeanDefinition.SCOPE_PROTOTYPE
         }
         else if (wrapper.isWritableProperty(property)) {
             wrapper.setPropertyValue(property, newValue)
@@ -225,15 +225,15 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
             for (Object constructorArg in constructorArgs) {
                 cav.addGenericArgumentValue(constructorArg)
             }
-            bd.setConstructorArgumentValues(cav)
+            bd.constructorArgumentValues = cav
         }
         if (clazz != null) {
-            bd.setLazyInit(clazz.getAnnotation(Lazy) != null)
-            bd.setBeanClass(clazz)
+            bd.lazyInit = clazz.getAnnotation(Lazy) != null
+            bd.beanClass = clazz
         }
-        bd.setScope(singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE)
+        bd.scope = singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE
         if (parentName != null) {
-            bd.setParentName(parentName)
+            bd.parentName = parentName
         }
         wrapper = new BeanWrapperImpl(bd)
         return bd
@@ -241,41 +241,41 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
 
     BeanConfiguration addProperty(String propertyName, Object propertyValue) {
         if (propertyValue instanceof BeanConfiguration) {
-            propertyValue = ((BeanConfiguration) propertyValue).getBeanDefinition()
+            propertyValue = propertyValue.beanDefinition
         }
         getBeanDefinition()
-            .getPropertyValues()
+            .propertyValues
             .addPropertyValue(propertyName, propertyValue)
 
         return this
     }
 
     BeanConfiguration setDestroyMethod(String methodName) {
-        getBeanDefinition().setDestroyMethodName(methodName)
+        getBeanDefinition().destroyMethodName = methodName
         return this
     }
 
     BeanConfiguration setDependsOn(String[] dependsOn) {
-        getBeanDefinition().setDependsOn(dependsOn)
+        getBeanDefinition().dependsOn = dependsOn
         return this
     }
 
     BeanConfiguration setFactoryBean(String beanName) {
-        getBeanDefinition().setFactoryBeanName(beanName)
+        getBeanDefinition().factoryBeanName = beanName
         return this
     }
 
     BeanConfiguration setFactoryMethod(String methodName) {
-        getBeanDefinition().setFactoryMethodName(methodName)
+        getBeanDefinition().factoryMethodName = methodName
         return this
     }
 
     BeanConfiguration setAutowire(String type) {
-        if ('byName'.equals(type)) {
-            getBeanDefinition().setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME)
+        if (type == 'byName') {
+            getBeanDefinition().autowireMode = AbstractBeanDefinition.AUTOWIRE_BY_NAME
         }
-        else if ('byType'.equals(type)) {
-            getBeanDefinition().setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE)
+        else if (type == 'byType') {
+            getBeanDefinition().autowireMode = AbstractBeanDefinition.AUTOWIRE_BY_TYPE
         }
         return this
     }
@@ -285,26 +285,20 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
     }
 
     Object getPropertyValue(String propName) {
-        PropertyValue propertyValue = getBeanDefinition()
-            .getPropertyValues()
-            .getPropertyValue(propName)
-        if (propertyValue == null) {
-            return null
-        }
-
-        return propertyValue.getValue()
+        PropertyValue propertyValue = getBeanDefinition().propertyValues.getPropertyValue(propName)
+        return propertyValue?.value
     }
 
     boolean hasProperty(String propName) {
-        return getBeanDefinition().getPropertyValues().contains(propName)
+        return getBeanDefinition().propertyValues.contains(propName)
     }
 
     void setPropertyValue(String property, Object newValue) {
-        getBeanDefinition().getPropertyValues().addPropertyValue(property, newValue)
+        getBeanDefinition().propertyValues.addPropertyValue(property, newValue)
     }
 
     BeanConfiguration setAbstract(boolean isAbstract) {
-        getBeanDefinition().setAbstract(isAbstract)
+        getBeanDefinition().abstract = isAbstract
         return this
     }
 
@@ -312,15 +306,15 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
         Assert.notNull(obj, 'Parent bean cannot be set to a null runtime bean reference!')
 
         if (obj instanceof String) {
-            parentName = (String) obj
+            parentName = obj
         }
         else if (obj instanceof RuntimeBeanReference) {
-            parentName = ((RuntimeBeanReference) obj).getBeanName()
+            parentName = obj.beanName
         }
         else if (obj instanceof BeanConfiguration) {
-            parentName = ((BeanConfiguration) obj).getName()
+            parentName = obj.name
         }
-        getBeanDefinition().setParentName(parentName)
+        getBeanDefinition().parentName = parentName
         setAbstract(false)
     }
 
