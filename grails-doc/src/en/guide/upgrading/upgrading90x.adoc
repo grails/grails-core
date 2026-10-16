@@ -177,12 +177,11 @@ settings, and what Jackson applies to a bean, such as `@JsonIgnore`, `@JsonInclu
 `includes` and `excludes` apply to them. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
 subclasses and per-type mapper registrations keep their configured behavior and precedence.
 
-The one difference from the mapper's own rendering is a value that leads back to an object still being
-written, whether a domain object, such as an embedded value that points at its owner, or a plain bean. The mapper
-writes a reference of the id of a domain object, and fails on a cycle of beans, as it does in a plain Spring MVC
-controller; a response writes what the legacy converter writes: `{"_ref": "..", "class": "..."}` by default, or as
-`grails.converters.json.circular.reference.behaviour` selects. With `IGNORE`, the property is written
-as `null` where the legacy converter left its name without a value.
+A domain object that leads back to itself while it is being written, such as an embedded value that points at its owner,
+is written as `{"_ref": "..", "class": "..."}` by default, or as `grails.converters.json.circular.reference.behaviour`
+selects, by the mapper as well as by a response and the converter. With `IGNORE`, the property is written as `null` where the
+legacy converter left its name without a value. A plain bean that leads back to itself is written the same way by a response
+and by the converter, and fails on the mapper, as it does in a plain Spring MVC controller.
 
 Boot's shared mapper is not given the Grails domain serializer unless `grails.converters.json.domain.jackson.enabled`
 is set, so plain Spring `@RestController` responses retain Jackson's normal domain property model. Both mappers serialize Groovy `GString`

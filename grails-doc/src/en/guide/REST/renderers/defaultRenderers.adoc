@@ -135,8 +135,8 @@ serializer, which Grails shapes to the domain class:
 version, which are written when they apply. The version and the class name are written when
 `grails.converters.json.domain.include.version` and `grails.converters.json.domain.include.class` are `true`.
 * An associated domain class instance is written as a reference of its id, or in full when
-`grails.converters.json.default.deep` is `true` (or within `JSON.use('deep') { }` for the converter). Rendering deep, an
-instance that is already being written further up is written as a reference.
+`grails.converters.json.default.deep` is `true` (or within `JSON.use('deep') { }` for the converter). An instance that is
+reached again while it is being written is written as `grails.converters.json.circular.reference.behaviour` selects.
 * A proxy is written as the instance it proxies, and a reference to a proxy is written from its identifier, without
 loading it.
 * What Jackson applies to any bean applies to the instance: `@JsonIgnore`, `@JsonIgnoreProperties` and write-only

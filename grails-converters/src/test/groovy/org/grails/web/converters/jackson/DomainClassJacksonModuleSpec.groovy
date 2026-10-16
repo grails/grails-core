@@ -111,6 +111,26 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper.writeValueAsString(first) == '{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":{"id":1}}}'
     }
 
+    void "an instance reached again is written as the circular reference behaviour selects, whichever mapper writes it"() {
+        given:
+        grailsApplication.config.setAt('grails.converters.json.default.deep', true)
+        grailsApplication.config.setAt('grails.converters.json.circular.reference.behaviour', behaviour)
+        def first = new Partner(name: 'first')
+        first.id = 1
+        def second = new Partner(name: 'second', partner: first)
+        second.id = 2
+        first.partner = second
+
+        expect:
+        mapper().writeValueAsString(first) == '{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":' + repeated + '}}'
+
+        where:
+        behaviour     || repeated
+        'DEFAULT'     || '{"_ref":"..","class":"' + Partner.name + '"}'
+        'PATH'        || '{"class":"' + Partner.name + '","ref":"root"}'
+        'INSERT_NULL' || 'null'
+    }
+
     void "a proxy is written as the instance it proxies, and a reference to one from its identifier, without loading it"() {
         given:
         def proxyHandler = new WriterProxyHandler()

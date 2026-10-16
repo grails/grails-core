@@ -193,10 +193,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
         DefaultConverterConfiguration<JSON> cfg = new DefaultConverterConfiguration<>(marshallers, proxyHandler);
         cfg.setEncoding(grailsConfig.getProperty(SETTING_CONVERTERS_ENCODING, "UTF-8"));
-        String defaultCirRefBehaviour = grailsConfig.getProperty(SETTING_CONVERTERS_CIRCULAR_REFERENCE_BEHAVIOUR, "DEFAULT");
-        cfg.setCircularReferenceBehaviour(Converter.CircularReferenceBehaviour.valueOf(
-                grailsConfig.getProperty(SETTING_CONVERTERS_JSON_CIRCULAR_REFERENCE_BEHAVIOUR, String.class,
-                      defaultCirRefBehaviour, Converter.CircularReferenceBehaviour.allowedValues())));
+        cfg.setCircularReferenceBehaviour(jsonCircularReferenceBehaviour(grailsConfig));
 
         Boolean defaultPrettyPrint = grailsConfig.getProperty(SETTING_CONVERTERS_PRETTY_PRINT, Boolean.class, false);
         Boolean prettyPrint = grailsConfig.getProperty(SETTING_CONVERTERS_JSON_PRETTY_PRINT, Boolean.class, defaultPrettyPrint);
@@ -317,25 +314,25 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
      * @since 9.0
      */
     public static DomainClassRendering jsonDomainClassRendering(GrailsApplication grailsApplication, ProxyHandler proxyHandler) {
-        return jsonDomainClassRendering(grailsApplication, proxyHandler, null);
-    }
-
-    /**
-     * As {@link #jsonDomainClassRendering(GrailsApplication, ProxyHandler)}, writing what a circular reference behaviour
-     * selects for an instance that is reached again while it is being written, rather than a reference of its id.
-     *
-     * @param grailsApplication the application
-     * @param proxyHandler unwraps proxied domain class instances
-     * @param circularReferenceBehaviour the behaviour, or {@code null} for a reference of the instance's id
-     * @return the rendering
-     * @since 9.0
-     */
-    public static DomainClassRendering jsonDomainClassRendering(GrailsApplication grailsApplication, ProxyHandler proxyHandler,
-            CircularReferenceBehaviour circularReferenceBehaviour) {
         Config config = grailsApplication != null ? grailsApplication.getConfig() : new PropertySourcesConfig();
         return new DomainClassRendering(grailsApplication, proxyHandler, includeDomainVersionProperty(config, "json"),
                 includeDomainClassProperty(config, "json"), config.getProperty(SETTING_CONVERTERS_JSON_DEFAULT_DEEP, Boolean.class, false),
-                circularReferenceBehaviour);
+                jsonCircularReferenceBehaviour(config));
+    }
+
+    /**
+     * What the JSON converter writes for an object that is reached again while it is being written:
+     * {@code grails.converters.json.circular.reference.behaviour}, else {@code grails.converters.default.circular.reference.behaviour},
+     * else {@code DEFAULT}.
+     *
+     * @param config the application's configuration
+     * @return the behaviour
+     * @since 9.0
+     */
+    public static CircularReferenceBehaviour jsonCircularReferenceBehaviour(Config config) {
+        String fallback = config.getProperty(SETTING_CONVERTERS_CIRCULAR_REFERENCE_BEHAVIOUR, "DEFAULT");
+        return CircularReferenceBehaviour.valueOf(config.getProperty(SETTING_CONVERTERS_JSON_CIRCULAR_REFERENCE_BEHAVIOUR,
+                String.class, fallback, CircularReferenceBehaviour.allowedValues()));
     }
 
     private static boolean includeDomainVersionProperty(Config grailsConfig, String converterType) {

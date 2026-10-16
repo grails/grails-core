@@ -31,7 +31,6 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.validation.Errors;
 
-import grails.config.Config;
 import grails.core.GrailsApplication;
 import grails.core.support.proxy.DefaultProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
@@ -63,15 +62,8 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
     }
 
     private CircularReferenceBehaviour circularReferenceBehaviour() {
-        if (this.grailsApplication == null) {
-            return CircularReferenceBehaviour.DEFAULT;
-        }
-        Config config = this.grailsApplication.getConfig();
-        String fallback = config.getProperty(
-                ConvertersConfigurationInitializer.SETTING_CONVERTERS_CIRCULAR_REFERENCE_BEHAVIOUR, "DEFAULT");
-        return CircularReferenceBehaviour.valueOf(config.getProperty(
-                ConvertersConfigurationInitializer.SETTING_CONVERTERS_JSON_CIRCULAR_REFERENCE_BEHAVIOUR, String.class,
-                fallback, CircularReferenceBehaviour.allowedValues()));
+        return this.grailsApplication == null ? CircularReferenceBehaviour.DEFAULT :
+                ConvertersConfigurationInitializer.jsonCircularReferenceBehaviour(this.grailsApplication.getConfig());
     }
 
     @Override
@@ -107,7 +99,7 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
         // The module the application's own mapper may have too, with this rendering: a response also honours the
         // circular reference behaviour of the JSON converter, which a plain Spring MVC response does not
         builder.addModule(new DomainClassJacksonModule(() -> ConvertersConfigurationInitializer.jsonDomainClassRendering(
-                this.grailsApplication, this.proxyHandler, circularReferenceBehaviour())));
+                this.grailsApplication, this.proxyHandler)));
         SimpleModule module = new SimpleModule("grails-domain-json");
         // Do not change Errors returned from plain Spring MVC controllers.
         module.addSerializer(Errors.class, new SpringErrorsJsonSerializer(
