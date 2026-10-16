@@ -231,7 +231,7 @@ class StreamByteBuffer {
     }
 
     void retainAfterReadingMode() {
-        setReadMode(ReadMode.RETAIN_AFTER_READING)
+        readMode = ReadMode.RETAIN_AFTER_READING
     }
 
     class StreamByteBufferChunk {

@@ -77,13 +77,13 @@ class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrappedWrite
 
     void setTarget(Writer wrapped) {
         if (wrapped instanceof GrailsPrintWriter) {
-            this.target = ((GrailsPrintWriter) wrapped)
+            this.target = wrapped
         }
         else {
             this.target = new GrailsPrintWriter(wrapped)
         }
         this.@out = this.target
-        this.@lock = this.@out != null ? this.@out : this
+        this.@lock = this.@out ?: this
     }
 
     boolean isAllowUnwrappingOut() {
@@ -301,11 +301,11 @@ class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrappedWrite
     }
 
     boolean isUsed() {
-        return target.isUsed()
+        return target.used
     }
 
     void setUsed(boolean newUsed) {
-        target.setUsed(newUsed)
+        target.used = newUsed
     }
 
     boolean resetUsed() {
@@ -322,7 +322,7 @@ class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrappedWrite
     }
 
     protected boolean isTrouble() {
-        return target.isTrouble()
+        return target.trouble
     }
 
     protected void handleIOException(IOException e) {

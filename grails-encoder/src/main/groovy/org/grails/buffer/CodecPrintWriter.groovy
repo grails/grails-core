@@ -43,12 +43,12 @@ class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware, Encode
         super(null)
         this.encoder = encoder
         buffer = new StreamCharBuffer()
-        buffer.setNotifyParentBuffersEnabled(false)
+        buffer.notifyParentBuffersEnabled = false
         this.@allowUnwrappingOut = false
         buffer.connectTo(out, false)
         if (out instanceof EncodedAppenderFactory) {
-            buffer.setWriteDirectlyToConnectedMinSize(0)
-            buffer.setChunkMinSize(0)
+            buffer.writeDirectlyToConnectedMinSize = 0
+            buffer.chunkMinSize = 0
         }
         setOut(buffer.getWriterForEncoder(encoder, encodingStateRegistry, ignoreEncodingState))
     }
@@ -58,8 +58,8 @@ class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware, Encode
     }
 
     EncodedAppender getEncodedAppender() {
-        EncodedAppender encodedAppender = ((EncodedAppenderFactory) buffer.getWriter()).getEncodedAppender()
-        encodedAppender.setIgnoreEncodingState(ignoreEncodingState)
+        EncodedAppender encodedAppender = ((EncodedAppenderFactory) buffer.writer).encodedAppender
+        encodedAppender.ignoreEncodingState = ignoreEncodingState
         return encodedAppender
     }
 

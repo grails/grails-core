@@ -83,7 +83,7 @@ class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     @Override
     boolean isAllowUnwrappingOut() {
-        return destinationActivated ? super.isAllowUnwrappingOut() : false
+        return destinationActivated && super.isAllowUnwrappingOut()
     }
 
     @Override
@@ -98,7 +98,7 @@ class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     @Override
     void close() {
-        if (!isBlockClose() && isDestinationActivated()) {
+        if (!blockClose && destinationActivated) {
             super.close()
         }
     }
@@ -255,7 +255,7 @@ class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     @Override
     void flush() {
-        if (!isBlockFlush() && isDestinationActivated()) {
+        if (!blockFlush && destinationActivated) {
             super.flush()
         }
     }
