@@ -113,6 +113,64 @@ class DefaultJsonRendererSpec extends Specification {
         log.contains('Spring JSON rendering is enabled but no MVC message converters are available; using legacy JSON.')
     }
 
+    void 'the missing converters warning is reported once for the renderers that share its flag'() {
+        given:
+        def shared = new java.util.concurrent.atomic.AtomicBoolean()
+        def renderers = (1..2).collect {
+            new DefaultJsonRenderer<Object>(Object).tap {
+                useSpringJson = true
+                missingConvertersReported = shared
+            }
+        }
+
+        when:
+        String log = stderrWhile {
+            renderers.each { it.render([title: 'Grails'], new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest())) }
+        }
+
+        then:
+        log.readLines().count { it.contains('no MVC message converters are available') } == 1
+    }
+
+    void 'a ProblemDetail with no MVC converters names why the legacy converter wrote it'() {
+        given:
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        String log = stderrWhile {
+            renderer.render(org.springframework.http.ProblemDetail.forStatus(409), new ServletRenderContext(webRequest))
+        }
+
+        then:
+        log.contains("A ProblemDetail is written through Spring's message converters, but no Spring message converter writes")
+        log.contains('so the legacy JSON converter writes it as a bean')
+    }
+
+    void 'with Spring JSON on, a legacy fallback says why rather than asking for the setting again'() {
+        given: 'an application converter, which cannot apply a projection'
+        def converter = Mock(HttpMessageConverter) {
+            canWrite(ProjectionBody, MediaType.APPLICATION_JSON) >> true
+            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON]
+        }
+        def renderer = new DefaultJsonRenderer<ProjectionBody>(ProjectionBody)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConverters = [converter]
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        String log = stderrWhile {
+            renderer.render(new ProjectionBody(title: 'Included', hidden: true),
+                    new ServletRenderContext(webRequest, [includes: ['title']]))
+        }
+
+        then:
+        log.contains('Spring JSON rendering is enabled, but [' + ProjectionBody.name + '] is written by the legacy JSON converter')
+        log.contains('includes and excludes need the Grails JSON mapper')
+        !log.contains('set grails.web.rendering.json.spring=true')
+    }
+
     void 'unknown named JSON configurations have the same error as render json'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)

@@ -24,15 +24,18 @@ import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller
 
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import spock.lang.Specification
 
 /**
- * An application that customizes the legacy JSON converter keeps it for {@code respond}, so that
- * its responses do not change when Spring JSON conversion becomes the default.
+ * Grails 9 writes {@code respond} responses through the legacy JSON converter unless
+ * {@code grails.web.rendering.json.spring} is set, so the marshallers an application registers with
+ * that converter apply to them. Grails 10 changes the default.
  */
 class RespondJsonConverterSelectionSpec extends Specification implements ControllerUnitTest<JsonSelectionController> {
 
-    void 'a registered JSON marshaller keeps respond on the legacy converter'() {
+    void 'a registered JSON marshaller applies to respond by default'() {
         given:
         JSON.registerObjectMarshaller(JsonSelectionBody) { JsonSelectionBody body -> [legacy: body.title] }
         response.format = 'json'
@@ -47,15 +50,19 @@ class RespondJsonConverterSelectionSpec extends Specification implements Control
 
 class RespondJsonMarshallerRegistererSpec extends Specification implements ControllerUnitTest<JsonSelectionController> {
 
-    Closure doWithSpring() {{ ->
-        jsonSelectionMarshallerRegisterer(ObjectMarshallerRegisterer) {
-            converterClass = JSON
-            marshaller = new ClosureObjectMarshaller<JSON>(JsonSelectionBody,
-                    { JsonSelectionBody body -> [legacy: body.title] })
-        }
-    }}
+    @Configuration
+    static class MarshallerConfiguration {
 
-    void 'an ObjectMarshallerRegisterer bean keeps respond on the legacy converter'() {
+        @Bean
+        ObjectMarshallerRegisterer jsonSelectionMarshallerRegisterer() {
+            new ObjectMarshallerRegisterer(
+                    converterClass: JSON,
+                    marshaller: new ClosureObjectMarshaller<JSON>(JsonSelectionBody,
+                            { JsonSelectionBody body -> [legacy: body.title] }))
+        }
+    }
+
+    void 'an ObjectMarshallerRegisterer bean applies to respond by default'() {
         given:
         response.format = 'json'
 
@@ -73,7 +80,7 @@ class RespondLegacyJsonSettingSpec extends Specification implements ControllerUn
         config['grails.web.rendering.json.spring'] = false
     }}
 
-    void 'setting grails.web.rendering.json.spring to false keeps respond on the legacy converter'() {
+    void 'setting grails.web.rendering.json.spring to false writes respond through the legacy converter'() {
         given:
         response.format = 'json'
 

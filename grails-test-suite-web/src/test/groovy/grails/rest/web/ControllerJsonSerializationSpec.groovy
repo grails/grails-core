@@ -72,6 +72,11 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         JsonRenderer<JsonRendererBeanBody> jsonRendererBeanBodyRenderer() {
             new JsonRenderer<JsonRendererBeanBody>(JsonRendererBeanBody)
         }
+
+        @Bean
+        JsonRenderer<JsonRendererCredentials> jsonRendererCredentialsRenderer() {
+            new JsonRenderer<JsonRendererCredentials>(JsonRendererCredentials).tap { excludes = ['password'] }
+        }
     }
 
     void 'test mapper honors customizers from nested configuration classes'() {
@@ -206,6 +211,37 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json == [firstName: 'ADA']
     }
 
+    void 'an application JsonRenderer bean keeps its own excludes on the Spring path'() {
+        when:
+        controller.respond(new JsonRendererCredentials(user: 'ada', password: 's3cret'))
+
+        then:
+        response.json == [user: 'ada']
+    }
+
+    void 'a request includes overrides the excludes of a JsonRenderer bean only where the bean sets none'() {
+        when:
+        controller.respond(new JsonRendererCredentials(user: 'ada', password: 's3cret'), includes: ['user', 'password'])
+
+        then: 'the bean excludes still win, as they do on the legacy path'
+        response.json == [user: 'ada']
+    }
+
+    void 'a named configuration does not hide a problem'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('unused') {
+            it.serializer(JsonResponseBody, new UpperTitleSerializer())
+        }
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatus(409), jsonConfiguration: 'unused')
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+    }
+
     void 'render json without a name uses the default mapper'() {
         when:
         controller.render(json: [message: "Saved ${'Grails'}"])
@@ -290,6 +326,11 @@ class JsonNamingCustomizer implements JsonMapperBuilderCustomizer {
 
 class JsonRendererBeanBody {
     String firstName
+}
+
+class JsonRendererCredentials {
+    String user
+    String password
 }
 
 class UpperFirstNameSerializer extends ValueSerializer<JsonRendererBeanBody> {

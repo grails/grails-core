@@ -103,7 +103,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
      * reported once rather than for every response.
      */
     AtomicBoolean legacyFallbackReported = new AtomicBoolean()
-    private final AtomicBoolean missingConvertersReported = new AtomicBoolean()
+
+    /** Shared by the renderers of one registry, like {@link #legacyFallbackReported}. */
+    AtomicBoolean missingConvertersReported = new AtomicBoolean()
     List<HttpMessageConverter<?>> springHttpMessageConverters = []
 
     /**
@@ -167,7 +169,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
      */
     protected void renderJson(T object, RenderContext context) {
         String selectedConfiguration = context.arguments?.get('jsonConfiguration')?.toString()
-        if (selectedConfiguration) {
+        if (selectedConfiguration && !(object instanceof ProblemDetail)) {
             if (namedJsonRenderer == null || !namedJsonRenderer.contains(selectedConfiguration)) {
                 throw new IllegalArgumentException("Named JSON configuration [$selectedConfiguration] is not registered.")
             }
@@ -175,6 +177,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
                     context.includes, context.excludes)
             return
         }
+        String springFallbackReason = null
         if (object instanceof ProblemDetail || canUseSpringConverter(context)) {
             Object springValue = object
             if (object instanceof Errors) {
@@ -194,7 +197,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
                 }
                 context.setContentType(GrailsWebUtil.getContentType(PROBLEM_JSON.name, encoding))
             }
-            if (renderWithSpringConverter(springValue, mediaType, context)) {
+            springFallbackReason = writeWithSpringConverter(springValue, mediaType, context)
+            if (springFallbackReason == null) {
                 return
             }
             if (object instanceof Errors) {
@@ -204,11 +208,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             }
         }
 
-        if (legacyFallbackReported.compareAndSet(false, true)) {
-            log.warn('Legacy respond() JSON rendering is deprecated and will be removed in Grails 11. ' +
-                    'Migrate to Jackson serializers and set grails.web.rendering.json.spring=true. ' +
-                    'Spring JSON becomes the default in Grails 10.')
-        }
+        reportLegacyFallback(object, springFallbackReason)
         JSON converter
         String legacyConfiguration = selectedConfiguration ?: namedConfiguration
         if (legacyConfiguration) {
@@ -219,6 +219,41 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             converter = new JSON(object)
         }
         renderJson(converter, context)
+    }
+
+    private void reportLegacyFallback(Object object, String springFallbackReason) {
+        if (!legacyFallbackReported.compareAndSet(false, true)) {
+            return
+        }
+        if (object instanceof ProblemDetail && springFallbackReason != null) {
+            log.warn("A ProblemDetail is written through Spring's message converters, but ${springFallbackReason}, " +
+                    'so the legacy JSON converter writes it as a bean.')
+            return
+        }
+        if (useSpringJson == Boolean.TRUE) {
+            if (springFallbackReason != null || namedConfiguration) {
+                log.warn("Spring JSON rendering is enabled, but [${object?.getClass()?.name}] is written by the " +
+                        'legacy JSON converter, which is deprecated and will be removed in Grails 11, because ' +
+                        "${springFallbackReason ?: "this renderer uses the legacy named configuration [${namedConfiguration}]"}.")
+            }
+            return
+        }
+        log.warn('Legacy respond() JSON rendering is deprecated and will be removed in Grails 11. ' +
+                'Migrate to Jackson serializers and set grails.web.rendering.json.spring=true. ' +
+                'Spring JSON becomes the default in Grails 10.')
+    }
+
+    /**
+     * The includes the projection and the legacy converter apply. A subclass that carries its own
+     * includes returns them here, so both response paths honour them.
+     */
+    protected List<String> getEffectiveIncludes(RenderContext context) {
+        return context.includes
+    }
+
+    /** The excludes the projection and the legacy converter apply; see {@link #getEffectiveIncludes}. */
+    protected List<String> getEffectiveExcludes(RenderContext context) {
+        return context.excludes
     }
 
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
@@ -252,7 +287,10 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         return useSpringJson == Boolean.TRUE && resolveSpringHttpMessageConverters() && !namedConfiguration
     }
 
-    private boolean renderWithSpringConverter(Object object, MediaType mediaType, RenderContext context) {
+    /**
+     * @return {@code null} once the value is written, otherwise why the Spring converters could not write it
+     */
+    private String writeWithSpringConverter(Object object, MediaType mediaType, RenderContext context) {
         if (mediaType.type == 'text' && mediaType.subtype == 'json') {
             mediaType = MediaType.APPLICATION_JSON
         }
@@ -264,21 +302,23 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
                     }
         }
         if (converter == null) {
-            return false
+            return "no Spring message converter writes [${objectType.name}] as ${mediaType}"
         }
+        List<String> includes = getEffectiveIncludes(context)
+        List<String> excludes = getEffectiveExcludes(context)
 
         // Only adapt the standard converter. Application converter subclasses and per-type
         // mappers retain their own serialization contract.
         boolean grailsMapper = grailsJsonMapperCustomizer != null &&
                 converter.getClass() == JacksonJsonHttpMessageConverter &&
                 !((JacksonJsonHttpMessageConverter) converter).getMappersForType(objectType)
-        if ((context.includes || context.excludes) && !grailsMapper) {
+        if ((includes || excludes) && !grailsMapper) {
             // Only the Grails mapper applies a projection; the legacy converter applies it otherwise.
-            return false
+            return 'includes and excludes need the Grails JSON mapper, which the application\'s message converter replaces'
         }
         JsonProjection projection = null
         if (grailsMapper) {
-            projection = JsonProjection.of(object, context.includes, context.excludes)
+            projection = JsonProjection.of(object, includes, excludes)
             // Keep the source converter itself: its prefix, media types and charset are application
             // configuration. Only the value's JSON representation uses the isolated Grails mapper.
             object = new GrailsJsonValue(object, grailsJsonMapperCustomizer.forGrails(
@@ -306,7 +346,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             converter.write(object, contentType, message)
         }
         projection?.reportUnapplied()
-        return true
+        return null
     }
 
     private MimeType resolveMimeType(RenderContext context) {
@@ -315,8 +355,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     protected void renderJson(JSON converter, RenderContext context) {
-        converter.setExcludes(context.excludes)
-        converter.setIncludes(context.includes)
+        converter.setExcludes(getEffectiveExcludes(context))
+        converter.setIncludes(getEffectiveIncludes(context))
         converter.render(context.getWriter())
     }
 

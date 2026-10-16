@@ -100,6 +100,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     Boolean useSpringJson = false
 
     private final AtomicBoolean legacyJsonFallbackReported = new AtomicBoolean()
+    private final AtomicBoolean missingJsonConvertersReported = new AtomicBoolean()
 
     @PostConstruct
     void initialize() {
@@ -137,6 +138,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
      */
     private void configureJsonRenderer(DefaultJsonRenderer renderer) {
         renderer.legacyFallbackReported = legacyJsonFallbackReported
+        renderer.missingConvertersReported = missingJsonConvertersReported
         if (renderer.useSpringJson == null) {
             renderer.useSpringJson = useSpringJson
         }
