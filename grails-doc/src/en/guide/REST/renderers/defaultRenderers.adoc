@@ -116,8 +116,9 @@ Setting `grails.converters.json.date` to `javascript` renders `java.util.Date` v
 constructors instead. With `grails.converters.json.legacy` left `true`, the default in Grails 9, the converter renders
 JSON as Grails 8 did; the upgrade guide lists the differences.
 
-Parsing is not affected: `JSON.parse` and `request.JSON` parse with Grails' own parser, which also accepts JSON that
-strict parsers reject, such as single-quoted strings and comments.
+With `legacy` left `true`, `JSON.parse` and `request.JSON` parse with Grails' own parser, which also accepts JSON that
+strict parsers reject, such as single-quoted strings and comments. With `legacy` set to `false`, the application's
+Jackson mapper parses, and the `spring.jackson.parser.*` properties decide what it accepts.
 
 
 ==== Domain Classes and the JsonMapper

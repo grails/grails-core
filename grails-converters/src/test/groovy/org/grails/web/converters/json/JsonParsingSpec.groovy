@@ -26,9 +26,9 @@ import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 
 /**
- * {@code JSON.parse}, and so {@code request.JSON}, parse with Grails' own {@code JSONTokener}, which writing JSON through
- * Jackson does not change: the lenient syntax it accepts, the number types it returns and its {@code Map} and
- * {@code List} containers.
+ * With {@code grails.converters.json.legacy} left {@code true}, the default in Grails 9, {@code JSON.parse}, and so
+ * {@code request.JSON}, parse with Grails' own {@code JSONTokener}: the lenient syntax it accepts, the number types it
+ * returns and its {@code Map} and {@code List} containers. {@code JsonMapperParsingSpec} covers the other setting.
  */
 class JsonParsingSpec extends Specification {
 

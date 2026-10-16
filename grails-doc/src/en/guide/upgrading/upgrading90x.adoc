@@ -308,11 +308,15 @@ and `spring.jackson.*` properties apply to them. For example, `spring.jackson.ti
 values in that time zone, and converts `OffsetDateTime` and `ZonedDateTime` values to it. When the application context
 has no `JsonMapper`, or has several and none is primary, as in a unit test, a default `JsonMapper` is used.
 
-Parsing JSON does not change. `JSON.parse`, `request.JSON` and `new JSONObject(String)` parse with Grails' own
-`JSONTokener`, as before: they accept the same syntax beyond strict JSON (single quotes, comments, unquoted values,
-uppercase literals, trailing commas, `new Date(...)`), return the same number types (`Integer`, `Long`, `BigInteger`,
-`Double` or `BigDecimal`, depending on the number) and the same `JSONObject` and `JSONArray` containers, which implement
-`Map` and `List`.
+With the setting `false`, `JSON.parse` and `request.JSON` parse with the application's Jackson mapper. What they accept
+is what the mapper's parser features allow, so strict JSON by default, where Grails' own parser also accepts single quotes,
+comments, unquoted names and values, uppercase literals, trailing commas and `new Date(...)`. To accept some of that again,
+set the Jackson parser properties, for example `spring.jackson.parser.allow-comments`, `spring.jackson.parser.allow-single-quotes`
+or `spring.jackson.parser.allow-trailing-comma`; `new Date(...)` and the other forms Jackson has no feature for are no longer
+accepted. What comes back does not change: the same `JSONObject` and `JSONArray` containers, which implement `Map` and `List`,
+with the same number types (`Integer`, `Long`, `BigInteger`, `Double` or `BigDecimal`, depending on the number). With the
+setting `true`, the default in Grails 9, both parse with Grails' own `JSONTokener` as before. `new JSONObject(String)` and
+`new JSONArray(String)` always do, whatever the setting.
 
 With the setting `false`, the mapper writes every value, as Spring Boot writes it: collections, maps, arrays, records,
 `Optional` values, enums and beans, besides the single values above. The converter renders each value in them, so the

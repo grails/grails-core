@@ -359,7 +359,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * Parses the given JSON String and returns either a JSONObject or a JSONArray
+     * Parses the given JSON String and returns either a JSONObject or a JSONArray. With
+     * {@code grails.converters.json.legacy} set to {@code false}, the application's Jackson mapper parses it, and what it
+     * accepts is what its parser features allow, such as {@code spring.jackson.parser.allow-comments}; otherwise Grails'
+     * own parser does, which also accepts single quotes, comments, unquoted values and the like.
      *
      * @param source A string containing some JSON
      * @return either a JSONObject or a JSONArray - depending on the given JSON
@@ -367,7 +370,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      */
     public static JSONElement parse(String source) throws ConverterException {
         try {
-            final Object value = new JSONTokener(source).nextValue();
+            final Object value = ConvertersConfigurationHolder.isLegacyJson() ?
+                    new JSONTokener(source).nextValue() : ConvertersConfigurationHolder.getJsonMapperSupport().parse(source);
             if (value instanceof JSONElement) {
                 return (JSONElement) value;
             }

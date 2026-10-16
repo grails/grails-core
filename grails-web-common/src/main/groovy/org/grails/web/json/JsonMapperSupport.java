@@ -19,14 +19,19 @@
 package org.grails.web.json;
 
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.BaseStream;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -213,6 +218,76 @@ public final class JsonMapperSupport {
      */
     public void writeValue(JsonGenerator generator, Object value, Predicate<Object> nestedValueWriter) {
         NestedValueSerializer.write(generator, value, nestedValueWriter);
+    }
+
+    /**
+     * Parses JSON text with the mapper's own parser, so that the parser features the mapper is configured with decide what
+     * is accepted, such as comments or single quotes. Objects and arrays become the {@link JSONObject}s and
+     * {@link JSONArray}s that {@code grails.converters.JSON#parse} has always returned, with the number types it has
+     * always returned: an {@code Integer}, a {@code Long} or a {@code BigInteger} for an integer, and for a number with a
+     * fraction a {@code Double}, or a {@code BigDecimal} where a {@code Double} would not be the same number.
+     *
+     * @param text the JSON text, whose first value is parsed
+     * @return the value: a {@code JSONObject}, a {@code JSONArray}, a {@code String}, a number, a {@code Boolean} or
+     *         {@code null}
+     * @throws JSONException if the text is not JSON the mapper's parser accepts
+     * @since 9.0
+     */
+    public Object parse(String text) throws JSONException {
+        try (JsonParser parser = mapper.createParser(text)) {
+            JsonToken token = parser.nextToken();
+            if (token == null) {
+                throw new JSONException("A JSON text must have a value");
+            }
+            return readValue(parser, token);
+        }
+        catch (JacksonException e) {
+            throw new JSONException(e);
+        }
+    }
+
+    private static Object readValue(JsonParser parser, JsonToken token) {
+        switch (token) {
+            case START_OBJECT -> {
+                Map<String, Object> properties = new LinkedHashMap<>();
+                for (JsonToken next = parser.nextToken(); next == JsonToken.PROPERTY_NAME; next = parser.nextToken()) {
+                    String name = parser.currentName();
+                    properties.put(name, readValue(parser, parser.nextToken()));
+                }
+                return new JSONObject(properties);
+            }
+            case START_ARRAY -> {
+                List<Object> elements = new ArrayList<>();
+                for (JsonToken next = parser.nextToken(); next != JsonToken.END_ARRAY; next = parser.nextToken()) {
+                    if (next == null) {
+                        throw new JSONException("A JSON array must end with ']'");
+                    }
+                    elements.add(readValue(parser, next));
+                }
+                return new JSONArray(elements);
+            }
+            case VALUE_STRING -> {
+                return parser.getString();
+            }
+            case VALUE_NUMBER_INT -> {
+                return parser.getNumberValue();
+            }
+            case VALUE_NUMBER_FLOAT -> {
+                BigDecimal number = parser.getDecimalValue();
+                double doubleValue = number.doubleValue();
+                return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
+            }
+            case VALUE_TRUE -> {
+                return Boolean.TRUE;
+            }
+            case VALUE_FALSE -> {
+                return Boolean.FALSE;
+            }
+            case VALUE_NULL -> {
+                return null;
+            }
+            default -> throw new JSONException("Unexpected " + token + " in a JSON text");
+        }
     }
 
     /**
