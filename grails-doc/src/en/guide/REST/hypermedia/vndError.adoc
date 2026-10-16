@@ -17,16 +17,37 @@ specific language governing permissions and limitations
 under the License.
 ////
 
-https://github.com/blongden/vnd.error[Vnd.Error] is a legacy error response format. New applications
-should use the default RFC 9457 `application/problem+json` validation response.
+https://github.com/blongden/vnd.error[Vnd.Error] is a legacy error response format. Grails 9 keeps the
+`{"errors": [...]}` body it has always sent for validation errors, and Grails 10 sends an RFC 9457
+`application/problem+json` response instead.
 
-By default, when a validation error occurs while POSTing a new resource, `respond` sends the errors back as an
-RFC 9457 problem with a 422 response code:
+In Grails 9, when a validation error occurs while POSTing a new resource, `respond` sends the errors
+back as they were in Grails 8, with a 422 response code:
 
 [source,groovy]
 ----
 $ curl -i -H "Accept: application/json"  -H "Content-Type: application/json" -X POST -d "" http://localhost:8080/books
 
+HTTP/1.1 422
+Content-Type: application/json;charset=UTF-8
+
+{
+  "errors": [
+    {
+      "object": "rest.test.Book",
+      "field": "title",
+      "rejected-value": null,
+      "message": "Property [title] of class [class rest.test.Book] cannot be null"
+    }
+  ]
+}
+----
+
+With `grails.web.rendering.json.spring: true`, which is the default from Grails 10, `respond` sends the
+errors as an RFC 9457 problem instead, and new applications should use that response:
+
+[source,groovy]
+----
 HTTP/1.1 422
 Content-Type: application/problem+json;charset=UTF-8
 
@@ -50,8 +71,7 @@ Content-Type: application/problem+json;charset=UTF-8
 ----
 
 The `codes` list is shortened here; it holds every message code tried for the error, most specific first.
-An application that keeps the legacy JSON converter for `respond`, as the
-xref:upgrading#upgrading90x[upgrade guide] describes, receives the previous `{"errors": [...]}` body instead.
+The xref:upgrading#upgrading90x[upgrade guide] describes the setting.
 
 If a compatibility client requires Vnd.Error JSON, explicitly register the
 `grails.rest.render.errors.VndErrorJsonRenderer` bean in `grails-app/conf/spring/resources.groovy`:
