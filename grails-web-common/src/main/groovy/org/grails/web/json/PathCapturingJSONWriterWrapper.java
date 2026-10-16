@@ -368,7 +368,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
      * @deprecated the name is misspelled, use {@link #getCurrentStackReference()}
      */
     @Deprecated
-    public String getCurrentStackReference() {
+    public String getCurrentStrackReference() {
         return getCurrentStackReference();
     }
 }
