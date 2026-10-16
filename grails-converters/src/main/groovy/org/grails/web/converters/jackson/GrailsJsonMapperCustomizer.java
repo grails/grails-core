@@ -114,5 +114,6 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
                 () -> this.grailsApplication == null ? null : this.grailsApplication.getMainContext()));
         builder.addModule(module);
         builder.addModule(JsonProjection.module());
+        builder.addModule(new CircularReferenceModule(this::circularReferenceBehaviour));
     }
 }

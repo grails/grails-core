@@ -352,6 +352,56 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build())
     }
 
+    void 'a cycle made only of beans follows circular reference behaviour #behaviour'() {
+        given:
+        def first = new JacksonNode(name: 'first')
+        first.next = new JacksonNode(name: 'second', next: first)
+
+        expect:
+        def mapper = beanCycleMapper(behaviour)
+        def written = mapper.readValue(mapper.writeValueAsString(root ? [first] : first), Object)
+        (root ? written[0] : written).next.next == repeated
+
+        where:
+        behaviour     | root  || repeated
+        'DEFAULT'     | false || [_ref: '..', class: JacksonNode.name]
+        'DEFAULT'     | true  || [_ref: '..', class: JacksonNode.name]
+        'PATH'        | false || [ref: 'root', class: JacksonNode.name]
+        'PATH'        | true  || [ref: 'root[0]', class: JacksonNode.name]
+        'INSERT_NULL' | false || null
+        'IGNORE'      | false || null
+    }
+
+    void 'a bean that refers to itself fails when the behaviour is EXCEPTION'() {
+        given:
+        def node = new JacksonNode(name: 'self')
+        node.next = node
+
+        when:
+        beanCycleMapper('EXCEPTION').writeValueAsString(node)
+
+        then:
+        def e = thrown(tools.jackson.databind.DatabindException)
+        e.message.contains("Circular Reference detected: class ${JacksonNode.name}")
+    }
+
+    void 'a bean repeated outside its own value is written in full each time'() {
+        given:
+        def shared = new JacksonNode(name: 'shared')
+        def mapper = beanCycleMapper('DEFAULT')
+
+        expect:
+        mapper.readValue(mapper.writeValueAsString([shared, shared]), List) ==
+                [[name: 'shared', next: null], [name: 'shared', next: null]]
+    }
+
+    private static JsonMapper beanCycleMapper(String behaviour) {
+        def application = new DefaultGrailsApplication()
+        application.initialise()
+        application.config.setAt('grails.converters.json.circular.reference.behaviour', behaviour)
+        new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build())
+    }
+
     void 'the Grails mapper honours the Jackson annotations and naming strategy of a domain class'() {
         given:
         def mapping = new KeyValueMappingContext('annotated')
@@ -500,6 +550,11 @@ class UnwrapCountingProxyHandler extends DefaultProxyHandler implements EntityPr
 @Entity
 class SpecialJacksonBook extends JacksonBook {
     String edition
+}
+
+class JacksonNode {
+    String name
+    JacksonNode next
 }
 
 class JsonCommand {

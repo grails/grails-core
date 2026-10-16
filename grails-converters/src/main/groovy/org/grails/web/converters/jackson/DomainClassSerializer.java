@@ -491,11 +491,11 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
      * Where an instance being written started: the nesting depth of its JSON object, and its path from the root in the
      * form the JSON converter's {@code PATH} circular reference behaviour writes.
      */
-    private record Frame(int depth, String path) {
+    record Frame(int depth, String path) {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<Object, Frame> renderingInstances(SerializationContext ctxt) {
+    static Map<Object, Frame> renderingInstances(SerializationContext ctxt) {
         Map<Object, Frame> instances = (Map<Object, Frame>) ctxt.getAttribute(RENDERING_INSTANCES);
         if (instances == null) {
             instances = new IdentityHashMap<>();
@@ -519,7 +519,7 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
     }
 
     /** Writes what the JSON converter writes for the circular reference behaviour that is configured. */
-    private static void writeCircularReference(Object value, Frame enclosing, JsonGenerator gen,
+    static void writeCircularReference(Object value, Frame enclosing, JsonGenerator gen,
             CircularReferenceBehaviour behaviour) {
         String type = value.getClass().getName();
         switch (behaviour) {
