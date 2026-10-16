@@ -61,7 +61,7 @@ class JsonReader extends AbstractBsonReader {
     JsonReader(final Reader reader) {
         super()
         scanner = new JsonScanner(reader)
-        setContext(new Context(null, BsonContextType.TOP_LEVEL))
+        context = new Context(null, BsonContextType.TOP_LEVEL)
     }
 
     @Override
@@ -71,12 +71,12 @@ class JsonReader extends AbstractBsonReader {
 
     @Override
     protected byte doPeekBinarySubType() {
-        return doReadBinaryData().getType()
+        return doReadBinaryData().type
     }
 
     @Override
     protected int doPeekBinarySize() {
-        return doReadBinaryData().getData().length
+        return doReadBinaryData().data.length
     }
 
     @Override
@@ -86,90 +86,90 @@ class JsonReader extends AbstractBsonReader {
 
     @Override
     BsonType readBsonType() {
-        if (isClosed()) {
+        if (closed) {
             throw new IllegalStateException('This instance has been closed')
         }
-        if (getState() == State.INITIAL || getState() == State.DONE || getState() == State.SCOPE_DOCUMENT) {
+        if (state == State.INITIAL || state == State.DONE || state == State.SCOPE_DOCUMENT) {
             // in JSON the top level value can be of any type so fall through
-            setState(State.TYPE)
+            state = State.TYPE
         }
-        if (getState() != State.TYPE) {
+        if (state != State.TYPE) {
             throwInvalidState('readBSONType', State.TYPE)
         }
 
-        if (getContext().getContextType() == BsonContextType.DOCUMENT) {
+        if (context.contextType == BsonContextType.DOCUMENT) {
             JsonToken nameToken = popToken()
-            switch (nameToken.getType()) {
+            switch (nameToken.type) {
                 case JsonTokenType.STRING:
                 case JsonTokenType.UNQUOTED_STRING:
-                    setCurrentName(nameToken.getValue(String))
+                    currentName = nameToken.getValue(String)
                     break
                 case JsonTokenType.END_OBJECT:
-                    setState(State.END_OF_DOCUMENT)
+                    state = State.END_OF_DOCUMENT
                     return BsonType.END_OF_DOCUMENT
                 default:
-                    throw new JsonParseException("JSON reader was expecting a name but found '%s'.", nameToken.getValue())
+                    throw new JsonParseException("JSON reader was expecting a name but found '%s'.", nameToken.value)
             }
 
             JsonToken colonToken = popToken()
-            if (colonToken.getType() != JsonTokenType.COLON) {
-                throw new JsonParseException("JSON reader was expecting ':' but found '%s'.", colonToken.getValue())
+            if (colonToken.type != JsonTokenType.COLON) {
+                throw new JsonParseException("JSON reader was expecting ':' but found '%s'.", colonToken.value)
             }
         }
 
         JsonToken token = popToken()
-        if (getContext().getContextType() == BsonContextType.ARRAY && token.getType() == JsonTokenType.END_ARRAY) {
-            setState(State.END_OF_ARRAY)
+        if (context.contextType == BsonContextType.ARRAY && token.type == JsonTokenType.END_ARRAY) {
+            state = State.END_OF_ARRAY
             return BsonType.END_OF_DOCUMENT
         }
 
         boolean noValueFound = false
-        switch (token.getType()) {
+        switch (token.type) {
             case JsonTokenType.BEGIN_ARRAY:
-                setCurrentBsonType(BsonType.ARRAY)
+                currentBsonType = BsonType.ARRAY
                 break
             case JsonTokenType.BEGIN_OBJECT:
                 visitExtendedJSON()
                 break
             case JsonTokenType.DOUBLE:
-                setCurrentBsonType(BsonType.DOUBLE)
-                currentValue = token.getValue()
+                currentBsonType = BsonType.DOUBLE
+                currentValue = token.value
                 break
             case JsonTokenType.END_OF_FILE:
-                setCurrentBsonType(BsonType.END_OF_DOCUMENT)
+                currentBsonType = BsonType.END_OF_DOCUMENT
                 break
             case JsonTokenType.INT32:
-                setCurrentBsonType(BsonType.INT32)
-                currentValue = token.getValue()
+                currentBsonType = BsonType.INT32
+                currentValue = token.value
                 break
             case JsonTokenType.INT64:
-                setCurrentBsonType(BsonType.INT64)
-                currentValue = token.getValue()
+                currentBsonType = BsonType.INT64
+                currentValue = token.value
                 break
             case JsonTokenType.REGULAR_EXPRESSION:
-                setCurrentBsonType(BsonType.REGULAR_EXPRESSION)
-                currentValue = token.getValue()
+                currentBsonType = BsonType.REGULAR_EXPRESSION
+                currentValue = token.value
                 break
             case JsonTokenType.STRING:
-                setCurrentBsonType(BsonType.STRING)
-                currentValue = token.getValue()
+                currentBsonType = BsonType.STRING
+                currentValue = token.value
                 break
             case JsonTokenType.UNQUOTED_STRING:
                 String value = token.getValue(String)
 
                 if (JsonToken.BOOLEAN_FALSE == value || JsonToken.BOOLEAN_TRUE == value) {
-                    setCurrentBsonType(BsonType.BOOLEAN)
+                    currentBsonType = BsonType.BOOLEAN
                     currentValue = Boolean.parseBoolean(value)
                 } else if ('Infinity' == value) {
-                    setCurrentBsonType(BsonType.DOUBLE)
+                    currentBsonType = BsonType.DOUBLE
                     currentValue = Double.POSITIVE_INFINITY
                 } else if ('NaN' == value) {
-                    setCurrentBsonType(BsonType.DOUBLE)
+                    currentBsonType = BsonType.DOUBLE
                     currentValue = Double.NaN
                 } else if (JsonToken.NULL == value) {
-                    setCurrentBsonType(BsonType.NULL)
+                    currentBsonType = BsonType.NULL
                 } else if ('undefined' == value) {
-                    setCurrentBsonType(BsonType.UNDEFINED)
+                    currentBsonType = BsonType.UNDEFINED
                 } else {
                     noValueFound = true
                 }
@@ -179,28 +179,28 @@ class JsonReader extends AbstractBsonReader {
                 break
         }
         if (noValueFound) {
-            throw new JsonParseException("JSON reader was expecting a value but found '%s'.", token.getValue())
+            throw new JsonParseException("JSON reader was expecting a value but found '%s'.", token.value)
         }
 
-        if (getContext().getContextType() == BsonContextType.ARRAY || getContext().getContextType() == BsonContextType.DOCUMENT) {
+        if (context.contextType == BsonContextType.ARRAY || context.contextType == BsonContextType.DOCUMENT) {
             JsonToken commaToken = popToken()
-            if (commaToken.getType() != JsonTokenType.COMMA) {
+            if (commaToken.type != JsonTokenType.COMMA) {
                 pushToken(commaToken)
             }
         }
 
-        switch (getContext().getContextType()) {
+        switch (context.contextType) {
             case BsonContextType.ARRAY:
             case BsonContextType.JAVASCRIPT_WITH_SCOPE:
             case BsonContextType.TOP_LEVEL:
-                setState(State.VALUE)
+                state = State.VALUE
                 break
             default:
                 // DOCUMENT, SCOPE_DOCUMENT and anything else
-                setState(State.NAME)
+                state = State.NAME
                 break
         }
-        return getCurrentBsonType()
+        return currentBsonType
     }
 
     @Override
@@ -215,11 +215,11 @@ class JsonReader extends AbstractBsonReader {
 
     @Override
     protected void doReadEndArray() {
-        setContext(getContext().getParentContext())
+        context = context.parentContext
 
-        if (getContext().getContextType() == BsonContextType.ARRAY || getContext().getContextType() == BsonContextType.DOCUMENT) {
+        if (context.contextType == BsonContextType.ARRAY || context.contextType == BsonContextType.DOCUMENT) {
             JsonToken commaToken = popToken()
-            if (commaToken.getType() != JsonTokenType.COMMA) {
+            if (commaToken.type != JsonTokenType.COMMA) {
                 pushToken(commaToken)
             }
         }
@@ -227,19 +227,19 @@ class JsonReader extends AbstractBsonReader {
 
     @Override
     protected void doReadEndDocument() {
-        setContext(getContext().getParentContext())
-        if (getContext() != null && getContext().getContextType() == BsonContextType.SCOPE_DOCUMENT) {
-            setContext(getContext().getParentContext()) // JavaScriptWithScope
+        context = context.parentContext
+        if (context != null && context.contextType == BsonContextType.SCOPE_DOCUMENT) {
+            context = context.parentContext // JavaScriptWithScope
             verifyToken(JsonToken.CLOSE_BRACE) // outermost closing bracket for JavaScriptWithScope
         }
 
-        if (getContext() == null) {
+        if (context == null) {
             throw new JsonParseException('Unexpected end of document.')
         }
 
-        if (getContext().getContextType() == BsonContextType.ARRAY || getContext().getContextType() == BsonContextType.DOCUMENT) {
+        if (context.contextType == BsonContextType.ARRAY || context.contextType == BsonContextType.DOCUMENT) {
             JsonToken commaToken = popToken()
-            if (commaToken.getType() != JsonTokenType.COMMA) {
+            if (commaToken.type != JsonTokenType.COMMA) {
                 pushToken(commaToken)
             }
         }
@@ -302,12 +302,12 @@ class JsonReader extends AbstractBsonReader {
 
     @Override
     protected void doReadStartArray() {
-        setContext(new Context(getContext(), BsonContextType.ARRAY))
+        context = new Context(context, BsonContextType.ARRAY)
     }
 
     @Override
     protected void doReadStartDocument() {
-        setContext(new Context(getContext(), BsonContextType.DOCUMENT))
+        context = new Context(context, BsonContextType.DOCUMENT)
     }
 
     @Override
@@ -337,7 +337,7 @@ class JsonReader extends AbstractBsonReader {
 
     @Override
     protected void doSkipValue() {
-        switch (getCurrentBsonType()) {
+        switch (currentBsonType) {
             case BsonType.ARRAY:
                 readStartArray()
                 while (readBsonType() != BsonType.END_OF_DOCUMENT) {
@@ -427,7 +427,7 @@ class JsonReader extends AbstractBsonReader {
         try {
             return scanner.nextToken()
         } catch (IOException e) {
-            throw new JsonParseException('Cannot parse JSON due to IO error: ' + e.getMessage(), e)
+            throw new JsonParseException('Cannot parse JSON due to IO error: ' + e.message, e)
         }
     }
 
@@ -444,8 +444,8 @@ class JsonReader extends AbstractBsonReader {
             throw new IllegalArgumentException("Can't be null")
         }
         JsonToken token = popToken()
-        if (!expected.equals(token.getValue())) {
-            throw new JsonParseException("JSON reader expected '%s' but found '%s'.", expected, token.getValue())
+        if (!expected.equals(token.value)) {
+            throw new JsonParseException("JSON reader expected '%s' but found '%s'.", expected, token.value)
         }
     }
 
@@ -453,7 +453,7 @@ class JsonReader extends AbstractBsonReader {
         JsonToken nameToken = popToken()
 
         pushToken(nameToken)
-        setCurrentBsonType(BsonType.DOCUMENT)
+        currentBsonType = BsonType.DOCUMENT
     }
 
     @Override
@@ -497,9 +497,9 @@ class JsonReader extends AbstractBsonReader {
             try {
                 JsonReader.this.scanner.reader.reset()
             } catch (IOException e) {
-                throw new JsonParseException('Failed to reset reader: ' + e.getMessage(), e)
+                throw new JsonParseException('Failed to reset reader: ' + e.message, e)
             }
-            JsonReader.this.resetContext(getParentContext(), getContextType())
+            JsonReader.this.resetContext(parentContext, contextType)
         }
 
     }

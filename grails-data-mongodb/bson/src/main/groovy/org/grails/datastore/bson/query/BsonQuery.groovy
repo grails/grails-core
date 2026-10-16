@@ -120,18 +120,18 @@ abstract class BsonQuery extends Query {
     private static final String THIS_PREFIX = 'this.'
     /** Matches MongoDB's own document nesting limit, so no value the server would accept is refused. */
     private static final int MAX_CRITERION_VALUE_DEPTH = 100
-    protected static Map<Class, QueryHandler> queryHandlers = new HashMap<>()
-    protected static Map<String, OperatorHandler> operatorHandlers = new HashMap<>()
-    protected static Map<Class, ProjectionHandler> groupByProjectionHandlers = new HashMap<>()
+    protected static Map<Class, QueryHandler> queryHandlers = [:]
+    protected static Map<String, OperatorHandler> operatorHandlers = [:]
+    protected static Map<Class, ProjectionHandler> groupByProjectionHandlers = [:]
 
-    protected static Map<Class, ProjectionHandler> projectProjectionHandlers = new HashMap<>()
+    protected static Map<Class, ProjectionHandler> projectProjectionHandlers = [:]
 
     /**
      * Criterion types whose values are shapes or nested queries by design and are therefore not
      * subject to {@link #validateCriterionValues(Criterion, PersistentEntity)}. Subclasses register
      * their own exemptions here, the same way they register query handlers.
      */
-    protected static final Set<Class<? extends Criterion>> VALUE_VALIDATION_EXEMPT_CRITERIA = new HashSet<>()
+    protected static final Set<Class<? extends Criterion>> VALUE_VALIDATION_EXEMPT_CRITERIA = [] as Set
 
     static {
         VALUE_VALIDATION_EXEMPT_CRITERIA.add(SubqueryCriterion)
@@ -326,9 +326,9 @@ abstract class BsonQuery extends Query {
 
         queryHandlers.put(Negation, new QueryHandler<Negation>() {
             void handle(EmbeddedQueryEncoder queryEncoder, Negation criteria, Document query, PersistentEntity entity) {
-                List nor = new ArrayList()
+                List nor = []
                 query.put(NOR_OPERATOR, nor)
-                for (Criterion criterion : criteria.getCriteria()) {
+                for (Criterion criterion in criteria.getCriteria()) {
                     Document negatedQuery = new Document()
                     nor.add(negatedQuery)
                     if (criterion instanceof PropertyCriterion) {
@@ -540,7 +540,7 @@ abstract class BsonQuery extends Query {
 
     @PackageScope
     static List readArrayOfValues(BsonReader queryReader) {
-        List values = new ArrayList()
+        List values = []
         BsonType bsonType = queryReader.getCurrentBsonType()
         if (bsonType == BsonType.ARRAY) {
             queryReader.readStartArray()
@@ -800,7 +800,7 @@ abstract class BsonQuery extends Query {
     protected static List<Object> getInListQueryValues(PersistentEntity entity, In inCriterion) {
         List<Object> values = new ArrayList<Object>(inCriterion.getValues().size())
         final MappingContext mappingContext = entity.getMappingContext()
-        for (Object value : inCriterion.getValues()) {
+        for (Object value in inCriterion.getValues()) {
             if (mappingContext.isPersistentEntity(value)) {
                 PersistentEntity pe = mappingContext.getPersistentEntity(
                         value.getClass().getName())
@@ -987,7 +987,7 @@ abstract class BsonQuery extends Query {
     protected static void populateBsonQuery(final EmbeddedQueryEncoder queryEncoder, Document query, List<Criterion> criteria, final PersistentEntity entity) {
         // if a query combines more than 1 item, wrap the items in individual $and or $or arguments
         // so that property names can't clash (e.g. for an $and containing two $ors)
-        for (Criterion criterion : criteria) {
+        for (Criterion criterion in criteria) {
             validateCriterionValues(criterion, entity)
             final QueryHandler queryHandler = queryHandlers.get(criterion.getClass())
             if (queryHandler != null) {
@@ -1013,17 +1013,17 @@ abstract class BsonQuery extends Query {
     protected static void populateBsonQuery(final EmbeddedQueryEncoder queryEncoder, Document query, Junction criteria, final PersistentEntity entity) {
         List subList = null
         if (criteria instanceof Disjunction) {
-            subList = new ArrayList()
+            subList = []
             query.put(OR_OPERATOR, subList)
         } else if (criteria instanceof Conjunction) {
-            subList = new ArrayList()
+            subList = []
             query.put(AND_OPERATOR, subList)
         } else if (criteria instanceof Negation) {
-            subList = new ArrayList()
+            subList = []
             query.put(NOT_OPERATOR, new Document(OR_OPERATOR, subList))
         }
 
-        for (Criterion criterion : criteria.getCriteria()) {
+        for (Criterion criterion in criteria.getCriteria()) {
             validateCriterionValues(criterion, entity)
             final QueryHandler queryHandler = queryHandlers.get(criterion.getClass())
             if (queryHandler != null) {

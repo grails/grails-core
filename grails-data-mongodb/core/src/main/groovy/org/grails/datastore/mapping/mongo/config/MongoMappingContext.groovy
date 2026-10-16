@@ -126,7 +126,7 @@ class MongoMappingContext extends DocumentMappingContext {
     ])
 
     @PackageScope CodecRegistry codecRegistry
-    @PackageScope Map<Class, Boolean> hasCodecCache = new HashMap<>()
+    @PackageScope Map<Class, Boolean> hasCodecCache = [:]
 
     /**
      * Storage type applied to {@code String id} domains that declare no explicit
@@ -268,7 +268,7 @@ class MongoMappingContext extends DocumentMappingContext {
         codecs.add(new PeriodCodec())
         codecs.add(new ZonedDateTimeCodec())
 
-        for (Codec codec : codecList) {
+        for (Codec codec in codecList) {
             codecs.add(codec)
         }
 
@@ -341,7 +341,7 @@ class MongoMappingContext extends DocumentMappingContext {
             }
         })
 
-        for (Converter converter : CodecExtensions.getBsonConverters()) {
+        for (Converter converter in CodecExtensions.getBsonConverters()) {
             converterRegistry.addConverter(converter)
         }
 

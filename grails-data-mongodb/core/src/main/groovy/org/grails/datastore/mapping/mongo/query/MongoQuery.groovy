@@ -191,7 +191,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                 PersistentEntity idTarget = resolveIdCriterionTarget(entity, inCriterion.getProperty())
                 if (idTarget != null && MongoIdCoercion.resolveStoredAs(idTarget) != null) {
                     List<Object> coerced = new ArrayList<Object>(values.size())
-                    for (Object v : values) {
+                    for (Object v in values) {
                         coerced.add(MongoIdCoercion.coerceIdToStoredType(v, idTarget))
                     }
                     values = coerced
@@ -552,7 +552,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         List<Document> aggregationPipeline = aggregatePipeline.getAggregationPipeline()
         boolean singleResult = aggregatePipeline.isSingleResult()
         List<ProjectedProperty> projectedKeys = aggregatePipeline.getProjectedKeys()
-        List projectedResults = new ArrayList()
+        List projectedResults = []
 
         AggregateIterable<Document> aggregatedResults = mongoSession.aggregate(collection, aggregationPipeline)
         aggregatedResults = (AggregateIterable<Document>) setHint(aggregatedResults)
@@ -560,7 +560,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
         if (singleResult && aggregateCursor.hasNext()) {
             Document dbo = aggregateCursor.next()
-            for (ProjectedProperty projectedProperty : projectedKeys) {
+            for (ProjectedProperty projectedProperty in projectedKeys) {
                 Object value = dbo.get(projectedProperty.projectionKey)
                 PersistentProperty property = projectedProperty.property
                 if (value != null) {
@@ -650,7 +650,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
         if (!orderBy.isEmpty()) {
             Document orderObject = new Document()
-            for (Order order : orderBy) {
+            for (Order order in orderBy) {
                 String property = order.getProperty()
                 property = getPropertyName(entity, property)
                 orderObject.put(property, order.getDirection() == Order.Direction.DESC ? -1 : 1)
@@ -686,9 +686,9 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         Collection<PersistentEntity> childEntities = entity.getMappingContext().getChildEntities(entity)
         if (childEntities.size() > 0) {
             HashMap classValue = new HashMap()
-            ArrayList classes = new ArrayList()
+            ArrayList classes = []
             classes.add(entity.getDiscriminator())
-            for (PersistentEntity childEntity : childEntities) {
+            for (PersistentEntity childEntity in childEntities) {
                 classes.add(childEntity.getDiscriminator())
             }
             classValue.put(MONGO_IN_OPERATOR, classes)
@@ -737,14 +737,14 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         // so that property names can't clash (e.g. for an $and containing two $ors)
         if (criteria.getCriteria().size() > 1) {
             if (criteria instanceof Disjunction) {
-                subList = new ArrayList()
+                subList = []
                 query.put(OR_OPERATOR, subList)
             } else if (criteria instanceof Conjunction) {
-                subList = new ArrayList()
+                subList = []
                 query.put(AND_OPERATOR, subList)
             }
         }
-        for (Criterion criterion : criteria.getCriteria()) {
+        for (Criterion criterion in criteria.getCriteria()) {
             final QueryHandler queryHandler = queryHandlers.get(criterion.getClass())
             if (queryHandler != null) {
                 Document dbo = query
@@ -821,9 +821,9 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     private static PersistentEntity resolveIdCriterionTarget(PersistentEntity entity, String propertyName) {
         PersistentProperty property = entity.getPropertyByName(propertyName)
         if (property instanceof ToOne) {
-            return ((ToOne) property).getAssociatedEntity()
+            return property.getAssociatedEntity()
         }
-        if (entity.getIdentity() != null && entity.getIdentity().getName().equals(propertyName)) {
+        if (entity.getIdentity() != null && entity.getIdentity().getName() == propertyName) {
             return entity
         }
         return null
@@ -837,7 +837,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
      */
     @PackageScope
     static void prefixEmbeddedQuery(String prefix, Document source, Document target) {
-        for (String key : source.keySet()) {
+        for (String key in source.keySet()) {
             Object value = source.get(key)
             if (key.charAt(0) == ('$' as char)) {
                 if (!(value instanceof List)) {
@@ -848,7 +848,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                             '] is not supported inside an embedded association query')
                 }
                 List<Object> rewritten = new ArrayList<>()
-                for (Object element : (List) value) {
+                for (Object element in (List) value) {
                     if (element instanceof Document) {
                         Document rewrittenElement = new Document()
                         prefixEmbeddedQuery(prefix, (Document) element, rewrittenElement)
@@ -879,7 +879,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     }
 
     private List wrapObjectResultInList(Object object) {
-        List result = new ArrayList()
+        List result = []
         result.add(object)
         return result
     }
@@ -1122,10 +1122,6 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             this.maxDistance = Distance.valueOf(maxDistance.doubleValue())
         }
 
-        void setMaxDistance(Distance maxDistance) {
-            this.maxDistance = maxDistance
-        }
-
     }
 
     /**
@@ -1250,7 +1246,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
         @PackageScope MongoCursor cursor
         private List<ProjectedProperty> projectedProperties
-        private List initializedObjects = new ArrayList()
+        private List initializedObjects = []
         private int internalIndex = 0
         @PackageScope boolean initialized = false
         private boolean containsAssociations = false
@@ -1260,7 +1256,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             this.cursor = cursor
             this.projectedProperties = projectedProperties
             this.session = session
-            for (ProjectedProperty projectedProperty : projectedProperties) {
+            for (ProjectedProperty projectedProperty in projectedProperties) {
                 if (projectedProperty.property instanceof Association) {
                     this.containsAssociations = true
                     break
@@ -1335,11 +1331,11 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                         handleNoResults()
                     } else if (property instanceof Embedded) {
                         Embedded embedded = (Embedded) property
-                        List embeddedList = new ArrayList()
+                        List embeddedList = []
                         CodecRegistry codecRegistry = session.getDatastore().getCodecRegistry()
                         PersistentEntityCodec codec = new PersistentEntityCodec(codecRegistry, embedded.getAssociatedEntity())
 
-                        for (Serializable embeddedDoc : identifiers) {
+                        for (Serializable embeddedDoc in identifiers) {
                             if (embeddedDoc instanceof Document) {
                                 Document documentObject = (Document) embeddedDoc
 
@@ -1363,7 +1359,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                         Document dbo = (Document) cursor.next()
                         List<Object> projectedResult = new ArrayList<>()
                         int index = 0
-                        for (ProjectedProperty projectedProperty : projectedProperties) {
+                        for (ProjectedProperty projectedProperty in projectedProperties) {
                             PersistentProperty property = projectedProperty.property
                             Object value = getProjectedValue(dbo, projectedProperty.projectionKey)
                             if (property instanceof Association) {
@@ -1385,18 +1381,18 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                         return
                     }
 
-                    Map<Integer, List> finalResults = new HashMap<>()
-                    for (Integer index : associationMap.keySet()) {
+                    Map<Integer, List> finalResults = [:]
+                    for (Integer index in associationMap.keySet()) {
                         Map<Class, List<Serializable>> associatedEntityIdentifiers = associationMap.get(index)
-                        for (Class associationClass : associatedEntityIdentifiers.keySet()) {
+                        for (Class associationClass in associatedEntityIdentifiers.keySet()) {
                             List<Serializable> identifiers = associatedEntityIdentifiers.get(associationClass)
                             finalResults.put(index, session.retrieveAll(associationClass, identifiers))
                         }
                     }
 
-                    for (Object initializedObject : initializedObjects) {
+                    for (Object initializedObject in initializedObjects) {
                         List projected = (List) initializedObject
-                        for (Integer index : finalResults.keySet()) {
+                        for (Integer index in finalResults.keySet()) {
                             List resultsByIndex = finalResults.get(index)
                             if (index < resultsByIndex.size()) {
                                 projected.set(index, resultsByIndex.get(index))
@@ -1428,9 +1424,9 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         }
 
         private Map<Integer, Map<Class, List<Serializable>>> createAssociationMap() {
-            Map<Integer, Map<Class, List<Serializable>>> associationMap = new HashMap<>()
+            Map<Integer, Map<Class, List<Serializable>>> associationMap = [:]
             associationMap = associationMap.withDefault { Object o ->
-                Map<Class, List<Serializable>> subMap = new HashMap<>()
+                Map<Class, List<Serializable>> subMap = [:]
                 subMap = subMap.withDefault { Object k ->
                     return new ArrayList<Serializable>()
                 }
@@ -1478,7 +1474,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         Object addInitializedObject(Document dbo) {
             if (projectedProperties.size() > 1) {
                 List<Object> projected = new ArrayList<>()
-                for (ProjectedProperty projectedProperty : projectedProperties) {
+                for (ProjectedProperty projectedProperty in projectedProperties) {
                     Object value
                     value = getProjectedValue(dbo, projectedProperty.projectionKey)
                     projected.add(value)
@@ -1661,7 +1657,7 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             groupByObject.put(MongoEntityPersister.MONGO_ID_FIELD, 0)
             Document additionalGroupBy = null
 
-            for (Projection projection : projectionList) {
+            for (Projection projection in projectionList) {
                 ProjectionHandler projectionHandler = resolveProjectProjectionHandlers().get(projection.getClass())
                 ProjectedProperty projectedProperty = new ProjectedProperty()
                 projectedProperty.projection = projection
@@ -1711,10 +1707,10 @@ class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             List<Order> orderBy = mongoQuery.getOrderBy()
             if (!orderBy.isEmpty()) {
                 Document sortBy = new Document()
-                for (Order order : orderBy) {
+                for (Order order in orderBy) {
                     String prop = order.getProperty()
                     String sortKey = prop
-                    for (ProjectedProperty pp : projectedKeys) {
+                    for (ProjectedProperty pp in projectedKeys) {
                         if (pp.property != null && pp.property.getName() == prop) {
                             sortKey = pp.projectionKey
                             if (sortKey.startsWith('id.')) {

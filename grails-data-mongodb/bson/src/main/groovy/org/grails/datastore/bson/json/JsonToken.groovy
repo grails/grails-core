@@ -43,16 +43,12 @@ class JsonToken {
     @PackageScope static final char NEW_LINE = '\n'
     @PackageScope static final char QUOTE = '"'
 
-    private final Object value
-    private final JsonTokenType type
+    final Object value
+    final JsonTokenType type
 
     JsonToken(final JsonTokenType type, final Object value) {
         this.value = value
         this.type = type
-    }
-
-    Object getValue() {
-        return value
     }
 
     def <T> T getValue(final Class<T> clazz) {
@@ -69,10 +65,6 @@ class JsonToken {
         } catch (ClassCastException e) {
             throw new IllegalStateException(e)
         }
-    }
-
-    JsonTokenType getType() {
-        return type
     }
 
 }

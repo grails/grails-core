@@ -207,7 +207,7 @@ final class RestartableMongoClient implements MongoClient {
 
     @Override
     ClusterDescription getClusterDescription() {
-        return driverClient().getClusterDescription()
+        return driverClient().clusterDescription
     }
 
     @Override
@@ -217,22 +217,22 @@ final class RestartableMongoClient implements MongoClient {
 
     @Override
     CodecRegistry getCodecRegistry() {
-        return driverClient().getCodecRegistry()
+        return driverClient().codecRegistry
     }
 
     @Override
     ReadPreference getReadPreference() {
-        return driverClient().getReadPreference()
+        return driverClient().readPreference
     }
 
     @Override
     WriteConcern getWriteConcern() {
-        return driverClient().getWriteConcern()
+        return driverClient().writeConcern
     }
 
     @Override
     ReadConcern getReadConcern() {
-        return driverClient().getReadConcern()
+        return driverClient().readConcern
     }
 
     @Override
