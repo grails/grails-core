@@ -131,7 +131,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
 
     public void render(Writer out) throws ConverterException {
         if (LEGACY_RENDER_REPORTED.compareAndSet(false, true)) {
-            log.warn("Legacy XML conversion is deprecated for removal in Grails 11. " +
+            log.warn("Legacy XML conversion is scheduled for removal in Grails 11. " +
                     "XML leaves the default web starter in Grails 10; migrate to JSON or an explicit Spring XML converter.");
         }
         stream = new StreamingMarkupWriter(out, encoding);

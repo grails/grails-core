@@ -28,6 +28,7 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 
+import grails.rest.render.RenderContext
 import grails.web.mime.MimeType
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
@@ -35,6 +36,10 @@ import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
+
+import org.springframework.validation.BeanPropertyBindingResult
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
+import grails.rest.render.xml.XmlRenderer
 
 import spock.lang.Specification
 
@@ -170,6 +175,49 @@ class SpringXmlRendererSpec extends Specification {
         new XmlSlurper().parseText(response.contentAsString).message.text() == 'café'
     }
 
+    void 'the excludes of an XmlRenderer keep a response on the legacy converter with Spring XML enabled'() {
+        given:
+        def converter = Mock(HttpMessageConverter)
+        def renderer = new XmlRenderer<XmlCredentials>(XmlCredentials)
+        renderer.excludes = ['password']
+        renderer.useSpringXml = true
+        renderer.springHttpMessageConverters = [converter]
+        def response = new MockHttpServletResponse()
+        def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
+
+        when:
+        renderer.render(new XmlCredentials(user: 'ada', password: 's3cret'),
+                new FixedMimeServletRenderContext(request, MimeType.XML))
+
+        then:
+        0 * converter._
+        response.contentAsString.contains('ada')
+        !response.contentAsString.contains('s3cret')
+    }
+
+    void 'validation errors are written as XML where an action view exists'() {
+        given:
+        def locator = Mock(GrailsConventionGroovyPageLocator)
+        def renderer = new DefaultXmlRenderer<Object>(Object, locator) {
+            @Override
+            protected void renderXml(Object object, RenderContext context) {
+                context.writer.write('<errors><error/></errors>')
+            }
+        }
+        def response = new MockHttpServletResponse()
+        def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
+        def errors = new BeanPropertyBindingResult(new XmlGreeting(message: 'x'), 'greeting')
+        errors.rejectValue('message', 'invalid', 'Message is invalid')
+
+        when:
+        renderer.render(errors, new FixedMimeServletRenderContext(request, MimeType.XML))
+
+        then:
+        0 * locator._
+        response.status == 422
+        new XmlSlurper().parseText(response.contentAsString).error.size() == 1
+    }
+
     void 'adding Jackson XML does not bypass registered XML marshallers by default'() {
         given:
         grails.converters.XML.registerObjectMarshaller(XmlGreeting) { value -> [custom: value.message] }
@@ -189,6 +237,11 @@ class SpringXmlRendererSpec extends Specification {
 
 class XmlGreeting {
     String message
+}
+
+class XmlCredentials {
+    String user
+    String password
 }
 
 @Entity

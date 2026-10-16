@@ -46,6 +46,10 @@ dependencies {
     implementation 'io.micrometer:micrometer-observation'
     implementation project(':grails-datamapping-core')
 
+    // XmlGrailsPlugin depends on the dataBinding plugin, which this module's own code does not
+    // reference: an application that adds only grails-xml must still get it.
+    runtimeOnly project(':grails-databinding')
+
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
     compileOnly 'org.slf4j:slf4j-nop'
 

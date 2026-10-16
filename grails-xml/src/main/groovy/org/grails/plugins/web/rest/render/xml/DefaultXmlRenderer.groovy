@@ -88,6 +88,30 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     ObjectProvider<SpringMessageConverters> springMessageConvertersProvider
 
+    private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
+    private volatile RendererRegistry resolvedRendererRegistry
+
+    private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
+        if (groovyPageLocator != null) {
+            return groovyPageLocator
+        }
+        // Only a locator that was found is kept: one registered after the first response is still found
+        if (resolvedGroovyPageLocator == null) {
+            resolvedGroovyPageLocator = groovyPageLocatorProvider?.getIfAvailable()
+        }
+        return resolvedGroovyPageLocator
+    }
+
+    private RendererRegistry resolveRendererRegistry() {
+        if (rendererRegistry != null) {
+            return rendererRegistry
+        }
+        if (resolvedRendererRegistry == null) {
+            resolvedRendererRegistry = rendererRegistryProvider?.getIfAvailable()
+        }
+        return resolvedRendererRegistry
+    }
+
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
         List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get() ?:
                 springMessageConvertersProvider?.getIfAvailable()?.converters
@@ -122,11 +146,11 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         context.setContentType(GrailsWebUtil.getContentType(mimeType.name, encoding))
 
         def viewName = context.viewName ?: context.actionName
-        GrailsConventionGroovyPageLocator locator = groovyPageLocator ?: groovyPageLocatorProvider?.getIfAvailable()
-        final view = locator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
+        final view = object instanceof Errors ? null :
+                resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
         if (view) {
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view
-            RendererRegistry registry = rendererRegistry ?: rendererRegistryProvider?.getIfAvailable()
+            RendererRegistry registry = resolveRendererRegistry()
             Renderer htmlRenderer = registry?.findRenderer(MimeType.HTML, object)
             if (htmlRenderer == null) {
                 htmlRenderer = new DefaultHtmlRenderer(targetType)
@@ -167,8 +191,25 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         renderXml(converter, context)
     }
 
+    /**
+     * The includes the legacy converter applies, and whose presence keeps a response on it. A
+     * subclass that carries its own includes returns them here.
+     */
+    protected List<String> getEffectiveIncludes(RenderContext context) {
+        return context.includes
+    }
+
+    /** The excludes the legacy converter applies; see {@link #getEffectiveIncludes}. */
+    protected List<String> getEffectiveExcludes(RenderContext context) {
+        return context.excludes
+    }
+
     private HttpMessageConverter<Object> findSpringConverter(Object object, RenderContext context) {
-        if (!useSpringXml || !resolveSpringHttpMessageConverters() || namedConfiguration || context.includes || context.excludes) {
+        if (!useSpringXml || namedConfiguration || getEffectiveIncludes(context) || getEffectiveExcludes(context)) {
+            return null
+        }
+        List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()
+        if (!converters) {
             return null
         }
         if (object == null || object instanceof Errors || object instanceof Map || object instanceof Collection ||
@@ -176,7 +217,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             return null
         }
         MediaType mediaType = MediaType.parseMediaType((context.acceptMimeType ?: MimeType.XML).name)
-        return (HttpMessageConverter<Object>) resolveSpringHttpMessageConverters().find { HttpMessageConverter<?> converter ->
+        return (HttpMessageConverter<Object>) converters.find { HttpMessageConverter<?> converter ->
             converter.canWrite(object.getClass(), mediaType) &&
                     converter.getSupportedMediaTypes(object.getClass()).any { MediaType supported ->
                         supported.subtype == 'xml' || supported.subtype.endsWith('+xml')
@@ -216,8 +257,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      * @param context
      */
     protected void renderXml(XML converter, RenderContext context) {
-        converter.setExcludes(context.excludes)
-        converter.setIncludes(context.includes)
+        converter.setExcludes(getEffectiveExcludes(context))
+        converter.setIncludes(getEffectiveIncludes(context))
         converter.render(context.getWriter())
     }
 }

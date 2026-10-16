@@ -114,9 +114,12 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
     }
 
     @Override
-    protected void renderXml(XML converter, RenderContext context) {
-        converter.setExcludes(excludes ?: context.excludes)
-        converter.setIncludes(includes != null ? includes : context.includes)
-        converter.render(context.getWriter())
+    protected List<String> getEffectiveIncludes(RenderContext context) {
+        return includes != null ? includes : context.includes
+    }
+
+    @Override
+    protected List<String> getEffectiveExcludes(RenderContext context) {
+        return excludes ?: context.excludes
     }
 }

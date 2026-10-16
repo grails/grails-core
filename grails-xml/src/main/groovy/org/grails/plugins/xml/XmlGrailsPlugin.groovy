@@ -31,8 +31,8 @@ import org.grails.plugins.codecs.XMLCodec
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
-import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
 import org.grails.web.databinding.bindingsource.HalXmlDataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator
@@ -72,6 +72,8 @@ class XmlGrailsPlugin extends Plugin {
             registry.registerBean('xmlRenderer', XmlFallbackRenderer) {
                 it.supplier {
                     XmlFallbackRenderer renderer = new XmlFallbackRenderer()
+                    // Set here as well as autowired, so the bean works in a factory that does not
+                    // process @Autowired, as the plugin's own spec uses.
                     renderer.groovyPageLocatorProvider = it.beanProvider(GrailsConventionGroovyPageLocator)
                     configure(renderer, environment, it.beanProvider(SpringMessageConverters).getIfAvailable())
                 }

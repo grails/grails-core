@@ -80,7 +80,7 @@ class XmlCompatibilitySpec extends Specification {
         }
 
         then:
-        log.readLines().count { it.contains('Legacy XML conversion is deprecated for removal in Grails 11.') } == 1
+        log.readLines().count { it.contains('Legacy XML conversion is scheduled for removal in Grails 11.') } == 1
         log.contains('XML leaves the default web starter in Grails 10')
     }
 
