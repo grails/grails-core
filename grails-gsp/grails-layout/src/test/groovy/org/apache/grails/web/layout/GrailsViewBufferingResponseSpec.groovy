@@ -123,6 +123,21 @@ class GrailsViewBufferingResponseSpec extends Specification {
         target.errorMessage == null
     }
 
+    void 'sendError is skipped once the target response is committed'() {
+        given:
+        def target = new MockHttpServletResponse()
+        target.setCommitted(true)
+        def response = new GrailsViewBufferingResponse(new MockHttpServletRequest(), target)
+
+        when:
+        response.sendError(500)
+        response.sendError(503, 'Unavailable')
+
+        then:
+        target.status == 200
+        target.errorMessage == null
+    }
+
     void 'sendError delegates status and message when the response is uncommitted'() {
         given:
         def target = new MockHttpServletResponse()

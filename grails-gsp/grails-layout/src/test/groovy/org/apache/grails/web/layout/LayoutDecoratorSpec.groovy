@@ -60,16 +60,20 @@ class LayoutDecoratorSpec extends Specification {
         def model = [greeting: 'Hello']
         def view = Mock(View)
         def decorator = new SpringMVCViewDecorator('main', view)
+        def pageDuringRender = null
+        def layoutPageDuringRender = null
 
         when:
         decorator.render(content, model, request, response, request.servletContext)
 
         then:
         1 * view.render(model, request, response) >> { Map values, servletRequest, servletResponse ->
-            assert servletRequest.getAttribute(RequestConstants.PAGE).body == 'Body'
-            assert servletRequest.getAttribute(EmbeddedGrailsLayoutView.GSP_GRAILS_LAYOUT_PAGE) instanceof GSPGrailsLayoutPage
+            pageDuringRender = servletRequest.getAttribute(RequestConstants.PAGE)
+            layoutPageDuringRender = servletRequest.getAttribute(EmbeddedGrailsLayoutView.GSP_GRAILS_LAYOUT_PAGE)
             servletResponse.getWriter().write(values.greeting + ': Body')
         }
+        pageDuringRender.body == 'Body'
+        layoutPageDuringRender instanceof GSPGrailsLayoutPage
         response.contentAsString == 'Hello: Body'
         response.committed
         request.getAttribute(RequestConstants.PAGE) == null

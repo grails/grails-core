@@ -23,6 +23,7 @@ import com.opensymphony.module.sitemesh.RequestConstants
 import grails.testing.web.taglib.TagLibUnitTest
 import org.grails.buffer.FastStringWriter
 import org.grails.plugins.web.taglib.RenderGrailsLayoutTagLib
+import org.grails.taglib.GrailsTagException
 import spock.lang.Specification
 
 class RenderGrailsLayoutTagLibSpec extends Specification implements TagLibUnitTest<RenderGrailsLayoutTagLib> {
@@ -34,7 +35,7 @@ class RenderGrailsLayoutTagLibSpec extends Specification implements TagLibUnitTe
         request.setAttribute(RequestConstants.PAGE, page)
     }
 
-    void 'pageProperty renders values default values and entire attributes'() {
+    void 'pageProperty renders a value, a default and an entire attribute'() {
         given:
         page.addProperty('body.class', 'content')
 
@@ -43,6 +44,15 @@ class RenderGrailsLayoutTagLibSpec extends Specification implements TagLibUnitTe
         applyTemplate('<g:pageProperty name="body.class" writeEntireProperty="true"/>') == ' class="content"'
         applyTemplate('<g:pageProperty name="missing" default="fallback"/>') == 'fallback'
         applyTemplate('<g:pageProperty name="missing"/>') == ''
+    }
+
+    void 'pageProperty requires a name attribute'() {
+        when:
+        applyTemplate('<g:pageProperty default="fallback"/>')
+
+        then:
+        def error = thrown(GrailsTagException)
+        error.message.contains('missing required attribute [name]')
     }
 
     void 'captured component buffers can be rendered and tested as page properties'() {
@@ -63,9 +73,9 @@ class RenderGrailsLayoutTagLibSpec extends Specification implements TagLibUnitTe
 
         expect:
         applyTemplate('<g:ifPageProperty name="page.theme" equals="dark">Yes</g:ifPageProperty>') == 'Yes'
-        applyTemplate('<g:ifPageProperty name="page.theme" equals="light">No</g:ifPageProperty>') == ''
-        applyTemplate('<g:ifPageProperty name="missing">No</g:ifPageProperty>') == ''
-        applyTemplate('<g:ifPageProperty>No</g:ifPageProperty>') == ''
+        applyTemplate('<g:ifPageProperty name="page.theme" equals="light">Hidden</g:ifPageProperty>') == ''
+        applyTemplate('<g:ifPageProperty name="missing">Hidden</g:ifPageProperty>') == ''
+        applyTemplate('<g:ifPageProperty>Hidden</g:ifPageProperty>') == ''
         applyTemplate('<g:ifPageProperty name="${[\'page.theme\', \'page.mode\']}" ' +
                 'equals="${[\'dark\', \'wide\']}">Both</g:ifPageProperty>') == 'Both'
     }

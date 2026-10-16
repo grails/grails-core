@@ -20,6 +20,7 @@
 package org.apache.grails.web.layout
 
 import grails.testing.web.taglib.TagLibUnitTest
+import org.grails.gsp.compiler.GrailsLayoutPreprocessor
 import org.grails.plugins.web.taglib.GrailsLayoutTagLib
 import spock.lang.Specification
 
@@ -46,6 +47,32 @@ class GrailsLayoutTagLibSpec extends Specification implements TagLibUnitTest<Gra
         page.body == 'Body'
         page.getProperty('body.class') == 'content'
         page.isUsed()
+    }
+
+    void 'wrapped title is captured in its own buffer so the layout head can drop it without reparsing'() {
+        when:
+        def output = applyTemplate('<grailsLayout:captureHead><grailsLayout:wrapTitleTag>' +
+                '<grailsLayout:captureTitle>Title</grailsLayout:captureTitle></grailsLayout:wrapTitleTag>' +
+                '<meta name="layout" content="main"></grailsLayout:captureHead>')
+        def layoutHead = new StringWriter()
+        page.writeHead(layoutHead)
+
+        then:
+        output == '<head><title>Title</title><meta name="layout" content="main"></head>'
+        page.title == 'Title'
+        page.isTitleCaptured()
+        page.titleBuffer != null
+        layoutHead.toString() == '<meta name="layout" content="main">'
+    }
+
+    void 'empty capture tags honour the preprocessor XML closing marker'() {
+        when:
+        def output = applyTemplate('<grailsLayout:captureMeta name="viewport" content="width" ' +
+                GrailsLayoutPreprocessor.XML_CLOSING_FOR_EMPTY_TAG_ATTRIBUTE_NAME + '="/"/>')
+
+        then:
+        output == '<meta name="viewport" content="width"/>'
+        page.getProperty('meta.viewport') == 'width'
     }
 
     void 'meta capture records both original and lowercase property names'() {
@@ -79,5 +106,7 @@ class GrailsLayoutTagLibSpec extends Specification implements TagLibUnitTest<Gra
         expect:
         applyTemplate('<grailsLayout:captureTitle/><grailsLayout:captureBody>Body</grailsLayout:captureBody>') ==
                 '<title></title><body>Body</body>'
+        applyTemplate('<grailsLayout:wrapTitleTag><grailsLayout:captureTitle>Title</grailsLayout:captureTitle>' +
+                '</grailsLayout:wrapTitleTag>') == '<title>Title</title>'
     }
 }
