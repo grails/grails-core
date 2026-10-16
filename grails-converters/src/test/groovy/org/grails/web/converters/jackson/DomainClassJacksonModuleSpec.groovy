@@ -339,6 +339,22 @@ class DomainClassJacksonModuleSpec extends Specification {
         json.toString() == '{"id":1,"title":"Grails","shelf":{"id":3}}'
     }
 
+    void "a marshaller for domain classes says how the converter renders an instance by being a DomainClassRenderer"() {
+        given: 'a marshaller that renders the version and the class name, for the instances it writes'
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
+            @Override
+            DomainClassRendering getRendering(JSON json, Class<?> type) {
+                new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, true, false)
+            }
+        })
+        def shelf = new Shelf(name: 'top')
+        shelf.id = 3
+        shelf.version = 5
+
+        expect:
+        new JSON(shelf).toString() == "{\"class\":\"${Shelf.name}\",\"id\":3,\"version\":5,\"name\":\"top\"}"
+    }
+
     void "a DomainClassMarshaller that writes references itself still does"() {
         given:
         JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {

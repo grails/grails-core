@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
@@ -52,9 +54,10 @@ import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.configuration.DefaultConverterConfiguration;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.jackson.DomainClassJacksonModule;
+import org.grails.web.converters.jackson.DomainClassRenderer;
+import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
-import org.grails.web.converters.marshaller.json.DomainClassMarshaller;
 import org.grails.web.json.JSONArray;
 import org.grails.web.json.JSONElement;
 import org.grails.web.json.JSONException;
@@ -84,6 +87,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     protected JSONWriter writer;
     protected Stack<Object> referenceStack;
     protected JsonMapperSupport jsonMapperSupport;
+
+    private Map<Class<?>, DomainClassRendering> domainClassRenderings = new ConcurrentHashMap<>();
     private JSONWriter jsonWriter;
 
     protected ConverterConfiguration<JSON> initConfig() {
@@ -118,8 +123,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     @SuppressWarnings("deprecation")
     private void prepareRender(Writer out) {
         // a domain class instance is rendered as the converter's marshaller for it asks, with its includes and excludes
+        domainClassRenderings = new ConcurrentHashMap<>();
         jsonMapperSupport = ConvertersConfigurationHolder.getJsonMapperSupport()
-                .withAttribute(DomainClassJacksonModule.RENDERINGS, DomainClassMarshaller.renderings(this));
+                .withAttribute(DomainClassJacksonModule.RENDERINGS, (Function<Object, DomainClassRendering>) this::domainClassRendering);
         jsonWriter = prettyPrint && ConvertersConfigurationHolder.isLegacyJson() ?
                 new PrettyPrintJSONWriter(out, jsonMapperSupport, PrettyPrintJSONWriter.DEFAULT_INDENT_STR) :
                 new JSONWriter(out, jsonMapperSupport, prettyPrint);
@@ -245,6 +251,13 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @return the JsonMapper this converter writes with
      * @since 9.0
      */
+    private DomainClassRendering domainClassRendering(Object instance) {
+        if (!(lookupObjectMarshaller(instance) instanceof DomainClassRenderer renderer)) {
+            return null;
+        }
+        return domainClassRenderings.computeIfAbsent(instance.getClass(), type -> renderer.getRendering(this, type));
+    }
+
     public JsonMapperSupport getJsonMapperSupport() {
         return jsonMapperSupport != null ? jsonMapperSupport : ConvertersConfigurationHolder.getJsonMapperSupport();
     }

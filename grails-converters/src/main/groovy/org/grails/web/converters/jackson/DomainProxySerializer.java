@@ -50,7 +50,7 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
     }
 
     private Object unwrapped(Object value, SerializationContext context) {
-        Object unwrapped = rendering.get().unwrap(value);
+        Object unwrapped = rendering.of(context, value).unwrap(value);
         if (unwrapped == value) {
             throw new IllegalStateException("The proxy handler could not unwrap the proxy [" + value.getClass().getName() + "]");
         }

@@ -497,7 +497,9 @@ is written by Jackson, and so is a subclass of a domain class that is neither a 
 * `DomainClassMarshaller` and `DeepDomainClassMarshaller` render through the serializer. Their constructors and
 protected methods (`includesProperty`, `excludesProperty`, `extractValue`, `asShortObject` and
 `isRenderDomainClassRelations`) are unchanged, and a subclass that overrides them still renders as it did. They are
-consulted before the mapper's value serializers, as `ProxyUnwrappingMarshaller` is.
+consulted before the mapper's value serializers, as `ProxyUnwrappingMarshaller` is. A marshaller of your own for domain
+classes tells the converter how to render an instance, with which `DomainClassRendering`, by implementing
+`DomainClassRenderer`.
 
 The application's `JsonMapper` is not changed: writing a domain class instance with it, such as returning one from a
 Spring MVC controller, renders it as a Jackson bean, as in Grails 8. To have the mapper render domain classes as

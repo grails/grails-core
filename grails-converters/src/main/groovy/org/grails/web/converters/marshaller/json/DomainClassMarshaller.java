@@ -30,8 +30,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import groovy.lang.GroovyObject;
 
@@ -57,6 +55,7 @@ import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.grails.web.converters.ConverterUtil;
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.jackson.DomainClassRenderer;
 import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.marshaller.ByDatasourceDomainClassFetcher;
 import org.grails.web.converters.marshaller.ByGrailsApplicationDomainClassFetcher;
@@ -77,7 +76,7 @@ import org.grails.web.json.JSONWriter;
  *
  * @since 1.1
  */
-public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON> {
+public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON> implements DomainClassRenderer {
 
     private boolean includeVersion = false;
     private boolean includeClass = false;
@@ -137,21 +136,11 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
     }
 
     /**
-     * The renderings of the domain class instances a converter writes: each is rendered with the includes and excludes the
-     * converter has for its class, by the domain class marshaller the converter has for the instance.
-     *
-     * @param json the converter
-     * @return gives the rendering of an instance, or {@code null} for an instance it has no domain class marshaller for
-     * @since 9.0
+     * Renders an instance with the includes and excludes the converter has for its class.
      */
-    public static Function<Object, DomainClassRendering> renderings(JSON json) {
-        Map<Class<?>, DomainClassRendering> renderings = new ConcurrentHashMap<>();
-        return instance -> {
-            if (!(json.lookupObjectMarshaller(instance) instanceof DomainClassMarshaller marshaller)) {
-                return null;
-            }
-            return renderings.computeIfAbsent(instance.getClass(), type -> marshaller.new Rendering(json, type));
-        };
+    @Override
+    public DomainClassRendering getRendering(JSON json, Class<?> type) {
+        return new Rendering(json, type);
     }
 
     /**
