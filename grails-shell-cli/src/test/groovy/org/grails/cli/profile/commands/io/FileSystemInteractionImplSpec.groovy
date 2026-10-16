@@ -65,6 +65,28 @@ class FileSystemInteractionImplSpec extends Specification {
         interaction.projectPath(file) == 'example.txt'
     }
 
+    def 'files that do not exist yet are resolved like existing ones'() {
+        given: 'a project directory that has not been created and files below it'
+        def pending = new File(directory, 'pending')
+        def pendingInteraction = new FileSystemInteractionImpl(Stub(ExecutionContext) { getBaseDir() >> pending })
+        def missing = new File(directory, 'nested/missing.txt')
+        def existing = interaction.file('present.txt')
+        existing.text = 'present'
+
+        when:
+        interaction.copy {
+            from(existing)
+            into(new File(directory, 'target'))
+        }
+
+        then:
+        interaction.projectPath(missing) == 'nested/missing.txt'
+        interaction.projectPath('missing.txt') == 'missing.txt'
+        !interaction.resource(missing).exists()
+        pendingInteraction.file('build.gradle') == new File(pending, 'build.gradle')
+        interaction.file('target/present.txt').text == 'present'
+    }
+
     def 'mkdir and delete operate on project files and return the interaction for chaining'() {
         when:
         def result = interaction.mkdir('nested/child')
