@@ -318,7 +318,8 @@ trait ResponseRenderer extends WebAttributes {
         boolean statusSet = handleStatusArgument(argMap, webRequest, response)
 
         def applicationAttributes = webRequest.attributes
-        if (argMap.containsKey(ARGUMENT_JSON)) {
+        // A JSONObject is a Map too: one with a top-level "json" key is a value to write, not render arguments.
+        if (!(argMap instanceof JSONElement) && argMap.containsKey(ARGUMENT_JSON)) {
             renderNamedJson(argMap, webRequest, response)
             return
         }
