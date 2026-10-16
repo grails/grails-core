@@ -56,19 +56,18 @@ class CompositeConfigSpec extends Specification {
         config.navigate('service', 'missing') == null
     }
 
-    void 'flatten and properties combine the keys of every config'() {
+    void 'flatten and properties resolve a shared key to the highest precedence config'() {
         given:
         def config = new CompositeConfig()
-        config.addFirst(new PropertySourcesConfig([shared: 'first', firstOnly: 'one']))
+        config.addLast(new PropertySourcesConfig([shared: 'middle', middleOnly: 'mid']))
         config.addLast(new PropertySourcesConfig([shared: 'last', lastOnly: 'two']))
+        config.addFirst(new PropertySourcesConfig([shared: 'first', firstOnly: 'one']))
 
         expect:
-        config.flatten().keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
-        config.flatten().subMap(['firstOnly', 'lastOnly']) == [firstOnly: 'one', lastOnly: 'two']
-        config.toProperties().keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
-        config.toProperties().getProperty('firstOnly') == 'one'
-        config.toProperties().getProperty('lastOnly') == 'two'
-        config.getProperty('shared') == 'first'
+        config.flatten() == [shared: 'first', firstOnly: 'one', middleOnly: 'mid', lastOnly: 'two']
+        config.toProperties() == [shared: 'first', firstOnly: 'one', middleOnly: 'mid', lastOnly: 'two'] as Properties
+        config.flatten().shared == config.getProperty('shared')
+        config.toProperties().getProperty('shared') == config.getProperty('shared')
     }
 
     void 'flatten and properties resolve disjoint configs completely'() {
@@ -83,7 +82,7 @@ class CompositeConfigSpec extends Specification {
         config.size() == 2
     }
 
-    void 'map views include the keys of every config'() {
+    void 'map views carry every key once with its highest precedence value'() {
         given:
         def first = new PropertySourcesConfig([shared: 'first', firstOnly: 'one'])
         def last = new PropertySourcesConfig([shared: 'last', lastOnly: 'two'])
@@ -93,6 +92,10 @@ class CompositeConfigSpec extends Specification {
 
         expect:
         !config.isEmpty()
+        config.size() == 3
+        config.get('lastOnly') == 'two'
+        config.getAt('lastOnly') == 'two'
+        config.get('shared') == 'first'
         config.keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
         config.containsKey('firstOnly')
         config.containsKey('lastOnly')
@@ -102,11 +105,28 @@ class CompositeConfigSpec extends Specification {
         config.containsValue('first')
         config.containsValue('two')
         !config.containsValue('missing')
-        config.values().containsAll(['first', 'one', 'two'])
+        !config.containsValue('last')
+        config.values().size() == 3
+        config.values().toSet() == ['first', 'one', 'two'] as Set
+        config.entrySet().size() == 3
         config.entrySet()*.key.toSet() == config.keySet()
+        config.entrySet().find { it.key == 'shared' }.value == 'first'
         config.entrySet().find { it.key == 'firstOnly' }.value == 'one'
         config.entrySet().find { it.key == 'lastOnly' }.value == 'two'
         config.iterator().toList().toSet() == config.entrySet()
+    }
+
+    void 'map views keep the precedence order of the configs that contribute keys'() {
+        given:
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig([lastOnly: 'two', shared: 'last']))
+        config.addFirst(new PropertySourcesConfig([shared: 'first', firstOnly: 'one']))
+
+        expect: 'the keys of the highest precedence config come first, then the keys only lower configs have'
+        config.keySet().toList().take(2).toSet() == ['shared', 'firstOnly'] as Set
+        config.keySet().toList().last() == 'lastOnly'
+        config.entrySet()*.key == config.keySet().toList()
+        config.values().toList() == config.keySet().collect { config.get(it) }
     }
 
     void 'empty composites and empty delegates have empty views'() {
