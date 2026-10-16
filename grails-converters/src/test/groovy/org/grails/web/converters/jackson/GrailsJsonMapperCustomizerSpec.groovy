@@ -33,6 +33,7 @@ import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.core.DefaultGrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.EntityProxyHandler
+import org.grails.datastore.mapping.proxy.EntityProxy
 import grails.core.support.proxy.ProxyHandler
 import grails.persistence.Entity
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
@@ -166,6 +167,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
     void 'the mapper builds before GORM is initialized and picks up entities afterwards'() {
         given: "a real application, whose mapping context proxy fails on any lookup until GORM runs"
         def application = new DefaultGrailsApplication(JacksonBook)
+        application.initialise()
 
         when: "auto-configuration builds the mapper ahead of GORM"
         def builder = JsonMapper.builder()
@@ -190,6 +192,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
     void 'a type written before GORM is ready still uses the domain serializer afterwards'() {
         given: "a real application, whose getMappingContext hands out a proxy that fails on use"
         def application = new DefaultGrailsApplication(JacksonBook, JacksonAuthor)
+        application.initialise()
         application.config.setAt('grails.converters.domain.include.class', true)
         def builder = JsonMapper.builder()
         def customizer = new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler())
@@ -226,6 +229,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
                 throw new IllegalStateException('broken mapping')
             }
         }
+        application.initialise()
         def builder = JsonMapper.builder()
         def customizer = new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler())
         customizer.customize(builder)
@@ -271,6 +275,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
     void 'application domain serializers keep precedence in the Grails mapper'() {
         given:
         def application = new DefaultGrailsApplication(JacksonBook)
+        application.initialise()
         def source = JsonMapper.builder().addModule(new SimpleModule('application-json')
                 .addSerializer(JacksonBook, ToStringSerializer.instance)).build()
         def book = new JacksonBook(title: 'Custom').tap { id = 3 }
@@ -284,6 +289,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def mappingContext = new KeyValueMappingContext('jackson')
         mappingContext.addPersistentEntities(JacksonBook, JacksonAuthor)
         def application = new DefaultGrailsApplication(JacksonBook, JacksonAuthor)
+        application.initialise()
         application.mappingContext = mappingContext
         application.config.setAt('grails.converters.domain.include.version', includeVersion)
         application.config.setAt('grails.converters.domain.include.class', includeClass)
@@ -340,9 +346,50 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def mappingContext = new KeyValueMappingContext('jackson')
         mappingContext.addPersistentEntities(JacksonPerson)
         def application = new DefaultGrailsApplication(JacksonPerson)
+        application.initialise()
         application.mappingContext = mappingContext
         application.config.setAt('grails.converters.json.circular.reference.behaviour', behaviour)
         new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build())
+    }
+
+    void 'the Grails mapper honours the Jackson annotations and naming strategy of a domain class'() {
+        given:
+        def mapping = new KeyValueMappingContext('annotated')
+        mapping.addPersistentEntities(AnnotatedJacksonBook)
+        def app = new DefaultGrailsApplication(AnnotatedJacksonBook)
+        app.initialise()
+        app.mappingContext = mapping
+        def source = JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).build()
+        def mapper = new GrailsJsonMapperCustomizer(app, new DefaultProxyHandler()).forGrails(source)
+        def book = new AnnotatedJacksonBook(secret: 'private', title: 'Grails', firstName: 'Ada').tap { id = 4 }
+
+        when:
+        def written = mapper.readValue(mapper.writeValueAsString(book), Map)
+
+        then: 'a @JsonIgnore property is left out, a persistent property is named as Jackson names it'
+        !written.containsKey('secret')
+        written.book_title == 'Grails'
+        written.first_name == 'Ada'
+        written.id == 4
+    }
+
+    void 'the Grails mapper replaces the domain module of the mapper it derives from'() {
+        given: 'a mapper whose own domain module would reference a cycle by id'
+        def person = new JacksonPerson(name: 'Ada').tap { id = 1 }
+        person.address = new JacksonAddress(street: 'Main', geo: new JacksonGeo(owner: person))
+        def mapping = new KeyValueMappingContext('replace')
+        mapping.addPersistentEntities(JacksonPerson)
+        def app = new DefaultGrailsApplication(JacksonPerson)
+        app.initialise()
+        app.mappingContext = mapping
+        app.config.setAt('grails.converters.json.circular.reference.behaviour', 'PATH')
+        def rendering = new DomainClassRendering(app, new DefaultProxyHandler(), false, false, false)
+        def source = JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).build()
+        def grails = new GrailsJsonMapperCustomizer(app, new DefaultProxyHandler()).forGrails(source)
+
+        expect: 'the source mapper writes a reference of the id, the Grails mapper what the response setting selects'
+        source.readValue(source.writeValueAsString(person), Map).address.geo.owner == [id: 1]
+        grails.readValue(grails.writeValueAsString(person), Map).address.geo.owner == [ref: 'root', class: JacksonPerson.name]
     }
 
     void 'an association reference to a proxy that knows its identifier does not initialize the proxy'() {
@@ -350,6 +397,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def mapping = new KeyValueMappingContext('references')
         mapping.addPersistentEntities(JacksonReview, JacksonAuthor)
         def app = new DefaultGrailsApplication(JacksonReview, JacksonAuthor)
+        app.initialise()
         app.mappingContext = mapping
         def proxyHandler = new UnwrapCountingProxyHandler()
         def mapper = new GrailsJsonMapperCustomizer(app, proxyHandler).forGrails(JsonMapper.builder().build())
@@ -368,6 +416,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def mapping = new KeyValueMappingContext('narrowed')
         mapping.addPersistentEntities(JacksonBook, SpecialJacksonBook, JacksonAuthor)
         def app = new DefaultGrailsApplication(JacksonBook, SpecialJacksonBook, JacksonAuthor)
+        app.initialise()
         app.mappingContext = mapping
         def proxyHandler = Stub(ProxyHandler) {
             unwrapIfProxy(_) >> { args -> args[0].is(proxy) ? target : args[0] }
@@ -392,6 +441,7 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def mapping = new KeyValueMappingContext('polymorphic')
         mapping.addPersistentEntities(JacksonBook, SpecialJacksonBook, JacksonAuthor)
         def app = new DefaultGrailsApplication(JacksonBook, SpecialJacksonBook, JacksonAuthor)
+        app.initialise()
         app.mappingContext = mapping
         app.config.setAt('grails.converters.domain.include.class', true)
         def proxyHandler = Stub(ProxyHandler) {
@@ -493,8 +543,14 @@ class JacksonAuthor {
     String name
 }
 
-class JacksonBookProxy extends JacksonBook {
+class JacksonBookProxy extends JacksonBook implements EntityProxy<JacksonBook> {
     JacksonBook target
+
+    void initialize() {}
+
+    boolean isInitialized() { target != null }
+
+    Serializable getProxyKey() { id }
 }
 
 class PublicView { }

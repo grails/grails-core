@@ -66,9 +66,7 @@ public final class JsonProjection {
             Class<?> unwalkedIterable) {
         this.includes = includes;
         this.excludes = excludes;
-        // Widened while writing, when a proxy is written as the narrower type it stands for
-        this.types = ConcurrentHashMap.newKeySet();
-        this.types.addAll(types);
+        this.types = types;
         this.unwalkedIterable = unwalkedIterable;
     }
 
@@ -150,17 +148,6 @@ public final class JsonProjection {
             }
         }
         return null;
-    }
-
-    /**
-     * Records that a proxy of the given type is being written as the narrower type it stands for, so
-     * that the projection requested for the proxy applies to the object it is written as.
-     */
-    void narrowed(Class<?> proxyType, Class<?> unwrappedType) {
-        if (types.contains(proxyType)) {
-            types.add(unwrappedType);
-            applied.add(proxyType);
-        }
     }
 
     /**

@@ -146,9 +146,7 @@ change it. `false` retains the legacy converter (with the warning); `true` uses 
 even while legacy marshallers are registered. Migrate those representations to Jackson serializers
 before enabling it. The legacy converter settings do not configure Jackson:
 `grails.converters.json.pretty.print` gives way to `spring.jackson.serialization.indent-output`,
-`grails.converters.json.date` to Boot's `spring.jackson.*` date settings, and
-`grails.converters.json.default.deep` has no counterpart, because an association is always written as
-its identifier (see below). Renderer beans an application declares, such as a `JsonRenderer` or an
+and `grails.converters.json.date` to Boot's `spring.jackson.*` date settings. Renderer beans an application declares, such as a `JsonRenderer` or an
 `XmlRenderer` for one of its types, follow the same settings, apply their own `includes` and
 `excludes`, and reach the same named configurations and message converters.
 
@@ -169,25 +167,25 @@ are skipped, so strings remain JSON strings and byte arrays use Jackson's base64
 The same media-family rule applies to XML conversion; a generic text converter cannot strip the XML
 string element.
 
-The standard Jackson converter uses an isolated mapper derived from Boot's configured `JsonMapper`
-for Grails domain compatibility. Persistent properties, identifiers, association identifiers, and
-per-response domain projections follow Grails metadata. On this domain path, Jackson property
-annotations (`@JsonIgnore`, `@JsonProperty`, `@JsonInclude`, `@JsonView`, `@JsonFormat`), property
-mixins, naming strategies, and transient getters do not define the representation. Register an
-explicit serializer or return a DTO when that property model is required. Ordinary non-domain beans
-retain Jackson's property rules. Application-provided converter subclasses and per-type mapper
-registrations keep their configured behavior and precedence.
+The standard Jackson converter uses an isolated mapper derived from Boot's configured `JsonMapper`.
+It renders domain classes with the same Jackson serializer as the `JsonMapper` itself does when
+`grails.converters.json.domain.jackson.enabled` is set, and as `render ... as JSON` does with
+`grails.converters.json.legacy` set to `false` (see the section on domain classes below): the
+persistent properties and the id, associated instances as references of their id, or in full with
+`grails.converters.json.default.deep`, the version and class name with the `grails.converters.json.domain.*`
+settings, and the Jackson annotations and naming strategy that section lists. Per-response `includes` and
+`excludes` apply to them. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
+subclasses and per-type mapper registrations keep their configured behavior and precedence.
 
-Association identifiers use their mapped identity property name (for example `uuid`), rather than
-the legacy marshaller's fixed `id` key. A value that leads back to a domain object still being
-written, such as an embedded value that points at its owner, is written as the legacy converter
-writes it: `{"_ref": "..", "class": "..."}` by default, or as
+The one difference from the mapper's own rendering is a value that leads back to a domain object still being
+written, such as an embedded value that points at its owner. The mapper writes a reference of its id; a response
+writes what the legacy converter writes: `{"_ref": "..", "class": "..."}` by default, or as
 `grails.converters.json.circular.reference.behaviour` selects. With `IGNORE`, the property is written
 as `null` where the legacy converter left its name without a value. A cycle made only of non-domain beans
 follows Jackson's rules, as it does in a plain Spring MVC controller, and fails the response.
 
-Boot's shared mapper is not given the Grails domain serializer, so plain Spring `@RestController`
-responses retain Jackson's normal domain property model. Both mappers serialize Groovy `GString`
+Boot's shared mapper is not given the Grails domain serializer unless `grails.converters.json.domain.jackson.enabled`
+is set, so plain Spring `@RestController` responses retain Jackson's normal domain property model. Both mappers serialize Groovy `GString`
 values as strings. Only the Grails mapper serializes Spring `Errors` as an `errors` array containing
 object, field, message, and codes, without rejected values; Grails `respond errors` adapts that array into an
 RFC 9457 problem response.

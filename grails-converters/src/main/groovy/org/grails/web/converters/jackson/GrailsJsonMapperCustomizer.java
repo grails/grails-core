@@ -35,8 +35,6 @@ import grails.config.Config;
 import grails.core.GrailsApplication;
 import grails.core.support.proxy.DefaultProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
-import org.grails.core.artefact.DomainClassArtefactHandler;
-import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer;
 
@@ -62,26 +60,6 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
     public GrailsJsonMapperCustomizer(GrailsApplication grailsApplication, ProxyHandler proxyHandler) {
         this.grailsApplication = grailsApplication;
         this.proxyHandler = proxyHandler;
-    }
-
-    private boolean domainArtefact(Class<?> type) {
-        // Decided from the class itself rather than the artefact registry: registry lookups need
-        // the Domain handler to have been registered and raise when it has not, whereas this holds
-        // as soon as the class is loaded -- which is the point, since GORM is not up yet. The flag
-        // lets a proxy be recognised through its domain superclass.
-        return DomainClassArtefactHandler.isDomainClass(type, true);
-    }
-
-    private MappingContext mappingContext() {
-        return this.grailsApplication == null ? null : this.grailsApplication.getMappingContext();
-    }
-
-    private boolean booleanProperty(String key, String fallbackKey) {
-        if (this.grailsApplication == null) {
-            return false;
-        }
-        boolean fallback = this.grailsApplication.getConfig().getProperty(fallbackKey, Boolean.class, false);
-        return this.grailsApplication.getConfig().getProperty(key, Boolean.class, fallback);
     }
 
     private CircularReferenceBehaviour circularReferenceBehaviour() {
@@ -115,26 +93,22 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
             builder.removeAllModules();
             // Install compatibility first so application serializers retain their precedence.
             customizeDomains(builder);
-            builder.addModules(modules);
+            for (JacksonModule module : modules) {
+                // The Grails mapper has its own rendering of domain classes, installed above
+                if (!(module instanceof DomainClassJacksonModule)) {
+                    builder.addModule(module);
+                }
+            }
             return builder.build();
         });
     }
 
     private void customizeDomains(JsonMapper.Builder builder) {
-        GrailsDomainSerializers domainSerializers = new GrailsDomainSerializers(
-                this::mappingContext, this::domainArtefact, this.proxyHandler,
-                () -> booleanProperty("grails.converters.json.domain.include.version",
-                        "grails.converters.domain.include.version"),
-                () -> booleanProperty("grails.converters.json.domain.include.class",
-                        "grails.converters.domain.include.class"),
-                this::circularReferenceBehaviour);
-        SimpleModule module = new SimpleModule("grails-domain-json") {
-            @Override
-            public void setupModule(SetupContext context) {
-                super.setupModule(context);
-                context.addSerializers(domainSerializers);
-            }
-        };
+        // The module the application's own mapper may have too, with this rendering: a response also honours the
+        // circular reference behaviour of the JSON converter, which a plain Spring MVC response does not
+        builder.addModule(new DomainClassJacksonModule(() -> ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                this.grailsApplication, this.proxyHandler, circularReferenceBehaviour())));
+        SimpleModule module = new SimpleModule("grails-domain-json");
         // Do not change Errors returned from plain Spring MVC controllers.
         module.addSerializer(Errors.class, new SpringErrorsJsonSerializer(
                 () -> this.grailsApplication == null ? null : this.grailsApplication.getMainContext()));

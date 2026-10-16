@@ -90,7 +90,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json == [title: 'Grails', first_name: 'Ada']
     }
 
-    void 'Grails domain compatibility is scoped away from the shared Boot mapper'() {
+    void 'a domain class response leaves out a @JsonIgnore property, as the shared Boot mapper does'() {
         given:
         def book = new JsonResponseDomain(title: 'Grails').save()
 
@@ -98,7 +98,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         controller.respond(book)
 
         then:
-        response.json == [id: book.id, title: 'Grails']
+        response.json == [id: book.id]
 
         and:
         def mapper = applicationContext.getBean(JsonMapper)

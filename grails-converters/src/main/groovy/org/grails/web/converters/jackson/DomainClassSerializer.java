@@ -42,7 +42,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.TokenStreamContext;
 import tools.jackson.core.type.WritableTypeId;
+import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.JacksonSerializable;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.SerializationFeature;
@@ -64,6 +66,7 @@ import org.grails.datastore.mapping.model.types.ManyToOne;
 import org.grails.datastore.mapping.model.types.OneToOne;
 import org.grails.datastore.mapping.reflect.NameUtils;
 import org.grails.datastore.mapping.reflect.ReflectionUtils;
+import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 
 /**
  * Serializes domain class instances as {@code grails.converters.JSON} renders them: an object of the id, the version
@@ -175,28 +178,35 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
     public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt) {
         Object object = rendering.unwrap(value);
         Naming naming = naming(ctxt);
-        Set<Object> instances = renderingInstances(ctxt);
-        if (!instances.add(object)) {
-            // rendering deep, an instance already being written further up is a reference to it
-            if (unwrapper == null) {
-                writeReference(object, entity(object, rendering), gen, rendering, naming);
+        Map<Object, Frame> instances = renderingInstances(ctxt);
+        Frame enclosing = instances.get(object);
+        if (enclosing != null) {
+            // an instance already being written further up is a reference to it, or what the circular reference
+            // behaviour writes in its place
+            if (unwrapper != null) {
+                writeReferenceProperties(object, entity(object, rendering), gen, rendering, naming, unwrapper);
+            }
+            else if (rendering.getCircularReferenceBehaviour() != null) {
+                writeCircularReference(object, enclosing, gen, rendering.getCircularReferenceBehaviour());
             }
             else {
-                writeReferenceProperties(object, entity(object, rendering), gen, rendering, naming, unwrapper);
+                writeReference(object, entity(object, rendering), gen, rendering, naming);
             }
             return;
         }
+        JsonProjection projection = projection(ctxt, object.getClass(), value.getClass());
+        if (unwrapper == null) {
+            gen.writeStartObject(object);
+        }
+        instances.put(object, frame(gen));
         try {
-            if (unwrapper == null) {
-                gen.writeStartObject(object);
-            }
-            writeProperties(object, gen, ctxt, rendering, naming, unwrapper);
-            if (unwrapper == null) {
-                gen.writeEndObject();
-            }
+            writeProperties(object, gen, ctxt, rendering, naming, unwrapper, projection);
         }
         finally {
             instances.remove(object);
+        }
+        if (unwrapper == null) {
+            gen.writeEndObject();
         }
     }
 
@@ -214,8 +224,8 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
         Object object = rendering.unwrap(value);
         PersistentEntity entity = entity(object, rendering);
         Naming naming = naming(ctxt);
-        Set<Object> instances = renderingInstances(ctxt);
-        boolean reference = !instances.add(object);
+        Map<Object, Frame> instances = renderingInstances(ctxt);
+        boolean reference = instances.containsKey(object);
         if (reference && rendering.writeReference(object, entity.getIdentity(), entity)) {
             return;
         }
@@ -224,8 +234,10 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
             writeReferenceProperties(object, entity, gen, rendering, naming, null);
         }
         else {
+            instances.put(object, frame(gen));
             try {
-                writeProperties(object, gen, ctxt, rendering, naming, null);
+                writeProperties(object, gen, ctxt, rendering, naming, null,
+                        projection(ctxt, object.getClass(), value.getClass()));
             }
             finally {
                 instances.remove(object);
@@ -238,29 +250,30 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
             DomainClassRendering rendering) {
         Object object = rendering.unwrap(value);
         gen.writeStartObject(object);
-        writeProperties(object, gen, ctxt, rendering, Naming.AS_THEY_ARE, null);
+        writeProperties(object, gen, ctxt, rendering, Naming.AS_THEY_ARE, null, null);
         gen.writeEndObject();
     }
 
     private static void writeProperties(Object object, JsonGenerator gen, SerializationContext ctxt,
-            DomainClassRendering rendering, Naming naming, NameTransformer unwrapper) {
+            DomainClassRendering rendering, Naming naming, NameTransformer unwrapper, JsonProjection projection) {
         PersistentEntity entity = entity(object, rendering);
         Names names = naming.of(object.getClass());
         Set<String> ignored = IGNORED_PROPERTIES.get(object.getClass());
         List<WrittenProperty> fields = new ArrayList<>();
-        if (rendering.isIncludeClass() && rendering.includes(object, "class")) {
+        if (rendering.isIncludeClass() && rendering.includes(object, "class") && projected(projection, names, "class")) {
             fields.add(new WrittenProperty("class", object.getClass().getName(), null, true));
         }
         // a composite key has no identity, and is not written
         PersistentProperty identity = entity.getIdentity();
-        if (identity != null && !ignored.contains(identity.getName()) && rendering.includes(object, identity.getName())) {
+        if (identity != null && !ignored.contains(identity.getName()) && rendering.includes(object, identity.getName()) &&
+                projected(projection, names, identity.getName())) {
             Object id = rendering.propertyValue(object, identity);
             if (id != null) {
                 fields.add(new WrittenProperty(identity.getName(), id, null, false));
             }
         }
         if (rendering.isIncludeVersion() && !ignored.contains(GormProperties.VERSION) &&
-                rendering.includes(object, GormProperties.VERSION)) {
+                rendering.includes(object, GormProperties.VERSION) && projected(projection, names, GormProperties.VERSION)) {
             Object version = rendering.propertyValue(object, entity.getVersion());
             if (version != null) {
                 fields.add(new WrittenProperty(GormProperties.VERSION, version, null, false));
@@ -269,7 +282,7 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
         BeanWrapper bean = new BeanWrapperImpl(object);
         for (PersistentProperty property : entity.getPersistentProperties()) {
             if (property.equals(entity.getVersion()) || ignored.contains(property.getName()) ||
-                    !rendering.includes(object, property.getName())) {
+                    !rendering.includes(object, property.getName()) || !projected(projection, names, property.getName())) {
                 continue;
             }
             fields.add(new WrittenProperty(property.getName(), bean.getPropertyValue(property.getName()),
@@ -287,6 +300,11 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
                 gen.writePOJO(field.value());
             }
         }
+    }
+
+    /** Whether the projection of this write, if there is one, keeps the property, named as it is or as written. */
+    private static boolean projected(JsonProjection projection, Names names, String property) {
+        return projection == null || projection.includes(property, names.name(property));
     }
 
     /**
@@ -469,13 +487,71 @@ public final class DomainClassSerializer extends StdSerializer<Object> {
         }
     }
 
+    /**
+     * Where an instance being written started: the nesting depth of its JSON object, and its path from the root in the
+     * form the JSON converter's {@code PATH} circular reference behaviour writes.
+     */
+    private record Frame(int depth, String path) {
+    }
+
     @SuppressWarnings("unchecked")
-    private static Set<Object> renderingInstances(SerializationContext ctxt) {
-        Set<Object> instances = (Set<Object>) ctxt.getAttribute(RENDERING_INSTANCES);
+    private static Map<Object, Frame> renderingInstances(SerializationContext ctxt) {
+        Map<Object, Frame> instances = (Map<Object, Frame>) ctxt.getAttribute(RENDERING_INSTANCES);
         if (instances == null) {
-            instances = Collections.newSetFromMap(new IdentityHashMap<>());
+            instances = new IdentityHashMap<>();
             ctxt.setAttribute(RENDERING_INSTANCES, instances);
         }
         return instances;
+    }
+
+    private static Frame frame(JsonGenerator gen) {
+        return new Frame(gen.streamWriteContext().getNestingDepth(), path(gen.streamWriteContext()));
+    }
+
+    /** The path from the root to the object or array a context belongs to, as {@code .name[0]}. */
+    private static String path(TokenStreamContext context) {
+        StringBuilder path = new StringBuilder();
+        for (TokenStreamContext parent = context.getParent(); parent != null && !parent.inRoot();
+                parent = parent.getParent()) {
+            path.insert(0, parent.inArray() ? "[" + parent.getCurrentIndex() + "]" : "." + parent.currentName());
+        }
+        return path.toString();
+    }
+
+    /** Writes what the JSON converter writes for the circular reference behaviour that is configured. */
+    private static void writeCircularReference(Object value, Frame enclosing, JsonGenerator gen,
+            CircularReferenceBehaviour behaviour) {
+        String type = value.getClass().getName();
+        switch (behaviour) {
+            case EXCEPTION -> throw DatabindException.from(gen, "Circular Reference detected: class " + type);
+            case INSERT_NULL -> gen.writeNull();
+            case IGNORE -> {
+                // An array element can be left out; a property name has already been written.
+                if (!gen.streamWriteContext().inArray()) {
+                    gen.writeNull();
+                }
+            }
+            case PATH -> {
+                gen.writeStartObject();
+                gen.writeStringProperty("class", type);
+                gen.writeStringProperty("ref", "root" + enclosing.path());
+                gen.writeEndObject();
+            }
+            default -> {
+                // One step up for each object or array between this value and the one it repeats
+                int levels = Math.max(1, gen.streamWriteContext().getNestingDepth() - enclosing.depth());
+                gen.writeStartObject();
+                gen.writeStringProperty("_ref", String.join("/", Collections.nCopies(levels, "..")));
+                gen.writeStringProperty("class", type);
+                gen.writeEndObject();
+            }
+        }
+    }
+
+    /** The projection of this write, if it names the written object's type or the proxy's. */
+    private static JsonProjection projection(SerializationContext ctxt, Class<?> type, Class<?> proxyType) {
+        Object projection = ctxt.getAttribute(JsonProjection.ATTRIBUTE);
+        return projection instanceof JsonProjection projected && projected.appliesTo(type, proxyType) != null ?
+                projected : null;
     }
 }

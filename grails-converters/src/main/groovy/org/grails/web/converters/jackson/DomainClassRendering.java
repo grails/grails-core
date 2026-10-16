@@ -39,6 +39,7 @@ import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.datastore.mapping.proxy.EntityProxy;
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
+import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 import org.grails.web.converters.ConverterUtil;
 import org.grails.web.converters.marshaller.ByDatasourceDomainClassFetcher;
 import org.grails.web.converters.marshaller.ByGrailsApplicationDomainClassFetcher;
@@ -86,6 +87,8 @@ public class DomainClassRendering {
 
     private final boolean deep;
 
+    private final CircularReferenceBehaviour circularReferenceBehaviour;
+
     private final List<DomainClassFetcher> domainClassFetchers;
 
     /**
@@ -97,6 +100,22 @@ public class DomainClassRendering {
      */
     public DomainClassRendering(GrailsApplication grailsApplication, ProxyHandler proxyHandler, boolean includeVersion,
             boolean includeClass, boolean deep) {
+        this(grailsApplication, proxyHandler, includeVersion, includeClass, deep, null);
+    }
+
+    /**
+     * @param grailsApplication the application whose domain classes are rendered
+     * @param proxyHandler unwraps proxied domain class instances
+     * @param includeVersion whether to write the version
+     * @param includeClass whether to write the class name
+     * @param deep whether to render associated domain class instances in full, rather than as references of their id
+     * @param circularReferenceBehaviour what to write for an instance that is reached again while it is being written,
+     * as {@code grails.converters.json.circular.reference.behaviour} selects for the JSON converter; {@code null}
+     * writes a reference of its id
+     */
+    public DomainClassRendering(GrailsApplication grailsApplication, ProxyHandler proxyHandler, boolean includeVersion,
+            boolean includeClass, boolean deep, CircularReferenceBehaviour circularReferenceBehaviour) {
+        this.circularReferenceBehaviour = circularReferenceBehaviour;
         this.grailsApplication = grailsApplication;
         this.proxyHandler = proxyHandler != null ? proxyHandler : new DefaultProxyHandler();
         this.includeVersion = includeVersion;
@@ -126,6 +145,14 @@ public class DomainClassRendering {
      */
     public boolean isDeep() {
         return deep;
+    }
+
+    /**
+     * @return what is written for an instance reached again while it is being written, or {@code null} for a reference
+     * of its id
+     */
+    public CircularReferenceBehaviour getCircularReferenceBehaviour() {
+        return circularReferenceBehaviour;
     }
 
     /**
