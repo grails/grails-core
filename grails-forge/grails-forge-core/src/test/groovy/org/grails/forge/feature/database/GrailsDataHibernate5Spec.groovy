@@ -61,6 +61,7 @@ class GrailsDataHibernate5Spec extends ApplicationContextSpec implements Command
                 .renderBuildSrc()
 
         then:
+        template.contains('implementation "org.apache.grails:grails-gradle-plugins"')
         !template.contains('org.apache.grails:grails-data-hibernate5')
     }
 

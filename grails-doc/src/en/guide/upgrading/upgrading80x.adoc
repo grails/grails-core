@@ -4811,7 +4811,7 @@ dependencies {
 }
 ----
 
-The entry was a leftover from the days when the Grails CLI found a plugin's commands through the build classpath; commands now ship in companion `-cli` artifacts that the Grails Gradle plugin discovers from the application's dependencies (see <<_cli_commands_move_to_companion_cli_artifacts,CLI Commands Move to Companion `-cli` Artifacts>>).
+The entry was a leftover from the days when the Grails CLI found a plugin's commands through the build classpath; commands now ship in companion `-cli` artifacts that the Grails Gradle plugin discovers from the application's dependencies (see <<cli-companion-artifacts,CLI Commands Move to Companion `-cli` Artifacts>>).
 Left in place, the plugin and its transitive Grails Data modules are loaded by the Groovy that Gradle embeds while it compiles `build.gradle`, and the global compile-time transformations those modules register run in that older Groovy.
 A build whose `buildscript` classpath still carries the plugin can fail at configuration time with an error such as `java.lang.NoSuchMethodError: 'java.lang.Number org.codehaus.groovy.runtime.typehandling.NumberMath.remainder(java.lang.Number, java.lang.Number)'` raised from `GlobalDetachedCriteriaASTTransformation`.
 The same applies to `grails-data-hibernate7` and to any other Grails module that registers a global transformation: none of them belong on the `buildscript` classpath.

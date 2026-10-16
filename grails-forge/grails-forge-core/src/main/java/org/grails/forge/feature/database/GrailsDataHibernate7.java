@@ -79,7 +79,7 @@ public class GrailsDataHibernate7 extends GormFeature implements DatabaseDriverC
         config.put("hibernate.cache.use_second_level_cache", false);
         config.put("hibernate.cache.use_query_cache", false);
 
-        // runtime only: the plugin jar must stay off the buildscript classpath, where Gradle's own
+        // application dependency only: the plugin jar must stay off the buildscript classpath, where Gradle's own
         // Groovy would run the global AST transformations it carries while compiling build.gradle;
         // its commands ship in the companion -cli artifact that the Grails Gradle plugin discovers
         generatorContext.addDependency(Dependency.builder()
