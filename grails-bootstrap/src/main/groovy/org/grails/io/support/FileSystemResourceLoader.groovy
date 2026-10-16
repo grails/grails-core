@@ -50,7 +50,7 @@ class FileSystemResourceLoader extends DefaultResourceLoader {
      */
     @Override
     protected Resource getResourceByPath(String path) {
-        if (path != null && path.startsWith('/')) {
+        if (path?.startsWith('/')) {
             path = path.substring(1)
         }
         return new FileSystemResource(path)

@@ -50,7 +50,7 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(WatchServiceDirectoryWatcher)
     private Map<WatchKey, List<String>> watchKeyToExtensionsMap = new ConcurrentHashMap<>()
-    private Set<Path> individualWatchedFiles = new HashSet<>()
+    private Set<Path> individualWatchedFiles = [] as Set
 
     private final WatchService watchService
 
@@ -86,7 +86,7 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
                         Path dir = (Path) watchKey.watchable()
                         Path child = dir.resolve(name).toAbsolutePath()
                         File childFile = child.toFile()
-                        if (individualWatchedFiles.contains(child) || individualWatchedFiles.contains(child.normalize())) {
+                        if (child in individualWatchedFiles || child.normalize() in individualWatchedFiles) {
                             if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
                                 fireOnNew(childFile)
                             } else if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
@@ -95,7 +95,7 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
                                 // do nothing... there's no way to communicate deletions
                             }
                         } else {
-                            List<String> fileExtensions = watchKeyToExtensionsMap.get(watchKey)
+                            List<String> fileExtensions = watchKeyToExtensionsMap[watchKey]
                             if (fileExtensions == null) {
                                 // this event didn't match a file in individualWatchedFiles so it's a not an individual file we're interested in
                                 // this event also didn't match a directory that we're interested in (if it did, fileExtentions wouldn't be null)
@@ -149,12 +149,12 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 
     @Override
     void addWatchFile(File fileToWatch) {
-        if (!isValidFileToMonitor(fileToWatch, Arrays.asList('*'))) return
+        if (!isValidFileToMonitor(fileToWatch, ['*'])) return
         try {
             if (!fileToWatch.exists()) return
             Path pathToWatch = fileToWatch.toPath().toAbsolutePath()
-            individualWatchedFiles.add(pathToWatch)
-            pathToWatch.getParent().register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY)
+            individualWatchedFiles << pathToWatch
+            pathToWatch.parent.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY)
         } catch (IOException e) {
             throw new RuntimeException(e)
         }
@@ -180,7 +180,7 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
                         return FileVisitResult.SKIP_SUBTREE
                     }
                     WatchKey watchKey = subDir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY)
-                    final List<String> originalFileExtensions = watchKeyToExtensionsMap.get(watchKey)
+                    final List<String> originalFileExtensions = watchKeyToExtensionsMap[watchKey]
                     if (originalFileExtensions == null) {
                         watchKeyToExtensionsMap.put(watchKey, fileExtensions)
                     } else {

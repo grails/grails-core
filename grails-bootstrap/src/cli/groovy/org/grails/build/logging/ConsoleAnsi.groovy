@@ -127,14 +127,7 @@ final class ConsoleAnsi {
         if (this.pendingStyles.isEmpty()) {
             return
         }
-        this.sb.append(CSI)
-        for (int i = 0; i < this.pendingStyles.size(); i++) {
-            if (i > 0) {
-                this.sb.append(';')
-            }
-            this.sb.append(this.pendingStyles.get(i))
-        }
-        this.sb.append('m')
+        this.sb.append(CSI).append(this.pendingStyles.join(';')).append('m')
         this.pendingStyles.clear()
     }
 

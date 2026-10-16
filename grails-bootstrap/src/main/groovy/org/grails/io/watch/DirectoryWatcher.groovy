@@ -56,7 +56,7 @@ class DirectoryWatcher extends Thread {
      * @return the watcher to delegate to
      */
     private static AbstractDirectoryWatcher createDelegate() {
-        if (System.getProperty('os.name').equals('Mac OS X')) {
+        if (System.getProperty('os.name') == 'Mac OS X') {
             AbstractDirectoryWatcher macOsWatcher = createMacOsWatcher()
             if (macOsWatcher != null) {
                 return macOsWatcher
@@ -153,7 +153,7 @@ class DirectoryWatcher extends Thread {
     void addWatchDirectory(File dir, List<String> fileExtensions) {
         List<String> fileExtensionsWithoutDot = new ArrayList<>(fileExtensions.size())
         for (String fileExtension in fileExtensions) {
-            fileExtensionsWithoutDot.add(removeStartingDotIfPresent(fileExtension))
+            fileExtensionsWithoutDot << removeStartingDotIfPresent(fileExtension)
         }
         directoryWatcherDelegate.addWatchDirectory(dir, fileExtensions)
     }
@@ -175,16 +175,16 @@ class DirectoryWatcher extends Thread {
      */
     void addWatchDirectory(File dir, String extension) {
         extension = removeStartingDotIfPresent(extension)
-        List<String> fileExtensions = new ArrayList<>()
-        if (extension != null && extension.length() > 0) {
+        List<String> fileExtensions = []
+        if (extension) {
             int i = extension.lastIndexOf('.')
             if (i > -1) {
                 extension = extension.substring(i + 1)
             }
-            fileExtensions.add(extension)
+            fileExtensions << extension
         }
         else {
-            fileExtensions.add('*')
+            fileExtensions << '*'
         }
         addWatchDirectory(dir, fileExtensions)
     }
