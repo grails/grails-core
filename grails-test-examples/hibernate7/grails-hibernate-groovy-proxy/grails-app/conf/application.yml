@@ -33,5 +33,4 @@ hibernate:
   # A proxy that crossed a serialization boundary has no session; this is Hibernate's path for
   # loading it through the SessionFactory it came from, which TraitDefaultValuesProxySpec relies on.
   enable_lazy_load_no_trans: true
-  proxy_factory_class: org.grails.orm.hibernate.proxy.ByteBuddyGroovyProxyFactory
 

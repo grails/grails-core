@@ -159,15 +159,23 @@ class TraitDefaultValuesProxySpec extends Specification {
         }
         boolean bookUninitializedAfter = !Hibernate.isInitialized(deserialized.book)
         Long idWithoutInitializing = deserialized.book.id
+        boolean bookUninitializedAfterId = !Hibernate.isInitialized(deserialized.book)
 
-        then: 'the book came back as an uninitialized proxy whose identifier reads without loading'
+        and: 'the book is read through, which loads it through the SessionFactory it came from'
+        String title = deserialized.book.title
+        String createdBy = deserialized.book.createdBy
+
+        then: 'the book came back as an uninitialized proxy that answers its identifier without loading, and then loads'
         bookUninitializedBefore
         deserialized.borrower == 'Ada'
         deserialized.book instanceof HibernateProxy
         deserialized.book instanceof Auditable
         bookUninitializedAfter
         idWithoutInitializing == bookId
-        !Hibernate.isInitialized(deserialized.book)
+        bookUninitializedAfterId
+        title == 'The Grails Guide'
+        createdBy == 'N/A'
+        Hibernate.isInitialized(deserialized.book)
     }
 
     @CompileStatic
