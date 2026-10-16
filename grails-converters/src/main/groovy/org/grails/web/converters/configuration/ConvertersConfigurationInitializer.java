@@ -40,6 +40,7 @@ import io.micrometer.observation.ObservationRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -56,6 +57,7 @@ import org.apache.grails.converters.internal.json.SimpleTypeMarshaller;
 import org.grails.config.PropertySourcesConfig;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.Converter.CircularReferenceBehaviour;
+import org.grails.web.converters.jackson.ConverterJsonModule;
 import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
@@ -149,13 +151,16 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
      */
     private JsonMapper withDomainClasses(JsonMapper mapper) {
         JsonMapper source = mapper != null ? mapper : JsonMapperSupport.DEFAULT.getMapper();
+        JsonMapper.Builder builder = source.rebuild();
+        boolean domainClasses = false;
         for (JacksonModule module : source.registeredModules()) {
-            if (module instanceof DomainClassJacksonModule) {
-                return source;
-            }
+            domainClasses |= module instanceof DomainClassJacksonModule;
         }
-        return source.rebuild().addModule(new DomainClassJacksonModule(
-                () -> jsonDomainClassRendering(grailsApplication, getProxyHandler()))).build();
+        if (!domainClasses) {
+            builder.addModule(new DomainClassJacksonModule(() -> jsonDomainClassRendering(grailsApplication, getProxyHandler())));
+        }
+        // a bean with no properties is written as an empty object, as the converter always has
+        return builder.addModule(new ConverterJsonModule()).disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).build();
     }
 
     private void initJSONConfiguration() {
@@ -214,12 +219,9 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         // them, and they are rendered with the converter's includes, excludes and deep setting
         marshallers.add(new org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller<>());
         marshallers.add(domainClassMarshaller(grailsConfig, proxyHandler));
-        // dates and times, the other single values the application's JsonMapper has a serializer for, and the collections,
-        // maps, arrays, records and Optional values it writes are written by the mapper, as Spring Boot writes them
+        // everything else is written by the application's JsonMapper, as Spring Boot writes it: dates and times, the other
+        // single values it has a serializer for, collections, maps, arrays, records, enums and beans
         marshallers.add(new org.grails.web.converters.marshaller.json.JsonMapperValueMarshaller());
-        marshallers.add(new org.grails.web.converters.marshaller.json.SimpleEnumMarshaller(true));
-        marshallers.add(new org.grails.web.converters.marshaller.json.GroovyBeanMarshaller());
-        marshallers.add(new org.grails.web.converters.marshaller.json.GenericJavaBeanMarshaller());
     }
 
     /**

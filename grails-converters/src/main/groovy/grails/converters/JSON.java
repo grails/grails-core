@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
@@ -45,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.io.IOUtils;
 import grails.util.GrailsWebUtil;
 import grails.web.mime.MimeType;
+import org.grails.core.util.IncludeExcludeSupport;
 import org.grails.web.converters.AbstractConverter;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.ConverterUtil;
@@ -53,6 +55,7 @@ import org.grails.web.converters.configuration.ConverterConfiguration;
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.configuration.DefaultConverterConfiguration;
 import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.jackson.ConverterJsonModule;
 import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.jackson.DomainClassRenderer;
 import org.grails.web.converters.jackson.DomainClassRendering;
@@ -89,6 +92,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     protected JsonMapperSupport jsonMapperSupport;
 
     private Map<Class<?>, DomainClassRendering> domainClassRenderings = new ConcurrentHashMap<>();
+
+    private Map<Class<?>, Predicate<String>> propertyFilters = new ConcurrentHashMap<>();
+
+    private static final Predicate<String> NO_FILTER = property -> true;
     private JSONWriter jsonWriter;
 
     protected ConverterConfiguration<JSON> initConfig() {
@@ -124,8 +131,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     private void prepareRender(Writer out) {
         // a domain class instance is rendered as the converter's marshaller for it asks, with its includes and excludes
         domainClassRenderings = new ConcurrentHashMap<>();
+        propertyFilters = new ConcurrentHashMap<>();
         jsonMapperSupport = ConvertersConfigurationHolder.getJsonMapperSupport()
-                .withAttribute(DomainClassJacksonModule.RENDERINGS, (Function<Object, DomainClassRendering>) this::domainClassRendering);
+                .withAttribute(DomainClassJacksonModule.RENDERINGS, (Function<Object, DomainClassRendering>) this::domainClassRendering)
+                .withAttribute(ConverterJsonModule.PROPERTY_FILTERS, (Function<Object, Predicate<String>>) this::propertyFilter);
         jsonWriter = prettyPrint && ConvertersConfigurationHolder.isLegacyJson() ?
                 new PrettyPrintJSONWriter(out, jsonMapperSupport, PrettyPrintJSONWriter.DEFAULT_INDENT_STR) :
                 new JSONWriter(out, jsonMapperSupport, prettyPrint);
@@ -251,6 +260,24 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @return the JsonMapper this converter writes with
      * @since 9.0
      */
+    /**
+     * Which properties of a bean the converter writes: those its includes and excludes for the class of the bean allow.
+     */
+    private Predicate<String> propertyFilter(Object bean) {
+        Predicate<String> filter = propertyFilters.computeIfAbsent(bean.getClass(), this::createPropertyFilter);
+        return filter == NO_FILTER ? null : filter;
+    }
+
+    private Predicate<String> createPropertyFilter(Class<?> type) {
+        List<String> includes = getIncludes(type);
+        List<String> excludes = getExcludes(type);
+        if ((includes == null || includes.isEmpty()) && (excludes == null || excludes.isEmpty())) {
+            return NO_FILTER;
+        }
+        IncludeExcludeSupport<String> support = new IncludeExcludeSupport<>();
+        return property -> support.shouldInclude(includes, excludes, property);
+    }
+
     private DomainClassRendering domainClassRendering(Object instance) {
         if (!(lookupObjectMarshaller(instance) instanceof DomainClassRenderer renderer)) {
             return null;

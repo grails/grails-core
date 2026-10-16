@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import spock.lang.Shared
@@ -431,7 +432,21 @@ class JsonMapperRenderingSpec extends Specification {
         context.close()
     }
 
-    void "beans, map entries and domain-like objects are rendered by their marshallers"() {
+    void "a bean renders as Jackson renders it, with the annotations on its properties"() {
+        expect:
+        new JSON(new AnnotatedBean(firstName: 'Ada', secret: 's')).toString() == '{"first_name":"Ada"}'
+    }
+
+    void "the includes and excludes of the converter decide which properties of a bean are written"() {
+        given:
+        def json = new JSON(new Holder(name: 'Fred', role: Role.ADMIN, unit: ChronoUnit.DAYS))
+        json.setExcludes(Holder, ['created', 'amount', 'unit'])
+
+        expect:
+        json.toString() == '{"name":"Fred","role":"ADMIN"}'
+    }
+
+    void "beans and map entries are rendered by the mapper"() {
         given:
         def bean = new Holder(name: 'Fred', created: new Date(1790305200000L), role: Role.ADMIN, unit: ChronoUnit.DAYS,
                 amount: new BigDecimal('10.50'))
@@ -439,7 +454,7 @@ class JsonMapperRenderingSpec extends Specification {
         expect:
         new JSON(bean).toString() ==
                 '{"amount":10.50,"created":"2026-09-25T03:00:00.000Z","name":"Fred","role":"ADMIN","unit":"DAYS"}'
-        new JSON([entry: new AbstractMap.SimpleEntry('k', 1)]).toString() == '{"entry":{"key":"k","value":1}}'
+        new JSON([entry: new AbstractMap.SimpleEntry('k', 1)]).toString() == '{"entry":{"k":1}}'
     }
 
     void "a value a marshaller writes directly to the writer is quoted, as JSONWriter quotes it"() {
@@ -656,6 +671,15 @@ enum Labelled {
 record Point(int x, int y) {}
 
 record Dated(Date when) {}
+
+class AnnotatedBean {
+    @JsonProperty('first_name')
+    String firstName
+    @JsonIgnore
+    String secret
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    String nickname
+}
 
 record Person(@JsonProperty('first_name') String firstName, @JsonIgnore String ssn) {}
 
