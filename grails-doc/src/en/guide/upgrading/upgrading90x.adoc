@@ -46,3 +46,24 @@ The Groovy actor event bus delivers each event to its subscribers in publication
 Applications that use GPars directly, for example `GParsPool.withPool { list.eachParallel { } }`, should move to the Groovy equivalents: the parallel collection methods are available on every `Collection` without a pool, and `groovy.concurrent.ParallelScope.withPool(n) { scope -> list.eachParallel { } }` runs them on a pool of a chosen size. Once the deprecated modules are removed, Grails will no longer bring GPars onto the classpath, so an application that still needs it must declare `org.codehaus.gpars:gpars` itself.
 
 NOTE: Groovy 6 marks the concurrency toolkit as incubating. The Grails modules that build on it expose only the Grails `Promise` and `EventBus` contracts, so changes to the Groovy API in later Groovy releases are absorbed by Grails rather than by application code.
+
+==== 2. Groovy Code Is Compiled with invokedynamic
+
+Grails 8 compiles every Groovy source set of an application without invokedynamic (`grails { indy = false }` was the default). Grails 9 leaves the setting unset, so the Groovy compiler's own default applies, and on Groovy 6 that is invokedynamic. An application that set `grails { indy = true }` can remove the line. Build logic that read the property, for example `grails.indy.get()`, must allow for it having no value now: use `grails.indy.getOrElse(true)` or check `grails.indy.present`.
+
+An application that has to keep classic call sites, for example while it measures the difference, sets the property explicitly. An application that applies GraalVM's native image plugin cannot: the build fails with the reason, because an image needs invokedynamic.
+
+To keep classic call sites:
+
+[source,groovy]
+.build.gradle
+----
+grails {
+    indy = false
+}
+----
+
+Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that sets `indy` to `false` declares `implementation 'org.apache.groovy:groovy-callsite'` itself, at the version the Grails BOM manages, and again for every source set that does not see its implementation dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin. Without it the Groovy compiler stops with a message naming the module.
+
+A library compiled with classic call sites needs the module too, whatever the application's own setting, because Groovy 6 loads such a class only with it; the failure is a `NoClassDefFoundError` naming `org.codehaus.groovy.runtime.callsite.CallSiteArray`. Spock 2.5, Geb 8 and the Asset Pipeline 5.2 are compiled with invokedynamic, but `org.testcontainers:testcontainers-spock` is not, so an application that uses it declares `testRuntimeOnly 'org.apache.groovy:groovy-callsite'` next to it.
+
