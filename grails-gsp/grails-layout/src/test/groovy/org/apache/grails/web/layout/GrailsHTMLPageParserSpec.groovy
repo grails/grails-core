@@ -76,6 +76,7 @@ class GrailsHTMLPageParserSpec extends Specification {
         body.toString() == 'Body'
         content.title == 'Title'
         content.getProperty('page.extra') == 'value'
+        content.propertyKeys.toList().containsAll(['title', 'meta.layout', 'page.extra'])
         GSPGrailsLayoutPage.content2htmlPage(content).body == 'Body'
     }
 }
