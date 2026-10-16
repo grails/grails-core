@@ -32,7 +32,6 @@ import spock.lang.Unroll
 
 class ContentNegotiationSpec extends Specification implements ControllerUnitTest<ContentNegotiationController> {
 
-
     Closure doWithConfig() {{ config ->
         config['grails.mime.use.accept.header'] = true
         config['grails.mime.types'] = [ // the first one is the default format
@@ -56,7 +55,6 @@ class ContentNegotiationSpec extends Specification implements ControllerUnitTest
         // Access config to ensure grailsApplication is initialized and Holders is populated.
         // This triggers doWithConfig() which registers the custom MIME types.
         assert config != null
-
     }
 
     void setupSpec() {

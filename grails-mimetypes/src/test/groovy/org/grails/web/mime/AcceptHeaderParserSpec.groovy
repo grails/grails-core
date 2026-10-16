@@ -54,6 +54,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       all: '*/*',
                       json: 'application/json',
                       html: ['text/html','application/xhtml+xml'],
+                      acme: 'application/vnd.Acme+json',
                       foov1: 'application/vnd.foo+json;v=1.0',
                       foov2: 'application/vnd.foo+json;v=2.0'
                     ]
@@ -240,6 +241,15 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         then:
         ['foov1'] == mimesV1.extension
         ['foov2'] == mimesV2.extension
+    }
+
+    void "matches a configured media type with capitals whatever the case of the header"() {
+        expect:
+        getAcceptHeaderParser().parse(header)*.extension == ['acme']
+        getAcceptHeaderParser().parse(header)*.name == ['application/vnd.Acme+json']
+
+        where:
+        header << ['application/vnd.Acme+json', 'application/vnd.acme+json', 'APPLICATION/VND.ACME+JSON;q=0.5']
     }
 
     void "preserves configured header parameters on the negotiated mime type"() {

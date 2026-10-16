@@ -47,6 +47,13 @@ class HttpServletResponseExtension {
 
     static MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
+    /**
+     * Strategies for contexts that have no {@link GrailsMimeTypesWebMvcConfigurer}, such as a bare
+     * test context, so that each request does not rebuild one. Weakly keyed by the application.
+     */
+    private static final Map<GrailsApplication, GrailsContentNegotiationStrategy> FALLBACK_STRATEGIES =
+            Collections.synchronizedMap(new WeakHashMap<GrailsApplication, GrailsContentNegotiationStrategy>())
+
     @CompileStatic
     static MimeType[] getMimeTypes() {
         ApplicationContext context = GrailsWebRequest.lookup()?.applicationContext
@@ -199,7 +206,9 @@ class HttpServletResponseExtension {
             if (strategy == null) {
                 GrailsApplication application = applicationContext?.getBeanProvider(GrailsApplication)?.getIfAvailable()
                 if (application != null) {
-                    strategy = new GrailsContentNegotiationStrategy(getMimeTypes(), application.config)
+                    strategy = FALLBACK_STRATEGIES.computeIfAbsent(application) { GrailsApplication key ->
+                        new GrailsContentNegotiationStrategy(getMimeTypes(), key.config)
+                    }
                 }
             }
             if (strategy != null) {

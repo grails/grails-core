@@ -18,9 +18,21 @@
  */
 package org.grails.plugins.web.mime
 
+import org.springframework.beans.factory.ObjectProvider
+import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+import org.springframework.web.servlet.LocaleResolver
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
+
 import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.spring.BeanBuilder
 import grails.web.mime.MimeType
+import grails.web.mime.MimeTypeProvider
 import org.grails.web.mime.GrailsContentNegotiationStrategy
 import org.grails.web.mime.GrailsMimeTypesWebMvcConfigurer
 import spock.lang.Specification
@@ -108,14 +120,54 @@ class MimeTypesConfigurationSpec extends Specification {
             mimeConfiguration(MimeTypesConfiguration, application, [])
         }
         application.setApplicationContext(bb.createApplicationContext())
+        def holder = Stub(ObjectProvider) { getObject() >> new MimeTypesHolder(MimeType.createDefaults()) }
 
         expect:
         application.mainContext.getBeansOfType(GrailsContentNegotiationStrategy).isEmpty()
 
         and: "the configurer still exposes the strategy so Grails format resolution can reach it"
-        application.mainContext.getBean(MimeTypesConfiguration)
-                .grailsMimeTypesWebMvcConfigurer(new MimeTypesHolder(MimeType.createDefaults()))
+        MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(holder, application)
                 .contentNegotiationStrategy instanceof GrailsContentNegotiationStrategy
+    }
+
+    void 'a MIME type provider that needs Spring MVC infrastructure does not close a startup cycle'() {
+        given:
+        def context = new AnnotationConfigWebApplicationContext()
+        context.servletContext = new MockServletContext()
+        context.register(CycleConfiguration)
+
+        when:
+        context.refresh()
+
+        then:
+        noExceptionThrown()
+        context.getBean(GrailsMimeTypesWebMvcConfigurer).contentNegotiationStrategy instanceof GrailsContentNegotiationStrategy
+
+        cleanup:
+        context.close()
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @EnableWebMvc
+    @Import(MimeTypesConfiguration)
+    static class CycleConfiguration {
+
+        @Bean
+        GrailsApplication grailsApplication(ApplicationContext applicationContext) {
+            def application = new DefaultGrailsApplication()
+            application.setApplicationContext(applicationContext)
+            application
+        }
+
+        @Bean
+        MimeTypeProvider localeAwareMimeTypeProvider(LocaleResolver localeResolver) {
+            new MimeTypeProvider() {
+                @Override
+                MimeType[] getMimeTypes() {
+                    [] as MimeType[]
+                }
+            }
+        }
     }
 
     private MimeType[] resolveMimeTypes(Map config, boolean mergeDefaults = false) {

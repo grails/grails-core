@@ -26,6 +26,7 @@ import grails.util.GrailsWebMockUtil
 import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.web.mime.DefaultMimeUtility
 import org.springframework.context.ApplicationContext
@@ -157,6 +158,59 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
         then:
             webRequest.currentResponse.format == 'json'
+    }
+
+    @Unroll
+    void "a configured media type with capitals matches #header in the Accept and Content-Type headers"() {
+        when:
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+            request.contentType = header
+            request.addHeader('Accept', header)
+            def result = response.withFormat {
+                json { 'json' }
+                acme { 'acme' }
+            }
+
+        then:
+            request.format == 'acme'
+            response.format == 'acme'
+            result == 'acme'
+
+        where:
+            header << ['application/vnd.Acme+json', 'application/vnd.acme+json']
+    }
+
+    void "a bare * in the Accept header matches no configured media type"() {
+        when:
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            request.addHeader('Accept', '*')
+
+        then: "as in Grails 8, the whole configured list is the answer, not */* alone"
+            webRequest.currentResponse.format == 'all'
+            webRequest.currentResponse.mimeTypes.size() > 1
+    }
+
+    void "the format parameter overrides the Accept header"() {
+        when:
+            final webRequest = boundMimeTypeRequest()
+            webRequest.currentRequest.addHeader('Accept', 'application/json')
+            webRequest.params.format = 'xml'
+
+        then:
+            webRequest.currentResponse.format == 'xml'
+    }
+
+    void "the response format request attribute overrides the Accept header"() {
+        when:
+            final webRequest = boundMimeTypeRequest()
+            webRequest.currentRequest.addHeader('Accept', 'application/json')
+            webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, 'xml')
+
+        then:
+            webRequest.currentResponse.format == 'xml'
     }
 
     void "an Accept header without a configured media type resolves to the all format"() {
@@ -351,6 +405,7 @@ grails.mime.types = [
                       css: 'text/css',
                       csv: 'text/csv',
                       json: ['application/json','text/json'],
+                      acme: 'application/vnd.Acme+json',
                       form: 'application/x-www-form-urlencoded',
                       multipartForm: 'multipart/form-data'
                     ]

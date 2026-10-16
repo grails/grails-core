@@ -34,8 +34,6 @@ import spock.lang.Specification
  */
 class ContentFormatControllerTests extends Specification implements ControllerUnitTest<ContentController>, DomainUnitTest<Gizmo> {
 
-
-
     Closure doWithConfig() {{ c ->
         c['grails.mime.use.accept.header'] = true
         c['grails.mime.types'] = [html: ['text/html', 'application/xhtml+xml'],

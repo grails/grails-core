@@ -22,8 +22,6 @@ import grails.web.mime.MimeType
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
 import org.grails.config.PropertySourcesConfig
-import org.grails.web.util.GrailsApplicationAttributes
-import org.grails.web.util.WebUtils
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
@@ -51,80 +49,6 @@ class GrailsContentNegotiationStrategySpec extends Specification {
             new MimeType('application/xml', 'xml'),
             MimeType.ALL
     ] as MimeType[]
-
-    void "Spring media types are resolved from the Grails accept header parser"() {
-        given:
-        def request = new MockHttpServletRequest()
-        request.addHeader('Accept', 'application/json;profile=v1;q=0.8, application/xml;q=0.9')
-
-        when:
-        List<MediaType> mediaTypes = strategy().resolveMediaTypes(new ServletWebRequest(request))
-
-        then:
-        mediaTypes*.type == ['application', 'application']
-        mediaTypes*.subtype == ['xml', 'json']
-        mediaTypes[0].qualityValue == 0.9d
-        mediaTypes[1].parameters.profile == 'v1'
-    }
-
-    void "format parameter remains authoritative over the accept header"() {
-        given:
-        def request = new MockHttpServletRequest()
-        request.setParameter('format', 'json')
-        request.addHeader('Accept', 'application/xml')
-
-        expect:
-        strategy().resolveMimeTypes(request)*.extension == ['json']
-    }
-
-    void "response format request attribute remains an authoritative compatibility override"() {
-        given:
-        def request = new MockHttpServletRequest()
-        request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, 'xml')
-        request.addHeader('Accept', 'application/json')
-
-        expect:
-        strategy().resolveMimeTypes(request)*.extension == ['xml']
-    }
-
-    void "error dispatch resolves its format without reading rejected request parameters"() {
-        given:
-        def request = new MockHttpServletRequest() {
-            @Override
-            String getParameter(String name) {
-                throw new IllegalStateException('request parameters cannot be parsed')
-            }
-        }
-        request.setAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, 413)
-        request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, 'json')
-        request.addHeader('Accept', 'application/xml')
-
-        expect:
-        strategy().resolveMimeTypes(request)*.extension == ['json']
-    }
-
-    void "missing accept header resolves to the configured all format"() {
-        expect:
-        strategy().resolveMimeTypes(new MockHttpServletRequest())*.extension == ['all']
-    }
-
-    void "configured browser user agent suppression retains the XHR exception"() {
-        given:
-        Config config = config(['grails.mime.disable.accept.header.userAgents': ['Trident']])
-        def strategy = strategy(config)
-        def request = new MockHttpServletRequest()
-        request.addHeader('User-Agent', 'Trident/7.0')
-        request.addHeader('Accept', 'application/json')
-
-        expect:
-        strategy.resolveMimeTypes(request)*.extension == ['all']
-
-        when:
-        request.addHeader('X-Requested-With', 'XMLHttpRequest')
-
-        then:
-        strategy.resolveMimeTypes(request)*.extension == ['json']
-    }
 
     void "the Web MVC configurer contributes format aliases and leaves Spring's strategies alone"() {
         given:

@@ -24,22 +24,18 @@ import groovy.transform.CompileStatic
 
 import jakarta.servlet.http.HttpServletRequest
 
-import org.springframework.http.MediaType
-import org.springframework.web.accept.ContentNegotiationStrategy
-import org.springframework.web.context.request.NativeWebRequest
-
 import grails.config.Config
 import grails.config.Settings
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
-import org.grails.web.util.GrailsApplicationAttributes
-import org.grails.web.util.WebUtils
 
 /**
- * Adapts Grails' configured format aliases and compatibility rules to Spring MVC content negotiation.
+ * Resolves the MIME types of a request's {@code Accept} header under the {@code grails.mime} rules.
+ * It is deliberately not a Spring {@code ContentNegotiationStrategy}: Spring MVC keeps its own
+ * negotiation, and Spring Security adopts any such bean it finds.
  */
 @CompileStatic
-class GrailsContentNegotiationStrategy implements ContentNegotiationStrategy {
+class GrailsContentNegotiationStrategy {
 
     private final MimeType[] mimeTypes
     private final boolean useAcceptHeader
@@ -57,17 +53,6 @@ class GrailsContentNegotiationStrategy implements ContentNegotiationStrategy {
         this.disableForUserAgents = createDisabledUserAgentPattern(config)
     }
 
-    @Override
-    List<MediaType> resolveMediaTypes(NativeWebRequest webRequest) {
-        HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest)
-        if (request == null) {
-            return [MediaType.ALL]
-        }
-        return resolveMimeTypes(request).collect { MimeType mimeType ->
-            SpringMediaTypeAdapter.toMediaType(mimeType)
-        }
-    }
-
     /**
      * @return the MIME types this strategy resolves against, as configured by grails.mime.types
      */
@@ -76,28 +61,9 @@ class GrailsContentNegotiationStrategy implements ContentNegotiationStrategy {
     }
 
     /**
-     * @return the MIME types for Spring MVC: the {@code format} parameter or response format when one
-     * is set, otherwise those of the {@code Accept} header
-     */
-    MimeType[] resolveMimeTypes(HttpServletRequest request) {
-        String formatOverride
-        if (!WebUtils.isError(request)) {
-            formatOverride = request.getParameter('format')
-        }
-        if (!formatOverride) {
-            formatOverride = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT) as String
-        }
-        if (formatOverride) {
-            MimeType mimeType = mimeTypes.find { MimeType candidate -> candidate.extension == formatOverride }
-            return [mimeType ?: mimeTypes[0]] as MimeType[]
-        }
-        return resolveAcceptedMimeTypes(request)
-    }
-
-    /**
      * @return the MIME types of the {@code Accept} header under the {@code grails.mime} rules, without
      * any {@code format} applied. This is what {@code response.mimeTypes}, and so {@code withFormat}
-     * when the format has no block of its own, falls back to.
+     * when the format has no block of its own, resolves.
      */
     MimeType[] resolveAcceptedMimeTypes(HttpServletRequest request) {
         String acceptHeader = resolveAcceptHeader(request)
@@ -117,7 +83,7 @@ class GrailsContentNegotiationStrategy implements ContentNegotiationStrategy {
         }
 
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT)
-        boolean xhr = request.getHeader('X-Requested-With')?.equalsIgnoreCase('XMLHttpRequest')
+        boolean xhr = request.getHeader('X-Requested-With') == 'XMLHttpRequest'
         boolean disabledForUserAgent = !(useAcceptHeaderXhr && xhr) &&
                 disableForUserAgents != null &&
                 userAgent != null &&

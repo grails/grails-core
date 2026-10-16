@@ -18,6 +18,8 @@
  */
 package org.grails.web.mime
 
+import java.util.function.Supplier
+
 import groovy.transform.CompileStatic
 
 import org.springframework.core.Ordered
@@ -39,10 +41,21 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
 
     private static final Set<String> DATA_FORMATS = Set.of('json', 'xml', 'hal', 'atom', 'rss', 'csv', 'text')
 
-    private final GrailsContentNegotiationStrategy contentNegotiationStrategy
+    private final Supplier<GrailsContentNegotiationStrategy> strategySupplier
+    private volatile GrailsContentNegotiationStrategy contentNegotiationStrategy
 
     GrailsMimeTypesWebMvcConfigurer(GrailsContentNegotiationStrategy contentNegotiationStrategy) {
         this.contentNegotiationStrategy = contentNegotiationStrategy
+        this.strategySupplier = null
+    }
+
+    /**
+     * @param strategySupplier builds the strategy on first use. Spring MVC collects its configurers
+     * while its own infrastructure beans are created, so a configurer that needed the MIME types
+     * when it was created would pull in every bean that supplies them, and fail on a cycle.
+     */
+    GrailsMimeTypesWebMvcConfigurer(Supplier<GrailsContentNegotiationStrategy> strategySupplier) {
+        this.strategySupplier = strategySupplier
     }
 
     /**
@@ -51,7 +64,17 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
      * bean it finds, so it is reached through this configurer instead.
      */
     GrailsContentNegotiationStrategy getContentNegotiationStrategy() {
-        return contentNegotiationStrategy
+        GrailsContentNegotiationStrategy strategy = contentNegotiationStrategy
+        if (strategy == null) {
+            synchronized (this) {
+                strategy = contentNegotiationStrategy
+                if (strategy == null) {
+                    strategy = strategySupplier.get()
+                    contentNegotiationStrategy = strategy
+                }
+            }
+        }
+        return strategy
     }
 
     @Override
@@ -64,7 +87,7 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
         // endpoints that never asked for it. Grails' own format resolution does not go through the
         // Spring manager; it uses this configurer's strategy directly.
         Map<String, MediaType> aliases = [:]
-        for (MimeType mimeType in contentNegotiationStrategy.configuredMimeTypes) {
+        for (MimeType mimeType in getContentNegotiationStrategy().configuredMimeTypes) {
             String extension = mimeType.extension
             if (!DATA_FORMATS.contains(extension ?: '')) {
                 continue

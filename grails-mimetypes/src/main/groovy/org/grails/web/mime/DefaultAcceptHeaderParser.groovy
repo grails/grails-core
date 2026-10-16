@@ -110,6 +110,10 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         for (String token in header.split(',')) {
             String candidate = token.trim()
             try {
+                if (candidate == '*') {
+                    // Spring reads a bare * as */*; Grails never has, and a configured type is not a match
+                    throw new InvalidMediaTypeException(candidate, 'Not a media type')
+                }
                 MediaType mediaType = MediaType.parseMediaType(candidate)
                 mimeTypes.add(SpringMediaTypeAdapter.toMimeType(mediaType))
             }
@@ -128,12 +132,14 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         String name = mime.name
         //First try to find the exact match for the mime type using name and version. If version is not set,  consider
         // version match to be successful.
+        // Spring's parser lowercases the requested name, so configured names compare ignoring case.
         def foundMime = mimeConfig.find { MimeType mt ->
-            mt.name == name && (!mime.version || mt.version == mime.version)
+            mt.name.equalsIgnoreCase(name) && (!mime.version || mt.version == mime.version)
         }
         //Fallback: Try to find match using the name (if version match is not found).
-        foundMime = foundMime ?: mimeConfig.find { MimeType mt -> mt.name == name }
+        foundMime = foundMime ?: mimeConfig.find { MimeType mt -> mt.name.equalsIgnoreCase(name) }
         if (foundMime) {
+            mime.name = foundMime.name
             mime.extension = foundMime.extension
             mimes << mime
         }
