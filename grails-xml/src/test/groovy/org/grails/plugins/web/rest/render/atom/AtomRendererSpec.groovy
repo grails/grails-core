@@ -35,12 +35,11 @@ import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.support.MockApplicationContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.mime.DefaultMimeUtility
-import org.grails.web.mime.HttpServletResponseExtension
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
@@ -57,8 +56,7 @@ class AtomRendererSpec extends Specification {
 
     void setup() {
         ShutdownOperations.runOperations()
-        HttpServletResponseExtension.@mimeTypes = null
-        def initializer = new ConvertersConfigurationInitializer()
+        def initializer = new XmlConvertersConfigurationInitializer()
         initializer.grailsApplication = new DefaultGrailsApplication()
         initializer.initialize()
     }
@@ -67,7 +65,6 @@ class AtomRendererSpec extends Specification {
         ConvertersConfigurationHolder.clear()
         RequestContextHolder.resetRequestAttributes()
         ShutdownOperations.runOperations()
-        HttpServletResponseExtension.@mimeTypes = null
     }
 
     void 'Test rendering a single domain object as an Atom feed'() {

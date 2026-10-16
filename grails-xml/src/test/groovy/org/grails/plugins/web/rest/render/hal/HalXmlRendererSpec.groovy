@@ -20,6 +20,7 @@ package org.grails.plugins.web.rest.render.hal
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.persistence.Entity
 import grails.rest.Link
 import grails.rest.render.hal.HalXmlCollectionRenderer
 import grails.rest.render.hal.HalXmlRenderer
@@ -36,12 +37,11 @@ import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.support.MockApplicationContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.mime.DefaultMimeUtility
-import org.grails.web.mime.HttpServletResponseExtension
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
@@ -58,8 +58,7 @@ class HalXmlRendererSpec extends Specification {
 
     void setup() {
         ShutdownOperations.runOperations()
-        HttpServletResponseExtension.@mimeTypes = null
-        def initializer = new ConvertersConfigurationInitializer()
+        def initializer = new XmlConvertersConfigurationInitializer()
         initializer.grailsApplication = new DefaultGrailsApplication()
         initializer.initialize()
     }
@@ -68,7 +67,6 @@ class HalXmlRendererSpec extends Specification {
         ConvertersConfigurationHolder.clear()
         RequestContextHolder.resetRequestAttributes()
         ShutdownOperations.runOperations()
-        HttpServletResponseExtension.@mimeTypes = null
     }
 
     void 'Test rendering a domain object with an embedded resource as HAL XML'() {
@@ -287,4 +285,71 @@ class LinkedGadget {
         docs.deprecated = true
         [docs]
     }
+}
+
+@Entity
+class Product {
+
+    String name
+    Integer numberInStock
+    Category category
+
+    @SuppressWarnings('unused')
+    static embedded = ['category']
+}
+
+@Entity
+class Category {
+
+    String name
+
+    @Override
+    String toString() {
+        name
+    }
+
+    // The renderer checks the objects it has written already, which needs equality by value
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) {
+            return true
+        }
+        if (getClass() != o.class) {
+            return false
+        }
+        name == ((Category) o).name
+    }
+
+    @Override
+    int hashCode() {
+        return name.hashCode()
+    }
+}
+
+@Entity
+class Team {
+
+    String name
+
+    @SuppressWarnings('unused')
+    static hasMany = [members: Member]
+}
+
+@Entity
+class Member {
+
+    String name
+
+    @SuppressWarnings('unused')
+    static belongsTo = [team: Team]
+}
+
+class SimpleProduct {
+    String name
+    Integer numberInStock
+    SimpleCategory category
+}
+
+class SimpleCategory {
+    String name
 }
