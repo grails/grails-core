@@ -48,6 +48,16 @@ class JSONTokenerApiSpec extends Specification {
         tokener.toString() == ' at character 4 of abcd'
     }
 
+    void "next(n) returns the next n characters up to exactly the end of the source"() {
+        given:
+        def tokener = new JSONTokener('abc')
+
+        expect:
+        tokener.next(2) == 'ab'
+        tokener.next(1) == 'c'
+        new JSONTokener('abc').next(3) == 'abc'
+    }
+
     void "character and substring mismatches include the source position"() {
         when:
         new JSONTokener('abc').next((char) 'z')
