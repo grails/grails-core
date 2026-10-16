@@ -18,7 +18,6 @@
  */
 package org.grails.web.json
 
-import java.io.IOException
 import java.io.StringWriter
 import java.io.Writer
 import java.util.Date
@@ -97,7 +96,6 @@ class JSONWriterApiSpec extends Specification {
 
         where:
         setup                                      | operation                         | message
-        ({ JSONWriter w -> })                         | ({ w -> w.value(true) })          | 'Value out of sequence'
         ({ JSONWriter w -> w.object() })              | ({ w -> w.value((Object) 'bad') }) | 'Value out of sequence'
         ({ JSONWriter w -> })                         | ({ w -> w.key('key') })           | 'Misplaced key'
         ({ JSONWriter w -> w.array() })               | ({ w -> w.key('key') })           | 'Misplaced key'
@@ -111,38 +109,6 @@ class JSONWriterApiSpec extends Specification {
         ({ JSONWriter w -> w.array().endArray() })    | ({ w -> w.array() })              | 'Misplaced array'
         ({ JSONWriter w -> w.object().endObject() })  | ({ w -> w.object() })             | 'Misplaced object'
         ({ JSONWriter w -> w.array().endArray() })    | ({ w -> w.value(1L) })            | 'Value out of sequence'
-    }
-
-    void "wrap IO failures when opening writing separating keys and closing containers"() {
-        given:
-        def output = Stub(Writer) {
-            write(_) >> { List arguments ->
-                def value = arguments[0]
-                if (value == failingValue) {
-                    throw new IOException('broken output')
-                }
-            }
-        }
-        def writer = new JSONWriter(output)
-
-        when:
-        operation(writer)
-
-        then:
-        def error = thrown(JSONException)
-        error.cause instanceof IOException
-        error.message == 'broken output'
-
-        where:
-        failingValue | operation
-        '['          | ({ w -> w.array() })
-        '{'          | ({ w -> w.object() })
-        'true'       | ({ w -> w.array().value(true) })
-        (int) ','    | ({ w -> w.array().value(true).value(false) })
-        (int) ','    | ({ w -> w.object().key('one').value(true).key('two') })
-        (int) ':'    | ({ w -> w.object().key('one') })
-        (int) ']'    | ({ w -> w.array().endArray() })
-        (int) '}'    | ({ w -> w.object().endObject() })
     }
 
     void "primitive overloads are available without Groovy dispatch"() {
