@@ -397,6 +397,10 @@ With the setting `false`, the following values render differently than in Grails
 | the entry is left out
 | a `ConverterException`: JSON has no `null` key, and the mapper does not accept one
 
+| Validation errors, as in `render errors as JSON`
+| `{"errors":[{"object":…,"field":…,"rejected-value":…,"message":…}]}`
+| `{"errors":[{"object":…,"field":…,"codes":[…],"message":…}]}`, the entries `respond` writes, without the rejected value, which can be a password or a token
+
 | A `Map.Entry`
 | `{"key":"k","value":1}`
 | `{"k":1}`, as the mapper writes it

@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 
+import groovy.json.JsonSlurper
+
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -355,6 +357,23 @@ class JsonMapperRenderingSpec extends Specification {
 
         cleanup:
         context.close()
+    }
+
+    void "validation errors render without the values that were rejected, as the mapper writes them"() {
+        given:
+        def errors = new BeanPropertyBindingResult(new Holder(name: 'secret'), 'holder')
+        errors.rejectValue('name', 'invalid', 'Name is invalid')
+
+        when:
+        def written = new JsonSlurper().parseText(new JSON(errors).toString())
+
+        then:
+        written.errors.size() == 1
+        written.errors[0].keySet() as List == ['object', 'field', 'codes', 'message']
+        written.errors[0].object == 'holder'
+        written.errors[0].field == 'name'
+        written.errors[0].message == 'Name is invalid'
+        !new JSON(errors).toString().contains('secret')
     }
 
     void "the validation errors marshaller takes precedence over a module serializer for Errors"() {

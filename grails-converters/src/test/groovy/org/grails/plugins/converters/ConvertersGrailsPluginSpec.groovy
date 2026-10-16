@@ -68,6 +68,21 @@ class ConvertersGrailsPluginSpec extends Specification {
         }
     }
 
+    void "the Grails 8 errors marshaller is registered only while the JSON converter renders as Grails 8 did"() {
+        given: 'the converters beans of an application that renders through the JsonMapper'
+        def mapperFactory = new DefaultListableBeanFactory()
+        mapperFactory.registerSingleton('grailsApplication', new DefaultGrailsApplication())
+        mapperFactory.registerSingleton('proxyHandler', new DefaultProxyHandler())
+        def environment = new StandardEnvironment()
+        environment.propertySources.addFirst(new MapPropertySource('test', ['grails.converters.json.legacy': false]))
+        def registrar = new ConvertersGrailsPlugin().beanRegistrar()
+        new BeanRegistryAdapter(mapperFactory, environment, registrar.getClass()).register(registrar)
+
+        expect:
+        beanFactory.containsBeanDefinition('errorsJsonMarshallerRegisterer')
+        !mapperFactory.containsBeanDefinition('errorsJsonMarshallerRegisterer')
+    }
+
     void "the named JSON configuration registry is created without a Boot JsonMapper"() {
         when: "the bean is instantiated in a context that has no JsonMapper, such as a unit test slice"
         def configurationRegistry = beanFactory.getBean('namedJsonConfigurationRegistry', NamedJsonConfigurationRegistry)

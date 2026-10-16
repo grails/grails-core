@@ -93,7 +93,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     /**
      * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9.
      */
-    private static final boolean LEGACY_JSON_BY_DEFAULT = true;
+    public static final boolean LEGACY_JSON_BY_DEFAULT = true;
 
     /**
      * Whether the notice that {@link #SETTING_CONVERTERS_JSON_LEGACY} is not set has been logged, so that it is logged
@@ -160,7 +160,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
             builder.addModule(new DomainClassJacksonModule(() -> jsonDomainClassRendering(grailsApplication, getProxyHandler())));
         }
         // a bean with no properties is written as an empty object, as the converter always has
-        return builder.addModule(new ConverterJsonModule()).disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).build();
+        return builder.addModule(new ConverterJsonModule(() -> applicationContext)).disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).build();
     }
 
     private void initJSONConfiguration() {

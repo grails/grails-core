@@ -116,12 +116,17 @@ class ConvertersGrailsPlugin extends Plugin {
                 }
             }
 
-            registry.registerBean('errorsJsonMarshallerRegisterer', ObjectMarshallerRegisterer) {
-                it.supplier {
-                    new ObjectMarshallerRegisterer(
-                            marshaller: it.bean('jsonErrorsMarshaller', JsonErrorsMarshaller),
-                            converterClass: JSON
-                    )
+            // The Grails 8 rendering of validation errors goes with the Grails 8 JSON converter. Rendered through the
+            // JsonMapper, validation errors are written by the mapper's serializer, as respond writes them.
+            if (environment.getProperty(ConvertersConfigurationInitializer.SETTING_CONVERTERS_JSON_LEGACY, Boolean,
+                    ConvertersConfigurationInitializer.LEGACY_JSON_BY_DEFAULT)) {
+                registry.registerBean('errorsJsonMarshallerRegisterer', ObjectMarshallerRegisterer) {
+                    it.supplier {
+                        new ObjectMarshallerRegisterer(
+                                marshaller: it.bean('jsonErrorsMarshaller', JsonErrorsMarshaller),
+                                converterClass: JSON
+                        )
+                    }
                 }
             }
         }

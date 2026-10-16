@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.Version;
@@ -32,24 +33,38 @@ import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.module.SimpleSerializers;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.jackson.JsonValueSerializer;
 import tools.jackson.databind.ser.jdk.EnumSerializer;
 import tools.jackson.databind.ser.std.StdSerializer;
 
+import org.springframework.context.MessageSource;
+import org.springframework.validation.Errors;
+
 import grails.persistence.PersistenceMethod;
 import grails.web.controllers.ControllerMethod;
 
 /**
  * The rules {@code grails.converters.JSON} adds to the mapper it writes with: an enum is written by its name, so that it
- * binds back, a bean leaves out the properties of the methods annotated {@code @PersistenceMethod} and
+ * binds back, validation errors are written without the values that were rejected, a bean leaves out the properties of the methods annotated {@code @PersistenceMethod} and
  * {@code @ControllerMethod}, and the converter's includes and excludes for the class of a bean decide which of its
  * properties are written.
  *
  * @since 9.0
  */
 public final class ConverterJsonModule extends JacksonModule {
+
+    private final Supplier<MessageSource> messageSource;
+
+    /**
+     * @param messageSource supplies the message source that resolves the messages of validation errors, or
+     *        {@code null} for their default messages
+     */
+    public ConverterJsonModule(Supplier<MessageSource> messageSource) {
+        this.messageSource = messageSource;
+    }
 
     /**
      * A writer attribute for a writer that includes only some of the properties of the beans it writes. Its value is a
@@ -70,6 +85,10 @@ public final class ConverterJsonModule extends JacksonModule {
 
     @Override
     public void setupModule(SetupContext context) {
+        // Validation errors are written without the values that were rejected, which can be passwords or tokens
+        SimpleSerializers serializers = new SimpleSerializers();
+        serializers.addSerializer(Errors.class, new SpringErrorsJsonSerializer(messageSource));
+        context.addSerializers(serializers);
         context.addSerializerModifier(new ValueSerializerModifier() {
             @Override
             public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
