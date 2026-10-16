@@ -173,8 +173,8 @@ It renders domain classes with the same Jackson serializer as the `JsonMapper` i
 `grails.converters.json.legacy` set to `false` (see the section on domain classes below): the
 persistent properties and the id, associated instances as references of their id, or in full with
 `grails.converters.json.default.deep`, the version and class name with the `grails.converters.json.domain.*`
-settings, and the Jackson annotations and naming strategy that section lists. Per-response `includes` and
-`excludes` apply to them. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
+settings, and what Jackson applies to a bean, such as `@JsonIgnore`, `@JsonInclude` and the naming strategy. Per-response
+`includes` and `excludes` apply to them. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
 subclasses and per-type mapper registrations keep their configured behavior and precedence.
 
 The one difference from the mapper's own rendering is a value that leads back to an object still being
@@ -473,14 +473,27 @@ JSON.registerObjectMarshaller(Locale) { Locale locale -> locale.toString() }
 JSON.registerObjectMarshaller(byte[]) { byte[] bytes -> bytes as List }
 ----
 
-==== 7. Domain Classes Can Render Through a Jackson Serializer
+==== 7. Domain Classes Render as Jackson Beans of Their Persistent Properties
 
-With `grails.converters.json.legacy` set to `false`, the JSON converter renders domain classes with a Jackson serializer,
-`DomainClassSerializer`, as `DomainClassMarshaller` rendered them, with these changes:
+With `grails.converters.json.legacy` set to `false`, the JSON converter renders a domain class instance with Jackson's own
+bean serializer, which Grails shapes to the domain class, as `DomainClassMarshaller` rendered it in Grails 8, with these
+differences:
 
-* A property annotated with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, is no longer rendered.
+* What Jackson applies to a bean applies to the instance, where the converter ignored it in Grails 8: a property annotated
+with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, is not rendered, nor is one that a class-level
+`@JsonIgnoreProperties` names; property names follow `@JsonProperty`, `@JsonNaming` and the mapper's naming strategy
+(`spring.jackson.property-naming-strategy`); `@JsonInclude` and `spring.jackson.default-property-inclusion` decide whether a
+null or empty property is written; `@JsonView`, `@JsonFormat`, a `@JsonSerialize` serializer on a property, mix-ins, filters
+and `@JsonPropertyOrder` apply; a domain class with `@JsonTypeInfo` is written with its type id, and an instance in a
+`@JsonUnwrapped` property is written into the enclosing object. As with Jackson's own unwrapping, an instance with a type
+id fails there, unless `SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS` is disabled.
+* Only the persistent properties are rendered, as in Grails 8: a transient property, or a getter with nothing persisted
+behind it, is not. They follow the class name, the id and the version, which are rendered ahead of them when they apply,
+in the order the domain class declares them, unless `@JsonPropertyOrder` says otherwise.
 * A to-many association whose value is a `Map` renders as an object of references, such as `{"a":{"id":1}}`, where it
 failed before.
+* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
+is written by Jackson, and so is a subclass of a domain class that is neither a domain class nor a proxy of one.
 * `DomainClassMarshaller` and `DeepDomainClassMarshaller` render through the serializer. Their constructors and
 protected methods (`includesProperty`, `excludesProperty`, `extractValue`, `asShortObject` and
 `isRenderDomainClassRelations`) are unchanged, and a subclass that overrides them still renders as it did. They are
@@ -500,27 +513,10 @@ grails:
                     enabled: true
 ----
 
-Grails then registers the serializer with the mapper, as a Jackson module, and the mapper renders associated instances as
-references of their id, such as `{"id":3}`, rather than in full, and proxies as the instances they proxy. Of what
-Jackson's bean serialization applies to a domain class, the serializer applies the following:
-
-* It leaves out a property annotated with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, on its field or
-getter, and the properties that a class-level `@JsonIgnoreProperties` names, such as those GORM names in the one it adds
-to every domain class.
-* It names the properties as Jackson does, by `@JsonProperty`, `@JsonNaming` and the mapper's naming strategy
-(`spring.jackson.property-naming-strategy`), and names the id of a reference as the referenced class names it.
-* It writes the type id of a domain class with `@JsonTypeInfo`. With `include = EXISTING_PROPERTY`, the type id is the
-value of that property, so it is written only when the property is persistent; a transient or computed one is not.
-* It writes the properties of a domain class instance in a `@JsonUnwrapped` property into the enclosing object. As with
-Jackson's own unwrapping, an instance with a type id fails there, unless
-`SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS` is disabled.
-* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
-is written by Jackson, and so is a subclass of a domain class that is neither a domain class nor a proxy of one.
-
-It applies nothing else. Null properties are written whatever `@JsonInclude` or
-`spring.jackson.default-property-inclusion` say, properties are written in the converter's order rather than by
-`@JsonPropertyOrder` or sorted alphabetically, and `@JsonView`, `@JsonFilter`, `@JsonAnyGetter`, `@JsonIgnoreType`,
-`@JsonFormat` and `@JsonSerialize` on a property, and mix-ins, other than the property names they give, do not apply.
+Grails then registers the module with the mapper, as the `domainClassJacksonModule` bean, which you can also add to a
+`JsonMapper` you build yourself. The mapper renders associated instances as references of their id, such as `{"id":3}`,
+rather than in full, and proxies as the instances they proxy, and names the id of a reference as the referenced class
+names it.
 
 ==== 8. Rendering Single Values as JSON
 

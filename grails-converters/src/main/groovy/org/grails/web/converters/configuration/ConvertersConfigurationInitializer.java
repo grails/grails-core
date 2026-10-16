@@ -39,6 +39,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import io.micrometer.observation.ObservationRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -55,9 +56,11 @@ import org.apache.grails.converters.internal.json.SimpleTypeMarshaller;
 import org.grails.config.PropertySourcesConfig;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.Converter.CircularReferenceBehaviour;
+import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 import org.grails.web.json.JsonDateFormat;
+import org.grails.web.json.JsonMapperSupport;
 
 /**
  * @author Siegfried Puchbauer
@@ -130,10 +133,29 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
             // the application's JsonMapper, or a default one when there is none, or more than one and none is primary.
             // Rendering as Grails 8 did, a default one, so that the application's Jackson settings do not change the text
             boolean legacy = getGrailsConfig().getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT);
-            ConvertersConfigurationHolder.setJsonMapper(legacy ? null : applicationContext.getBeanProvider(JsonMapper.class).getIfUnique());
+            ConvertersConfigurationHolder.setJsonMapper(legacy ? null : withDomainClasses(
+                    applicationContext.getBeanProvider(JsonMapper.class).getIfUnique()));
+        }
+        else if (!getGrailsConfig().getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT)) {
+            ConvertersConfigurationHolder.setJsonMapper(withDomainClasses(null));
         }
         initJSONConfiguration();
         initDeepJSONConfiguration();
+    }
+
+    /**
+     * The mapper the JSON converter renders domain class instances with: the application's own, with the module that
+     * renders them if it does not have it already.
+     */
+    private JsonMapper withDomainClasses(JsonMapper mapper) {
+        JsonMapper source = mapper != null ? mapper : JsonMapperSupport.DEFAULT.getMapper();
+        for (JacksonModule module : source.registeredModules()) {
+            if (module instanceof DomainClassJacksonModule) {
+                return source;
+            }
+        }
+        return source.rebuild().addModule(new DomainClassJacksonModule(
+                () -> jsonDomainClassRendering(grailsApplication, getProxyHandler()))).build();
     }
 
     private void initJSONConfiguration() {

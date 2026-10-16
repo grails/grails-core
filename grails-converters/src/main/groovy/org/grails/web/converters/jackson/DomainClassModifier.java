@@ -1,0 +1,227 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *    https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+package org.grails.web.converters.jackson;
+
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.PropertyName;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.introspect.VirtualAnnotatedMember;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
+
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.config.GormProperties;
+import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.model.types.ManyToOne;
+import org.grails.datastore.mapping.model.types.OneToOne;
+import org.grails.datastore.mapping.reflect.NameUtils;
+import org.grails.datastore.mapping.reflect.ReflectionUtils;
+
+/**
+ * Makes the bean serializer of a domain class write what {@code grails.converters.JSON} writes for an instance: the
+ * class name, the id and the version when they apply, then the persistent properties in the order the domain class
+ * declares them, and an association as a reference of its id, or in full when rendering deep.
+ *
+ * <p>The serializer is otherwise Jackson's, so what Jackson applies to a bean applies to the instance: the naming
+ * strategy, {@code @JsonIgnore}, {@code @JsonInclude}, {@code @JsonView}, {@code @JsonFormat}, mixins, filters, type
+ * ids and unwrapping. A property that is not persistent is not written.</p>
+ *
+ * @since 9.0
+ */
+final class DomainClassModifier extends ValueSerializerModifier {
+
+    private final DomainRendering rendering;
+
+    private final DomainReferences references = new DomainReferences();
+
+    DomainClassModifier(DomainRendering rendering) {
+        this.rendering = rendering;
+    }
+
+    /**
+     * @return the entity of a domain class that is written as a bean, or {@code null} for any other type
+     * @throws org.grails.core.exceptions.GrailsConfigurationException if GORM has not yet made its metadata readable,
+     * so that the serializer is built when the first instance is written, once it has
+     */
+    private PersistentEntity entity(Class<?> type) {
+        DomainClassRendering current = rendering.get();
+        return current.isDomainClass(type) && !current.isProxyType(type) ? current.findEntityOfType(type) : null;
+    }
+
+    @Override
+    public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
+            List<BeanPropertyWriter> properties) {
+        PersistentEntity entity = entity(beanDescription.get().getBeanClass());
+        if (entity == null) {
+            return properties;
+        }
+        Map<String, String> internalNames = new HashMap<>();
+        for (BeanPropertyDefinition definition : beanDescription.get().findProperties()) {
+            internalNames.put(definition.getName(), definition.getInternalName());
+        }
+        List<PersistentProperty> persistent = new ArrayList<>();
+        for (PersistentProperty property : entity.getPersistentProperties()) {
+            if (!property.equals(entity.getVersion()) && !property.equals(entity.getIdentity())) {
+                persistent.add(property);
+            }
+        }
+        List<BeanPropertyWriter> written = new ArrayList<>();
+        for (PersistentProperty property : persistent) {
+            for (BeanPropertyWriter writer : properties) {
+                if (property.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
+                    written.add(new DomainPropertyWriter(withReferences(writer, property), property.getName(), rendering));
+                }
+            }
+        }
+        if (beanDescription.get().getClassAnnotations().get(JsonPropertyOrder.class) != null) {
+            // Jackson's order, as the class asks for it, for the properties it keeps
+            List<BeanPropertyWriter> ordered = new ArrayList<>();
+            for (BeanPropertyWriter writer : properties) {
+                for (BeanPropertyWriter kept : written) {
+                    if (kept.getName().equals(writer.getName())) {
+                        ordered.add(kept);
+                    }
+                }
+            }
+            return ordered;
+        }
+        return written;
+    }
+
+    private BeanPropertyWriter withReferences(BeanPropertyWriter writer, PersistentProperty property) {
+        if (property instanceof Association<?> association && !association.isEmbedded() &&
+                association.getAssociatedEntity() != null && !association.getType().isEnum() &&
+                writer.getSerializer() == null && !writer.isUnwrapping() &&
+                writer.getAnnotation(JsonSerialize.class) == null) {
+            writer.assignSerializer(references.serializer(association.getAssociatedEntity(),
+                    !(association instanceof OneToOne || association instanceof ManyToOne), rendering));
+        }
+        return writer;
+    }
+
+    @Override
+    public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
+            List<BeanPropertyWriter> properties) {
+        BeanDescription description = beanDescription.get();
+        PersistentEntity entity = entity(description.getBeanClass());
+        if (entity == null) {
+            return properties;
+        }
+        // These are written ahead of the other properties. The id and the version are Jackson's own properties unless the
+        // class leaves them out, GORM leaving out the version, so they are written by writers of their own.
+        List<BeanPropertyWriter> ordered = new ArrayList<>();
+        ordered.add(leading(config, description, "class", DomainLeadingWriter.Kind.CLASS, entity));
+        if (entity.getIdentity() != null && !ignored(description.getBeanClass(), entity.getIdentity().getName())) {
+            ordered.add(leading(config, description, entity.getIdentity().getName(), DomainLeadingWriter.Kind.ID, entity));
+        }
+        if (entity.getVersion() != null && !ignored(description.getBeanClass(), GormProperties.VERSION)) {
+            ordered.add(leading(config, description, GormProperties.VERSION, DomainLeadingWriter.Kind.VERSION, entity));
+        }
+        ordered.addAll(properties);
+        return ordered;
+    }
+
+    private BeanPropertyWriter leading(SerializationConfig config, BeanDescription description, String property,
+            DomainLeadingWriter.Kind kind, PersistentEntity entity) {
+        BeanPropertyDefinition definition = null;
+        for (BeanPropertyDefinition candidate : description.findProperties()) {
+            if (property.equals(candidate.getInternalName())) {
+                definition = candidate;
+            }
+        }
+        JavaType object = config.getTypeFactory().constructType(Object.class);
+        if (definition == null || kind == DomainLeadingWriter.Kind.CLASS) {
+            definition = SimpleBeanPropertyDefinition.construct(config,
+                    new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), property, object),
+                    PropertyName.construct(property));
+        }
+        return new DomainLeadingWriter(definition, description.getClassAnnotations(), object, kind, entity, rendering);
+    }
+
+    @Override
+    public ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier beanDescription,
+            ValueSerializer<?> serializer) {
+        DomainClassRendering current = rendering.get();
+        Class<?> type = beanDescription.get().getBeanClass();
+        if (!current.isDomainClass(type) || current.isProxyType(type)) {
+            return serializer;
+        }
+        ValueSerializer<?> tracked = CycleTracking.around(serializer, this::onCycle);
+        return tracked != null ? tracked : serializer;
+    }
+
+    /** An instance reached again while it is being written is a reference to it, or what the behaviour selects. */
+    private void onCycle(Object value, Cycles.Frame enclosing, tools.jackson.core.JsonGenerator generator,
+            tools.jackson.databind.SerializationContext context) {
+        DomainClassRendering current = rendering.of(context);
+        if (current.getCircularReferenceBehaviour() != null) {
+            Cycles.write(value, enclosing, generator, current.getCircularReferenceBehaviour());
+        }
+        else {
+            references.write(value, current.findEntity(value), generator, context, current);
+        }
+    }
+
+    /**
+     * Whether the class leaves a property out with {@code @JsonIgnore}, or makes it write-only, on its field or getter.
+     */
+    private static boolean ignored(Class<?> type, String property) {
+        for (Class<?> current = type; current != null && current != Object.class; current = current.getSuperclass()) {
+            for (Field field : current.getDeclaredFields()) {
+                if (field.getName().equals(property) && ignoredForSerialization(field)) {
+                    return true;
+                }
+            }
+            for (Method method : current.getDeclaredMethods()) {
+                if (ReflectionUtils.isGetter(method.getName(), method.getParameterTypes()) &&
+                        property.equals(NameUtils.getPropertyNameForGetterOrSetter(method.getName())) &&
+                        ignoredForSerialization(method)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean ignoredForSerialization(AnnotatedElement element) {
+        JsonIgnore ignore = element.getAnnotation(JsonIgnore.class);
+        if (ignore != null && ignore.value()) {
+            return true;
+        }
+        JsonProperty property = element.getAnnotation(JsonProperty.class);
+        return property != null && property.access() == JsonProperty.Access.WRITE_ONLY;
+    }
+}

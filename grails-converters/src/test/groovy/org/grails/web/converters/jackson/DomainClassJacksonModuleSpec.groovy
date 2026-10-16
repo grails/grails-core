@@ -18,12 +18,15 @@
  */
 package org.grails.web.converters.jackson
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.JsonView
 import spock.lang.Specification
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.MapperFeature
@@ -122,7 +125,7 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper.writeValueAsString(volume) == '{"id":1,"title":"Grails","shelf":null,"writers":[{"id":9}],"writersByName":null}'
     }
 
-    void "properties annotated @JsonIgnore or write-only are not written, and those of @JsonIgnoreProperties only by the mapper"() {
+    void "properties annotated @JsonIgnore or write-only are not written, and those @JsonIgnoreProperties names are not"() {
         given: 'GORM adds @JsonIgnoreProperties to every domain class, naming properties such as the version'
         def member = new Member(name: 'a', password: 'secret', pin: '1234', token: 'abc')
         member.id = 1
@@ -132,7 +135,9 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(member) == '{"id":1,"name":"a"}'
         mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, false, false))
                 .writeValueAsString(member) == '{"id":1,"version":2,"name":"a"}'
-        new JSON(member).toString() == '{"id":1,"name":"a","token":"abc"}'
+
+        and: 'the JSON converter leaves them out as well'
+        new JSON(member).toString() == '{"id":1,"name":"a"}'
     }
 
     void "a domain class with its own @JsonSerialize serializer keeps it"() {
@@ -233,6 +238,22 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
     }
 
+    void "@JsonInclude, @JsonView and @JsonFormat on a property apply, as they do to any bean"() {
+        given:
+        def annotated = new Annotated(name: 'a', nickname: '', hidden: 'h', born: new Date(0))
+        annotated.id = 1
+        def mapper = mapper()
+
+        expect: 'an empty nickname is left out, and a date is formatted as the property asks'
+        mapper.writeValueAsString(annotated) == '{"id":1,"name":"a","hidden":"h","born":"1970"}'
+
+        and: 'a view writes the properties in it, as it does for any bean when default view inclusion is off'
+        mapper.writerWithView(Everyone).writeValueAsString(annotated) == '{"hidden":"h"}'
+
+        and: 'the JSON converter applies them as well'
+        new JSON(annotated).toString() == '{"id":1,"name":"a","hidden":"h","born":"1970"}'
+    }
+
     void "the mapper's naming strategy, @JsonNaming and @JsonProperty name the properties the mapper writes"() {
         given:
         def snakeCase = JsonMapper.builder()
@@ -250,8 +271,8 @@ class DomainClassJacksonModuleSpec extends Specification {
         snakeCase.writeValueAsString(titled) == '{"id":1,"book_title":"G","shelf":{"id":3},"subtitle":"s"}'
         mapper().writeValueAsString(kebab) == '{"id":4,"book-title":"K"}'
 
-        and: 'the JSON converter writes the property names as they are'
-        new JSON(titled).toString() == '{"id":1,"bookTitle":"G","shelf":{"id":3},"subTitle":"s"}'
+        and: 'the JSON converter writes the names Jackson gives, apart from a naming strategy of the mapper it uses'
+        new JSON(titled).toString() == '{"id":1,"bookTitle":"G","shelf":{"id":3},"subtitle":"s"}'
     }
 
     void "the properties are written in the converter's order, whether or not the mapper sorts properties"() {
@@ -350,13 +371,13 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair)
+                Titled, Kebab, Kennel, Pair, Annotated)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair)
+                Kennel, Pair, Annotated)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -458,6 +479,19 @@ class Unwrapped {
     @JsonUnwrapped(prefix = 'w_')
     Writer prefixed
     String note
+}
+
+class Everyone { }
+
+@Entity
+class Annotated {
+    String name
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    String nickname
+    @JsonView(Everyone)
+    String hidden
+    @JsonFormat(pattern = 'yyyy', timezone = 'UTC')
+    Date born
 }
 
 @Entity

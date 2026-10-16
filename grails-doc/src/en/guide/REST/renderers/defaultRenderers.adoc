@@ -95,7 +95,7 @@ spring:
         time-zone: America/New_York
 ----
 
-Domain classes are rendered by a Jackson serializer that Grails provides, as described below. Beans, enums, records,
+Domain classes are rendered by Jackson's bean serializer, which Grails shapes to the domain class, as described below. Beans, enums, records,
 `Optional`, collections and maps are rendered by Grails marshallers, and the values they contain as any other value is.
 Enums render by `name()`, so that the JSON binds back to them, and strings are escaped for an HTML `<script>` element
 (`</` is written as `<\u002f`). To render a type differently, register an object
@@ -123,22 +123,30 @@ strict parsers reject, such as single-quoted strings and comments.
 ==== Domain Classes and the JsonMapper
 
 
-With `grails.converters.json.legacy` set to `false`, the JSON converter renders a domain class instance with a Jackson
-serializer that Grails provides:
+With `grails.converters.json.legacy` set to `false`, the JSON converter renders a domain class instance with Jackson's bean
+serializer, which Grails shapes to the domain class:
 
 [source,json]
 ----
 {"id":1,"title":"Grails","publisher":{"id":3},"authors":[{"id":1},{"id":2}]}
 ----
 
+* The persistent properties are written, in the order the domain class declares them, after the class name, the id and the
+version, which are written when they apply. The version and the class name are written when
+`grails.converters.json.domain.include.version` and `grails.converters.json.domain.include.class` are `true`.
 * An associated domain class instance is written as a reference of its id, or in full when
-`grails.converters.json.default.deep` is `true` (or within `JSON.use('deep') { }` for the converter). Rendering deep with
-the mapper, an instance that is already being written further up is written as a reference.
-* The version and the class name are written when `grails.converters.json.domain.include.version` and
-`grails.converters.json.domain.include.class` are `true`.
+`grails.converters.json.default.deep` is `true` (or within `JSON.use('deep') { }` for the converter). Rendering deep, an
+instance that is already being written further up is written as a reference.
 * A proxy is written as the instance it proxies, and a reference to a proxy is written from its identifier, without
 loading it.
-* A property annotated with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, is not written.
+* What Jackson applies to any bean applies to the instance: `@JsonIgnore`, `@JsonIgnoreProperties` and write-only
+properties leave a property out; `@JsonProperty`, `@JsonNaming` and the mapper's naming strategy name the properties, also
+in references; `@JsonInclude` and `spring.jackson.default-property-inclusion` decide about null and empty properties;
+`@JsonView`, `@JsonFormat`, a `@JsonSerialize` serializer on a property, mix-ins, filters and `@JsonPropertyOrder` apply; a
+domain class with `@JsonTypeInfo` is written with its type id, and an instance in a `@JsonUnwrapped` property is written into
+the enclosing object.
+* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
+is written by Jackson, as any class is.
 
 The property values are rendered by the converter's marshallers. The application's `JsonMapper` itself renders domain
 classes as Jackson beans, as it does any class. To have it render them as the JSON converter does, including when a
@@ -154,19 +162,8 @@ grails:
                     enabled: true
 ----
 
-Grails then registers the serializer with the mapper, as the `domainClassJacksonModule` bean, which you can also add to a
-`JsonMapper` you build yourself. Written by the mapper:
-
-* The properties that `@JsonIgnoreProperties` names are left out, as Jackson leaves them out; GORM adds that annotation
-to every domain class, naming properties such as `errors` and `tenantId`. The converter renders those with its includes
-and excludes, as before.
-* Property names follow `@JsonProperty`, `@JsonNaming` and the mapper's naming strategy, also in references. A domain
-class with `@JsonTypeInfo` is written with its type id, and an instance in a `@JsonUnwrapped` property is unwrapped.
-* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
-is written by Jackson.
-
-Other Jackson annotations and settings, such as `@JsonInclude`, `@JsonView` or `@JsonFormat` on a property, do not apply
-to domain classes; the upgrade guide lists them.
+Grails then registers the module with the mapper, as the `domainClassJacksonModule` bean, which you can also add to a
+`JsonMapper` you build yourself.
 
 
 ==== Date and Time Rendering

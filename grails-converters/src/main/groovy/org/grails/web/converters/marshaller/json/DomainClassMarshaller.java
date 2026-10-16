@@ -55,8 +55,8 @@ import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.grails.web.converters.ConverterUtil;
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.jackson.DomainClassRendering;
-import org.grails.web.converters.jackson.DomainClassSerializer;
 import org.grails.web.converters.marshaller.ByDatasourceDomainClassFetcher;
 import org.grails.web.converters.marshaller.ByGrailsApplicationDomainClassFetcher;
 import org.grails.web.converters.marshaller.DomainClassFetcher;
@@ -66,7 +66,7 @@ import org.grails.web.json.JSONWriter;
 /**
  *
  * Object marshaller for domain classes to JSON. It renders an instance with a
- * {@link DomainClassSerializer}, through the converter's {@code JsonMapper}, with the includes and excludes of the
+ * {@link DomainClassJacksonModule}, through the converter's {@code JsonMapper}, with the includes and excludes of the
  * converter and of {@link #includesProperty(Object, String)} and {@link #excludesProperty(Object, String)}, and renders
  * the property values with the converter. With {@code grails.converters.json.legacy}, it renders an instance as
  * Grails 8 did.
@@ -132,7 +132,8 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             return;
         }
         Object object = proxyHandler.unwrapIfProxy(value);
-        JsonMapperValueMarshaller.write(DomainClassSerializer.value(object, new Rendering(json, object.getClass())), json);
+        DomainClassJacksonModule.withRendering(new Rendering(json, object.getClass()),
+                () -> JsonMapperValueMarshaller.write(object, json));
     }
 
     /**
