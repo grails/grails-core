@@ -108,7 +108,7 @@ class JSONWriterSpec extends Specification {
 
         when:
         wrapper.object().key('list').array().object().key('a')
-        def path = wrapper.currentStrackReference
+        def path = wrapper.currentStackReference
         wrapper.value(1L).endObject().endArray().endObject()
 
         then:
@@ -347,7 +347,7 @@ class JSONWriterSpec extends Specification {
         def nested = { Object value ->
             wrapper.writeNested {
                 wrapper.object().key('x')
-                path = wrapper.currentStrackReference
+                path = wrapper.currentStackReference
                 wrapper.value(1).endObject()
             }
             true
