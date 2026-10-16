@@ -62,14 +62,12 @@ class GrailsResourceUtilsSpec extends Specification {
         path                                                  | relativePath                 | directory
         '/app/grails-app/domain/example/Book.groovy'            | 'example/Book.groovy'         | 'domain'
         '/app/grails-app/conf/BootStrap.groovy'                 | 'BootStrap.groovy'            | 'conf'
+        '/app/grails-app/conf/spring/resources.groovy'          | 'resources.groovy'            | 'conf'
+        '/app/grails-app/conf/spring/nested/beans.groovy'       | 'nested/beans.groovy'         | 'conf'
+        'C:\\app\\grails-app\\conf\\spring\\resources.groovy' | 'resources.groovy'            | 'conf'
         'C:\\app\\grails-app\\domain\\example\\Book.java'     | 'example\\Book.java'         | 'domain'
         '/app/src/main/groovy/example/Book.groovy'              | null                         | null
         '/app/grails-app/views/book/show.gsp'                  | null                         | null
-    }
-
-    void 'a spring script resolves to the conf artefact directory'() {
-        expect:
-        GrailsResourceUtils.getArtefactDirectory('/app/grails-app/conf/spring/resources.groovy') == 'conf'
     }
 
     void 'domain detection distinguishes source directories and extensions'() {
