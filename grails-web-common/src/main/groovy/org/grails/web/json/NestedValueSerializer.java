@@ -46,7 +46,8 @@ import tools.jackson.databind.type.MapType;
  */
 final class NestedValueSerializer extends DelegatingSerializer {
 
-    private static final ThreadLocal<Frame> FRAME = new ThreadLocal<>();
+    /** The attribute of the serialization context that holds the {@link Frame} of the value being written. */
+    private static final String FRAME = NestedValueSerializer.class.getName() + ".frame";
 
     NestedValueSerializer(ValueSerializer<?> delegatee) {
         super(delegatee);
@@ -68,19 +69,23 @@ final class NestedValueSerializer extends DelegatingSerializer {
      *        write it
      */
     static void write(JsonGenerator generator, Object value, Predicate<Object> nestedValueWriter) {
-        Frame previous = FRAME.get();
-        FRAME.set(new Frame(generator, value, nestedValueWriter));
+        // The frame belongs to the write: its context is the one every serializer of this value is given
+        SerializationContext context = context(generator);
+        Object previous = context.getAttribute(FRAME);
+        context.setAttribute(FRAME, new Frame(generator, value, nestedValueWriter));
         try {
             generator.writePOJO(value);
         }
         finally {
-            if (previous != null) {
-                FRAME.set(previous);
-            }
-            else {
-                FRAME.remove();
-            }
+            context.setAttribute(FRAME, previous);
         }
+    }
+
+    private static SerializationContext context(JsonGenerator generator) {
+        if (generator.objectWriteContext() instanceof SerializationContext context) {
+            return context;
+        }
+        throw new IllegalArgumentException("The generator was not created by a mapper's writer");
     }
 
     /**
@@ -91,7 +96,8 @@ final class NestedValueSerializer extends DelegatingSerializer {
      * @return the location, or an empty string when nothing is being written with a nested value writer
      */
     static String nestedPath(JsonGenerator generator) {
-        Frame frame = FRAME.get();
+        Frame frame = generator.objectWriteContext() instanceof SerializationContext context ?
+                (Frame) context.getAttribute(FRAME) : null;
         if (frame == null || frame.generator != generator) {
             return "";
         }
@@ -118,20 +124,20 @@ final class NestedValueSerializer extends DelegatingSerializer {
 
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt) {
-        if (!writtenAsNested(value, gen)) {
+        if (!writtenAsNested(value, gen, ctxt)) {
             _delegatee.serialize(value, gen, ctxt);
         }
     }
 
     @Override
     public void serializeWithType(Object value, JsonGenerator gen, SerializationContext ctxt, TypeSerializer typeSer) {
-        if (!writtenAsNested(value, gen)) {
+        if (!writtenAsNested(value, gen, ctxt)) {
             _delegatee.serializeWithType(value, gen, ctxt, typeSer);
         }
     }
 
-    private static boolean writtenAsNested(Object value, JsonGenerator generator) {
-        Frame frame = FRAME.get();
+    private static boolean writtenAsNested(Object value, JsonGenerator generator, SerializationContext context) {
+        Frame frame = (Frame) context.getAttribute(FRAME);
         if (frame == null || frame.generator != generator) {
             return false;
         }
