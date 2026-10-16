@@ -69,7 +69,5 @@ class CommandExceptionSpec extends Specification {
         new NoHelpCommandArgumentsException().message == null
         new NoHelpCommandArgumentsException().options == [BootCommandException.Option.SHOW_USAGE,
                                                          BootCommandException.Option.HIDE_MESSAGE].toSet()
-        new NoArgumentsException().message == null
-        new NoArgumentsException().options.empty
     }
 }

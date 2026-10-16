@@ -42,10 +42,12 @@ class CommandRunnerSpec extends Specification {
     }
 
     void cleanup() {
-        System.out.close()
-        System.err.close()
+        PrintStream capturedOut = System.out
+        PrintStream capturedErr = System.err
         System.setOut(originalOut)
         System.setErr(originalErr)
+        capturedOut.close()
+        capturedErr.close()
     }
 
     def 'runner name is suitable for use as a prefix'() {

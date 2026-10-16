@@ -63,14 +63,14 @@ class TemplateRendererImplSpec extends Specification {
         renderer.render('Hello ${name}!', destination, [name: 'Grails'])
 
         then:
-        destination.text == 'original'
+        destination.getText('UTF-8') == 'original'
         1 * console.warn('Destination file greeting.txt already exists, skipping...')
 
         when:
         renderer.render('Hello ${name}!', destination, [name: 'Grails'], true)
 
         then:
-        destination.text == 'Hello Grails!'
+        destination.getText('UTF-8') == 'Hello Grails!'
         0 * repository._
     }
 
@@ -86,8 +86,8 @@ class TemplateRendererImplSpec extends Specification {
         renderer.render(new FileSystemResource(template), resourceDestination, [name: 'Resource'])
 
         then:
-        fileDestination.text == 'Hello File!'
-        resourceDestination.text == 'Hello Resource!'
+        fileDestination.getText('UTF-8') == 'Hello File!'
+        resourceDestination.getText('UTF-8') == 'Hello Resource!'
         1 * console.addStatus('Rendered template greeting.tpl to destination file.txt')
         1 * console.addStatus('Rendered template greeting.tpl to destination resource.txt')
         0 * repository._
@@ -103,7 +103,7 @@ class TemplateRendererImplSpec extends Specification {
         renderer.render(template: 'greeting.tpl', destination: 'generated/greeting.txt', model: [name: 'Project'])
 
         then:
-        new File(directory, 'generated/greeting.txt').text == 'Hello Project!'
+        new File(directory, 'generated/greeting.txt').getText('UTF-8') == 'Hello Project!'
         renderer.template('greeting.tpl').file == template
         0 * repository._
     }
