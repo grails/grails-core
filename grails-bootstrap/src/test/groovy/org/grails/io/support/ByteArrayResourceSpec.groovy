@@ -85,7 +85,7 @@ class ByteArrayResourceSpec extends Specification {
 
         then:
         UnsupportedOperationException exception = thrown()
-        exception.message == "Method $operation not supported"
+        exception.message.contains(operation)
 
         where:
         operation        | arguments

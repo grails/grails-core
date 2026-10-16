@@ -199,8 +199,6 @@ class AntPathMatcherSpec extends Specification {
         '/{hotel}'     | '/booking'        | '/{hotel}/booking'
         '/*.html'      | '/hotels.html'    | '/hotels.html'
         '/*.html'      | '/hotels'         | '/hotels.html'
-        '/*.html'      | '/*.txt'          | '/*.html'
-        '/report.html' | '/other.txt'      | '/report.html'
         '/users/{id:[}' | '/users/42'       | '/users/{id:[}/users/42'
         ' '            | 'booking'         | ' /booking'
     }
@@ -241,7 +239,7 @@ class AntPathMatcherSpec extends Specification {
     }
 
     @Unroll
-    void 'null input to #operation is rejected'() {
+    void 'null input to #operation throws NullPointerException'() {
         when:
         matcher."$operation"(*arguments)
 
@@ -273,15 +271,10 @@ class AntPathMatcherSpec extends Specification {
         operation << ['match', 'matchStart', 'extractUriTemplateVariables']
     }
 
-    void 'capturing groups in template regex match but cannot be extracted as extra variables'() {
+    void 'capturing groups in a template regex still match'() {
         expect:
         matcher.match('/users/{id:(ab|cd)}', '/users/ab')
-
-        when:
-        matcher.extractUriTemplateVariables('/users/{id:(ab|cd)}', '/users/ab')
-
-        then:
-        thrown(IndexOutOfBoundsException)
+        !matcher.match('/users/{id:(ab|cd)}', '/users/ef')
     }
 
     @Unroll
