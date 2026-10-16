@@ -214,15 +214,10 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         // them, and they are rendered with the converter's includes, excludes and deep setting
         marshallers.add(new org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller<>());
         marshallers.add(domainClassMarshaller(grailsConfig, proxyHandler));
-        // dates and times and the other single values the application's JsonMapper has a serializer for are written
-        // by the mapper, as Spring Boot writes them
+        // dates and times, the other single values the application's JsonMapper has a serializer for, and the collections,
+        // maps, arrays, records and Optional values it writes are written by the mapper, as Spring Boot writes them
         marshallers.add(new org.grails.web.converters.marshaller.json.JsonMapperValueMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.json.SimpleEnumMarshaller(true));
-        marshallers.add(new org.grails.web.converters.marshaller.json.RecordMarshaller());
-        marshallers.add(new org.grails.web.converters.marshaller.json.OptionalMarshaller());
-        marshallers.add(new org.grails.web.converters.marshaller.json.ArrayMarshaller());
-        marshallers.add(new org.grails.web.converters.marshaller.json.CollectionMarshaller());
-        marshallers.add(new org.grails.web.converters.marshaller.json.MapMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.json.GroovyBeanMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.json.GenericJavaBeanMarshaller());
     }

@@ -388,9 +388,30 @@ class JsonMapperRenderingSpec extends Specification {
         rendered == new JSON([error: error]).toString()
     }
 
-    void "a record renders as an object of its components, without the Jackson annotations on them"() {
+    void "a record renders as Jackson renders it, with the annotations on its components"() {
         expect:
-        new JSON([person: new Person('Ada', 'x')]).toString() == '{"person":{"firstName":"Ada","ssn":"x"}}'
+        new JSON([person: new Person('Ada', 'x')]).toString() == '{"person":{"first_name":"Ada"}}'
+    }
+
+    void "a map with a null key fails, as it does for Spring Boot, where the Grails 8 converter left the entry out"() {
+        when:
+        new JSON([(null): 1, a: 2]).toString()
+
+        then:
+        def e = thrown(RuntimeException)
+        e.message.contains('Null key for a Map not allowed in JSON')
+    }
+
+    void "a collection that contains itself renders as an empty collection where it repeats, as before"() {
+        given:
+        List list = []
+        list << list
+        Map map = [:]
+        map.self = map
+
+        expect:
+        new JSON(list).toString() == '[[]]'
+        new JSON(map).toString() == '{"self":{}}'
     }
 
     void "a marshaller an ObjectMarshallerRegisterer registers takes precedence"() {

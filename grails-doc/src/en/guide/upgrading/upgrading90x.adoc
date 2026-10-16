@@ -315,10 +315,13 @@ uppercase literals, trailing commas, `new Date(...)`), return the same number ty
 `Double` or `BigDecimal`, depending on the number) and the same `JSONObject` and `JSONArray` containers, which implement
 `Map` and `List`.
 
-With the setting `false`, Grails marshallers still render domain classes, beans, enums, collections, maps and arrays,
-and now records (as an object of their components) and `Optional` (as its value), so the values they contain are
-rendered as any other value is. A marshaller that an application registers, with `JSON.registerObjectMarshaller(...)` or an
-`ObjectMarshallerRegisterer`, still takes precedence over the mapper for the types it supports.
+With the setting `false`, the mapper writes collections, maps, arrays, records and `Optional` values, as Spring Boot
+writes them (a record as an object of its components, with the Jackson annotations on them), and the converter renders
+each value in them, so the values they contain are rendered as any other value is.
+Grails marshallers still render beans and enums. A marshaller that an application registers, with
+`JSON.registerObjectMarshaller(...)` or an `ObjectMarshallerRegisterer`, still takes precedence over the mapper for the
+types it supports. A collection or a map that contains itself is written as before, as an empty collection or map where it
+repeats, or as the `grails.converters.json.circular.reference.behaviour` selects.
 
 A Jackson module registered with the application, such as a `JacksonModule` bean or a `@JacksonComponent` serializer,
 applies to `grails.converters.JSON` with the setting `false`, where Grails 8 ignored it. When a module provides a serializer for a type that
@@ -390,6 +393,10 @@ With the setting `false`, the following values render differently than in Grails
 | `Optional`
 | `{"empty":false,"present":true}`
 | its value, or `null` when it is empty
+
+| A map with a `null` key
+| the entry is left out
+| a `ConverterException`: JSON has no `null` key, and the mapper does not accept one
 
 | A `NaN` or infinite `double`
 | `NaN`, which is not valid JSON

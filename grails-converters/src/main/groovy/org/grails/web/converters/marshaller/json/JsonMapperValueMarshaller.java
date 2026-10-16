@@ -18,6 +18,10 @@
  */
 package org.grails.web.converters.marshaller.json;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+
 import grails.converters.JSON;
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.exceptions.ConverterException;
@@ -32,9 +36,10 @@ import org.grails.web.json.JsonMapperValue;
  * that Jackson modules registered with the application serialize
  * (see {@link org.grails.web.json.JsonMapperSupport#rendersValue(Class)}).
  *
- * <p>It is registered after {@code ProxyUnwrappingMarshaller} and the domain class marshaller, and ahead of the enum,
- * record, {@code Optional}, collection, map and bean marshallers, so those never see such a value. Any marshaller an
- * application registers takes precedence for the types it supports.
+ * <p>It also writes collections, maps, arrays, records and {@code Optional}, whose values it renders with the converter.
+ * It is registered after {@code ProxyUnwrappingMarshaller} and the domain class marshaller, and ahead of the enum and
+ * bean marshallers, so those never see such a value. Any marshaller an application registers takes precedence for the
+ * types it supports.
  *
  * <p>A value nested in a value the mapper writes, such as a property that a Jackson module's serializer writes with
  * {@code JsonGenerator#writePOJO}, is rendered by the converter as any other value is, so marshallers apply to it.
@@ -45,7 +50,16 @@ import org.grails.web.json.JsonMapperValue;
 public class JsonMapperValueMarshaller implements ObjectMarshaller<JSON> {
 
     public boolean supports(Object object) {
-        return ConvertersConfigurationHolder.getJsonMapperSupport().rendersValue(object.getClass());
+        return isStructure(object) || ConvertersConfigurationHolder.getJsonMapperSupport().rendersValue(object.getClass());
+    }
+
+    /**
+     * Whether the mapper writes the object as a structure of other values: a collection, a map, an array, a record or an
+     * {@code Optional}. The converter renders each value in it, so that its marshallers apply to them.
+     */
+    private static boolean isStructure(Object object) {
+        return object instanceof Collection || object instanceof Map || object.getClass().isArray() ||
+                object.getClass().isRecord() || object instanceof Optional;
     }
 
     public void marshalObject(Object object, JSON converter) throws ConverterException {
@@ -66,7 +80,9 @@ public class JsonMapperValueMarshaller implements ObjectMarshaller<JSON> {
     }
 
     private static boolean writeNested(Object nested, JSON converter) {
-        if (converter.lookupObjectMarshaller(nested) instanceof JsonMapperValueMarshaller) {
+        // A single value is left to the mapper, but a structure goes back through the converter, which keeps track of the
+        // objects it is rendering, so that one that contains itself is found
+        if (converter.lookupObjectMarshaller(nested) instanceof JsonMapperValueMarshaller && !isStructure(nested)) {
             return false;
         }
         converter.getWriter().writeNested(() -> converter.convertAnother(nested));
