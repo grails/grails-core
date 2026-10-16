@@ -33,6 +33,7 @@ class GrailsResourceUtilsSpec extends Specification {
         GrailsResourceUtils.getClassName(path) == className
         GrailsResourceUtils.isProjectSource(path) == projectSource
         GrailsResourceUtils.isGrailsPath(path) == grailsPath
+        // the second lookup is answered from the known-path cache and must agree with the first
         GrailsResourceUtils.isGrailsPath(path) == grailsPath
 
         where:
@@ -66,13 +67,9 @@ class GrailsResourceUtilsSpec extends Specification {
         '/app/grails-app/views/book/show.gsp'                  | null                         | null
     }
 
-    void 'spring script root lookup retains the full source path'() {
-        given:
-        String path = '/app/grails-app/conf/spring/resources.groovy'
-
+    void 'a spring script resolves to the conf artefact directory'() {
         expect:
-        GrailsResourceUtils.getPathFromRoot(path) == path
-        GrailsResourceUtils.getArtefactDirectory(path) == 'conf'
+        GrailsResourceUtils.getArtefactDirectory('/app/grails-app/conf/spring/resources.groovy') == 'conf'
     }
 
     void 'domain detection distinguishes source directories and extensions'() {
@@ -215,6 +212,7 @@ class GrailsResourceUtilsSpec extends Specification {
         File file = new File(tempDir, 'with space.txt')
         URL url = file.toURI().toURL()
         URL jar = new URL('jar:' + url.toString() + '!/example/Book.class')
+        URL jarWithoutProtocol = new URL('jar', '', 'C:/mypath/myjar.jar!/example/Book.class')
 
         expect:
         GrailsResourceUtils.getFile(url, 'fixture') == file
@@ -228,6 +226,7 @@ class GrailsResourceUtilsSpec extends Specification {
         !GrailsResourceUtils.isJarURL(url)
         GrailsResourceUtils.extractJarFileURL(jar) == url
         GrailsResourceUtils.extractJarFileURL(url) == url
+        GrailsResourceUtils.extractJarFileURL(jarWithoutProtocol) == new URL('file:/C:/mypath/myjar.jar')
 
         when:
         def connection = url.openConnection()

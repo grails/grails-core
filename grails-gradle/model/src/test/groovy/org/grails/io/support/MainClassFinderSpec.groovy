@@ -32,10 +32,8 @@ class MainClassFinderSpec extends Specification {
     @TempDir
     File tempDir
 
-    private final Set<String> cacheKeys = new HashSet<>()
-
     void cleanup() {
-        cacheKeys.each { MainClassFinder.mainClasses.remove(it) }
+        MainClassFinder.mainClasses.clear()
     }
 
     void 'findMainClass finds a nested Grails application and its class file'() {
@@ -98,7 +96,6 @@ class MainClassFinderSpec extends Specification {
     void 'findMainClass can bypass its cache and rescan after a cached class is deleted'() {
         given:
         File application = writeClass(tempDir, 'example/Application')
-        cacheKeys.add(tempDir.canonicalPath)
         def original = MainClassFinder.findMainClass(tempDir)
 
         when:
@@ -147,8 +144,6 @@ class MainClassFinderSpec extends Specification {
         source.text = 'package example'
         File classes = new File(tempDir, 'build/classes/main')
         File application = writeClass(classes, 'example/Application')
-        cacheKeys.add(source.toURI().toString())
-        cacheKeys.add(classes.canonicalPath)
 
         expect:
         MainClassFinder.searchMainClass(source.toURI()) == 'example.Application'

@@ -87,9 +87,12 @@ class UrlResourceSpec extends Specification {
     }
 
     void 'directories are not readable file resources'() {
+        given:
+        def resource = new UrlResource(tempDir.toURI())
+
         expect:
-        new UrlResource(tempDir.toURI()).exists()
-        !new UrlResource(tempDir.toURI()).isReadable()
+        resource.exists()
+        !resource.isReadable()
     }
 
     void 'a non-file URI is preserved but cannot be resolved to a file'() {

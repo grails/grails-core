@@ -89,7 +89,7 @@ class ClassPathResourceSpec extends Specification {
         relative.inputStream.withCloseable { it.read() } == 0xca
         absolute.inputStream.withCloseable { it.read() } == 0xca
         relative.description == 'class path resource [org/grails/io/support/ClassPathResourceSpec.class]'
-        relative.createRelative('MainClassFinderSpec.class').exists()
+        relative.createRelative('ClassPathResource.class').exists()
     }
 
     void 'the default constructor uses the context class loader'() {
