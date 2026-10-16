@@ -47,7 +47,27 @@ Applications that use GPars directly, for example `GParsPool.withPool { list.eac
 
 NOTE: Groovy 6 marks the concurrency toolkit as incubating. The Grails modules that build on it expose only the Grails `Promise` and `EventBus` contracts, so changes to the Groovy API in later Groovy releases are absorbed by Grails rather than by application code.
 
-==== 2. `grails.converters.JSON` Can Write JSON With Spring Boot's JsonMapper
+==== 2. Groovy Code Is Compiled with invokedynamic
+
+Grails 8 compiles every Groovy source set of an application without invokedynamic (`grails { indy = false }` was the default). Grails 9 leaves the setting unset, so the Groovy compiler's own default applies, and on Groovy 6 that is invokedynamic. An application that set `grails { indy = true }` can remove the line. Build logic that read the property, for example `grails.indy.get()`, must allow for it having no value now: use `grails.indy.getOrElse(true)` or check `grails.indy.present`.
+
+An application that has to keep classic call sites, for example while it measures the difference, sets the property explicitly. An application that applies GraalVM's native image plugin cannot: the build fails with the reason, because an image needs invokedynamic.
+
+To keep classic call sites:
+
+[source,groovy]
+.build.gradle
+----
+grails {
+    indy = false
+}
+----
+
+Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that sets `indy` to `false` declares `implementation 'org.apache.groovy:groovy-callsite'` itself, at the version the Grails BOM manages, and again for every source set that does not see its implementation dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin. Without it the Groovy compiler stops with a message naming the module.
+
+A library compiled with classic call sites needs the module too, whatever the application's own setting, because Groovy 6 loads such a class only with it; the failure is a `NoClassDefFoundError` naming `org.codehaus.groovy.runtime.callsite.CallSiteArray`. Spock 2.5, Geb 8 and the Asset Pipeline 5.2 are compiled with invokedynamic, but `org.testcontainers:testcontainers-spock` is not, so an application that uses it declares `testRuntimeOnly 'org.apache.groovy:groovy-callsite'` next to it.
+
+==== 3. `grails.converters.JSON` Can Write JSON With Spring Boot's JsonMapper
 
 In Grails 9, `render ... as JSON`, `respond` for a JSON request and every other use of `grails.converters.JSON` still
 render JSON as Grails 8 did, by default (see <<renderingJsonAsGrails8,Rendering JSON As Grails 8 Did>>). Setting
@@ -237,7 +257,7 @@ JSON.registerObjectMarshaller(Locale) { Locale locale -> locale.toString() }
 JSON.registerObjectMarshaller(byte[]) { byte[] bytes -> bytes as List }
 ----
 
-==== 3. Domain Classes Can Render Through a Jackson Serializer
+==== 4. Domain Classes Can Render Through a Jackson Serializer
 
 With `grails.converters.json.legacy` set to `false`, the JSON converter renders domain classes with a Jackson serializer,
 `DomainClassSerializer`, as `DomainClassMarshaller` rendered them, with these changes:
