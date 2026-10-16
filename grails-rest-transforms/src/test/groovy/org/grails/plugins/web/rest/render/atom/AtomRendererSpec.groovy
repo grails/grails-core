@@ -33,8 +33,6 @@ import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.rest.render.ServletRenderContext
-import org.grails.plugins.web.rest.render.hal.Product
-import org.grails.plugins.web.rest.render.hal.SimpleProduct
 import org.grails.support.MockApplicationContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -150,12 +148,12 @@ class AtomRendererSpec extends Specification {
 
     void 'Test Atom rejects non domain objects for #collection'() {
         given:
-        def renderer = configureRenderer(collection ? new AtomCollectionRenderer(SimpleProduct) : new AtomRenderer(SimpleProduct))
+        def renderer = configureRenderer(collection ? new AtomCollectionRenderer(AtomNote) : new AtomRenderer(AtomNote))
         def webRequest = boundMimeTypeRequest()
-        def product = new SimpleProduct(name: 'MacBook')
+        def note = new AtomNote(title: 'Draft')
 
         when:
-        renderer.render(collection ? [product] : product, new ServletRenderContext(webRequest))
+        renderer.render(collection ? [note] : note, new ServletRenderContext(webRequest))
 
         then:
         def error = thrown(IllegalArgumentException)
@@ -167,21 +165,34 @@ class AtomRendererSpec extends Specification {
 
     void 'Test Atom rejects domain objects without lastUpdated'() {
         given:
-        def renderer = configureRenderer(new AtomRenderer(Product))
+        def renderer = configureRenderer(new AtomRenderer(AtomAuthor))
         def webRequest = boundMimeTypeRequest()
 
         when:
-        renderer.render(new Product(name: 'MacBook'), new ServletRenderContext(webRequest))
+        renderer.render(new AtomAuthor(name: 'Graeme'), new ServletRenderContext(webRequest))
 
         then:
         def error = thrown(IllegalArgumentException)
         error.message.contains("The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
     }
 
+    void 'Test Atom tag ids derive from the resource URI with #description'() {
+        expect:
+        AtomRenderer.generateIdForURI(url, dateCreated, id) == expected
+
+        where:
+        description              | url                          | dateCreated                                            | id   || expected
+        'a resource path'        | 'http://localhost/books'     | null                                                   | null || 'tag:localhost:/books'
+        'an explicit identifier' | 'https://localhost/books/1'  | null                                                   | 1L   || 'tag:localhost:1'
+        'a creation date'        | 'http://localhost/books/1'   | new GregorianCalendar(2013, Calendar.NOVEMBER, 8).time | 1L   || 'tag:localhost,2013-11-08:1'
+        'a fragment'             | 'http://example.org/books#1' | null                                                   | null || 'tag:example.org:/books/1'
+        'no path'                | 'localhost'                  | null                                                   | null || 'tag:localhost'
+    }
+
     private AtomRenderer configureRenderer(AtomRenderer renderer) {
         def mappingContext = new KeyValueMappingContext('')
         mappingContext.addPersistentEntity(AtomBook)
-        mappingContext.addPersistentEntity(Product)
+        mappingContext.addPersistentEntity(AtomAuthor)
         renderer.mappingContext = mappingContext
         def messages = new StaticMessageSource()
         messages.addMessage('resource.atomBook.href.title', Locale.ENGLISH, 'Books')
@@ -238,4 +249,13 @@ class AtomBook {
     String title
     Date dateCreated
     Date lastUpdated
+}
+
+@Entity
+class AtomAuthor {
+    String name
+}
+
+class AtomNote {
+    String title
 }

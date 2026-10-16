@@ -20,6 +20,7 @@ package org.grails.plugins.web.rest.render.hal
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.rest.Link
 import grails.rest.render.hal.HalXmlCollectionRenderer
 import grails.rest.render.hal.HalXmlRenderer
 import grails.spring.BeanBuilder
@@ -27,6 +28,7 @@ import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
+import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
@@ -175,6 +177,46 @@ class HalXmlRendererSpec extends Specification {
         'context excludes'  | null     | []                            | [excludes: ['numberInStock', 'category']]
     }
 
+    void 'Test HAL XML writes the extra links declared by the rendered object'() {
+        given:
+        def renderer = configureRenderer(new HalXmlRenderer(LinkedGadget))
+        def webRequest = boundMimeTypeRequest()
+        def response = webRequest.response as MockHttpServletResponse
+
+        when:
+        renderer.render(new LinkedGadget(name: 'Gadget'), new ServletRenderContext(webRequest))
+
+        then:
+        response.contentAsString.contains('<resource href="http://localhost/products" hreflang="en" title="Products">')
+        response.contentAsString.contains('<link rel="docs" href="http://example.org/docs" hreflang="en" templated="true" deprecated="true" />')
+        response.contentAsString.contains('<name>Gadget</name>')
+    }
+
+    void 'Test HAL XML supports relative links pretty printing and a custom mime type'() {
+        given:
+        def pretty = configureRenderer(new HalXmlRenderer(Product, MimeType.XML))
+        pretty.absoluteLinks = false
+        pretty.prettyPrint = true
+        def compact = configureRenderer(new HalXmlRenderer(Product))
+        compact.absoluteLinks = false
+        def product = new Product(name: 'MacBook', numberInStock: 10)
+
+        when:
+        def prettyRequest = boundMimeTypeRequest()
+        pretty.render(product, new ServletRenderContext(prettyRequest))
+        String prettyXml = (prettyRequest.response as MockHttpServletResponse).contentAsString
+        def compactRequest = boundMimeTypeRequest()
+        compact.render(product, new ServletRenderContext(compactRequest))
+        String compactXml = (compactRequest.response as MockHttpServletResponse).contentAsString
+
+        then:
+        pretty.mimeTypes.toList() == [MimeType.XML]
+        compactXml.contains('<resource href="/products" hreflang="en" title="Products">')
+        !compactXml.contains('http://localhost')
+        prettyXml != compactXml
+        prettyXml.replaceAll(/\s*\R\s*/, '') == compactXml
+    }
+
     private HalXmlRenderer configureRenderer(HalXmlRenderer renderer) {
         def mappingContext = new KeyValueMappingContext('')
         mappingContext.addPersistentEntity(Product)
@@ -232,5 +274,17 @@ class HalXmlRendererSpec extends Specification {
         (webRequest.request as MockHttpServletRequest).addHeader('ACCEPT', 'application/hal+xml')
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, '/products')
         webRequest
+    }
+}
+
+class LinkedGadget {
+
+    String name
+
+    Collection<Link> links() {
+        def docs = new Link('docs', 'http://example.org/docs')
+        docs.templated = true
+        docs.deprecated = true
+        [docs]
     }
 }
