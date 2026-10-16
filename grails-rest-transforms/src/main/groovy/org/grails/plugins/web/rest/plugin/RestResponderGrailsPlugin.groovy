@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory
 
 import org.springframework.beans.factory.BeanRegistrar
 import org.springframework.beans.factory.BeanRegistry
+import org.springframework.context.MessageSource
 import org.springframework.core.env.Environment
 
 import grails.config.Settings
@@ -33,7 +34,6 @@ import grails.core.GrailsClass
 import grails.plugins.Plugin
 import grails.rest.Resource
 import grails.rest.render.errors.ValidationProblemDetailFactory
-import org.springframework.context.MessageSource
 import grails.util.GrailsUtil
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
@@ -68,7 +68,9 @@ class RestResponderGrailsPlugin extends Plugin {
                 }
             }
             registry.registerBean('validationProblemDetailFactory', ValidationProblemDetailFactory) {
-                it.supplier {
+                // A fallback candidate: an application's own factory bean, whatever its name, is
+                // the one the renderers autowire.
+                it.fallback().supplier {
                     // Resolves each error through the application's MessageSource, so a validation
                     // response carries the message for the current locale with its arguments
                     // substituted rather than the raw default template.

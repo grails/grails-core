@@ -75,6 +75,21 @@ class RestResponderGrailsPluginSpec extends Specification {
                 .create(errors).properties.errors.first().message == 'Application message'
     }
 
+    void "an application factory bean wins over the plugin's whatever it is named"() {
+        given:
+        def beanFactory = new DefaultListableBeanFactory()
+        applyRegistrar(beanFactory, new StandardEnvironment())
+        def application = new ValidationProblemDetailFactory(true)
+        beanFactory.registerSingleton('includingRejectedValues', application)
+
+        expect: 'a lookup by type, as the renderer registry autowires, finds the application bean'
+        beanFactory.getBean(ValidationProblemDetailFactory).is(application)
+
+        and: 'the plugin bean is still there for an application that defines none'
+        beanFactory.getBeanNamesForType(ValidationProblemDetailFactory) as Set ==
+                ['validationProblemDetailFactory', 'includingRejectedValues'] as Set
+    }
+
     private static void applyRegistrar(DefaultListableBeanFactory beanFactory, StandardEnvironment environment) {
         beanFactory.registerSingleton('messageSource', new StaticMessageSource())
         def plugin = new RestResponderGrailsPlugin(grailsApplication: new DefaultGrailsApplication())
