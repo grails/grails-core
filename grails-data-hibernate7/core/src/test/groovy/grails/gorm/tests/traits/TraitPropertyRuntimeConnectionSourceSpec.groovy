@@ -19,7 +19,6 @@
 package grails.gorm.tests.traits
 
 import grails.gorm.annotation.Entity
-import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.orm.hibernate.HibernateDatastore
 import org.springframework.util.ReflectionUtils
@@ -54,7 +53,7 @@ class TraitPropertyRuntimeConnectionSourceSpec extends Specification {
         Long id = null
         RuntimeTraitEntity.later.withTransaction {
             def entity = new RuntimeTraitEntity(name: 'n', bar: 'b')
-            GormEnhancer.findInstanceApi(RuntimeTraitEntity, 'later').save(entity, [flush: true, failOnError: true])
+            entity.save(flush: true, failOnError: true)
             id = entity.id
         }
         String bar = null
