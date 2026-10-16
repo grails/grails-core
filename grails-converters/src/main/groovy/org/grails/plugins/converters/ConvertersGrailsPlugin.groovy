@@ -18,6 +18,8 @@
  */
 package org.grails.plugins.converters
 
+import java.util.function.Supplier
+
 import groovy.transform.CompileStatic
 
 import tools.jackson.databind.json.JsonMapper
@@ -25,6 +27,7 @@ import tools.jackson.databind.json.JsonMapper
 import org.springframework.beans.factory.BeanRegistrar
 import org.springframework.beans.factory.BeanRegistry
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.core.env.Environment
 
 import grails.converters.JSON
@@ -36,6 +39,8 @@ import grails.util.GrailsUtil
 import org.grails.plugins.codecs.JSONCodec
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
+import org.grails.web.converters.jackson.DomainClassJacksonModule
+import org.grails.web.converters.jackson.DomainClassRendering
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.grails.web.converters.jackson.JacksonNamedJsonRenderer
 import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
@@ -95,6 +100,19 @@ class ConvertersGrailsPlugin extends Plugin {
             registry.registerBean('namedJsonRenderer', JacksonNamedJsonRenderer) {
                 it.supplier {
                     new JacksonNamedJsonRenderer(it.bean('namedJsonConfigurationRegistry', NamedJsonConfigurationRegistry))
+                }
+            }
+
+            // Spring Boot registers every JacksonModule bean with the application's JsonMapper, so the module is opt-in
+            if (environment.getProperty(ConvertersConfigurationInitializer.SETTING_CONVERTERS_JSON_DOMAIN_JACKSON_ENABLED, Boolean, false)) {
+                registry.registerBean('domainClassJacksonModule', DomainClassJacksonModule) {
+                    it.supplier {
+                        ObjectProvider<GrailsApplication> grailsApplication = it.beanProvider(GrailsApplication)
+                        ObjectProvider<ProxyHandler> proxyHandler = it.beanProvider(ProxyHandler)
+                        new DomainClassJacksonModule({ ->
+                            ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication.getIfUnique(), proxyHandler.getIfUnique())
+                        } as Supplier<DomainClassRendering>)
+                    }
                 }
             }
 

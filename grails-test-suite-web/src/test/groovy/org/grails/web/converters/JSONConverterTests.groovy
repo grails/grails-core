@@ -95,7 +95,7 @@ class JSONConverterTests extends Specification implements ControllerUnitTest<JSO
         params.e = enumInstance
         controller.testEnum()
 
-        then:
+        then: 'since Grails 9 a single value renders as a JSON value, as Spring Boot renders it'
         response.contentAsString == '"HEAD"'
     }
 
