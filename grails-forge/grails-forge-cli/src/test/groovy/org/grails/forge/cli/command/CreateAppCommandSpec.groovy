@@ -19,29 +19,17 @@
 
 package org.grails.forge.cli.command
 
-import io.micronaut.configuration.picocli.MicronautFactory
-import io.micronaut.configuration.picocli.PicocliRunner
-import io.micronaut.context.ApplicationContext
-import io.micronaut.context.env.Environment
 import org.grails.forge.application.ApplicationType
 import org.grails.forge.application.WebAvailableFeatures
 import org.grails.forge.cli.CodeGenConfig
+import org.grails.forge.cli.CliRunner
 import org.grails.forge.cli.CommandFixture
 import org.grails.forge.cli.CommandSpec
+import org.grails.forge.cli.GrailsPicocliFactory
 import org.grails.forge.io.ConsoleOutput
 import picocli.CommandLine
-import spock.lang.AutoCleanup
-import spock.lang.Shared
 
 class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
-
-    @Shared
-    @AutoCleanup
-    ApplicationContext ctx = ApplicationContext.run(Environment.CLI)
-
-    @Shared
-    @AutoCleanup
-    ApplicationContext beanContext = ApplicationContext.run()
 
     PrintStream originalOut
     PrintStream originalErr
@@ -62,7 +50,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setOut(new PrintStream(out))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "foobar")
+        CliRunner.run(CreateAppCommand, beanContext, "foobar")
 
         then:
         noExceptionThrown()
@@ -75,7 +63,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setErr(new PrintStream(baos))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "temp",  "--gorm", "xyz")
+        CliRunner.run(CreateAppCommand, beanContext, "temp",  "--gorm", "xyz")
 
         then:
         noExceptionThrown()
@@ -88,7 +76,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setOut(new PrintStream(out))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "dataswitch", "--data", "hibernate7")
+        CliRunner.run(CreateAppCommand, beanContext, "dataswitch", "--data", "hibernate7")
 
         then:
         noExceptionThrown()
@@ -101,7 +89,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setOut(new PrintStream(out))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "dshort", "-d", "hibernate7")
+        CliRunner.run(CreateAppCommand, beanContext, "dshort", "-d", "hibernate7")
 
         then:
         noExceptionThrown()
@@ -114,7 +102,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setOut(new PrintStream(out))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "gshort", "-g", "hibernate7")
+        CliRunner.run(CreateAppCommand, beanContext, "gshort", "-g", "hibernate7")
 
         then:
         noExceptionThrown()
@@ -127,7 +115,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setOut(new PrintStream(out))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "legacygorm", "--gorm", "hibernate")
+        CliRunner.run(CreateAppCommand, beanContext, "legacygorm", "--gorm", "hibernate")
 
         then:
         noExceptionThrown()
@@ -142,7 +130,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         System.setErr(new PrintStream(err))
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "hib5gorm", "--gorm", "hibernate5")
+        CliRunner.run(CreateAppCommand, beanContext, "hib5gorm", "--gorm", "hibernate5")
 
         then: 'Hibernate 5 support has been removed, so this value no longer resolves'
         err.toString().contains("Invalid Grails Data implementation selection: hibernate5")
@@ -151,7 +139,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
 
     void "the --features completion candidates are listed in name order"() {
         when:
-        List<String> candidates = new CommandLine(CreateAppCommand, new MicronautFactory(ctx))
+        List<String> candidates = new CommandLine(CreateAppCommand, new GrailsPicocliFactory(beanContext))
                 .commandSpec
                 .findOption('--features')
                 .completionCandidates()
@@ -173,7 +161,7 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         }
 
         when:
-        PicocliRunner.run(CreateAppCommand, ctx, "temp", "--list-features")
+        CliRunner.run(CreateAppCommand, beanContext, "temp", "--list-features")
 
         then:
         noExceptionThrown()

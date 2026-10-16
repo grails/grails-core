@@ -37,6 +37,7 @@ class GormImplSpec extends Specification {
         'HIBERNATE7' | GormImpl.HIBERNATE7
         'mongodb'    | GormImpl.MONGODB
         'neo4j'      | GormImpl.NEO4J
+        'invalid'    | null
         null         | null
     }
 
