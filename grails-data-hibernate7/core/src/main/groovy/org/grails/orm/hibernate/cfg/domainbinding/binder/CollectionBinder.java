@@ -229,11 +229,13 @@ public class CollectionBinder {
      * side declares {@code belongsTo}, both sides are inverse and the relationship is never stored, so warn about it
      * once per relationship. A Map-valued side is never inverse once its second pass has run, because
      * {@code MapSecondPassBinder} makes it write the join table, so a relationship with a Map on either side is
-     * stored and gets no warning.
+     * stored and gets no warning. A circular many-to-many, whose two properties are on the same class, is warned about
+     * as well, because it loses data the same way; its two sides tie on the owner name, so the property names decide
+     * which side warns.
      */
     private void warnIfManyToManyHasNoOwningSide(HibernateToManyProperty property) {
         if (!(property instanceof HibernateManyToManyProperty manyToMany) ||
-                !manyToMany.isBidirectional() || manyToMany.isCircular()) {
+                !manyToMany.isBidirectional()) {
             return;
         }
         Association<?> otherSide = manyToMany.getInverseSide();
@@ -241,7 +243,8 @@ public class CollectionBinder {
                 Map.class.isAssignableFrom(manyToMany.getType()) || Map.class.isAssignableFrom(otherSide.getType())) {
             return;
         }
-        if (manyToMany.getOwner().getName().compareTo(otherSide.getOwner().getName()) > 0) {
+        int byOwner = manyToMany.getOwner().getName().compareTo(otherSide.getOwner().getName());
+        if (byOwner > 0 || byOwner == 0 && manyToMany.getName().compareTo(otherSide.getName()) > 0) {
             return;
         }
         LOG.warn("Neither side of the many-to-many between [{}.{}] and [{}.{}] declares belongsTo, so the relationship " +

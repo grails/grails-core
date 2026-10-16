@@ -63,6 +63,45 @@ class ManyToManyWithoutOwnerWarningSpec extends Specification {
         !output.contains(WARNING)
     }
 
+    void 'a circular many-to-many with no belongsTo logs one warning, because nothing is stored'() {
+        when:
+        var output = stderrWhile {
+            new HibernateDatastore(WarnCircular).close()
+        }
+
+        then:
+        output.readLines().count { it.contains(WARNING) } == 1
+        output.contains('[grails.gorm.tests.WarnCircular.followers] and [grails.gorm.tests.WarnCircular.following]')
+        output.contains('for example in WarnCircular: static belongsTo = WarnCircular')
+    }
+
+    void 'a circular many-to-many with belongsTo logs no warning and stores the relationship'() {
+        given:
+        var output = null
+        HibernateDatastore datastore = null
+
+        when:
+        output = stderrWhile {
+            datastore = new HibernateDatastore(WarnCircularOwned)
+        }
+        WarnCircularOwned.withNewTransaction {
+            WarnCircularOwned followed = new WarnCircularOwned(name: 'followed').save(failOnError: true)
+            WarnCircularOwned follower = new WarnCircularOwned(name: 'follower').save(failOnError: true)
+            follower.addToFollowing(followed)
+            follower.save(failOnError: true)
+        }
+
+        then:
+        !output.contains(WARNING)
+        WarnCircularOwned.withNewSession {
+            WarnCircularOwned.findByName('follower').following*.name == ['followed'] &&
+                    WarnCircularOwned.findByName('followed').followers*.name == ['follower']
+        }
+
+        cleanup:
+        datastore?.close()
+    }
+
     void 'a unidirectional one-to-many and a basic collection log no warning'() {
         when:
         var output = stderrWhile {
@@ -173,6 +212,29 @@ class WarnSelfReferencing {
     Set<WarnSelfReferencing> friends
 
     static hasMany = [friends: WarnSelfReferencing]
+}
+
+@Entity
+class WarnCircular {
+
+    String name
+    Set<WarnCircular> following
+    Set<WarnCircular> followers
+
+    static hasMany = [following: WarnCircular, followers: WarnCircular]
+    static mappedBy = [following: 'followers', followers: 'following']
+}
+
+@Entity
+class WarnCircularOwned {
+
+    String name
+    Set<WarnCircularOwned> following
+    Set<WarnCircularOwned> followers
+
+    static hasMany = [following: WarnCircularOwned, followers: WarnCircularOwned]
+    static mappedBy = [following: 'followers', followers: 'following']
+    static belongsTo = WarnCircularOwned
 }
 
 @Entity
