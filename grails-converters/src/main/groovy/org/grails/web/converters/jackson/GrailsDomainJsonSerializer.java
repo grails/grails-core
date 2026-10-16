@@ -72,6 +72,9 @@ final class GrailsDomainJsonSerializer extends ValueSerializer<Object> {
     public void serialize(Object value, JsonGenerator generator, SerializationContext context) throws JacksonException {
         Object unwrapped = proxyHandler.unwrapIfProxy(value);
         if (unwrapped != value && unwrapped.getClass() != entity.getJavaClass()) {
+            if (context.getAttribute(JsonProjection.ATTRIBUTE) instanceof JsonProjection projected) {
+                projected.narrowed(value.getClass(), unwrapped.getClass());
+            }
             context.writeValue(generator, unwrapped);
             return;
         }
@@ -215,9 +218,10 @@ final class GrailsDomainJsonSerializer extends ValueSerializer<Object> {
         if (proxyHandler instanceof EntityProxyHandler entityProxyHandler) {
             identifier = entityProxyHandler.getProxyIdentifier(value);
         }
-        Object unwrapped = proxyHandler.unwrapIfProxy(value);
         if (identifier == null && identity != null) {
-            identifier = new BeanWrapperImpl(unwrapped).getPropertyValue(identity.getName());
+            // Unwrapping initializes a lazy proxy, which a reference to a proxy that knows its
+            // identifier must not do: it costs a query, and fails on a detached instance.
+            identifier = new BeanWrapperImpl(proxyHandler.unwrapIfProxy(value)).getPropertyValue(identity.getName());
         }
         generator.writeStartObject();
         if (includeClass) {

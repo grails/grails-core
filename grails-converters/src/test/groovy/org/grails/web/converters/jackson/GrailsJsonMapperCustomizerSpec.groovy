@@ -32,6 +32,7 @@ import groovy.json.JsonSlurper
 import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.core.DefaultGrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
+import grails.core.support.proxy.EntityProxyHandler
 import grails.core.support.proxy.ProxyHandler
 import grails.persistence.Entity
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
@@ -344,6 +345,46 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build())
     }
 
+    void 'an association reference to a proxy that knows its identifier does not initialize the proxy'() {
+        given:
+        def mapping = new KeyValueMappingContext('references')
+        mapping.addPersistentEntities(JacksonReview, JacksonAuthor)
+        def app = new DefaultGrailsApplication(JacksonReview, JacksonAuthor)
+        app.mappingContext = mapping
+        def proxyHandler = new UnwrapCountingProxyHandler()
+        def mapper = new GrailsJsonMapperCustomizer(app, proxyHandler).forGrails(JsonMapper.builder().build())
+        def review = new JacksonReview(text: 'Fine', author: new JacksonAuthorProxy().tap { id = 7 }).tap { id = 1 }
+
+        expect: 'the reference is the identifier alone, and a detached proxy would have thrown on unwrapping'
+        new JsonSlurper().parseText(mapper.writeValueAsString(review)) == [id: 1, text: 'Fine', author: [id: 7]]
+        proxyHandler.unwraps == 0
+    }
+
+    void 'a projection applies to a narrowed proxy inside a collection'() {
+        given:
+        def target = new SpecialJacksonBook(title: 'Subclass', edition: 'second').tap { id = 5 }
+        def proxy = new JacksonBookProxy(target: target)
+        def plain = new JacksonBook(title: 'Plain').tap { id = 1 }
+        def mapping = new KeyValueMappingContext('narrowed')
+        mapping.addPersistentEntities(JacksonBook, SpecialJacksonBook, JacksonAuthor)
+        def app = new DefaultGrailsApplication(JacksonBook, SpecialJacksonBook, JacksonAuthor)
+        app.mappingContext = mapping
+        def proxyHandler = Stub(ProxyHandler) {
+            unwrapIfProxy(_) >> { args -> args[0].is(proxy) ? target : args[0] }
+        }
+        def registry = new NamedJsonConfigurationRegistry(
+                new GrailsJsonMapperCustomizer(app, proxyHandler).forGrails(JsonMapper.builder().build()))
+        def output = new StringWriter()
+
+        when:
+        registry.writeValue(null, output, [plain, proxy], null, ['title'])
+
+        then: 'the excluded property is left out of the proxy as well as of the plain instance'
+        def written = new JsonSlurper().parseText(output.toString())
+        written.every { !it.containsKey('title') }
+        written[1].edition == 'second'
+    }
+
     void 'a narrowed proxy renders the unwrapped subclass properties and class name'() {
         given:
         def target = new SpecialJacksonBook(title: 'Subclass', edition: 'second').tap { id = 5 }
@@ -363,6 +404,46 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         result.class == SpecialJacksonBook.name
         result.edition == 'second'
         result.title == 'Subclass'
+    }
+}
+
+@Entity
+class JacksonReview {
+    Long id
+    Long version
+    String text
+    JacksonAuthor author
+}
+
+class JacksonAuthorProxy extends JacksonAuthor {
+}
+
+/** Stands in for a lazy-loading handler: a proxy knows its identifier but cannot be initialized. */
+class UnwrapCountingProxyHandler extends DefaultProxyHandler implements EntityProxyHandler {
+    int unwraps
+
+    @Override
+    boolean isProxy(Object o) {
+        o instanceof JacksonAuthorProxy
+    }
+
+    @Override
+    Object unwrapIfProxy(Object o) {
+        if (o instanceof JacksonAuthorProxy) {
+            unwraps++
+            throw new IllegalStateException('could not initialize proxy - no Session')
+        }
+        o
+    }
+
+    @Override
+    Object getProxyIdentifier(Object o) {
+        ((JacksonAuthorProxy) o).id
+    }
+
+    @Override
+    Class<?> getProxiedClass(Object o) {
+        JacksonAuthor
     }
 }
 
