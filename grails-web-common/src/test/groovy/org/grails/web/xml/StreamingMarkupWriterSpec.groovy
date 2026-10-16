@@ -69,7 +69,7 @@ class StreamingMarkupWriterSpec extends Specification {
         writer.write(34)
 
         then:
-        1 * target.write('&quot;') >> { throw new IOException('output failed') }
+        1 * target.write(*_) >> { throw new IOException('output failed') }
         def error = thrown(IOException)
         error.message == 'output failed'
     }

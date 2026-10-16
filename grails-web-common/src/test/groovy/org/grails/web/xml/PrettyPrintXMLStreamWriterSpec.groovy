@@ -105,7 +105,7 @@ class PrettyPrintXMLStreamWriterSpec extends Specification {
         writer.startNode('root')
 
         then:
-        1 * target.write(60) >> { throw new IOException('output failed') }
+        1 * target.write(*_) >> { throw new IOException('output failed') }
         def error = thrown(IOException)
         error.message == 'output failed'
     }

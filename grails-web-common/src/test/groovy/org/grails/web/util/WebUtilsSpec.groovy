@@ -92,6 +92,27 @@ class WebUtilsSpec extends Specification {
         resolved.is(view)
     }
 
+    def "resolves a controller view using the locale of the bound web request"() {
+        given:
+        def previous = RequestContextHolder.getRequestAttributes()
+        def request = new MockHttpServletRequest()
+        request.preferredLocales = [Locale.FRANCE]
+        def resolver = Mock(ViewResolver)
+        def view = Stub(View)
+        WebUtils.storeGrailsWebRequest(new GrailsWebRequest(request, new MockHttpServletResponse(), request.servletContext))
+
+        when:
+        def resolved = WebUtils.resolveView(request, 'show', 'book', resolver)
+
+        then:
+        1 * resolver.resolveViewName('/book/show', Locale.FRANCE) >> view
+        resolved.is(view)
+
+        cleanup:
+        WebUtils.clearGrailsWebRequest()
+        RequestContextHolder.setRequestAttributes(previous)
+    }
+
     def "strips the application context and Grails dispatch path from request URIs"() {
         given:
         def request = new MockHttpServletRequest()

@@ -45,7 +45,7 @@ class BoundedCharsAsEncodedBytesCounterSpec extends Specification {
         'ISO-8859-1' | 3
     }
 
-    def "writer is initialized lazily and reused with configured capacity and encoding"() {
+    def "writer is initialized lazily reused with configured capacity and encoding and keeps counting after close"() {
         given:
         def counter = new BoundedCharsAsEncodedBytesCounter()
         counter.setCapacity(16)
@@ -69,6 +69,12 @@ class BoundedCharsAsEncodedBytesCounterSpec extends Specification {
         counter.writerReferenced
         counter.getCountingWriter().is(writer)
         counter.size() == 8
+
+        when: 'close is a no-op so the shared writer keeps counting'
+        writer.write(66)
+
+        then:
+        counter.size() == 9
     }
 
     def "appends character sequence slices including sequences larger than the write buffer"() {
