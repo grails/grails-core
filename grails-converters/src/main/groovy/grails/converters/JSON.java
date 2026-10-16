@@ -51,8 +51,10 @@ import org.grails.web.converters.configuration.ConverterConfiguration;
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.configuration.DefaultConverterConfiguration;
 import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
+import org.grails.web.converters.marshaller.json.DomainClassMarshaller;
 import org.grails.web.json.JSONArray;
 import org.grails.web.json.JSONElement;
 import org.grails.web.json.JSONException;
@@ -115,7 +117,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
 
     @SuppressWarnings("deprecation")
     private void prepareRender(Writer out) {
-        jsonMapperSupport = ConvertersConfigurationHolder.getJsonMapperSupport();
+        // a domain class instance is rendered as the converter's marshaller for it asks, with its includes and excludes
+        jsonMapperSupport = ConvertersConfigurationHolder.getJsonMapperSupport()
+                .withAttribute(DomainClassJacksonModule.RENDERINGS, DomainClassMarshaller.renderings(this));
         jsonWriter = prettyPrint && ConvertersConfigurationHolder.isLegacyJson() ?
                 new PrettyPrintJSONWriter(out, jsonMapperSupport, PrettyPrintJSONWriter.DEFAULT_INDENT_STR) :
                 new JSONWriter(out, jsonMapperSupport, prettyPrint);

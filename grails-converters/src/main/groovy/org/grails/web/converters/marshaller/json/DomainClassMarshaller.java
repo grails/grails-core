@@ -30,6 +30,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import groovy.lang.GroovyObject;
 
@@ -55,7 +57,6 @@ import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.grails.web.converters.ConverterUtil;
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.grails.web.converters.exceptions.ConverterException;
-import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.marshaller.ByDatasourceDomainClassFetcher;
 import org.grails.web.converters.marshaller.ByGrailsApplicationDomainClassFetcher;
@@ -132,8 +133,25 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             return;
         }
         Object object = proxyHandler.unwrapIfProxy(value);
-        DomainClassJacksonModule.withRendering(new Rendering(json, object.getClass()),
-                () -> JsonMapperValueMarshaller.write(object, json));
+        JsonMapperValueMarshaller.write(object, json);
+    }
+
+    /**
+     * The renderings of the domain class instances a converter writes: each is rendered with the includes and excludes the
+     * converter has for its class, by the domain class marshaller the converter has for the instance.
+     *
+     * @param json the converter
+     * @return gives the rendering of an instance, or {@code null} for an instance it has no domain class marshaller for
+     * @since 9.0
+     */
+    public static Function<Object, DomainClassRendering> renderings(JSON json) {
+        Map<Class<?>, DomainClassRendering> renderings = new ConcurrentHashMap<>();
+        return instance -> {
+            if (!(json.lookupObjectMarshaller(instance) instanceof DomainClassMarshaller marshaller)) {
+                return null;
+            }
+            return renderings.computeIfAbsent(instance.getClass(), type -> marshaller.new Rendering(json, type));
+        };
     }
 
     /**

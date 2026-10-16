@@ -18,6 +18,7 @@
  */
 package org.grails.web.json
 
+import java.time.Month
 import java.util.function.Predicate
 
 import groovy.transform.CompileStatic
@@ -157,6 +158,27 @@ class JSONWriterSpec extends Specification {
                 [type, null, 'null'],
             ]
         }
+    }
+
+    void "a JsonMapperSupport with an attribute writes with it, and the one it derives from does not"() {
+        given: 'a serializer that writes the attribute of the write'
+        def mapper = JsonMapper.builder().addModule(new SimpleModule()
+                .addSerializer(Box, new AttributeSerializer())).build()
+        def support = new JsonMapperSupport(mapper)
+        def derived = support.withAttribute('who', 'the writer')
+        def plain = new StringWriter()
+        def attributed = new StringWriter()
+
+        when:
+        new JSONWriter(plain, support, false).value(new JsonMapperValue(new Box(content: 'x'), support))
+        new JSONWriter(attributed, derived, false).value(new JsonMapperValue(new Box(content: 'x'), derived))
+
+        then:
+        plain.toString() == '"none"'
+        attributed.toString() == '"the writer"'
+
+        and: 'the derived support shares the value rendering of the one it derives from'
+        derived.rendersValue(Month) == support.rendersValue(Month)
     }
 
     void "a single value is a JSON text, written without a flush"() {
@@ -360,5 +382,17 @@ class BoxSerializer extends StdSerializer<Box> {
         generator.writeName('content')
         generator.writePOJO(box.content)
         generator.writeEndObject()
+    }
+}
+
+class AttributeSerializer extends StdSerializer<Box> {
+
+    AttributeSerializer() {
+        super(Box)
+    }
+
+    @Override
+    void serialize(Box box, JsonGenerator generator, SerializationContext context) {
+        generator.writeString((context.getAttribute('who') ?: 'none') as String)
     }
 }

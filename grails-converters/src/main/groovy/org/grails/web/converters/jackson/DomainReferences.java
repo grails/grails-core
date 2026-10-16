@@ -111,7 +111,7 @@ final class DomainReferences {
 
         @Override
         public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
-            DomainClassRendering current = rendering.of(context);
+            DomainClassRendering current = rendering.ofOwner(context, generator);
             if (current.isDeep()) {
                 context.writeValue(generator, DomainWrites.copied(current.unwrap(value)));
             }
@@ -141,7 +141,7 @@ final class DomainReferences {
         @Override
         public void serializeWithType(Object value, JsonGenerator generator, SerializationContext context,
                 TypeSerializer typeSerializer) {
-            DomainClassRendering current = rendering.of(context);
+            DomainClassRendering current = rendering.ofOwner(context, generator);
             if (current.isDeep() && !toMany) {
                 // In full, an instance is written with its type id; a reference carries none
                 Object unwrapped = DomainWrites.copied(current.unwrap(value));

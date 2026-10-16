@@ -85,6 +85,6 @@ final class DomainPropertyWriter extends BeanPropertyWriter {
     }
 
     private boolean included(Object bean, SerializationContext context) {
-        return rendering.of(context).includes(bean, property) && DomainWrites.projected(context, bean, property, getName());
+        return rendering.of(context, bean).includes(bean, property) && DomainWrites.projected(context, bean, property, getName());
     }
 }

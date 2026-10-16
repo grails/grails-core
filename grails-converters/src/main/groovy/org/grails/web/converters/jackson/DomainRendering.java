@@ -18,14 +18,16 @@
  */
 package org.grails.web.converters.jackson;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 
 /**
- * Finds the {@link DomainClassRendering} of a write: the one the writer supplied for it, such as the JSON converter does
- * for each domain class instance it renders, or else the one of the mapper's {@link DomainClassJacksonModule}. The
- * writer carries the write out on its own thread, so the rendering it supplies is the thread's for the duration.
+ * Finds the {@link DomainClassRendering} of a write: the one the writer supplied for the instance, such as the JSON
+ * converter does for each domain class instance it renders, or else the one of the mapper's
+ * {@link DomainClassJacksonModule}.
  *
  * <p>The module's rendering is kept once it knows the application's domain classes, which it may not when the mapper
  * is built ahead of the application.</p>
@@ -33,9 +35,6 @@ import tools.jackson.databind.SerializationContext;
  * @since 9.0
  */
 final class DomainRendering implements Supplier<DomainClassRendering> {
-
-    /** The rendering a writer supplied for the write that is under way on this thread. */
-    private static final ThreadLocal<DomainClassRendering> SUPPLIED = new ThreadLocal<>();
 
     private final Supplier<DomainClassRendering> source;
 
@@ -59,29 +58,27 @@ final class DomainRendering implements Supplier<DomainClassRendering> {
 
     /**
      * @param context the context of a write
-     * @return the rendering to write with
+     * @param instance a domain class instance being written
+     * @return the rendering to write the instance with: the one the writer supplied for it, if it did
      */
-    DomainClassRendering of(SerializationContext context) {
-        DomainClassRendering supplied = SUPPLIED.get();
-        return supplied != null ? supplied : get();
+    @SuppressWarnings("unchecked")
+    DomainClassRendering of(SerializationContext context, Object instance) {
+        if (context.getAttribute(DomainClassJacksonModule.RENDERINGS) instanceof Function<?, ?> renderings) {
+            DomainClassRendering supplied = ((Function<Object, DomainClassRendering>) renderings).apply(instance);
+            if (supplied != null) {
+                return supplied;
+            }
+        }
+        return get();
     }
 
     /**
-     * Runs a write, which the current thread carries out, with a rendering of its own.
+     * @param context the context of a write
+     * @param generator the generator, which is inside the object of the instance whose property is being written
+     * @return the rendering to write the property with
      */
-    static void with(DomainClassRendering rendering, Runnable write) {
-        DomainClassRendering previous = SUPPLIED.get();
-        SUPPLIED.set(rendering);
-        try {
-            write.run();
-        }
-        finally {
-            if (previous != null) {
-                SUPPLIED.set(previous);
-            }
-            else {
-                SUPPLIED.remove();
-            }
-        }
+    DomainClassRendering ofOwner(SerializationContext context, JsonGenerator generator) {
+        Object owner = generator.streamWriteContext().currentValue();
+        return owner != null ? of(context, owner) : get();
     }
 }

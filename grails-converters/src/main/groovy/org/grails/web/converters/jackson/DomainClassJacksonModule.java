@@ -68,16 +68,11 @@ public class DomainClassJacksonModule extends JacksonModule {
     }
 
     /**
-     * Runs a write that the current thread carries out, with a rendering of its own for the domain class instances it
-     * writes, as long as the mapper has a {@code DomainClassJacksonModule}. The JSON converter renders each instance with
-     * its own includes and excludes this way.
-     *
-     * @param rendering how to render the instances
-     * @param write the write
+     * A writer attribute for a writer that renders the domain class instances it writes in its own ways. Its value is a
+     * {@code Function<Object, DomainClassRendering>} that gives the rendering of an instance, or {@code null} for the
+     * module's. The JSON converter renders each instance with its own includes and excludes this way.
      */
-    public static void withRendering(DomainClassRendering rendering, Runnable write) {
-        DomainRendering.with(rendering, write);
-    }
+    public static final String RENDERINGS = DomainClassRendering.class.getName() + ".renderings";
 
     @Override
     public String getModuleName() {

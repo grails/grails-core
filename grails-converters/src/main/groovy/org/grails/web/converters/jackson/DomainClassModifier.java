@@ -186,7 +186,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
     /** An instance reached again while it is being written is a reference to it, or what the behaviour selects. */
     private void onCycle(Object value, Cycles.Frame enclosing, tools.jackson.core.JsonGenerator generator,
             tools.jackson.databind.SerializationContext context) {
-        DomainClassRendering current = rendering.of(context);
+        DomainClassRendering current = rendering.of(context, value);
         if (current.getCircularReferenceBehaviour() != null) {
             Cycles.write(value, enclosing, generator, current.getCircularReferenceBehaviour());
         }

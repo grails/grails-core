@@ -83,7 +83,7 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
 
     @Override
     protected Object value(Object bean, JsonGenerator generator, SerializationContext context) {
-        DomainClassRendering current = rendering.of(context);
+        DomainClassRendering current = rendering.of(context, bean);
         return switch (kind) {
             case CLASS -> bean.getClass().getName();
             case ID -> current.propertyValue(bean, entity.getIdentity());
@@ -115,7 +115,7 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
     }
 
     private boolean included(Object bean, SerializationContext context) {
-        DomainClassRendering current = rendering.of(context);
+        DomainClassRendering current = rendering.of(context, bean);
         String property = kind == Kind.ID ? entity.getIdentity().getName() : kind.property;
         boolean enabled = switch (kind) {
             case CLASS -> current.isIncludeClass();

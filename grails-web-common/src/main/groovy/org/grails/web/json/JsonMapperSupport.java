@@ -20,6 +20,7 @@ package org.grails.web.json;
 
 import java.io.Writer;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -73,28 +74,9 @@ public final class JsonMapperSupport {
 
     private final JsonMapper writingMapper;
 
-    private final ClassValue<Boolean> rendersValue = new ClassValue<>() {
-        @Override
-        protected Boolean computeValue(Class<?> type) {
-            if (isContainer(type)) {
-                return false;
-            }
-            try {
-                ValueSerializer<?> serializer = serializationContext().findValueSerializer(type);
-                if (Enum.class.isAssignableFrom(type) && serializer instanceof JsonValueSerializer) {
-                    // an enum renders by name(), so that it binds back, even when it has a @JsonValue
-                    return false;
-                }
-                return !(serializer instanceof BeanSerializerBase || serializer instanceof ToEmptyObjectSerializer ||
-                        serializer instanceof EnumSerializer || serializer instanceof ReferenceTypeSerializer ||
-                        serializer instanceof StdContainerSerializer || serializer instanceof UnsupportedTypeSerializer);
-            }
-            catch (RuntimeException | LinkageError e) {
-                // a type Jackson cannot build a serializer for is left to the Grails marshallers
-                return false;
-            }
-        }
-    };
+    private final Map<Object, Object> attributes;
+
+    private final ClassValue<Boolean> rendersValue;
 
     /**
      * @param mapper the mapper to write JSON with
@@ -102,6 +84,52 @@ public final class JsonMapperSupport {
     public JsonMapperSupport(JsonMapper mapper) {
         this.mapper = Objects.requireNonNull(mapper, "mapper cannot be null");
         this.writingMapper = mapper.rebuild().addModule(NestedValueSerializer.module()).build();
+        this.attributes = Map.of();
+        this.rendersValue = rendersValue();
+    }
+
+    private ClassValue<Boolean> rendersValue() {
+        return new ClassValue<>() {
+            @Override
+            protected Boolean computeValue(Class<?> type) {
+                if (isContainer(type)) {
+                    return false;
+                }
+                try {
+                    ValueSerializer<?> serializer = serializationContext().findValueSerializer(type);
+                    if (Enum.class.isAssignableFrom(type) && serializer instanceof JsonValueSerializer) {
+                        // an enum renders by name(), so that it binds back, even when it has a @JsonValue
+                        return false;
+                    }
+                    return !(serializer instanceof BeanSerializerBase || serializer instanceof ToEmptyObjectSerializer ||
+                            serializer instanceof EnumSerializer || serializer instanceof ReferenceTypeSerializer ||
+                            serializer instanceof StdContainerSerializer || serializer instanceof UnsupportedTypeSerializer);
+                }
+                catch (RuntimeException | LinkageError e) {
+                    // a type Jackson cannot build a serializer for is left to the Grails marshallers
+                    return false;
+                }
+            }
+        };
+    }
+
+    private JsonMapperSupport(JsonMapperSupport base, Map<Object, Object> attributes) {
+        this.mapper = base.mapper;
+        this.writingMapper = base.writingMapper;
+        this.attributes = attributes;
+        this.rendersValue = base.rendersValue;
+    }
+
+    /**
+     * @param key the key of a serialization context attribute
+     * @param value its value, which serializers read with {@code SerializationContext#getAttribute}
+     * @return a support that writes with the same mapper, whose generators carry the attribute in addition to this
+     *         one's, so that a serializer can read what the writer knows about the write
+     */
+    public JsonMapperSupport withAttribute(Object key, Object value) {
+        Map<Object, Object> combined = new HashMap<>(attributes);
+        combined.put(key, value);
+        return new JsonMapperSupport(this, Map.copyOf(combined));
     }
 
     /**
@@ -124,6 +152,7 @@ public final class JsonMapperSupport {
         // not indented unless asked to be, even when the mapper indents its output (spring.jackson.serialization.indent-output)
         ObjectWriter writer = (prettyPrint ? writingMapper.writerWithDefaultPrettyPrinter() :
                 writingMapper.writer().without(SerializationFeature.INDENT_OUTPUT))
+                .withAttributes(attributes)
                 .without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                 .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM);
         return writer.createGenerator(new HtmlSafeJsonWriter(out));
@@ -139,6 +168,7 @@ public final class JsonMapperSupport {
      */
     public JsonGenerator createGenerator(Writer out, PrettyPrinter prettyPrinter) {
         ObjectWriter writer = writingMapper.writer().with(prettyPrinter)
+                .withAttributes(attributes)
                 .without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                 .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM);
         return writer.createGenerator(new HtmlSafeJsonWriter(out));
