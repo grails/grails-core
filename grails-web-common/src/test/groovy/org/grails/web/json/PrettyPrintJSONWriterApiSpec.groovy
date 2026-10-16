@@ -73,9 +73,24 @@ class PrettyPrintJSONWriterApiSpec extends Specification {
         ({ w -> w.key('key') })                | 'Misplaced key'
         ({ w -> w.value(true) })               | 'Value out of sequence'
         ({ w -> w.object().valueNull() })      | 'Value out of sequence'
-        // endObject misuse is matched on the shared prefix only: the writer currently reports it as endArray
-        ({ w -> w.array().endObject() })       | 'Misplaced end'
+        ({ w -> w.array().endObject() })       | 'Misplaced endObject'
         ({ w -> w.object().endArray() })       | 'Misplaced endArray'
+    }
+
+    void "pretty writer writes nothing before rejecting a misplaced end"() {
+        given:
+        def output = new StringWriter()
+        def writer = new PrettyPrintJSONWriter(output)
+        writer.array()
+        def written = output.toString()
+
+        when:
+        writer.endObject()
+
+        then:
+        def error = thrown(JSONException)
+        error.message == 'Misplaced endObject.'
+        output.toString() == written
     }
 
     void "pretty writer wraps failures in newlines indentation keys and values"() {

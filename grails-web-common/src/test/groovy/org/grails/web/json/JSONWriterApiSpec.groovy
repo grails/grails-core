@@ -105,9 +105,8 @@ class JSONWriterApiSpec extends Specification {
         ({ JSONWriter w -> w.object() })              | ({ w -> w.array() })              | 'Misplaced array'
         ({ JSONWriter w -> w.object() })              | ({ w -> w.object() })             | 'Misplaced object'
         ({ JSONWriter w -> })                         | ({ w -> w.endArray() })           | 'Misplaced endArray'
-        // endObject misuse is matched on the shared prefix only: the writer currently reports it as endArray
-        ({ JSONWriter w -> })                         | ({ w -> w.endObject() })          | 'Misplaced end'
-        ({ JSONWriter w -> w.object().key('key') })   | ({ w -> w.endObject() })          | 'Misplaced end'
+        ({ JSONWriter w -> })                         | ({ w -> w.endObject() })          | 'Misplaced endObject'
+        ({ JSONWriter w -> w.object().key('key') })   | ({ w -> w.endObject() })          | 'Misplaced endObject'
         ({ JSONWriter w -> w.array().endArray() })    | ({ w -> w.array() })              | 'Misplaced array'
         ({ JSONWriter w -> w.object().endObject() })  | ({ w -> w.object() })             | 'Misplaced object'
         ({ JSONWriter w -> w.array().endArray() })    | ({ w -> w.value(1L) })            | 'Value out of sequence'
