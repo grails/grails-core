@@ -47,7 +47,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter append(String s) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > append({})", delegate.mode.name(), s);
         }
         delegate.append(s);
@@ -57,7 +57,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     protected JSONWriter append(Writable writableValue) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > append({})", delegate.mode.name(), writableValue);
         }
         delegate.append(writableValue);
@@ -86,7 +86,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public void comma() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("comma()");
         }
         delegate.comma();
@@ -95,7 +95,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter array() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > array()", delegate.mode.name());
         }
         pathStack.push(new IndexElement(-1));
@@ -106,7 +106,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter end(Mode m, char c) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > end({}, {})", delegate.mode.name(), m, c);
         }
         delegate.end(m, c);
@@ -116,7 +116,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter endArray() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > endArray()", delegate.mode.name());
         }
         pathStack.pop();
@@ -130,7 +130,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter endObject() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > endObject()", delegate.mode.name());
         }
         delegate.endObject();
@@ -143,7 +143,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter key(String s) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > key({})", delegate.mode.name(), s);
         }
         pathStack.push(new PropertyElement(s));
@@ -154,7 +154,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter object() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > object()", delegate.mode.name());
         }
         if (delegate.mode == Mode.ARRAY) {
@@ -167,7 +167,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public void pop(Mode c) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > pop({})", delegate.mode.name(), c);
         }
         delegate.pop(c);
@@ -176,7 +176,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public void push(Mode c) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > push({})", delegate.mode.name(), c);
         }
         delegate.push(c);
@@ -191,7 +191,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     private int nextIndex() {
         int x = ((IndexElement) pathStack.peek()).index + 1;
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > Next index: {}", delegate.mode.name(), x);
         }
         return x;
@@ -200,7 +200,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter value(boolean b) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > value(boolean {})", delegate.mode.name(), b);
         }
         if (delegate.mode == Mode.ARRAY) {
@@ -216,7 +216,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter value(double d) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > value(double {})", delegate.mode.name(), d);
         }
         if (delegate.mode == Mode.ARRAY) {
@@ -232,7 +232,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter value(long l) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > value(long {})", delegate.mode.name(), l);
         }
         if (delegate.mode == Mode.ARRAY) {
@@ -248,7 +248,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter value(Number number) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > value(Number {})", delegate.mode.name(), number);
         }
         if (delegate.mode == Mode.ARRAY) {
@@ -264,7 +264,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter valueNull() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > valueNull()", delegate.mode.name());
         }
         if (delegate.mode == Mode.ARRAY) {
@@ -280,7 +280,7 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     @Override
     public JSONWriter value(Object o) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStrackReference());
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
             log.debug("{} > value(Object {})", delegate.mode.name(), o);
         }
 
@@ -356,11 +356,19 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
         return out.toString();
     }
 
-    public String getCurrentStrackReference() {
+    public String getCurrentStackReference() {
         StringBuilder out = new StringBuilder();
         for (PathElement el : pathStack) {
             out.append(el.toString());
         }
         return out.toString();
+    }
+
+    /**
+     * @deprecated the name is misspelled, use {@link #getCurrentStackReference()}
+     */
+    @Deprecated
+    public String getCurrentStackReference() {
+        return getCurrentStackReference();
     }
 }
