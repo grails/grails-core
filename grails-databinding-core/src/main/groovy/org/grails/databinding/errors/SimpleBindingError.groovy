@@ -29,10 +29,10 @@ import grails.databinding.errors.BindingError
 @CompileStatic
 class SimpleBindingError implements BindingError {
 
-    private final Object object
-    private final String propertyName
-    private final Object rejectedValue
-    private final Throwable cause
+    final Object object
+    final String propertyName
+    final Object rejectedValue
+    final Throwable cause
 
     SimpleBindingError(Object object, String propertyName,
             Object rejectedValue, Throwable cause) {
@@ -40,22 +40,6 @@ class SimpleBindingError implements BindingError {
         this.propertyName = propertyName
         this.rejectedValue = rejectedValue
         this.cause = cause
-    }
-
-    Object getObject() {
-        return object
-    }
-
-    String getPropertyName() {
-        return propertyName
-    }
-
-    Object getRejectedValue() {
-        return rejectedValue
-    }
-
-    Throwable getCause() {
-        return cause
     }
 
 }
