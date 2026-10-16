@@ -42,6 +42,34 @@ See xref:commandLine#gradleConfigurationCache[Using the Gradle Configuration Cac
 
 Grails Micronaut is maintained and released from the https://github.com/apache/grails-micronaut[Apache Grails Micronaut repository] and consumes published Grails Core artifacts.
 
+==== Groovy's invokedynamic default applies again
+
+Grails 7 and 8 compile every Groovy source set of an application without invokedynamic, because Groovy 4 and 5 ran dynamic code markedly slower with it (https://github.com/apache/grails-core/issues/15293[#15293]).
+Grails 9 runs on Groovy 6 and no longer overrides the compiler: unless the build sets `grails { indy }`, each Groovy compile task keeps the Groovy compiler's own default, which is invokedynamic.
+Grails' own published modules are compiled with invokedynamic as well.
+
+To keep compiling classic call sites, set it in `build.gradle`:
+
+[source,groovy]
+.build.gradle
+----
+grails {
+    indy = false
+}
+----
+
+On Groovy 6, classic call sites need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that opts out declares it, at the version the Grails BOM manages:
+
+[source,groovy]
+.build.gradle
+----
+dependencies {
+    implementation 'org.apache.groovy:groovy-callsite'
+}
+----
+
+An application that keeps the default never ships the module. The same dependency is needed, whatever the application's own setting, for a library that was compiled with classic call sites, because Groovy 6 can load such a class only with the module: `org.testcontainers:testcontainers-spock` is one, so declare the module as `testRuntimeOnly` next to it.
+
 ==== Spring Boot 4.2 and Spring Framework 7.1
 
 Grails {grailsMajorVersion} is built on Spring Boot {springBootVersion} and Spring Framework {springVersion}.
