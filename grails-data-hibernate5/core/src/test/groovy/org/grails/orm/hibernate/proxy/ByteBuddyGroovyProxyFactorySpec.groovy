@@ -22,7 +22,9 @@ import grails.gorm.annotation.Entity
 import groovy.transform.CompileStatic
 
 import org.grails.orm.hibernate.HibernateDatastore
+import org.hibernate.Hibernate
 import org.hibernate.HibernateException
+import org.hibernate.Session
 import org.hibernate.engine.spi.SharedSessionContractImplementor
 import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
@@ -114,6 +116,37 @@ class ByteBuddyGroovyProxyFactorySpec extends Specification {
 
         then:
         thrown(HibernateException)
+    }
+
+    void "a proxy from getProxy survives Java serialization as the proxy its SessionFactory hands out"() {
+        given:
+        def factory = new ByteBuddyGroovyProxyFactory(helper)
+        factory.postInstantiate(GroovyProxyFactoryEntity.name, GroovyProxyFactoryEntity, [HibernateProxy] as Set,
+                GroovyProxyFactoryEntity.getMethod('getId'), GroovyProxyFactoryEntity.getMethod('setId', Long), null)
+        Session session = datastore.sessionFactory.openSession()
+        HibernateProxy proxy = factory.getProxy(1L, session as SharedSessionContractImplementor)
+
+        when:
+        def deserialized = roundTrip(proxy)
+
+        then: 'the serialized form rebuilt a Groovy-aware proxy of the class the session itself hands out'
+        deserialized instanceof GroovyProxyFactoryEntity
+        deserialized.getClass().is(session.getReference(GroovyProxyFactoryEntity, 1L).getClass())
+        !Hibernate.isInitialized(deserialized)
+        lazyInitializerOf(deserialized) instanceof ByteBuddyGroovyInterceptor
+        lazyInitializerOf(deserialized).identifier == 1L
+
+        cleanup:
+        session?.close()
+    }
+
+    @CompileStatic
+    private static Object roundTrip(Object object) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream()
+        new ObjectOutputStream(bytes).withCloseable { ObjectOutputStream out -> out.writeObject(object) }
+        new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray())).withCloseable { ObjectInputStream input ->
+            input.readObject()
+        }
     }
 
     @CompileStatic

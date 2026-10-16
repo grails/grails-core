@@ -19,6 +19,7 @@
 package grails.gorm.tests.proxy.traitinitializer
 
 import grails.gorm.annotation.Entity
+import groovy.transform.CompileStatic
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
 import org.grails.orm.hibernate.HibernateDatastore
@@ -37,12 +38,20 @@ import spock.lang.Specification
  * (Groovy 3+ no longer marks it as synthetic, so Hibernate's synthetic-only filter does not
  * exclude it) and the trait initializer fails with a {@code NullPointerException}.
  *
- * {@code Domain.load()} must return a usable, uninitialized proxy for both entities.
+ * {@code Domain.load()} must return a usable, uninitialized proxy for both entities, and the serialized
+ * form of such a proxy must read back as the same kind of proxy: Hibernate's own serialized form rebuilds
+ * a stock proxy, which fails the same way.
  */
 @Issue('https://github.com/apache/grails-core/issues/16600')
 class TraitInitializerProxySpec extends Specification {
 
-    @Shared @AutoCleanup HibernateDatastore datastore = new HibernateDatastore(getClass().getPackage())
+    /**
+     * Lazy loading outside a transaction is how Hibernate initializes a deserialized proxy: it looks the
+     * originating SessionFactory up by the identity the serialized form carries and opens a session for it.
+     */
+    @Shared @AutoCleanup HibernateDatastore datastore = new HibernateDatastore(
+            ['dataSource.dbCreate': 'create-drop', 'hibernate.enable_lazy_load_no_trans': true],
+            getClass().getPackage())
 
     void "load() of an entity whose trait declares default values returns a proxy that initializes on use"() {
         given: "a persisted entity whose trait declares fields with default values"
@@ -105,6 +114,72 @@ class TraitInitializerProxySpec extends Specification {
         Hibernate.isInitialized(owner.target)
     }
 
+    void "an uninitialized proxy of an entity whose trait declares default values survives Java serialization"() {
+        given: "a persisted entity whose trait declares fields with default values"
+        Long id = null
+        InitializedTraitEntity.withTransaction {
+            id = new InitializedTraitEntity(name: 'seed').save(flush: true, failOnError: true).id
+        }
+
+        when: "an uninitialized proxy is serialized while its session is open, and read back"
+        Class<?> proxyClass = null
+        InitializedTraitEntity deserialized = null
+        InitializedTraitEntity.withTransaction {
+            InitializedTraitEntity proxy = InitializedTraitEntity.load(id)
+            proxyClass = proxy.getClass()
+            deserialized = roundTrip(proxy) as InitializedTraitEntity
+        }
+        boolean uninitializedAfterRead = !Hibernate.isInitialized(deserialized)
+        Long idWithoutInitializing = deserialized.id
+        boolean uninitializedAfterId = !Hibernate.isInitialized(deserialized)
+
+        and: "the deserialized proxy is read through, outside any session, so it loads through its SessionFactory"
+        String name = deserialized.name
+        String createdBy = deserialized.createdBy
+
+        then: "it came back as the same proxy class, answering its identifier without loading and its state by loading"
+        deserialized instanceof HibernateProxy
+        deserialized instanceof InitializedTrait
+        deserialized.getClass() == proxyClass
+        uninitializedAfterRead
+        idWithoutInitializing == id
+        uninitializedAfterId
+        name == 'seed'
+        createdBy == 'N/A'
+        Hibernate.isInitialized(deserialized)
+    }
+
+    void "an entity graph holding an uninitialized proxy of such an entity survives Java serialization"() {
+        given: "a persisted owner with an association to the entity"
+        Long ownerId = null
+        Long targetId = null
+        TraitOwnerEntity.withTransaction {
+            InitializedTraitEntity target =
+                    new InitializedTraitEntity(name: 'seed').save(flush: true, failOnError: true)
+            targetId = target.id
+            ownerId = new TraitOwnerEntity(target: target).save(flush: true, failOnError: true).id
+        }
+
+        when: "the owner is loaded in a new session and serialized with the association still lazy"
+        TraitOwnerEntity deserializedOwner = null
+        boolean targetUninitializedBefore = false
+        TraitOwnerEntity.withTransaction {
+            TraitOwnerEntity owner = TraitOwnerEntity.get(ownerId)
+            targetUninitializedBefore = !Hibernate.isInitialized(owner.target)
+            deserializedOwner = roundTrip(owner) as TraitOwnerEntity
+        }
+        boolean targetUninitializedAfter = !Hibernate.isInitialized(deserializedOwner.target)
+        Long idWithoutInitializing = deserializedOwner.target.id
+
+        then: "the association came back as an uninitialized proxy whose identifier reads without a session"
+        targetUninitializedBefore
+        deserializedOwner.target instanceof HibernateProxy
+        deserializedOwner.target instanceof InitializedTrait
+        targetUninitializedAfter
+        idWithoutInitializing == targetId
+        !Hibernate.isInitialized(deserializedOwner.target)
+    }
+
     void "control: load() of an entity whose trait declares no initializer creates the proxy"() {
         given: "a persisted entity whose trait declares a plain property"
         Long id = null
@@ -121,6 +196,15 @@ class TraitInitializerProxySpec extends Specification {
         proxy != null
         !Hibernate.isInitialized(proxy)
     }
+
+    @CompileStatic
+    private static Object roundTrip(Object object) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream()
+        new ObjectOutputStream(bytes).withCloseable { ObjectOutputStream out -> out.writeObject(object) }
+        new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray())).withCloseable { ObjectInputStream input ->
+            input.readObject()
+        }
+    }
 }
 
 trait InitializedTrait {
@@ -129,12 +213,12 @@ trait InitializedTrait {
 }
 
 @Entity
-class InitializedTraitEntity implements InitializedTrait {
+class InitializedTraitEntity implements InitializedTrait, Serializable {
     String name
 }
 
 @Entity
-class TraitOwnerEntity {
+class TraitOwnerEntity implements Serializable {
     InitializedTraitEntity target
 }
 
