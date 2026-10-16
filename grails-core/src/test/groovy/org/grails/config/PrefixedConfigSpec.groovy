@@ -133,6 +133,7 @@ class PrefixedConfigSpec extends Specification {
             { it.resolveRequiredPlaceholders('${name}') }
         ]
     }
+
     @CompileStatic
     private static boolean configsEqual(PrefixedConfig config, Object other) {
         config.equals(other)

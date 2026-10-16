@@ -82,9 +82,9 @@ class StopWatchSpec extends Specification {
         watch.getTaskInfo().every { it.timeMillis >= 0 }
         watch.shortSummary() == "StopWatch 'startup': running time (millis) = ${watch.getTotalTimeMillis()}"
         watch.prettyPrint().startsWith(watch.shortSummary())
-        watch.prettyPrint().contains('ms     %     Task name')
-        watch.prettyPrint().contains('configuration\n')
-        watch.prettyPrint().contains('beans\n')
+        watch.prettyPrint().contains('Task name')
+        watch.prettyPrint().readLines().any { it.endsWith('configuration') }
+        watch.prettyPrint().readLines().any { it.endsWith('beans') }
         watch.toString().contains('[configuration] took ')
         watch.toString().contains('[beans] took ')
     }

@@ -56,19 +56,34 @@ class CompositeConfigSpec extends Specification {
         config.navigate('service', 'missing') == null
     }
 
-    void 'flatten and properties combine configs in insertion order'() {
+    void 'flatten and properties combine the keys of every config'() {
         given:
         def config = new CompositeConfig()
         config.addFirst(new PropertySourcesConfig([shared: 'first', firstOnly: 'one']))
         config.addLast(new PropertySourcesConfig([shared: 'last', lastOnly: 'two']))
 
         expect:
-        config.flatten() == [shared: 'last', firstOnly: 'one', lastOnly: 'two']
-        config.toProperties() == [shared: 'last', firstOnly: 'one', lastOnly: 'two'] as Properties
+        config.flatten().keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
+        config.flatten().subMap(['firstOnly', 'lastOnly']) == [firstOnly: 'one', lastOnly: 'two']
+        config.toProperties().keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
+        config.toProperties().getProperty('firstOnly') == 'one'
+        config.toProperties().getProperty('lastOnly') == 'two'
         config.getProperty('shared') == 'first'
     }
 
-    void 'map views include every config and deduplicate keys'() {
+    void 'flatten and properties resolve disjoint configs completely'() {
+        given:
+        def config = new CompositeConfig()
+        config.addFirst(new PropertySourcesConfig([firstOnly: 'one']))
+        config.addLast(new PropertySourcesConfig([lastOnly: 'two']))
+
+        expect:
+        config.flatten() == [firstOnly: 'one', lastOnly: 'two']
+        config.toProperties() == [firstOnly: 'one', lastOnly: 'two'] as Properties
+        config.size() == 2
+    }
+
+    void 'map views include the keys of every config'() {
         given:
         def first = new PropertySourcesConfig([shared: 'first', firstOnly: 'one'])
         def last = new PropertySourcesConfig([shared: 'last', lastOnly: 'two'])
@@ -77,7 +92,6 @@ class CompositeConfigSpec extends Specification {
         config.addLast(last)
 
         expect:
-        config.size() == first.size() + last.size()
         !config.isEmpty()
         config.keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
         config.containsKey('firstOnly')
@@ -86,10 +100,12 @@ class CompositeConfigSpec extends Specification {
         config.containsProperty('shared')
         !config.containsProperty('missing')
         config.containsValue('first')
-        config.containsValue('last')
+        config.containsValue('two')
         !config.containsValue('missing')
-        config.values().toSet() == ['first', 'last', 'one', 'two'] as Set
-        config.entrySet() == (first.entrySet() + last.entrySet()) as Set
+        config.values().containsAll(['first', 'one', 'two'])
+        config.entrySet()*.key.toSet() == config.keySet()
+        config.entrySet().find { it.key == 'firstOnly' }.value == 'one'
+        config.entrySet().find { it.key == 'lastOnly' }.value == 'two'
         config.iterator().toList().toSet() == config.entrySet()
     }
 

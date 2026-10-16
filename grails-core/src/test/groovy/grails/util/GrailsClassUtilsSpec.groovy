@@ -18,11 +18,7 @@
  */
 package grails.util
 
-import java.io.ByteArrayInputStream
-import java.io.Closeable
-
 import grails.artefact.Enhanced
-import groovy.util.ConfigObject
 import spock.lang.Specification
 
 class GrailsClassUtilsSpec extends Specification {
@@ -97,7 +93,7 @@ class GrailsClassUtilsSpec extends Specification {
         GrailsClassUtils.getPropertiesAssignableToType(TestBean, null).length == 0
     }
 
-    void 'new instance property lookup handles valid invalid and uninstantiable classes'() {
+    void 'new instance property lookup handles valid, invalid and uninstantiable classes'() {
         expect:
         GrailsClassUtils.getPropertyValueOfNewInstance(TestBean, 'name') == 'Grails'
         GrailsClassUtils.getPropertyValueOfNewInstance(TestBean, 'name', String) == 'Grails'
