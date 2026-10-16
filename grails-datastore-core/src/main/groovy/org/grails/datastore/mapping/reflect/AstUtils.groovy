@@ -446,6 +446,17 @@ class AstUtils {
     }
     @Memoized
     static boolean isDomainClass(ClassNode classNode) {
+        return isDomainClassUncached(classNode)
+    }
+
+    /**
+     * Checks the current node without reusing answers for same-named classes from
+     * other compilations. ClassNode equality is based on the class name.
+     *
+     * @param classNode the class node to inspect
+     * @return whether the node represents a domain class
+     */
+    static boolean isDomainClassUncached(ClassNode classNode) {
         if (classNode == null) return false
         if (classNode.isArray()) return false
         if (implementsInterface(classNode, 'org.grails.datastore.gorm.GormEntity')) {
@@ -634,7 +645,7 @@ class AstUtils {
     }
 
     /**
-     * Finds the highest uncompiled domain class in the contiguous domain hierarchy.
+     * Finds the highest uncompiled domain class, walking past plain intermediates.
      * Plain superclasses may be shared with non-persistent classes and must not receive
      * generated persistence properties.
      *
@@ -642,12 +653,15 @@ class AstUtils {
      * @return the domain class that should declare generated persistence properties
      */
     static ClassNode getFurthestUnresolvedDomainParent(ClassNode classNode) {
+        ClassNode target = classNode
         ClassNode parent = classNode.getSuperClass()
-        while (parent != null && !parent.isResolved() && isDomainClass(parent)) {
-            classNode = parent
+        while (parent != null && !parent.isResolved() && parent.name != 'java.lang.Object') {
+            if (isDomainClassUncached(parent)) {
+                target = parent
+            }
             parent = parent.getSuperClass()
         }
-        return classNode
+        return target
     }
 
     static ClassNode getFurthestUnresolvedParent(ClassNode classNode) {

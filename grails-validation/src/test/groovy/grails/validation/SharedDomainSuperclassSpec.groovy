@@ -24,30 +24,30 @@ import spock.lang.Specification
 @Issue('https://github.com/apache/grails-core/issues/15364')
 class SharedDomainSuperclassSpec extends Specification {
 
-    void 'a command sharing a plain superclass with an entity validates only its own properties'() {
+    void 'a command sharing properties through #sharing with an entity validates only its own properties'() {
         given:
         def loader = new GroovyClassLoader()
-        loader.parseClass('''
+        loader.parseClass("""
             import grails.persistence.Entity
             import grails.validation.Validateable
 
-            abstract class BaseFoo {
+            $baseDeclaration {
                 String foo
             }
 
             @Entity
-            class Foo extends BaseFoo {
+            class Foo $relationship BaseFoo {
                 static constraints = {
                     foo nullable: false
                 }
             }
 
-            class FooCommand extends BaseFoo implements Validateable {
+            class FooCommand $commandDeclaration {
                 static constraints = {
                     foo nullable: false
                 }
             }
-        ''')
+        """)
         def command = loader.loadClass('FooCommand').getDeclaredConstructor().newInstance()
 
         when:
@@ -74,5 +74,10 @@ class SharedDomainSuperclassSpec extends Specification {
 
         cleanup:
         loader.close()
+
+        where:
+        sharing              | baseDeclaration          | relationship | commandDeclaration
+        'a plain superclass' | 'abstract class BaseFoo'  | 'extends'    | 'extends BaseFoo implements Validateable'
+        'a trait'            | 'trait BaseFoo'           | 'implements' | 'implements BaseFoo, Validateable'
     }
 }

@@ -63,6 +63,8 @@ class GormEntityTransformSpec extends Specification{
         child.getMethod('getVersion').declaringClass == root
         !child.declaredFields*.name.contains('id')
         !child.declaredFields*.name.contains('version')
+        !child.superclass.declaredFields*.name.contains('id') || child.superclass == root
+        !child.superclass.declaredFields*.name.contains('version') || child.superclass == root
         command.hasProperty('id') == null
         command.hasProperty('version') == null
 
@@ -72,8 +74,109 @@ class GormEntityTransformSpec extends Specification{
         where:
         declarations << [
             '@Entity abstract class RootEntity extends SharedDetails { }; @Entity class ChildEntity extends RootEntity { }',
-            '@Entity class ChildEntity extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }'
+            '@Entity class ChildEntity extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }',
+            '@Entity abstract class RootEntity extends SharedDetails { }; abstract class PlainIntermediate extends RootEntity { }; @Entity class ChildEntity extends PlainIntermediate { }',
+            '@Entity class ChildEntity extends PlainIntermediate { }; abstract class PlainIntermediate extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }'
         ]
+    }
+
+    void 'identity placement and dirty checking are independent of same-named parents in separate compilations'() {
+        given:
+        def firstLoader = new GroovyClassLoader()
+        def secondLoader = new GroovyClassLoader()
+        def packageName = "recompiled.entities.order${firstSource}"
+        def sources = [
+            '''
+                import grails.gorm.annotation.Entity
+                @Entity class RecompiledChild extends RecompiledBase { String title }
+                abstract class RecompiledBase { String name }
+            ''',
+            '''
+                import grails.gorm.annotation.Entity
+                @Entity class RecompiledChild extends RecompiledBase { String title }
+                @Entity abstract class RecompiledBase { String name }
+            '''
+        ]
+
+        when:
+        firstLoader.parseClass("package $packageName\n${sources[firstSource]}")
+        secondLoader.parseClass("package $packageName\n${sources[1 - firstSource]}")
+        def plainLoader = firstSource == 0 ? firstLoader : secondLoader
+        def domainLoader = firstSource == 1 ? firstLoader : secondLoader
+        def plainBase = plainLoader.loadClass("${packageName}.RecompiledBase")
+        def plainChild = plainLoader.loadClass("${packageName}.RecompiledChild")
+        def domainBase = domainLoader.loadClass("${packageName}.RecompiledBase")
+        def domainChild = domainLoader.loadClass("${packageName}.RecompiledChild")
+
+        then:
+        !plainBase.declaredFields*.name.contains('id')
+        !plainBase.declaredFields*.name.contains('version')
+        plainChild.getDeclaredField('id').type == Long
+        plainChild.getDeclaredField('version').type == Long
+        domainBase.getDeclaredField('id').type == Long
+        domainBase.getDeclaredField('version').type == Long
+        !domainChild.declaredFields*.name.contains('id')
+        !domainChild.declaredFields*.name.contains('version')
+        domainChild.getMethod('getId').declaringClass == domainBase
+        domainChild.getMethod('getVersion').declaringClass == domainBase
+
+        when:
+        def plainInstance = plainChild.getDeclaredConstructor().newInstance()
+        def domainInstance = domainChild.getDeclaredConstructor().newInstance()
+        plainInstance.trackChanges()
+        domainInstance.trackChanges()
+        plainInstance.title = 'plain parent'
+        domainInstance.title = 'domain parent'
+        domainInstance.name = 'updated'
+
+        then:
+        plainInstance.listDirtyPropertyNames() == ['title']
+        domainInstance.listDirtyPropertyNames() == ['title', 'name']
+
+        cleanup:
+        firstLoader.close()
+        secondLoader.close()
+
+        where:
+        firstSource << [0, 1]
+    }
+
+    void 'dirty checking a plain base does not make it the owner of generated persistence fields'() {
+        given:
+        def loader = new GroovyClassLoader()
+        loader.parseClass('''
+            import grails.gorm.annotation.Entity
+            import grails.gorm.dirty.checking.DirtyCheck
+
+            @DirtyCheck
+            abstract class DirtyDetails {
+                String name
+            }
+
+            @Entity
+            class DirtyDetailsEntity extends DirtyDetails { }
+
+            class DirtyDetailsCommand extends DirtyDetails { }
+        ''')
+        def entity = loader.loadClass('DirtyDetailsEntity')
+        def base = loader.loadClass('DirtyDetails')
+        def command = loader.loadClass('DirtyDetailsCommand').getDeclaredConstructor().newInstance()
+
+        when:
+        command.trackChanges()
+        command.name = 'updated'
+
+        then:
+        command.listDirtyPropertyNames() == ['name']
+        !base.declaredFields*.name.contains('id')
+        !base.declaredFields*.name.contains('version')
+        command.hasProperty('id') == null
+        command.hasProperty('version') == null
+        entity.getDeclaredField('id').type == Long
+        entity.getDeclaredField('version').type == Long
+
+        cleanup:
+        loader.close()
     }
 
     void 'separately compiled plain superclasses are not modified'() {

@@ -86,6 +86,8 @@ class DefaultDomainClassInjectorSpec extends Specification {
         child.getMethod('getVersion').declaringClass == root
         !child.declaredFields*.name.contains('id')
         !child.declaredFields*.name.contains('version')
+        !child.superclass.declaredFields*.name.contains('id') || child.superclass == root
+        !child.superclass.declaredFields*.name.contains('version') || child.superclass == root
         command.hasProperty('id') == null
         command.hasProperty('version') == null
 
@@ -95,7 +97,9 @@ class DefaultDomainClassInjectorSpec extends Specification {
         where:
         declarations << [
             '@Entity abstract class RootEntity extends SharedDetails { }; @Entity class ChildEntity extends RootEntity { }',
-            '@Entity class ChildEntity extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }'
+            '@Entity class ChildEntity extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }',
+            '@Entity abstract class RootEntity extends SharedDetails { }; abstract class PlainIntermediate extends RootEntity { }; @Entity class ChildEntity extends PlainIntermediate { }',
+            '@Entity class ChildEntity extends PlainIntermediate { }; abstract class PlainIntermediate extends RootEntity { }; @Entity abstract class RootEntity extends SharedDetails { }'
         ]
     }
 
