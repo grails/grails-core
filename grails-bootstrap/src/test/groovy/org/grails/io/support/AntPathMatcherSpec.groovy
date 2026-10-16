@@ -199,8 +199,26 @@ class AntPathMatcherSpec extends Specification {
         '/{hotel}'     | '/booking'        | '/{hotel}/booking'
         '/*.html'      | '/hotels.html'    | '/hotels.html'
         '/*.html'      | '/hotels'         | '/hotels.html'
+        '/*.html'      | '/hotels.*'       | '/hotels.html'
+        '/*.*'         | '/*.html'         | '/*.html'
+        '/report.html' | '/other.txt'      | '/report.html/other.txt'
         '/users/{id:[}' | '/users/42'       | '/users/{id:[}/users/42'
         ' '            | 'booking'         | ' /booking'
+    }
+
+    @Unroll
+    void 'combine rejects #first and #second because both name a wildcard extension'() {
+        when:
+        matcher.combine(first, second)
+
+        then:
+        def error = thrown(IllegalArgumentException)
+        error.message == "Cannot combine patterns: $first vs $second"
+
+        where:
+        first     | second
+        '/*.html' | '/*.txt'
+        '/*.html' | '/hotels.txt'
     }
 
     @Unroll
@@ -271,10 +289,19 @@ class AntPathMatcherSpec extends Specification {
         operation << ['match', 'matchStart', 'extractUriTemplateVariables']
     }
 
-    void 'capturing groups in a template regex still match'() {
+    void 'capturing groups in a template regex match but cannot be extracted as variables'() {
         expect:
         matcher.match('/users/{id:(ab|cd)}', '/users/ab')
         !matcher.match('/users/{id:(ab|cd)}', '/users/ef')
+        matcher.extractUriTemplateVariables('/users/{id:(?:ab|cd)}', '/users/ab') == [id: 'ab']
+
+        when:
+        matcher.extractUriTemplateVariables('/users/{id:(ab|cd)}', '/users/ab')
+
+        then:
+        def error = thrown(IllegalArgumentException)
+        error.message.contains('does not match the number of URI template variables')
+        error.message.endsWith('Use non-capturing groups instead.')
     }
 
     @Unroll
