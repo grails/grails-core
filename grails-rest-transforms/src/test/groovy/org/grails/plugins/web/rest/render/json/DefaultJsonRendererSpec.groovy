@@ -201,19 +201,20 @@ class DefaultJsonRendererSpec extends Specification {
         log.readLines().count { it.contains('no MVC message converters are available') } == 1
     }
 
-    void 'a ProblemDetail with no MVC converters names why the legacy converter wrote it'() {
+    void 'a ProblemDetail with no MVC converters names why the legacy converter wrote it, once'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
         String log = stderrWhile {
-            renderer.render(org.springframework.http.ProblemDetail.forStatus(409), new ServletRenderContext(webRequest))
+            2.times {
+                renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest()))
+            }
         }
 
         then:
         log.contains("A ProblemDetail is written through Spring's message converters, but no Spring message converter writes")
-        log.contains('so the legacy JSON converter writes it as a bean')
+        log.readLines().count { it.contains('so the legacy JSON converter writes it as a bean') } == 1
     }
 
     void 'a named JSON configuration does not apply to a ProblemDetail the legacy converter writes'() {
