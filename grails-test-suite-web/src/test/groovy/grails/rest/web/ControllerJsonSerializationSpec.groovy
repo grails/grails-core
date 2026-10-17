@@ -174,6 +174,20 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         format << ['html', 'csv']
     }
 
+    void 'a problem respond names a view for, which a client asks for in a format no view renders, is written as problem JSON'() {
+        given:
+        request.requestURI = '/books'
+        response.format = 'csv'
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatus(409), view: 'conflict')
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+    }
+
     void 'a problem is rendered as HTML with the view respond names, with the status it carries'() {
         given:
         response.format = 'html'

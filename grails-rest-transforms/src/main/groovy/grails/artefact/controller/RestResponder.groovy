@@ -161,8 +161,9 @@ trait RestResponder {
 
         Renderer renderer = null
         // A problem is written in JSON or XML, as Spring MVC writes it: the HTML renderer renders one only with the view
-        // respond names, and a client that accepts neither format is answered with application/problem+json
-        boolean problem = value instanceof ProblemDetail && !args.view
+        // respond names, and a client that accepts no format a renderer writes it in is answered with
+        // application/problem+json
+        boolean problem = value instanceof ProblemDetail
 
         for (MimeType mimeType in mimeTypes) {
             if (mimeType == MimeType.ALL && formats) {
@@ -210,7 +211,7 @@ trait RestResponder {
                 } else {
                     renderer = registry.findRenderer(mimeType, value)
                 }
-                if (problem && renderer instanceof DefaultHtmlRenderer && !(mimeType.extension in ['json', 'xml'])) {
+                if (problem && !args.view && renderer instanceof DefaultHtmlRenderer && !(mimeType.extension in ['json', 'xml'])) {
                     renderer = null
                 }
             }
