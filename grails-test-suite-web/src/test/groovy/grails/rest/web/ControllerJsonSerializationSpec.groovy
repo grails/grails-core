@@ -32,6 +32,8 @@ import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.rest.render.RenderContext
+import grails.rest.render.Renderer
+import grails.web.mime.MimeType
 import grails.rest.render.json.JsonRenderer
 import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.http.ProblemDetail
@@ -407,6 +409,28 @@ class ControllerProblemPageSpec extends Specification implements ControllerUnitT
     }
 }
 
+class ControllerProblemJsonRendererSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    @Configuration
+    static class ProblemJsonConfiguration {
+        @Bean
+        ProblemJsonRenderer problemJsonRenderer() {
+            new ProblemJsonRenderer()
+        }
+    }
+
+    void 'a JSON renderer an application registers for problems renders them'() {
+        given:
+        response.format = 'json'
+
+        when:
+        controller.respond(ProblemDetail.forStatus(409))
+
+        then:
+        response.contentAsString == '{"custom":409}'
+    }
+}
+
 class ControllerSerializablePageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
 
     @Configuration
@@ -463,6 +487,19 @@ class ProblemPageRenderer extends DefaultHtmlRenderer<Object> {
     void render(Object object, RenderContext context) {
         context.setViewName('/errors/problem')
         context.setModel([problem: object])
+    }
+}
+
+class ProblemJsonRenderer implements Renderer<ProblemDetail> {
+
+    final Class<ProblemDetail> targetType = ProblemDetail
+
+    final MimeType[] mimeTypes = [MimeType.JSON] as MimeType[]
+
+    @Override
+    void render(Object object, RenderContext context) {
+        context.setContentType('application/json')
+        context.writer.write("{\"custom\":${((ProblemDetail) object).status}}")
     }
 }
 
