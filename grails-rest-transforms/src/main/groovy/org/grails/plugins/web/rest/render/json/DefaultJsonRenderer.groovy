@@ -219,9 +219,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
         reportLegacyFallback(object, springFallbackReason)
         JSON converter
-        String legacyConfiguration = selectedConfiguration ?: namedConfiguration
-        if (legacyConfiguration) {
-            JSON.use(legacyConfiguration) {
+        // A jsonConfiguration argument names a configuration of the JSON mapper, which the legacy converter does not have
+        if (namedConfiguration) {
+            JSON.use(namedConfiguration) {
                 converter = new JSON(object)
             }
         } else {

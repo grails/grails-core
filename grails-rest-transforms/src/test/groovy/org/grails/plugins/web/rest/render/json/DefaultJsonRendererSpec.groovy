@@ -160,6 +160,23 @@ class DefaultJsonRendererSpec extends Specification {
         log.contains('so the legacy JSON converter writes it as a bean')
     }
 
+    void 'a named JSON configuration does not apply to a ProblemDetail the legacy converter writes'() {
+        given: 'a configuration of the JSON mapper, which the legacy converter does not have'
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        stderrWhile {
+            renderer.render(ProblemDetail.forStatus(409),
+                    new ServletRenderContext(webRequest, [jsonConfiguration: 'catalog']))
+        }
+
+        then:
+        noExceptionThrown()
+        webRequest.response.status == 409
+        webRequest.response.contentAsString.contains('"status":409')
+    }
+
     void 'a ProblemDetail the legacy converter writes and a legacy response are each reported, whichever comes first'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
