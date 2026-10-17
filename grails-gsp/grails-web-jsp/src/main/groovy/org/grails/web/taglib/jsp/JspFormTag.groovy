@@ -16,80 +16,83 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.taglib.jsp
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.taglib.jsp;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 /**
  * JSP facade onto the GSP form tag
  *
  * @author Graeme Rocher
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class JspFormTag extends JspInvokeGrailsTagLibTag {
 
-    private static final long serialVersionUID = -3045238592311090749L
+    private static final long serialVersionUID = -3045238592311090749L;
 
-    private static final String TAG_NAME = 'form'
+    private static final String TAG_NAME = 'form';
 
-    private String controller
-    private String action
-    private String id
-    private String url
-    private String params
-    private String method
+    private String controller;
+    private String action;
+    private String id;
+    private String url;
+    private String params;
+    private String method;
 
     JspFormTag() {
-        setTagName(TAG_NAME)
+        setTagName(TAG_NAME);
     }
 
     String getMethod() {
-        return method
+        return method;
     }
 
     void setMethod(String method) {
-        this.method = method
+        this.method = method;
     }
 
     String getParams() {
-        return params
+        return params;
     }
 
     void setParams(String params) {
-        this.params = params
+        this.params = params;
     }
 
     String getController() {
-        return controller
+        return controller;
     }
 
     void setController(String controller) {
-        this.controller = controller
+        this.controller = controller;
     }
 
     String getAction() {
-        return action
+        return action;
     }
 
     void setAction(String action) {
-        this.action = action
+        this.action = action;
     }
 
     @Override
     String getId() {
-        return id
+        return id;
     }
 
     @Override
     void setId(String id) {
-        this.id = id
+        this.id = id;
     }
 
     String getUrl() {
-        return url
+        return url;
     }
 
     void setUrl(String url) {
-        this.url = url
+        this.url = url;
     }
 }
