@@ -79,6 +79,62 @@ class DefaultJsonRendererSpec extends Specification {
         status << [422, 499, 299, 599]
     }
 
+    void 'a status argument of #argument decides the status of a problem response, as the status of a ResponseEntity does in Spring MVC'() {
+        given:
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        String log = stderrWhile {
+            renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(webRequest, [status: argument]))
+        }
+
+        then: 'the problem keeps its own status, and the mismatch is reported'
+        webRequest.response.status == 400
+        webRequest.response.contentAsString.contains('"status":409')
+        log.contains('The response is sent with the status argument [400], but its ProblemDetail carries status [409].')
+
+        where:
+        argument << [400, HttpStatus.BAD_REQUEST, '400']
+    }
+
+    void 'a status argument that matches the problem is not reported'() {
+        given:
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        String log = stderrWhile {
+            renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(webRequest, [status: 409]))
+        }
+
+        then:
+        webRequest.response.status == 409
+        !log.contains('status argument')
+    }
+
+    void 'a status argument does not change the status of the problem built for validation errors'() {
+        given:
+        def renderer = new DefaultJsonRenderer<Errors>(Errors)
+        renderer.useSpringJson = true
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
+        def errors = new BeanPropertyBindingResult(new Object(), 'book')
+        errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        String log = stderrWhile {
+            renderer.render(errors, new ServletRenderContext(webRequest, [status: 400]))
+        }
+
+        then:
+        webRequest.response.status == 422
+        webRequest.response.contentAsString.contains('"status":422')
+        !log.contains('status argument')
+    }
+
     void 'the hooks of the legacy JSON path are deprecated for removal in Grails 11'() {
         expect:
         [DefaultJsonRenderer.getDeclaredField('namedConfiguration').getAnnotation(Deprecated),

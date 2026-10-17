@@ -185,6 +185,25 @@ class HtmlRendererSpec extends Specification {
         webRequest.currentResponse.status == 409
         problem.instance == URI.create('/books/1')
     }
+
+    void "the view respond names renders a problem with the status respond is given"() {
+        given:
+        def renderer = new DefaultHtmlRenderer(Object)
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+        webRequest.actionName = 'show'
+        def renderContext = new ServletRenderContext(webRequest, [view: 'conflict', status: 400]) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.HTML
+            }
+        }
+
+        when:
+        renderer.render(ProblemDetail.forStatus(409), renderContext)
+
+        then:
+        webRequest.currentResponse.status == 400
+    }
 }
 @Entity
 class Book {

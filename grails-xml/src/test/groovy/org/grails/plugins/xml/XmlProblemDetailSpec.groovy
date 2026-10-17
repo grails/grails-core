@@ -56,6 +56,18 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         problem.detail.text() == 'The title is taken'
     }
 
+    void 'a status respond is given decides the status of the response, and the problem keeps its own'() {
+        given:
+        response.format = 'xml'
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), status: 400)
+
+        then:
+        response.status == 400
+        new XmlSlurper().parseText(response.contentAsString).status.text() == '409'
+    }
+
     void 'without a converter for problems, as without jackson-dataformat-xml, a problem is written as Spring writes it'() {
         given: 'a problem with extension members, which Spring writes'
         def problem = { ->

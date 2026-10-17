@@ -203,7 +203,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             // Set the content type before writing: once the writer flushes, the response is
             // committed and a later content type change is silently discarded.
             if (springValue instanceof ProblemDetail) {
-                ProblemDetailResponse.prepare((ProblemDetail) springValue, context)
+                if (object instanceof Errors) {
+                    ProblemDetailResponse.prepareBuilt((ProblemDetail) springValue, context)
+                }
+                else {
+                    ProblemDetailResponse.prepare((ProblemDetail) springValue, context)
+                }
                 context.setContentType(GrailsWebUtil.getContentType(PROBLEM_JSON.name, encoding))
             }
             springFallbackReason = writeWithSpringConverter(springValue, mediaType, context)

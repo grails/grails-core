@@ -164,6 +164,16 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json.instance == '/books'
     }
 
+    void 'a status respond is given decides the status of a problem response, and the problem keeps its own'() {
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatus(409), status: 400)
+
+        then:
+        response.status == 400
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+    }
+
     void 'a problem a client asks for as #format is written as problem JSON, as Spring MVC writes it'() {
         given:
         request.requestURI = '/books'
