@@ -88,6 +88,19 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         GrailsWebMockUtil.bindMockWebRequest(ctx)
     }
 
+    void "an application context without a MimeUtility resolves the request format from the configured media types"() {
+        given:
+        def servletContext = new MockServletContext()
+        def ctx = new GenericWebApplicationContext(servletContext)
+        ctx.refresh()
+        MockHttpServletRequest request = GrailsWebMockUtil.bindMockWebRequest(ctx).currentRequest
+        request.contentType = 'application/json'
+
+        expect:
+        request.format == 'json'
+        request.mimeTypes*.extension == ['json']
+    }
+
     void "Test format property is valid for CONTENT_TYPE and Accept header"() {
         when: "The request CONTENT_TYPE header is 'text/xml'"
             final webRequest = boundMimeTypeRequest()

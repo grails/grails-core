@@ -86,7 +86,8 @@ class HttpServletRequestExtension {
             if (context == null) {
                 context = WebApplicationContextUtils.getWebApplicationContext(request.servletContext)
             }
-            MimeType[] mimeTypes = context != null ? context.getBean(MimeUtility).getKnownMimeTypes() as MimeType[] : MimeType.getConfiguredMimeTypes()
+            MimeUtility mimeUtility = context?.getBeanProvider(MimeUtility)?.getIfAvailable()
+            MimeType[] mimeTypes = mimeUtility != null ? mimeUtility.getKnownMimeTypes() as MimeType[] : MimeType.getConfiguredMimeTypes()
             def parser = new DefaultAcceptHeaderParser(mimeTypes)
             String header = request.contentType
             if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
