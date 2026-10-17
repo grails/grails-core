@@ -196,8 +196,9 @@ Grails 9 preserves the legacy `grails.converters.JSON` converter for `respond()`
 deprecation warning when that path renders. Opt into Spring MVC's message converters, backed by Boot's
 configured Jackson `JsonMapper`, with `grails.web.rendering.json.spring: true`. Grails 10 will enable it
 by default; the legacy `respond()` path is scheduled for removal in Grails 11. Jackson can render date
-formats, bean properties, circular references, and validation errors differently, so review the JSON
-returned by `respond()` endpoints when you upgrade. Explicit `render value as JSON` calls still use the
+formats, bean properties, circular references, and validation errors differently, and writes an enum as Jackson does,
+by its `@JsonValue` or its `toString()`, where the legacy converter writes its name, so review the JSON returned by
+`respond()` endpoints when you upgrade. Explicit `render value as JSON` calls still use the
 legacy converter.
 
 The setting alone determines the default response path: registering a marshaller does not implicitly
