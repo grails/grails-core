@@ -37,8 +37,10 @@ class GrailsWebBootXmlSpec extends Specification {
     }
 
     void 'an application compiles against grails-xml, which grails-web-boot is published with as an api dependency'() {
-        given: 'the POM grails-web-boot is published with'
-        def pom = new XmlSlurper().parse(new File(System.getProperty('grails.web.boot.pom')))
+        given: 'the POM grails-web-boot is published with, which the build generates and names for the test'
+        String path = System.getProperty('grails.web.boot.pom')
+        assert path: 'grails.web.boot.pom names no POM: run the test with Gradle, whose test task generates it'
+        def pom = new XmlSlurper().parse(new File(path))
 
         expect:
         pom.dependencies.dependency.find { it.artifactId.text() == 'grails-xml' }.scope.text() == 'compile'
