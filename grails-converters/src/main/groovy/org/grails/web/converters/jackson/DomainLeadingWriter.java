@@ -36,7 +36,7 @@ import org.grails.datastore.mapping.model.PersistentEntity;
  * Writes the class name or the version of a domain class instance, or its id where Jackson has no property for it. They
  * are written ahead of the other properties, as the JSON converter writes them: the class name and the version only when
  * the rendering includes them, and the id and version only when they have a value, since an unsaved instance has
- * neither. The version and the id are written in the views of their property.
+ * neither. They are written in the views of their property, or else in those the class names for its properties.
  *
  * @since 9.0
  */

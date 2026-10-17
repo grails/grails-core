@@ -238,8 +238,10 @@ final class DomainClassModifier extends ValueSerializerModifier {
                     new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), property, object),
                     PropertyName.construct(property));
         }
+        // As Jackson's own writers do, a property that names no view is written in those its class names
+        Class<?>[] views = definition.findViews();
         return new DomainLeadingWriter(definition, description.getClassAnnotations(), object, kind, entity, rendering,
-                definition.findViews());
+                views != null ? views : description.findDefaultViews());
     }
 
     @Override

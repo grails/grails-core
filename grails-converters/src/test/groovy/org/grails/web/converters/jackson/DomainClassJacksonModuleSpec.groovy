@@ -204,6 +204,19 @@ class DomainClassJacksonModuleSpec extends Specification {
         new JSON(hiddenId).toString() == '{"name":"a"}'
     }
 
+    void "the version and the class name are written in the view the class names for its properties, as the id is"() {
+        given:
+        def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, true, false))
+        def viewed = new ViewedClass(name: 'a')
+        viewed.id = 1
+        viewed.version = 2
+
+        expect:
+        mapper.writerWithView(OutsideView).writeValueAsString(viewed) ==
+                "{\"class\":\"${ViewedClass.name}\",\"id\":1,\"version\":2,\"name\":\"a\"}"
+        mapper.writerWithView(IdView).writeValueAsString(viewed) == '{}'
+    }
+
     void "a mix-in applies to the id"() {
         given:
         def writer = new Writer(name: 'a')
@@ -529,14 +542,14 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified, Ordered,
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, ViewedClass, StringId, HiddenId, Library, Identified, Ordered,
                 Filtered)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified, Ordered,
+                Kennel, Pair, Annotated, ViewedId, ViewedClass, StringId, HiddenId, Library, Identified, Ordered,
                 Filtered)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
@@ -591,6 +604,12 @@ class ViewedId {
     @JsonView(IdView)
     Long id
     @JsonView(OutsideView)
+    String name
+}
+
+@Entity
+@JsonView(OutsideView)
+class ViewedClass {
     String name
 }
 
