@@ -124,11 +124,11 @@ class ConvertersGrailsPluginSpec extends Specification {
     }
 
     void "the conventional Boot mapper resolves multiple non-primary mapper beans"() {
-        given:
-        beanFactory.registerSingleton('jacksonJsonMapper',
-                JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).build())
+        given: "another mapper registered first, so that the first mapper found is not Boot's"
         beanFactory.registerSingleton('pluginMapper',
                 JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE).build())
+        beanFactory.registerSingleton('jacksonJsonMapper',
+                JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).build())
         def registry = beanFactory.getBean('namedJsonConfigurationRegistry', NamedJsonConfigurationRegistry)
         registry.register('catalog') { }
 
