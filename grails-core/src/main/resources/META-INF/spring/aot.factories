@@ -20,4 +20,5 @@ org.apache.grails.core.aot.VarargsBeanRegistrationAotProcessor
 org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
 org.apache.grails.core.aot.ApplicationBytecodeBeanFactoryInitializationAotProcessor,\
 org.apache.grails.core.aot.ArtefactClassesBeanFactoryInitializationAotProcessor,\
-org.apache.grails.core.aot.ArtefactReflectionBeanFactoryInitializationAotProcessor
+org.apache.grails.core.aot.ArtefactReflectionBeanFactoryInitializationAotProcessor,\
+org.apache.grails.core.aot.BeanReflectionBeanFactoryInitializationAotProcessor
