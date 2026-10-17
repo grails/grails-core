@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
-The default renderers for XML and JSON can be found in the `grails.rest.render.xml` and `grails.rest.render.json` packages respectively. These use the Grails converters (`grails.converters.XML` and `grails.converters.JSON`) by default for response rendering. The XML renderers and `grails.converters.XML` are part of the `grails-xml` module, which the Grails 9 web starter includes; from Grails 10 it is added explicitly.
+The default renderers for XML and JSON can be found in the `grails.rest.render.xml` and `grails.rest.render.json` packages respectively. These use the Grails converters (`grails.converters.XML` and `grails.converters.JSON`) by default for response rendering. The XML renderers and `grails.converters.XML` are part of the `grails-xml` module, which the Grails 9 web starter and `grails-web-boot` bring; from Grails 10 it is added explicitly.
 
 WARNING: `XmlRenderer`, `XmlCollectionRenderer` and `grails.converters.XML` are deprecated and scheduled for removal in Grails 11. The examples below use `JsonRenderer`; `XmlRenderer` takes the same `includes` and `excludes` until it is removed.
 

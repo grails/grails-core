@@ -18,7 +18,7 @@ under the License.
 ////
 
 NOTE: XML conversion, renderers and binding require `org.apache.grails:grails-xml`. The Grails 9
-web starter includes it; applications without that starter, and applications upgrading to Grails 10,
+web starter and `grails-web-boot` bring it; applications without either, and applications upgrading to Grails 10,
 must add the dependency explicitly. Advertising an XML format alone does not install XML support.
 
 The framework provides a sophisticated but simple mechanism for binding REST requests to domain objects and command objects.  One way to take advantage of this is to bind the `request` property in a controller the `properties` of a domain class.  Given the following XML as the body of the request, the `createBook` action will create a new `Book` and assign "The Stand" to the `title` property and "Stephen King" to the `authorName` property.

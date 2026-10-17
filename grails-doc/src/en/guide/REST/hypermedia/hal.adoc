@@ -18,7 +18,7 @@ under the License.
 ////
 
 NOTE: XML conversion, renderers and binding require `org.apache.grails:grails-xml`. The Grails 9
-web starter includes it; applications without that starter, and applications upgrading to Grails 10,
+web starter and `grails-web-boot` bring it; applications without either, and applications upgrading to Grails 10,
 must add the dependency explicitly. Advertising an XML format alone does not install XML support.
 
 https://stateless.co/hal_specification.html[HAL] is a standard exchange format commonly used when developing REST APIs that follow HATEOAS principals. An example HAL document representing a list of orders can be seen below:
@@ -130,8 +130,8 @@ Content-Type: application/hal+json;charset=ISO-8859-1
 ----
 
 HAL XML renderers are deprecated since Grails 9.0 and will be removed in Grails 11. Existing
-clients can retain them temporarily with the optional `grails-xml` module, which the Grails 9 web starter
-includes and which every application adds explicitly from Grails 10. New development should
+clients can retain them temporarily with the optional `grails-xml` module, which the Grails 9 web starter and
+`grails-web-boot` bring and which every application adds explicitly from Grails 10. New development should
 use the Grails HAL JSON renderer. Spring HATEOAS models can be returned from Spring MVC controllers;
 adding `spring-boot-starter-hateoas` alone does not register a Grails renderer for those models.
 
