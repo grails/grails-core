@@ -96,6 +96,20 @@ class JsonViewJsonRendererSpec extends Specification {
         problem.instance == URI.create('/books/1')
     }
 
+    void 'a ProblemDetail rendered with the view respond names, for a client that accepts no JSON type, is sent as JSON'() {
+        given: 'a client that accepts none of the types JSON views write, whose problem respond writes as JSON'
+        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolving('/problem': new ProblemView()), null, null,
+                defaultRenderer)
+        def context = context([view: '/problem'])
+        context.webRequest.currentRequest.addHeader('Accept', 'text/plain')
+
+        when:
+        viewRenderer.render(ProblemDetail.forStatus(422), context)
+
+        then:
+        context.webRequest.currentResponse.contentType.startsWith('application/json')
+    }
+
     void 'a ProblemDetail is written by the default renderer when the view respond names does not exist'() {
         given:
         def context = context([view: '/missing'])

@@ -82,7 +82,12 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
             context.setContentType(ct.toString())
         }
         else {
-            final mimeType = context.acceptMimeType ?: mimeTypes[0]
+            MimeType mimeType = context.acceptMimeType ?: mimeTypes[0]
+            if (problem && !(mimeType in mimeTypes)) {
+                // respond writes a problem as JSON for a client that accepts no format a renderer writes, in this
+                // renderer's format
+                mimeType = mimeTypes[0]
+            }
             if (!mimeType.equals(MimeType.ALL)) {
                 context.setContentType(mimeType.name)
             }
