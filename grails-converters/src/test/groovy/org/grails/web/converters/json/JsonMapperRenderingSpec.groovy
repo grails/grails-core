@@ -150,6 +150,16 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(holder).toString() == '{"note":"n","role":"head"}'
     }
 
+    void "a value a marshaller writes in the place of a property's value is written as itself, without the property's annotations"() {
+        given: 'marshallers that write a record and a bean in the place of the value they are registered for'
+        JSON.registerObjectMarshaller(Login) { Login login -> new LoginView(login.user()) }
+        JSON.registerObjectMarshaller(Profile) { Profile profile -> new ProfileView(user: profile.user) }
+
+        expect: 'whatever the class of the value the marshaller writes'
+        new JSON(new LoginHolder(login: new Login('ada', 's3cret'))).toString() == '{"login":{"user":"ada"}}'
+        new JSON(new ProfileHolder(profile: new Profile(user: 'ada'))).toString() == '{"profile":{"user":"ada"}}'
+    }
+
     void "the annotations of a property apply to the bean, collection or map it holds, as the JsonMapper applies them"() {
         given:
         def account = new Account(user: 'ada', secret: 's3cret')
@@ -901,6 +911,28 @@ class ShapedValues {
 
 class UnwrapAddress {
     String street
+}
+
+record Login(String user, String password) {}
+
+record LoginView(String user) {}
+
+class LoginHolder {
+    @JsonIgnoreProperties('user')
+    Login login
+}
+
+class Profile {
+    String user
+}
+
+class ProfileView {
+    String user
+}
+
+class ProfileHolder {
+    @JsonIgnoreProperties('user')
+    Profile profile
 }
 
 class UnwrapHolder {

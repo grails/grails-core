@@ -210,7 +210,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @throws ConverterException
      */
     public void value(Object o) throws ConverterException {
-        o = config.getProxyHandler().unwrapIfProxy(o);
+        Object unwrapped = config.getProxyHandler().unwrapIfProxy(o);
+        if (unwrapped != o && unwrapped != null) {
+            writer.standIn(o, unwrapped);
+        }
+        o = unwrapped;
         try {
             if (o == null) {
                 writer.valueNull();

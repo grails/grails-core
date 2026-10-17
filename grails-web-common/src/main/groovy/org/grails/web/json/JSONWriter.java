@@ -415,6 +415,21 @@ public class JSONWriter {
     }
 
     /**
+     * Records that the value about to be written stands for the nested value {@link #writeNested(Runnable)} writes, as the
+     * instance a proxy proxies does, so that it is written as the {@code JsonMapper} writes it in the place of the proxy:
+     * with what the property the nested value is the value of is annotated with. Nothing is recorded for any other value.
+     *
+     * @param nested the nested value
+     * @param instance the value written in its place
+     * @since 9.0
+     */
+    public void standIn(Object nested, Object instance) {
+        if (generator != null) {
+            NestedValueSerializer.standIn(generator, nested, instance);
+        }
+    }
+
+    /**
      * The location of the nested value that {@link #writeNested(Runnable)} is about to write, relative to the
      * {@link JsonMapperValue} it is nested in, such as {@code .inner} or {@code [0]}.
      */

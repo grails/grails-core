@@ -18,6 +18,8 @@
  */
 package org.grails.web.converters.jackson
 
+import java.util.function.Supplier
+
 import groovy.json.JsonSlurper
 
 import com.fasterxml.jackson.annotation.JsonFilter
@@ -49,12 +51,14 @@ import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.ser.BeanPropertyWriter
 import tools.jackson.databind.ser.ValueSerializerModifier
+import tools.jackson.databind.ser.std.DelegatingSerializer
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
 import tools.jackson.databind.ser.std.StdSerializer
 import tools.jackson.databind.ser.std.ToStringSerializer
 
 import org.springframework.context.ApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 
 import grails.converters.JSON
 import grails.converters.json.NamedJsonConfigurationRegistry
@@ -65,6 +69,7 @@ import grails.core.support.proxy.EntityProxyHandler
 import grails.core.support.proxy.ProxyHandler
 import grails.persistence.Entity
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.hibernate.proxy.HibernateProxy
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.proxy.EntityProxy
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -500,7 +505,7 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
     }
 
-    void "what a property is annotated with applies to the instance a proxy in it stands for, when the JSON converter's proxy handler unwraps it"() {
+    void "what a property is annotated with applies to the instance a Hibernate proxy in it stands for, whichever part of the JSON converter unwraps it"() {
         given: 'a proxy with a lazy initializer and a proxy handler that unwraps it, as Hibernate has'
         ConvertersConfigurationHolder.clear()
         def initializer = new ConvertersConfigurationInitializer() {
@@ -514,7 +519,7 @@ class DomainClassJacksonModuleSpec extends Specification {
         def proxy = { long id ->
             def writer = new Writer(name: 'a')
             writer.id = id
-            new LazyWriterProxy(target: writer, proxyId: id)
+            new LazyWriterProxy(target: writer)
         }
         def holder = new IgnoringWriterHolder(writer: proxy(1), writers: [proxy(2)])
         def dog = new Dog(name: 'Rex')
@@ -529,6 +534,40 @@ class DomainClassJacksonModuleSpec extends Specification {
         and: 'a proxy narrowed to a subclass, with the type id of the subclass'
         mapper.writeValueAsString(pet) == '{"animal":{"@type":"Dog","id":3}}'
         new JSON(pet).toString() == '{"animal":{"@type":"Dog","id":3}}'
+
+        when: 'the converter has a proxy handler that does not unwrap it, so that its proxy marshaller does'
+        ConvertersConfigurationHolder.clear()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
+
+        then:
+        new JSON(holder).toString() == '{"writer":{"id":1},"writers":[{"id":2}]}'
+        new JSON(pet).toString() == '{"animal":{"@type":"Dog","id":3}}'
+    }
+
+    void "a module's wrapper around the serializer of a domain class writes the instance a proxy stands for, in the JSON converter"() {
+        given: "the application's JsonMapper, whose module wraps the serializer of Writer, and Hibernate's proxy handler"
+        def application = new SimpleModule('application').setSerializerModifier(new ValueSerializerModifier() {
+            @Override
+            ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier description,
+                    ValueSerializer<?> serializer) {
+                description.get().beanClass == Writer ? new ApplicationWrapper(serializer) : serializer
+            }
+        })
+        def context = new GenericApplicationContext()
+        context.registerBean(JsonMapper, { JsonMapper.builder().addModule(application).build() } as Supplier<JsonMapper>)
+        context.registerBean(ProxyHandler, { new LazyProxyHandler() } as Supplier<ProxyHandler>)
+        context.refresh()
+        ConvertersConfigurationHolder.clear()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication, applicationContext: context).initialize()
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+
+        expect:
+        new JSON(new IgnoringWriterHolder(writer: new LazyWriterProxy(target: writer), writers: [])).toString() ==
+                '{"writer":{"id":1},"writers":[]}'
+
+        cleanup:
+        context.close()
     }
 
     void "a proxy in a @JsonUnwrapped property is written into the enclosing object, as the instance it proxies is"() {
@@ -1150,16 +1189,9 @@ class WriterProxy extends Writer implements EntityProxy<Writer> {
     Serializable getProxyKey() { proxyId }
 }
 
-/** A proxy as Hibernate gives one, whose class extends the class it proxies and which has a lazy initializer. */
-class LazyWriterProxy extends Writer implements EntityProxy<Writer> {
+/** A proxy as Hibernate gives one: its class extends the class it proxies, and it has a lazy initializer. */
+class LazyWriterProxy extends Writer implements HibernateProxy {
     Writer target
-    Long proxyId
-
-    void initialize() {}
-
-    boolean isInitialized() { true }
-
-    Serializable getProxyKey() { proxyId }
 
     LazyInitializer getHibernateLazyInitializer() {
         new LazyInitializer(implementation: target)
@@ -1182,14 +1214,8 @@ class DogProxy extends Dog implements EntityProxy<Dog> {
 }
 
 /** A proxy of an Animal that stands for a Dog, as Hibernate gives one for an association to Animal. */
-class LazyAnimalProxy extends Animal implements EntityProxy<Animal> {
+class LazyAnimalProxy extends Animal implements HibernateProxy {
     Animal target
-
-    void initialize() {}
-
-    boolean isInitialized() { true }
-
-    Serializable getProxyKey() { target.id }
 
     LazyInitializer getHibernateLazyInitializer() {
         new LazyInitializer(implementation: target)
@@ -1201,17 +1227,35 @@ class IgnoringPet {
     Animal animal
 }
 
-class LazyProxyHandler implements ProxyHandler {
+/** A proxy handler that unwraps the proxies Hibernate gives, as that of Hibernate does. */
+class LazyProxyHandler implements EntityProxyHandler {
 
-    boolean isProxy(Object o) { o instanceof LazyWriterProxy || o instanceof LazyAnimalProxy }
+    boolean isProxy(Object o) { o instanceof HibernateProxy }
 
-    Object unwrapIfProxy(Object instance) { isProxy(instance) ? instance.target : instance }
+    Object unwrapIfProxy(Object instance) { isProxy(instance) ? instance.hibernateLazyInitializer.implementation : instance }
 
     boolean isInitialized(Object o) { true }
 
     void initialize(Object o) {}
 
     boolean isInitialized(Object obj, String associationName) { true }
+
+    Object getProxyIdentifier(Object o) { isProxy(o) ? unwrapIfProxy(o).id : null }
+
+    Class<?> getProxiedClass(Object o) { isProxy(o) ? o.getClass().superclass : o.getClass() }
+}
+
+/** A module's wrapper around the serializer of a domain class, as a library may add one. */
+class ApplicationWrapper extends DelegatingSerializer {
+
+    ApplicationWrapper(ValueSerializer<?> delegatee) {
+        super(delegatee)
+    }
+
+    @Override
+    protected ValueSerializer<Object> newDelegatingInstance(ValueSerializer<?> delegatee) {
+        new ApplicationWrapper(delegatee)
+    }
 }
 
 class WriterProxyHandler implements EntityProxyHandler {
