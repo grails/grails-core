@@ -16,9 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.query
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.query;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 /**
  * An abstract result list for initializing objects lazily from a cursor
@@ -26,123 +27,125 @@ import groovy.transform.CompileStatic
  * @author Graeme Rocher
  * @since 5.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 abstract class AbstractResultList extends AbstractList implements Closeable {
 
-    protected int offset = 0
-    protected final List initializedObjects
-    private int internalIndex
-    private Integer size
-    protected boolean initialized = false
-    protected Iterator<Object> cursor
+    protected int offset = 0;
+    protected final List initializedObjects;
+    private int internalIndex;
+    private Integer size;
+    protected boolean initialized = false;
+    protected Iterator<Object> cursor;
 
     AbstractResultList(int offset, Iterator<Object> cursor) {
-        this(offset, -1, cursor)
+        this(offset, -1, cursor);
     }
 
     AbstractResultList(int offset, Integer size, Iterator<Object> cursor) {
-        this.offset = offset
-        boolean hasSize = size != null && size > -1
+        this.offset = offset;
+        boolean hasSize = size != null && size > -1;
         if (hasSize) {
-            this.size = size
+            this.size = size;
         }
-        this.cursor = cursor
-        this.initialized = !cursor.hasNext()
-        this.initializedObjects = hasSize ? new ArrayList(size) : new ArrayList()
+        this.cursor = cursor;
+        this.initialized = !cursor.hasNext();
+        this.initializedObjects = hasSize ? new ArrayList(size) : new ArrayList();
     }
 
     Iterator<Object> getCursor() {
-        return cursor
+        return cursor;
     }
 
     protected void initializeFully() {
         if (initialized) {
-            return
+            return;
         }
 
         while (cursor.hasNext()) {
-            convertObject()
+            convertObject();
         }
-        initialized = true
+        initialized = true;
     }
 
     @Override
     boolean isEmpty() {
         if (initialized) {
-            return initializedObjects.isEmpty()
+            return initializedObjects.isEmpty();
         }
         else {
-            return initializedObjects.isEmpty() && !cursor.hasNext()
+            return initializedObjects.isEmpty() && !cursor.hasNext();
         }
     }
 
     @SuppressWarnings('unchecked')
     @Override
     Object get(int index) {
-        final List initializedObjects = this.initializedObjects
-        final int initializedSize = initializedObjects.size()
+        final List initializedObjects = this.initializedObjects;
+        final int initializedSize = initializedObjects.size();
         if (initializedSize > index) {
-            return initializedObjects.get(index)
-        }
-        else if (!initialized) {
+            return initializedObjects.get(index);
+        } else if (!initialized) {
             while (cursor.hasNext()) {
-                Object o = convertObject()
+                Object o = convertObject();
                 if (index == internalIndex) {
-                    return o
+                    return o;
                 }
                 else if (index < initializedSize) {
-                    return initializedObjects.get(index)
+                    return initializedObjects.get(index);
                 }
+
             }
-            initialized = true
+            initialized = true;
         }
-        return initializedObjects.get(index)
+        return initializedObjects.get(index);
     }
 
     protected Object convertObject() {
-        final Object next = convertObject(nextDecoded())
+        final Object next = convertObject(nextDecoded());
         if (!cursor.hasNext()) {
-            initialized = true
+            initialized = true;
         }
-        initializedObjects.add(next)
-        internalIndex = initializedObjects.size()
-        return next
+        initializedObjects.add(next);
+        internalIndex = initializedObjects.size();
+        return next;
     }
 
     protected Object convertObject(Object o) {
-        return o
+        return o;
     }
 
-    protected abstract Object nextDecoded()
+    protected abstract Object nextDecoded();
 
     @Override
     Object set(int index, Object o) {
-        Object previous = get(index)
-        initializedObjects.set(index, o)
-        return previous
+        Object previous = get(index);
+        initializedObjects.set(index, o);
+        return previous;
     }
 
     @Override
     void add(int index, Object element) {
-        initializeFully()
-        this.initializedObjects.add(index, element)
+        initializeFully();
+        this.initializedObjects.add(index, element);
     }
 
     @Override
     Object remove(int index) {
-        initializeFully()
-        return this.initializedObjects.remove(index)
+        initializeFully();
+        return this.initializedObjects.remove(index);
     }
 
     @Override
     ListIterator listIterator() {
-        return listIterator(0)
+        return listIterator(0);
     }
 
     @Override
     ListIterator listIterator(int index) {
-        initializeFully()
-        return initializedObjects.listIterator(index)
+        initializeFully();
+        return initializedObjects.listIterator(index);
     }
 
     /**
@@ -154,62 +157,61 @@ abstract class AbstractResultList extends AbstractList implements Closeable {
     Iterator iterator() {
         if (initialized || !initializedObjects.isEmpty()) {
             if (!initialized) {
-                initializeFully()
+                initializeFully();
             }
-            return initializedObjects.iterator()
+            return initializedObjects.iterator();
         }
 
         return new Iterator() {
-            int iteratorIndex = 0
-            Object current
-
+            int iteratorIndex = 0;
+            Object current;
             boolean hasNext() {
                 if (iteratorIndex < internalIndex) {
-                    return true
+                    return true;
                 }
                 else if (!initialized) {
-                    boolean hasMore = cursor.hasNext()
+
+                    boolean hasMore = cursor.hasNext();
                     if (!hasMore) {
-                        initialized = true
+                        initialized = true;
                     }
-                    return hasMore
+                    return hasMore;
                 }
-                return false
+                return false;
             }
 
             @SuppressWarnings('unchecked')
             Object next() {
                 if (iteratorIndex < internalIndex) {
-                    current = initializedObjects.get(iteratorIndex)
+                    current = initializedObjects.get(iteratorIndex);
                 }
                 else {
-                    current = convertObject()
+                    current = convertObject();
                 }
                 try {
-                    return current
-                }
-                finally {
-                    iteratorIndex++
+                    return current;
+                } finally {
+                    iteratorIndex++;
                 }
             }
 
             void remove() {
                 if (current != null) {
-                    initializedObjects.remove(current)
+                    initializedObjects.remove(current);
                 }
             }
-        }
+        };
     }
 
     @Override
     int size() {
         if (initialized) {
-            return initializedObjects.size()
+            return initializedObjects.size();
         }
         else if (this.size == null) {
-            initializeFully()
-            this.size = initializedObjects.size()
+            initializeFully();
+            this.size = initializedObjects.size();
         }
-        return size
+        return size;
     }
 }

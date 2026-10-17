@@ -16,16 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.validation.constraints;
 
-package org.grails.datastore.gorm.validation.constraints
+import groovy.transform.CompileStatic;
+import org.springframework.context.MessageSource;
+import org.springframework.validation.Errors;
 
-import groovy.transform.CompileStatic
-import org.springframework.context.MessageSource
-import org.springframework.validation.Errors
-
-import grails.gorm.validation.ConstrainedProperty
-import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
-import org.grails.datastore.mapping.reflect.ClassUtils
+import grails.gorm.validation.ConstrainedProperty;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
+import org.grails.datastore.mapping.reflect.ClassUtils;
 
 /**
  * Implements a maximum value constraint.
@@ -33,22 +33,23 @@ import org.grails.datastore.mapping.reflect.ClassUtils
  * @author Graeme Rocher
  * @since 0.4
  */
-@SuppressWarnings(['unchecked', 'rawtypes'])
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'unchecked', 'rawtypes'])
 @CompileStatic
 class MaxConstraint extends AbstractConstraint {
 
-    private final Comparable maxValue
+    private final Comparable maxValue;
 
     MaxConstraint(Class<?> constraintOwningClass, String constraintPropertyName, Object constraintParameter, MessageSource messageSource) {
-        super(constraintOwningClass, constraintPropertyName, constraintParameter, messageSource)
-        this.maxValue = (Comparable) this.constraintParameter
+        super(constraintOwningClass, constraintPropertyName, constraintParameter, messageSource);
+        this.maxValue = (Comparable) this.constraintParameter;
     }
 
     /**
      * @return Returns the maxValue.
      */
     Comparable getMaxValue() {
-        return maxValue
+        return maxValue;
     }
 
     /* (non-Javadoc)
@@ -57,7 +58,7 @@ class MaxConstraint extends AbstractConstraint {
     boolean supports(Class type) {
         return type != null && (
                 Comparable.isAssignableFrom(type) ||
-                        ClassUtils.isAssignableOrConvertibleFrom(Number, type))
+                        ClassUtils.isAssignableOrConvertibleFrom(Number, type));
     }
 
     @Override
@@ -65,35 +66,35 @@ class MaxConstraint extends AbstractConstraint {
         if (constraintParameter == null) {
             throw new IllegalArgumentException('Parameter for constraint [' +
                     ConstrainedProperty.MAX_CONSTRAINT + '] of property [' +
-                    constraintPropertyName + '] of class [' + constraintOwningClass + '] cannot be null')
+                    constraintPropertyName + '] of class [' + constraintOwningClass + '] cannot be null');
         }
 
         if (!(constraintParameter instanceof Comparable<?>) && (!constraintParameter.getClass().isPrimitive())) {
             throw new IllegalArgumentException('Parameter for constraint [' +
                     ConstrainedProperty.MAX_CONSTRAINT + '] of property [' + constraintPropertyName +
-                    '] of class [' + constraintOwningClass + '] must implement the interface [java.lang.Comparable]')
+                    '] of class [' + constraintOwningClass + '] must implement the interface [java.lang.Comparable]');
         }
 
-        Class<?> propertyClass = ClassPropertyFetcher.getPropertyType(constraintOwningClass, constraintPropertyName)
+        Class<?> propertyClass = ClassPropertyFetcher.getPropertyType(constraintOwningClass, constraintPropertyName);
         if (!ClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(), propertyClass)) {
             throw new IllegalArgumentException('Parameter for constraint [' +
                     ConstrainedProperty.MAX_CONSTRAINT + '] of property [' +
                     constraintPropertyName + '] of class [' + constraintOwningClass +
-                    '] must be the same type as property: [' + propertyClass.getName() + ']')
+                    '] must be the same type as property: [' + propertyClass.getName() + ']');
         }
-        return constraintParameter
+        return constraintParameter;
     }
 
     String getName() {
-        return ConstrainedProperty.MAX_CONSTRAINT
+        return ConstrainedProperty.MAX_CONSTRAINT;
     }
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if (maxValue.compareTo(propertyValue) < 0) {
-            Object[] args = [constraintPropertyName, constraintOwningClass, propertyValue, maxValue] as Object[]
+            Object[] args = [constraintPropertyName, constraintOwningClass, propertyValue, maxValue] as Object[];
             rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MAX_MESSAGE_CODE,
-                    ConstrainedProperty.MAX_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args)
+                    ConstrainedProperty.MAX_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args);
         }
     }
 
