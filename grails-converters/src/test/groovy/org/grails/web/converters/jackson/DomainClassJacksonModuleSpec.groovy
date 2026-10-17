@@ -230,6 +230,22 @@ class DomainClassJacksonModuleSpec extends Specification {
                 .writeValueAsString(writer) == '{"name":"a"}'
     }
 
+    void "a mix-in applies to the version, which GORM leaves out of every domain class for the rendering to decide"() {
+        given:
+        def versioned = new GormVersioned(name: 'top')
+        versioned.id = 3
+        versioned.version = 5
+        def rendering = new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, false, false)
+
+        expect:
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).build()
+                .writeValueAsString(versioned) == '{"id":3,"version":5,"name":"top"}'
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).addMixIn(GormVersioned, IgnoredVersionMixin)
+                .build().writeValueAsString(versioned) == '{"id":3,"name":"top"}'
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering))
+                .addMixIn(GormVersioned, IgnoredVersionPropertiesMixin).build().writeValueAsString(versioned) == '{"id":3,"name":"top"}'
+    }
+
     void "rendering deep, the annotations of an association apply to the instances it writes"() {
         given:
         def shelf = new Shelf(name: 'top')
@@ -542,14 +558,14 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, ViewedClass, StringId, HiddenId, Library, Identified, Ordered,
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, Library, Identified, Ordered,
                 Filtered)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, ViewedClass, StringId, HiddenId, Library, Identified, Ordered,
+                Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, Library, Identified, Ordered,
                 Filtered)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
@@ -633,6 +649,21 @@ abstract class IgnoredIdMixin {
 
 @JsonIgnoreProperties(['id'])
 abstract class IgnoredIdPropertiesMixin { }
+
+// GORM names the version in the @JsonIgnoreProperties of every domain class
+@Entity
+@JsonIgnoreProperties(['version'])
+class GormVersioned {
+    String name
+}
+
+abstract class IgnoredVersionMixin {
+    @JsonIgnore
+    abstract Long getVersion()
+}
+
+@JsonIgnoreProperties(['version'])
+abstract class IgnoredVersionPropertiesMixin { }
 
 @Entity
 class Library {

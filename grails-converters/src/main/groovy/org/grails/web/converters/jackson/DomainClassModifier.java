@@ -22,6 +22,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -175,7 +176,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
                 ordered.add(leading(config, description, identity.getName(), DomainLeadingWriter.Kind.ID, entity));
             }
         }
-        if (entity.getVersion() != null && !versionIgnored(description)) {
+        if (entity.getVersion() != null && !versionIgnored(config, description)) {
             ordered.add(leading(config, description, GormProperties.VERSION, DomainLeadingWriter.Kind.VERSION, entity));
         }
         ordered.addAll(others);
@@ -214,10 +215,17 @@ final class DomainClassModifier extends ValueSerializerModifier {
     /**
      * Whether the version is left out. GORM names it in the {@code @JsonIgnoreProperties} of every domain class, so that
      * Jackson leaves it out, and the rendering decides; what is ignored for the version itself, also by a mix-in, is.
+     * Jackson merges the annotations of a mix-in into those of the class, so a mix-in is read for itself.
      */
-    private static boolean versionIgnored(BeanDescription description) {
+    private static boolean versionIgnored(SerializationConfig config, BeanDescription description) {
         if (ignored(description.getBeanClass(), GormProperties.VERSION)) {
             return true;
+        }
+        for (Class<?> type = description.getBeanClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+            Class<?> mixIn = config.findMixInClassFor(type);
+            if (mixIn != null && (ignored(mixIn, GormProperties.VERSION) || namedIgnored(mixIn, GormProperties.VERSION))) {
+                return true;
+            }
         }
         JsonIgnoreProperties.Value byClass = description.getPropertyIgnorals();
         return description.getIgnoredPropertyNames().contains(GormProperties.VERSION) &&
@@ -287,6 +295,12 @@ final class DomainClassModifier extends ValueSerializerModifier {
             }
         }
         return false;
+    }
+
+    /** Whether the {@code @JsonIgnoreProperties} of a class leaves a property out when it is written. */
+    private static boolean namedIgnored(Class<?> type, String property) {
+        JsonIgnoreProperties ignorals = type.getAnnotation(JsonIgnoreProperties.class);
+        return ignorals != null && !ignorals.allowGetters() && Arrays.asList(ignorals.value()).contains(property);
     }
 
     private static boolean ignoredForSerialization(AnnotatedElement element) {
