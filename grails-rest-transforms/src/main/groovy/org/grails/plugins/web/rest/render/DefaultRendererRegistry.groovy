@@ -102,6 +102,11 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     private final AtomicBoolean legacyJsonFallbackReported = new AtomicBoolean()
     private final AtomicBoolean missingJsonConvertersReported = new AtomicBoolean()
 
+    /** The container renderers plugins contribute as defaults, collected with the renderer beans, by component type. */
+    private final Map<Renderer, Class> pendingDefaultContainerRenderers = new LinkedHashMap<>()
+
+    private boolean initialized
+
     @PostConstruct
     void initialize() {
         final defaultJsonRenderer = new DefaultJsonRenderer<Object>(Object, groovyPageLocator, this)
@@ -129,6 +134,12 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         defaultContainerHtmlRenderer.encoding = encoding
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.HTML), defaultContainerHtmlRenderer)
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.ALL), defaultContainerHtmlRenderer)
+        // The defaults plugins contribute take their keys as the registry's own do, over the renderer beans
+        initialized = true
+        pendingDefaultContainerRenderers.each { Renderer renderer, Class componentType ->
+            addContainerRenderer(componentType, renderer)
+        }
+        pendingDefaultContainerRenderers.clear()
     }
 
     /**
@@ -193,13 +204,12 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
         configureJsonRenderer(renderer)
+        if (renderer instanceof FallbackRenderer && !initialized) {
+            pendingDefaultContainerRenderers.put(renderer, objectType)
+            return
+        }
         for (MimeType mt in renderer.mimeTypes) {
             def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
-            // A plugin's default gives way to any other renderer for the key, whichever comes first
-            Renderer existing = containerRenderers.get(key)
-            if (renderer instanceof FallbackRenderer && existing != null && !(existing instanceof FallbackRenderer)) {
-                continue
-            }
             containerRendererCache.invalidate(key)
             containerRenderers.put(key, renderer)
         }

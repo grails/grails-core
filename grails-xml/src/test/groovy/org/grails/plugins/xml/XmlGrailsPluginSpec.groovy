@@ -30,6 +30,7 @@ import grails.converters.XML
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
+import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.SpringMessageConverters
@@ -149,7 +150,29 @@ class XmlGrailsPluginSpec extends Specification {
         customFirst << [true, false]
     }
 
-    void "an application renderer of validation errors as XML takes precedence over the plugin's, whichever is collected first"() {
+    void "the plugin's renderer of validation errors answers XML over an application's renderer bean, as in Grails 8, whichever is collected first"() {
+        given: 'a Vnd.Error renderer bean, which also names the XML media types'
+        def vndError = new VndErrorXmlRenderer()
+        def plugin = beanFactory.getBean('xmlErrorsRenderer', XmlErrorsRenderer)
+        def registry = new DefaultRendererRegistry()
+        def errors = new BeanPropertyBindingResult(new Object(), 'book')
+
+        when:
+        registry.setRenderers((vndErrorFirst ? [vndError, plugin] : [plugin, vndError]) as Renderer[])
+        registry.initialize()
+
+        then:
+        registry.findContainerRenderer(MimeType.XML, Errors, errors).is(plugin)
+        registry.findContainerRenderer(MimeType.TEXT_XML, Errors, errors).is(plugin)
+
+        and: 'the application renderer answers its own media type'
+        registry.findContainerRenderer(VndErrorXmlRenderer.MIME_TYPE, Errors, errors).is(vndError)
+
+        where:
+        vndErrorFirst << [true, false]
+    }
+
+    void "a renderer of validation errors added once the registry is initialized answers XML over the plugin's"() {
         given:
         def custom = Stub(ContainerRenderer) {
             getTargetType() >> Errors
@@ -159,19 +182,15 @@ class XmlGrailsPluginSpec extends Specification {
         def plugin = beanFactory.getBean('xmlErrorsRenderer', XmlErrorsRenderer)
         def registry = new DefaultRendererRegistry()
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
+        registry.setRenderers([plugin] as Renderer[])
+        registry.initialize()
 
         when:
-        registry.setRenderers((customFirst ? [custom, plugin] : [plugin, custom]) as Renderer[])
-        registry.initialize()
+        registry.addRenderer(custom)
 
         then:
         registry.findContainerRenderer(MimeType.XML, Errors, errors).is(custom)
-
-        and: "the plugin's renderer still answers the media types the application renderer does not"
         registry.findContainerRenderer(MimeType.TEXT_XML, Errors, errors).is(plugin)
-
-        where:
-        customFirst << [true, false]
     }
 
     void 'a renderer discovers a GSP locator registered after its creation'() {

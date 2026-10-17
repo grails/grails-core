@@ -32,8 +32,8 @@ import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
  * <p>A {@link ContainerRenderer} so that it can be contributed as a bean: DefaultRendererRegistry
  * autowires every {@code Renderer} and routes container renderers to the container registry, which
  * keeps registration independent of which registry instance is created and when. A
- * {@link FallbackRenderer}, so that an application's renderer of validation errors as XML takes
- * precedence over it, whichever bean is collected first.</p>
+ * {@link FallbackRenderer}, so that it answers the XML media types over an application's renderer
+ * beans, such as a {@code VndErrorXmlRenderer}, as the registry's own renderer did in Grails 8.</p>
  *
  * @since 9.0
  */

@@ -26,9 +26,10 @@ import grails.rest.render.Renderer
  * <p>{@link DefaultRendererRegistry} registers it as it registers the renderers it creates itself:
  * it is consulted only after the renderers registered for the class hierarchy and interfaces of the
  * object. Every other renderer bean, including one whose target type is {@code Object}, keeps
- * precedence over it. A {@link grails.rest.render.ContainerRenderer} marked so gives way, in the
- * same way, to any other container renderer for its container type, component type and MIME type,
- * whichever is registered first.</p>
+ * precedence over it. A {@link grails.rest.render.ContainerRenderer} marked so takes its container
+ * type, component type and MIME types as the registry's own renderers of validation errors take
+ * theirs: over the container renderer beans, as in Grails 8, and below a renderer added once the
+ * registry is initialized.</p>
  *
  * @since 9.0
  */
