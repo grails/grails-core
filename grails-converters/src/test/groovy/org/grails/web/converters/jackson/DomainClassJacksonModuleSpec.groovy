@@ -33,14 +33,19 @@ import com.fasterxml.jackson.annotation.JsonView
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import spock.lang.Specification
 import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.BeanDescription
 import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.SerializationConfig
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.annotation.JsonNaming
 import tools.jackson.databind.annotation.JsonSerialize
 import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.module.SimpleModule
+import tools.jackson.databind.ser.BeanPropertyWriter
+import tools.jackson.databind.ser.ValueSerializerModifier
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
 import tools.jackson.databind.ser.std.StdSerializer
@@ -570,6 +575,58 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '"writers":[{"id":"id-1"},{"id":"id-2"}],"writersByName":{"a":{"id":"id-1"},"b":{"id":"id-2"}}}'
     }
 
+    void "an unsaved instance is written without an id, unless its rendering gives it one"() {
+        given:
+        def unsaved = new Shelf(name: 'top')
+
+        expect:
+        mapper().writeValueAsString(unsaved) == '{"name":"top"}'
+        new JSON(unsaved).toString() == '{"name":"top"}'
+
+        when:
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
+            @Override
+            protected Object extractValue(Object domainObject, PersistentProperty property) {
+                def value = super.extractValue(domainObject, property)
+                property.name == 'id' && value == null ? 'unsaved' : value
+            }
+        })
+
+        then:
+        new JSON(unsaved).toString() == '{"id":"unsaved","name":"top"}'
+    }
+
+    void "a value the rendering gives in place of the id is written with the serializer and inclusion of the id"() {
+        given: 'an id written by its own serializer, and left out when empty'
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
+            @Override
+            protected Object extractValue(Object domainObject, PersistentProperty property) {
+                def value = super.extractValue(domainObject, property)
+                property.name == 'id' ? (value == 1L ? 101L : '') : value
+            }
+        })
+        def first = new PublicId(name: 'a')
+        first.id = 1
+        def second = new PublicId(name: 'b')
+        second.id = 2
+
+        expect:
+        new JSON(first).toString() == '{"id":"101","name":"a"}'
+        new JSON(second).toString() == '{"name":"b"}'
+    }
+
+    void "the id is written by the writer another module gives it"() {
+        given: "an application's module, which the mapper consults ahead of the domain class module registered before it"
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def module = new SimpleModule('prefixed-ids').setSerializerModifier(new PrefixedIds())
+
+        expect:
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(
+                ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())))
+                .addModule(module).build().writeValueAsString(writer) == '{"id":"w1","name":"a"}'
+    }
+
     private JsonMapper mapper(DomainClassRendering rendering = ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())) {
         JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).build()
     }
@@ -601,15 +658,15 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, Library, Identified, Ordered,
-                Filtered)
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
+                Identified, Ordered, Filtered)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, Library, Identified, Ordered,
-                Filtered)
+                Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
+                Ordered, Filtered)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -683,6 +740,35 @@ class StringId {
 @JsonIgnoreProperties(['id'])
 class HiddenId {
     String name
+}
+
+@Entity
+class PublicId {
+    @JsonSerialize(using = ToStringSerializer)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    long id
+    String name
+}
+
+class PrefixedIds extends ValueSerializerModifier {
+
+    @Override
+    List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier description,
+            List<BeanPropertyWriter> writers) {
+        writers.collect { it.name == 'id' ? new PrefixedIdWriter(it) : it }
+    }
+}
+
+class PrefixedIdWriter extends BeanPropertyWriter {
+
+    PrefixedIdWriter(BeanPropertyWriter writer) {
+        super(writer)
+    }
+
+    @Override
+    void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) {
+        generator.writeStringProperty(name, "w${get(bean)}".toString())
+    }
 }
 
 abstract class IgnoredIdMixin {

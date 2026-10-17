@@ -21,76 +21,124 @@ package org.grails.web.converters.jackson;
 import java.util.Objects;
 
 import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.impl.PropertySerializerMap;
+import tools.jackson.databind.util.NameTransformer;
+
+import org.springframework.util.ClassUtils;
 
 import org.grails.datastore.mapping.model.PersistentProperty;
 
 /**
- * Jackson's own writer of the id of a domain class instance, so that what Jackson applies to a property applies to it,
- * writing the value the rendering of the instance gives the id, as the version and the ids of associated instances are:
- * the JSON converter's domain class marshaller reads them with {@code extractValue}.
+ * Writes the id of a domain class instance with the value the rendering of the instance gives it, as the version and the
+ * ids of associated instances are: the JSON converter's domain class marshaller reads them with {@code extractValue}. An
+ * id the rendering gives as {@code null}, such as that of an unsaved instance, is not written, as the converter does not
+ * write it.
+ *
+ * <p>The writer of the property writes the id itself, so that what Jackson, or another module, applies to the property
+ * applies to it. A value the rendering gives in its place is written with the serializer, type id and inclusion of the
+ * property.</p>
  *
  * @since 9.0
  */
 final class DomainIdWriter extends BeanPropertyWriter {
 
+    private final BeanPropertyWriter delegate;
+
     private final PersistentProperty identity;
 
     private final DomainRendering rendering;
 
-    DomainIdWriter(BeanPropertyWriter writer, PersistentProperty identity, DomainRendering rendering) {
-        super(writer);
+    DomainIdWriter(BeanPropertyWriter delegate, PersistentProperty identity, DomainRendering rendering) {
+        super(delegate);
+        this.delegate = delegate;
         this.identity = identity;
         this.rendering = rendering;
     }
 
-    private DomainIdWriter(DomainIdWriter base, PropertyName name) {
-        super(base, name);
-        this.identity = base.identity;
-        this.rendering = base.rendering;
+    @Override
+    public BeanPropertyWriter rename(NameTransformer transformer) {
+        BeanPropertyWriter renamed = delegate.rename(transformer);
+        return renamed == delegate ? this : new DomainIdWriter(renamed, identity, rendering);
     }
 
     @Override
-    protected BeanPropertyWriter _new(PropertyName newName) {
-        return new DomainIdWriter(this, newName);
+    public void assignSerializer(ValueSerializer<Object> serializer) {
+        super.assignSerializer(serializer);
+        delegate.assignSerializer(serializer);
+    }
+
+    @Override
+    public void assignNullSerializer(ValueSerializer<Object> serializer) {
+        super.assignNullSerializer(serializer);
+        delegate.assignNullSerializer(serializer);
+    }
+
+    @Override
+    public void assignTypeSerializer(TypeSerializer typeSerializer) {
+        super.assignTypeSerializer(typeSerializer);
+        delegate.assignTypeSerializer(typeSerializer);
     }
 
     @Override
     public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
         Object rendered = rendering.of(context, bean).propertyValue(bean, identity);
-        if (Objects.equals(rendered, get(bean))) {
-            super.serializeAsProperty(bean, generator, context);
+        if (rendered == null) {
+            return;
         }
-        else if (rendered != null) {
+        if (Objects.equals(rendered, get(bean))) {
+            delegate.serializeAsProperty(bean, generator, context);
+            return;
+        }
+        ValueSerializer<Object> serializer = serializer(rendered, context);
+        if (!suppressed(rendered, serializer, context)) {
             generator.writeName(_name);
-            write(rendered, generator, context);
+            write(rendered, serializer, generator, context);
         }
     }
 
     @Override
     public void serializeAsElement(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
         Object rendered = rendering.of(context, bean).propertyValue(bean, identity);
-        if (Objects.equals(rendered, get(bean))) {
-            super.serializeAsElement(bean, generator, context);
+        if (rendered == null) {
+            serializeAsOmittedElement(bean, generator, context);
+            return;
         }
-        else if (rendered != null) {
-            write(rendered, generator, context);
+        if (Objects.equals(rendered, get(bean))) {
+            delegate.serializeAsElement(bean, generator, context);
+            return;
+        }
+        ValueSerializer<Object> serializer = serializer(rendered, context);
+        if (suppressed(rendered, serializer, context)) {
+            serializeAsOmittedElement(bean, generator, context);
         }
         else {
-            generator.writeNull();
+            write(rendered, serializer, generator, context);
         }
     }
 
-    /**
-     * Writes the value the rendering gives the id with the serializer of the property, when the value is of its type,
-     * and otherwise with the serializer Jackson finds for the value.
-     */
-    private void write(Object value, JsonGenerator generator, SerializationContext context) {
-        ValueSerializer<Object> serializer = _serializer != null && _declaredType.getRawClass().isInstance(value) ?
-                _serializer : context.findPrimaryPropertySerializer(value.getClass(), this);
+    /** The serializer of the property, for a value of its type, and otherwise the one Jackson finds for the value. */
+    private ValueSerializer<Object> serializer(Object value, SerializationContext context) {
+        if (_serializer != null && ClassUtils.resolvePrimitiveIfNecessary(_declaredType.getRawClass()).isInstance(value)) {
+            return _serializer;
+        }
+        PropertySerializerMap serializers = _dynamicSerializers;
+        ValueSerializer<Object> serializer = serializers.serializerFor(value.getClass());
+        return serializer != null ? serializer : _findAndAddDynamic(serializers, value.getClass(), context);
+    }
+
+    /** Whether the inclusion of the property, such as {@code @JsonInclude(NON_EMPTY)}, leaves the value out. */
+    private boolean suppressed(Object value, ValueSerializer<Object> serializer, SerializationContext context) {
+        if (_suppressableValue == null) {
+            return false;
+        }
+        return MARKER_FOR_EMPTY == _suppressableValue ? serializer.isEmpty(context, value) : _suppressableValue.equals(value);
+    }
+
+    private void write(Object value, ValueSerializer<Object> serializer, JsonGenerator generator, SerializationContext context) {
         if (_typeSerializer == null) {
             serializer.serialize(value, generator, context);
         }

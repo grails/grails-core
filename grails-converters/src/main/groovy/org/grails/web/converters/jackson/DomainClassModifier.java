@@ -104,12 +104,12 @@ final class DomainClassModifier extends ValueSerializerModifier {
         List<BeanPropertyWriter> written = new ArrayList<>();
         PersistentProperty identity = entity.getIdentity();
         if (identity != null) {
-            // Jackson's own writer of the id, so that what Jackson applies to a property applies to it; it is moved
-            // ahead of the other properties once Jackson has left out the properties the class ignores
+            // The writer Jackson, or another module, gives the id writes it, so that what they apply to a property applies
+            // to it; it is moved ahead of the other properties once Jackson has left out the properties the class ignores
             for (BeanPropertyWriter writer : properties) {
                 if (identity.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
                     written.add(GatedPropertyWriter.gated(new DomainIdWriter(writer, identity, rendering),
-                            included(identity.getName()).and((bean, context, property) -> property.get(bean) != null)));
+                            included(identity.getName())));
                 }
             }
         }
