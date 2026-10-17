@@ -16,18 +16,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.command.run
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.cli.command.run;
 
-import java.util.logging.Level
+import java.util.logging.Level;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import org.grails.cli.compiler.GroovyCompilerScope
-import org.grails.cli.compiler.RepositoryConfigurationFactory
-import org.grails.cli.compiler.grape.RepositoryConfiguration
-import org.grails.cli.profile.Command
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.compiler.GroovyCompilerScope;
+import org.grails.cli.compiler.RepositoryConfigurationFactory;
+import org.grails.cli.compiler.grape.RepositoryConfiguration;
+import org.grails.cli.profile.Command;
+import org.grails.cli.profile.CommandDescription;
+import org.grails.cli.profile.ExecutionContext;
 
 /**
  * {@link Command} to 'run' a groovy script or scripts.
@@ -38,106 +39,108 @@ import org.grails.cli.profile.ExecutionContext
  * @since 1.0.0
  * @see SpringApplicationRunner
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class RunCommand implements Command {
 
-    public static final String NAME = 'run'
+    public static final String NAME = 'run';
 
-    private final Object monitor = new Object()
+    private final Object monitor = new Object();
 
-    private SpringApplicationRunner runner
+    private SpringApplicationRunner runner;
 
     @Override
     String getName() {
-        return NAME
+        return NAME;
     }
 
     @Override
     CommandDescription getDescription() {
-        CommandDescription description = new CommandDescription()
-        description.setName(NAME)
-        description.setDescription('Run a grails groovy script')
-        description.setUsage('run [SCRIPT NAME]')
-        return description
+        CommandDescription description = new CommandDescription();
+        description.setName(NAME);
+        description.setDescription('Run a grails groovy script');
+        description.setUsage('run [SCRIPT NAME]');
+        return description;
     }
 
     @Override
     synchronized boolean handle(ExecutionContext executionContext) {
         synchronized (this.monitor) {
-            String[] sources = executionContext.getCommandLine().getRemainingArgs().toArray(new String[0])
+            String[] sources = executionContext.getCommandLine().getRemainingArgs().toArray(new String[0]);
             List<RepositoryConfiguration> repositoryConfiguration = RepositoryConfigurationFactory
-                    .createDefaultRepositoryConfiguration()
+                    .createDefaultRepositoryConfiguration();
             repositoryConfiguration.add(0,
-                    new RepositoryConfiguration('local', new File('repository').toURI(), true))
+                    new RepositoryConfiguration('local', new File('repository').toURI(), true));
 
             SpringApplicationRunnerConfiguration configuration = new SpringApplicationRunnerConfigurationAdapter(
-                    repositoryConfiguration)
+                    repositoryConfiguration);
 
             try {
-                this.runner = new SpringApplicationRunner(configuration, sources)
-                this.runner.compileAndRun()
+                this.runner = new SpringApplicationRunner(configuration, sources);
+                this.runner.compileAndRun();
             }
             catch (Exception e) {
-                throw new RuntimeException(e)
+                throw new RuntimeException(e);
             }
 
-            return true
+            return true;
         }
     }
 
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SpringApplicationRunnerConfigurationAdapter implements SpringApplicationRunnerConfiguration {
 
-        private final List<RepositoryConfiguration> repositoryConfiguration
+        private final List<RepositoryConfiguration> repositoryConfiguration;
 
         SpringApplicationRunnerConfigurationAdapter(List<RepositoryConfiguration> repositoryConfiguration) {
-            this.repositoryConfiguration = repositoryConfiguration
+            this.repositoryConfiguration = repositoryConfiguration;
         }
 
         @Override
         boolean isWatchForFileChanges() {
-            return true
+            return true;
         }
 
         @Override
         Level getLogLevel() {
-            return Level.INFO
+            return Level.INFO;
         }
 
         @Override
         GroovyCompilerScope getScope() {
-            return GroovyCompilerScope.DEFAULT
+            return GroovyCompilerScope.DEFAULT;
         }
 
         @Override
         boolean isGuessImports() {
-            return true
+            return true;
         }
 
         @Override
         boolean isGuessDependencies() {
-            return true
+            return true;
         }
 
         @Override
         boolean isAutoconfigure() {
-            return true
+            return true;
         }
 
         @Override
         String[] getClasspath() {
-            return new String[0]
+            return new String[0];
         }
 
         @Override
         List<RepositoryConfiguration> getRepositoryConfiguration() {
-            return this.repositoryConfiguration
+            return this.repositoryConfiguration;
         }
 
         @Override
         boolean isQuiet() {
-            return false
+            return false;
         }
 
     }
-
 }

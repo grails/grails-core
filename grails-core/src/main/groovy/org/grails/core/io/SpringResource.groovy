@@ -16,11 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.core.io
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.core.io;
 
-import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
-import org.grails.io.support.Resource
+import groovy.transform.PackageScope;
+
+import org.grails.io.support.Resource;
 
 /**
  * Bridges Grails and Spring Resource APIs
@@ -28,62 +29,62 @@ import org.grails.io.support.Resource
  * @author Graeme Rocher
  * @since 2.2
  */
-@CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 class SpringResource implements Resource {
 
     @PackageScope
-    org.springframework.core.io.Resource springResource
+    org.springframework.core.io.Resource springResource;
 
     SpringResource(org.springframework.core.io.Resource springResource) {
-        this.springResource = springResource
+        this.springResource = springResource;
     }
 
     InputStream getInputStream() throws IOException {
-        return springResource.getInputStream()
+        return springResource.getInputStream();
     }
 
     boolean exists() {
-        return springResource.exists()
+        return springResource.exists();
     }
 
     boolean isReadable() {
-        return springResource.isReadable()
+        return springResource.isReadable();
     }
 
     URL getURL() throws IOException {
-        return springResource.getURL()
+        return springResource.getURL();
     }
 
     URI getURI() throws IOException {
-        return springResource.getURI()
+        return springResource.getURI();
     }
 
     File getFile() throws IOException {
-        return springResource.getFile()
+        return springResource.getFile();
     }
 
     long contentLength() throws IOException {
-        return springResource.contentLength()
+        return springResource.contentLength();
     }
 
     long lastModified() throws IOException {
-        return springResource.lastModified()
+        return springResource.lastModified();
     }
 
     String getFilename() {
-        return springResource.getFilename()
+        return springResource.getFilename();
     }
 
     String getDescription() {
-        return springResource.getDescription()
+        return springResource.getDescription();
     }
 
     Resource createRelative(String relativePath) {
         try {
-            return new SpringResource(springResource.createRelative(relativePath))
-        }
-        catch (IOException e) {
-            return null
+            return new SpringResource(springResource.createRelative(relativePath));
+        } catch (IOException e) {
+            return null;
         }
     }
 

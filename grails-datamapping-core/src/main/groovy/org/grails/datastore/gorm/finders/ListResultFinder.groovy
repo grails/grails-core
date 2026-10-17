@@ -16,86 +16,89 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.finders;
 
-import java.util.regex.Pattern
+import java.util.regex.Pattern;
 
-import grails.gorm.DetachedCriteria
-import org.grails.datastore.gorm.DatastoreResolver
-import org.grails.datastore.mapping.core.Datastore
-import org.grails.datastore.mapping.core.Session
-import org.grails.datastore.mapping.core.SessionCallback
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.query.Query
+import grails.gorm.DetachedCriteria;
+import org.grails.datastore.gorm.DatastoreResolver;
+import org.grails.datastore.mapping.core.Datastore;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.core.SessionCallback;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.query.Query;
 
 /**
  * Implements every dynamic finder that returns a list of results: {@code findAllBy*} and the
  * {@code findAll<booleanProperty>By*} boolean-clause form - configured via static factory methods
  * rather than subclassed, composing a {@link DynamicFinder} grammar instead of extending it.
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 class ListResultFinder implements FinderMethod, QueryBuildingFinder {
 
-    private static final String FIND_ALL_BY_PATTERN = '(findAllBy)([A-Z]\\w*)'
-    private static final String FIND_ALL_BY_BOOLEAN_PATTERN = '(findAll)((\\w+)(By)([A-Z]\\w*)|(\\w+))'
-    private static final String[] OPERATORS = ['And', 'Or'] as String[]
+    private static final String FIND_ALL_BY_PATTERN = '(findAllBy)([A-Z]\\w*)';
+    private static final String FIND_ALL_BY_BOOLEAN_PATTERN = '(findAll)((\\w+)(By)([A-Z]\\w*)|(\\w+))';
+    private static final String[] OPERATORS = ['And', 'Or'] as String[];
 
-    private final DatastoreResolver datastoreResolver
-    private final DynamicFinder grammar
+    private final DatastoreResolver datastoreResolver;
+    private final DynamicFinder grammar;
 
     private ListResultFinder(DatastoreResolver datastoreResolver, DynamicFinder grammar) {
-        this.datastoreResolver = datastoreResolver
-        this.grammar = grammar
+        this.datastoreResolver = datastoreResolver;
+        this.grammar = grammar;
     }
 
     static ListResultFinder findAllBy(Datastore datastore) {
-        return findAllBy(FinderSupport.resolverFor(datastore), datastore.getMappingContext())
+        return findAllBy(FinderSupport.resolverFor(datastore), datastore.getMappingContext());
     }
 
     static ListResultFinder findAllBy(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
-        return new ListResultFinder(datastoreResolver, grammar(FIND_ALL_BY_PATTERN, mappingContext, false))
+        return new ListResultFinder(datastoreResolver, grammar(FIND_ALL_BY_PATTERN, mappingContext, false));
     }
 
     static ListResultFinder findAllBy(MappingContext mappingContext) {
-        return findAllBy(null, mappingContext)
+        return findAllBy(null, mappingContext);
     }
 
     static ListResultFinder findAllByBoolean(Datastore datastore) {
-        return findAllByBoolean(FinderSupport.resolverFor(datastore), datastore.getMappingContext())
+        return findAllByBoolean(FinderSupport.resolverFor(datastore), datastore.getMappingContext());
     }
 
     static ListResultFinder findAllByBoolean(DatastoreResolver datastoreResolver, MappingContext mappingContext) {
-        return new ListResultFinder(datastoreResolver, grammar(FIND_ALL_BY_BOOLEAN_PATTERN, mappingContext, true))
+        return new ListResultFinder(datastoreResolver, grammar(FIND_ALL_BY_BOOLEAN_PATTERN, mappingContext, true));
     }
 
     static ListResultFinder findAllByBoolean(MappingContext mappingContext) {
-        return findAllByBoolean(null, mappingContext)
+        return findAllByBoolean(null, mappingContext);
     }
 
     private static DynamicFinder grammar(String pattern, MappingContext mappingContext, boolean booleanClause) {
-        return new DynamicFinder(Pattern.compile(pattern), OPERATORS, mappingContext, booleanClause)
+        return new DynamicFinder(Pattern.compile(pattern), OPERATORS, mappingContext, booleanClause);
     }
 
     @Override
     void setPattern(String pattern) {
-        grammar.setPattern(pattern)
+        grammar.setPattern(pattern);
     }
 
     @Override
     boolean isMethodMatch(String methodName) {
-        return grammar.isMethodMatch(methodName)
+        return grammar.isMethodMatch(methodName);
     }
 
     @Override
     @SuppressWarnings('rawtypes')
     Object invoke(Class clazz, String methodName, Object[] arguments) {
-        return invoke(clazz, methodName, (Closure) null, arguments)
+        return invoke(clazz, methodName, (Closure) null, arguments);
     }
 
     @Override
     @SuppressWarnings('rawtypes')
     Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
-        DynamicFinderInvocation invocation = grammar.createFinderInvocation(clazz, methodName, additionalCriteria, arguments)
-        return doInvoke(invocation)
+        DynamicFinderInvocation invocation = grammar.createFinderInvocation(clazz, methodName, additionalCriteria, arguments);
+        return doInvoke(invocation);
     }
 
     /**
@@ -111,22 +114,22 @@ class ListResultFinder implements FinderMethod, QueryBuildingFinder {
      */
     @SuppressWarnings('rawtypes')
     Object invoke(Class clazz, String methodName, DetachedCriteria detachedCriteria, Object[] arguments) {
-        DynamicFinderInvocation invocation = grammar.createFinderInvocation(clazz, methodName, null, arguments)
+        DynamicFinderInvocation invocation = grammar.createFinderInvocation(clazz, methodName, null, arguments);
         if (detachedCriteria != null) {
-            invocation.setDetachedCriteria(detachedCriteria)
+            invocation.setDetachedCriteria(detachedCriteria);
         }
-        return doInvoke(invocation)
+        return doInvoke(invocation);
     }
 
     private Object doInvoke(final DynamicFinderInvocation invocation) {
         return FinderSupport.execute(datastoreResolver, { Session session ->
-            Query query = buildQuery(invocation, session)
-            return query.list()
-        } as SessionCallback<Object>)
+            Query query = buildQuery(invocation, session);
+            return query.list();
+        } as SessionCallback<Object>);
     }
 
     @Override
     Query buildQuery(DynamicFinderInvocation invocation, Session session) {
-        return grammar.buildQuery(invocation, session)
+        return grammar.buildQuery(invocation, session);
     }
 }
