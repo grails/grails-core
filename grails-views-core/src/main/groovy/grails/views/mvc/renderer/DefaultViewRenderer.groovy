@@ -22,6 +22,7 @@ package grails.views.mvc.renderer
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 
+import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.view.AbstractUrlBasedView
@@ -68,7 +69,7 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
     void render(Object object, RenderContext context) {
         if (object instanceof ProblemDetail) {
             // A problem carries its own status and content type, which rendering a view would replace
-            defaultRenderer.render(object, context)
+            renderDefault(object, context)
             return
         }
         def arguments = context.arguments
@@ -146,7 +147,21 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
             modelAndView.setView(view)
         }
         else {
+            renderDefault(object, context)
+        }
+    }
+
+    /**
+     * Without a view, the object is rendered by the renderer the format had before views were added. A format nothing
+     * else renders, such as XML without the {@code grails-xml} module, is not acceptable, as {@code respond} answers
+     * when it finds no renderer.
+     */
+    private void renderDefault(Object object, RenderContext context) {
+        if (defaultRenderer != null) {
             defaultRenderer.render(object, context)
+        }
+        else {
+            context.setStatus(HttpStatus.NOT_ACCEPTABLE)
         }
     }
 
