@@ -74,6 +74,17 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
         view == '/wildcardView'
     }
 
+    void 'a content type #contentType matches the configured type, as it does in an application'() {
+        when:
+        request.contentType = contentType
+
+        then:
+        request.format == 'json'
+
+        where:
+        contentType << ['Application/JSON', 'application/json;charset=UTF-8']
+    }
+
     @Issue('GRAILS-11093')
     void 'Test specifying request format'() {
         when: 'a request format is specified'
