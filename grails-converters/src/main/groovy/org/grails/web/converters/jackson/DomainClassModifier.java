@@ -166,9 +166,14 @@ final class DomainClassModifier extends ValueSerializerModifier {
             return properties;
         }
         // The class name, the id and the version are written ahead of the other properties. The id is written by Jackson's
-        // writer, unless Jackson has none for it; GORM leaves out the version, so a writer of its own writes it.
+        // writer, unless Jackson has none for it; GORM leaves out the version, so a writer of its own writes it. The class
+        // name and the version are properties only where a rendering may write them.
+        DomainClassRendering defaults = rendering.get();
+        boolean perWrite = rendering.renderingsPerWrite();
         List<BeanPropertyWriter> ordered = new ArrayList<>();
-        ordered.add(leading(config, description, "class", DomainLeadingWriter.Kind.CLASS, entity));
+        if (perWrite || defaults.isIncludeClass()) {
+            ordered.add(leading(config, description, "class", DomainLeadingWriter.Kind.CLASS, entity));
+        }
         List<BeanPropertyWriter> others = new ArrayList<>(properties);
         PersistentProperty identity = entity.getIdentity();
         if (identity != null) {
@@ -180,7 +185,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
                 ordered.add(leading(config, description, identity.getName(), DomainLeadingWriter.Kind.ID, entity));
             }
         }
-        if (entity.getVersion() != null && !versionIgnored(config, description)) {
+        if (entity.getVersion() != null && !versionIgnored(config, description) && (perWrite || defaults.isIncludeVersion())) {
             ordered.add(leading(config, description, GormProperties.VERSION, DomainLeadingWriter.Kind.VERSION, entity));
         }
         ordered.addAll(others);

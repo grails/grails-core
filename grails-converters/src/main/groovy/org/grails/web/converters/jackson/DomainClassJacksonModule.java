@@ -64,13 +64,26 @@ public class DomainClassJacksonModule extends JacksonModule {
      * @param rendering supplies how to render domain class instances, when the first one is serialized
      */
     public DomainClassJacksonModule(Supplier<DomainClassRendering> rendering) {
-        this.rendering = new DomainRendering(Objects.requireNonNull(rendering, "rendering cannot be null"));
+        this(rendering, false);
+    }
+
+    /**
+     * @param rendering supplies how to render domain class instances, when the first one is serialized
+     * @param renderingsPerWrite whether a write supplies the rendering of each instance it writes, with
+     *        {@link #RENDERINGS}, so that the class name and the version are written as that rendering selects. Otherwise
+     *        they are properties of the instance only when {@code rendering} writes them, so that they do not conflict
+     *        with the properties of a bean the instance is unwrapped into
+     */
+    public DomainClassJacksonModule(Supplier<DomainClassRendering> rendering, boolean renderingsPerWrite) {
+        this.rendering = new DomainRendering(Objects.requireNonNull(rendering, "rendering cannot be null"),
+                renderingsPerWrite);
     }
 
     /**
      * A writer attribute for a writer that renders the domain class instances it writes in its own ways. Its value is a
      * {@code Function<Object, DomainClassRendering>} that gives the rendering of an instance, or {@code null} for the
-     * module's. The JSON converter renders each instance with its own includes and excludes this way.
+     * module's. The JSON converter renders each instance with its own includes and excludes this way. A module whose
+     * writes do this is created with {@code renderingsPerWrite}.
      */
     public static final String RENDERINGS = DomainClassRendering.class.getName() + ".renderings";
 

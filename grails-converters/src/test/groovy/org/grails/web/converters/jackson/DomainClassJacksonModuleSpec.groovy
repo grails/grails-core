@@ -491,6 +491,26 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(code) == '"X1"'
     }
 
+    void "a class name or a version the rendering does not write does not conflict with a property of a bean the instance is unwrapped into"() {
+        given: 'a bean with a version of its own, into which a versioned domain class instance is unwrapped'
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def envelope = new VersionedEnvelope(version: 'v1', writer: writer)
+
+        expect: "the mapper's rendering writes neither, as Spring Boot's mapper and a response's have it by default"
+        mapper().writeValueAsString(envelope) == '{"version":"v1","id":1,"name":"a"}'
+
+        and: 'the JSON converter, whose renderings may write either for each instance it writes'
+        new JSON(envelope).toString() == '{"version":"v1","id":1,"name":"a"}'
+
+        when: 'the rendering writes the version'
+        mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, false, false))
+                .writeValueAsString(envelope)
+
+        then: 'the names conflict, as Jackson reports it for any bean'
+        thrown(InvalidDefinitionException)
+    }
+
     void "a domain instance in a @JsonUnwrapped property is written into the enclosing object"() {
         given:
         def writer = new Writer(name: 'a')
@@ -1127,6 +1147,12 @@ class UnwrappedDog {
     @JsonUnwrapped
     Dog dog
     String note
+}
+
+class VersionedEnvelope {
+    String version
+    @JsonUnwrapped
+    Writer writer
 }
 
 class Unwrapped {

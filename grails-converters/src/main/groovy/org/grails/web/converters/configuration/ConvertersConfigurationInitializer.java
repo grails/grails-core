@@ -141,7 +141,8 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     private JsonMapper withDomainClasses(JsonMapper mapper) {
         JsonMapper source = mapper != null ? mapper : JsonMapperSupport.DEFAULT.getMapper();
         return GrailsJsonMapperCustomizer.withGrailsModules(source,
-                new DomainClassJacksonModule(() -> jsonDomainClassRendering(getGrailsApplication(), getProxyHandler())),
+                // the converter writes each instance with its own rendering
+                new DomainClassJacksonModule(() -> jsonDomainClassRendering(getGrailsApplication(), getProxyHandler()), true),
                 new ConverterJsonModule(this::getApplicationContext))
                 // a bean with no properties is written as an empty object, as the converter always has
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)

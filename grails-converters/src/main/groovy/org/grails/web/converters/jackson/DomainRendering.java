@@ -38,10 +38,21 @@ final class DomainRendering implements Supplier<DomainClassRendering> {
 
     private final Supplier<DomainClassRendering> source;
 
+    private final boolean renderingsPerWrite;
+
     private volatile DomainClassRendering kept;
 
-    DomainRendering(Supplier<DomainClassRendering> source) {
+    DomainRendering(Supplier<DomainClassRendering> source, boolean renderingsPerWrite) {
         this.source = source;
+        this.renderingsPerWrite = renderingsPerWrite;
+    }
+
+    /**
+     * @return whether a write may supply the rendering of each instance it writes, which may then write what this one
+     *         does not
+     */
+    boolean renderingsPerWrite() {
+        return renderingsPerWrite;
     }
 
     @Override
