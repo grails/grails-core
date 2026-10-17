@@ -19,6 +19,8 @@
 
 package nativei18n
 
+import groovy.transform.CompileStatic
+
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 
@@ -41,7 +43,12 @@ import org.springframework.context.MessageSource
  * <p>Only the first of the three is covered by Spring Boot's own hints, which register the two
  * hardcoded patterns {@code messages.properties} and {@code messages_*.properties} and derive
  * nothing from the configured base names.</p>
+ *
+ * <p>Compiled statically, as a generated application's {@code Application} class is, so that the
+ * image depends on resource hints for what this checks and not on reflection metadata for how it
+ * checks it.</p>
  */
+@CompileStatic
 class Application extends GrailsAutoConfiguration {
 
     static void main(String[] args) {
@@ -50,7 +57,7 @@ class Application extends GrailsAutoConfiguration {
             return
         }
 
-        ConfigurableApplicationContext context = (ConfigurableApplicationContext) GrailsApp.run(Application, args)
+        ConfigurableApplicationContext context = GrailsApp.run(Application, args)
         int exitCode = 0
         try {
             MessageSource messages = context.getBean(MessageSource)
