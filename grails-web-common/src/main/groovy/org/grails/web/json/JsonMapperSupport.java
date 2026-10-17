@@ -83,6 +83,8 @@ public final class JsonMapperSupport {
 
     private final ClassValue<Boolean> rendersValue;
 
+    private final ClassValue<Boolean> writesObjectIds;
+
     /**
      * @param mapper the mapper to write JSON with
      */
@@ -91,6 +93,21 @@ public final class JsonMapperSupport {
         this.writingMapper = mapper.rebuild().addModule(NestedValueSerializer.module()).build();
         this.attributes = Map.of();
         this.rendersValue = rendersValue();
+        this.writesObjectIds = writesObjectIds();
+    }
+
+    private ClassValue<Boolean> writesObjectIds() {
+        return new ClassValue<>() {
+            @Override
+            protected Boolean computeValue(Class<?> type) {
+                try {
+                    return serializationContext().findValueSerializer(type).usesObjectId();
+                }
+                catch (RuntimeException | LinkageError e) {
+                    return false;
+                }
+            }
+        };
     }
 
     private ClassValue<Boolean> rendersValue() {
@@ -123,6 +140,7 @@ public final class JsonMapperSupport {
         this.writingMapper = base.writingMapper;
         this.attributes = attributes;
         this.rendersValue = base.rendersValue;
+        this.writesObjectIds = base.writesObjectIds;
     }
 
     /**
@@ -191,6 +209,19 @@ public final class JsonMapperSupport {
      */
     public boolean rendersValue(Class<?> type) {
         return rendersValue.get(type);
+    }
+
+    /**
+     * Whether the mapper writes values of the type with object ids, as for a class annotated {@code @JsonIdentityInfo}:
+     * it writes the id of a value it has written already in the document, including a value reached again while it is
+     * being written.
+     *
+     * @param type a value type
+     * @return whether the mapper writes object ids for values of the type
+     * @since 9.0
+     */
+    public boolean writesObjectIds(Class<?> type) {
+        return writesObjectIds.get(type);
     }
 
     /**

@@ -244,6 +244,10 @@ class DomainClassJacksonModuleSpec extends Specification {
         expect:
         mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
                 .writeValueAsString(first) == '{"@id":1,"id":1,"name":"first","partner":{"@id":2,"id":2,"name":"second","partner":1}}'
+
+        and: 'so does the JSON converter'
+        JSON.use('deep') { new JSON(first).toString() } ==
+                '{"@id":1,"id":1,"name":"first","partner":{"@id":2,"id":2,"name":"second","partner":1}}'
     }
 
     void "a domain class with its own @JsonSerialize serializer keeps it"() {

@@ -33,10 +33,12 @@ import java.util.regex.Pattern
 
 import groovy.json.JsonSlurper
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -268,6 +270,15 @@ class JsonMapperRenderingSpec extends Specification {
         'DEFAULT'     | 'a relative reference' || [_ref: '../..', class: Node.name]
         'PATH'        | 'a path from the root' || [ref: 'root.wrapper.others[0]', class: Node.name]
         'INSERT_NULL' | 'null'                 || null
+    }
+
+    void "a bean with @JsonIdentityInfo reached again renders as the mapper's object id, not as a circular reference"() {
+        given:
+        def first = new IdentifiedNode(name: 'first')
+        first.next = new IdentifiedNode(name: 'second', next: first)
+
+        expect:
+        new JSON(first).toString() == '{"@id":1,"name":"first","next":{"@id":2,"name":"second","next":1}}'
     }
 
     void "with the PATH circular reference behaviour, a reference through a module serializer has the path of the value it writes"() {
@@ -752,6 +763,12 @@ class Node {
     String name
     Node parent
     List<Node> children
+}
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator)
+class IdentifiedNode {
+    String name
+    IdentifiedNode next
 }
 
 class Secret {

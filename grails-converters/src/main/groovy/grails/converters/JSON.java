@@ -229,7 +229,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 writer.value(o);
             }
             else {
-                if (referenceStack.contains(o)) {
+                // A value the mapper writes with object ids is written again: the mapper writes its id
+                if (referenceStack.contains(o) && (ConvertersConfigurationHolder.isLegacyJson() ||
+                        !getJsonMapperSupport().writesObjectIds(o.getClass()))) {
                     handleCircularRelationship(o);
                 }
                 else {
