@@ -16,21 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.compiler.gorm
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.compiler.gorm;
 
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.classgen.GeneratorContext
-import org.codehaus.groovy.control.SourceUnit
-import org.springframework.core.Ordered
+import groovy.transform.Canonical;
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
 
-import grails.compiler.ast.AstTransformer
-import grails.compiler.ast.GrailsArtefactClassInjector
-import org.grails.compiler.injection.GrailsASTUtils
-import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.datastore.mapping.reflect.AstUtils
-import org.grails.io.support.GrailsResourceUtils
+import org.springframework.core.Ordered;
+
+import grails.compiler.ast.AstTransformer;
+import grails.compiler.ast.GrailsArtefactClassInjector;
+import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.datastore.mapping.reflect.AstUtils;
+import org.grails.io.support.GrailsResourceUtils;
 
 /**
  * Transforms GORM entities making the GORM API available to Java.
@@ -38,49 +40,51 @@ import org.grails.io.support.GrailsResourceUtils
  * @author Graeme Rocher
  * @since 2.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @AstTransformer
 @CompileStatic
 class GormTransformer implements GrailsArtefactClassInjector, Ordered {
 
     @Override
     int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
     @Override
     String[] getArtefactTypes() {
-        return [DomainClassArtefactHandler.TYPE] as String[]
+        return [DomainClassArtefactHandler.TYPE] as String[];
     }
 
     boolean shouldInject(URL url) {
-        return GrailsResourceUtils.isDomainClass(url)
+        return GrailsResourceUtils.isDomainClass(url);
     }
 
     static Collection<String> getKnownEntityNames() {
-        return AstUtils.getKnownEntityNames()
+        return AstUtils.getKnownEntityNames();
     }
 
     @Override
     void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if (GrailsASTUtils.hasAnnotation(classNode, Canonical)) {
-            GrailsASTUtils.error(source, classNode, 'Class [' + classNode.getName() + '] is marked with @groovy.transform.Canonical which is not supported for GORM entities.', true)
+            GrailsASTUtils.error(source, classNode, 'Class [' + classNode.getName() + '] is marked with @groovy.transform.Canonical which is not supported for GORM entities.', true);
         }
-        final GormEntityTransformation transformation = new GormEntityTransformation()
+        final GormEntityTransformation transformation = new GormEntityTransformation();
 
-        transformation.visit(classNode, source)
+        transformation.visit(classNode, source);
     }
 
     @Override
     void performInjection(SourceUnit source, ClassNode classNode) {
         if (GrailsASTUtils.hasAnnotation(classNode, Canonical)) {
-            GrailsASTUtils.error(source, classNode, 'Class [' + classNode.getName() + '] is marked with @groovy.transform.Canonical which is not supported for GORM entities.', true)
+            GrailsASTUtils.error(source, classNode, 'Class [' + classNode.getName() + '] is marked with @groovy.transform.Canonical which is not supported for GORM entities.', true);
         }
-        new GormEntityTransformation().visit(classNode, source)
+        new GormEntityTransformation().visit(classNode, source);
     }
 
     @Override
     void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
-        performInjection(source, classNode)
+        performInjection(source, classNode);
     }
 
 }
