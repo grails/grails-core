@@ -17,20 +17,21 @@
  *  under the License.
  */
 
-package grails.gorm
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.gorm;
 
-import jakarta.persistence.criteria.JoinType
+import jakarta.persistence.criteria.JoinType;
 
-import org.grails.datastore.gorm.query.criteria.AbstractCriteriaBuilder
-import org.grails.datastore.mapping.core.Session
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.query.Query
-import org.grails.datastore.mapping.query.QueryCreator
-import org.grails.datastore.mapping.query.api.BuildableCriteria
-import org.grails.datastore.mapping.query.api.Criteria
-import org.grails.datastore.mapping.query.api.ProjectionList
+import org.grails.datastore.gorm.query.criteria.AbstractCriteriaBuilder;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.query.QueryCreator;
+import org.grails.datastore.mapping.query.api.BuildableCriteria;
+import org.grails.datastore.mapping.query.api.Criteria;
+import org.grails.datastore.mapping.query.api.ProjectionList;
 
-import static org.grails.datastore.gorm.finders.DynamicFinder.populateArgumentsForCriteria
+import static org.grails.datastore.gorm.finders.DynamicFinder.populateArgumentsForCriteria;
 
 /**
  * Criteria builder implementation that operates against DataStore abstraction.
@@ -38,55 +39,56 @@ import static org.grails.datastore.gorm.finders.DynamicFinder.populateArgumentsF
  * @author Graeme Rocher
  * @since 1.0
  */
-@SuppressWarnings('rawtypes')
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'rawtypes'])
 class CriteriaBuilder<T> extends AbstractCriteriaBuilder implements BuildableCriteria, ProjectionList {
 
-    public static final String ORDER_DESCENDING = 'desc'
-    public static final String ORDER_ASCENDING = 'asc'
+    public static final String ORDER_DESCENDING = 'desc';
+    public static final String ORDER_ASCENDING = 'asc';
 
-    protected final Session session
+    protected final Session session;
 
     CriteriaBuilder(final Class targetClass, QueryCreator queryCreator, final MappingContext mappingContext) {
-        super(targetClass, queryCreator, mappingContext)
-        this.session = null
+        super(targetClass, queryCreator, mappingContext);
+        this.session = null;
     }
 
     CriteriaBuilder(final Class targetClass, final Session session) {
-        super(targetClass, session, session.getMappingContext())
-        this.session = session
+        super(targetClass, session, session.getMappingContext());
+        this.session = session;
 
     }
 
     CriteriaBuilder(final Class targetClass, final Session session, final Query query) {
-        this(targetClass, session)
-        this.query = query
+        this(targetClass, session);
+        this.query = query;
     }
 
     @Override
     BuildableCriteria cache(boolean cache) {
-        return (BuildableCriteria) super.cache(cache)
+        return (BuildableCriteria) super.cache(cache);
     }
 
     @Override
     BuildableCriteria readOnly(boolean readOnly) {
-        return (BuildableCriteria) super.readOnly(readOnly)
+        return (BuildableCriteria) super.readOnly(readOnly);
     }
 
     @Override
     BuildableCriteria join(String property) {
-        return (BuildableCriteria) super.join(property)
+        return (BuildableCriteria) super.join(property);
     }
 
     @Override
     BuildableCriteria join(String property, JoinType joinType) {
-        ensureQueryIsInitialized()
-        query.join(property, joinType)
-        return this
+        ensureQueryIsInitialized();
+        query.join(property, joinType);
+        return this;
     }
 
     @Override
     BuildableCriteria select(String property) {
-        return (BuildableCriteria) super.select(property)
+        return (BuildableCriteria) super.select(property);
     }
 
     /**
@@ -96,10 +98,10 @@ class CriteriaBuilder<T> extends AbstractCriteriaBuilder implements BuildableCri
      * @return The result list
      */
     List list(Closure callable) {
-        ensureQueryIsInitialized()
-        invokeClosureNode(callable)
+        ensureQueryIsInitialized();
+        invokeClosureNode(callable);
 
-        return query.list()
+        return query.list();
     }
 
     /**
@@ -111,11 +113,11 @@ class CriteriaBuilder<T> extends AbstractCriteriaBuilder implements BuildableCri
      * @return A single result
      */
     Object get(Closure callable) {
-        ensureQueryIsInitialized()
-        invokeClosureNode(callable)
+        ensureQueryIsInitialized();
+        invokeClosureNode(callable);
 
-        uniqueResult = true
-        return query.singleResult()
+        uniqueResult = true;
+        return query.singleResult();
     }
 
     /**
@@ -125,24 +127,24 @@ class CriteriaBuilder<T> extends AbstractCriteriaBuilder implements BuildableCri
      * @return The result list
      */
     List listDistinct(Closure callable) {
-        ensureQueryIsInitialized()
-        invokeClosureNode(callable)
+        ensureQueryIsInitialized();
+        invokeClosureNode(callable);
 
-        query.projections().distinct()
-        return query.list()
+        query.projections().distinct();
+        return query.list();
     }
 
     List list(Map paginateParams, Closure callable) {
-        ensureQueryIsInitialized()
+        ensureQueryIsInitialized();
 
-        paginationEnabledList = true
-        orderEntries = new ArrayList<>()
-        invokeClosureNode(callable)
-        populateArgumentsForCriteria(targetClass, query, paginateParams)
+        paginationEnabledList = true;
+        orderEntries = new ArrayList<>();
+        invokeClosureNode(callable);
+        populateArgumentsForCriteria(targetClass, query, paginateParams);
         for (Query.Order orderEntry : orderEntries) {
-            query.order(orderEntry)
+            query.order(orderEntry);
         }
-        return new PagedResultList(query)
+        return new PagedResultList(query);
     }
 
     /**
@@ -152,16 +154,16 @@ class CriteriaBuilder<T> extends AbstractCriteriaBuilder implements BuildableCri
      * @return The result count
      */
     Number count(Closure callable) {
-        ensureQueryIsInitialized()
-        invokeClosureNode(callable)
-        uniqueResult = true
-        query.projections().count()
-        return (Number) query.singleResult()
+        ensureQueryIsInitialized();
+        invokeClosureNode(callable);
+        uniqueResult = true;
+        query.projections().count();
+        return (Number) query.singleResult();
     }
 
     @Override
     Object scroll(@DelegatesTo(Criteria) Closure c) {
-        return executeCriteriaConstruction(c)
+        return executeCriteriaConstruction(c);
     }
 
     /**
@@ -171,17 +173,17 @@ class CriteriaBuilder<T> extends AbstractCriteriaBuilder implements BuildableCri
      * @return The result
      */
     Object call(@DelegatesTo(Criteria) Closure c) {
-        ensureQueryIsInitialized()
-        uniqueResult = false
-        invokeClosureNode(c)
+        ensureQueryIsInitialized();
+        uniqueResult = false;
+        invokeClosureNode(c);
 
-        Object result
+        Object result;
         if (!uniqueResult) {
-            result = invokeList()
+            result = invokeList();
         }
         else {
-            result = query.singleResult()
+            result = query.singleResult();
         }
-        return result
+        return result;
     }
 }

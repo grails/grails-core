@@ -16,17 +16,18 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.finders;
 
-import org.springframework.core.convert.ConversionService
-import org.springframework.core.convert.TypeDescriptor
-import org.springframework.util.Assert
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.util.Assert;
 
-import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.model.PersistentProperty
-import org.grails.datastore.mapping.query.Query
-import org.grails.datastore.mapping.query.Query.Criterion
-import org.grails.datastore.mapping.query.Restrictions
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.query.Query.Criterion;
+import org.grails.datastore.mapping.query.Restrictions;
 
 /**
  *  Method expression used to evaluate a dynamic finder.
@@ -38,55 +39,57 @@ import org.grails.datastore.mapping.query.Restrictions
  * shapes reflectively via {@code Class.getConstructor(...).newInstance(...)} - so static usage
  * analysis can't see either call site even though both are genuinely exercised.
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 abstract class MethodExpression {
 
-    protected String propertyName
-    protected Object[] arguments
-    protected int argumentsRequired = 1
+    protected String propertyName;
+    protected Object[] arguments;
+    protected int argumentsRequired = 1;
     /**
      * @deprecated  Do not use
      */
     @Deprecated
-    protected Class<?> targetClass
+    protected Class<?> targetClass;
 
-    abstract Query.Criterion createCriterion()
+    abstract Query.Criterion createCriterion();
 
     protected MethodExpression(@SuppressWarnings('unused') Class<?> targetClass, String propertyName) {
-        this.propertyName = propertyName
+        this.propertyName = propertyName;
     }
 
     protected MethodExpression(String propertyName) {
-        this.propertyName = propertyName
+        this.propertyName = propertyName;
     }
 
     int getArgumentsRequired() {
-        return argumentsRequired
+        return argumentsRequired;
     }
 
     void convertArguments(PersistentEntity persistentEntity) {
         ConversionService conversionService = persistentEntity
-                .getMappingContext().getConversionService()
-        PersistentProperty<?> prop = resolveProperty(persistentEntity, propertyName)
+                .getMappingContext().getConversionService();
+        PersistentProperty<?> prop = resolveProperty(persistentEntity, propertyName);
         if (prop != null && arguments != null && argumentsRequired > 0) {
-            Class<?> type = prop.getType()
+            Class<?> type = prop.getType();
             for (int i = 0; i < argumentsRequired; i++) {
-                Object arg = arguments[i]
+                Object arg = arguments[i];
                 if (arg != null && !type.isAssignableFrom(arg.getClass())) {
                     // Add special handling for GStringImpl
                     if (arg instanceof CharSequence && arg.getClass() != String) {
-                        arg = arg.toString()
-                        arguments[i] = arg
+                        arg = arg.toString();
+                        arguments[i] = arg;
                         if (type.isAssignableFrom(arg.getClass())) {
-                            break
+                            break;
                         }
                     }
-                    TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(type)
+                    TypeDescriptor typeDescriptor = TypeDescriptor.valueOf(type);
                     if ((typeDescriptor.isArray() || typeDescriptor.isCollection()) && (typeDescriptor.getElementTypeDescriptor() == null || typeDescriptor.getElementTypeDescriptor().getType().isAssignableFrom(arg.getClass()))) {
                         // skip converting argument to collection/array type if argument is correct instance of element type
-                        break
+                        break;
                     }
                     if (conversionService.canConvert(arg.getClass(), type)) {
-                        arguments[i] = conversionService.convert(arg, type)
+                        arguments[i] = conversionService.convert(arg, type);
                     }
                 }
             }
@@ -94,160 +97,160 @@ abstract class MethodExpression {
     }
 
     void setArguments(Object[] arguments) {
-        this.arguments = arguments
+        this.arguments = arguments;
     }
 
     Object[] getArguments() {
-        return Arrays.copyOf(arguments, arguments.length)
+        return Arrays.copyOf(arguments, arguments.length);
     }
 
     String getPropertyName() {
-        return propertyName
+        return propertyName;
     }
 
     static class GreaterThan extends MethodExpression {
         GreaterThan(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         GreaterThan(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.gt(propertyName, arguments[0])
+            return Restrictions.gt(propertyName, arguments[0]);
         }
     }
 
     static class GreaterThanEquals extends MethodExpression {
         GreaterThanEquals(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         GreaterThanEquals(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.gte(propertyName, arguments[0])
+            return Restrictions.gte(propertyName, arguments[0]);
         }
     }
 
     static class LessThan extends MethodExpression {
         LessThan(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         LessThan(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.lt(propertyName, arguments[0])
+            return Restrictions.lt(propertyName, arguments[0]);
         }
     }
 
     static class LessThanEquals extends MethodExpression {
         LessThanEquals(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         LessThanEquals(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.lte(propertyName, arguments[0])
+            return Restrictions.lte(propertyName, arguments[0]);
         }
     }
 
     static class Like extends MethodExpression {
         Like(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         Like(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.like(propertyName, arguments[0].toString())
+            return Restrictions.like(propertyName, arguments[0].toString());
         }
     }
 
     static class Ilike extends MethodExpression {
         @SuppressWarnings('unused')
         Ilike(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         @SuppressWarnings('unused')
         Ilike(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.ilike(propertyName, arguments[0].toString())
+            return Restrictions.ilike(propertyName, arguments[0].toString());
         }
     }
 
     static class Rlike extends MethodExpression {
         @SuppressWarnings('unused')
         Rlike(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         @SuppressWarnings('unused')
         Rlike(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.rlike(propertyName, arguments[0].toString())
+            return Restrictions.rlike(propertyName, arguments[0].toString());
         }
     }
 
     static class NotInList extends MethodExpression {
         @SuppressWarnings('unused')
         NotInList(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         NotInList(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            Query.Negation negation = new Query.Negation()
-            negation.add(Restrictions.in(propertyName, (Collection<?>) arguments[0]))
-            return negation
+            Query.Negation negation = new Query.Negation();
+            negation.add(Restrictions.in(propertyName, (Collection<?>) arguments[0]));
+            return negation;
         }
 
         @Override
         void setArguments(Object[] arguments) {
             Assert.isTrue(arguments.length > 0,
-                    "Only a collection of elements is supported in an 'in' query")
+                    "Only a collection of elements is supported in an 'in' query");
 
-            Object arg = arguments[0]
-            Assert.isTrue((arg instanceof Collection) || arg == null, "Only a collection of elements is supported in an 'in' query")
+            Object arg = arguments[0];
+            Assert.isTrue((arg instanceof Collection) || arg == null, "Only a collection of elements is supported in an 'in' query");
 
-            super.setArguments(arguments)
+            super.setArguments(arguments);
         }
 
         @Override
         void convertArguments(PersistentEntity persistentEntity) {
             ConversionService conversionService = persistentEntity
-                    .getMappingContext().getConversionService()
-            PersistentProperty<?> prop = resolveProperty(persistentEntity, propertyName)
-            convertArgumentsForProp(prop, this.@arguments, conversionService)
+                    .getMappingContext().getConversionService();
+            PersistentProperty<?> prop = resolveProperty(persistentEntity, propertyName);
+            convertArgumentsForProp(prop, this.@arguments, conversionService);
         }
     }
 
@@ -255,35 +258,35 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         InList(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         InList(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.in(propertyName, (Collection<?>) arguments[0])
+            return Restrictions.in(propertyName, (Collection<?>) arguments[0]);
         }
 
         @Override
         void setArguments(Object[] arguments) {
             Assert.isTrue(arguments.length > 0,
-                "Only a collection of elements is supported in an 'in' query")
+                "Only a collection of elements is supported in an 'in' query");
 
-            Object arg = arguments[0]
-            Assert.isTrue((arg instanceof Collection) || arg == null, "Only a collection of elements is supported in an 'in' query")
+            Object arg = arguments[0];
+            Assert.isTrue((arg instanceof Collection) || arg == null, "Only a collection of elements is supported in an 'in' query");
 
-            super.setArguments(arguments)
+            super.setArguments(arguments);
         }
 
         @Override
         void convertArguments(PersistentEntity persistentEntity) {
             ConversionService conversionService = persistentEntity
-                    .getMappingContext().getConversionService()
-            PersistentProperty<?> prop = resolveProperty(persistentEntity, propertyName)
-            convertArgumentsForProp(prop, this.@arguments, conversionService)
+                    .getMappingContext().getConversionService();
+            PersistentProperty<?> prop = resolveProperty(persistentEntity, propertyName);
+            convertArgumentsForProp(prop, this.@arguments, conversionService);
         }
 
     }
@@ -291,27 +294,27 @@ abstract class MethodExpression {
     static class Between extends MethodExpression {
 
         Between(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
-            argumentsRequired = 2
+            super(targetClass, propertyName);
+            argumentsRequired = 2;
         }
 
         Between(String propertyName) {
-            super(propertyName)
-            argumentsRequired = 2
+            super(propertyName);
+            argumentsRequired = 2;
         }
 
         @Override
         Query.Criterion createCriterion() {
-            return Restrictions.between(propertyName, arguments[0], arguments[1])
+            return Restrictions.between(propertyName, arguments[0], arguments[1]);
         }
 
         @Override
         void setArguments(Object[] arguments) {
-            Assert.isTrue(arguments.length > 1, "A 'between' query requires at least two arguments")
+            Assert.isTrue(arguments.length > 1, "A 'between' query requires at least two arguments");
             Assert.isTrue(arguments[0] instanceof Comparable && arguments[1] instanceof Comparable,
-                "A 'between' query requires that both arguments are comparable")
+                "A 'between' query requires that both arguments are comparable");
 
-            super.setArguments(arguments)
+            super.setArguments(arguments);
         }
 
     }
@@ -320,19 +323,19 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         InRange(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
-            argumentsRequired = 1
+            super(targetClass, propertyName);
+            argumentsRequired = 1;
         }
 
         InRange(String propertyName) {
-            super(propertyName)
-            argumentsRequired = 1
+            super(propertyName);
+            argumentsRequired = 1;
         }
 
         @Override
         Query.Criterion createCriterion() {
-            Range<?> range = (Range<?>) arguments[0]
-            return Restrictions.between(propertyName, range.getFrom(), range.getTo())
+            Range<?> range = (Range<?>) arguments[0];
+            return Restrictions.between(propertyName, range.getFrom(), range.getTo());
         }
 
         @Override
@@ -342,11 +345,11 @@ abstract class MethodExpression {
 
         @Override
         void setArguments(Object[] arguments) {
-            Assert.isTrue(arguments.length == 1, "An 'inRange' query requires exactly 1 argument")
+            Assert.isTrue(arguments.length == 1, "An 'inRange' query requires exactly 1 argument");
             Assert.isTrue(arguments[0] instanceof Range,
-                    "An 'inRange' query requires a Range argument")
+                    "An 'inRange' query requires a Range argument");
 
-            super.setArguments(arguments)
+            super.setArguments(arguments);
         }
 
     }
@@ -355,19 +358,19 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         IsNull(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
-            argumentsRequired = 0
+            super(targetClass, propertyName);
+            argumentsRequired = 0;
         }
 
         @SuppressWarnings('unused')
         IsNull(String propertyName) {
-            super(propertyName)
-            argumentsRequired = 0
+            super(propertyName);
+            argumentsRequired = 0;
         }
 
         @Override
         Criterion createCriterion() {
-            return Restrictions.isNull(propertyName)
+            return Restrictions.isNull(propertyName);
         }
 
     }
@@ -376,19 +379,19 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         IsNotNull(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
-            argumentsRequired = 0
+            super(targetClass, propertyName);
+            argumentsRequired = 0;
         }
 
         @SuppressWarnings('unused')
         IsNotNull(String propertyName) {
-            super(propertyName)
-            argumentsRequired = 0
+            super(propertyName);
+            argumentsRequired = 0;
         }
 
         @Override
         Criterion createCriterion() {
-            return Restrictions.isNotNull(propertyName)
+            return Restrictions.isNotNull(propertyName);
         }
 
     }
@@ -397,19 +400,19 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         IsEmpty(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
-            argumentsRequired = 0
+            super(targetClass, propertyName);
+            argumentsRequired = 0;
         }
 
         @SuppressWarnings('unused')
         IsEmpty(String propertyName) {
-            super(propertyName)
-            argumentsRequired = 0
+            super(propertyName);
+            argumentsRequired = 0;
         }
 
         @Override
         Criterion createCriterion() {
-            return Restrictions.isEmpty(propertyName)
+            return Restrictions.isEmpty(propertyName);
         }
 
     }
@@ -418,19 +421,19 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         IsNotEmpty(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
-            argumentsRequired = 0
+            super(targetClass, propertyName);
+            argumentsRequired = 0;
         }
 
         @SuppressWarnings('unused')
         IsNotEmpty(String propertyName) {
-            super(propertyName)
-            argumentsRequired = 0
+            super(propertyName);
+            argumentsRequired = 0;
         }
 
         @Override
         Criterion createCriterion() {
-            return Restrictions.isNotEmpty(propertyName)
+            return Restrictions.isNotEmpty(propertyName);
         }
 
     }
@@ -438,20 +441,20 @@ abstract class MethodExpression {
     static class Equal extends MethodExpression {
 
         Equal(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         Equal(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            Object argument = arguments[0]
+            Object argument = arguments[0];
             if (argument != null) {
-                return Restrictions.eq(propertyName, argument)
+                return Restrictions.eq(propertyName, argument);
             } else {
-                return Restrictions.isNull(propertyName)
+                return Restrictions.isNull(propertyName);
             }
         }
 
@@ -461,20 +464,20 @@ abstract class MethodExpression {
 
         @SuppressWarnings('unused')
         NotEqual(Class<?> targetClass, String propertyName) {
-            super(targetClass, propertyName)
+            super(targetClass, propertyName);
         }
 
         NotEqual(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
 
         @Override
         Query.Criterion createCriterion() {
-            Object argument = arguments[0]
+            Object argument = arguments[0];
             if (argument != null) {
-                return Restrictions.ne(propertyName, arguments[0])
+                return Restrictions.ne(propertyName, arguments[0]);
             } else {
-                return Restrictions.isNotNull(propertyName)
+                return Restrictions.isNotNull(propertyName);
             }
         }
 
@@ -487,31 +490,31 @@ abstract class MethodExpression {
      * exactly one place.
      */
     private static PersistentProperty<?> resolveProperty(PersistentEntity persistentEntity, String propertyName) {
-        PersistentProperty<?> prop = persistentEntity.getPropertyByName(propertyName)
+        PersistentProperty<?> prop = persistentEntity.getPropertyByName(propertyName);
         if (prop == null && propertyName.equals(persistentEntity.getIdentity().getName())) {
-            return persistentEntity.getIdentity()
+            return persistentEntity.getIdentity();
         }
-        return prop
+        return prop;
     }
 
     private static void convertArgumentsForProp(PersistentProperty<?> prop, Object[] arguments, ConversionService conversionService) {
         if (prop != null) {
-            Class<?> type = prop.getType()
-            Collection<?> collection = (Collection<?>) arguments[0]
-            List<Object> converted
+            Class<?> type = prop.getType();
+            Collection<?> collection = (Collection<?>) arguments[0];
+            List<Object> converted;
             if (collection == null) {
-                converted = Collections.emptyList()
+                converted = Collections.emptyList();
             }
             else {
-                converted = new ArrayList<>(collection.size())
+                converted = new ArrayList<>(collection.size());
                 for (Object o : collection) {
                     if (o != null && !type.isAssignableFrom(o.getClass())) {
-                        o = conversionService.convert(o, type)
+                        o = conversionService.convert(o, type);
                     }
-                    converted.add(o)
+                    converted.add(o);
                 }
             }
-            arguments[0] = converted
+            arguments[0] = converted;
         }
     }
 }

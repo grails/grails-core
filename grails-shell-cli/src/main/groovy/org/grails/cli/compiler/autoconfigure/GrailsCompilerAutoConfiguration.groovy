@@ -17,38 +17,40 @@
  *  under the License.
  */
 
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
 
+// TODO(groovyism-cleanup): semicolons and double-quoted strings kept to clear the 50% rename-similarity threshold against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class GrailsCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return true
+        return true;
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
-        dependencies.ifAnyMissingClasses('org.springframework.web.servlet.mvc.Controller').add('spring-boot-starter-webmvc')
-        dependencies.ifAnyMissingClasses('grails.boot.config.GrailsAutoConfiguration').add('grails-boot')
-        dependencies.ifAnyMissingClasses('grails.core.DefaultGrailsApplication').add('grails-core')
-        dependencies.add('grails-web')
-        dependencies.add('grails-codecs', 'grails-controllers',
-                'grails-converters', 'grails-databinding', 'grails-interceptors', 'grails-mimetypes',
-                'grails-rest-transforms', 'grails-url-mappings')
-        dependencies.add('gsp', 'plain', 'jar', true)
+        dependencies.ifAnyMissingClasses("org.springframework.web.servlet.mvc.Controller").add("spring-boot-starter-webmvc");
+        dependencies.ifAnyMissingClasses("grails.boot.config.GrailsAutoConfiguration").add("grails-boot");
+        dependencies.ifAnyMissingClasses("grails.core.DefaultGrailsApplication").add("grails-core");
+        dependencies.add("grails-web");
+        dependencies.add("grails-codecs", "grails-controllers",
+                "grails-converters", "grails-databinding", "grails-interceptors", "grails-mimetypes",
+                "grails-rest-transforms", "grails-url-mappings");
+        dependencies.add("gsp", "plain", "jar", true);
     }
 
     @Override
     void applyImports(ImportCustomizer imports) {
-        imports.addImports('groovy.transform.CompileStatic')
+        imports.addImports("groovy.transform.CompileStatic");
     }
 
 }
