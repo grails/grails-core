@@ -74,8 +74,10 @@ through Spring's message converters, with the status the problem carries, and an
 resource path. A `status` argument decides the status of the response, as the status of a `ResponseEntity` does in
 Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client that accepts neither JSON
 nor XML, such as one asking only for HTML, is answered with `application/problem+json`, as Spring MVC answers it. A
-browser's `Accept` header lists `application/xml` after HTML, so a browser is answered with `application/problem+xml`,
-as Spring MVC answers it when it has an XML converter, and so is a client that asks for `application/problem+xml`. XML is rendered by the `grails-xml` module, without which a client
+browser's `Accept` header lists `application/xml` after HTML, so where the action responds in XML, a browser is answered
+with `application/problem+xml`, as Spring MVC answers it when it has an XML converter, and so is a client that asks for
+`application/problem+xml`; where it responds in JSON only, as the controllers of the `rest-api` profile do, it is
+answered with `application/problem+json`. XML is rendered by the `grails-xml` module, without which a client
 asking for XML is answered with `application/problem+json` as well. Spring writes XML problems with
 `jackson-dataformat-xml`; without it, Grails writes them in the same format. A view, whether a GSP, a JSON view or a
 markup view, renders a problem only when `respond` names it with the `view` argument, and the response keeps the problem's

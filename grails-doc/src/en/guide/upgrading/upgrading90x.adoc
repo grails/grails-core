@@ -691,8 +691,9 @@ When `respond` receives a `ProblemDetail`, it sets the HTTP status from the prob
 `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client
 that accepts neither JSON nor XML, such as one asking only for HTML, is answered with `application/problem+json`, as
 Spring MVC answers it, where Grails 8 rendered the action's view with a 200. A browser's `Accept` header lists
-`application/xml` after HTML, so a browser is answered with `application/problem+xml`, as Spring MVC answers it when it
-has an XML converter. A view renders a problem only when `respond` names it with the `view` argument, and the response
+`application/xml` after HTML, so where the action responds in XML, a browser is answered with `application/problem+xml`,
+as Spring MVC answers it when it has an XML converter, and where it responds in JSON only, with
+`application/problem+json`. A view renders a problem only when `respond` names it with the `view` argument, and the response
 keeps the problem's status. A renderer the application registers for `ProblemDetail`, or for a type problems share,
 such as `Serializable`, renders them in its format. Otherwise a `ProblemDetail` is written through Spring's message
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
