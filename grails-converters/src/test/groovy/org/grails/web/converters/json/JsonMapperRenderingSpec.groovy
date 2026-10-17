@@ -60,6 +60,8 @@ import org.springframework.context.support.GenericApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 
 import grails.converters.JSON
+import grails.persistence.PersistenceMethod
+import grails.web.controllers.ControllerMethod
 import grails.core.DefaultGrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.ProxyHandler
@@ -175,6 +177,11 @@ class JsonMapperRenderingSpec extends Specification {
 
         cleanup:
         context.close()
+    }
+
+    void "the methods Grails adds to a bean as persistence or controller methods are not written"() {
+        expect:
+        new JSON(new MarkedMethods(title: 'Grails')).toString() == '{"title":"Grails"}'
     }
 
     void "enums render by name, as in Grails 8, and a Month as its number"() {
@@ -903,6 +910,20 @@ class EchoSerializer extends StdSerializer<Echo> {
     @Override
     void serialize(Echo value, JsonGenerator generator, SerializationContext context) {
         generator.writeString(String.valueOf(context.getAttribute('who')))
+    }
+}
+
+class MarkedMethods {
+    String title
+
+    @PersistenceMethod
+    List<String> getDirtyPropertyNames() {
+        ['title']
+    }
+
+    @ControllerMethod
+    String getActionName() {
+        'show'
     }
 }
 
