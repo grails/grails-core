@@ -6,6 +6,7 @@ org.apache.grails.core.aot.BeanRegistrarRuntimeHints,\
 org.apache.grails.core.aot.GrailsApiRuntimeHints,\
 org.apache.grails.core.aot.GrailsBannerRuntimeHints,\
 org.apache.grails.core.aot.GrailsClosureRuntimeHints,\
+org.apache.grails.core.aot.GrailsFactoriesRuntimeHints,\
 org.apache.grails.core.aot.GrailsPluginRuntimeHints,\
 org.apache.grails.core.aot.GrailsResourceRuntimeHints,\
 org.apache.grails.core.aot.GroovyExtensionModuleRuntimeHints
