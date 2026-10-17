@@ -40,7 +40,7 @@ import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.jackson.JsonValueSerializer;
 import tools.jackson.databind.ser.jdk.EnumSerializer;
-import tools.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.ser.std.StdScalarSerializer;
 
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
@@ -166,7 +166,8 @@ public final class ConverterJsonModule extends JacksonModule {
         return serializer.replaceDelegatee(replaceInnermost(delegatee, replacement));
     }
 
-    private static final class EnumNameSerializer extends StdSerializer<Enum<?>> {
+    /** A scalar, as Jackson's own enum serializer is, so that it is also written with a type id. */
+    private static final class EnumNameSerializer extends StdScalarSerializer<Enum<?>> {
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         private EnumNameSerializer() {

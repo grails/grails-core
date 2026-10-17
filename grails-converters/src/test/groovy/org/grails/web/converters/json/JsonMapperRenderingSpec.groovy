@@ -39,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
@@ -145,6 +146,15 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(holder).toString() ==
                 '{"account":{"user":"ada"},"accounts":[{"user":"ada"}],"accountsByName":{"ada":{"user":"ada"}}}'
         new JSON(holder).toString() == jackson.writeValueAsString(holder)
+    }
+
+    void "an enum written with a type id renders by name, with the type id the JsonMapper writes"() {
+        given:
+        def holder = new TypedValueHolder(value: Tint.RED)
+
+        expect:
+        new JSON(holder).toString() == jackson.writeValueAsString(holder)
+        new JSON(holder).toString().contains('"RED"')
     }
 
     void "enums render by name, as in Grails 8, and a Month as its number"() {
@@ -744,6 +754,13 @@ class JsonMapperRenderingSpec extends Specification {
 }
 
 enum Role { HEAD, DISPATCHER, ADMIN }
+
+enum Tint { RED }
+
+class TypedValueHolder {
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    Object value
+}
 
 enum BodyStatus {
     ACTIVE('A') {
