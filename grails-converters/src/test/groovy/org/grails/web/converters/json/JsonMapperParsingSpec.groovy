@@ -18,6 +18,7 @@
  */
 package org.grails.web.converters.json
 
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.mock.web.MockHttpServletRequest
 import spock.lang.Specification
 import tools.jackson.core.json.JsonReadFeature
@@ -25,7 +26,11 @@ import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.json.JsonMapper
 
 import grails.converters.JSON
+import grails.core.DefaultGrailsApplication
+import grails.core.support.proxy.DefaultProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.exceptions.ConverterException
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
@@ -166,9 +171,17 @@ class JsonMapperParsingSpec extends Specification {
         thrown(ConverterException)
     }
 
+    /** Initializes the converters as an application with the mapper and {@code grails.converters.json.legacy: false}. */
     private static void use(JsonMapper mapper) {
         ConvertersConfigurationHolder.clear()
-        ConvertersConfigurationHolder.setLegacyJson(false)
-        ConvertersConfigurationHolder.setJsonMapper(mapper)
+        def grailsApplication = new DefaultGrailsApplication()
+        grailsApplication.config.setAt('grails.converters.json.legacy', false)
+        grailsApplication.initialise()
+        def applicationContext = new GenericApplicationContext()
+        applicationContext.registerBean(ProxyHandler, { new DefaultProxyHandler() })
+        applicationContext.registerBean(JsonMapper, { mapper })
+        applicationContext.refresh()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication, applicationContext: applicationContext)
+                .initialize()
     }
 }
