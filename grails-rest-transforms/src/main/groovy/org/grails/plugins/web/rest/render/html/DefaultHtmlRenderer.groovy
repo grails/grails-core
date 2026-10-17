@@ -88,7 +88,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
         }
 
         if (object instanceof ProblemDetail) {
-            // The view answers with the status the problem carries, as the problem written in JSON or XML does
+            // The view answers with the status the problem written in JSON or XML would have
             ProblemDetailResponse.prepare((ProblemDetail) object, context)
         }
 

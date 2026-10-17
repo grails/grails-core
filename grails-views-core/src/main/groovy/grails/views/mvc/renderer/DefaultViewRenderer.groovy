@@ -70,7 +70,7 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
     void render(Object object, RenderContext context) {
         def arguments = context.arguments
         // A problem carries its own content type, which a view would replace: only the view that respond names renders
-        // it, answering with the status the problem carries
+        // it, answering with the status the problem written in JSON would have
         boolean problem = object instanceof ProblemDetail
         if (problem && !arguments?.view) {
             renderDefault(object, context)

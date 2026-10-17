@@ -80,8 +80,8 @@ with `application/problem+xml`, as Spring MVC answers it when it has an XML conv
 answered with `application/problem+json`. XML is rendered by the `grails-xml` module, without which a client
 asking for XML is answered with `application/problem+json` as well. Spring writes XML problems with
 `jackson-dataformat-xml`; without it, Grails writes them in the same format. A view, whether a GSP, a JSON view or a
-markup view, renders a problem only when `respond` names it with the `view` argument, and the response keeps the problem's
-status; the action's view and the templates found by convention do not render problems. A renderer the application
+markup view, renders a problem only when `respond` names it with the `view` argument, and the response has the status it
+would have in JSON or XML; the action's view and the templates found by convention do not render problems. A renderer the application
 registers for `ProblemDetail`, or for a type problems share, such as `Serializable`, renders them in its format, as a
 registered renderer renders any type it is registered for:
 
