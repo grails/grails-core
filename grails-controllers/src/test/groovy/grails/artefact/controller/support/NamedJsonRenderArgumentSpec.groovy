@@ -23,6 +23,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import grails.artefact.Controller
 import grails.util.GrailsWebMockUtil
 import grails.web.render.NamedJsonRenderer
+import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 
 import spock.lang.Specification
 
@@ -143,7 +144,22 @@ class NamedJsonRenderArgumentSpec extends Specification {
         1 * renderer.render('deep', [title: 'Grails'], _, null, null) >> { throw new IOException('broken pipe') }
 
         and: "the failure surfaces and the response is not marked as written"
-        thrown(Exception)
+        def e = thrown(ControllerExecutionException)
+        e.message == 'I/O error rendering named JSON configuration [deep].'
+        e.cause instanceof IOException
+        webRequest.renderView
+    }
+
+    void 'render json: without a JSON renderer fails rather than writing nothing'() {
+        given:
+        def controller = new NamedJsonArgumentController()
+
+        when:
+        controller.render(json: [title: 'Grails'])
+
+        then:
+        def e = thrown(IllegalStateException)
+        e.message == 'No JSON renderer is available.'
         webRequest.renderView
     }
 
