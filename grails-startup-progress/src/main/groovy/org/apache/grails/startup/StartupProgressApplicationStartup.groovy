@@ -84,7 +84,7 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
     @Override
     StartupStep start(String name) {
         StartupStep step = delegate.start(name)
-        if (!progress.isReporting()) {
+        if (!progress.reporting) {
             return step
         }
         switch (name) {
@@ -108,10 +108,10 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
      */
     private Set<String> eagerSingletons() {
         Set<String> names = new HashSet<>()
-        for (String name : beanFactory.getBeanDefinitionNames()) {
+        for (String name : beanFactory.beanDefinitionNames) {
             BeanDefinition definition = beanFactory.getBeanDefinition(name)
-            if (definition.isSingleton() && !definition.isAbstract() && !definition.isLazyInit()) {
-                names.add(name)
+            if (definition.singleton && !definition.abstract && !definition.lazyInit) {
+                names << name
             }
         }
         return names
@@ -179,17 +179,17 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
 
         @Override
         String getName() {
-            return step.getName()
+            return step.name
         }
 
         @Override
         long getId() {
-            return step.getId()
+            return step.id
         }
 
         @Override
         Long getParentId() {
-            return step.getParentId()
+            return step.parentId
         }
 
         @Override
@@ -206,7 +206,7 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
 
         @Override
         StartupStep.Tags getTags() {
-            return step.getTags()
+            return step.tags
         }
 
         @Override
@@ -246,7 +246,7 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
 
         @Override
         StartupStep tag(String key, String value) {
-            if (BEAN_NAME_TAG.equals(key) && value != null) {
+            if (key == BEAN_NAME_TAG && value != null) {
                 beanName = StartupProgressApplicationStartup.this.definedName(value)
                 StartupProgressApplicationStartup.this.progress.beanCreationStarted(beanName)
             }
@@ -260,7 +260,7 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
             if (beanName != null && StartupProgressApplicationStartup.this.beanFactory.containsBeanDefinition(beanName)) {
                 StartupProgressApplicationStartup.this.progress.beanCreated(beanName, elapsedNanos - nestedNanos)
             }
-            if (enclosing != null) {
+            if (enclosing) {
                 enclosing.@nestedNanos = enclosing.@nestedNanos + elapsedNanos
                 StartupProgressApplicationStartup.this.creating.set(enclosing)
                 // the bean this one was created for is being created again, not the one that has just finished
@@ -289,10 +289,10 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
 
         @Override
         StartupStep tag(String key, String value) {
-            if (StartupTask.DESCRIPTION_TAG.equals(key)) {
+            if (key == StartupTask.DESCRIPTION_TAG) {
                 task.described(value)
             }
-            else if (StartupTask.TOTAL_TAG.equals(key)) {
+            else if (key == StartupTask.TOTAL_TAG) {
                 task.totalled(value)
             }
             return super.tag(key, value)
@@ -302,7 +302,7 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
         void end() {
             super.end()
             task.ended()
-            if (enclosing != null) {
+            if (enclosing) {
                 StartupProgressApplicationStartup.this.running.set(enclosing)
             }
             else {
@@ -322,7 +322,7 @@ final class StartupProgressApplicationStartup implements ApplicationStartup {
 
         @Override
         StartupStep tag(String key, String value) {
-            if (StartupTask.ITEM_TAG.equals(key)) {
+            if (key == StartupTask.ITEM_TAG) {
                 task.itemStarted(value)
             }
             return super.tag(key, value)

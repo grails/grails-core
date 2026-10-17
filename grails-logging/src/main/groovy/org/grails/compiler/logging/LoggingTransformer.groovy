@@ -58,29 +58,29 @@ class LoggingTransformer implements AllArtefactClassInjector {
     @Override
     void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
         if (classNode.getNodeMetaData(Slf4j) != null) return
-        String packageName = Slf4j.getPackage().getName()
+        String packageName = Slf4j.package.name
 
         // if already annotated skip
-        for (AnnotationNode annotationNode in classNode.getAnnotations()) {
-            if (annotationNode.getClassNode().getPackageName().equals(packageName)) {
+        for (AnnotationNode annotationNode in classNode.annotations) {
+            if (annotationNode.classNode.packageName == packageName) {
                 return
             }
         }
 
         FieldNode logField = classNode.getField('log')
         if (logField != null) {
-            if (!Modifier.isPrivate(logField.getModifiers())) {
+            if (!Modifier.isPrivate(logField.modifiers)) {
                 return
             }
         }
 
-        if (classNode.getSuperClass().getName().equals('grails.boot.config.GrailsAutoConfiguration')) {
+        if (classNode.superClass.name == 'grails.boot.config.GrailsAutoConfiguration') {
             return
         }
 
         AnnotationNode annotationNode = new AnnotationNode(ClassHelper.make(Slf4j))
         LogASTTransformation logASTTransformation = new LogASTTransformation()
-        logASTTransformation.setCompilationUnit(new CompilationUnit(new GroovyClassLoader(getClass().getClassLoader())))
+        logASTTransformation.compilationUnit = new CompilationUnit(new GroovyClassLoader(getClass().classLoader))
         logASTTransformation.visit([annotationNode, classNode] as ASTNode[], source)
         classNode.putNodeMetaData(Slf4j, annotationNode)
     }
