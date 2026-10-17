@@ -641,7 +641,7 @@ configure intentional exceptions through `JsonMapperBuilderCustomizer`.
 With Jackson enabled, ordinary untyped JSON numbers keep the types the previous parser produced. Values with a fractional part are read
 as `BigDecimal` rather than `Double`, so binding a request value such as `1.15` to a `BigDecimal` property
 retains exactly the digits the request sent. Whole numbers bind as `Integer`, `Long`, or `BigInteger`
-when too large for a `Long`; the legacy parser could overflow those large integers.
+when too large for a `Long`, as with the legacy parser.
 
 ==== 10. REST Validation Errors Use RFC 9457 Problems
 
