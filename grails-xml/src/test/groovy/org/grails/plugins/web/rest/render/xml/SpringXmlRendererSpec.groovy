@@ -24,6 +24,7 @@ import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -103,6 +104,30 @@ class SpringXmlRendererSpec extends Specification {
         1 * second.getSupportedMediaTypes(XmlGreeting) >> [MediaType.APPLICATION_XML]
         1 * second.write(_, new MediaType(MediaType.APPLICATION_XML, UTF_8), _)
         0 * _
+    }
+
+    void 'a write that fails part-way leaves the response uncommitted, so that the error page applies'() {
+        given:
+        def converter = Mock(HttpMessageConverter) {
+            canWrite(XmlGreeting, MediaType.APPLICATION_XML) >> true
+            getSupportedMediaTypes(XmlGreeting) >> [MediaType.APPLICATION_XML]
+            write(_, _, _) >> { arguments ->
+                arguments[2].body.write('<XmlGreeting><message>'.bytes)
+                throw new HttpMessageNotWritableException('failed part-way')
+            }
+        }
+        def renderer = new DefaultXmlRenderer<XmlGreeting>(XmlGreeting)
+        renderer.useSpringXml = true
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        def response = new MockHttpServletResponse()
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
+
+        when:
+        renderer.render(new XmlGreeting(message: 'hello'), new FixedMimeServletRenderContext(webRequest, MimeType.XML))
+
+        then:
+        thrown(HttpMessageNotWritableException)
+        !response.committed
     }
 
     void 'a generic string converter does not strip the legacy XML string element'() {
