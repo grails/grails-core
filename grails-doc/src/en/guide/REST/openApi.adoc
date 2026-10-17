@@ -405,8 +405,8 @@ has and the `errors` a validateable object has are not part of it.
 
 A property of a class the Grails operations are described with - a domain class, a command object,
 or any other class, such as one an `@ApiResponse` names - is described by the name Grails'
-converters, JSON views and data binding render and bind it by: its own. So neither a
-`@JsonProperty` rename, which Grails ignores, nor the name Jackson would otherwise write, such as
+converters, JSON views and data binding render and bind it by with their default settings: its own. So neither a
+`@JsonProperty` rename, which they then ignore, nor the name Jackson would otherwise write, such as
 `isbn` for `ISBN`, changes it, and a command object's request parameters are described by the names
 Grails binds them by. Where the description should name a property otherwise, `@Schema(name)`
 renames it, and its constraints, and whether it is required or read only, follow the rename. A
