@@ -271,10 +271,12 @@ public final class JsonMapperSupport {
     /**
      * Parses JSON text with the mapper's own parser, so that the parser features the mapper is configured with decide what
      * is accepted, such as comments or single quotes. Objects and arrays become the {@link JSONObject}s and
-     * {@link JSONArray}s that {@code grails.converters.JSON#parse} has always returned, with the number types it has
-     * always returned: an {@code Integer}, a {@code Long} or a {@code BigInteger} for a number without a fraction, such
-     * as {@code 15} or {@code 1.5e1}, and for one with a fraction a {@code Double}, or a {@code BigDecimal} where a
-     * {@code Double} would not be the same number.
+     * {@link JSONArray}s that {@code grails.converters.JSON#parse} has always returned, with the number types Grails' own
+     * parser gives: an {@code Integer}, a {@code Long} or a {@code BigInteger} for a number written with as many digits
+     * after the decimal point as its exponent moves, such as {@code 15} or {@code 1.5e1}; a {@code Double} for any other
+     * number written with the digits {@code Double.toString} writes for it, such as {@code 2.5}; and otherwise a
+     * {@code BigDecimal}, such as {@code 1.00}, {@code 1e3} or {@code 1e400}. NaN and Infinity, which a mapper may
+     * accept, are {@code Double}s.
      *
      * <p>Text after the value is rejected, as the mapper rejects it when it reads a value, unless the mapper disables
      * {@code DeserializationFeature.FAIL_ON_TRAILING_TOKENS}.
