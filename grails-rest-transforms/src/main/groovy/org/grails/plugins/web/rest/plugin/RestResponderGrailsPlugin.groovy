@@ -67,10 +67,13 @@ class RestResponderGrailsPlugin extends Plugin {
                     return rendererRegistry
                 }
             }
+            // Both are infrastructure beans, which an application @Bean of the same name replaces, whereas
+            // configuration classes are read after plugins register their beans, and Spring keeps an
+            // application bean that is already defined.
             registry.registerBean('defaultValidationProblemDetailFactory', ValidationProblemDetailFactory) {
                 // A fallback candidate: an application's own factory bean, whatever its name, is
                 // the one the renderers autowire.
-                it.fallback().supplier {
+                it.fallback().infrastructure().supplier {
                     // Resolves each error through the application's MessageSource, so a validation
                     // response carries the message for the current locale with its arguments
                     // substituted rather than the raw default template.
@@ -80,7 +83,7 @@ class RestResponderGrailsPlugin extends Plugin {
             registry.registerBean('validationProblemDetailFactory', ValidationProblemDetailFactory) {
                 // Controllers autowire by name: under this name, the factory the renderers autowire
                 // by type, which this bean is left out of.
-                it.notAutowirable().supplier { it.bean(ValidationProblemDetailFactory) }
+                it.notAutowirable().infrastructure().supplier { it.bean(ValidationProblemDetailFactory) }
             }
             registry.registerBean('springMessageConverters', SpringMessageConverters)
         }

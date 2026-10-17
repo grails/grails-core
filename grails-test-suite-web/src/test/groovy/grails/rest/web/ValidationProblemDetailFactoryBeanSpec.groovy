@@ -70,10 +70,43 @@ class ValidationProblemDetailFactoryBeanSpec extends Specification implements Co
         response.json.errors.first().rejectedValue == 'secret'
     }
 
-    private static BeanPropertyBindingResult errors() {
+    static BeanPropertyBindingResult errors() {
         def errors = new BeanPropertyBindingResult(new ProblemFactoryBody(name: 'secret'), 'body')
         errors.rejectValue('name', 'invalid', 'Name is invalid')
         errors
+    }
+}
+
+/**
+ * An application {@code @Bean} method of the name the plugin registers its own factory under replaces it.
+ */
+class ValidationProblemDetailFactoryConventionalNameSpec extends Specification implements ControllerUnitTest<ProblemFactoryController> {
+
+    Closure doWithConfig() {
+        { config -> config['grails.web.rendering.json.spring'] = true }
+    }
+
+    @Configuration
+    static class FactoryConfiguration {
+
+        @Bean
+        ValidationProblemDetailFactory validationProblemDetailFactory(MessageSource messageSource) {
+            new ValidationProblemDetailFactory(true, messageSource)
+        }
+    }
+
+    void setup() {
+        response.format = 'json'
+    }
+
+    void 'respond and a controller that declares the factory both get the application factory'() {
+        when:
+        controller.respond(ValidationProblemDetailFactoryBeanSpec.errors())
+
+        then:
+        response.json.errors.first().rejectedValue == 'secret'
+        controller.validationProblemDetailFactory.create(ValidationProblemDetailFactoryBeanSpec.errors()).properties.errors
+                .first().rejectedValue == 'secret'
     }
 }
 
