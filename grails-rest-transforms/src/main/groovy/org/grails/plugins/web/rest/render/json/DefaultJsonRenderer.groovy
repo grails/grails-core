@@ -38,7 +38,9 @@ import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.validation.Errors
 
+import tools.jackson.core.JsonEncoding
 import tools.jackson.core.JsonGenerator
+import tools.jackson.core.StreamWriteFeature
 import tools.jackson.databind.JacksonSerializable
 import tools.jackson.databind.ObjectWriter
 import tools.jackson.databind.SerializationContext
@@ -375,13 +377,24 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             this.projection = projection
         }
 
+        /**
+         * Writes the value with a generator of the Grails mapper, on the output of the converter's generator: a generator
+         * writes a value a serializer hands it with {@link JsonGenerator#writePOJO(Object)} with the mapper that created
+         * it, which for the converter's is the application's.
+         */
         @Override
         void serialize(JsonGenerator generator, SerializationContext context) {
-            ObjectWriter writer = mapper.writer()
+            ObjectWriter writer = mapper.writer().without(StreamWriteFeature.AUTO_CLOSE_TARGET)
             if (projection != null) {
                 writer = writer.withAttribute(JsonProjection.ATTRIBUTE, projection)
             }
-            writer.writeValue(generator, value)
+            // what the converter wrote before the value, such as a prefix, comes first
+            generator.flush()
+            Object output = generator.streamWriteOutputTarget()
+            JsonGenerator grailsGenerator = output instanceof Writer ? writer.createGenerator((Writer) output) :
+                    writer.createGenerator((OutputStream) output, JsonEncoding.UTF8)
+            grailsGenerator.writePOJO(value)
+            grailsGenerator.close()
         }
 
         @Override

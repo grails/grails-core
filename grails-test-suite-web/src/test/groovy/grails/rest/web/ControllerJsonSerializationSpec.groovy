@@ -43,6 +43,7 @@ import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.DatabindException
 import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.annotation.JsonSerialize
 import spock.lang.Specification
 
 class ControllerJsonSerializationSpec extends Specification implements ControllerUnitTest<JsonResponseController>,
@@ -100,6 +101,17 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.json == [title: 'Grails', first_name: 'Ada']
+    }
+
+    void 'a value a serializer writes with writePOJO is written with the Grails mapper, as the value it is nested in'() {
+        given: 'a bean whose serializer writes a domain class instance with JsonGenerator.writePOJO'
+        def book = new JsonResponseDomain(title: 'Grails').save()
+
+        when:
+        controller.respond(new PojoWritingBody(book: book))
+
+        then: 'as respond writes the instance itself'
+        response.json == [book: [id: book.id]]
     }
 
     void 'a named JSON write that fails part-way leaves the response uncommitted, so that the error page applies'() {
@@ -527,6 +539,21 @@ class ProblemJsonRenderer implements Renderer<ProblemDetail> {
     void render(Object object, RenderContext context) {
         context.setContentType('application/json')
         context.writer.write("{\"custom\":${((ProblemDetail) object).status}}")
+    }
+}
+
+@JsonSerialize(using = PojoWritingSerializer)
+class PojoWritingBody {
+    Object book
+}
+
+class PojoWritingSerializer extends ValueSerializer<PojoWritingBody> {
+    @Override
+    void serialize(PojoWritingBody value, JsonGenerator generator, SerializationContext context) {
+        generator.writeStartObject()
+        generator.writeName('book')
+        generator.writePOJO(value.book)
+        generator.writeEndObject()
     }
 }
 
