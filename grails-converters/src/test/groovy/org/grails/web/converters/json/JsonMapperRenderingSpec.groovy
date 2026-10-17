@@ -63,6 +63,7 @@ import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.web.converters.exceptions.ConverterException
+import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller
 import org.grails.web.converters.marshaller.ObjectMarshaller
 import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller
@@ -403,6 +404,25 @@ class JsonMapperRenderingSpec extends Specification {
 
         expect:
         new JSON(errors).toString() == '{"errors":[{"object":"test","message":"Error happening on test object."}]}'
+
+        cleanup:
+        context.close()
+    }
+
+    void "an application serializer takes precedence over the converter's own, as it does in Grails responses"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, {
+                JsonMapper.builder().addModule(new SimpleModule().addSerializer(BeanPropertyBindingResult, new MapperErrorsSerializer())).build()
+            })
+        }
+        initialize([:], context)
+        def errors = new BeanPropertyBindingResult(new Object(), 'test')
+        errors.reject('failed', 'Error happening on test object.')
+
+        expect:
+        new JSON(errors).toString() == '"written by the mapper"'
+        new GrailsJsonMapperCustomizer().forGrails(context.getBean(JsonMapper)).writeValueAsString(errors) == '"written by the mapper"'
 
         cleanup:
         context.close()

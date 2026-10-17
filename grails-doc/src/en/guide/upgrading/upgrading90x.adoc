@@ -325,7 +325,8 @@ With the setting `false`, the mapper writes every value, as Spring Boot writes i
 `Optional` values, enums and beans, besides the single values above. The converter renders each value in them, so the
 values they contain are rendered as any other value is. A marshaller that an application registers, with
 `JSON.registerObjectMarshaller(...)` or an `ObjectMarshallerRegisterer`, still takes precedence over the mapper for the types
-it supports. A collection, a map or a bean that contains itself is written as before, as an empty collection or map where it
+it supports, and a serializer of a Jackson module registered with the application's mapper takes precedence over those
+Grails adds, such as the one for validation errors, as it does in `respond`. A collection, a map or a bean that contains itself is written as before, as an empty collection or map where it
 repeats, or as the `grails.converters.json.circular.reference.behaviour` selects.
 
 What Jackson applies to a bean applies to a bean the converter renders, where Grails 8 ignored it: `@JsonProperty`,

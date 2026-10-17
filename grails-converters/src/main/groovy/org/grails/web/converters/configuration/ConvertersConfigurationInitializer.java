@@ -39,7 +39,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import io.micrometer.observation.ObservationRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -60,6 +59,7 @@ import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 import org.grails.web.converters.jackson.ConverterJsonModule;
 import org.grails.web.converters.jackson.DomainClassJacksonModule;
 import org.grails.web.converters.jackson.DomainClassRendering;
+import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 import org.grails.web.json.JsonDateFormat;
 import org.grails.web.json.JsonMapperSupport;
@@ -146,21 +146,17 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     }
 
     /**
-     * The mapper the JSON converter renders domain class instances with: the application's own, with the module that
-     * renders them if it does not have it already.
+     * The mapper the JSON converter renders with: the application's own, with the modules of the converter, as Grails
+     * responses derive theirs.
      */
     private JsonMapper withDomainClasses(JsonMapper mapper) {
         JsonMapper source = mapper != null ? mapper : JsonMapperSupport.DEFAULT.getMapper();
-        JsonMapper.Builder builder = source.rebuild();
-        boolean domainClasses = false;
-        for (JacksonModule module : source.registeredModules()) {
-            domainClasses |= module instanceof DomainClassJacksonModule;
-        }
-        if (!domainClasses) {
-            builder.addModule(new DomainClassJacksonModule(() -> jsonDomainClassRendering(grailsApplication, getProxyHandler())));
-        }
-        // a bean with no properties is written as an empty object, as the converter always has
-        return builder.addModule(new ConverterJsonModule(() -> applicationContext)).disable(SerializationFeature.FAIL_ON_EMPTY_BEANS).build();
+        return GrailsJsonMapperCustomizer.withGrailsModules(source,
+                new DomainClassJacksonModule(() -> jsonDomainClassRendering(grailsApplication, getProxyHandler())),
+                new ConverterJsonModule(() -> applicationContext))
+                // a bean with no properties is written as an empty object, as the converter always has
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .build();
     }
 
     private void initJSONConfiguration(boolean legacy) {

@@ -74,38 +74,43 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
     }
 
     /**
-     * Derives the mapper used by Grails responses without changing Spring MVC's mapper.
-     * Domain compatibility uses persistent metadata rather than Jackson's bean property model.
+     * Derives the mapper used by Grails responses without changing Spring MVC's mapper: the application's mapper, with
+     * the rendering of domain classes, validation errors, projections and circular references of Grails responses.
      */
     public JsonMapper forGrails(JsonMapper mapper) {
-        return grailsMappers.computeIfAbsent(mapper, source -> {
-            JsonMapper.Builder builder = source.rebuild();
-            List<JacksonModule> modules = new ArrayList<>();
-            builder.withModules(modules::add);
-            builder.removeAllModules();
-            // Install compatibility first so application serializers retain their precedence.
-            customizeDomains(builder);
-            for (JacksonModule module : modules) {
-                // The Grails mapper has its own rendering of domain classes, installed above
-                if (!(module instanceof DomainClassJacksonModule)) {
-                    builder.addModule(module);
-                }
-            }
-            return builder.build();
-        });
+        return grailsMappers.computeIfAbsent(mapper, source -> withGrailsModules(source,
+                // The module the application's own mapper may have too, with this rendering: a response also honours the
+                // circular reference behaviour of the JSON converter, which a plain Spring MVC response does not
+                new DomainClassJacksonModule(() -> ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                        this.grailsApplication, this.proxyHandler)),
+                // Do not change Errors returned from plain Spring MVC controllers.
+                new SimpleModule("grails-domain-json").addSerializer(Errors.class, new SpringErrorsJsonSerializer(
+                        () -> this.grailsApplication == null ? null : this.grailsApplication.getMainContext())),
+                JsonProjection.module(),
+                new CircularReferenceModule(this::circularReferenceBehaviour)).build());
     }
 
-    private void customizeDomains(JsonMapper.Builder builder) {
-        // The module the application's own mapper may have too, with this rendering: a response also honours the
-        // circular reference behaviour of the JSON converter, which a plain Spring MVC response does not
-        builder.addModule(new DomainClassJacksonModule(() -> ConvertersConfigurationInitializer.jsonDomainClassRendering(
-                this.grailsApplication, this.proxyHandler)));
-        SimpleModule module = new SimpleModule("grails-domain-json");
-        // Do not change Errors returned from plain Spring MVC controllers.
-        module.addSerializer(Errors.class, new SpringErrorsJsonSerializer(
-                () -> this.grailsApplication == null ? null : this.grailsApplication.getMainContext()));
-        builder.addModule(module);
-        builder.addModule(JsonProjection.module());
-        builder.addModule(new CircularReferenceModule(this::circularReferenceBehaviour));
+    /**
+     * A copy of an application's mapper with Grails modules, which the JSON converter and Grails responses derive their
+     * mappers with. The Grails modules are installed ahead of the application's, so that the application's serializers
+     * keep their precedence over them, and a {@link DomainClassJacksonModule} of the application's mapper is replaced by
+     * the one given.
+     *
+     * @param mapper the application's mapper
+     * @param grailsModules the Grails modules
+     * @return a builder of the copy
+     */
+    public static JsonMapper.Builder withGrailsModules(JsonMapper mapper, JacksonModule... grailsModules) {
+        JsonMapper.Builder builder = mapper.rebuild();
+        List<JacksonModule> modules = new ArrayList<>();
+        builder.withModules(modules::add);
+        builder.removeAllModules();
+        builder.addModules(grailsModules);
+        for (JacksonModule module : modules) {
+            if (!(module instanceof DomainClassJacksonModule)) {
+                builder.addModule(module);
+            }
+        }
+        return builder;
     }
 }
