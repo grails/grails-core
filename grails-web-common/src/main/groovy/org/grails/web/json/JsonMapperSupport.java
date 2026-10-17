@@ -216,10 +216,11 @@ public final class JsonMapperSupport {
 
     /**
      * Whether the mapper writes values of the type itself, with a dedicated serializer for a single value. Beans,
-     * records, enums other than those with their own serializer (such as {@code Month}), including an enum with a
-     * {@code @JsonValue}, {@code Optional} and other
-     * reference types, collections, maps, iterables, streams and object arrays are left to Grails marshallers, so that
-     * the values they contain are rendered as any other value is.
+     * records, {@code Optional} and other reference types, collections, maps, iterables, streams and object arrays are
+     * left to Grails marshallers, so that the values they contain are rendered as any other value is. So is an enum the
+     * mapper writes with Jackson's enum serializer or by its {@code @JsonValue}, so that it renders by name. The mapper
+     * writes any other enum itself: one with a serializer of its own, such as {@code Month}, and, on the mapper of
+     * {@code grails.converters.JSON}, which writes enums by name, every enum.
      *
      * @param type a value type
      * @return whether the mapper writes values of the type
