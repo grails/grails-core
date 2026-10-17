@@ -37,7 +37,8 @@ import org.grails.web.errors.ValidationErrorEntries;
  *
  * <p>Rejected field values are omitted by default because they may contain secrets or other
  * sensitive request data. Applications can explicitly include them by using
- * {@link #ValidationProblemDetailFactory(boolean)}.</p>
+ * {@link #ValidationProblemDetailFactory(boolean, MessageSource)}, which resolves the messages through the
+ * application's {@code MessageSource}.</p>
  *
  * @since 9.0
  */
