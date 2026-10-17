@@ -33,6 +33,7 @@ import tools.jackson.databind.json.JsonMapper
 import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
+import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
 import grails.rest.render.json.JsonRenderer
 import grails.testing.web.controllers.ControllerUnitTest
@@ -297,6 +298,10 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
     }
 
     void 'a request includes overrides the excludes of a JsonRenderer bean only where the bean sets none'() {
+        expect: 'the bean is the renderer of the type it is registered for'
+        applicationContext.getBean(RendererRegistry).findRenderer(MimeType.JSON, new JsonRendererProfile())
+                .is(applicationContext.getBean('jsonRendererProfileRenderer'))
+
         when: 'the bean sets no excludes'
         controller.respond(new JsonRendererProfile(name: 'ada', email: 'ada@example.com'), includes: ['name'])
 
