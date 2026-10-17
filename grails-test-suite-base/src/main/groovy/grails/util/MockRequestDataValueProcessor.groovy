@@ -28,7 +28,7 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
 class MockRequestDataValueProcessor implements RequestDataValueProcessor {
 
     Map<String, String> getExtraHiddenFields(HttpServletRequest request) {
-        Map<String, String> extraHiddenFields = new HashMap<>()
+        Map<String, String> extraHiddenFields = [:]
         extraHiddenFields.put('requestDataValueProcessorHiddenName', 'hiddenValue')
         return extraHiddenFields
     }
@@ -43,7 +43,7 @@ class MockRequestDataValueProcessor implements RequestDataValueProcessor {
     }
 
     String processFormFieldValue(HttpServletRequest request, String name, String value, String type) {
-        return value + '_PROCESSED_'
+        return "${value}_PROCESSED_"
     }
 
     String processUrl(HttpServletRequest request, String url) {
@@ -54,7 +54,7 @@ class MockRequestDataValueProcessor implements RequestDataValueProcessor {
             toAppend = '?requestDataValueProcessorParamName=paramValue'
         }
         if (url.indexOf('#') > -1) {
-            url = url.replace('#', toAppend + '#')
+            url = url.replace('#', "${toAppend}#")
         } else {
             url = url + toAppend
         }

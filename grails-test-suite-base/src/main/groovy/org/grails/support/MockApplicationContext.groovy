@@ -87,7 +87,7 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
     void unregisterMockResource(String location) {
         for (Iterator<Resource> it = resources.iterator(); it.hasNext();) {
             MockResource mockResource = (MockResource) it.next()
-            if (mockResource.location.equals(location)) {
+            if (mockResource.location == location) {
                 it.remove()
             }
         }
@@ -147,7 +147,7 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
     }
 
     String[] getBeanDefinitionNames() {
-        return beans.keySet().toArray(new String[beans.keySet().size()])
+        return beans.keySet() as String[]
     }
 
     @Override
@@ -172,13 +172,13 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
 
     @SuppressWarnings([ 'unchecked', 'rawtypes' ])
     String[] getBeanNamesForType(Class type) {
-        List<String> beanNames = new ArrayList<>()
+        List<String> beanNames = []
         for (String beanName in beans.keySet()) {
-            if (type.isAssignableFrom(beans.get(beanName).getClass())) {
-                beanNames.add(beanName)
+            if (type.isAssignableFrom(beans[beanName].getClass())) {
+                beanNames << beanName
             }
         }
-        return beanNames.toArray(new String[beanNames.size()])
+        return beanNames as String[]
     }
 
     @SuppressWarnings('rawtypes')
@@ -189,11 +189,8 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
     @SuppressWarnings('unchecked')
     def <T> Map<String, T> getBeansOfType(Class<T> type) throws BeansException {
         String[] beanNames = getBeanNamesForType(type)
-        Map<String, T> newMap = new HashMap<>()
-        for (int i = 0; i < beanNames.length; i++) {
-            String beanName = beanNames[i]
-            newMap.put(beanName, (T) getBean(beanName))
-        }
+        Map<String, T> newMap = [:]
+        beanNames.each { String beanName -> newMap.put(beanName, (T) getBean(beanName)) }
         return newMap
     }
 
@@ -203,10 +200,7 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
 
     def <A extends Annotation> A findAnnotationOnBean(String name, Class<A> annotation) {
         Object o = getBean(name)
-        if (o != null) {
-            return o.getClass().getAnnotation(annotation)
-        }
-        return null
+        return o?.getClass()?.getAnnotation(annotation)
     }
 
     @Override
@@ -215,9 +209,9 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
     }
 
     Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotation) throws BeansException {
-        Map<String, Object> submap = new HashMap<>()
+        Map<String, Object> submap = [:]
         for (Object beanName in beans.keySet()) {
-            Object bean = beans.get(beanName)
+            Object bean = beans[beanName]
             if (bean != null && bean.getClass().getAnnotation(annotation) != null) {
                 submap.put(beanName.toString(), bean)
             }
@@ -239,21 +233,21 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
      * @since 2.4
      */
     String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType) {
-        List<String> beanNamesList = new ArrayList<>()
+        List<String> beanNamesList = []
         for (Object beanName in beans.keySet()) {
-            Object bean = beans.get(beanName)
+            Object bean = beans[beanName]
             if (bean != null && bean.getClass().getAnnotation(annotationType) != null) {
-                beanNamesList.add(beanName.toString())
+                beanNamesList << beanName.toString()
             }
         }
-        return beanNamesList.toArray(new String[beanNamesList.size()])
+        return beanNamesList as String[]
     }
 
     Object getBean(String name) throws BeansException {
         if (!beans.containsKey(name)) {
             throw new NoSuchBeanDefinitionException(name)
         }
-        return beans.get(name)
+        return beans[name]
     }
 
     @SuppressWarnings('unchecked')
@@ -262,11 +256,11 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
             throw new NoSuchBeanDefinitionException(name)
         }
 
-        if (requiredType != null && !requiredType.isAssignableFrom(beans.get(name).getClass())) {
+        if (requiredType != null && !requiredType.isAssignableFrom(beans[name].getClass())) {
             throw new NoSuchBeanDefinitionException(name)
         }
 
-        return (T) beans.get(name)
+        return (T) beans[name]
     }
 
     @Override
@@ -323,7 +317,7 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
             throw new NoSuchBeanDefinitionException(name)
         }
 
-        return beans.get(name).getClass()
+        return beans[name].getClass()
     }
 
     @Override
@@ -369,19 +363,19 @@ class MockApplicationContext extends GroovyObjectSupport implements WebApplicati
         }
 
         locationPattern = GrailsStringUtils.trimStart(locationPattern, '/') // starting with "**/" is OK
-        List<Resource> result = new ArrayList<>()
+        List<Resource> result = []
         for (Resource res in resources) {
-            String path = res instanceof ClassPathResource ? ((ClassPathResource) res).getPath() : res.getDescription()
+            String path = res instanceof ClassPathResource ? ((ClassPathResource) res).path : res.description
             if (pathMatcher.match(locationPattern, path)) {
-                result.add(res)
+                result << res
             }
         }
-        return result.toArray(new Resource[0])
+        return result as Resource[]
     }
 
     Resource getResource(String location) {
         for (Resource mockResource in resources) {
-            if (pathMatcher.match(mockResource.getDescription(), GrailsStringUtils.trimStart(location, '/'))) {
+            if (pathMatcher.match(mockResource.description, GrailsStringUtils.trimStart(location, '/'))) {
                 return mockResource
             }
         }
