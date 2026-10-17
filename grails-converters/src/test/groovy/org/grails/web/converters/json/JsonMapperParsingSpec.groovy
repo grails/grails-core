@@ -101,6 +101,19 @@ class JsonMapperParsingSpec extends Specification {
         JSON.parse("{'x':1, y:'a' // note\n,}") == [x: 1, y: 'a']
     }
 
+    void "JSON.parse reads NaN and Infinity as doubles when the mapper's parser accepts them"() {
+        given:
+        use(JsonMapper.builder().enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS).build())
+
+        when:
+        def parsed = JSON.parse('{"nan":NaN,"infinity":Infinity,"negative":-Infinity}')
+
+        then:
+        Double.isNaN(parsed.nan as double)
+        parsed.infinity == Double.POSITIVE_INFINITY
+        parsed.negative == Double.NEGATIVE_INFINITY
+    }
+
     void "JSON.parse reads #number as a #type.simpleName"() {
         when:
         def value = JSON.parse("{\"n\":${number}}").n
