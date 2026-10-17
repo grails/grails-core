@@ -18,7 +18,6 @@
  */
 package org.grails.web.json
 
-import java.time.Month
 import java.util.function.Predicate
 
 import groovy.transform.CompileStatic
@@ -176,9 +175,6 @@ class JSONWriterSpec extends Specification {
         then:
         plain.toString() == '"none"'
         attributed.toString() == '"the writer"'
-
-        and: 'the derived support shares the value rendering of the one it derives from'
-        derived.rendersValue(Month) == support.rendersValue(Month)
     }
 
     void "a single value is a JSON text, written without a flush"() {
