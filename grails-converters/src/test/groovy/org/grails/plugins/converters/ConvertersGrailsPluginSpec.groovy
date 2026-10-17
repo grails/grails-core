@@ -18,6 +18,7 @@
  */
 package org.grails.plugins.converters
 
+import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 
 import org.springframework.beans.factory.support.BeanRegistryAdapter
@@ -110,27 +111,29 @@ class ConvertersGrailsPluginSpec extends Specification {
 
     void "a registered JsonMapper is the one configurations derive from"() {
         given: "a mapper registered after the registry bean definition, as Boot's is"
-        def mapper = JsonMapper.builder().build()
+        def mapper = JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).build()
         beanFactory.registerSingleton('jacksonJsonMapper', mapper)
         def configurationRegistry = beanFactory.getBean('namedJsonConfigurationRegistry', NamedJsonConfigurationRegistry)
 
         when:
-        configurationRegistry.register('deep') { it.attribute('depth', 'deep') }
+        configurationRegistry.register('catalog') { it.attribute('depth', 'deep') }
 
         then:
-        configurationRegistry.writeValueAsString('deep', [title: 'Grails']) == '{"title":"Grails"}'
+        configurationRegistry.writeValueAsString('catalog', new PluginBook(bookTitle: 'Grails')) == '{"book_title":"Grails"}'
     }
 
     void "the conventional Boot mapper resolves multiple non-primary mapper beans"() {
         given:
-        beanFactory.registerSingleton('jacksonJsonMapper', JsonMapper.builder().build())
-        beanFactory.registerSingleton('pluginMapper', JsonMapper.builder().build())
+        beanFactory.registerSingleton('jacksonJsonMapper',
+                JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).build())
+        beanFactory.registerSingleton('pluginMapper',
+                JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE).build())
         def registry = beanFactory.getBean('namedJsonConfigurationRegistry', NamedJsonConfigurationRegistry)
-        registry.register('deep') { }
+        registry.register('catalog') { }
 
         expect:
-        registry.writeValueAsString('deep', [title: 'Grails']) == '{"title":"Grails"}'
-        registry.writeValueAsString(null, [ok: true]) == '{"ok":true}'
+        registry.writeValueAsString('catalog', new PluginBook(bookTitle: 'Grails')) == '{"book_title":"Grails"}'
+        registry.writeValueAsString(null, new PluginBook(bookTitle: 'Grails')) == '{"book_title":"Grails"}'
     }
 
     void "the named JSON renderer is created without a Boot JsonMapper"() {
@@ -239,4 +242,8 @@ class ConvertersGrailsPluginSpec extends Specification {
         grailsApplication.setMappingContext(mappingContext)
         grailsApplication
     }
+}
+
+class PluginBook {
+    String bookTitle
 }
