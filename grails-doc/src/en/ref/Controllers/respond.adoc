@@ -73,8 +73,9 @@ Supported `arguments`:
 A Spring `ProblemDetail` is written as `application/problem+json`, or as `application/problem+xml` for an XML response,
 through Spring's message converters, with the status the problem carries, and an absent `instance` is set to the current
 resource path. A client that accepts neither JSON nor XML, such as a browser asking for HTML, is answered with
-`application/problem+json`, as Spring MVC answers it. Spring writes problems as XML with `jackson-dataformat-xml`; without
-it, the legacy XML converter writes the problem as a bean, with the same status. A view, whether a GSP, a JSON view or a
+`application/problem+json`, as Spring MVC answers it. XML is rendered by the `grails-xml` module, without which a client
+asking for XML is answered with `application/problem+json` as well. Spring writes XML problems with
+`jackson-dataformat-xml`; without it, Grails writes them in the same format. A view, whether a GSP, a JSON view or a
 markup view, renders a problem only when `respond` names it with the `view` argument, and the response keeps the problem's
 status; the action's view and the templates found by convention do not render problems:
 

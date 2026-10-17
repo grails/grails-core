@@ -18,6 +18,8 @@
  */
 package org.grails.plugins.xml
 
+import groovy.namespace.QName
+import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
 
 import org.springframework.http.HttpStatus
@@ -47,50 +49,71 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         response.status == 409
         response.contentType.startsWith('application/problem+xml')
 
-        and:
+        and: 'as the problem element of RFC 9457'
         def problem = new XmlSlurper().parseText(response.contentAsString)
+        tree(response.contentAsString)[0..1] == ['problem', 'urn:ietf:rfc:7807']
         problem.status.text() == '409'
         problem.detail.text() == 'The title is taken'
     }
 
-    void 'without a converter for problems, the status is still the problem one, and the legacy converter writes it once warned'() {
-        given:
+    void 'without a converter for problems, as without jackson-dataformat-xml, a problem is written as Spring writes it'() {
+        given: 'a problem with extension members, which Spring writes'
+        def problem = { ->
+            def written = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken & <gone>')
+            written.instance = URI.create('/books/1')
+            written.setProperty('errors', [[objectName: 'book', field: 'title', codes: ['a', 'b']],
+                                           [objectName: 'book', message: null]])
+            written.setProperty('retryAt', new Date(0))
+            written.setProperty('none', null)
+            written.setProperty('empty', [])
+            written
+        }
+        response.format = 'xml'
+        controller.respond(problem())
+        def spring = response.contentAsString
         def renderer = new DefaultXmlRenderer<Object>(Object)
         renderer.springHttpMessageConvertersSupplier = { [] }
 
         when:
-        def first = renderProblem(renderer, ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken'))
-        def second = renderProblem(renderer, ProblemDetail.forStatus(HttpStatus.GONE))
+        def fallback = renderProblem(renderer, problem())
 
         then:
-        first.response.status == 409
-        first.response.contentType.startsWith('application/xml')
-        new XmlSlurper().parseText(first.response.contentAsString).detail.text() == 'The title is taken'
-        first.log.contains('so the legacy XML converter writes it as a bean')
-
-        and: 'the warning is logged once'
-        second.response.status == 410
-        !second.log.contains('legacy XML converter')
+        fallback.status == 409
+        fallback.contentType.startsWith('application/problem+xml')
+        tree(fallback.contentAsString) == tree(spring)
     }
 
-    private static Map renderProblem(DefaultXmlRenderer<Object> renderer, ProblemDetail problem) {
+    private static MockHttpServletResponse renderProblem(DefaultXmlRenderer<Object> renderer, ProblemDetail problem) {
         def response = new MockHttpServletResponse()
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
-        PrintStream original = System.err
-        def buffer = new ByteArrayOutputStream()
-        System.setErr(new PrintStream(buffer, true))
-        try {
-            renderer.render(problem, new ServletRenderContext(webRequest) {
-                @Override
-                MimeType getAcceptMimeType() {
-                    MimeType.XML
-                }
-            })
+        renderer.render(problem, new ServletRenderContext(webRequest) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+        })
+        response
+    }
+
+    /** The name, namespace, nil attribute and content of each element, which the XML a writer formats leaves alike. */
+    private static List tree(String xml) {
+        node(new XmlParser(false, true).parseText(xml))
+    }
+
+    private static List node(Node element) {
+        QName name = (QName) element.name()
+        Object nil = null
+        element.attributes().each { Object key, Object value ->
+            if (key instanceof QName && ((QName) key).localPart == 'nil') {
+                nil = value
+            }
         }
-        finally {
-            System.setErr(original)
+        List<Node> children = element.children().findAll { it instanceof Node } as List<Node>
+        List content = []
+        for (Node child : children) {
+            content << node(child)
         }
-        [response: response, log: buffer.toString()]
+        [name.localPart, name.namespaceURI, nil, children ? content : element.text()]
     }
 }
 

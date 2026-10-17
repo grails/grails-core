@@ -20,11 +20,9 @@ package org.grails.plugins.web.rest.render.xml
 
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
 
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,6 +34,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.validation.Errors
 
 import grails.converters.XML
@@ -50,6 +49,7 @@ import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.json.JsonMapperSupport
 
 /**
  * Default renderer for XML responses
@@ -57,7 +57,6 @@ import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
  * @author Graeme Rocher
  * @since 2.3
  */
-@Slf4j
 @CompileStatic
 class DefaultXmlRenderer<T> implements Renderer<T> {
 
@@ -93,8 +92,6 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
 
     private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
     private volatile RendererRegistry resolvedRendererRegistry
-
-    private final AtomicBoolean problemFallbackReported = new AtomicBoolean()
 
     private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
         if (groovyPageLocator != null) {
@@ -175,28 +172,27 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
 
     /**
      * Writes a problem as Spring MVC does, as {@code application/problem+xml} through its message converters, whatever
-     * {@code grails.web.rendering.xml.spring} is set to. Where none can write it, the legacy converter writes it as a
-     * bean.
+     * {@code grails.web.rendering.xml.spring} is set to. Where none can write it, as without
+     * {@code jackson-dataformat-xml}, it is written in the format Spring's converter writes, with the extension members
+     * converted by the mapper of Spring's JSON converter, as the problem written in JSON has them.
      */
     private void renderProblem(ProblemDetail problem, RenderContext context) {
         ProblemDetailResponse.prepare(problem, context)
         MediaType problemXml = MediaType.APPLICATION_PROBLEM_XML
-        HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) resolveSpringHttpMessageConverters().find {
+        context.setContentType(GrailsWebUtil.getContentType(problemXml.toString(), encoding))
+        List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()
+        HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) converters.find {
             HttpMessageConverter<?> candidate -> candidate.canWrite(ProblemDetail, problemXml) &&
                     candidate.getSupportedMediaTypes(ProblemDetail).any { MediaType supported ->
                         supported.subtype == 'xml' || supported.subtype.endsWith('+xml')
                     }
         }
         if (converter != null) {
-            context.setContentType(GrailsWebUtil.getContentType(problemXml.toString(), encoding))
             renderWithSpringConverter(converter, problem, problemXml, context)
             return
         }
-        if (problemFallbackReported.compareAndSet(false, true)) {
-            log.warn("A ProblemDetail is written through Spring's message converters, but none can write " +
-                    "${problemXml}, so the legacy XML converter writes it as a bean.")
-        }
-        renderXml(new XML(problem), context)
+        def json = (JacksonJsonHttpMessageConverter) converters.find { it instanceof JacksonJsonHttpMessageConverter }
+        ProblemXml.write(problem, context.writer, json?.mapper ?: JsonMapperSupport.DEFAULT.mapper)
     }
 
     /**
