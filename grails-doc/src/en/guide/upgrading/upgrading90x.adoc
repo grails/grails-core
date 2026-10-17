@@ -102,8 +102,9 @@ properties are no longer autowired; they are set only where an application sets 
 Without the module, a request for an XML format that nothing else renders is answered like a request for
 any unsupported format: `respond` answers `406 Not Acceptable`, or `404` with no body for validation
 errors, which have no renderer; an XML request body binds nothing and raises no error; and `request.XML`
-and `encodeAsXML` fail with a `MissingPropertyException` or `MissingMethodException`. An application that
-sees these after an upgrade needs the dependency above.
+fails with a `MissingPropertyException`. `encodeAsXML` and the `xml` codec still escape text, but an object
+other than text is escaped as its string rather than rendered as XML. An application that sees these after
+an upgrade needs the dependency above.
 
 Set `grails.web.rendering.xml.spring: true` to write ordinary bean responses with Spring Framework's `JacksonXmlHttpMessageConverter`,
 backed by the Spring Boot-managed Jackson XML mapper. As in a plain Spring Boot application, that

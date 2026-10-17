@@ -27,7 +27,6 @@ import org.springframework.core.env.Environment
 import grails.converters.XML
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
-import org.grails.plugins.codecs.XMLCodec
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
@@ -47,7 +46,6 @@ class XmlGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [converters: version, dataBinding: version, restResponder: version]
-    def providedArtefacts = [XMLCodec]
 
     private static <T extends DefaultXmlRenderer> T configure(T renderer, Environment environment,
             SpringMessageConverters converters) {

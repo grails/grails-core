@@ -37,6 +37,7 @@ import grails.core.support.proxy.ProxyHandler
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import org.grails.plugins.codecs.JSONCodec
+import org.grails.plugins.codecs.XMLCodec
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.web.converters.jackson.DomainClassJacksonModule
@@ -60,7 +61,8 @@ class ConvertersGrailsPlugin extends Plugin {
     def observe = ['controllers']
     def dependsOn = [controllers: version, domainClass: version]
     def providedArtefacts = [
-        JSONCodec
+        JSONCodec,
+        XMLCodec
     ]
 
     @Override
