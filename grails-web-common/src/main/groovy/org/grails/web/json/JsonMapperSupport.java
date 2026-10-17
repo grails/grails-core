@@ -56,11 +56,11 @@ import tools.jackson.databind.util.TokenBuffer;
  * The Jackson {@link JsonMapper} that {@code grails.converters.JSON} writes through: Spring Boot's auto-configured
  * mapper in an application, so that {@code spring.jackson.*} settings apply, or a default mapper otherwise.
  *
- * <p>The mapper writes the JSON token stream, and writes every value that it has a dedicated serializer for, such as
- * dates and times, {@code Month}, {@code UUID}, {@code Locale}, {@code byte[]}, types with a {@code @JsonValue} and
- * the types that Jackson modules registered with the application serialize. Grails marshallers still render domain
- * classes, beans, records, enums, collections, maps, arrays and {@code Optional}, so the values they contain are
- * rendered as any other value is. The JSON text is written through {@link HtmlSafeJsonWriter}.
+ * <p>The mapper writes the JSON token stream, and the values the converter hands it: every value that it has a dedicated
+ * serializer for, such as dates and times, {@code Month}, {@code UUID}, {@code Locale}, {@code byte[]}, types with a
+ * {@code @JsonValue} and the types that Jackson modules registered with the application serialize, and, rendering as
+ * Spring Boot does, beans, records, collections, maps, arrays and {@code Optional} values, whose nested values the
+ * converter renders as any other value. The JSON text is written through {@link HtmlSafeJsonWriter}.
  *
  * <p>JSON is written with a copy of the mapper whose serializers offer the values nested in a value they write, such
  * as a property that a module's serializer writes, to the nested value writer the value is written with
