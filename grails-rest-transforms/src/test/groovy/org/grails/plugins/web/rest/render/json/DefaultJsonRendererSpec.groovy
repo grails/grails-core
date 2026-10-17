@@ -425,8 +425,8 @@ class DefaultJsonRendererSpec extends Specification {
         webRequest.response.contentAsString == '{"status":422,"title":"Validation failed"}'
     }
 
-    void 'the problem content type survives a response committed while writing'() {
-        given: "a converter whose write commits the response, as a large body would"
+    void 'the problem content type is set before the body is written, which can commit the response'() {
+        given:
         def converter = Mock(HttpMessageConverter) {
             getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON]
         }
@@ -436,6 +436,7 @@ class DefaultJsonRendererSpec extends Specification {
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        String contentTypeWhenWritten = null
 
         when:
         renderer.render(errors, new ServletRenderContext(webRequest))
@@ -443,11 +444,10 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         1 * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
         1 * converter.write(_, new MediaType(MediaType.APPLICATION_PROBLEM_JSON, UTF_8), _) >> { arguments ->
+            contentTypeWhenWritten = webRequest.response.contentType
             arguments[2].body.write('{"status":422}'.bytes)
         }
-
-        and: "the content type was set before the body was written, so it is not lost"
-        webRequest.response.contentType == 'application/problem+json;charset=UTF-8'
+        contentTypeWhenWritten == 'application/problem+json;charset=UTF-8'
     }
 
     void 'a write that fails part-way leaves the response uncommitted, so that the error page applies'() {
