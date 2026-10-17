@@ -47,16 +47,17 @@ class JsonViewJsonRendererSpec extends Specification {
         RequestContextHolder.resetRequestAttributes()
     }
 
-    void 'a view renders an object when one exists for the action'() {
+    void 'the view respond names renders an object'() {
         given:
-        def context = context()
+        def view = new ProblemView()
+        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolving('/book': view), null, null, defaultRenderer)
 
         when:
-        renderer.render([title: 'Grails'], context)
+        viewRenderer.render([title: 'Grails'], context([view: '/book']))
 
         then:
         0 * defaultRenderer.render(_, _)
-        modelAndView.view != null
+        modelAndView.view.is(view)
     }
 
     void 'a ProblemDetail is written by the default renderer, even where a view is found by convention'() {
