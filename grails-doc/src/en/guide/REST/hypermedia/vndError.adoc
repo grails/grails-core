@@ -53,10 +53,10 @@ HTTP/1.1 422
 Content-Type: application/problem+json;charset=UTF-8
 
 {
-  "type": "about:blank",
-  "title": "Validation failed",
-  "status": 422,
   "detail": "Request validation failed with 1 error.",
+  "instance": "/books",
+  "status": 422,
+  "title": "Validation failed",
   "errors": [
     {
       "object": "rest.test.Book",
