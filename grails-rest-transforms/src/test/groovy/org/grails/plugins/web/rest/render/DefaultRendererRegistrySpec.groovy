@@ -115,6 +115,28 @@ class DefaultRendererRegistrySpec extends Specification {
         !legacyBean.useSpringJson
     }
 
+    void 'a JSON renderer added to the registry directly takes its settings too'() {
+        given:
+        def namedRenderer = Stub(NamedJsonRenderer)
+        def registry = new DefaultRendererRegistry(useSpringJson: true, springMessageConverters: new SpringMessageConverters(),
+                namedJsonRenderer: namedRenderer)
+        registry.initialize()
+        def defaultRenderer = new DefaultJsonRenderer<Object>(Object, MimeType.JSON)
+        def containerRenderer = new DefaultJsonRenderer<List>(List, MimeType.JSON)
+
+        when:
+        registry.addDefaultRenderer(defaultRenderer)
+        registry.addContainerRenderer(String, containerRenderer)
+
+        then:
+        [defaultRenderer, containerRenderer].every { DefaultJsonRenderer renderer ->
+            renderer.useSpringJson && renderer.namedJsonRenderer.is(namedRenderer) &&
+                    renderer.springHttpMessageConvertersSupplier != null
+        }
+        registry.findRenderer(MimeType.JSON, new Object()).is(defaultRenderer)
+        registry.findContainerRenderer(MimeType.JSON, List, ['a']).is(containerRenderer)
+    }
+
     void 'validation errors negotiate the problem JSON media type'() {
         given:
         def registry = new DefaultRendererRegistry()

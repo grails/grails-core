@@ -106,7 +106,6 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     void initialize() {
         final defaultJsonRenderer = new DefaultJsonRenderer<Object>(Object, groovyPageLocator, this)
         defaultJsonRenderer.encoding = encoding
-        configureJsonRenderer(defaultJsonRenderer)
         addDefaultRenderer(defaultJsonRenderer)
         final defaultHtmlRenderer = new DefaultHtmlRenderer<Object>(Object)
         defaultHtmlRenderer.suffix = modelSuffix
@@ -133,10 +132,15 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     }
 
     /**
-     * Applies this registry's settings to a JSON renderer: the ones it creates, and renderer beans
-     * such as an application {@code JsonRenderer}. Settings a renderer bean sets itself are kept.
+     * Applies this registry's settings to a JSON renderer: the ones it creates, renderer beans
+     * such as an application {@code JsonRenderer}, and renderers added to it directly. Settings a
+     * renderer sets itself are kept.
      */
-    private void configureJsonRenderer(DefaultJsonRenderer renderer) {
+    private void configureJsonRenderer(Renderer<?> candidate) {
+        if (!(candidate instanceof DefaultJsonRenderer)) {
+            return
+        }
+        DefaultJsonRenderer renderer = (DefaultJsonRenderer) candidate
         renderer.legacyFallbackReported = legacyJsonFallbackReported
         renderer.missingConvertersReported = missingJsonConvertersReported
         if (renderer.useSpringJson == null) {
@@ -165,9 +169,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Override
     def <T> void addRenderer(Renderer<T> renderer) {
-        if (renderer instanceof DefaultJsonRenderer) {
-            configureJsonRenderer((DefaultJsonRenderer) renderer)
-        }
+        configureJsonRenderer(renderer)
         if (renderer instanceof ContainerRenderer) {
             ContainerRenderer cr = (ContainerRenderer) renderer
             addContainerRenderer(cr.componentType, cr)
@@ -181,6 +183,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Override
     void addDefaultRenderer(Renderer<Object> renderer) {
+        configureJsonRenderer(renderer)
         for (MimeType mt in renderer.mimeTypes) {
             registerDefault(mt, renderer)
             removeFromCache(renderer.getTargetType(), mt)
@@ -189,6 +192,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
+        configureJsonRenderer(renderer)
         for (MimeType mt in renderer.mimeTypes) {
             def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
 
