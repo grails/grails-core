@@ -489,13 +489,9 @@ class DomainClassJacksonModuleSpec extends Specification {
         first.partner = second
         def deep = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
 
-        when:
-        def written = new JsonSlurper().parseText(deep.writeValueAsString(new ShapedPartnerHolder(partner: first)))
-
-        then: 'the instance is an array of its properties, and the instance reached again is a reference to it'
-        written.partner instanceof List
-        written.partner.contains('first')
-        written.partner.last() == [id: 2, name: 'second', partner: [id: 1]]
+        expect: 'the instance is an array of its properties, and the instance reached again is a reference to it'
+        deep.writeValueAsString(new ShapedPartnerHolder(partner: first)) ==
+                '{"partner":[1,"first",{"id":2,"name":"second","partner":{"id":1}}]}'
     }
 
     void "a domain class with a @JsonValue is written by Jackson"() {
