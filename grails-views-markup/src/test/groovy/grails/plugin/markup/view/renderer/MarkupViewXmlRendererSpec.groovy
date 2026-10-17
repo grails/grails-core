@@ -83,7 +83,7 @@ class MarkupViewXmlRendererSpec extends Specification {
         1 * context.setStatus(HttpStatus.NOT_ACCEPTABLE)
     }
 
-    void 'without a view or an XML renderer, a problem is written as problem JSON, as respond writes it'() {
+    void 'without a view or an XML renderer, a problem is written as problem JSON, as respond writes it, with status #status'() {
         given: "a registry with Spring MVC's JSON converter, which writes problems"
         def registry = new DefaultRendererRegistry()
         registry.springMessageConverters = new SpringMessageConverters()
@@ -98,12 +98,17 @@ class MarkupViewXmlRendererSpec extends Specification {
 
         when:
         def renderer = registry.findRenderer(MimeType.XML, problem)
-        renderer.render(problem, new ServletRenderContext(webRequest, [view: '/missing']))
+        renderer.render(problem, new ServletRenderContext(webRequest, [view: '/missing'] + arguments))
 
         then:
         renderer instanceof MarkupViewXmlRenderer
-        webRequest.response.status == 422
+        webRequest.response.status == status
         webRequest.response.contentType.startsWith('application/problem+json')
+
+        where: 'the status the problem carries, or the one respond is given'
+        arguments     || status
+        [:]           || 422
+        [status: 400] || 400
     }
 }
 

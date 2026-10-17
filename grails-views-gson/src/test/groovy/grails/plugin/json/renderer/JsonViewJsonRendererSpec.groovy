@@ -110,6 +110,21 @@ class JsonViewJsonRendererSpec extends Specification {
         context.webRequest.currentResponse.contentType.startsWith('application/json')
     }
 
+    void 'a ProblemDetail is rendered with the view respond names, with the status respond is given'() {
+        given:
+        def problemView = new ProblemView()
+        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolving('/problem': problemView), null, null,
+                defaultRenderer)
+        def context = context([view: '/problem', status: 400])
+
+        when:
+        viewRenderer.render(ProblemDetail.forStatus(422), context)
+
+        then:
+        modelAndView.view.is(problemView)
+        context.webRequest.currentResponse.status == 400
+    }
+
     void 'a ProblemDetail is written by the default renderer when the view respond names does not exist'() {
         given:
         def context = context([view: '/missing'])
