@@ -23,10 +23,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.databind.BeanDescription;
@@ -99,6 +101,17 @@ final class DomainClassModifier extends ValueSerializerModifier {
             }
         }
         List<BeanPropertyWriter> written = new ArrayList<>();
+        PersistentProperty identity = entity.getIdentity();
+        if (identity != null) {
+            // Jackson's own writer of the id, so that what Jackson applies to a property applies to it; it is moved
+            // ahead of the other properties once Jackson has left out the properties the class ignores
+            for (BeanPropertyWriter writer : properties) {
+                if (identity.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
+                    written.add(GatedPropertyWriter.gated(writer, included(identity.getName())
+                            .and((bean, context, property) -> property.get(bean) != null)));
+                }
+            }
+        }
         for (PersistentProperty property : persistent) {
             for (BeanPropertyWriter writer : properties) {
                 if (property.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
@@ -146,18 +159,68 @@ final class DomainClassModifier extends ValueSerializerModifier {
         if (entity == null) {
             return properties;
         }
-        // These are written ahead of the other properties. The id and the version are Jackson's own properties unless the
-        // class leaves them out, GORM leaving out the version, so they are written by writers of their own.
+        // The class name, the id and the version are written ahead of the other properties. The id is written by Jackson's
+        // writer, unless Jackson has none for it; GORM leaves out the version, so a writer of its own writes it.
         List<BeanPropertyWriter> ordered = new ArrayList<>();
         ordered.add(leading(config, description, "class", DomainLeadingWriter.Kind.CLASS, entity));
-        if (entity.getIdentity() != null && !ignored(description.getBeanClass(), entity.getIdentity().getName())) {
-            ordered.add(leading(config, description, entity.getIdentity().getName(), DomainLeadingWriter.Kind.ID, entity));
+        List<BeanPropertyWriter> others = new ArrayList<>(properties);
+        PersistentProperty identity = entity.getIdentity();
+        if (identity != null) {
+            BeanPropertyWriter id = removeWriter(others, description, identity.getName());
+            if (id != null) {
+                ordered.add(id);
+            }
+            else if (!known(description, identity.getName()) && !ignored(description.getBeanClass(), identity.getName())) {
+                ordered.add(leading(config, description, identity.getName(), DomainLeadingWriter.Kind.ID, entity));
+            }
         }
-        if (entity.getVersion() != null && !ignored(description.getBeanClass(), GormProperties.VERSION)) {
+        if (entity.getVersion() != null && !versionIgnored(description)) {
             ordered.add(leading(config, description, GormProperties.VERSION, DomainLeadingWriter.Kind.VERSION, entity));
         }
-        ordered.addAll(properties);
+        ordered.addAll(others);
         return ordered;
+    }
+
+    private static BeanPropertyWriter removeWriter(List<BeanPropertyWriter> writers, BeanDescription description,
+            String property) {
+        Map<String, String> internalNames = new HashMap<>();
+        for (BeanPropertyDefinition definition : description.findProperties()) {
+            internalNames.put(definition.getName(), definition.getInternalName());
+        }
+        for (Iterator<BeanPropertyWriter> iterator = writers.iterator(); iterator.hasNext();) {
+            BeanPropertyWriter writer = iterator.next();
+            if (property.equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
+                iterator.remove();
+                return writer;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether Jackson decided about the property: it has a property for it, which it may have left out since, or it
+     * ignores it, by an annotation of the class, of the property or of a mix-in.
+     */
+    private static boolean known(BeanDescription description, String property) {
+        for (BeanPropertyDefinition definition : description.findProperties()) {
+            if (property.equals(definition.getInternalName())) {
+                return true;
+            }
+        }
+        return description.getIgnoredPropertyNames().contains(property);
+    }
+
+    /**
+     * Whether the version is left out. GORM names it in the {@code @JsonIgnoreProperties} of every domain class, so that
+     * Jackson leaves it out, and the rendering decides; what is ignored for the version itself, also by a mix-in, is.
+     */
+    private static boolean versionIgnored(BeanDescription description) {
+        if (ignored(description.getBeanClass(), GormProperties.VERSION)) {
+            return true;
+        }
+        JsonIgnoreProperties.Value byClass = description.getPropertyIgnorals();
+        return description.getIgnoredPropertyNames().contains(GormProperties.VERSION) &&
+                (byClass == null || !byClass.findIgnoredForSerialization().contains(GormProperties.VERSION));
     }
 
     private BeanPropertyWriter leading(SerializationConfig config, BeanDescription description, String property,
@@ -174,7 +237,8 @@ final class DomainClassModifier extends ValueSerializerModifier {
                     new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), property, object),
                     PropertyName.construct(property));
         }
-        return new DomainLeadingWriter(definition, description.getClassAnnotations(), object, kind, entity, rendering);
+        return new DomainLeadingWriter(definition, description.getClassAnnotations(), object, kind, entity, rendering,
+                definition.findViews());
     }
 
     @Override

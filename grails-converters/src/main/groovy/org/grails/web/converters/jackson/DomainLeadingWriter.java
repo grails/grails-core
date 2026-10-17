@@ -33,9 +33,10 @@ import tools.jackson.databind.util.Annotations;
 import org.grails.datastore.mapping.model.PersistentEntity;
 
 /**
- * Writes the class name, the id or the version of a domain class instance. They are written ahead of the other
- * properties, as the JSON converter writes them: the class name and the version only when the rendering includes them,
- * and the id and version only when they have a value, since an unsaved instance has neither.
+ * Writes the class name or the version of a domain class instance, or its id where Jackson has no property for it. They
+ * are written ahead of the other properties, as the JSON converter writes them: the class name and the version only when
+ * the rendering includes them, and the id and version only when they have a value, since an unsaved instance has
+ * neither. The version and the id are written in the views of their property.
  *
  * @since 9.0
  */
@@ -62,8 +63,8 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
     private final DomainRendering rendering;
 
     DomainLeadingWriter(BeanPropertyDefinition definition, Annotations contextAnnotations, JavaType type, Kind kind,
-            PersistentEntity entity, DomainRendering rendering) {
-        super(definition, contextAnnotations, type, null, null, null, NON_NULL, null);
+            PersistentEntity entity, DomainRendering rendering, Class<?>[] views) {
+        super(definition, contextAnnotations, type, null, null, null, NON_NULL, views);
         this.kind = kind;
         this.entity = entity;
         this.rendering = rendering;

@@ -46,6 +46,14 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
          * @return whether the property is written
          */
         boolean includes(Object bean, SerializationContext context, BeanPropertyWriter writer) throws Exception;
+
+        /**
+         * @param other another gate
+         * @return a gate that includes a property when this gate and the other one do
+         */
+        default Gate and(Gate other) {
+            return (bean, context, writer) -> includes(bean, context, writer) && other.includes(bean, context, writer);
+        }
     }
 
     private final BeanPropertyWriter delegate;
@@ -65,9 +73,7 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
      */
     static BeanPropertyWriter gated(BeanPropertyWriter writer, Gate gate) {
         if (writer instanceof GatedPropertyWriter gated) {
-            Gate first = gated.gate;
-            return new GatedPropertyWriter(gated.delegate,
-                    (bean, context, property) -> first.includes(bean, context, property) && gate.includes(bean, context, property));
+            return new GatedPropertyWriter(gated.delegate, gated.gate.and(gate));
         }
         return new GatedPropertyWriter(writer, gate);
     }

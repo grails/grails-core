@@ -38,6 +38,7 @@ import tools.jackson.databind.annotation.JsonSerialize
 import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.ser.std.StdSerializer
+import tools.jackson.databind.ser.std.ToStringSerializer
 
 import org.springframework.context.ApplicationContext
 
@@ -175,6 +176,39 @@ class DomainClassJacksonModuleSpec extends Specification {
 
         and: 'the JSON converter leaves them out as well'
         new JSON(member).toString() == '{"id":1,"name":"a"}'
+    }
+
+    void "the id is written as Jackson writes any property: in its views, by its own serializer, unless the class leaves it out"() {
+        given:
+        def viewed = new ViewedId(name: 'a')
+        viewed.id = 1
+        def stringId = new StringId(name: 'a')
+        stringId.id = 1
+        def hiddenId = new HiddenId(name: 'a')
+        hiddenId.id = 1
+
+        expect:
+        mapper().writerWithView(OutsideView).writeValueAsString(viewed) == '{"name":"a"}'
+        mapper().writerWithView(IdView).writeValueAsString(viewed) == '{"id":1}'
+        mapper().writeValueAsString(stringId) == '{"id":"1","name":"a"}'
+        mapper().writeValueAsString(hiddenId) == '{"name":"a"}'
+
+        and: 'the JSON converter writes them alike'
+        new JSON(stringId).toString() == '{"id":"1","name":"a"}'
+        new JSON(hiddenId).toString() == '{"name":"a"}'
+    }
+
+    void "a mix-in applies to the id"() {
+        given:
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def rendering = ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())
+
+        expect:
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).addMixIn(Writer, IgnoredIdMixin).build()
+                .writeValueAsString(writer) == '{"name":"a"}'
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).addMixIn(Writer, IgnoredIdPropertiesMixin).build()
+                .writeValueAsString(writer) == '{"name":"a"}'
     }
 
     void "a domain class with its own @JsonSerialize serializer keeps it"() {
@@ -424,13 +458,13 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated)
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated)
+                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -474,6 +508,39 @@ class Member {
     String pin
     String token
 }
+
+class OutsideView { }
+
+class IdView { }
+
+@Entity
+class ViewedId {
+    @JsonView(IdView)
+    Long id
+    @JsonView(OutsideView)
+    String name
+}
+
+@Entity
+class StringId {
+    @JsonSerialize(using = ToStringSerializer)
+    Long id
+    String name
+}
+
+@Entity
+@JsonIgnoreProperties(['id'])
+class HiddenId {
+    String name
+}
+
+abstract class IgnoredIdMixin {
+    @JsonIgnore
+    abstract Long getId()
+}
+
+@JsonIgnoreProperties(['id'])
+abstract class IgnoredIdPropertiesMixin { }
 
 @Entity
 @JsonSerialize(using = LabelSerializer)
