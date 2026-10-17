@@ -191,7 +191,7 @@ trait RestResponder {
                             context.viewName = args.view as String
                         }
                         if (statusCode != null) {
-                            context.setStatus(HttpStatus.valueOf(statusCode))
+                            setStatus(context, statusCode)
                         }
                         errorsRenderer.render(errors, context)
                         if (context.wasWrittenTo() && !response.isCommitted()) {
@@ -226,7 +226,7 @@ trait RestResponder {
         if (renderer) {
             final context = new ServletRenderContext(webRequest, args)
             if (statusCode != null) {
-                context.setStatus(HttpStatus.valueOf(statusCode))
+                setStatus(context, statusCode)
             }
             if (problem) {
                 // A problem answers with the status it carries and the path of the resource whichever renderer writes it,
@@ -248,6 +248,17 @@ trait RestResponder {
      */
     private boolean rendersActionView(Renderer renderer, MimeType mimeType) {
         renderer instanceof DefaultHtmlRenderer && renderer.targetType == Object && !(mimeType.extension in ['json', 'xml'])
+    }
+
+    /** Any status code, as a {@code ResponseEntity} takes it, also one {@link HttpStatus} has no constant for. */
+    private static void setStatus(ServletRenderContext context, int statusCode) {
+        HttpStatus status = HttpStatus.resolve(statusCode)
+        if (status != null) {
+            context.setStatus(status)
+        }
+        else {
+            context.webRequest.currentResponse.setStatus(statusCode)
+        }
     }
 
     private callRender(Map args) {

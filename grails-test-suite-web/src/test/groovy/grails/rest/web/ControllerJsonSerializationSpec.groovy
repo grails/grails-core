@@ -214,6 +214,19 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         output.readLines().count { it.contains('but its ProblemDetail carries status [409]') } == 1
     }
 
+    void 'a status respond is given that has no HttpStatus constant is sent, as a ResponseEntity sends it, for #description'() {
+        when:
+        controller.respond(value, status: 499)
+
+        then:
+        response.status == 499
+
+        where:
+        description | value
+        'a problem' | org.springframework.http.ProblemDetail.forStatus(409)
+        'a value'   | [title: 'Grails']
+    }
+
     private static String outputWhile(Closure<?> work) {
         PrintStream original = System.out
         def buffer = new ByteArrayOutputStream()
