@@ -38,6 +38,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
+import org.springframework.web.context.request.RequestContextHolder
 
 import grails.converters.JSON
 import grails.core.DefaultGrailsApplication
@@ -222,6 +223,7 @@ class DefaultJsonRendererSpec extends Specification {
 
     void cleanup() {
         ConvertersConfigurationHolder.clear()
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void 'legacy rendering writes a JSON string with configuration #configuration'() {

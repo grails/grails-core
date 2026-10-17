@@ -18,6 +18,8 @@
  */
 package grails.artefact.controller.support
 
+import org.springframework.web.context.request.RequestContextHolder
+
 import grails.artefact.Controller
 import grails.util.GrailsWebMockUtil
 import grails.web.render.NamedJsonRenderer
@@ -27,6 +29,10 @@ import spock.lang.Specification
 class NamedJsonRenderArgumentSpec extends Specification {
 
     def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+    void cleanup() {
+        RequestContextHolder.resetRequestAttributes()
+    }
 
     void 'render json honors an encoding without an explicit content type'() {
         given:
