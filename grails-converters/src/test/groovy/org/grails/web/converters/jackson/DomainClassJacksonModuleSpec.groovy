@@ -18,12 +18,14 @@
  */
 package org.grails.web.converters.jackson
 
+import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
@@ -39,6 +41,8 @@ import tools.jackson.databind.annotation.JsonNaming
 import tools.jackson.databind.annotation.JsonSerialize
 import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
+import tools.jackson.databind.ser.std.SimpleFilterProvider
 import tools.jackson.databind.ser.std.StdSerializer
 import tools.jackson.databind.ser.std.ToStringSerializer
 
@@ -248,6 +252,19 @@ class DomainClassJacksonModuleSpec extends Specification {
         and: 'so does the JSON converter'
         JSON.use('deep') { new JSON(first).toString() } ==
                 '{"@id":1,"id":1,"name":"first","partner":{"@id":2,"id":2,"name":"second","partner":1}}'
+    }
+
+    void "@JsonPropertyOrder orders the persistent properties, after the id, and @JsonFilter filters them"() {
+        given:
+        def ordered = new Ordered(alpha: 'a', beta: 'b', gamma: 'c')
+        ordered.id = 1
+        def filtered = new Filtered(name: 'a', secret: 's')
+        filtered.id = 2
+        def filters = new SimpleFilterProvider().addFilter('domain', SimpleBeanPropertyFilter.serializeAllExcept('secret'))
+
+        expect:
+        mapper().writeValueAsString(ordered) == '{"id":1,"gamma":"c","alpha":"a","beta":"b"}'
+        mapper().writer(filters).writeValueAsString(filtered) == '{"id":2,"name":"a"}'
     }
 
     void "a domain class with its own @JsonSerialize serializer keeps it"() {
@@ -497,13 +514,15 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified)
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified, Ordered,
+                Filtered)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified)
+                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified, Ordered,
+                Filtered)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -596,6 +615,21 @@ class Library {
 class Identified {
     String name
     Identified partner
+}
+
+@Entity
+@JsonPropertyOrder(['gamma', 'alpha'])
+class Ordered {
+    String alpha
+    String beta
+    String gamma
+}
+
+@Entity
+@JsonFilter('domain')
+class Filtered {
+    String name
+    String secret
 }
 
 @Entity

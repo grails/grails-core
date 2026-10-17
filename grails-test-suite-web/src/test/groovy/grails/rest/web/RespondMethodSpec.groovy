@@ -125,6 +125,24 @@ class RespondMethodSpec extends Specification implements ControllerUnitTest<Book
             response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
     }
 
+    void 'respond writes the legacy errors JSON for a domain instance with errors by default during the Grails 9 migration'() {
+        given:
+        def book = new Book(title: '')
+        book.validate()
+        response.format = 'json'
+
+        when:
+        controller.show(book)
+
+        then: 'the Grails 8 body and status, not a problem'
+        response.status == 422
+        response.contentType == 'application/json;charset=UTF-8'
+        response.json.errors.first().object == Book.name
+        response.json.errors.first().field == 'title'
+        response.json.errors.first().message == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
+        !response.json.containsKey('status')
+    }
+
     void "Test that the respond method produces JSON for a domain instance and a content type of JSON"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)

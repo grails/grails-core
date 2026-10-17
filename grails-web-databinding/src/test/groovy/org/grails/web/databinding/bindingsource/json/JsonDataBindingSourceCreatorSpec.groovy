@@ -62,6 +62,24 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource['qty'] == 3
     }
 
+    void 'with Jackson, #number binds as the legacy parser binds it'() {
+        given:
+        def body = { new ByteArrayInputStream("{\"n\": ${number}}".getBytes(StandardCharsets.UTF_8)) }
+        def jackson = new JsonDataBindingSourceCreator(jsonMapper: JsonMapper.builder().build(), useJackson: true)
+
+        when:
+        def parsed = jackson.createDataBindingSource(MimeType.JSON, Object, body())['n']
+        def legacy = new JsonDataBindingSourceCreator().createDataBindingSource(MimeType.JSON, Object, body())['n']
+
+        then:
+        parsed.getClass() == legacy.getClass()
+        parsed == legacy
+
+        where:
+        number << ['3', '-7', '2147483648', '9223372036854775807', '9223372036854775808', '1.15', '1.0', '1e3', '-0',
+                   '12345678901234567890.12345']
+    }
+
     void 'JSON decimals inside a collection body also bind as BigDecimal'() {
         given:
         def inputStream = new ByteArrayInputStream('[{"price": 1.15}]'.getBytes(StandardCharsets.UTF_8))

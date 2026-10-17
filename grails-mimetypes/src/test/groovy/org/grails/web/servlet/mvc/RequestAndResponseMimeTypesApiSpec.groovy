@@ -376,6 +376,32 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     
 
+    @Unroll
+    void "withFormat follows the Accept header of an XHR request from #userAgent unless #additionalConfig"() {
+        setup:
+            def config = getTestConfig()
+            config.merge(new ConfigSlurper().parse('grails.mime.disable.accept.header.userAgents = ["Trident"]\n' + additionalConfig))
+            application.setConfig(config)
+            final webRequest = boundMimeTypeRequest()
+            def request = webRequest.currentRequest
+            request.addHeader('Accept', 'application/xml, text/html, */*')
+            request.addHeader('User-Agent', userAgent)
+            request.addHeader('X-Requested-With', 'XMLHttpRequest')
+            def responseResult = webRequest.currentResponse.withFormat {
+                json { 'got json' }
+                html { 'got html' }
+            }
+
+        expect:
+            responseResult == formatResponse
+
+        where:
+            formatResponse | userAgent | additionalConfig
+            'got html'     | 'Trident' | ''
+            'got json'     | 'Trident' | 'grails.mime.disable.accept.header.userAgentsXhr = true'
+            'got json'     | 'Mozilla' | 'grails.mime.use.accept.header = false'
+    }
+
     private MimeType[] buildMimeTypes() {
         final def mainContext = new GenericApplicationContext()
         mainContext.refresh()
