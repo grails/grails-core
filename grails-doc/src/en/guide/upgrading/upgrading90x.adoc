@@ -409,7 +409,7 @@ With the setting `false`, the following values render differently than in Grails
 
 | Validation errors, as in `render errors as JSON`
 | `{"errors":[{"object":…,"field":…,"rejected-value":…,"message":…}]}`
-| `{"errors":[{"object":…,"field":…,"codes":[…],"message":…}]}`, the entries `respond` writes, without the rejected value, which can be a password or a token
+| `{"errors":[{"object":…,"field":…,"codes":[…],"message":…}]}`, the entries `respond` writes, without the rejected value, which can be a password or a token; XML validation errors keep their Grails 8 shape, including the rejected value, until legacy XML conversion is removed
 
 | A `Map.Entry`
 | `{"key":"k","value":1}`
