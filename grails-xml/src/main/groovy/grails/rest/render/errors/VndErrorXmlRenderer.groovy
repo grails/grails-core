@@ -27,6 +27,7 @@ import org.springframework.validation.ObjectError
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
+import org.grails.plugins.xml.DeprecatedXmlNotice
 import org.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.grails.web.xml.StreamingMarkupWriter
 import org.grails.web.xml.XMLStreamWriter
@@ -54,6 +55,8 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
 
     @Override
     void render(Object object, RenderContext context) {
+        DeprecatedXmlNotice.report('Vnd.Error XML', 'Respond with validation errors as JSON, which ' +
+                'grails.web.rendering.json.spring renders as RFC 9457 Problem Details.')
         if (object instanceof BeanPropertyBindingResult) {
             def errors = object as BeanPropertyBindingResult
             context.setContentType(GrailsWebUtil.getContentType(MIME_TYPE.name, encoding))

@@ -215,6 +215,35 @@ class HalXmlRendererSpec extends Specification {
         prettyXml.replaceAll(/\s*\R\s*/, '') == compactXml
     }
 
+    void 'HAL XML rendering warns once per application that it is scheduled for removal in Grails 11'() {
+        given:
+        def renderer = configureRenderer(new HalXmlRenderer(Product))
+
+        when:
+        String log = stderrWhile {
+            2.times {
+                renderer.render(new Product(name: 'MacBook', numberInStock: 1, category: new Category(name: 'Laptops')),
+                        new ServletRenderContext(boundMimeTypeRequest()))
+            }
+        }
+
+        then:
+        log.readLines().count { it.contains('HAL XML rendering is scheduled for removal in Grails 11.') } == 1
+    }
+
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
+    }
+
     private HalXmlRenderer configureRenderer(HalXmlRenderer renderer) {
         def mappingContext = new KeyValueMappingContext('')
         mappingContext.addPersistentEntity(Product)

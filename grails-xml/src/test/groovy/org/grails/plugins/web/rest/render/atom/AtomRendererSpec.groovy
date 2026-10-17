@@ -186,6 +186,36 @@ class AtomRendererSpec extends Specification {
         'no path'                | 'localhost'                  | null                                                   | null || 'tag:localhost'
     }
 
+    void 'Atom rendering warns once per application that it is scheduled for removal in Grails 11'() {
+        given:
+        def renderer = configureRenderer(new AtomRenderer(AtomBook))
+        def book = new AtomBook(title: 'Grails')
+        book.id = 1L
+        book.dateCreated = new Date(1383908400000L)
+        book.lastUpdated = new Date(1383994800000L)
+
+        when:
+        String log = stderrWhile {
+            2.times { renderer.render(book, new ServletRenderContext(boundMimeTypeRequest())) }
+        }
+
+        then:
+        log.readLines().count { it.contains('Atom rendering is scheduled for removal in Grails 11.') } == 1
+    }
+
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
+    }
+
     private AtomRenderer configureRenderer(AtomRenderer renderer) {
         def mappingContext = new KeyValueMappingContext('')
         mappingContext.addPersistentEntity(AtomBook)

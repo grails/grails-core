@@ -40,10 +40,14 @@ import org.grails.web.converters.marshaller.xml.GroovyBeanMarshaller
 /**
  * An XML renderer that allows including / excluding properties
  *
+ * @deprecated Scheduled for removal in Grails 11, with the legacy XML conversion it renders with. Render JSON, or
+ * write XML with Spring's XML converter ({@code grails.web.rendering.xml.spring}) or an application renderer.
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
+@Deprecated(since = '9.0', forRemoval = true)
 class XmlRenderer<T> extends DefaultXmlRenderer<T> {
 
     @Autowired

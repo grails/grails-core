@@ -27,9 +27,13 @@ import org.xml.sax.SAXParseException
 
 import grails.core.DefaultGrailsApplication
 import grails.web.mime.MimeType
+import grails.rest.render.atom.AtomCollectionRenderer
+import grails.rest.render.atom.AtomRenderer
 import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.rest.render.hal.HalXmlCollectionRenderer
 import grails.rest.render.hal.HalXmlRenderer
+import grails.rest.render.xml.XmlCollectionRenderer
+import grails.rest.render.xml.XmlRenderer
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
@@ -50,12 +54,14 @@ class XmlCompatibilitySpec extends Specification {
         ValidationErrorsMarshaller.getAnnotation(Deprecated).forRemoval()
     }
 
-    void 'HAL XML renderers are deprecated for removal in Grails 11'() {
+    void '#type.simpleName is deprecated for removal in Grails 11, with the rest of legacy XML conversion'() {
         expect:
-        HalXmlRenderer.getAnnotation(Deprecated).since() == '9.0'
-        HalXmlRenderer.getAnnotation(Deprecated).forRemoval()
-        HalXmlCollectionRenderer.getAnnotation(Deprecated).since() == '9.0'
-        HalXmlCollectionRenderer.getAnnotation(Deprecated).forRemoval()
+        type.getAnnotation(Deprecated).since() == '9.0'
+        type.getAnnotation(Deprecated).forRemoval()
+
+        where:
+        type << [XML, XmlRenderer, XmlCollectionRenderer, HalXmlRenderer, HalXmlCollectionRenderer, AtomRenderer,
+                 AtomCollectionRenderer]
     }
 
     void setup() {

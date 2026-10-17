@@ -30,6 +30,7 @@ import grails.rest.render.util.AbstractLinkingRenderer
 import grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
+import org.grails.plugins.xml.DeprecatedXmlNotice
 import org.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.grails.web.xml.StreamingMarkupWriter
 import org.grails.web.xml.XMLStreamWriter
@@ -76,6 +77,7 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
 
     @Override
     void renderInternal(Object object, RenderContext renderContext) {
+        DeprecatedXmlNotice.report('HAL XML', 'Render HAL JSON with HalJsonRenderer, or use Spring HATEOAS.')
 
         Set writtenObjects = []
         def xml = startDocument(renderContext)

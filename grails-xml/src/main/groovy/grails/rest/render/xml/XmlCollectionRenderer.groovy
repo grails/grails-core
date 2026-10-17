@@ -29,10 +29,14 @@ import grails.web.mime.MimeType
  *
  * A XML renderer for a collection of objects
  *
+ * @deprecated Scheduled for removal in Grails 11, with the legacy XML conversion it renders with. Render JSON, or
+ * write XML with Spring's XML converter ({@code grails.web.rendering.xml.spring}) or an application renderer.
+ *
  * @since 2.3.1
  *
  */
 @CompileStatic
+@Deprecated(since = '9.0', forRemoval = true)
 class XmlCollectionRenderer extends XmlRenderer implements ContainerRenderer {
 
     final Class componentType

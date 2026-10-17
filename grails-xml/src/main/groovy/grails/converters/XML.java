@@ -66,9 +66,13 @@ import static org.grails.io.support.SpringIOUtils.createXmlSlurper;
 /**
  * A converter that converts domain classes to XML.
  *
+ * @deprecated Scheduled for removal in Grails 11, with the rest of legacy XML conversion. Render JSON, or write XML
+ * with Spring's XML converter ({@code grails.web.rendering.xml.spring}) or an application renderer.
+ *
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
  */
+@Deprecated(since = "9.0", forRemoval = true)
 public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeExcludeConverter<XMLStreamWriter> {
 
     public static final Log log = LogFactory.getLog(XML.class);

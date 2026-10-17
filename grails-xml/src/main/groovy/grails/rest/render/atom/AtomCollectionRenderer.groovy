@@ -25,10 +25,14 @@ import grails.rest.render.ContainerRenderer
 /**
  * An Atom XML renderer for a collection of objects
  *
+ * @deprecated Scheduled for removal in Grails 11, with the {@link AtomRenderer} it extends. Write Atom feeds with a
+ * view or an application renderer.
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
+@Deprecated(since = '9.0', forRemoval = true)
 class AtomCollectionRenderer extends AtomRenderer implements ContainerRenderer {
 
     final Class componentType

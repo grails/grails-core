@@ -32,15 +32,20 @@ import grails.rest.render.hal.HalXmlRenderer
 import grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
+import org.grails.plugins.xml.DeprecatedXmlNotice
 
 /**
  *
  * Renders output in Atom format (http://tools.ietf.org/html/rfc4287)
  *
+ * @deprecated Scheduled for removal in Grails 11, with the {@link HalXmlRenderer} it extends. Write Atom feeds with
+ * a view or an application renderer.
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
+@Deprecated(since = '9.0', forRemoval = true)
 class AtomRenderer<T> extends HalXmlRenderer<T> {
 
     public static final MimeType MIME_TYPE = MimeType.ATOM_XML
@@ -62,6 +67,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
 
     @Override
     void renderInternal(Object object, RenderContext renderContext) {
+        DeprecatedXmlNotice.report('Atom', 'Write the feed with a view or an application renderer.')
 
         Set writtenObjects = []
         def xml = startDocument(renderContext)
