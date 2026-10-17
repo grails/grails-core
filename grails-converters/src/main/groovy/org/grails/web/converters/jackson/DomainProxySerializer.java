@@ -80,7 +80,7 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
             throw new IllegalStateException("The proxy handler could not unwrap the proxy [" + value.getClass().getName() + "]");
         }
         if (context.getAttribute(JsonProjection.ATTRIBUTE) instanceof JsonProjection projection) {
-            projection.narrowed(value.getClass(), unwrapped.getClass());
+            projection.narrowed(value.getClass(), unwrapped == null ? null : unwrapped.getClass());
         }
         return unwrapped;
     }

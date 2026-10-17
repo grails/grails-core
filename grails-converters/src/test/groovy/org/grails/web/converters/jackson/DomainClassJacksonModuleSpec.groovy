@@ -49,6 +49,7 @@ import tools.jackson.databind.ser.std.ToStringSerializer
 import org.springframework.context.ApplicationContext
 
 import grails.converters.JSON
+import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
@@ -177,11 +178,25 @@ class DomainClassJacksonModuleSpec extends Specification {
         shelf.id = 3
         def library = new Library(name: 'main', shelf: shelf, writers: [new WriterProxy(proxyId: 9)])
         library.id = 7
+        def kennel = new Kennel(resident: new DogProxy(proxyId: 2))
+        kennel.id = 5
+        def registry = new NamedJsonConfigurationRegistry(mapper(rendering))
+        def projected = new StringWriter()
 
         expect:
         mapper(rendering).writeValueAsString(new WriterProxy(proxyId: 9)) == 'null'
         deep.writeValueAsString(library) == '{"id":7,"name":"main","shelf":{"id":3},"writers":[null]}'
         new JSON(new WriterProxy(proxyId: 9)).toString() == 'null'
+
+        and: 'in an association whose type writes a type id'
+        deep.writeValueAsString(kennel) == '{"id":5,"resident":null}'
+
+        when: 'the response names the properties to write'
+        String log = stderrWhile { registry.writeValue(null, projected, new WriterProxy(proxyId: 9), ['name'], null) }
+
+        then: 'nothing is left to project'
+        projected.toString() == 'null'
+        !log.contains('were not applied')
     }
 
     void "properties annotated @JsonIgnore or write-only are not written, and those @JsonIgnoreProperties names are not"() {
@@ -559,6 +574,19 @@ class DomainClassJacksonModuleSpec extends Specification {
         JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).build()
     }
 
+    private static String stderrWhile(Closure<?> work) {
+        PrintStream original = System.err
+        def buffer = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setErr(original)
+        }
+        buffer.toString()
+    }
+
     private static Volume volume() {
         def first = new Writer(name: 'a')
         first.id = 1
@@ -823,6 +851,16 @@ class WriterProxy extends Writer implements EntityProxy<Writer> {
     Serializable getProxyKey() { proxyId }
 }
 
+class DogProxy extends Dog implements EntityProxy<Dog> {
+    Dog target
+    Long proxyId
+
+    void initialize() {}
+
+    boolean isInitialized() { target != null }
+
+    Serializable getProxyKey() { proxyId }
+}
 
 class WriterProxyHandler implements EntityProxyHandler {
 

@@ -165,8 +165,13 @@ final class DomainReferences {
             DomainClassRendering current = rendering.ofOwner(context, generator);
             if (current.isDeep() && !toMany) {
                 // In full, an instance is written with its type id; a reference carries none
-                Object unwrapped = DomainWrites.copied(current.unwrap(value));
-                context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serializeWithType(unwrapped, generator,
+                Object unwrapped = current.unwrap(value);
+                if (unwrapped == null) {
+                    generator.writeNull();
+                    return;
+                }
+                Object written = DomainWrites.copied(unwrapped);
+                context.findPrimaryPropertySerializer(written.getClass(), property).serializeWithType(written, generator,
                         context, typeSerializer);
             }
             else {

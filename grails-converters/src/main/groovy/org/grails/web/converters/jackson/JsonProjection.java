@@ -155,11 +155,14 @@ public final class JsonProjection {
 
     /**
      * Records that a proxy of the given type is being written as the narrower type it stands for, so that the projection
-     * requested for the proxy applies to the object it is written as.
+     * requested for the proxy applies to the object it is written as. A proxy of an instance that no longer exists, which
+     * has no type to stand for, is written as {@code null}, which leaves nothing to project.
      */
     void narrowed(Class<?> proxyType, Class<?> unwrappedType) {
         if (types.contains(proxyType)) {
-            types.add(unwrappedType);
+            if (unwrappedType != null) {
+                types.add(unwrappedType);
+            }
             applied.add(proxyType);
         }
     }
