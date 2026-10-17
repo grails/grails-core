@@ -59,9 +59,8 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
     }
 
     /**
-     * Exposes the configured strategy to Grails' own format resolution. The strategy is deliberately
-     * not a bean of its own: Spring Security adopts any {@link org.springframework.web.accept.ContentNegotiationStrategy}
-     * bean it finds, so it is reached through this configurer instead.
+     * Exposes the configured strategy to Grails' own format resolution. It is built on first use,
+     * here rather than as a bean of its own, for the reason the supplier constructor gives.
      */
     GrailsContentNegotiationStrategy getContentNegotiationStrategy() {
         GrailsContentNegotiationStrategy strategy = contentNegotiationStrategy

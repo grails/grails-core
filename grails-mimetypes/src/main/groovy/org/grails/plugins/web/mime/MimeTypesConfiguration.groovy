@@ -135,9 +135,10 @@ class MimeTypesConfiguration {
      */
     @Bean
     static GrailsMimeTypesWebMvcConfigurer grailsMimeTypesWebMvcConfigurer(
-            ObjectProvider<MimeTypesHolder> mimeTypesHolder, GrailsApplication grailsApplication) {
+            ObjectProvider<MimeUtility> mimeUtility, GrailsApplication grailsApplication) {
+        // The MIME types request.format and response.format resolve against as well
         return new GrailsMimeTypesWebMvcConfigurer({ ->
-            new GrailsContentNegotiationStrategy(mimeTypesHolder.getObject().mimeTypes, grailsApplication.config)
+            new GrailsContentNegotiationStrategy(mimeUtility.getObject().knownMimeTypes as MimeType[], grailsApplication.config)
         } as Supplier<GrailsContentNegotiationStrategy>)
     }
 

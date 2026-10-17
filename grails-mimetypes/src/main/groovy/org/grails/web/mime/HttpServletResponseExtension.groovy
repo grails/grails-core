@@ -27,9 +27,11 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 
+import grails.config.Config
 import grails.core.GrailsApplication
 import grails.web.mime.MimeType
 import grails.web.mime.MimeUtility
+import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
@@ -46,13 +48,6 @@ import org.grails.web.util.GrailsApplicationAttributes
 class HttpServletResponseExtension {
 
     static MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
-
-    /**
-     * Strategies for contexts that have no {@link GrailsMimeTypesWebMvcConfigurer}, such as a bare
-     * test context, so that each request does not rebuild one. Weakly keyed by the application.
-     */
-    private static final Map<GrailsApplication, GrailsContentNegotiationStrategy> FALLBACK_STRATEGIES =
-            Collections.synchronizedMap(new WeakHashMap<GrailsApplication, GrailsContentNegotiationStrategy>())
 
     @CompileStatic
     static MimeType[] getMimeTypes() {
@@ -198,41 +193,16 @@ class HttpServletResponseExtension {
             if (applicationContext == null && request.servletContext != null) {
                 applicationContext = WebApplicationContextUtils.getWebApplicationContext(request.servletContext)
             }
-            // The strategy is not a bean of its own so that Spring Security does not adopt it, so
-            // reach it through the configurer that holds it rather than by its own type.
             GrailsContentNegotiationStrategy strategy = applicationContext?.getBeanProvider(
                     GrailsMimeTypesWebMvcConfigurer
             )?.getIfAvailable()?.contentNegotiationStrategy
             if (strategy == null) {
-                GrailsApplication application = applicationContext?.getBeanProvider(GrailsApplication)?.getIfAvailable()
-                if (application != null) {
-                    strategy = FALLBACK_STRATEGIES.computeIfAbsent(application) { GrailsApplication key ->
-                        new GrailsContentNegotiationStrategy(getMimeTypes(), key.config)
-                    }
-                }
+                // A context without MimeTypesConfiguration, such as one a test builds by hand, has no
+                // configurer: the strategy is built for the request from the application's settings
+                Config config = applicationContext?.getBeanProvider(GrailsApplication)?.getIfAvailable()?.config
+                strategy = new GrailsContentNegotiationStrategy(getMimeTypes(), config ?: new PropertySourcesConfig())
             }
-            if (strategy != null) {
-                result = strategy.resolveAcceptedMimeTypes(request)
-                request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS, result)
-                return result
-            }
-
-            def parser = new DefaultAcceptHeaderParser(getMimeTypes())
-            String header = request.getHeader(grails.web.http.HttpHeaders.ACCEPT)
-            result = parser.parse(header)
-
-            // GRAILS-8341 - If no header the parser would have returned all configured mime types.  Since no format
-            // was specified in the request we look for the 'all' format and return that if found.  If 'all' is
-            // not found the fallback behavior is to return all configured mime types from the parser.
-            if (!header) {
-                for (mime in result) {
-                    if (mime.extension == 'all') {
-                        result = [mime] as MimeType[]
-                        break
-                    }
-                }
-            }
-
+            result = strategy.resolveAcceptedMimeTypes(request)
             request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS, result)
         }
         return result

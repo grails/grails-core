@@ -33,6 +33,7 @@ import grails.core.GrailsApplication
 import grails.spring.BeanBuilder
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeProvider
+import org.grails.web.mime.DefaultMimeUtility
 import org.grails.web.mime.GrailsContentNegotiationStrategy
 import org.grails.web.mime.GrailsMimeTypesWebMvcConfigurer
 import spock.lang.Specification
@@ -111,23 +112,14 @@ class MimeTypesConfigurationSpec extends Specification {
         mimeTypes.findAll { it.extension == 'xml' }*.name == ['text/xml', 'application/xml']
     }
 
-    void 'the MVC integration does not expose a strategy bean to type-based consumers'() {
+    void 'Grails format resolution resolves against the MIME types of the MimeUtility, as request.format does'() {
         given:
-        def application = new DefaultGrailsApplication()
-        def bb = new BeanBuilder()
-        bb.beans {
-            grailsApplication = application
-            mimeConfiguration(MimeTypesConfiguration, application, [])
-        }
-        application.setApplicationContext(bb.createApplicationContext())
-        def holder = Stub(ObjectProvider) { getObject() >> new MimeTypesHolder(MimeType.createDefaults()) }
+        def custom = [new MimeType('application/vnd.acme+json', 'acme'), new MimeType('text/html', 'html')] as MimeType[]
+        def mimeUtility = Stub(ObjectProvider) { getObject() >> new DefaultMimeUtility(custom) }
 
         expect:
-        application.mainContext.getBeansOfType(GrailsContentNegotiationStrategy).isEmpty()
-
-        and: "the configurer still exposes the strategy so Grails format resolution can reach it"
-        MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(holder, application)
-                .contentNegotiationStrategy instanceof GrailsContentNegotiationStrategy
+        MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(mimeUtility, new DefaultGrailsApplication())
+                .contentNegotiationStrategy.configuredMimeTypes as List == custom as List
     }
 
     void 'a MIME type provider that needs Spring MVC infrastructure does not close a startup cycle'() {
