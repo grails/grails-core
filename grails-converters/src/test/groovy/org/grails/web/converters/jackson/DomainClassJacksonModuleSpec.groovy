@@ -18,6 +18,8 @@
  */
 package org.grails.web.converters.jackson
 
+import groovy.json.JsonSlurper
+
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
@@ -128,6 +130,8 @@ class DomainClassJacksonModuleSpec extends Specification {
         given:
         grailsApplication.config.setAt('grails.converters.json.default.deep', true)
         grailsApplication.config.setAt('grails.converters.json.circular.reference.behaviour', behaviour)
+        ConvertersConfigurationHolder.clear()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
         def first = new Partner(name: 'first')
         first.id = 1
         def second = new Partner(name: 'second', partner: first)
@@ -136,6 +140,10 @@ class DomainClassJacksonModuleSpec extends Specification {
 
         expect:
         mapper().writeValueAsString(first) == '{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":' + repeated + '}}'
+
+        and: 'so does the JSON converter, whose references order their keys as a map does'
+        new JsonSlurper().parseText(new JSON(first).toString()) ==
+                new JsonSlurper().parseText('{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":' + repeated + '}}')
 
         where:
         behaviour     || repeated

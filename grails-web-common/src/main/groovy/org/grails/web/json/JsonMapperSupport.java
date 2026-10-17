@@ -118,7 +118,7 @@ public final class JsonMapperSupport {
                     return false;
                 }
                 try {
-                    ValueSerializer<?> serializer = serializationContext().findValueSerializer(type);
+                    ValueSerializer<?> serializer = innermost(serializationContext().findValueSerializer(type));
                     if (Enum.class.isAssignableFrom(type) && serializer instanceof JsonValueSerializer) {
                         // an enum renders by name(), so that it binds back, even when it has a @JsonValue
                         return false;
@@ -133,6 +133,16 @@ public final class JsonMapperSupport {
                 }
             }
         };
+    }
+
+    /** The serializer another one wraps, such as a bean serializer that tracks cycles, which decides what it writes. */
+    private static ValueSerializer<?> innermost(ValueSerializer<?> serializer) {
+        ValueSerializer<?> current = serializer;
+        for (ValueSerializer<?> delegatee = current.getDelegatee(); delegatee != null && delegatee != current;
+                delegatee = current.getDelegatee()) {
+            current = delegatee;
+        }
+        return current;
     }
 
     private JsonMapperSupport(JsonMapperSupport base, Map<Object, Object> attributes) {
