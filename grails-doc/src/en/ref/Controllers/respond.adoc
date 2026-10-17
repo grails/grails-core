@@ -70,8 +70,10 @@ Supported `arguments`:
 * `excludes` - Properties to exclude if rendering with the converters API
 * `jsonConfiguration` - For a JSON response, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with. A name that is not registered throws `IllegalArgumentException`
 
-A Spring `ProblemDetail` is written as `application/problem+json`, through Spring's message converters, with the status
-the problem carries, and an absent `instance` is set to the current resource path:
+A Spring `ProblemDetail` is written as `application/problem+json`, or as `application/problem+xml` for an XML response,
+through Spring's message converters, with the status the problem carries, and an absent `instance` is set to the current
+resource path. Spring writes problems as XML with `jackson-dataformat-xml`; without it, the legacy XML converter writes the
+problem as a bean, with the same status:
 
 [source,groovy]
 ----

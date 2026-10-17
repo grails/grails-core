@@ -20,9 +20,11 @@ package org.grails.plugins.web.rest.render.xml
 
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,6 +33,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
+import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.validation.Errors
@@ -43,6 +46,7 @@ import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
@@ -53,6 +57,7 @@ import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
  * @author Graeme Rocher
  * @since 2.3
  */
+@Slf4j
 @CompileStatic
 class DefaultXmlRenderer<T> implements Renderer<T> {
 
@@ -88,6 +93,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
 
     private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
     private volatile RendererRegistry resolvedRendererRegistry
+
+    private final AtomicBoolean problemFallbackReported = new AtomicBoolean()
 
     private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
         if (groovyPageLocator != null) {
@@ -144,7 +151,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         context.setContentType(GrailsWebUtil.getContentType(mimeType.name, encoding))
 
         def viewName = context.viewName ?: context.actionName
-        final view = object instanceof Errors ? null :
+        final view = object instanceof Errors || object instanceof ProblemDetail ? null :
                 resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
         if (view) {
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view
@@ -155,6 +162,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
                 htmlRenderer.encoding = encoding
             }
             htmlRenderer.render((Object) object, context)
+        } else if (object instanceof ProblemDetail) {
+            renderProblem((ProblemDetail) object, context)
         } else {
             if (object instanceof Errors) {
                 context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -162,6 +171,32 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             renderXml(object, context)
         }
 
+    }
+
+    /**
+     * Writes a problem as Spring MVC does, as {@code application/problem+xml} through its message converters, whatever
+     * {@code grails.web.rendering.xml.spring} is set to. Where none can write it, the legacy converter writes it as a
+     * bean.
+     */
+    private void renderProblem(ProblemDetail problem, RenderContext context) {
+        ProblemDetailResponse.prepare(problem, context)
+        MediaType problemXml = MediaType.APPLICATION_PROBLEM_XML
+        HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) resolveSpringHttpMessageConverters().find {
+            HttpMessageConverter<?> candidate -> candidate.canWrite(ProblemDetail, problemXml) &&
+                    candidate.getSupportedMediaTypes(ProblemDetail).any { MediaType supported ->
+                        supported.subtype == 'xml' || supported.subtype.endsWith('+xml')
+                    }
+        }
+        if (converter != null) {
+            context.setContentType(GrailsWebUtil.getContentType(problemXml.toString(), encoding))
+            renderWithSpringConverter(converter, problem, problemXml, context)
+            return
+        }
+        if (problemFallbackReported.compareAndSet(false, true)) {
+            log.warn("A ProblemDetail is written through Spring's message converters, but none can write " +
+                    "${problemXml}, so the legacy XML converter writes it as a bean.")
+        }
+        renderXml(new XML(problem), context)
     }
 
     /**
@@ -173,7 +208,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     protected void renderXml(Object object, RenderContext context) {
         HttpMessageConverter<Object> springConverter = findSpringConverter(object, context)
         if (springConverter != null) {
-            renderWithSpringConverter(springConverter, object, context)
+            renderWithSpringConverter(springConverter, object,
+                    MediaType.parseMediaType((context.acceptMimeType ?: MimeType.XML).name), context)
             return
         }
 
@@ -224,12 +260,11 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     private void renderWithSpringConverter(
-            HttpMessageConverter<Object> converter, Object object, RenderContext context) {
+            HttpMessageConverter<Object> converter, Object object, MediaType mediaType, RenderContext context) {
         // Jackson only writes UTF encodings; the servlet writer applies the response encoding.
         Charset charset = converter instanceof AbstractJacksonHttpMessageConverter ?
                 StandardCharsets.UTF_8 : Charset.forName(encoding)
-        MediaType contentType = new MediaType(
-                MediaType.parseMediaType((context.acceptMimeType ?: MimeType.XML).name), charset)
+        MediaType contentType = new MediaType(mediaType, charset)
         WriterOutputStream.writeThrough(context.writer, charset) { OutputStream body ->
             HttpOutputMessage message = new HttpOutputMessage() {
                 private final HttpHeaders headers = new HttpHeaders()
