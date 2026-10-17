@@ -19,7 +19,6 @@
 package org.grails.web.json;
 
 import java.io.Writer;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,6 +36,7 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.PrettyPrinter;
 import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.SerializationFeature;
@@ -224,10 +224,14 @@ public final class JsonMapperSupport {
      * Parses JSON text with the mapper's own parser, so that the parser features the mapper is configured with decide what
      * is accepted, such as comments or single quotes. Objects and arrays become the {@link JSONObject}s and
      * {@link JSONArray}s that {@code grails.converters.JSON#parse} has always returned, with the number types it has
-     * always returned: an {@code Integer}, a {@code Long} or a {@code BigInteger} for an integer, and for a number with a
-     * fraction a {@code Double}, or a {@code BigDecimal} where a {@code Double} would not be the same number.
+     * always returned: an {@code Integer}, a {@code Long} or a {@code BigInteger} for a number without a fraction, such
+     * as {@code 15} or {@code 1.5e1}, and for one with a fraction a {@code Double}, or a {@code BigDecimal} where a
+     * {@code Double} would not be the same number.
      *
-     * @param text the JSON text, whose first value is parsed
+     * <p>Text after the value is rejected, as the mapper rejects it when it reads a value, unless the mapper disables
+     * {@code DeserializationFeature.FAIL_ON_TRAILING_TOKENS}.
+     *
+     * @param text the JSON text
      * @return the value: a {@code JSONObject}, a {@code JSONArray}, a {@code String}, a number, a {@code Boolean} or
      *         {@code null}
      * @throws JSONException if the text is not JSON the mapper's parser accepts
@@ -239,7 +243,11 @@ public final class JsonMapperSupport {
             if (token == null) {
                 throw new JSONException("A JSON text must have a value");
             }
-            return readValue(parser, token);
+            Object value = readValue(parser, token);
+            if (mapper.isEnabled(DeserializationFeature.FAIL_ON_TRAILING_TOKENS) && parser.nextToken() != null) {
+                throw new JSONException("Unexpected " + parser.currentToken() + " after the JSON value");
+            }
+            return value;
         }
         catch (JacksonException e) {
             throw new JSONException(e);
@@ -269,13 +277,9 @@ public final class JsonMapperSupport {
             case VALUE_STRING -> {
                 return parser.getString();
             }
-            case VALUE_NUMBER_INT -> {
-                return parser.getNumberValue();
-            }
-            case VALUE_NUMBER_FLOAT -> {
-                BigDecimal number = parser.getDecimalValue();
-                double doubleValue = number.doubleValue();
-                return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
+            case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> {
+                // NaN and Infinity, which the mapper may accept, have no decimal value
+                return parser.isNaN() ? parser.getDoubleValue() : JSONTokener.number(parser.getDecimalValue());
             }
             case VALUE_TRUE -> {
                 return Boolean.TRUE;

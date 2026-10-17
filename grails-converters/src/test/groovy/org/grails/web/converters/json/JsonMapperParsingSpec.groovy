@@ -21,6 +21,7 @@ package org.grails.web.converters.json
 import org.springframework.mock.web.MockHttpServletRequest
 import spock.lang.Specification
 import tools.jackson.core.json.JsonReadFeature
+import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.json.JsonMapper
 
 import grails.converters.JSON
@@ -70,6 +71,16 @@ class JsonMapperParsingSpec extends Specification {
         'a JavaScript date'             | '{"x":new Date(0)}'
         'an unterminated object'        | '{"x":1'
         'no value at all'               | ''
+        'text after the value'          | '{"x":1} garbage'
+        'a second value'                | '{"x":1}{"y":2}'
+    }
+
+    void "JSON.parse accepts text after the value when the mapper does not fail on trailing tokens"() {
+        given:
+        use(JsonMapper.builder().disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).build())
+
+        expect:
+        JSON.parse('{"x":1} garbage') == [x: 1]
     }
 
     void "JSON.parse accepts the syntax the mapper's parser is configured to accept"() {
@@ -102,6 +113,19 @@ class JsonMapperParsingSpec extends Specification {
         '0.123456789012345678901' || BigDecimal | '0.123456789012345678901'
         '1.00'                    || BigDecimal | '1.00'
         '1e3'                     || BigDecimal | '1E+3'
+        '1.5e1'                   || Integer    | '15'
+        '1E0'                     || Integer    | '1'
+        '-0'                      || Integer    | '0'
+    }
+
+    void "JSON.parse reads #number as Grails' own parser does"() {
+        expect: "new JSONObject(String) always parses with Grails' parser"
+        JSON.parse("{\"n\":${number}}").n == new JSONObject("{\"n\":${number}}").n
+        JSON.parse("{\"n\":${number}}").n.getClass() == new JSONObject("{\"n\":${number}}").n.getClass()
+
+        where:
+        number << ['42', '-7', '9223372036854775807', '9223372036854775808', '1.5', '0.123456789012345678901', '1.00',
+                   '1e3', '1.5e1', '1E0', '2.5E-3', '-0']
     }
 
     void "JSON.parse returns Grails' Map and List containers, with Java nulls"() {

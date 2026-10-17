@@ -379,23 +379,33 @@ public class JSONTokener {
             } catch (Exception e) {
                 return s;
             }
-
-            if (number.scale() == 0) {
-                try {
-                    return number.intValueExact();
-                } catch (Exception e) {
-                    try {
-                        return number.longValueExact();
-                    } catch (Exception f) {
-                        return number.toBigInteger();
-                    }
-                }
-            } else {
-                double doubleValue = number.doubleValue();
-                return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
-            }
+            return number(number);
         }
         return s;
+    }
+
+    /**
+     * The number type Grails' JSON parsing gives a number: an {@code Integer}, a {@code Long} or a {@code BigInteger}
+     * for a number without a fraction, such as {@code 15} or {@code 1.5e1}, and for one with a fraction a
+     * {@code Double}, or a {@code BigDecimal} where a {@code Double} would not be the same number.
+     *
+     * @param number a parsed number
+     * @return the number, as the type Grails' JSON parsing gives it
+     */
+    static Number number(BigDecimal number) {
+        if (number.scale() == 0) {
+            try {
+                return number.intValueExact();
+            } catch (ArithmeticException e) {
+                try {
+                    return number.longValueExact();
+                } catch (ArithmeticException f) {
+                    return number.toBigInteger();
+                }
+            }
+        }
+        double doubleValue = number.doubleValue();
+        return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
     }
 
     /**
