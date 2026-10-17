@@ -16,9 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.finders
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.finders;
 
-import grails.gorm.DetachedCriteria
+import grails.gorm.DetachedCriteria;
 
 /**
  * Value object used to construct all the information necessary to invoke a dynamic finder.
@@ -26,56 +27,57 @@ import grails.gorm.DetachedCriteria
  * @author Graeme Rocher
  * @since 1.0
  */
-@SuppressWarnings('rawtypes')
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'rawtypes'])
 class DynamicFinderInvocation {
 
-    private final Class javaClass
-    private final String methodName
-    private final Object[] arguments
-    private final List<MethodExpression> expressions
-    private final Closure criteria
-    private final String operator
-    private DetachedCriteria detachedCriteria
+    private final Class javaClass;
+    private final String methodName;
+    private final Object[] arguments;
+    private final List<MethodExpression> expressions;
+    private final Closure criteria;
+    private final String operator;
+    private DetachedCriteria detachedCriteria;
 
     DynamicFinderInvocation(Class javaClass, String methodName, Object[] arguments,
                                    List<MethodExpression> expressions, Closure criteria, String operator) {
-        this.javaClass = javaClass
-        this.methodName = methodName
-        this.arguments = arguments
-        this.expressions = expressions
-        this.criteria = criteria
-        this.operator = operator
+        this.javaClass = javaClass;
+        this.methodName = methodName;
+        this.arguments = arguments;
+        this.expressions = expressions;
+        this.criteria = criteria;
+        this.operator = operator;
     }
 
     Class<?> getJavaClass() {
-        return javaClass
+        return javaClass;
     }
 
     String getMethodName() {
-        return methodName
+        return methodName;
     }
 
     Object[] getArguments() {
-        return arguments
+        return arguments;
     }
 
     List<MethodExpression> getExpressions() {
-        return expressions
+        return expressions;
     }
 
     Closure getCriteria() {
-        return criteria
+        return criteria;
     }
 
     String getOperator() {
-        return operator
+        return operator;
     }
 
     DetachedCriteria getDetachedCriteria() {
-        return detachedCriteria
+        return detachedCriteria;
     }
 
     void setDetachedCriteria(DetachedCriteria detachedCriteria) {
-        this.detachedCriteria = detachedCriteria
+        this.detachedCriteria = detachedCriteria;
     }
 }
