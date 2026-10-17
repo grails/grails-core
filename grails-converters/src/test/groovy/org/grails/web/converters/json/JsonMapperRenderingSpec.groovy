@@ -66,6 +66,7 @@ import org.grails.web.converters.exceptions.ConverterException
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller
 import org.grails.web.converters.marshaller.ObjectMarshaller
+import org.grails.web.converters.marshaller.json.JsonMapperValueMarshaller
 import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller
 import org.grails.web.json.DateTimeValues
 import org.grails.web.json.JSONWriter
@@ -293,6 +294,34 @@ class JsonMapperRenderingSpec extends Specification {
         def json = JSON.parse(new JSON(first).toString())
 
         then: 'the mapper never writes the bean, so it has no object id to write'
+        json.name == 'first'
+        json.next.name == 'second'
+        json.next.next._ref
+        json.next.next['class'] == IdentifiedNode.name
+    }
+
+    @Timeout(10)
+    void "a bean with @JsonIdentityInfo that a subclass of the mapper's marshaller writes itself is a circular reference when reached again"() {
+        given:
+        JSON.registerObjectMarshaller(new JsonMapperValueMarshaller() {
+            @Override
+            boolean supports(Object object) {
+                object instanceof IdentifiedNode
+            }
+
+            @Override
+            void marshalObject(Object object, JSON converter) {
+                IdentifiedNode node = (IdentifiedNode) object
+                converter.convertAnother([name: node.name, next: node.next])
+            }
+        })
+        def first = new IdentifiedNode(name: 'first')
+        first.next = new IdentifiedNode(name: 'second', next: first)
+
+        when:
+        def json = JSON.parse(new JSON(first).toString())
+
+        then:
         json.name == 'first'
         json.next.name == 'second'
         json.next.next._ref

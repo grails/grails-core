@@ -18,6 +18,10 @@
  */
 package org.grails.web.converters.marshaller.json;
 
+import java.lang.reflect.Method;
+
+import org.springframework.util.ReflectionUtils;
+
 import grails.converters.JSON;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
@@ -42,6 +46,14 @@ import org.grails.web.json.JsonMapperValue;
  */
 public class JsonMapperValueMarshaller implements ObjectMarshaller<JSON> {
 
+    private static final ClassValue<Boolean> OVERRIDES_MARSHAL_OBJECT = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            Method marshalObject = ReflectionUtils.findMethod(type, "marshalObject", Object.class, JSON.class);
+            return marshalObject != null && marshalObject.getDeclaringClass() != JsonMapperValueMarshaller.class;
+        }
+    };
+
     public boolean supports(Object object) {
         return true;
     }
@@ -53,10 +65,10 @@ public class JsonMapperValueMarshaller implements ObjectMarshaller<JSON> {
     /**
      * @param marshaller the marshaller of a value
      * @return whether it writes the value with the converter's mapper, as this marshaller and the domain class
-     *         marshaller do
+     *         marshaller do, unless a subclass writes it itself
      */
     public static boolean writesWithMapper(ObjectMarshaller<JSON> marshaller) {
-        return marshaller instanceof JsonMapperValueMarshaller ||
+        return marshaller instanceof JsonMapperValueMarshaller && !OVERRIDES_MARSHAL_OBJECT.get(marshaller.getClass()) ||
                 marshaller instanceof DomainClassMarshaller domainClassMarshaller && domainClassMarshaller.writesWithMapper();
     }
 
