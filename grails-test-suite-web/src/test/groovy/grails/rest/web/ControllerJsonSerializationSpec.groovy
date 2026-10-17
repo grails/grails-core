@@ -339,6 +339,27 @@ class ControllerJsonMapperOverrideSpec extends Specification implements Controll
     }
 }
 
+class ControllerProblemDefaultsSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    void 'with the default settings, a problem a client asks for as #format is written as problem JSON'() {
+        given:
+        request.requestURI = '/books'
+        response.format = format
+
+        when:
+        controller.respond(ProblemDetail.forStatus(409))
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+        response.json.instance == '/books'
+
+        where:
+        format << ['json', 'html', 'csv']
+    }
+}
+
 class ControllerProblemPageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
 
     @Configuration
