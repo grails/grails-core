@@ -16,24 +16,26 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.neo4j.engine
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.neo4j.engine;
 
-import groovy.transform.CompileStatic
-import org.neo4j.driver.Transaction
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import groovy.transform.CompileStatic;
 
-import org.grails.datastore.gorm.neo4j.CypherBuilder
-import org.grails.datastore.gorm.neo4j.GraphPersistentEntity
-import org.grails.datastore.gorm.neo4j.RelationshipPersistentEntity
-import org.grails.datastore.gorm.neo4j.RelationshipUtils
-import org.grails.datastore.mapping.core.impl.PendingOperationAdapter
-import org.grails.datastore.mapping.engine.EntityAccess
-import org.grails.datastore.mapping.model.config.GormProperties
-import org.grails.datastore.mapping.model.types.Association
+import org.neo4j.driver.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.grails.datastore.gorm.neo4j.engine.RelationshipPendingInsert.FROM
-import static org.grails.datastore.gorm.neo4j.engine.RelationshipPendingInsert.TO
+import org.grails.datastore.gorm.neo4j.CypherBuilder;
+import org.grails.datastore.gorm.neo4j.GraphPersistentEntity;
+import org.grails.datastore.gorm.neo4j.RelationshipPersistentEntity;
+import org.grails.datastore.gorm.neo4j.RelationshipUtils;
+import org.grails.datastore.mapping.core.impl.PendingOperationAdapter;
+import org.grails.datastore.mapping.engine.EntityAccess;
+import org.grails.datastore.mapping.model.config.GormProperties;
+import org.grails.datastore.mapping.model.types.Association;
+
+import static org.grails.datastore.gorm.neo4j.engine.RelationshipPendingInsert.FROM;
+import static org.grails.datastore.gorm.neo4j.engine.RelationshipPendingInsert.TO;
 
 /**
  * Represents a pending relationship delete
@@ -41,63 +43,64 @@ import static org.grails.datastore.gorm.neo4j.engine.RelationshipPendingInsert.T
  * @author Stefan
  * @author Graeme Rocher
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class RelationshipPendingDelete extends PendingOperationAdapter<Object, Serializable> {
 
-    private static final Logger log = LoggerFactory.getLogger(RelationshipPendingDelete)
+    private static final Logger log = LoggerFactory.getLogger(RelationshipPendingDelete);
 
-    private final Transaction boltTransaction
-    private final Association association
-    private final Collection<Serializable> targetIdentifiers
-    private final EntityAccess entityAccess
+    private final Transaction boltTransaction;
+    private final Association association;
+    private final Collection<Serializable> targetIdentifiers;
+    private final EntityAccess entityAccess;
 
     RelationshipPendingDelete(EntityAccess parent, Association association, Collection<Serializable> pendingInserts, Transaction boltTransaction) {
-        super(parent.getPersistentEntity(), (Serializable) parent.getIdentifier(), parent.getEntity())
-        this.targetIdentifiers = pendingInserts
-        this.boltTransaction = boltTransaction
-        this.association = association
-        this.entityAccess = parent
+        super(parent.getPersistentEntity(), (Serializable) parent.getIdentifier(), parent.getEntity());
+        this.targetIdentifiers = pendingInserts;
+        this.boltTransaction = boltTransaction;
+        this.association = association;
+        this.entityAccess = parent;
     }
 
     @Override
     void run() {
-        GraphPersistentEntity graphParent = (GraphPersistentEntity) getEntity()
+        GraphPersistentEntity graphParent = (GraphPersistentEntity) getEntity();
 
-        Serializable parentId = getNativeKey()
-        final boolean isRelationshipAssociation = graphParent.isRelationshipEntity()
+        Serializable parentId = getNativeKey();
+        final boolean isRelationshipAssociation = graphParent.isRelationshipEntity();
         if (isRelationshipAssociation) {
             if (association.getName().equals(FROM)) {
-                RelationshipPersistentEntity relEntity = (RelationshipPersistentEntity) graphParent
-                GraphPersistentEntity graphChild = relEntity.getToEntity()
-                graphParent = relEntity.getFromEntity()
+                RelationshipPersistentEntity relEntity = (RelationshipPersistentEntity) graphParent;
+                GraphPersistentEntity graphChild = relEntity.getToEntity();
+                graphParent = relEntity.getFromEntity();
 
-                Object endEntity = entityAccess.getProperty(TO)
-                Object startEntity = entityAccess.getProperty(FROM)
-                parentId = graphParent.getReflector().getIdentifier(startEntity)
-                this.targetIdentifiers.clear()
-                this.targetIdentifiers.add(graphChild.getReflector().getIdentifier(endEntity))
+                Object endEntity = entityAccess.getProperty(TO);
+                Object startEntity = entityAccess.getProperty(FROM);
+                parentId = graphParent.getReflector().getIdentifier(startEntity);
+                this.targetIdentifiers.clear();
+                this.targetIdentifiers.add(graphChild.getReflector().getIdentifier(endEntity));
             } else {
                 // don't do anything for the 'to' end
-                return
+                return;
             }
         }
 
-        final Map<String, Object> params = new LinkedHashMap<>(2)
+        final Map<String, Object> params = new LinkedHashMap<>(2);
 
         if (RelationshipUtils.useReversedMappingFor(association)) {
-            params.put(GormProperties.IDENTITY, parentId)
+            params.put(GormProperties.IDENTITY, parentId);
         } else {
-            params.put(CypherBuilder.START, parentId)
-            params.put(CypherBuilder.END, targetIdentifiers)
+            params.put(CypherBuilder.START, parentId);
+            params.put(CypherBuilder.END, targetIdentifiers);
         }
 
-        String cypher = graphParent.formatAssociationDelete(association, entityAccess.getEntity())
+        String cypher = graphParent.formatAssociationDelete(association, entityAccess.getEntity());
         if (cypher != null) {
             if (log.isDebugEnabled()) {
-                log.debug('DELETE Cypher [{}] for parameters [{}]', cypher, params)
+                log.debug('DELETE Cypher [{}] for parameters [{}]', cypher, params);
             }
-            boltTransaction.run(cypher, params)
+            boltTransaction.run(cypher, params);
         }
     }
-
 }

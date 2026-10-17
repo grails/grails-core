@@ -16,57 +16,60 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.neo4j
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.neo4j;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 /**
  * combination of relationship type and direction to be used a key in a map
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class TypeDirectionPair {
 
-    private String type
-    private boolean outgoing
-    private String targetType
+    private String type;
+    private boolean outgoing;
+    private String targetType;
 
     TypeDirectionPair(String type, boolean outgoing) {
-        this.type = type
-        this.outgoing = outgoing
+        this.type = type;
+        this.outgoing = outgoing;
     }
 
     String getType() {
-        return type
+        return type;
     }
 
     void setType(String type) {
-        this.type = type
+        this.type = type;
     }
 
     boolean isOutgoing() {
-        return outgoing
+        return outgoing;
     }
 
     void setOutgoing(boolean outgoing) {
-        this.outgoing = outgoing
+        this.outgoing = outgoing;
     }
 
     @Override
     boolean equals(Object o) {
-        if (this.is(o)) return true
-        if (o == null || getClass() != o.getClass()) return false
+        if (this.is(o)) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        TypeDirectionPair that = (TypeDirectionPair) o
+        TypeDirectionPair that = (TypeDirectionPair) o;
 
-        if (outgoing != that.outgoing) return false
-        return type.equals(that.type)
+        if (outgoing != that.outgoing) return false;
+        return type.equals(that.type);
     }
 
     @Override
     int hashCode() {
-        int result = type.hashCode()
-        result = 31 * result + (outgoing ? 1 : 0)
-        return result
+        int result = type.hashCode();
+        result = 31 * result + (outgoing ? 1 : 0);
+        return result;
     }
 
     @Override
@@ -74,15 +77,14 @@ class TypeDirectionPair {
         return 'TypeDirectionPair{' +
             "type='" + type + '\'' +
             ', outgoing=' + outgoing +
-            '}'
+            '}';
     }
 
     String getTargetType() {
-        return targetType
+        return targetType;
     }
 
     void setTargetType(String targetType) {
-        this.targetType = targetType
+        this.targetType = targetType;
     }
-
 }
