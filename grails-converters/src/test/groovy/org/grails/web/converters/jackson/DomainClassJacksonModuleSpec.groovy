@@ -41,6 +41,7 @@ import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationConfig
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.ValueSerializer
 import tools.jackson.databind.annotation.JsonNaming
 import tools.jackson.databind.annotation.JsonSerialize
 import tools.jackson.databind.exc.InvalidDefinitionException
@@ -427,6 +428,53 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper(false).writeValueAsString(volume()) ==
                 '{"Id":1,"Title":"Grails","Shelf":{"Id":3},"Writers":[{"Id":1},{"Id":2}],"WritersByName":{"a":{"Id":1},"b":{"Id":2}}}'
         mapper(true).writeValueAsString(first) == '{"Id":1,"Name":"first","Partner":{"Id":2,"Name":"second","Partner":{"Id":1}}}'
+    }
+
+    void "a module that gives the serializer of a domain class a filter id, or a serializer of its own, keeps it tracking circular references"() {
+        given: 'a module registered before the domain class module, so that its modifier is given the tracking serializer'
+        def first = new Partner(name: 'first')
+        first.id = 1
+        def second = new Partner(name: 'second', partner: first)
+        second.id = 2
+        first.partner = second
+        def deep = new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true)
+        def mapper = { Closure<ValueSerializer<?>> change ->
+            def application = new SimpleModule('application').setSerializerModifier(new ValueSerializerModifier() {
+                @Override
+                ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier description,
+                        ValueSerializer<?> serializer) {
+                    description.get().beanClass == Partner ? change(serializer) : serializer
+                }
+            })
+            JsonMapper.builder().addModule(application).addModule(new DomainClassJacksonModule(deep)).build()
+        }
+        def filters = new SimpleFilterProvider().addFilter('partners', SimpleBeanPropertyFilter.serializeAllExcept('name'))
+
+        expect: 'a filter id applies, and the instance reached again is a reference to it'
+        mapper { it.withFilterId('partners') }.writer(filters).writeValueAsString(first) ==
+                '{"id":1,"partner":{"id":2,"partner":{"id":1}}}'
+
+        and: 'so does a serializer of its own'
+        mapper { it.replaceDelegatee(new PartnerLabelSerializer()) }.writeValueAsString(first) ==
+                '{"label":"first","partner":{"label":"second","partner":{"id":1}}}'
+    }
+
+    void "the shape a property's @JsonFormat asks for applies to a domain instance, which is still tracked"() {
+        given:
+        def first = new Partner(name: 'first')
+        first.id = 1
+        def second = new Partner(name: 'second', partner: first)
+        second.id = 2
+        first.partner = second
+        def deep = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
+
+        when:
+        def written = new JsonSlurper().parseText(deep.writeValueAsString(new ShapedPartnerHolder(partner: first)))
+
+        then: 'the instance is an array of its properties, and the instance reached again is a reference to it'
+        written.partner instanceof List
+        written.partner.contains('first')
+        written.partner.last() == [id: 2, name: 'second', partner: [id: 1]]
     }
 
     void "a domain class with a @JsonValue is written by Jackson"() {
@@ -996,6 +1044,27 @@ class IgnoringWriterHolder {
     Writer writer
     @JsonIgnoreProperties('name')
     List<Writer> writers
+}
+
+class PartnerLabelSerializer extends StdSerializer<Partner> {
+
+    PartnerLabelSerializer() {
+        super(Partner)
+    }
+
+    @Override
+    void serialize(Partner partner, JsonGenerator generator, SerializationContext context) {
+        generator.writeStartObject()
+        generator.writeStringProperty('label', partner.name)
+        generator.writeName('partner')
+        context.writeValue(generator, partner.partner)
+        generator.writeEndObject()
+    }
+}
+
+class ShapedPartnerHolder {
+    @JsonFormat(shape = JsonFormat.Shape.ARRAY)
+    Partner partner
 }
 
 class UnwrappedCode {
