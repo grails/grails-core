@@ -386,8 +386,10 @@ public class JSONTokener {
 
     /**
      * The number type Grails' JSON parsing gives a number: an {@code Integer}, a {@code Long} or a {@code BigInteger}
-     * for a number without a fraction, such as {@code 15} or {@code 1.5e1}, and for one with a fraction a
-     * {@code Double}, or a {@code BigDecimal} where a {@code Double} would not be the same number.
+     * for a number written with as many digits after the decimal point as its exponent moves, such as {@code 15} or
+     * {@code 1.5e1}; a {@code Double} for any other number that a {@code Double} writes as it is written, such as
+     * {@code 2.5}; and otherwise a {@code BigDecimal}, such as {@code 1.00}, {@code 1e3} or {@code 1e400}, which no
+     * {@code Double} holds.
      *
      * @param number a parsed number
      * @return the number, as the type Grails' JSON parsing gives it
@@ -405,6 +407,9 @@ public class JSONTokener {
             }
         }
         double doubleValue = number.doubleValue();
+        if (Double.isInfinite(doubleValue)) {
+            return number;
+        }
         return number.equals(BigDecimal.valueOf(doubleValue)) ? doubleValue : number;
     }
 

@@ -118,6 +118,8 @@ class JsonMapperParsingSpec extends Specification {
         '0.123456789012345678901' || BigDecimal | '0.123456789012345678901'
         '1.00'                    || BigDecimal | '1.00'
         '1e3'                     || BigDecimal | '1E+3'
+        '1e400'                   || BigDecimal | '1E+400'
+        '-1e400'                  || BigDecimal | '-1E+400'
         '1.5e1'                   || Integer    | '15'
         '1E0'                     || Integer    | '1'
         '-0'                      || Integer    | '0'
@@ -130,7 +132,7 @@ class JsonMapperParsingSpec extends Specification {
 
         where:
         number << ['42', '-7', '9223372036854775807', '9223372036854775808', '1.5', '0.123456789012345678901', '1.00',
-                   '1e3', '1.5e1', '1E0', '2.5E-3', '-0']
+                   '1e3', '1e400', '-1e400', '1e-400', '1.5e1', '1E0', '2.5E-3', '-0']
     }
 
     void "JSON.parse returns Grails' Map and List containers, with Java nulls"() {

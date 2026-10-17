@@ -81,6 +81,8 @@ class JsonParsingSpec extends Specification {
         '0.123456789012345678901' || BigDecimal | '0.123456789012345678901'
         '1.00'                    || BigDecimal | '1.00'
         '1e3'                     || BigDecimal | '1E+3'
+        '1e400'                   || BigDecimal | '1E+400'
+        '-1e400'                  || BigDecimal | '-1E+400'
     }
 
     void "JSON.parse returns Grails' Map and List containers, with Java nulls"() {
