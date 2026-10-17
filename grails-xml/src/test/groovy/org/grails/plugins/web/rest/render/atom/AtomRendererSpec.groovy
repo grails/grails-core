@@ -23,6 +23,7 @@ import grails.core.GrailsApplication
 import grails.persistence.Entity
 import grails.rest.render.atom.AtomCollectionRenderer
 import grails.rest.render.atom.AtomRenderer
+import grails.rest.render.hal.HalXmlRenderer
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
@@ -203,6 +204,26 @@ class AtomRendererSpec extends Specification {
         log.readLines().count { it.contains('Atom rendering is scheduled for removal in Grails 11.') } == 1
     }
 
+    void 'each XML format warns for itself, so Atom warns once HAL XML has warned'() {
+        given:
+        def hal = configureRenderer(new HalXmlRenderer(AtomBook))
+        def atom = configureRenderer(new AtomRenderer(AtomBook))
+        def book = new AtomBook(title: 'Grails')
+        book.id = 1L
+        book.dateCreated = new Date(1383908400000L)
+        book.lastUpdated = new Date(1383994800000L)
+
+        when:
+        String log = stderrWhile {
+            hal.render(book, new ServletRenderContext(boundMimeTypeRequest()))
+            atom.render(book, new ServletRenderContext(boundMimeTypeRequest()))
+        }
+
+        then:
+        log.readLines().count { it.contains('HAL XML rendering is scheduled for removal in Grails 11.') } == 1
+        log.readLines().count { it.contains('Atom rendering is scheduled for removal in Grails 11.') } == 1
+    }
+
     private static String stderrWhile(Closure<?> work) {
         PrintStream original = System.err
         def buffer = new ByteArrayOutputStream()
@@ -216,7 +237,7 @@ class AtomRendererSpec extends Specification {
         buffer.toString()
     }
 
-    private AtomRenderer configureRenderer(AtomRenderer renderer) {
+    private <R extends HalXmlRenderer> R configureRenderer(R renderer) {
         def mappingContext = new KeyValueMappingContext('')
         mappingContext.addPersistentEntity(AtomBook)
         mappingContext.addPersistentEntity(AtomAuthor)

@@ -18,7 +18,10 @@
  */
 package org.grails.plugins.xml
 
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.beans.factory.support.BeanRegistryAdapter
+import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
+import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.StandardEnvironment
@@ -220,12 +223,22 @@ class XmlGrailsPluginSpec extends Specification {
         rendererRegistry.initialize()
         beanFactory.registerSingleton('rendererRegistry', rendererRegistry)
 
+        and: 'a factory that autowires the beans and initializes them, as an application context does'
+        def environment = new StandardEnvironment()
+        beanFactory.autowireCandidateResolver = new ContextAnnotationAutowireCandidateResolver()
+        beanFactory.addEmbeddedValueResolver { String value -> environment.resolvePlaceholders(value) }
+        beanFactory.addBeanPostProcessor(new AutowiredAnnotationBeanPostProcessor(beanFactory: beanFactory))
+        beanFactory.addBeanPostProcessor(new CommonAnnotationBeanPostProcessor(beanFactory: beanFactory))
+
         when: "every bean the plugin registers is created"
         beanFactory.beanDefinitionNames.each { beanFactory.getBean(it) }
 
         then: "no bean has registered a renderer behind the registry's back"
         rendererRegistry.findRenderer(MimeType.XML, new URL('https://grails.apache.org')) == null
         rendererRegistry.findContainerRenderer(MimeType.XML, Errors, new BeanPropertyBindingResult('value', 'target')) == null
+
+        and: 'the renderers were autowired with the registry they could have reached'
+        beanFactory.getBean('xmlRenderer', DefaultXmlRenderer).rendererRegistryProvider.getIfAvailable().is(rendererRegistry)
     }
 
     void 'Atom feed rendering remains opt-in'() {

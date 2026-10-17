@@ -36,6 +36,7 @@ import grails.rest.render.xml.XmlCollectionRenderer
 import grails.rest.render.xml.XmlRenderer
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 import org.grails.web.converters.exceptions.ConverterException
 import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
@@ -52,6 +53,13 @@ class XmlCompatibilitySpec extends Specification {
         VndErrorXmlRenderer.getAnnotation(Deprecated).forRemoval()
         ValidationErrorsMarshaller.getAnnotation(Deprecated).since() == '9.0'
         ValidationErrorsMarshaller.getAnnotation(Deprecated).forRemoval()
+    }
+
+    void 'the converters initializer keeps the XML deep setting as a constant deprecated for removal'() {
+        expect: 'it names the setting the XML initializer reads'
+        ConvertersConfigurationInitializer.SETTING_CONVERTERS_XML_DEEP ==
+                XmlConvertersConfigurationInitializer.SETTING_CONVERTERS_XML_DEEP
+        ConvertersConfigurationInitializer.getField('SETTING_CONVERTERS_XML_DEEP').getAnnotation(Deprecated).forRemoval()
     }
 
     void '#type.simpleName is deprecated for removal in Grails 11, with the rest of legacy XML conversion'() {
