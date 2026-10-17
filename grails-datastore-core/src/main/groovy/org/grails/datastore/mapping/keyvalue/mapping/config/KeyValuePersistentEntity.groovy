@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  'License'); you may not use this file except in compliance
+ *  "License"); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *    https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -32,63 +32,67 @@ import org.grails.datastore.mapping.model.types.Embedded
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class KeyValuePersistentEntity extends AbstractPersistentEntity<Family> {
 
-    private Object mappedForm
-    private KeyValueClassMapping classMapping
+    private Object mappedForm;
+    private KeyValueClassMapping classMapping;
 
     KeyValuePersistentEntity(@SuppressWarnings('rawtypes') Class javaClass, MappingContext context) {
-        super(javaClass, context)
-        this.mappedForm = context.getMappingFactory().createMappedForm(this)
-        this.classMapping = new KeyValueClassMapping(this, context)
+        super(javaClass, context);
+        this.mappedForm = context.getMappingFactory().createMappedForm(this);
+        this.classMapping = new KeyValueClassMapping(this, context);
     }
 
     @SuppressWarnings('unchecked')
     @Override
     ClassMapping<Family> getMapping() {
-        return classMapping
+        return classMapping;
     }
 
     @Override
     PersistentEntity getParentEntity() {
-        Class superclass = this.javaClass.getSuperclass()
+        Class superclass = this.javaClass.getSuperclass();
         if (superclass != null) {
-            return context.getPersistentEntity(superclass.getName())
+            return context.getPersistentEntity(superclass.getName());
         }
 
-        return null
+        return null;
     }
 
     @Override
     PersistentProperty getPropertyByName(String name) {
         if (name != null && name.contains('.')) {
-            String[] props = name.split('\\.')
+            String[] props = name.split('\\.');
 
             // Get the embedded property type
-            PersistentProperty embeddedProp = super.getPropertyByName(props[0])
+            PersistentProperty embeddedProp = super.getPropertyByName(props[0]);
             if (embeddedProp instanceof Embedded) {
-                PersistentEntity embeddedEntity = ((Embedded) embeddedProp).getAssociatedEntity()
-                return embeddedEntity.getPropertyByName(props[1])
+                PersistentEntity embeddedEntity = ((Embedded) embeddedProp).getAssociatedEntity();
+                return embeddedEntity.getPropertyByName(props[1]);
             }
 
-            return super.getPropertyByName(name)
+            return super.getPropertyByName(name);
         }
         else {
-            return super.getPropertyByName(name)
+            return super.getPropertyByName(name);
         }
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     class KeyValueClassMapping extends AbstractClassMapping<Family> {
+
         KeyValueClassMapping(PersistentEntity entity, MappingContext context) {
-            super(entity, context)
+            super(entity, context);
 
         }
 
         @Override
         Family getMappedForm() {
-            return (Family) KeyValuePersistentEntity.this.mappedForm
+            return (Family) KeyValuePersistentEntity.this.mappedForm;
         }
     }
-
 }

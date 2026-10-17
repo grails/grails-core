@@ -18,9 +18,9 @@
  */
 package org.grails.datastore.mapping.model
 
-import java.beans.PropertyDescriptor
-
 import groovy.transform.CompileStatic
+
+import java.beans.PropertyDescriptor
 
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.reflect.EntityReflector
@@ -33,98 +33,98 @@ import org.grails.datastore.mapping.reflect.NameUtils
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['rawtypes', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings('rawtypes')
 abstract class AbstractPersistentProperty<T extends Property> implements PersistentProperty<T> {
 
-    protected final PersistentEntity owner
-    protected final MappingContext context
-    protected final String name
-    protected final Class type
-    protected Boolean inherited
-    private EntityReflector.PropertyReader reader
-    private EntityReflector.PropertyWriter writer
+    protected final PersistentEntity owner;
+    protected final MappingContext context;
+    protected final String name;
+    protected final Class type;
+    protected Boolean inherited;
+    private EntityReflector.PropertyReader reader;
+    private EntityReflector.PropertyWriter writer;
 
     AbstractPersistentProperty(PersistentEntity owner, MappingContext context, PropertyDescriptor descriptor) {
-        this(owner, context, descriptor.getName(), descriptor.getPropertyType())
+        this(owner, context, descriptor.getName(), descriptor.getPropertyType());
     }
 
     AbstractPersistentProperty(PersistentEntity owner, MappingContext context, String name, Class type) {
-        this.owner = owner
-        this.context = context
-        this.name = name
-        this.type = type
+        this.owner = owner;
+        this.context = context;
+        this.name = name;
+        this.type = type;
     }
 
     String getName() {
-        return name
+        return name;
     }
 
     String getCapitilizedName() {
-        return NameUtils.capitalize(getName())
+        return NameUtils.capitalize(getName());
     }
 
     Class getType() {
-        return type
+        return type;
     }
 
     PersistentEntity getOwner() {
-        return owner
+        return owner;
     }
 
     @Override
     String toString() {
-        String mappingType = getClass().getName()
+        String mappingType = getClass().getName();
         if (mappingType.contains('$')) {
-            mappingType = getClass().getSuperclass().getName()
+            mappingType = getClass().getSuperclass().getName();
         }
-        return getName() + ':' + getType().getName() + ' (' + mappingType + ')'
+        return getName() + ':' + getType().getName() + ' (' + mappingType + ')';
     }
 
     boolean isNullable() {
-        final T mappedForm = getMapping().getMappedForm()
-        return mappedForm != null && mappedForm.isNullable()
+        final T mappedForm = getMapping().getMappedForm();
+        return mappedForm != null && mappedForm.isNullable();
     }
 
     @Override
     boolean isInherited() {
         if (inherited == null) {
+
             if (owner.isRoot()) {
-                inherited = false
-            }
-            else {
-                PersistentEntity parentEntity = owner.getParentEntity()
-                boolean foundInParent = false
+                inherited = false;
+            } else {
+                PersistentEntity parentEntity = owner.getParentEntity();
+                boolean foundInParent = false;
                 while (parentEntity != null) {
-                    final PersistentProperty p = parentEntity.getPropertyByName(name)
+                    final PersistentProperty p = parentEntity.getPropertyByName(name);
                     if (p != null) {
-                        foundInParent = true
-                        break
+                        foundInParent = true;
+                        break;
                     }
-                    parentEntity = parentEntity.getParentEntity()
+                    parentEntity = parentEntity.getParentEntity();
                 }
 
-                inherited = foundInParent
+                inherited = foundInParent;
             }
         }
 
-        return inherited
+        return inherited;
     }
 
     @Override
     EntityReflector.PropertyReader getReader() {
         if (reader == null) {
-            reader = getOwner().getReflector().getPropertyReader(getName())
+            reader = getOwner().getReflector().getPropertyReader(getName());
         }
-        return reader
+        return reader;
     }
 
     @Override
     EntityReflector.PropertyWriter getWriter() {
         if (writer == null) {
-            writer = getOwner().getReflector().getPropertyWriter(getName())
+            writer = getOwner().getReflector().getPropertyWriter(getName());
         }
-        return writer
+        return writer;
     }
-
 }

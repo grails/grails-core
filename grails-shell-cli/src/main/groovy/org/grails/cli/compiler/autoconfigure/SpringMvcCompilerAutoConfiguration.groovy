@@ -16,16 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
-import org.grails.cli.groovy.GroovyTemplate
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
+import org.grails.cli.groovy.GroovyTemplate;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring MVC.
@@ -34,19 +34,21 @@ import org.grails.cli.groovy.GroovyTemplate
  * @author Phillip Webb
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class SpringMvcCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return AstUtils.hasAtLeastOneAnnotation(classNode, 'Controller', 'RestController', 'EnableWebMvc')
+        return AstUtils.hasAtLeastOneAnnotation(classNode, 'Controller', 'RestController', 'EnableWebMvc');
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
         dependencies.ifAnyMissingClasses('org.springframework.web.servlet.mvc.Controller')
-            .add('spring-boot-starter-webmvc')
-        dependencies.ifAnyMissingClasses('groovy.text.TemplateEngine').add('groovy-templates')
+            .add('spring-boot-starter-webmvc');
+        dependencies.ifAnyMissingClasses('groovy.text.TemplateEngine').add('groovy-templates');
     }
 
     @Override
@@ -54,8 +56,8 @@ class SpringMvcCompilerAutoConfiguration extends CompilerAutoConfiguration {
         imports.addStarImports('org.springframework.web.bind.annotation',
                 'org.springframework.web.servlet.config.annotation', 'org.springframework.web.servlet',
                 'org.springframework.http', 'org.springframework.web.servlet.handler', 'org.springframework.http',
-                'org.springframework.ui', 'groovy.text')
-        imports.addStaticImport(GroovyTemplate.getName(), 'template')
+                'org.springframework.ui', 'groovy.text');
+        imports.addStaticImport(GroovyTemplate.getName(), 'template');
     }
 
 }
