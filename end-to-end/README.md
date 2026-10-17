@@ -93,7 +93,7 @@ Dynamic Groovy in a native image needs two things this branch has and 8.0.x deli
 | | 8.0.x | here |
 |---|---|---|
 | Groovy | 5, which has no AOT link mode | 6.0.0, which carries [GROOVY-12234](https://issues.apache.org/jira/browse/GROOVY-12234)'s AOT link mode for indy dispatch and ships its own native-image configuration |
-| framework invokedynamic | off by default in `CompilePlugin`, because Groovy 5's indy default is a large runtime regression for dynamic Groovy (#15293) | on for the library modules, which `CompilePlugin` compiles with it; the plugin modules take the Grails Gradle plugin's `indy` default, which #16165 turns on |
+| framework invokedynamic | off by default in `CompilePlugin`, because Groovy 5's indy default is a large runtime regression for dynamic Groovy (#15293) | on: Groovy 6's default, which `CompilePlugin` and the Grails Gradle plugin keep unless a build turns it off |
 
 Without the AOT link mode, indy-compiled Groovy cannot link in an image: the runtime invokes
 `IndyInterface`'s bootstrap method without its `<clinit>` having run, so a `static final` handle is
@@ -101,9 +101,7 @@ still null and it fails as `BootstrapMethodError: NullPointerException` at
 `IndyInterface.makeBootHandle`. Without invokedynamic at all, Groovy classes carry a `CallSiteArray`
 and define call-site classes as they run, which an image forbids: `UnsupportedFeatureError: Tried to
 define class`, naming a class nobody wrote. Either one on its own is fatal, which is why native
-image is not a Grails 8 capability and this module is not on that branch. Until #16165 is merged
-the second applies here too: `grails-gsp`, `grails-sitemesh3` and `grails-cache`, which the web
-starter brings in, are published with classic call sites.
+image is not a Grails 8 capability and this module is not on that branch.
 
 ### What it needs
 
