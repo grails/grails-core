@@ -61,6 +61,7 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.EntityProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import grails.persistence.Entity
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
@@ -449,6 +450,37 @@ class DomainClassJacksonModuleSpec extends Specification {
         and: 'so does the JSON converter'
         new JSON(new Unwrapped(writer: writer, prefixed: writer, note: 'n')).toString() ==
                 '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
+    }
+
+    void "what a property is annotated with applies to the instance a proxy in it stands for, when the JSON converter's proxy handler unwraps it"() {
+        given: 'a proxy with a lazy initializer and a proxy handler that unwraps it, as Hibernate has'
+        ConvertersConfigurationHolder.clear()
+        def initializer = new ConvertersConfigurationInitializer() {
+            @Override
+            protected ProxyHandler getProxyHandler() {
+                new LazyProxyHandler()
+            }
+        }
+        initializer.grailsApplication = grailsApplication
+        initializer.initialize()
+        def proxy = { long id ->
+            def writer = new Writer(name: 'a')
+            writer.id = id
+            new LazyWriterProxy(target: writer, proxyId: id)
+        }
+        def holder = new IgnoringWriterHolder(writer: proxy(1), writers: [proxy(2)])
+        def dog = new Dog(name: 'Rex')
+        dog.id = 3
+        def pet = new IgnoringPet(animal: new LazyAnimalProxy(target: dog))
+        def mapper = mapper(new DomainClassRendering(grailsApplication, new LazyProxyHandler(), false, false, false))
+
+        expect:
+        mapper.writeValueAsString(holder) == '{"writer":{"id":1},"writers":[{"id":2}]}'
+        new JSON(holder).toString() == '{"writer":{"id":1},"writers":[{"id":2}]}'
+
+        and: 'a proxy narrowed to a subclass, with the type id of the subclass'
+        mapper.writeValueAsString(pet) == '{"animal":{"@type":"Dog","id":3}}'
+        new JSON(pet).toString() == '{"animal":{"@type":"Dog","id":3}}'
     }
 
     void "a proxy in a @JsonUnwrapped property is written into the enclosing object, as the instance it proxies is"() {
@@ -959,6 +991,13 @@ class Code {
     String jsonValue() { code }
 }
 
+class IgnoringWriterHolder {
+    @JsonIgnoreProperties('name')
+    Writer writer
+    @JsonIgnoreProperties('name')
+    List<Writer> writers
+}
+
 class UnwrappedCode {
     @JsonUnwrapped
     Code code
@@ -1042,6 +1081,26 @@ class WriterProxy extends Writer implements EntityProxy<Writer> {
     Serializable getProxyKey() { proxyId }
 }
 
+/** A proxy as Hibernate gives one, whose class extends the class it proxies and which has a lazy initializer. */
+class LazyWriterProxy extends Writer implements EntityProxy<Writer> {
+    Writer target
+    Long proxyId
+
+    void initialize() {}
+
+    boolean isInitialized() { true }
+
+    Serializable getProxyKey() { proxyId }
+
+    LazyInitializer getHibernateLazyInitializer() {
+        new LazyInitializer(implementation: target)
+    }
+}
+
+class LazyInitializer {
+    Object implementation
+}
+
 class DogProxy extends Dog implements EntityProxy<Dog> {
     Dog target
     Long proxyId
@@ -1051,6 +1110,39 @@ class DogProxy extends Dog implements EntityProxy<Dog> {
     boolean isInitialized() { target != null }
 
     Serializable getProxyKey() { proxyId }
+}
+
+/** A proxy of an Animal that stands for a Dog, as Hibernate gives one for an association to Animal. */
+class LazyAnimalProxy extends Animal implements EntityProxy<Animal> {
+    Animal target
+
+    void initialize() {}
+
+    boolean isInitialized() { true }
+
+    Serializable getProxyKey() { target.id }
+
+    LazyInitializer getHibernateLazyInitializer() {
+        new LazyInitializer(implementation: target)
+    }
+}
+
+class IgnoringPet {
+    @JsonIgnoreProperties('name')
+    Animal animal
+}
+
+class LazyProxyHandler implements ProxyHandler {
+
+    boolean isProxy(Object o) { o instanceof LazyWriterProxy || o instanceof LazyAnimalProxy }
+
+    Object unwrapIfProxy(Object instance) { isProxy(instance) ? instance.target : instance }
+
+    boolean isInitialized(Object o) { true }
+
+    void initialize(Object o) {}
+
+    boolean isInitialized(Object obj, String associationName) { true }
 }
 
 class WriterProxyHandler implements EntityProxyHandler {

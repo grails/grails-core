@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.TokenStreamContext;
 import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
@@ -54,8 +55,16 @@ final class NestedValueSerializer extends DelegatingSerializer {
     /** The attribute of the serialization context that holds the {@link HandedBack} value the nested value writer writes. */
     private static final String HANDED_BACK = NestedValueSerializer.class.getName() + ".handedBack";
 
+    /** The property the values are written for, or {@code null} for values that are not the values of a property. */
+    private final BeanProperty property;
+
     NestedValueSerializer(ValueSerializer<?> delegatee) {
+        this(delegatee, null);
+    }
+
+    private NestedValueSerializer(ValueSerializer<?> delegatee, BeanProperty property) {
         super(delegatee);
+        this.property = property;
     }
 
     /**
@@ -82,11 +91,13 @@ final class NestedValueSerializer extends DelegatingSerializer {
         context.setAttribute(FRAME, frame);
         context.setAttribute(HANDED_BACK, null);
         try {
-            if (handedBack instanceof HandedBack nested && nested.value == value && nested.generator == generator) {
-                // A nested value the nested value writer writes with the mapper again is written by the serializer of the
-                // property it is the value of, so that what the property is annotated with applies to it
+            if (handedBack instanceof HandedBack nested && nested.generator == generator &&
+                    (nested.value == value || nested.isProxiedBy(value))) {
+                // A nested value the nested value writer writes with the mapper again, or the instance it writes in the
+                // place of a proxy, is written by the serializer of the property it is the value of, so that what the
+                // property is annotated with applies to it
                 frame.rootWritten = true;
-                nested.write(context);
+                nested.write(value, context);
             }
             else {
                 generator.writePOJO(value);
@@ -136,7 +147,14 @@ final class NestedValueSerializer extends DelegatingSerializer {
 
     @Override
     protected ValueSerializer<Object> newDelegatingInstance(ValueSerializer<?> newDelegatee) {
-        return new NestedValueSerializer(newDelegatee);
+        return new NestedValueSerializer(newDelegatee, property);
+    }
+
+    /** The property is kept, so that the instance a proxy in it stands for is written with the serializer of the property. */
+    @Override
+    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
+        ValueSerializer<?> contextual = context.handleSecondaryContextualization(_delegatee, property);
+        return contextual == _delegatee && property == this.property ? this : new NestedValueSerializer(contextual, property);
     }
 
     /**
@@ -185,7 +203,9 @@ final class NestedValueSerializer extends DelegatingSerializer {
             return false;
         }
         Object previous = context.getAttribute(HANDED_BACK);
-        context.setAttribute(HANDED_BACK, new HandedBack(generator, value, _delegatee, typeSerializer));
+        TokenStreamContext place = generator.streamWriteContext();
+        context.setAttribute(HANDED_BACK, new HandedBack(generator, value, _delegatee, typeSerializer, property, place,
+                place.getEntryCount()));
         try {
             return frame.nestedValueWriter.test(value);
         }
@@ -194,16 +214,37 @@ final class NestedValueSerializer extends DelegatingSerializer {
         }
     }
 
-    /** A nested value handed to the nested value writer, with the serializer of the property it is the value of. */
+    /**
+     * A nested value handed to the nested value writer, with the serializer of the property it is the value of and the
+     * place it is written in.
+     */
     private record HandedBack(JsonGenerator generator, Object value, ValueSerializer<Object> serializer,
-            TypeSerializer typeSerializer) {
+            TypeSerializer typeSerializer, BeanProperty property, TokenStreamContext place, int entries) {
 
-        void write(SerializationContext context) {
+        /**
+         * Whether the instance is one that this value, a proxy, stands for, which the nested value writer writes in its
+         * place: an instance of the class the proxy class extends, written where nothing has been written since.
+         */
+        boolean isProxiedBy(Object instance) {
+            Class<?> proxied = value.getClass().getSuperclass();
+            return instance != null && proxied != null && proxied != Object.class && proxied.isInstance(instance) &&
+                    generator.streamWriteContext() == place && place.getEntryCount() == entries;
+        }
+
+        void write(Object instance, SerializationContext context) {
+            ValueSerializer<Object> written = serializer;
+            if (instance != value) {
+                // as the mapper writes the instance a proxy stands for
+                written = context.findPrimaryPropertySerializer(instance.getClass(), property);
+                if (written instanceof NestedValueSerializer nested) {
+                    written = nested._delegatee;
+                }
+            }
             if (typeSerializer == null) {
-                serializer.serialize(value, generator, context);
+                written.serialize(instance, generator, context);
             }
             else {
-                serializer.serializeWithType(value, generator, context, typeSerializer);
+                written.serializeWithType(instance, generator, context, typeSerializer);
             }
         }
     }
