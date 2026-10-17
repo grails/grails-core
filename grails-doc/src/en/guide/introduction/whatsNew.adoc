@@ -87,6 +87,34 @@ Jackson `JsonMapper`, so a Grails application and a Spring Boot application retu
 render. See the Date and Time Rendering sections of the REST and JSON Views guides, and the upgrade guide for the
 types that render differently than in Grails 7.
 
+==== JSON Responses Through Spring Boot's Jackson Mapper, and RFC 9457 Problems
+
+With `grails.web.rendering.json.spring: true`, `respond` writes JSON through Spring MVC's message converters, with a
+mapper Grails derives from Spring Boot's Jackson `JsonMapper`, so the `spring.jackson.*` settings and the application's
+Jackson modules apply to its responses as they do in a Spring Boot application. `render json: value` writes with the
+same mapper, and `grails.converters.json.legacy: false` makes `grails.converters.JSON` write through Spring Boot's
+mapper as well. Grails 9 keeps Grails 8's JSON by default.
+
+Named Jackson configurations, registered with the `NamedJsonConfigurationRegistry` bean, are selected for each response,
+in place of the thread-local `JSON.use(...)`. Every registry has a `deep` configuration, which writes the associations of
+domain class instances in full:
+
+[source,groovy]
+----
+respond book, jsonConfiguration: 'catalog'
+render json: book, jsonConfiguration: 'deep', excludes: ['isbn']
+----
+
+`respond` writes a Spring `ProblemDetail` as Spring MVC writes it, as `application/problem+json`, or
+`application/problem+xml` for an XML client, with the status the problem carries. `ValidationProblemDetailFactory`
+creates one for validation errors.
+
+XML conversion, binding and renderers move to the `grails-xml` module, which the Grails 9 web starter and
+`grails-web-boot` still bring, and which a JSON-only application can exclude. Grails reads the `Accept` and
+`Content-Type` headers with Spring's media type parser, so media type names match whatever their case.
+
+See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 3 to 6, 10 and 12.
+
 ==== Hibernate 7 Application Generation
 
 Grails Forge can now generate applications configured for Grails Data with Hibernate 7.
