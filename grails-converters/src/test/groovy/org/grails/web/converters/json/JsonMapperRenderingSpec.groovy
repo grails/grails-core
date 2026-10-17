@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import spock.lang.Shared
@@ -122,6 +123,15 @@ class JsonMapperRenderingSpec extends Specification {
         expect:
         new JSON(bean).toString() == '{"born":"1970-01-01","count":"5"}'
         new JSON(bean).toString() == jackson.writeValueAsString(bean)
+    }
+
+    void "a @JsonUnwrapped property is written into the enclosing object, as the JsonMapper writes it"() {
+        given:
+        def holder = new UnwrapHolder(address: new UnwrapAddress(street: 'Main'), note: 'n')
+
+        expect:
+        new JSON(holder).toString() == '{"street":"Main","note":"n"}'
+        new JSON(holder).toString() == jackson.writeValueAsString(holder)
     }
 
     void "enums render by name, as in Grails 8, and a Month as its number"() {
@@ -783,6 +793,16 @@ class ShapedValues {
     Long count
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = 'yyyy-MM-dd', timezone = 'UTC')
     Date born
+}
+
+class UnwrapAddress {
+    String street
+}
+
+class UnwrapHolder {
+    @JsonUnwrapped
+    UnwrapAddress address
+    String note
 }
 
 class AnnotatedBean {

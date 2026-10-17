@@ -433,6 +433,10 @@ class DomainClassJacksonModuleSpec extends Specification {
         expect: 'in the place of the property, in the order the mapper writes the properties of the enclosing bean'
         mapper().writeValueAsString(new Unwrapped(writer: writer, prefixed: writer, note: 'n')) ==
                 '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
+
+        and: 'so does the JSON converter'
+        new JSON(new Unwrapped(writer: writer, prefixed: writer, note: 'n')).toString() ==
+                '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
     }
 
     void "@JsonInclude, @JsonView and @JsonFormat on a property apply, as they do to any bean"() {

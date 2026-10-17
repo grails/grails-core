@@ -37,6 +37,7 @@ import tools.jackson.databind.type.CollectionLikeType;
 import tools.jackson.databind.type.CollectionType;
 import tools.jackson.databind.type.MapLikeType;
 import tools.jackson.databind.type.MapType;
+import tools.jackson.databind.util.NameTransformer;
 
 /**
  * Wraps every serializer of the mapper that a {@link JsonMapperSupport} writes with, so that a value nested in a value
@@ -121,6 +122,15 @@ final class NestedValueSerializer extends DelegatingSerializer {
     @Override
     protected ValueSerializer<Object> newDelegatingInstance(ValueSerializer<?> newDelegatee) {
         return new NestedValueSerializer(newDelegatee);
+    }
+
+    /**
+     * An unwrapped value is written into the object that encloses it, as the property's serializer writes it: the nested
+     * value writer writes a complete value, which cannot be written there.
+     */
+    @Override
+    public ValueSerializer<Object> unwrappingSerializer(NameTransformer unwrapper) {
+        return _delegatee.unwrappingSerializer(unwrapper);
     }
 
     /**
