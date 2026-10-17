@@ -102,8 +102,9 @@ application context when it writes a response, so their `groovyPageLocator` and 
 properties are no longer autowired; they are set only where an application sets them.
 
 Without the module, a request for an XML format that nothing else renders is answered like a request for
-any unsupported format: `respond` answers `406 Not Acceptable`, or `404` with no body for validation
-errors, which have no renderer; an XML request body binds nothing and raises no error; and `request.XML`
+any unsupported format: `respond` sends a `406 Not Acceptable` error, or a `404` one for validation errors,
+which have no renderer, so that the application's error pages apply, and writes a `ProblemDetail` as
+`application/problem+json` (see section 10); an XML request body binds nothing and raises no error; and `request.XML`
 fails with a `MissingPropertyException`. `encodeAsXML` and the `xml` codec still escape text, but an object
 other than text is escaped as its string rather than rendered as XML. An application that sees these after
 an upgrade needs the dependency above.
@@ -137,7 +138,8 @@ published in its existing descriptor format; `grails-xml` concerns application H
 ==== 4. Opt Into Spring JSON Conversion
 
 Each JSON and XML path keeps its Grails 8 behaviour by default in Grails 9, and has a setting that opts into the
-Jackson-based one:
+Jackson-based one. A `ProblemDetail` is the exception: `respond` always writes it through Spring's message
+converters (see section 10).
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -169,7 +171,7 @@ Jackson-based one:
 | `grails.web.rendering.xml.spring`
 | XML written by `respond` for ordinary beans
 | `false`
-| unchanged
+| unchanged until legacy XML conversion is removed in Grails 11
 |===
 
 `request.JSON` and data binding parse a request body under different settings, so set
@@ -657,6 +659,10 @@ Each message is resolved through the application's `MessageSource` for the curre
 `messages.properties` entries and Spring Boot's `spring.messages.*` settings apply to validation
 responses as they do elsewhere.
 
+With JSON views, a `grails-app/views/errors/_errors.gson` template renders validation errors instead, as in
+Grails 8. Applications generated with the JSON views feature or the REST API profile have one; delete it to
+answer with the problem, or respond with `validationProblemDetailFactory.create(errors)`, which no view renders.
+
 Applications can also inject the factory when they need to create or customize the problem explicitly.
 When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem, selects
 `application/problem+json`, or `application/problem+xml` for an XML response, and fills in an absent
@@ -675,7 +681,9 @@ Rejected field values are excluded by default because they can contain passwords
 sensitive request data. Applications that deliberately need those values can define their own factory
 bean after reviewing that exposure risk. It replaces the default one whatever its name, both for `respond` and
 for a controller that declares a `validationProblemDetailFactory` property, and takes the `MessageSource` so that
-messages stay localized:
+messages stay localized. A bean named `validationProblemDetailFactory` overrides the plugin's bean of that name, so it
+needs bean definition overriding, which Grails allows unless `spring.main.allow-bean-definition-overriding` is `false`;
+any other name works either way:
 
 [source,groovy]
 .grails-app/init/Application.groovy
