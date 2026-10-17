@@ -62,8 +62,9 @@ JSON.registerObjectMarshaller(Book) {
 ==== Customizing JSON via Spring Boot
 
 
-Register Jackson serializers with Spring Boot's configured mapper so they apply to `respond()`, Spring MVC,
-and other Jackson-based integrations:
+Register Jackson serializers with Spring Boot's configured mapper so that they apply to Spring MVC and other
+Jackson-based integrations, to `respond()` with `grails.web.rendering.json.spring` set to `true`, to `render json:`,
+and to `grails.converters.JSON` with `grails.converters.json.legacy` set to `false`:
 
 [source,groovy]
 ----
@@ -79,5 +80,6 @@ JsonMapperBuilderCustomizer applicationJsonCustomizer() {
 }
 ----
 
-`BookValueSerializer` is an application-provided Jackson `ValueSerializer<Book>`. Legacy JSON marshallers
-continue to run when the legacy renderer is selected explicitly or as a compatibility fallback.
+`BookValueSerializer` is an application-provided Jackson `ValueSerializer<Book>`. With the Grails 9 defaults, `respond()`
+and `render ... as JSON` write JSON with the legacy converter, which the marshallers above customize and which does not
+use the serializer.
