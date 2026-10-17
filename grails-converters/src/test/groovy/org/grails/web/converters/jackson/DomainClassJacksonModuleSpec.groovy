@@ -145,6 +145,23 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper.writeValueAsString(volume) == '{"id":1,"title":"Grails","shelf":null,"writers":[{"id":9}],"writersByName":null}'
     }
 
+    void "a GORM proxy is unwrapped by itself when the application's proxy handler does not unwrap it, as on MongoDB"() {
+        given: 'only Hibernate registers a proxy handler; other datastores leave the default one, which unwraps nothing'
+        def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, false))
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def volume = new Volume(title: 'Grails', writers: [new WriterProxy(proxyId: 9)])
+        volume.id = 1
+
+        expect: 'the proxy is written as its target, and a reference to one from its key, without loading it'
+        mapper.writeValueAsString(new WriterProxy(target: writer, proxyId: 1)) == '{"id":1,"name":"a"}'
+        mapper.writeValueAsString(volume) == '{"id":1,"title":"Grails","shelf":null,"writers":[{"id":9}],"writersByName":null}'
+
+        and: 'the JSON converter, which renders through the same serializer, writes them alike'
+        new JSON(new WriterProxy(target: writer, proxyId: 1)).toString() == '{"id":1,"name":"a"}'
+        new JSON(volume).toString() == '{"id":1,"title":"Grails","shelf":null,"writers":[{"id":9}],"writersByName":null}'
+    }
+
     void "properties annotated @JsonIgnore or write-only are not written, and those @JsonIgnoreProperties names are not"() {
         given: 'GORM adds @JsonIgnoreProperties to every domain class, naming properties such as the version'
         def member = new Member(name: 'a', password: 'secret', pin: '1234', token: 'abc')

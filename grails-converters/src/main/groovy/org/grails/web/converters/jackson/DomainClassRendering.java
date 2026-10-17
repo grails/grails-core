@@ -196,11 +196,18 @@ public class DomainClassRendering {
     }
 
     /**
+     * A GORM proxy is unwrapped by itself when the proxy handler leaves it as it is: only Hibernate registers a proxy
+     * handler, so that of an application on another datastore, such as MongoDB, unwraps nothing.
+     *
      * @param value a domain class instance, or a proxy of one
      * @return the instance itself
      */
     public Object unwrap(Object value) {
-        return proxyHandler.unwrapIfProxy(value);
+        Object unwrapped = proxyHandler.unwrapIfProxy(value);
+        if (unwrapped == value && value instanceof EntityProxy<?> proxy) {
+            return proxy.getTarget();
+        }
+        return unwrapped;
     }
 
     /**
@@ -272,6 +279,9 @@ public class DomainClassRendering {
             if (id != null) {
                 return id;
             }
+        }
+        if (reference instanceof EntityProxy<?> proxy && proxy.getProxyKey() != null) {
+            return proxy.getProxyKey();
         }
         return propertyValue(reference, idProperty);
     }
