@@ -36,8 +36,10 @@ import groovy.json.JsonSlurper
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
@@ -131,6 +133,17 @@ class JsonMapperRenderingSpec extends Specification {
 
         expect:
         new JSON(holder).toString() == '{"street":"Main","note":"n"}'
+        new JSON(holder).toString() == jackson.writeValueAsString(holder)
+    }
+
+    void "the annotations of a property apply to the bean, collection or map it holds, as the JsonMapper applies them"() {
+        given:
+        def account = new Account(user: 'ada', secret: 's3cret')
+        def holder = new AccountHolder(account: account, accounts: [account], accountsByName: [ada: account])
+
+        expect:
+        new JSON(holder).toString() ==
+                '{"account":{"user":"ada"},"accounts":[{"user":"ada"}],"accountsByName":{"ada":{"user":"ada"}}}'
         new JSON(holder).toString() == jackson.writeValueAsString(holder)
     }
 
@@ -803,6 +816,21 @@ class UnwrapHolder {
     @JsonUnwrapped
     UnwrapAddress address
     String note
+}
+
+class Account {
+    String user
+    String secret
+}
+
+@JsonPropertyOrder(['account', 'accounts', 'accountsByName'])
+class AccountHolder {
+    @JsonIgnoreProperties(['secret'])
+    Account account
+    @JsonIgnoreProperties(['secret'])
+    List<Account> accounts
+    @JsonIgnoreProperties(['secret'])
+    Map<String, Account> accountsByName
 }
 
 class AnnotatedBean {

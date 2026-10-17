@@ -51,6 +51,9 @@ final class NestedValueSerializer extends DelegatingSerializer {
     /** The attribute of the serialization context that holds the {@link Frame} of the value being written. */
     private static final String FRAME = NestedValueSerializer.class.getName() + ".frame";
 
+    /** The attribute of the serialization context that holds the {@link HandedBack} value the nested value writer writes. */
+    private static final String HANDED_BACK = NestedValueSerializer.class.getName() + ".handedBack";
+
     NestedValueSerializer(ValueSerializer<?> delegatee) {
         super(delegatee);
     }
@@ -74,12 +77,24 @@ final class NestedValueSerializer extends DelegatingSerializer {
         // The frame belongs to the write: its context is the one every serializer of this value is given
         SerializationContext context = context(generator);
         Object previous = context.getAttribute(FRAME);
-        context.setAttribute(FRAME, new Frame(generator, value, nestedValueWriter));
+        Object handedBack = context.getAttribute(HANDED_BACK);
+        Frame frame = new Frame(generator, value, nestedValueWriter);
+        context.setAttribute(FRAME, frame);
+        context.setAttribute(HANDED_BACK, null);
         try {
-            generator.writePOJO(value);
+            if (handedBack instanceof HandedBack nested && nested.value == value && nested.generator == generator) {
+                // A nested value the nested value writer writes with the mapper again is written by the serializer of the
+                // property it is the value of, so that what the property is annotated with applies to it
+                frame.rootWritten = true;
+                nested.write(context);
+            }
+            else {
+                generator.writePOJO(value);
+            }
         }
         finally {
             context.setAttribute(FRAME, previous);
+            context.setAttribute(HANDED_BACK, handedBack);
         }
     }
 
@@ -145,19 +160,20 @@ final class NestedValueSerializer extends DelegatingSerializer {
 
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt) {
-        if (!writtenAsNested(value, gen, ctxt)) {
+        if (!writtenAsNested(value, gen, ctxt, null)) {
             _delegatee.serialize(value, gen, ctxt);
         }
     }
 
     @Override
     public void serializeWithType(Object value, JsonGenerator gen, SerializationContext ctxt, TypeSerializer typeSer) {
-        if (!writtenAsNested(value, gen, ctxt)) {
+        if (!writtenAsNested(value, gen, ctxt, typeSer)) {
             _delegatee.serializeWithType(value, gen, ctxt, typeSer);
         }
     }
 
-    private static boolean writtenAsNested(Object value, JsonGenerator generator, SerializationContext context) {
+    private boolean writtenAsNested(Object value, JsonGenerator generator, SerializationContext context,
+            TypeSerializer typeSerializer) {
         Frame frame = (Frame) context.getAttribute(FRAME);
         if (frame == null || frame.generator != generator) {
             return false;
@@ -166,7 +182,28 @@ final class NestedValueSerializer extends DelegatingSerializer {
             frame.rootWritten = true;
             return false;
         }
-        return frame.nestedValueWriter.test(value);
+        Object previous = context.getAttribute(HANDED_BACK);
+        context.setAttribute(HANDED_BACK, new HandedBack(generator, value, _delegatee, typeSerializer));
+        try {
+            return frame.nestedValueWriter.test(value);
+        }
+        finally {
+            context.setAttribute(HANDED_BACK, previous);
+        }
+    }
+
+    /** A nested value handed to the nested value writer, with the serializer of the property it is the value of. */
+    private record HandedBack(JsonGenerator generator, Object value, ValueSerializer<Object> serializer,
+            TypeSerializer typeSerializer) {
+
+        void write(SerializationContext context) {
+            if (typeSerializer == null) {
+                serializer.serialize(value, generator, context);
+            }
+            else {
+                serializer.serializeWithType(value, generator, context, typeSerializer);
+            }
+        }
     }
 
     private static final class Frame {

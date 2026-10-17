@@ -305,6 +305,9 @@ class DomainClassJacksonModuleSpec extends Specification {
 
         and: 'to a proxy of an instance in the association as well'
         deep.writeValueAsString(proxied) == '{"id":8,"name":"main","shelf":{"id":3},"writers":[{"id":1}]}'
+
+        and: 'and when the JSON converter renders deep'
+        JSON.use('deep') { new JSON(library).toString() } == '{"id":7,"name":"main","shelf":{"id":3},"writers":[{"id":1}]}'
     }
 
     void "a domain class with @JsonIdentityInfo writes a repeated instance as Jackson's object id"() {
