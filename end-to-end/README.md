@@ -68,8 +68,8 @@ first is covered by Spring Boot's own hints, which register the two hardcoded pa
 | Bundle | Base name | Why it is here |
 |---|---|---|
 | the application's own | `messages` | The case Boot already covers, as a control. |
-| the plugin's | `native-messages` | Namespaced, so Boot's patterns never reach it. The plugin name is multi-word, so this also covers the descriptor's hyphenated spelling being matched against the plugin's camel-case one. |
-| one the application configured | `config.i18n.custom` | Outside `grails-app/i18n`, and written dotted, so it also proves the base name is converted to `config/i18n/custom` before being registered. |
+| the plugin's | `native-messages` | Namespaced, so Boot's patterns never reach it. Its file is at the root of the classpath, where Grails registers every properties file, so in an image this proves the plugin is found and its base name reaches the message source. The plugin name is multi-word, so this also covers the descriptor's hyphenated spelling being matched against the plugin's camel-case one. |
+| one the application configured | `config.i18n.custom` | Outside `grails-app/i18n` and the root, so the only one carried into an image by the hints derived from the base names alone, and written dotted, so it also proves the base name is converted to `config/i18n/custom` before being registered. |
 
 Each is resolved in English and in a locale variant. The locale half is the assertion that would
 fail if the hints registered *bundles* rather than resource *patterns* and the image were built with
@@ -85,6 +85,11 @@ cd end-to-end
 The JVM half runs in `check` and needs nothing special. It cannot falsify a hint; its value is as a
 fixture guard, keeping the bundles and the assertions from drifting apart. The native half is opt-in
 because it needs a GraalVM toolchain and minutes of CPU.
+
+The native half needs no recorded metadata. Nothing traced by an agent is checked in or generated: the
+image is built from what the framework registers while the code is generated -- finding the plugins,
+creating their beans and artefacts, what Groovy does reflectively -- and from the hints derived from the
+configured base names. So a failure here is a gap in the framework, not in this fixture.
 
 ### Why this runs here and not on 8.0.x
 

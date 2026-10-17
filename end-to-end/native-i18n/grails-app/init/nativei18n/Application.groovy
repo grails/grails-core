@@ -42,7 +42,10 @@ import org.springframework.context.MessageSource
  *
  * <p>Only the first of the three is covered by Spring Boot's own hints, which register the two
  * hardcoded patterns {@code messages.properties} and {@code messages_*.properties} and derive
- * nothing from the configured base names.</p>
+ * nothing from the configured base names. Grails registers every properties file at the root of the
+ * classpath as well, which is where an application's and a plugin's bundles land, so of the three
+ * only the configured base name, which is not at the root, is carried into an image by the hints
+ * derived from {@code spring.messages.basename} alone.</p>
  *
  * <p>Compiled statically, as a generated application's {@code Application} class is, so that the
  * image depends on resource hints for what this checks and not on reflection metadata for how it
@@ -66,13 +69,15 @@ class Application extends GrailsAutoConfiguration {
             check(messages, 'native.app.greeting', Locale.ENGLISH, 'hello from the application bundle')
 
             // A plugin's bundle, base name 'native-messages'. Namespaced, so Boot's messages*
-            // patterns never reach it; it survives only because the base names are recorded at build
-            // time and hinted from them. The plugin name is also multi-word, so this covers the
-            // descriptor's hyphenated spelling being matched against the plugin's camel-case one.
+            // patterns never reach it. Its file is at the root, which Grails registers, so what this
+            // proves in an image is that the plugin is found and its base name reaches the message
+            // source. The plugin name is also multi-word, so this covers the descriptor's hyphenated
+            // spelling being matched against the plugin's camel-case one.
             check(messages, 'native.plugin.greeting', Locale.ENGLISH, 'hello from the plugin bundle')
 
-            // A base name the application configured itself, written in dotted form, so this proves
-            // config.i18n.custom was converted to config/i18n/custom before being used.
+            // A base name the application configured itself, outside the root and written in dotted
+            // form. The one bundle only the hints derived from the base names carry into an image,
+            // so this proves config.i18n.custom was converted to config/i18n/custom and registered.
             check(messages, 'native.custom.greeting', Locale.ENGLISH, 'hello from a configured base name')
 
             // A locale variant of each. In an image this is what would fail if the hints registered
