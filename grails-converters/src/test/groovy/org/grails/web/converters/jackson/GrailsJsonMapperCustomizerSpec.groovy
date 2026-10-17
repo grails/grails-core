@@ -413,6 +413,15 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         'INSERT_NULL' || [null]   | 'written as null'
     }
 
+    void 'with the IGNORE behaviour, a cycle reached as a value of a map is null, as a property is'() {
+        given:
+        def keyed = new JacksonKeyedNode(name: 'keyed')
+        keyed.byName = [self: keyed]
+
+        expect:
+        beanCycleMapper('IGNORE').writeValueAsString(keyed) == '{"byName":{"self":null},"name":"keyed"}'
+    }
+
     void 'with the IGNORE behaviour, a cycle reached as a property of a bean written as an array is null, so that the positions are kept'() {
         given:
         def lone = new JacksonRowNode(name: 'lone')
@@ -605,6 +614,11 @@ class SpecialJacksonBook extends JacksonBook {
 class JacksonNode {
     String name
     JacksonNode next
+}
+
+class JacksonKeyedNode {
+    String name
+    Map<String, JacksonKeyedNode> byName
 }
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)

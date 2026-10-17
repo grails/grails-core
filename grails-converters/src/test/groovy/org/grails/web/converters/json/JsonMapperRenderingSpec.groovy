@@ -213,6 +213,8 @@ class JsonMapperRenderingSpec extends Specification {
         lone.parent = lone
         def row = new RowNode(name: 'lone')
         row.parent = row
+        def keyed = new KeyedNode(name: 'keyed')
+        keyed.byName = [self: keyed]
 
         when:
         def list = new JsonSlurper().parseText(new JSON(first).toString())
@@ -225,6 +227,9 @@ class JsonMapperRenderingSpec extends Specification {
 
         and: 'a property of a bean written as an array keeps its position'
         new JSON(row).toString() == '["lone",null]'
+
+        and: 'a value of a map is null, as a property is'
+        new JsonSlurper().parseText(new JSON(keyed).toString()).byName == [self: null]
     }
 
     void "enums render by name, as in Grails 8, and a Month as its number"() {
@@ -1057,6 +1062,11 @@ class Node {
     String name
     Node parent
     List<Node> children
+}
+
+class KeyedNode {
+    String name
+    Map<String, KeyedNode> byName
 }
 
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
