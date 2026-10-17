@@ -310,7 +310,28 @@ class JSONWriterSpec extends Specification {
         out.toString() == '{"map":{"content":{"size":2}},"date":{"content":"1970-01-01T00:00:00.000Z"},"after":1}'
     }
 
-    void "a nested value writer must write one complete value"() {
+    void "a nested value writer that writes nothing leaves the value out of a list, and writes null for a property"() {
+        given: 'a nested value writer that writes nothing for a map, as the converter writes a value IGNORE leaves out'
+        def writer = new JSONWriter(out, boxes, false)
+        def nested = { Object value ->
+            if (value instanceof Map) {
+                writer.writeNested { }
+                return true
+            }
+            false
+        } as Predicate<Object>
+
+        when:
+        writer.object()
+                .key('property').value(new JsonMapperValue(new Box(content: [a: 1]), boxes, nested))
+                .key('elements').value(new JsonMapperValue(new Box(content: [[a: 1], 2]), boxes, nested))
+                .endObject()
+
+        then: 'as the mapper writes them'
+        out.toString() == '{"property":{"content":null},"elements":{"content":[2]}}'
+    }
+
+    void "a nested value writer that starts a value must complete it"() {
         given:
         def writer = new JSONWriter(out, boxes, false)
         def nested = { Object value ->
