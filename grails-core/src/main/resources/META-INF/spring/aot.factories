@@ -11,7 +11,8 @@ org.apache.grails.core.aot.GrailsClosureRuntimeHints,\
 org.apache.grails.core.aot.GrailsFactoriesRuntimeHints,\
 org.apache.grails.core.aot.GrailsPluginRuntimeHints,\
 org.apache.grails.core.aot.GrailsResourceRuntimeHints,\
-org.apache.grails.core.aot.GroovyExtensionModuleRuntimeHints
+org.apache.grails.core.aot.GroovyExtensionModuleRuntimeHints,\
+org.apache.grails.core.aot.PropertyEditorRuntimeHints
 
 org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
 org.apache.grails.core.aot.AutowireModeBeanRegistrationAotProcessor,\
