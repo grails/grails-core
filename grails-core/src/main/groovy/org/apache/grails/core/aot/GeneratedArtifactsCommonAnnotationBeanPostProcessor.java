@@ -28,8 +28,9 @@ import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 
 /**
  * Injects through {@code @Resource}, and calls {@code @PostConstruct} and {@code @PreDestroy} methods on, the
- * beans the code generated ahead of time did not create, and leaves alone the ones it did: it has injected
- * those and recorded their initialization and destruction methods on their definitions.
+ * beans the code generated ahead of time did not handle, and leaves alone the ones it did -- the beans it
+ * created that are of the type their definitions declare: it has injected those and recorded their
+ * initialization and destruction methods on their definitions.
  *
  * @since 9.0
  * @see GeneratedBeanDefinitions
@@ -47,14 +48,14 @@ public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonA
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        if (!GeneratedBeanDefinitions.isGenerated(beanFactory, beanName)) {
+        if (!GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
             super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
         }
     }
 
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) throws BeansException {
-        if (GeneratedBeanDefinitions.isGenerated(beanFactory, beanName)) {
+        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
             return pvs;
         }
         return super.postProcessProperties(pvs, bean, beanName);
@@ -62,7 +63,7 @@ public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonA
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (GeneratedBeanDefinitions.isGenerated(beanFactory, beanName)) {
+        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
             return bean;
         }
         return super.postProcessBeforeInitialization(bean, beanName);
@@ -70,7 +71,7 @@ public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonA
 
     @Override
     public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
-        if (!GeneratedBeanDefinitions.isGenerated(beanFactory, beanName)) {
+        if (!GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
             super.postProcessBeforeDestruction(bean, beanName);
         }
     }

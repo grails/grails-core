@@ -143,10 +143,37 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
             context.close()
     }
 
+    void 'a bean the generated code created as an interface is injected and initialized by the processors'() {
+        given: 'a bean the generated code created from a factory method declaring an interface, as the link ' +
+                'generator is created, so the code saw none of the members of the class it returns'
+            def context = new GenericApplicationContext()
+            context.registerBean('collaborator', CollaboratorFixture)
+            context.registerBeanDefinition('declaredAsInterface', new RootBeanDefinition(InjectedType).tap {
+                instanceSupplier = { new InjectedFixture() }
+            })
+            GeneratedBeanDefinitions.record(context.beanFactory)
+
+        when:
+            withGeneratedArtifacts(true) {
+                GrailsApplicationPostProcessor.registerAnnotationConfigProcessorsForGeneratedArtifacts(context)
+            }
+            context.refresh()
+
+        then: 'nobody else injects it: left alone, the link generator rendered no link'
+            context.getBean('declaredAsInterface', InjectedFixture).injections == 1
+            context.getBean('declaredAsInterface', InjectedFixture).initializations == 1
+
+        cleanup:
+            context.close()
+    }
+
     static class CollaboratorFixture {
     }
 
-    static class InjectedFixture {
+    static interface InjectedType {
+    }
+
+    static class InjectedFixture implements InjectedType {
 
         int injections
 

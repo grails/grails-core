@@ -50,7 +50,7 @@ class GrailsPluginLifecycleInitializerSpec extends Specification {
             new GrailsPluginLifecycleInitializer().initialize(context)
 
         then:
-            GeneratedBeanDefinitions.isGenerated(context.beanFactory, 'generated')
+            GeneratedBeanDefinitions.isInjectedByGeneratedCode(context.beanFactory, 'generated', String)
     }
 
     void 'nothing is recorded otherwise'() {

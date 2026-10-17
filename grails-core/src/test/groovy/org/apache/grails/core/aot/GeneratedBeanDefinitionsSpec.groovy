@@ -20,68 +20,122 @@ package org.apache.grails.core.aot
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.support.RootBeanDefinition
+import org.springframework.cglib.proxy.Enhancer
+import org.springframework.cglib.proxy.NoOp
 import spock.lang.Specification
 
 /**
- * Covers telling the beans the generated code contributed from the ones declared after it.
+ * Covers telling the beans the generated code injected from the ones it did not: those declared after it,
+ * and those of a class it never saw.
  */
 class GeneratedBeanDefinitionsSpec extends Specification {
 
     DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory()
 
-    void 'a bean whose definition was there when they were recorded is generated'() {
+    void 'a bean of the type its generated definition declares was injected by the generated code'() {
         given:
-            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(String))
+            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(ConfigurationFixture))
 
         when:
             GeneratedBeanDefinitions.record(beanFactory)
 
         then:
-            GeneratedBeanDefinitions.isGenerated(beanFactory, 'generated')
+            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'generated', ConfigurationFixture)
     }
 
-    void 'a bean declared afterwards is not'() {
+    void 'so was the subclass Spring generates for a configuration class'() {
         given:
+            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(ConfigurationFixture))
             GeneratedBeanDefinitions.record(beanFactory)
-
-        when:
-            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(String))
-
-        then:
-            !GeneratedBeanDefinitions.isGenerated(beanFactory, 'declaredLater')
-    }
-
-    void 'a bean declared again in place of a generated one is not'() {
-        given: 'a plugin declaring a bean the generated code also contributed, as the bean DSL does at run time'
-            beanFactory.registerBeanDefinition('redeclared', new RootBeanDefinition(String))
-            GeneratedBeanDefinitions.record(beanFactory)
-
-        when:
-            beanFactory.registerBeanDefinition('redeclared', new RootBeanDefinition(StringBuilder))
-
-        then: 'the definition that will be used is not the one the generated code wired'
-            !GeneratedBeanDefinitions.isGenerated(beanFactory, 'redeclared')
-    }
-
-    void 'nothing is generated where nothing was recorded'() {
-        given: 'a context not running on generated artifacts'
-            beanFactory.registerBeanDefinition('ordinary', new RootBeanDefinition(String))
+            Class<?> enhanced = new Enhancer(superclass: ConfigurationFixture, callback: NoOp.INSTANCE).create().getClass()
 
         expect:
-            !GeneratedBeanDefinitions.isGenerated(beanFactory, 'ordinary')
-            !GeneratedBeanDefinitions.isGenerated(null, 'ordinary')
+            enhanced != ConfigurationFixture
+            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'generated', enhanced)
+    }
+
+    void 'the type a factory method product is declared as is the one compared'() {
+        given: 'a factory method product, whose definition holds the factory class and the type it returns'
+            beanFactory.registerBeanDefinition('product', new RootBeanDefinition(ConfigurationFixture).tap {
+                targetType = ProductFixture
+            })
+            GeneratedBeanDefinitions.record(beanFactory)
+
+        expect:
+            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'product', ProductFixture)
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'product', ConfigurationFixture)
+    }
+
+    void 'a bean of another class than its definition declares was not'() {
+        given: 'a factory method declaring an interface, as the link generator is declared'
+            beanFactory.registerBeanDefinition('declaredAsInterface', new RootBeanDefinition(ProductType))
+            GeneratedBeanDefinitions.record(beanFactory)
+
+        expect: 'the generated code never saw the members of the class it returns'
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredAsInterface', ProductFixture)
+    }
+
+    void 'a bean declared afterwards was not'() {
+        given:
+            GeneratedBeanDefinitions.record(beanFactory)
+
+        when:
+            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(ConfigurationFixture))
+
+        then:
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredLater', ConfigurationFixture)
+    }
+
+    void 'a bean declared again in place of a generated one was not'() {
+        given: 'a plugin declaring a bean the generated code also contributed, as the bean DSL does at run time'
+            beanFactory.registerBeanDefinition('redeclared', new RootBeanDefinition(ConfigurationFixture))
+            GeneratedBeanDefinitions.record(beanFactory)
+
+        when:
+            beanFactory.registerBeanDefinition('redeclared', new RootBeanDefinition(ConfigurationFixture))
+
+        then: 'the definition that will be used is not the one the generated code wired'
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'redeclared', ConfigurationFixture)
+    }
+
+    void 'a definition that declares no type is left to the processors'() {
+        given:
+            beanFactory.registerBeanDefinition('untyped', new RootBeanDefinition())
+            GeneratedBeanDefinitions.record(beanFactory)
+
+        expect:
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'untyped', ConfigurationFixture)
+    }
+
+    void 'nothing was injected by generated code where nothing was recorded'() {
+        given: 'a context not running on generated artifacts'
+            beanFactory.registerBeanDefinition('ordinary', new RootBeanDefinition(ConfigurationFixture))
+
+        expect:
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'ordinary', ConfigurationFixture)
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(null, 'ordinary', ConfigurationFixture)
     }
 
     void 'recording twice keeps what was recorded first'() {
         given:
-            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(String))
+            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(ConfigurationFixture))
             GeneratedBeanDefinitions.record(beanFactory)
-            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(String))
+            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(ConfigurationFixture))
 
         when:
             GeneratedBeanDefinitions.record(beanFactory)
 
         then:
-            !GeneratedBeanDefinitions.isGenerated(beanFactory, 'declaredLater')
+            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'generated', ConfigurationFixture)
+            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredLater', ConfigurationFixture)
+    }
+
+    static class ConfigurationFixture {
+    }
+
+    static interface ProductType {
+    }
+
+    static class ProductFixture implements ProductType {
     }
 }

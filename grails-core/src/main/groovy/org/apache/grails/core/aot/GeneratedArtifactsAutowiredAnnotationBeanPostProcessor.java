@@ -28,7 +28,8 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 
 /**
  * Injects through {@code @Autowired}, {@code @Value} and {@code @Inject} the beans the code generated ahead of
- * time did not create, and leaves alone the ones it did, which it has already injected.
+ * time did not inject, and leaves alone the ones it did: the beans it created that are of the type their
+ * definitions declare.
  *
  * @since 9.0
  * @see GeneratedBeanDefinitions
@@ -46,14 +47,14 @@ public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends Auto
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        if (!GeneratedBeanDefinitions.isGenerated(beanFactory, beanName)) {
+        if (!GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
             super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
         }
     }
 
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) throws BeansException {
-        if (GeneratedBeanDefinitions.isGenerated(beanFactory, beanName)) {
+        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
             return pvs;
         }
         return super.postProcessProperties(pvs, bean, beanName);
