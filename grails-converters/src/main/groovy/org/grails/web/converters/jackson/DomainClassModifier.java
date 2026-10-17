@@ -107,8 +107,8 @@ final class DomainClassModifier extends ValueSerializerModifier {
             // ahead of the other properties once Jackson has left out the properties the class ignores
             for (BeanPropertyWriter writer : properties) {
                 if (identity.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
-                    written.add(GatedPropertyWriter.gated(writer, included(identity.getName())
-                            .and((bean, context, property) -> property.get(bean) != null)));
+                    written.add(GatedPropertyWriter.gated(new DomainIdWriter(writer, identity, rendering),
+                            included(identity.getName()).and((bean, context, property) -> property.get(bean) != null)));
                 }
             }
         }

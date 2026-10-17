@@ -496,6 +496,21 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"id":1,"title":"Grails","shelf":"Shelf:3","writers":["Writer:1","Writer:2"],"writersByName":{"a":"Writer:1","b":"Writer:2"}}'
     }
 
+    void "the id of an instance is the value a DomainClassMarshaller extracts, as are the ids of the instances it references"() {
+        given:
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
+            @Override
+            protected Object extractValue(Object domainObject, PersistentProperty property) {
+                def value = super.extractValue(domainObject, property)
+                property.name == 'id' ? "id-${value}".toString() : value
+            }
+        })
+
+        expect:
+        new JSON(volume()).toString() == '{"id":"id-1","title":"Grails","shelf":{"id":"id-3"},' +
+                '"writers":[{"id":"id-1"},{"id":"id-2"}],"writersByName":{"a":{"id":"id-1"},"b":{"id":"id-2"}}}'
+    }
+
     private JsonMapper mapper(DomainClassRendering rendering = ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())) {
         JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).build()
     }
