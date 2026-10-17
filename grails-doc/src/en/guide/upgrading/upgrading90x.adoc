@@ -607,8 +607,8 @@ names it.
 
 ==== 8. Rendering Single Values as JSON
 
-In Grails 8, rendering a single enum value with `render(Number.ONE as JSON)` threw a `ConverterException`.
-It now produces the JSON string `"ONE"`. The default enum marshaller uses the enum name, including when the
+In Grails 8, rendering a single enum value with `render(Role.HEAD as JSON)` threw a `ConverterException`.
+It now produces the JSON string `"HEAD"`. The default enum marshaller uses the enum name, including when the
 value is nested in an object or array.
 
 The legacy JSON converter now accepts scalar root values: strings (including GStrings), numbers,
