@@ -412,7 +412,7 @@ class DomainClassJacksonModuleSpec extends Specification {
         offered == [1L]
     }
 
-    void "a domain instance with a type id in a @JsonUnwrapped property fails, as Jackson's own unwrapping does"() {
+    void "a #description with a type id in a @JsonUnwrapped property fails, as Jackson's own unwrapping does"() {
         given:
         def dog = new Dog(name: 'Rex')
         dog.id = 2
@@ -422,13 +422,18 @@ class DomainClassJacksonModuleSpec extends Specification {
                 .build()
 
         when:
-        mapper().writeValueAsString(new UnwrappedDog(dog: dog, note: 'n'))
+        mapper().writeValueAsString(new UnwrappedDog(dog: value(dog), note: 'n'))
 
         then:
         thrown(InvalidDefinitionException)
 
         expect: 'without the type id, when the feature is disabled'
-        lenient.writeValueAsString(new UnwrappedDog(dog: dog, note: 'n')) == '{"id":2,"name":"Rex","note":"n"}'
+        lenient.writeValueAsString(new UnwrappedDog(dog: value(dog), note: 'n')) == '{"id":2,"name":"Rex","note":"n"}'
+
+        where:
+        description       | value
+        'domain instance' | { Dog instance -> instance }
+        'proxy'           | { Dog instance -> new DogProxy(target: instance, proxyId: 2) }
     }
 
     void "references are named as the instance itself, by the mapper's naming strategy"() {
@@ -628,6 +633,10 @@ class DomainClassJacksonModuleSpec extends Specification {
         expect:
         mapper().writeValueAsString(new UnwrappedCode(code: code, note: 'n')) == '{"code":"X1","note":"n"}'
         mapper().writeValueAsString(new UnwrappedCode(code: new CodeProxy(target: code, proxyId: 1), note: 'n')) ==
+                '{"code":"X1","note":"n"}'
+
+        and: 'so does the JSON converter'
+        new JSON(new UnwrappedCode(code: new CodeProxy(target: code, proxyId: 1), note: 'n')).toString() ==
                 '{"code":"X1","note":"n"}'
     }
 
