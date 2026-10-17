@@ -47,7 +47,7 @@ final class PageBindingCollector extends CodeVisitorSupport {
     private static final String SET_TAG = 'set'
     private static final String VAR_ATTRIBUTE = 'var'
 
-    private final Set<String> names = new HashSet<>()
+    private final Set<String> names = [] as Set
 
     private PageBindingCollector() {
     }
