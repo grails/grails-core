@@ -124,7 +124,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             }
         }
 
-        mimeTypes.sort(true, new QualityComparator())
+        // In the order of the header, which decides between types of equal quality once they are sorted
         return mimeTypes
     }
 

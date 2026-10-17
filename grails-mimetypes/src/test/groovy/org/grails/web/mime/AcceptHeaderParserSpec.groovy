@@ -84,6 +84,12 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         '1.0' == mimes[0].quality
     }
 
+    void 'a +xml type at least as preferred as application/xml, after it in the header, is promoted over it as in Grails 8'() {
+        expect: 'atom takes the place of the xml before it, ahead of json, which is as preferred'
+        getAcceptHeaderParser().parse('application/xml;q=0.9, application/json, application/atom+xml')*.extension ==
+                ['atom', 'json', 'xml']
+    }
+
     protected DefaultAcceptHeaderParser getAcceptHeaderParser() {
         final application = new DefaultGrailsApplication()
         application.setConfig(config)
