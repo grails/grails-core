@@ -18,6 +18,7 @@
  */
 package grails.plugin.markup.view.renderer
 
+import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.context.request.RequestContextHolder
@@ -25,6 +26,7 @@ import org.springframework.web.servlet.ModelAndView
 
 import grails.plugin.markup.view.MarkupViewConfiguration
 import grails.plugin.markup.view.mvc.MarkupViewResolver
+import grails.rest.render.RenderContext
 import grails.util.GrailsWebMockUtil
 import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
@@ -65,6 +67,20 @@ class MarkupViewXmlRendererSpec extends Specification {
 
         where:
         value << [new MarkupBody(title: 'Grails')]
+    }
+
+    void 'without a renderer to fall back to, a problem is not acceptable in a context other than a servlet one'() {
+        given:
+        def renderer = new MarkupViewXmlRenderer(Object, new MarkupViewResolver(new MarkupViewConfiguration()), null, null, null)
+        def context = Mock(RenderContext) {
+            getArguments() >> [:]
+        }
+
+        when:
+        renderer.render(ProblemDetail.forStatus(422), context)
+
+        then:
+        1 * context.setStatus(HttpStatus.NOT_ACCEPTABLE)
     }
 
     void 'without a view or an XML renderer, a problem is written as problem JSON, as respond writes it'() {
