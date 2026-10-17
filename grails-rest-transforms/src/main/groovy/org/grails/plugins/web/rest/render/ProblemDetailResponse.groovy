@@ -21,6 +21,8 @@ package org.grails.plugins.web.rest.render
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
+import jakarta.servlet.http.HttpServletRequest
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ProblemDetail
@@ -38,6 +40,9 @@ import grails.rest.render.RenderContext
 @CompileStatic
 class ProblemDetailResponse {
 
+    /** The request attribute that holds the problem the response has been prepared for. */
+    private static final String PREPARED = ProblemDetailResponse.name + '.prepared'
+
     private ProblemDetailResponse() {
     }
 
@@ -50,6 +55,14 @@ class ProblemDetailResponse {
      * @param context the context of the response
      */
     static void prepare(ProblemDetail problem, RenderContext context) {
+        if (context instanceof ServletRenderContext) {
+            // respond prepares a problem for whichever renderer writes it, and a renderer that prepares it again leaves it
+            HttpServletRequest request = ((ServletRenderContext) context).webRequest.currentRequest
+            if (request.getAttribute(PREPARED).is(problem)) {
+                return
+            }
+            request.setAttribute(PREPARED, problem)
+        }
         Integer requested = requestedStatus(context)
         if (requested != null && requested != problem.status) {
             log.warn("The response is sent with the status argument [${requested}], " +

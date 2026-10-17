@@ -203,12 +203,28 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
     void 'a status respond is given decides the status of a problem response, and the problem keeps its own'() {
         when:
-        controller.respond(org.springframework.http.ProblemDetail.forStatus(409), status: 400)
+        String output = outputWhile { controller.respond(org.springframework.http.ProblemDetail.forStatus(409), status: 400) }
 
         then:
         response.status == 400
         response.contentType == 'application/problem+json;charset=UTF-8'
         response.json.status == 409
+
+        and: 'the mismatch is reported once'
+        output.readLines().count { it.contains('but its ProblemDetail carries status [409]') } == 1
+    }
+
+    private static String outputWhile(Closure<?> work) {
+        PrintStream original = System.out
+        def buffer = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(buffer, true))
+        try {
+            work.call()
+        }
+        finally {
+            System.setOut(original)
+        }
+        buffer.toString()
     }
 
     void 'a problem a client asks for as #format is written as problem JSON, as Spring MVC writes it'() {
@@ -434,9 +450,10 @@ class ControllerProblemPageSpec extends Specification implements ControllerUnitT
         }
     }
 
-    void 'an HTML renderer an application registers for problems renders them'() {
+    void 'an HTML renderer an application registers for problems renders them, with the status the problem carries'() {
         given:
         response.format = 'html'
+        request.requestURI = '/books'
         def problem = ProblemDetail.forStatus(409)
 
         when:
@@ -445,6 +462,8 @@ class ControllerProblemPageSpec extends Specification implements ControllerUnitT
         then:
         view == '/errors/problem'
         model.problem.is(problem)
+        response.status == 409
+        problem.instance == URI.create('/books')
     }
 }
 
@@ -458,7 +477,7 @@ class ControllerProblemJsonRendererSpec extends Specification implements Control
         }
     }
 
-    void 'a JSON renderer an application registers for problems renders them'() {
+    void 'a JSON renderer an application registers for problems renders them, with the status the problem carries'() {
         given:
         response.format = 'json'
 
@@ -467,6 +486,7 @@ class ControllerProblemJsonRendererSpec extends Specification implements Control
 
         then:
         response.contentAsString == '{"custom":409}'
+        response.status == 409
     }
 }
 

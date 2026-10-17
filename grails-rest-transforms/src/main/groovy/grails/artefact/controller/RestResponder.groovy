@@ -40,6 +40,7 @@ import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
+import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.util.GrailsApplicationAttributes
@@ -226,6 +227,11 @@ trait RestResponder {
             final context = new ServletRenderContext(webRequest, args)
             if (statusCode != null) {
                 context.setStatus(HttpStatus.valueOf(statusCode))
+            }
+            if (problem) {
+                // A problem answers with the status it carries and the path of the resource whichever renderer writes it,
+                // one the application registers included, as in Spring MVC
+                ProblemDetailResponse.prepare((ProblemDetail) value, context)
             }
             renderer.render(value, context)
             if (context.wasWrittenTo() && !response.isCommitted()) {
