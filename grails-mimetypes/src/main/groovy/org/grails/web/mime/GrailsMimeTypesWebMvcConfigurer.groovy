@@ -42,11 +42,13 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
     private static final Set<String> DATA_FORMATS = Set.of('json', 'xml', 'hal', 'atom', 'rss', 'csv', 'text')
 
     private final Supplier<GrailsContentNegotiationStrategy> strategySupplier
+    private final Supplier<MimeType[]> dataFormatMimeTypes
     private volatile GrailsContentNegotiationStrategy contentNegotiationStrategy
 
     GrailsMimeTypesWebMvcConfigurer(GrailsContentNegotiationStrategy contentNegotiationStrategy) {
         this.contentNegotiationStrategy = contentNegotiationStrategy
         this.strategySupplier = null
+        this.dataFormatMimeTypes = () -> contentNegotiationStrategy.configuredMimeTypes
     }
 
     /**
@@ -56,6 +58,19 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
      */
     GrailsMimeTypesWebMvcConfigurer(Supplier<GrailsContentNegotiationStrategy> strategySupplier) {
         this.strategySupplier = strategySupplier
+        this.dataFormatMimeTypes = () -> getContentNegotiationStrategy().configuredMimeTypes
+    }
+
+    /**
+     * @param strategySupplier builds the strategy on first use, as for {@link #GrailsMimeTypesWebMvcConfigurer(Supplier)}
+     * @param dataFormatMimeTypes the MIME types whose data formats are registered with Spring MVC, which it asks for
+     * while its content negotiation manager is created, so that they need not be those of the strategy
+     * @since 9.0
+     */
+    GrailsMimeTypesWebMvcConfigurer(Supplier<GrailsContentNegotiationStrategy> strategySupplier,
+            Supplier<MimeType[]> dataFormatMimeTypes) {
+        this.strategySupplier = strategySupplier
+        this.dataFormatMimeTypes = dataFormatMimeTypes
     }
 
     /**
@@ -86,7 +101,7 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
         // endpoints that never asked for it. Grails' own format resolution does not go through the
         // Spring manager; it uses this configurer's strategy directly.
         Map<String, MediaType> aliases = [:]
-        for (MimeType mimeType in getContentNegotiationStrategy().configuredMimeTypes) {
+        for (MimeType mimeType in dataFormatMimeTypes.get()) {
             String extension = mimeType.extension
             if (!DATA_FORMATS.contains(extension ?: '')) {
                 continue

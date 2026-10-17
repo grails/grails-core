@@ -23,10 +23,13 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockServletContext
+import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
 import org.springframework.web.servlet.LocaleResolver
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
@@ -122,12 +125,12 @@ class MimeTypesConfigurationSpec extends Specification {
                 .contentNegotiationStrategy.configuredMimeTypes as List == custom as List
     }
 
-    void 'a MIME type provider that needs Spring MVC infrastructure does not close a startup cycle'() {
+    void 'a MIME type provider that needs #infrastructure does not close a startup cycle'() {
         given: 'circular references disallowed, as Spring Boot does, so that a cycle fails the refresh'
         def context = new AnnotationConfigWebApplicationContext()
         context.allowCircularReferences = false
         context.servletContext = new MockServletContext()
-        context.register(CycleConfiguration)
+        context.register(configuration)
 
         when:
         context.refresh()
@@ -136,8 +139,16 @@ class MimeTypesConfigurationSpec extends Specification {
         noExceptionThrown()
         context.getBean(GrailsMimeTypesWebMvcConfigurer).contentNegotiationStrategy instanceof GrailsContentNegotiationStrategy
 
+        and: 'the data formats are registered with Spring MVC'
+        context.getBean(ContentNegotiationManager).getMediaTypeMappings().get('json') == MediaType.APPLICATION_JSON
+
         cleanup:
         context.close()
+
+        where:
+        infrastructure                    | configuration
+        'a locale resolver'               | CycleConfiguration
+        "Spring MVC's handler adapter"    | HandlerAdapterCycleConfiguration
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -154,6 +165,29 @@ class MimeTypesConfigurationSpec extends Specification {
 
         @Bean
         MimeTypeProvider localeAwareMimeTypeProvider(LocaleResolver localeResolver) {
+            new MimeTypeProvider() {
+                @Override
+                MimeType[] getMimeTypes() {
+                    [] as MimeType[]
+                }
+            }
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @EnableWebMvc
+    @Import(MimeTypesConfiguration)
+    static class HandlerAdapterCycleConfiguration {
+
+        @Bean
+        GrailsApplication grailsApplication(ApplicationContext applicationContext) {
+            def application = new DefaultGrailsApplication()
+            application.setApplicationContext(applicationContext)
+            application
+        }
+
+        @Bean
+        MimeTypeProvider adapterAwareMimeTypeProvider(RequestMappingHandlerAdapter handlerAdapter) {
             new MimeTypeProvider() {
                 @Override
                 MimeType[] getMimeTypes() {
