@@ -16,20 +16,21 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.servlet
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.servlet;
 
-import jakarta.servlet.ServletContext
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
-import jakarta.servlet.http.HttpSession
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-import groovy.transform.CompileStatic
-import org.springframework.context.ApplicationContext
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.support.WebApplicationContextUtils
+import groovy.transform.CompileStatic;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.util.WebUtils
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.util.WebUtils;
 
 /**
  * Delegates calls to a passed GrailsWebRequest instance.
@@ -37,13 +38,15 @@ import org.grails.web.util.WebUtils
  * @author Graeme Rocher
  * @since 0.6
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class WebRequestDelegatingRequestContext implements GrailsRequestContext {
 
-    private GrailsWebRequest webRequest
+    private GrailsWebRequest webRequest;
 
     WebRequestDelegatingRequestContext() {
-        webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes()
+        webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
     }
 
     /**
@@ -51,55 +54,55 @@ class WebRequestDelegatingRequestContext implements GrailsRequestContext {
      * @return The webrequest object
      */
     GrailsWebRequest getWebRequest() {
-        return webRequest
+        return webRequest;
     }
 
     HttpServletRequest getRequest() {
-        return webRequest.getRequest()
+        return webRequest.getRequest();
     }
 
     HttpServletResponse getResponse() {
-        return webRequest.getCurrentResponse()
+        return webRequest.getCurrentResponse();
     }
 
     HttpSession getSession() {
-        return webRequest.getSession()
+        return webRequest.getSession();
     }
 
     ServletContext getServletContext() {
-        return webRequest.getServletContext()
+        return webRequest.getServletContext();
     }
 
     @SuppressWarnings('rawtypes')
     Map getParams() {
-        return webRequest.getParams()
+        return webRequest.getParams();
     }
 
     ApplicationContext getApplicationContext() {
-        ServletContext servletContext = getServletContext()
-        return WebApplicationContextUtils.getWebApplicationContext(servletContext)
+        ServletContext servletContext = getServletContext();
+        return WebApplicationContextUtils.getWebApplicationContext(servletContext);
     }
 
     Writer getOut() {
-        return webRequest.getOut()
+        return webRequest.getOut();
     }
 
     String getActionName() {
-        return webRequest.getActionName()
+        return webRequest.getActionName();
     }
 
     String getControllerName() {
-        return webRequest.getControllerName()
+        return webRequest.getControllerName();
     }
 
     String getRequestURI() {
-        HttpServletRequest request = getRequest()
-        String uri = (String) request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE)
+        HttpServletRequest request = getRequest();
+        String uri = (String) request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
         if (uri == null) {
-            uri = request.getRequestURI()
+            uri = request.getRequestURI();
         }
 
-        return uri
+        return uri;
     }
 
 }
