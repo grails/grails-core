@@ -75,7 +75,7 @@ class DefaultRendererRegistrySpec extends Specification {
 
     void 'a fallback renderer bean is consulted after the renderers for the class and its interfaces'() {
         given:
-        def fallback = Stub(FallbackRenderer) {
+        def fallback = Stub(Renderer, additionalInterfaces: [FallbackRenderer]) {
             getTargetType() >> Object
             getMimeTypes() >> ([MimeType.XML] as MimeType[])
         }

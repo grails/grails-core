@@ -22,21 +22,24 @@ import groovy.transform.CompileStatic
 
 import org.springframework.validation.Errors
 
-import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import grails.rest.render.ContainerRenderer
+import org.grails.plugins.web.rest.render.FallbackRenderer
+import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 
 /**
  * Renders validation errors as XML for any object type.
  *
  * <p>A {@link ContainerRenderer} so that it can be contributed as a bean: DefaultRendererRegistry
  * autowires every {@code Renderer} and routes container renderers to the container registry, which
- * keeps registration independent of which registry instance is created and when.</p>
+ * keeps registration independent of which registry instance is created and when. A
+ * {@link FallbackRenderer}, so that an application's renderer of validation errors as XML takes
+ * precedence over it, whichever bean is collected first.</p>
  *
  * @since 9.0
  */
 @CompileStatic
 @SuppressWarnings('rawtypes')
-class XmlErrorsRenderer extends DefaultXmlRenderer implements ContainerRenderer {
+class XmlErrorsRenderer extends DefaultXmlRenderer implements ContainerRenderer, FallbackRenderer {
 
     XmlErrorsRenderer() {
         super(Errors)

@@ -174,7 +174,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
             ContainerRenderer cr = (ContainerRenderer) renderer
             addContainerRenderer(cr.componentType, cr)
         } else if (renderer instanceof FallbackRenderer) {
-            addDefaultRenderer((FallbackRenderer) renderer)
+            addDefaultRenderer((Renderer<Object>) renderer)
         } else {
             Class targetType = renderer.targetType
             addToRegisteredObjects(targetType, renderer)
@@ -195,7 +195,11 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         configureJsonRenderer(renderer)
         for (MimeType mt in renderer.mimeTypes) {
             def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
-
+            // A plugin's default gives way to any other renderer for the key, whichever comes first
+            Renderer existing = containerRenderers.get(key)
+            if (renderer instanceof FallbackRenderer && existing != null && !(existing instanceof FallbackRenderer)) {
+                continue
+            }
             containerRendererCache.invalidate(key)
             containerRenderers.put(key, renderer)
         }

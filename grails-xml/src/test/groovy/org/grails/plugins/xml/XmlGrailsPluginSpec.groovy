@@ -27,6 +27,7 @@ import org.springframework.validation.Errors
 import org.springframework.http.converter.HttpMessageConverter
 
 import grails.converters.XML
+import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.web.mime.MimeType
@@ -143,6 +144,31 @@ class XmlGrailsPluginSpec extends Specification {
 
         and: 'the default XML bean still answers the media types the application renderer does not'
         registry.findRenderer(MimeType.TEXT_XML, 'value').is(fallback)
+
+        where:
+        customFirst << [true, false]
+    }
+
+    void "an application renderer of validation errors as XML takes precedence over the plugin's, whichever is collected first"() {
+        given:
+        def custom = Stub(ContainerRenderer) {
+            getTargetType() >> Errors
+            getComponentType() >> Object
+            getMimeTypes() >> ([MimeType.XML] as MimeType[])
+        }
+        def plugin = beanFactory.getBean('xmlErrorsRenderer', XmlErrorsRenderer)
+        def registry = new DefaultRendererRegistry()
+        def errors = new BeanPropertyBindingResult(new Object(), 'book')
+
+        when:
+        registry.setRenderers((customFirst ? [custom, plugin] : [plugin, custom]) as Renderer[])
+        registry.initialize()
+
+        then:
+        registry.findContainerRenderer(MimeType.XML, Errors, errors).is(custom)
+
+        and: "the plugin's renderer still answers the media types the application renderer does not"
+        registry.findContainerRenderer(MimeType.TEXT_XML, Errors, errors).is(plugin)
 
         where:
         customFirst << [true, false]
