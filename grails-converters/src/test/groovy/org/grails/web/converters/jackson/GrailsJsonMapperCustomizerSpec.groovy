@@ -19,9 +19,11 @@
 package org.grails.web.converters.jackson
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.JsonView
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.module.SimpleModule
@@ -287,6 +289,19 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
 
         expect:
         mapper.writeValueAsString(book) == source.writeValueAsString(book)
+    }
+
+    void 'the properties a @JsonValue accessor leaves out of the bean it gives are left out, as the mapper leaves them out'() {
+        given:
+        def application = new DefaultGrailsApplication()
+        application.initialise()
+        def source = JsonMapper.builder().build()
+        def mapper = new GrailsJsonMapperCustomizer(application).forGrails(source)
+        def holder = new JacksonValueHolder(account: new JacksonAccount(user: 'ada', secret: 's3cret'))
+
+        expect:
+        mapper.writeValueAsString(holder) == '{"user":"ada"}'
+        mapper.writeValueAsString(holder) == source.writeValueAsString(holder)
     }
 
     private JsonMapper domainMapper(boolean includeVersion, boolean includeClass, ProxyHandler proxyHandler = null) {
@@ -639,4 +654,19 @@ class AnnotatedJacksonBook {
 abstract class AnnotatedJacksonBookMixin {
     @JsonIgnore
     abstract String getMixinHidden()
+}
+
+class JacksonAccount {
+    String user
+    String secret
+}
+
+class JacksonValueHolder {
+    JacksonAccount account
+
+    @JsonValue
+    @JsonIgnoreProperties(['secret'])
+    JacksonAccount getAccount() {
+        account
+    }
 }

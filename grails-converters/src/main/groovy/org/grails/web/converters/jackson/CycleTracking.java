@@ -20,10 +20,13 @@ package org.grails.web.converters.jackson;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
@@ -135,6 +138,33 @@ final class CycleTracking extends ValueSerializer<Object> {
         }
         // a property annotated @JsonIdentityInfo makes the serializer write object ids
         return contextual.usesObjectId() ? contextual : new CycleTracking(contextual, onCycle);
+    }
+
+    @Override
+    public ValueSerializer<?> withIgnoredProperties(Set<String> ignoredProperties) {
+        return tracking(delegate.withIgnoredProperties(ignoredProperties));
+    }
+
+    @Override
+    public ValueSerializer<?> withFilterId(Object filterId) {
+        return tracking(delegate.withFilterId(filterId));
+    }
+
+    @Override
+    public ValueSerializer<?> withFormatOverrides(SerializationConfig config, JsonFormat.Value formatOverrides) {
+        ValueSerializer<?> overridden = delegate.withFormatOverrides(config, formatOverrides);
+        return overridden == null ? null : tracking(overridden);
+    }
+
+    @Override
+    public ValueSerializer<Object> replaceDelegatee(ValueSerializer<?> delegatee) {
+        return tracking(delegatee);
+    }
+
+    /** The bean serializer Jackson asks for, such as one that leaves out properties, tracked as this one is. */
+    @SuppressWarnings("unchecked")
+    private ValueSerializer<Object> tracking(ValueSerializer<?> serializer) {
+        return serializer == delegate ? this : new CycleTracking(serializer, onCycle);
     }
 
     @Override
