@@ -80,6 +80,11 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         JsonRenderer<JsonRendererCredentials> jsonRendererCredentialsRenderer() {
             new JsonRenderer<JsonRendererCredentials>(JsonRendererCredentials).tap { excludes = ['password'] }
         }
+
+        @Bean
+        JsonRenderer<JsonRendererProfile> jsonRendererProfileRenderer() {
+            new JsonRenderer<JsonRendererProfile>(JsonRendererProfile)
+        }
     }
 
     void 'test mapper honors customizers from nested configuration classes'() {
@@ -280,7 +285,15 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
     }
 
     void 'a request includes overrides the excludes of a JsonRenderer bean only where the bean sets none'() {
-        when:
+        when: 'the bean sets no excludes'
+        controller.respond(new JsonRendererProfile(name: 'ada', email: 'ada@example.com'), includes: ['name'])
+
+        then:
+        response.json == [name: 'ada']
+
+        when: 'the bean sets excludes'
+        response.reset()
+        response.format = 'json'
         controller.respond(new JsonRendererCredentials(user: 'ada', password: 's3cret'), includes: ['user', 'password'])
 
         then: 'the bean excludes still win, as they do on the legacy path'
@@ -449,6 +462,11 @@ class JsonRendererBeanBody {
 class JsonRendererCredentials {
     String user
     String password
+}
+
+class JsonRendererProfile {
+    String name
+    String email
 }
 
 class UpperFirstNameSerializer extends ValueSerializer<JsonRendererBeanBody> {
