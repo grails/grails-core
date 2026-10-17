@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -43,6 +45,8 @@ import tools.jackson.databind.introspect.VirtualAnnotatedMember;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
+
+import org.springframework.util.ClassUtils;
 
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
@@ -215,13 +219,19 @@ final class DomainClassModifier extends ValueSerializerModifier {
     /**
      * Whether the version is left out. GORM names it in the {@code @JsonIgnoreProperties} of every domain class, so that
      * Jackson leaves it out, and the rendering decides; what is ignored for the version itself, also by a mix-in, is.
-     * Jackson merges the annotations of a mix-in into those of the class, so a mix-in is read for itself.
+     * Jackson merges the annotations of a mix-in into those of the class, so a mix-in is read for itself, for each type
+     * Jackson applies mix-ins of: the class, its superclasses, including {@code Object}, and its interfaces.
      */
     private static boolean versionIgnored(SerializationConfig config, BeanDescription description) {
         if (ignored(description.getBeanClass(), GormProperties.VERSION)) {
             return true;
         }
-        for (Class<?> type = description.getBeanClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+        Set<Class<?>> types = new LinkedHashSet<>();
+        for (Class<?> type = description.getBeanClass(); type != null; type = type.getSuperclass()) {
+            types.add(type);
+        }
+        types.addAll(ClassUtils.getAllInterfacesForClassAsSet(description.getBeanClass()));
+        for (Class<?> type : types) {
             Class<?> mixIn = config.findMixInClassFor(type);
             if (mixIn != null && (ignored(mixIn, GormProperties.VERSION) || namedIgnored(mixIn, GormProperties.VERSION))) {
                 return true;

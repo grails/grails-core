@@ -279,6 +279,12 @@ class DomainClassJacksonModuleSpec extends Specification {
                 .build().writeValueAsString(versioned) == '{"id":3,"name":"top"}'
         JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering))
                 .addMixIn(GormVersioned, IgnoredVersionPropertiesMixin).build().writeValueAsString(versioned) == '{"id":3,"name":"top"}'
+
+        and: 'a mix-in of an interface of the class, or of every class, as Jackson applies them'
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).addMixIn(Catalogued, IgnoredVersionMixin)
+                .build().writeValueAsString(versioned) == '{"id":3,"name":"top"}'
+        JsonMapper.builder().addModule(new DomainClassJacksonModule(rendering)).addMixIn(Object, IgnoredVersionPropertiesMixin)
+                .build().writeValueAsString(versioned) == '{"id":3,"name":"top"}'
     }
 
     void "rendering deep, the annotations of an association apply to the instances it writes"() {
@@ -779,10 +785,12 @@ abstract class IgnoredIdMixin {
 @JsonIgnoreProperties(['id'])
 abstract class IgnoredIdPropertiesMixin { }
 
+interface Catalogued { }
+
 // GORM names the version in the @JsonIgnoreProperties of every domain class
 @Entity
 @JsonIgnoreProperties(['version'])
-class GormVersioned {
+class GormVersioned implements Catalogued {
     String name
 }
 
