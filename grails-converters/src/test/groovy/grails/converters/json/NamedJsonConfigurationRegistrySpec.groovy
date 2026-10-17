@@ -120,6 +120,72 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         mapper.writeValueAsString(value) == '{"name":"Grails"}'
     }
 
+    void 'a write to a response writer leaves it open and unflushed, so that one failing part-way leaves the response uncommitted'() {
+        given: "a writer that records what the registry does with it, as a response's writer commits the response"
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        def calls = []
+        def output = new StringWriter() {
+            @Override
+            void flush() {
+                calls << 'flush'
+            }
+
+            @Override
+            void close() {
+                calls << 'close'
+            }
+        }
+
+        when:
+        registry.writeValue(configuration, output, new NamedJsonFailing(title: 'Grails'), includes, null)
+
+        then:
+        thrown(JacksonException)
+        calls.isEmpty()
+
+        when: 'a write that succeeds'
+        registry.writeValue(configuration, output, new NamedJsonValue(name: 'Grails'), includes, null)
+
+        then:
+        calls.isEmpty()
+        output.toString().endsWith('{"name":"Grails"}')
+
+        where:
+        configuration | includes
+        null          | null
+        'deep'        | null
+        'deep'        | ['title', 'name', 'failing']
+    }
+
+    void 'an I/O failure of the writer is the IOException the write declares, for a value of #characters characters'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        def output = new Writer() {
+            @Override
+            void write(char[] buffer, int offset, int length) {
+                throw new IOException('broken pipe')
+            }
+
+            @Override
+            void flush() {
+            }
+
+            @Override
+            void close() {
+            }
+        }
+
+        when: 'written while the value is, or once it is complete, where it fits in the buffer'
+        registry.writeValue('deep', output, new NamedJsonValue(name: 'G' * characters))
+
+        then:
+        IOException e = thrown()
+        e.message == 'broken pipe'
+
+        where:
+        characters << [60000, 6]
+    }
+
     void 'unknown configurations fail clearly'() {
         given:
         def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
@@ -323,6 +389,14 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
             System.setErr(original)
         }
         buffer.toString()
+    }
+}
+
+class NamedJsonFailing {
+    String title
+
+    String getFailing() {
+        throw new IllegalStateException('the value cannot be read')
     }
 }
 

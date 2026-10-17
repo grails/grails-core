@@ -41,6 +41,7 @@ import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.DatabindException
 import tools.jackson.databind.ValueSerializer
 import spock.lang.Specification
 
@@ -99,6 +100,27 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.json == [title: 'Grails', first_name: 'Ada']
+    }
+
+    void 'a named JSON write that fails part-way leaves the response uncommitted, so that the error page applies'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
+
+        when: 'render json:'
+        controller.render(json: new FailingJsonBody(title: 'Grails'))
+
+        then:
+        thrown(DatabindException)
+        !response.committed
+
+        when: 'respond with a named configuration'
+        response.reset()
+        response.format = 'json'
+        controller.respond(new FailingJsonBody(title: 'Grails'), jsonConfiguration: 'plain')
+
+        then:
+        thrown(DatabindException)
+        !response.committed
     }
 
     void 'a domain class response leaves out a @JsonIgnore property, as the shared Boot mapper does'() {
@@ -505,6 +527,14 @@ class ProblemJsonRenderer implements Renderer<ProblemDetail> {
     void render(Object object, RenderContext context) {
         context.setContentType('application/json')
         context.writer.write("{\"custom\":${((ProblemDetail) object).status}}")
+    }
+}
+
+class FailingJsonBody {
+    String title
+
+    String getUnreadable() {
+        throw new IllegalStateException('the value cannot be read')
     }
 }
 

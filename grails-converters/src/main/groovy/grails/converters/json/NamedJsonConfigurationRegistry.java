@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamWriteFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -111,8 +113,18 @@ public final class NamedJsonConfigurationRegistry {
         return writer(name).writeValueAsString(value);
     }
 
+    /**
+     * Writes a value to a writer, such as that of a response, which is left open and unflushed: the container owns a
+     * response's writer, and a write that fails part-way leaves what fits in the response buffer uncommitted, so that the
+     * error page applies.
+     *
+     * @param name the registered configuration, or null for the default one
+     * @param output the writer
+     * @param value the value to write
+     * @throws IOException if writing to the writer fails
+     */
     public void writeValue(String name, Writer output, Object value) throws IOException {
-        writer(name).writeValue(output, value);
+        write(writer(name), output, value);
     }
 
     /**
@@ -120,14 +132,15 @@ public final class NamedJsonConfigurationRegistry {
      * configuration. The projection applies to objects of the value's type, or of its elements' types
      * when the value is a collection or array, unlike the legacy converter, which projected only a
      * single root object: domain objects and beans Jackson writes property by property. A value with
-     * no properties to project, such as a map or a string, is rejected before anything is written.
+     * no properties to project, such as a map or a string, is rejected before anything is written. The writer is left
+     * open and unflushed, as {@link #writeValue(String, Writer, Object)} leaves it.
      *
      * @param name the registered configuration
      * @param output the response writer
      * @param value the value to write
      * @param includes property names to include, or null for all
      * @param excludes property names to exclude, or null for none
-     * @throws IOException if writing fails
+     * @throws IOException if writing to the writer fails
      * @throws IllegalArgumentException if a projection is requested for a value it cannot apply to
      */
     public void writeValue(String name, Writer output, Object value,
@@ -135,10 +148,28 @@ public final class NamedJsonConfigurationRegistry {
         ObjectWriter writer = writer(name);
         JsonProjection projection = JsonProjection.of(value, includes, excludes);
         if (projection == null) {
-            writer.writeValue(output, value);
+            write(writer, output, value);
             return;
         }
-        writer.withAttribute(JsonProjection.ATTRIBUTE, projection).writeValue(output, value);
+        write(writer.withAttribute(JsonProjection.ATTRIBUTE, projection), output, value);
         projection.reportUnapplied();
+    }
+
+    private static void write(ObjectWriter writer, Writer output, Object value) throws IOException {
+        try {
+            writer.without(StreamWriteFeature.AUTO_CLOSE_TARGET)
+                    .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)
+                    .writeValue(output, value);
+        }
+        catch (JacksonException e) {
+            // Jackson reports a failure of the writer as the unchecked cause of its own exception, and inside the
+            // failure of the value being written
+            for (Throwable cause = e.getCause(); cause != null; cause = cause.getCause()) {
+                if (cause instanceof IOException io) {
+                    throw io;
+                }
+            }
+            throw e;
+        }
     }
 }
