@@ -23,11 +23,12 @@ import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.util.NameTransformer;
 
 /**
  * Writes a proxy of a domain class instance as the instance it proxies, in its own serializer, so that a proxy narrowed
  * to a subclass is written as the subclass. A proxy of an instance that no longer exists, which has no target, is
- * written as {@code null}.
+ * written as {@code null}, or left out of the object a {@code @JsonUnwrapped} property would write it into.
  *
  * @since 9.0
  */
@@ -37,29 +38,44 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
 
     private final BeanProperty property;
 
+    /** The names of the properties of the instance, when it is written into the object that encloses it. */
+    private final NameTransformer unwrapper;
+
     DomainProxySerializer(DomainRendering rendering) {
-        this(rendering, null);
+        this(rendering, null, null);
     }
 
-    private DomainProxySerializer(DomainRendering rendering, BeanProperty property) {
+    private DomainProxySerializer(DomainRendering rendering, BeanProperty property, NameTransformer unwrapper) {
         this.rendering = rendering;
         this.property = property;
+        this.unwrapper = unwrapper;
     }
 
     /** The instance is written with the property the proxy is written for, so that what it is annotated with applies. */
     @Override
     public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
-        return property == this.property ? this : new DomainProxySerializer(rendering, property);
+        return property == this.property ? this : new DomainProxySerializer(rendering, property, unwrapper);
+    }
+
+    /** The instance is written into the object that encloses it, as the serializer of the instance unwraps it. */
+    @Override
+    public ValueSerializer<Object> unwrappingSerializer(NameTransformer unwrapper) {
+        return new DomainProxySerializer(rendering, property, unwrapper);
+    }
+
+    @Override
+    public boolean isUnwrappingSerializer() {
+        return unwrapper != null;
     }
 
     @Override
     public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
         Object unwrapped = unwrapped(value, context);
         if (unwrapped == null) {
-            generator.writeNull();
+            writeNull(generator);
             return;
         }
-        context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serialize(unwrapped, generator, context);
+        serializer(unwrapped, generator, context).serialize(unwrapped, generator, context);
     }
 
     @Override
@@ -67,11 +83,29 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
             TypeSerializer typeSerializer) {
         Object unwrapped = unwrapped(value, context);
         if (unwrapped == null) {
-            generator.writeNull();
+            writeNull(generator);
             return;
         }
-        context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serializeWithType(unwrapped, generator, context,
-                typeSerializer);
+        serializer(unwrapped, generator, context).serializeWithType(unwrapped, generator, context, typeSerializer);
+    }
+
+    private void writeNull(JsonGenerator generator) {
+        if (unwrapper == null) {
+            generator.writeNull();
+        }
+    }
+
+    private ValueSerializer<Object> serializer(Object instance, JsonGenerator generator, SerializationContext context) {
+        ValueSerializer<Object> serializer = context.findPrimaryPropertySerializer(instance.getClass(), property);
+        if (unwrapper == null) {
+            return serializer;
+        }
+        ValueSerializer<Object> unwrapping = serializer.unwrappingSerializer(unwrapper);
+        if (!unwrapping.isUnwrappingSerializer()) {
+            // a serializer that cannot unwrap the instance writes it under the name of the property, as Jackson does
+            generator.writeName(property.getName());
+        }
+        return unwrapping;
     }
 
     private Object unwrapped(Object value, SerializationContext context) {

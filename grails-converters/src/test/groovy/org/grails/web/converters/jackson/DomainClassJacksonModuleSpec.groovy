@@ -451,6 +451,35 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
     }
 
+    void "a proxy in a @JsonUnwrapped property is written into the enclosing object, as the instance it proxies is"() {
+        given:
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def proxy = { -> new WriterProxy(target: writer, proxyId: 1) }
+
+        expect:
+        mapper().writeValueAsString(new Unwrapped(writer: proxy(), prefixed: proxy(), note: 'n')) ==
+                '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
+
+        and: 'a proxy of an instance that no longer exists is left out, as a null value is'
+        mapper().writeValueAsString(new Unwrapped(writer: new WriterProxy(proxyId: 9), note: 'n')) == '{"note":"n"}'
+
+        and: 'so does the JSON converter'
+        new JSON(new Unwrapped(writer: proxy(), prefixed: proxy(), note: 'n')).toString() ==
+                '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
+    }
+
+    void "a proxy in a @JsonUnwrapped property of an instance that cannot be unwrapped is written under the name of the property"() {
+        given: 'a domain class with a @JsonValue, which Jackson does not unwrap'
+        def code = new Code(code: 'X1')
+        code.id = 1
+
+        expect:
+        mapper().writeValueAsString(new UnwrappedCode(code: code, note: 'n')) == '{"code":"X1","note":"n"}'
+        mapper().writeValueAsString(new UnwrappedCode(code: new CodeProxy(target: code, proxyId: 1), note: 'n')) ==
+                '{"code":"X1","note":"n"}'
+    }
+
     void "@JsonInclude, @JsonView and @JsonFormat on a property apply, as they do to any bean"() {
         given:
         def annotated = new Annotated(name: 'a', nickname: '', hidden: 'h', born: new Date(0))
@@ -928,6 +957,23 @@ class Code {
 
     @JsonValue
     String jsonValue() { code }
+}
+
+class UnwrappedCode {
+    @JsonUnwrapped
+    Code code
+    String note
+}
+
+class CodeProxy extends Code implements EntityProxy<Code> {
+    Code target
+    Long proxyId
+
+    void initialize() {}
+
+    boolean isInitialized() { target != null }
+
+    Serializable getProxyKey() { proxyId }
 }
 
 class UnwrappedDog {
