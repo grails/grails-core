@@ -28,8 +28,8 @@ import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.plugins.web.mime.MimeTypesConfiguration
-import grails.web.mime.MimeUtility
 import org.grails.web.mime.DefaultMimeUtility
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.MapPropertySource
@@ -209,11 +209,12 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     @Unroll
     void "with the strategy MimeTypesConfiguration defines, as in an application, an Accept header of #accept resolves to #format"() {
-        given: "the configurer MimeTypesConfiguration defines over the application's MIME types and settings"
+        given: "the configurer MimeTypesConfiguration defines over the application's settings, and MIME types of its own"
             final webRequest = boundMimeTypeRequest()
             def context = (GenericWebApplicationContext) webRequest.applicationContext
+            def own = new DefaultMimeUtility((buildMimeTypes() + new MimeType('application/vnd.own+json', 'own')) as MimeType[])
             def configurer = Spy(MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(
-                    context.getBeanProvider(MimeUtility), (GrailsApplication) application))
+                    Stub(ObjectProvider) { getObject() >> own }, (GrailsApplication) application))
             context.beanFactory.registerSingleton('grailsMimeTypesWebMvcConfigurer', configurer)
             webRequest.currentRequest.addHeader('Accept', accept)
 
@@ -230,6 +231,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             'application/vnd.acme+json' || 'acme'
             '*'                         || 'all'
             'image/avif, image/webp'    || 'all'
+            'application/vnd.own+json'  || 'own'
     }
 
     void "the format parameter overrides the Accept header"() {
