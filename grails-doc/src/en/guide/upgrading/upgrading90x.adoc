@@ -200,7 +200,7 @@ legacy converter.
 The setting alone determines the default response path: registering a marshaller does not implicitly
 change it. `false` retains the legacy converter (with the warning); `true` uses Spring's converters
 even while legacy marshallers are registered. Migrate those representations to Jackson serializers
-before enabling it. The legacy converter settings do not configure Jackson:
+before enabling it. Two legacy converter settings do not configure Jackson:
 `grails.converters.json.pretty.print` gives way to `spring.jackson.serialization.indent-output`,
 and `grails.converters.json.date` to Boot's `spring.jackson.*` date settings. Renderer beans an application declares, such as a `JsonRenderer` or an
 `XmlRenderer` for one of its types, follow the same settings, apply their own `includes` and
