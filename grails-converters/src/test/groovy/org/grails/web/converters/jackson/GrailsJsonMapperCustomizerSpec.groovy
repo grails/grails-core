@@ -206,8 +206,9 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         when: "the type is written once before GORM has initialized"
         mapper.writeValueAsString(book)
 
-        then: "writing is refused rather than silently producing a bean-shaped document"
-        thrown(Exception)
+        then: "writing is refused rather than silently producing a bean-shaped document, because GORM is not ready"
+        def e = thrown(Exception)
+        causes(e).any { it instanceof GrailsConfigurationException }
 
         and: "a null check could not have detected this, since the proxy is not null"
         application.mappingContext != null
@@ -222,6 +223,14 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         after.class == JacksonBook.name
         after.id == 9
         after.title == 'Cached'
+    }
+
+    private static List<Throwable> causes(Throwable throwable) {
+        List<Throwable> causes = []
+        for (Throwable cause = throwable; cause != null && !causes.contains(cause); cause = cause.cause) {
+            causes << cause
+        }
+        causes
     }
 
     void 'a mapping defect surfaces instead of falling back to bean serialization'() {
