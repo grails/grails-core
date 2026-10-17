@@ -33,6 +33,8 @@ import grails.web.mime.MimeType
  * Resolves the MIME types of a request's {@code Accept} header under the {@code grails.mime} rules.
  * It is deliberately not a Spring {@code ContentNegotiationStrategy}: Spring MVC keeps its own
  * negotiation, and Spring Security adopts any such bean it finds.
+ *
+ * @since 9.0
  */
 @CompileStatic
 class GrailsContentNegotiationStrategy {

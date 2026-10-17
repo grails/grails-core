@@ -26,6 +26,8 @@ import grails.web.mime.MimeType
 
 /**
  * Internal bridge between the Grails format-aware MIME type and Spring's HTTP media type.
+ *
+ * @since 9.0
  */
 @CompileStatic
 final class SpringMediaTypeAdapter {

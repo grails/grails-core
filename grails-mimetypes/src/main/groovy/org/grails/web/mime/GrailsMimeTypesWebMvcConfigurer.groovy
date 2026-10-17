@@ -34,6 +34,8 @@ import grails.web.mime.MimeType
  * Registers the configured Grails data formats with Spring MVC as format aliases, which Spring
  * uses only when parameter negotiation is enabled, and holds the strategy Grails' own format
  * resolution uses.
+ *
+ * @since 9.0
  */
 @CompileStatic
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -65,7 +67,6 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
      * @param strategySupplier builds the strategy on first use, as for {@link #GrailsMimeTypesWebMvcConfigurer(Supplier)}
      * @param dataFormatMimeTypes the MIME types whose data formats are registered with Spring MVC, which it asks for
      * while its content negotiation manager is created, so that they need not be those of the strategy
-     * @since 9.0
      */
     GrailsMimeTypesWebMvcConfigurer(Supplier<GrailsContentNegotiationStrategy> strategySupplier,
             Supplier<MimeType[]> dataFormatMimeTypes) {
