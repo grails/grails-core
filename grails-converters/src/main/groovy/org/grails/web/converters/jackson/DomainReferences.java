@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
@@ -86,9 +87,14 @@ final class DomainReferences {
         });
     }
 
-    /** Writes an association as references, or in full when the rendering is deep. */
-    ValueSerializer<Object> serializer(PersistentEntity associated, boolean toMany, DomainRendering rendering) {
-        return new ReferenceSerializer(this, associated, toMany, rendering);
+    /**
+     * Writes an association as references, or in full when the rendering is deep, with the property of the association,
+     * so that what it is annotated with, such as {@code @JsonIgnoreProperties}, applies to the instances, as it does to
+     * any bean.
+     */
+    ValueSerializer<Object> serializer(PersistentEntity associated, boolean toMany, DomainRendering rendering,
+            BeanProperty property) {
+        return new ReferenceSerializer(this, associated, toMany, rendering, property);
     }
 
     private static final class ReferenceSerializer extends ValueSerializer<Object> {
@@ -101,19 +107,28 @@ final class DomainReferences {
 
         private final DomainRendering rendering;
 
+        private final BeanProperty property;
+
         private ReferenceSerializer(DomainReferences references, PersistentEntity associated, boolean toMany,
-                DomainRendering rendering) {
+                DomainRendering rendering, BeanProperty property) {
             this.references = references;
             this.associated = associated;
             this.toMany = toMany;
             this.rendering = rendering;
+            this.property = property;
+        }
+
+        @Override
+        public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
+            return property == this.property ? this : new ReferenceSerializer(references, associated, toMany, rendering, property);
         }
 
         @Override
         public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
             DomainClassRendering current = rendering.ofOwner(context, generator);
             if (current.isDeep()) {
-                context.writeValue(generator, DomainWrites.copied(current.unwrap(value)));
+                Object written = DomainWrites.copied(current.unwrap(value));
+                context.findPrimaryPropertySerializer(written.getClass(), property).serialize(written, generator, context);
             }
             else if (!toMany) {
                 references.write(value, associated, generator, context, current);
@@ -145,8 +160,8 @@ final class DomainReferences {
             if (current.isDeep() && !toMany) {
                 // In full, an instance is written with its type id; a reference carries none
                 Object unwrapped = DomainWrites.copied(current.unwrap(value));
-                context.findValueSerializer(unwrapped.getClass()).serializeWithType(unwrapped, generator, context,
-                        typeSerializer);
+                context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serializeWithType(unwrapped, generator,
+                        context, typeSerializer);
             }
             else {
                 serialize(value, generator, context);

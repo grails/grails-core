@@ -19,6 +19,7 @@
 package org.grails.web.converters.jackson;
 
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsontype.TypeSerializer;
@@ -33,20 +34,35 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
 
     private final DomainRendering rendering;
 
+    private final BeanProperty property;
+
     DomainProxySerializer(DomainRendering rendering) {
+        this(rendering, null);
+    }
+
+    private DomainProxySerializer(DomainRendering rendering, BeanProperty property) {
         this.rendering = rendering;
+        this.property = property;
+    }
+
+    /** The instance is written with the property the proxy is written for, so that what it is annotated with applies. */
+    @Override
+    public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
+        return property == this.property ? this : new DomainProxySerializer(rendering, property);
     }
 
     @Override
     public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
-        context.writeValue(generator, unwrapped(value, context));
+        Object unwrapped = unwrapped(value, context);
+        context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serialize(unwrapped, generator, context);
     }
 
     @Override
     public void serializeWithType(Object value, JsonGenerator generator, SerializationContext context,
             TypeSerializer typeSerializer) {
         Object unwrapped = unwrapped(value, context);
-        context.findValueSerializer(unwrapped.getClass()).serializeWithType(unwrapped, generator, context, typeSerializer);
+        context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serializeWithType(unwrapped, generator, context,
+                typeSerializer);
     }
 
     private Object unwrapped(Object value, SerializationContext context) {

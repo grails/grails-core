@@ -145,8 +145,9 @@ final class DomainClassModifier extends ValueSerializerModifier {
                 association.getAssociatedEntity() != null && !association.getType().isEnum() &&
                 writer.getSerializer() == null && !writer.isUnwrapping() &&
                 writer.getAnnotation(JsonSerialize.class) == null) {
+            // Jackson contextualizes only the serializers it assigns itself, so this one is given the property here
             writer.assignSerializer(references.serializer(association.getAssociatedEntity(),
-                    !(association instanceof OneToOne || association instanceof ManyToOne), rendering));
+                    !(association instanceof OneToOne || association instanceof ManyToOne), rendering, writer));
         }
         return writer;
     }

@@ -211,6 +211,26 @@ class DomainClassJacksonModuleSpec extends Specification {
                 .writeValueAsString(writer) == '{"name":"a"}'
     }
 
+    void "rendering deep, the annotations of an association apply to the instances it writes"() {
+        given:
+        def shelf = new Shelf(name: 'top')
+        shelf.id = 3
+        def first = new Writer(name: 'a')
+        first.id = 1
+        def library = new Library(name: 'main', shelf: shelf, writers: [first])
+        library.id = 7
+
+        def proxied = new Library(name: 'main', shelf: shelf, writers: [new WriterProxy(target: first, proxyId: 1)])
+        proxied.id = 8
+        def deep = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
+
+        expect:
+        deep.writeValueAsString(library) == '{"id":7,"name":"main","shelf":{"id":3},"writers":[{"id":1}]}'
+
+        and: 'to a proxy of an instance in the association as well'
+        deep.writeValueAsString(proxied) == '{"id":8,"name":"main","shelf":{"id":3},"writers":[{"id":1}]}'
+    }
+
     void "a domain class with its own @JsonSerialize serializer keeps it"() {
         given:
         def label = new Label(text: 'x')
@@ -458,13 +478,13 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId)
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId)
+                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -541,6 +561,16 @@ abstract class IgnoredIdMixin {
 
 @JsonIgnoreProperties(['id'])
 abstract class IgnoredIdPropertiesMixin { }
+
+@Entity
+class Library {
+    static hasMany = [writers: Writer]
+    String name
+    @JsonIgnoreProperties(['name'])
+    Shelf shelf
+    @JsonIgnoreProperties(['name'])
+    List writers
+}
 
 @Entity
 @JsonSerialize(using = LabelSerializer)
