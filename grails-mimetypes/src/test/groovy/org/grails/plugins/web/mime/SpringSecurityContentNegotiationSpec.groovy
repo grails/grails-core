@@ -18,8 +18,10 @@
  */
 package org.grails.plugins.web.mime
 
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
@@ -33,15 +35,13 @@ import org.springframework.web.context.request.ServletWebRequest
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 import grails.core.DefaultGrailsApplication
-import grails.web.mime.MimeType
-import org.grails.web.mime.GrailsContentNegotiationStrategy
-import org.grails.web.mime.GrailsMimeTypesWebMvcConfigurer
+import grails.core.GrailsApplication
 
 import spock.lang.Specification
 
 class SpringSecurityContentNegotiationSpec extends Specification {
 
-    void 'Spring Security starts with Grails negotiation installed only through MVC'() {
+    void "Spring Security starts with Grails' MIME configuration, which gives it no strategy of its own to adopt"() {
         given:
         def context = new AnnotationConfigWebApplicationContext()
         context.servletContext = new MockServletContext()
@@ -50,10 +50,9 @@ class SpringSecurityContentNegotiationSpec extends Specification {
         when:
         context.refresh()
 
-        then:
+        then: 'the one strategy is the MVC manager, which keeps Spring negotiation for Spring Security'
         context.getBean(SecurityFilterChain)
-        context.getBeansOfType(GrailsContentNegotiationStrategy).isEmpty()
-        context.getBeansOfType(ContentNegotiationStrategy).size() == 1
+        context.getBeansOfType(ContentNegotiationStrategy).keySet() == ['mvcContentNegotiationManager'] as Set
 
         and:
         def manager = context.getBean('mvcContentNegotiationManager', ContentNegotiationManager)
@@ -109,12 +108,14 @@ class SpringSecurityContentNegotiationSpec extends Specification {
     @Configuration(proxyBeanMethods = false)
     @EnableWebMvc
     @EnableWebSecurity
+    @Import(MimeTypesConfiguration)
     static class SecurityWebConfiguration {
 
         @Bean
-        GrailsMimeTypesWebMvcConfigurer grailsMimeTypesWebMvcConfigurer() {
-            new GrailsMimeTypesWebMvcConfigurer(new GrailsContentNegotiationStrategy(
-                    MimeType.createDefaults(), new DefaultGrailsApplication().config))
+        GrailsApplication grailsApplication(ApplicationContext applicationContext) {
+            def application = new DefaultGrailsApplication()
+            application.setApplicationContext(applicationContext)
+            application
         }
 
         @Bean

@@ -123,8 +123,9 @@ class MimeTypesConfigurationSpec extends Specification {
     }
 
     void 'a MIME type provider that needs Spring MVC infrastructure does not close a startup cycle'() {
-        given:
+        given: 'circular references disallowed, as Spring Boot does, so that a cycle fails the refresh'
         def context = new AnnotationConfigWebApplicationContext()
+        context.allowCircularReferences = false
         context.servletContext = new MockServletContext()
         context.register(CycleConfiguration)
 

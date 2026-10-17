@@ -255,21 +255,25 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         mapper.writeValueAsString([message: "Saved ${title}"]) == '{"message":"Saved Grails"}'
     }
 
-    void 'Grails domain compatibility does not change Jackson annotations on the shared mapper'() {
+    void 'the Grails mapper keeps the mix-ins, naming, inclusion and views of the mapper it derives from'() {
         given:
+        def mapping = new KeyValueMappingContext('derived')
+        mapping.addPersistentEntities(AnnotatedJacksonBook)
+        def app = new DefaultGrailsApplication(AnnotatedJacksonBook)
+        app.initialise()
+        app.mappingContext = mapping
         def builder = JsonMapper.builder().addMixIn(AnnotatedJacksonBook, AnnotatedJacksonBookMixin)
                 .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
                 .changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_NULL) }
-        def customizer = new GrailsJsonMapperCustomizer()
+        def customizer = new GrailsJsonMapperCustomizer(app, new DefaultProxyHandler())
         customizer.customize(builder)
-        def mapper = builder.build()
-        customizer.forGrails(mapper)
+        def mapper = customizer.forGrails(builder.build())
         def book = new AnnotatedJacksonBook(secret: 'private', title: 'Grails', firstName: 'Ada',
-                published: new Date(0), internal: 'hidden')
+                published: new Date(0), internal: 'hidden').tap { id = 4 }
 
-        expect:
+        expect: 'the domain class is written as Grails writes it, with what the mapper applies to any bean'
         mapper.readValue(mapper.writerWithView(PublicView).writeValueAsString(book), Map) == [
-                book_title: 'Grails', first_name: 'Ada', published: '1970', summary: 'Grails by Ada']
+                id: 4, book_title: 'Grails', first_name: 'Ada', published: '1970']
     }
 
     void 'application domain serializers keep precedence in the Grails mapper'() {

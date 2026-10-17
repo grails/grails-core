@@ -196,28 +196,29 @@ class XmlGrailsPluginSpec extends Specification {
     }
 
     void 'nothing registers XML renderers other than those beans'() {
-        given: "a registry that never sees the renderer beans"
+        given: "a registry the plugin's beans could reach, which nothing gives them"
         def rendererRegistry = new DefaultRendererRegistry()
         rendererRegistry.initialize()
-        def registrar = new XmlGrailsPlugin().beanRegistrar()
-        new BeanRegistryAdapter(beanFactory, new StandardEnvironment(), registrar.getClass()).register(registrar)
+        beanFactory.registerSingleton('rendererRegistry', rendererRegistry)
 
         when: "every bean the plugin registers is created"
         beanFactory.beanDefinitionNames.each { beanFactory.getBean(it) }
 
         then: "no bean has registered a renderer behind the registry's back"
         rendererRegistry.findRenderer(MimeType.XML, new URL('https://grails.apache.org')) == null
+        rendererRegistry.findContainerRenderer(MimeType.XML, Errors, new BeanPropertyBindingResult('value', 'target')) == null
     }
 
     void 'Atom feed rendering remains opt-in'() {
         given:
         def rendererRegistry = new DefaultRendererRegistry()
+
+        when: "the registry collects every renderer bean the plugin registers"
+        rendererRegistry.setRenderers(beanFactory.getBeansOfType(Renderer).values() as Renderer[])
         rendererRegistry.initialize()
 
-        when: "the plugin's renderer beans are registered"
-        rendererRegistry.setRenderers([new XmlFallbackRenderer()] as Renderer[])
-
-        then: "no Atom renderer comes with them"
+        then: "XML is rendered, and no Atom renderer comes with it"
+        rendererRegistry.findRenderer(MimeType.XML, new URL('https://grails.apache.org')) != null
         rendererRegistry.findRenderer(MimeType.ATOM_XML, new URL('https://grails.apache.org')) == null
     }
 }
