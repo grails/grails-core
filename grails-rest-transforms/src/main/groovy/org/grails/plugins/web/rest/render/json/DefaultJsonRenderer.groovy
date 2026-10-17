@@ -114,7 +114,6 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     /** Shared by the renderers of one registry, like {@link #legacyFallbackReported}. */
     AtomicBoolean missingConvertersReported = new AtomicBoolean()
-    List<HttpMessageConverter<?>> springHttpMessageConverters = []
 
     /**
      * Resolved when a response is written rather than when this renderer is built, so that
@@ -265,8 +264,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
-        List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get()
-        return supplied ?: springHttpMessageConverters
+        return springHttpMessageConvertersSupplier?.get() ?: []
     }
 
     /**

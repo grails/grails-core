@@ -76,8 +76,6 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     ObjectProvider<RendererRegistry> rendererRegistryProvider
 
-    List<HttpMessageConverter<?>> springHttpMessageConverters = []
-
     /**
      * Resolved when a response is written rather than when this renderer is built, so that
      * obtaining the converters cannot force MVC initialization during bean creation.
@@ -115,7 +113,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
         List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get() ?:
                 springMessageConvertersProvider?.getIfAvailable()?.converters
-        return supplied ?: springHttpMessageConverters
+        return supplied ?: []
     }
 
     String namedConfiguration

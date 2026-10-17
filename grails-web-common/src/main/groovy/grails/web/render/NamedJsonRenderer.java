@@ -31,8 +31,6 @@ public interface NamedJsonRenderer {
 
     boolean contains(String name);
 
-    void render(String name, Object value, Writer writer) throws IOException;
-
     /**
      * Renders with a per-response projection applied.
      *

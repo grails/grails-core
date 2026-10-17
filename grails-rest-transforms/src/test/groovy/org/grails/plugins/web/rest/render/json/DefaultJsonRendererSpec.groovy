@@ -60,7 +60,7 @@ class DefaultJsonRendererSpec extends Specification {
     void 'an explicit ProblemDetail controls the status content type and instance for status #status'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
-        renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def context = new ServletRenderContext(webRequest)
         context.resourcePath = '/books'
@@ -93,7 +93,7 @@ class DefaultJsonRendererSpec extends Specification {
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = true
         renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
-        renderer.springHttpMessageConverters = [source]
+        renderer.springHttpMessageConvertersSupplier = { [source] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def context = new ServletRenderContext(webRequest) {
             @Override
@@ -167,7 +167,7 @@ class DefaultJsonRendererSpec extends Specification {
         def renderer = new DefaultJsonRenderer<ProjectionBody>(ProjectionBody)
         renderer.useSpringJson = true
         renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -225,8 +225,8 @@ class DefaultJsonRendererSpec extends Specification {
         new GrailsJsonMapperCustomizer().customize(builder)
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [new ByteArrayHttpMessageConverter(),
-                new StringHttpMessageConverter(), new JacksonJsonHttpMessageConverter(builder)]
+        renderer.springHttpMessageConvertersSupplier = { [new ByteArrayHttpMessageConverter(),
+                new StringHttpMessageConverter(), new JacksonJsonHttpMessageConverter(builder)] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -248,7 +248,7 @@ class DefaultJsonRendererSpec extends Specification {
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = true
         renderer.encoding = 'ISO-8859-1'
-        renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -270,7 +270,7 @@ class DefaultJsonRendererSpec extends Specification {
         expect:
         [first, second, first, second].every { source ->
             def webRequest = GrailsWebMockUtil.bindMockWebRequest()
-            renderer.springHttpMessageConverters = [source]
+            renderer.springHttpMessageConvertersSupplier = { [source] }
             renderer.render(new ProjectionBody(title: 'Grails', hidden: true), new ServletRenderContext(webRequest))
             webRequest.response.contentAsString.contains(source.is(first) ? '"title":"Grails"' : '"Title":"Grails"')
         }
@@ -286,7 +286,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Map>(Map)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [first, selected]
+        renderer.springHttpMessageConvertersSupplier = { [first, selected] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -308,7 +308,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Map>(Map)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -329,7 +329,7 @@ class DefaultJsonRendererSpec extends Specification {
         def renderer = new DefaultJsonRenderer<ProjectionBody>(ProjectionBody)
         renderer.useSpringJson = true
         renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -346,7 +346,7 @@ class DefaultJsonRendererSpec extends Specification {
         def renderer = new DefaultJsonRenderer<ProjectionBody>(ProjectionBody)
         renderer.useSpringJson = true
         renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
-        renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -383,7 +383,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new FieldError('book', 'title', 'secret', false,
                 ['book.title.blank'] as String[], null, 'Title must not be blank'))
@@ -411,7 +411,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -436,7 +436,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -484,7 +484,7 @@ class DefaultJsonRendererSpec extends Specification {
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = true
         renderer.encoding = 'ISO-8859-1'
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -511,7 +511,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         renderer.validationProblemDetailFactory =
                 new ValidationProblemDetailFactory(false, new StaticMessageSource())
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
@@ -540,7 +540,7 @@ class DefaultJsonRendererSpec extends Specification {
         }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         renderer.errorsHttpStatus = HttpStatus.BAD_REQUEST
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
@@ -561,7 +561,7 @@ class DefaultJsonRendererSpec extends Specification {
     void 'without a Spring JSON setting the legacy converter writes the response and warns'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
-        renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
 
         when: 'two responses are written'
         String log = stderrWhile {
@@ -584,7 +584,7 @@ class DefaultJsonRendererSpec extends Specification {
         def reported = new AtomicBoolean()
         def renderers = (1..2).collect {
             new DefaultJsonRenderer<Object>(Object).tap {
-                springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
+                springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
                 legacyFallbackReported = reported
             }
         }
@@ -603,7 +603,7 @@ class DefaultJsonRendererSpec extends Specification {
         JSON.registerObjectMarshaller(ProjectionBody) { ProjectionBody body -> [legacy: body.title] }
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = setting
-        renderer.springHttpMessageConverters = [new JacksonJsonHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:

@@ -44,11 +44,6 @@ public final class JacksonNamedJsonRenderer implements NamedJsonRenderer {
     }
 
     @Override
-    public void render(String name, Object value, Writer writer) throws IOException {
-        registry.writeValue(name, writer, value);
-    }
-
-    @Override
     public void render(String name, Object value, Writer writer,
             List<String> includes, List<String> excludes) throws IOException {
         registry.writeValue(name, writer, value, includes, excludes);

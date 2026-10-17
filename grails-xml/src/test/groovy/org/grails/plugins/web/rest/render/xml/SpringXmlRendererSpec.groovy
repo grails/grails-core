@@ -64,7 +64,7 @@ class SpringXmlRendererSpec extends Specification {
         given:
         def renderer = new DefaultXmlRenderer<XmlGreeting>(XmlGreeting)
         renderer.useSpringXml = true
-        renderer.springHttpMessageConverters = [new JacksonXmlHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonXmlHttpMessageConverter()] }
         def response = new MockHttpServletResponse()
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
         def context = new FixedMimeServletRenderContext(webRequest, acceptedMimeType)
@@ -89,7 +89,7 @@ class SpringXmlRendererSpec extends Specification {
         def second = Mock(HttpMessageConverter)
         def renderer = new DefaultXmlRenderer<XmlGreeting>(XmlGreeting)
         renderer.useSpringXml = true
-        renderer.springHttpMessageConverters = [first, second]
+        renderer.springHttpMessageConvertersSupplier = { [first, second] }
         def response = new MockHttpServletResponse()
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
         def context = new FixedMimeServletRenderContext(webRequest, MimeType.XML)
@@ -109,7 +109,7 @@ class SpringXmlRendererSpec extends Specification {
         given:
         def renderer = new DefaultXmlRenderer<String>(String)
         renderer.useSpringXml = true
-        renderer.springHttpMessageConverters = [new StringHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new StringHttpMessageConverter()] }
         def response = new MockHttpServletResponse()
         def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
 
@@ -127,7 +127,7 @@ class SpringXmlRendererSpec extends Specification {
         def mvcConverter = Mock(HttpMessageConverter)
         def renderer = new DefaultXmlRenderer<Map>(Map)
         renderer.useSpringXml = true
-        renderer.springHttpMessageConverters = [mvcConverter]
+        renderer.springHttpMessageConvertersSupplier = { [mvcConverter] }
         def response = new MockHttpServletResponse()
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
         def context = new FixedMimeServletRenderContext(webRequest, MimeType.XML)
@@ -146,7 +146,7 @@ class SpringXmlRendererSpec extends Specification {
         def converter = Mock(HttpMessageConverter)
         def renderer = new DefaultXmlRenderer<XmlDomainGreeting>(XmlDomainGreeting)
         renderer.useSpringXml = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def response = new MockHttpServletResponse()
         def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
 
@@ -163,7 +163,7 @@ class SpringXmlRendererSpec extends Specification {
         def renderer = new DefaultXmlRenderer<XmlGreeting>(XmlGreeting)
         renderer.useSpringXml = true
         renderer.encoding = 'ISO-8859-1'
-        renderer.springHttpMessageConverters = [new JacksonXmlHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonXmlHttpMessageConverter()] }
         def response = new MockHttpServletResponse()
         def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
 
@@ -181,7 +181,7 @@ class SpringXmlRendererSpec extends Specification {
         def renderer = new XmlRenderer<XmlCredentials>(XmlCredentials)
         renderer.excludes = ['password']
         renderer.useSpringXml = true
-        renderer.springHttpMessageConverters = [converter]
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
         def response = new MockHttpServletResponse()
         def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
 
@@ -222,7 +222,7 @@ class SpringXmlRendererSpec extends Specification {
         given:
         grails.converters.XML.registerObjectMarshaller(XmlGreeting) { value -> [custom: value.message] }
         def renderer = new DefaultXmlRenderer<XmlGreeting>(XmlGreeting)
-        renderer.springHttpMessageConverters = [new JacksonXmlHttpMessageConverter()]
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonXmlHttpMessageConverter()] }
         def response = new MockHttpServletResponse()
         def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
 
