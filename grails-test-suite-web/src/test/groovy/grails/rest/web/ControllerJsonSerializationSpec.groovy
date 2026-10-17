@@ -219,6 +219,17 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json == [user: 'ada']
     }
 
+    void 'an application JsonRenderer bean keeps its own excludes with a named configuration'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
+
+        when:
+        controller.respond(new JsonRendererCredentials(user: 'ada', password: 's3cret'), jsonConfiguration: 'plain')
+
+        then:
+        response.json == [user: 'ada']
+    }
+
     void 'a request includes overrides the excludes of a JsonRenderer bean only where the bean sets none'() {
         when:
         controller.respond(new JsonRendererCredentials(user: 'ada', password: 's3cret'), includes: ['user', 'password'])

@@ -174,7 +174,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
                 throw new IllegalArgumentException("Named JSON configuration [$selectedConfiguration] is not registered.")
             }
             namedJsonRenderer.render(selectedConfiguration, object, context.writer,
-                    context.includes, context.excludes)
+                    getEffectiveIncludes(context), getEffectiveExcludes(context))
             return
         }
         String springFallbackReason = null
