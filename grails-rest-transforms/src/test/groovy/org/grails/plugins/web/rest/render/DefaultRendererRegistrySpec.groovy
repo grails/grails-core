@@ -128,6 +128,8 @@ class DefaultRendererRegistrySpec extends Specification {
         bean.namedJsonRenderer.is(namedRenderer)
         bean.springHttpMessageConvertersSupplier != null
         bean.legacyFallbackReported.is(registry.findRenderer(MimeType.JSON, new Object()).legacyFallbackReported)
+        bean.problemFallbackReported.is(registry.findRenderer(MimeType.JSON, new Object()).problemFallbackReported)
+        !bean.problemFallbackReported.is(bean.legacyFallbackReported)
 
         and: 'a renderer that chose its path keeps it'
         !legacyBean.useSpringJson

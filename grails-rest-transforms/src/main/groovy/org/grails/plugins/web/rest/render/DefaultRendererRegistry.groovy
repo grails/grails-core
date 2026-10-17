@@ -101,6 +101,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     private final AtomicBoolean legacyJsonFallbackReported = new AtomicBoolean()
     private final AtomicBoolean missingJsonConvertersReported = new AtomicBoolean()
+    private final AtomicBoolean problemJsonFallbackReported = new AtomicBoolean()
 
     /** The container renderers plugins contribute as defaults, collected with the renderer beans, with their component types. */
     private final List<Tuple2<Class, Renderer>> pendingDefaultContainerRenderers = []
@@ -154,6 +155,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         DefaultJsonRenderer renderer = (DefaultJsonRenderer) candidate
         renderer.legacyFallbackReported = legacyJsonFallbackReported
         renderer.missingConvertersReported = missingJsonConvertersReported
+        renderer.problemFallbackReported = problemJsonFallbackReported
         if (renderer.useSpringJson == null) {
             renderer.useSpringJson = useSpringJson
         }

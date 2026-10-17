@@ -116,6 +116,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     AtomicBoolean missingConvertersReported = new AtomicBoolean()
 
     /**
+     * Shared by the renderers of one registry, like {@link #legacyFallbackReported}: a problem the legacy converter
+     * writes is reported once, whether or not a legacy response was.
+     */
+    AtomicBoolean problemFallbackReported = new AtomicBoolean()
+
+    /**
      * Resolved when a response is written rather than when this renderer is built, so that
      * obtaining the converters cannot force MVC initialization during bean creation.
      */
@@ -225,12 +231,14 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     private void reportLegacyFallback(Object object, String springFallbackReason) {
-        if (!legacyFallbackReported.compareAndSet(false, true)) {
+        if (object instanceof ProblemDetail && springFallbackReason != null) {
+            if (problemFallbackReported.compareAndSet(false, true)) {
+                log.warn("A ProblemDetail is written through Spring's message converters, but ${springFallbackReason}, " +
+                        'so the legacy JSON converter writes it as a bean.')
+            }
             return
         }
-        if (object instanceof ProblemDetail && springFallbackReason != null) {
-            log.warn("A ProblemDetail is written through Spring's message converters, but ${springFallbackReason}, " +
-                    'so the legacy JSON converter writes it as a bean.')
+        if (!legacyFallbackReported.compareAndSet(false, true)) {
             return
         }
         if (useSpringJson == Boolean.TRUE) {

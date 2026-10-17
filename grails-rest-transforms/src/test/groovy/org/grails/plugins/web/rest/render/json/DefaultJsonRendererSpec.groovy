@@ -159,6 +159,26 @@ class DefaultJsonRendererSpec extends Specification {
         log.contains('so the legacy JSON converter writes it as a bean')
     }
 
+    void 'a ProblemDetail the legacy converter writes and a legacy response are each reported, whichever comes first'() {
+        given:
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        def values = [[title: 'Grails'], ProblemDetail.forStatus(409)]
+
+        when:
+        String log = stderrWhile {
+            (problemFirst ? values.reverse() : values).each { value ->
+                renderer.render(value, new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest()))
+            }
+        }
+
+        then:
+        log.contains(LEGACY_RESPOND_WARNING)
+        log.contains('so the legacy JSON converter writes it as a bean')
+
+        where:
+        problemFirst << [false, true]
+    }
+
     void 'with Spring JSON on, a legacy fallback says why rather than asking for the setting again'() {
         given: 'an application converter, which cannot apply a projection'
         def converter = Mock(HttpMessageConverter) {
