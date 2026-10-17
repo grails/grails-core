@@ -56,9 +56,10 @@ class MarkupViewXmlRendererSpec extends Specification {
         def renderer = registry.findRenderer(MimeType.XML, value)
         renderer.render(value, new ServletRenderContext(webRequest, [view: '/missing']))
 
-        then:
+        then: 'the error is sent, as respond sends it, so that the error page applies'
         renderer instanceof MarkupViewXmlRenderer
         webRequest.response.status == 406
+        webRequest.response.committed
 
         where:
         value << [new MarkupBody(title: 'Grails'), ProblemDetail.forStatus(422)]
