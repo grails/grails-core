@@ -88,7 +88,7 @@ public class JsonMapperValueMarshaller implements ObjectMarshaller<JSON> {
     private static boolean writeNested(Object nested, JSON converter) {
         // A single value is left to the mapper, but any other goes back through the converter, which keeps track of the
         // objects it is rendering, so that one that contains itself is found
-        if (converter.lookupObjectMarshaller(nested) instanceof JsonMapperValueMarshaller &&
+        if (writesWithMapper(converter.lookupObjectMarshaller(nested)) &&
                 converter.getJsonMapperSupport().rendersValue(nested.getClass())) {
             return false;
         }

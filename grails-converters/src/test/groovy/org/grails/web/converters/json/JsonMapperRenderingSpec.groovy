@@ -361,6 +361,27 @@ class JsonMapperRenderingSpec extends Specification {
         json.next.next['class'] == IdentifiedNode.name
     }
 
+    void "a subclass of the mapper's marshaller that writes a single value itself writes it wherever it is nested"() {
+        given:
+        def id = UUID.fromString('0f8fad5b-d9cb-469f-a165-70867728950e')
+        JSON.registerObjectMarshaller(new JsonMapperValueMarshaller() {
+            @Override
+            boolean supports(Object object) {
+                object instanceof UUID
+            }
+
+            @Override
+            void marshalObject(Object object, JSON converter) {
+                converter.convertAnother(object.toString().toUpperCase())
+            }
+        })
+
+        expect:
+        new JSON(id).toString() == '"0F8FAD5B-D9CB-469F-A165-70867728950E"'
+        new JSON([id: id, ids: [id]]).toString() ==
+                '{"id":"0F8FAD5B-D9CB-469F-A165-70867728950E","ids":["0F8FAD5B-D9CB-469F-A165-70867728950E"]}'
+    }
+
     void "with the PATH circular reference behaviour, a reference through a module serializer has the path of the value it writes"() {
         given:
         def context = moduleContext()
