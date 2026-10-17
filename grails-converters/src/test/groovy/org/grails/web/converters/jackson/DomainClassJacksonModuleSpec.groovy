@@ -220,6 +220,22 @@ class DomainClassJacksonModuleSpec extends Specification {
         !log.contains('were not applied')
     }
 
+    void "a proxy of an instance that no longer exists is empty, as null is, where a property leaves out empty values"() {
+        given:
+        def mapper = JsonMapper.builder()
+                .changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_EMPTY) }
+                .addModule(new DomainClassJacksonModule(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(),
+                        false, false, false)))
+                .build()
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+
+        expect:
+        mapper.writeValueAsString(new WriterHolder(writer: new WriterProxy(proxyId: 9))) == '{}'
+        mapper.writeValueAsString(new WriterHolder(writer: new WriterProxy(target: writer, proxyId: 1))) ==
+                '{"writer":{"id":1,"name":"a"}}'
+    }
+
     void "properties annotated @JsonIgnore or write-only are not written, and those @JsonIgnoreProperties names are not"() {
         given: 'GORM adds @JsonIgnoreProperties to every domain class, naming properties such as the version'
         def member = new Member(name: 'a', password: 'secret', pin: '1234', token: 'abc')
@@ -1082,6 +1098,10 @@ class Pet {
 @Entity
 class Kennel {
     Animal resident
+}
+
+class WriterHolder {
+    Writer writer
 }
 
 @Entity

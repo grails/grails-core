@@ -28,7 +28,8 @@ import tools.jackson.databind.util.NameTransformer;
 /**
  * Writes a proxy of a domain class instance as the instance it proxies, in its own serializer, so that a proxy narrowed
  * to a subclass is written as the subclass. A proxy of an instance that no longer exists, which has no target, is
- * written as {@code null}, or left out of the object a {@code @JsonUnwrapped} property would write it into.
+ * written as {@code null}, and left out of the object a {@code @JsonUnwrapped} property would write it into and by a
+ * property that leaves out empty values.
  *
  * @since 9.0
  */
@@ -66,6 +67,19 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
     @Override
     public boolean isUnwrappingSerializer() {
         return unwrapper != null;
+    }
+
+    /**
+     * A proxy of an instance that no longer exists is empty, as {@code null} is, and any other is as empty as the instance
+     * it proxies, so that a property that leaves out empty values leaves it out.
+     */
+    @Override
+    public boolean isEmpty(SerializationContext context, Object value) {
+        Object unwrapped = rendering.of(context, value).unwrap(value);
+        if (unwrapped == null) {
+            return true;
+        }
+        return unwrapped != value && context.findValueSerializer(unwrapped.getClass()).isEmpty(context, unwrapped);
     }
 
     @Override
