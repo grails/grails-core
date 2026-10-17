@@ -85,9 +85,9 @@ configurations.configureEach {
 In Grails 10 neither will bring it, and `@Resource` will default to JSON only.
 Legacy XML conversion is scheduled for removal in Grails 11: `grails.converters.XML`, the `XmlRenderer`,
 `XmlCollectionRenderer`, HAL XML, Atom and Vnd.Error XML renderers, and the XML validation errors
-marshaller are deprecated for removal. The converter, and the HAL XML, Atom and Vnd.Error XML renderers, each log one
-warning when they are used; the other XML renderers and the errors marshaller warn through the converter they render
-with.
+marshaller are deprecated for removal. The converter logs one warning when it first renders XML, and the HAL XML, Atom
+and Vnd.Error XML renderers each log one when they are used; the other XML renderers and the errors marshaller warn
+through the converter they render with.
 MIME type negotiation still recognizes `application/xml`, `text/xml`, Atom, and other XML media
 types; recognizing a media type does not install an XML serializer.
 

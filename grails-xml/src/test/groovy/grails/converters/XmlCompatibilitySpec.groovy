@@ -95,7 +95,7 @@ class XmlCompatibilitySpec extends Specification {
 
         then:
         log.readLines().count { it.contains('Legacy XML conversion is scheduled for removal in Grails 11.') } == 1
-        log.contains('XML leaves the default web starter in Grails 10')
+        log.contains('XML leaves the web starter and grails-web-boot in Grails 10')
     }
 
     void 'maps retain their entry names and nested collection shape'() {
