@@ -22,7 +22,8 @@ https://github.com/blongden/vnd.error[Vnd.Error] is a legacy error response form
 `application/problem+json` response instead.
 
 In Grails 9, when a validation error occurs while POSTing a new resource, `respond` sends the errors
-back as they were in Grails 8, with a 422 response code:
+back as they were in Grails 8, with a 422 response code. With `grails.converters.json.legacy: false`, each entry
+carries its error `codes` in place of the `rejected-value`, which can be a password or a token:
 
 [source,groovy]
 ----
@@ -93,9 +94,8 @@ Then if you alter the client request to accept Vnd.Error you get an appropriate 
 [source,groovy]
 ----
 $ curl -i -H "Accept: application/vnd.error+json,application/json" -H "Content-Type: application/json" -X POST -d "" http://localhost:8080/books
-HTTP/1.1 200 OK
-Server: Apache-Coyote/1.1
-Content-Type: application/vnd.error+json;charset=ISO-8859-1
+HTTP/1.1 422
+Content-Type: application/vnd.error+json;charset=UTF-8
 
 [
     {

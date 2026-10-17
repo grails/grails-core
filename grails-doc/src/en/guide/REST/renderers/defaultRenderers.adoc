@@ -95,11 +95,14 @@ spring:
         time-zone: America/New_York
 ----
 
-Domain classes are rendered by Jackson's bean serializer, which Grails shapes to the domain class, as described below. Beans, enums, records,
-`Optional`, collections and maps are rendered by Grails marshallers, and the values they contain as any other value is.
-Enums render by `name()`, so that the JSON binds back to them, and strings are escaped for an HTML `<script>` element
-(`</` is written as `<\u002f`). To render a type differently, register an object
-marshaller for it, which takes precedence over the mapper, for example in `BootStrap.init`:
+Domain classes are rendered by Jackson's bean serializer, which Grails shapes to the domain class, as described below.
+Beans, records, `Optional` values, collections, maps and arrays are written by the mapper as Spring Boot writes them, and
+the values they contain are rendered as any other value is, so Jackson annotations, mix-ins and the mapper's naming and
+inclusion apply. Grails adds only its own rules: enums render by `name()`, so that the JSON binds back to them, the
+converter's includes and excludes decide which properties of a bean are written, methods annotated `@PersistenceMethod`
+or `@ControllerMethod` are not properties, and strings are escaped for an HTML `<script>` element (`</` is written as
+`<\u002f`). To render a type differently, register an object marshaller for it, which takes precedence over the mapper,
+for example in `BootStrap.init`:
 
 [source,groovy]
 ----
@@ -137,7 +140,7 @@ serializer, which Grails shapes to the domain class:
 version, which are written when they apply. The version and the class name are written when
 `grails.converters.json.domain.include.version` and `grails.converters.json.domain.include.class` are `true`.
 * An associated domain class instance is written as a reference of its id, or in full when
-`grails.converters.json.default.deep` is `true` (or within `JSON.use('deep') { }` for the converter). An instance that is
+`grails.converters.json.default.deep` is `true`, or, for the converter, within the deprecated `JSON.use('deep') { }`. An instance that is
 reached again while it is being written is written as `grails.converters.json.circular.reference.behaviour` selects.
 * A proxy is written as the instance it proxies, and a reference to a proxy is written from its identifier, without
 loading it.

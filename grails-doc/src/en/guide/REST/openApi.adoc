@@ -604,11 +604,11 @@ class of each, such as `<lines><string>a</string></lines>`, and a listing as a `
 holding one for each. The `xml` object cannot describe a map, which Grails renders as `entry`
 elements keyed by an attribute, and the document describes the XML Grails renders by default, not
 that of `grails.converters.xml.default.deep` or `grails.converters.xml.domain.include.class`. The
-JSON shapes are likewise those of the Grails JSON converter. The Spring opt-ins of the
-xref:upgrading#upgrading90x[upgrade guide], `grails.web.rendering.json.spring` and
-`grails.web.rendering.xml.spring`, make Spring's converters write ordinary beans by their own rules, and
-the document does not follow them: a Jackson naming strategy or annotation on a bean, or an element
-name that Spring's XML converter chooses, is not described.
+JSON shapes are likewise those of the Grails JSON converter as Grails 8 rendered them. The opt-ins of the
+xref:upgrading#upgrading90x[upgrade guide], `grails.web.rendering.json.spring`,
+`grails.converters.json.legacy: false` and `grails.web.rendering.xml.spring`, have Jackson or Spring's converters
+write by their own rules, and the document does not follow them: a Jackson naming strategy, inclusion or annotation on
+a bean or a domain class, or an element name that Spring's XML converter chooses, is not described.
 
 `RestfulController` answers its own `save` and `update` with a `Location` header naming the
 resource, which the `201` and `200` responses describe, and its `patch` too, which `update` serves.

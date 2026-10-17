@@ -271,7 +271,7 @@ trait ResponseRenderer extends WebAttributes {
     /**
      * Renders the {@code json} argument with the default or a registered named Jackson configuration:
      *
-     * <pre>render json: book, jsonConfiguration: 'deep'</pre>
+     * <pre>render json: book, jsonConfiguration: 'catalog'</pre>
      *
      * Keyed off the argument map rather than an overload taking an object, so that no other
      * two-argument render call can be captured by it.

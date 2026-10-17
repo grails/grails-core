@@ -50,7 +50,16 @@ def init = {
 }
 ----
 
-And then hitting the URL http://localhost:8080/books/1, which will render the response like:
+And then hitting the URL http://localhost:8080/books/1, which will render the response in the first of the resource's
+formats, JSON, like:
+
+[source,json]
+----
+{"id":1,"title":"The Stand"}
+----
+
+If you change the URL to http://localhost:8080/books/1.xml, with the `grails-xml` module present, you will get an XML
+response such as:
 
 [source,xml]
 ----
@@ -58,14 +67,6 @@ And then hitting the URL http://localhost:8080/books/1, which will render the re
 <book id="1">
     <title>The Stand</title>
 </book>
-----
-
-If you change the URL to http://localhost:8080/books/1.json you will get a JSON response such as:
-
-
-[source,json]
-----
-{"id":1,"title":"The Stand"}
 ----
 
 To choose the formats a resource answers, set the `formats` attribute of the `Resource` transformation. Listing `xml` requires the `grails-xml` module, which the Grails 9 web starter includes; from Grails 10, `@Resource` defaults to JSON only:

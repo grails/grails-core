@@ -259,10 +259,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * @return the JsonMapper this converter writes with
-     * @since 9.0
-     */
-    /**
      * Which properties of a bean the converter writes: those its includes and excludes for the class of the bean allow.
      */
     private Predicate<String> propertyFilter(Object bean) {
@@ -287,6 +283,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         return domainClassRenderings.computeIfAbsent(instance.getClass(), type -> renderer.getRendering(this, type));
     }
 
+    /**
+     * @return the JsonMapper this converter writes with
+     * @since 9.0
+     */
     public JsonMapperSupport getJsonMapperSupport() {
         return jsonMapperSupport != null ? jsonMapperSupport : ConvertersConfigurationHolder.getJsonMapperSupport();
     }

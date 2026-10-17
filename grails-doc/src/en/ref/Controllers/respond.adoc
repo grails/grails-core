@@ -68,6 +68,16 @@ Supported `arguments`:
 * `formats` - A list of formats to respond with
 * `includes` - Properties to include if rendering with the converters API
 * `excludes` - Properties to exclude if rendering with the converters API
+* `jsonConfiguration` - For a JSON response, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with. A name that is not registered throws `IllegalArgumentException`
+
+A Spring `ProblemDetail` is written as `application/problem+json`, through Spring's message converters, with the status
+the problem carries, and an absent `instance` is set to the current resource path:
+
+[source,groovy]
+----
+respond validationProblemDetailFactory.create(book.errors)   // 422 application/problem+json
+respond ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The book is checked out')
+----
 
 WARNING: Due to the way Groovy works, while responding with a Map and arguments it is important to respond in this manner `respond([:], status: 200)` instead of this manner `respond([:], [status: 200])`. Failure to do so will result in the arguments being reversed.
 
