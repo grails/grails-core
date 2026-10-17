@@ -607,8 +607,8 @@ grails:
 
 Grails then registers the module with the mapper, as the `domainClassJacksonModule` bean, which you can also add to a
 `JsonMapper` you build yourself. The mapper renders associated instances as references of their id, such as `{"id":3}`,
-rather than in full, and proxies as the instances they proxy, and names the id of a reference as the referenced class
-names it.
+or in full with `grails.converters.json.default.deep`, and proxies as the instances they proxy, and names the id of a
+reference as the referenced class names it.
 
 ==== 8. Rendering Single Values as JSON
 
