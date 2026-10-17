@@ -252,6 +252,19 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         registry.writeValueAsString('attributed', new NamedJsonEcho()) == '"app/named"'
     }
 
+    void 'a configuration may have any name, also that of a module the registry writes with'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        registry.register('projection') { }
+        def output = new StringWriter()
+
+        when:
+        registry.writeValue('projection', output, new NamedJsonCredentials(user: 'a', password: 'b'), null, ['password'])
+
+        then:
+        new JsonSlurper().parseText(output.toString()) == [user: 'a']
+    }
+
     void 'the writer for a configuration is derived once and reused'() {
         given:
         def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())

@@ -21,6 +21,7 @@ package grails.converters.json;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import tools.jackson.core.Version;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.json.JsonMapper;
@@ -40,7 +41,8 @@ public final class NamedJsonConfiguration {
     private boolean registered;
 
     NamedJsonConfiguration(String name) {
-        this.module = new SimpleModule("grails-json-" + name);
+        // Its own registration id: a module named as the configuration would replace a module of the same name
+        this.module = new SimpleModule("grails-json-" + name, Version.unknownVersion(), new Object());
     }
 
     public <T> NamedJsonConfiguration serializer(Class<T> type, ValueSerializer<? super T> serializer) {
