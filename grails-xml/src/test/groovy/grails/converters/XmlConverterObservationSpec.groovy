@@ -26,13 +26,12 @@ import grails.core.support.proxy.DefaultProxyHandler
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
-import org.grails.web.converters.exceptions.ConverterException
 import org.springframework.context.support.StaticApplicationContext
 import org.springframework.mock.web.MockHttpServletResponse
 
 import spock.lang.Specification
 
-class ConverterObservationSpec extends Specification {
+class XmlConverterObservationSpec extends Specification {
 
     private final List<Observation.Context> recorded = []
     private StaticApplicationContext applicationContext
@@ -41,23 +40,6 @@ class ConverterObservationSpec extends Specification {
         ConvertersConfigurationHolder.clear()
         recorded.clear()
         applicationContext?.close()
-    }
-
-    void "JSON response rendering records a converter observation when a registry bean is available"() {
-        given:
-        initializeConverters(recordingRegistry())
-        def response = new MockHttpServletResponse()
-
-        when:
-        new JSON([title: 'Undertow']).render(response)
-
-        then:
-        response.contentAsString == '{"title":"Undertow"}'
-        recorded.size() == 1
-        recorded[0].name == 'grails.convert'
-        recorded[0].contextualName == 'grails.convert json'
-        recorded[0].lowCardinalityKeyValues.find { it.key == 'grails.convert.format' }?.value == 'json'
-        recorded[0].error == null
     }
 
     void "XML response rendering records a converter observation when a registry bean is available"() {
@@ -75,42 +57,6 @@ class ConverterObservationSpec extends Specification {
         recorded[0].contextualName == 'grails.convert xml'
         recorded[0].lowCardinalityKeyValues.find { it.key == 'grails.convert.format' }?.value == 'xml'
         recorded[0].error == null
-    }
-
-    void "configured observations are cleared back to a no-op registry"() {
-        given:
-        initializeConverters(recordingRegistry())
-        ConvertersConfigurationHolder.clear()
-        new ConvertersConfigurationInitializer().initialize()
-        def response = new MockHttpServletResponse()
-
-        when:
-        new JSON([title: 'Undertow']).render(response)
-
-        then:
-        response.contentAsString == '{"title":"Undertow"}'
-        recorded.isEmpty()
-    }
-
-    void "converter observations record converter exceptions"() {
-        given:
-        initializeConverters(recordingRegistry())
-        def response = new MockHttpServletResponse() {
-            @Override
-            PrintWriter getWriter() throws IOException {
-                throw new IOException('boom')
-            }
-        }
-
-        when:
-        new JSON([title: 'Undertow']).render(response)
-
-        then:
-        def exception = thrown(ConverterException)
-        exception.cause.message == 'boom'
-        recorded.size() == 1
-        recorded[0].name == 'grails.convert'
-        recorded[0].error instanceof ConverterException
     }
 
     private ObservationRegistry recordingRegistry() {
@@ -135,6 +81,7 @@ class ConverterObservationSpec extends Specification {
             beanFactory.registerSingleton('observationRegistry', registry)
             refresh()
         }
+        // the JSON converter's initializer sets the observation registry the XML converter observes with
         new ConvertersConfigurationInitializer(applicationContext: applicationContext).initialize()
         new XmlConvertersConfigurationInitializer(applicationContext: applicationContext).initialize()
     }

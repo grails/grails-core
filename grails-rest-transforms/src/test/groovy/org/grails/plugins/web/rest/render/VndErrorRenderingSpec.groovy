@@ -22,7 +22,6 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.persistence.Entity
 import grails.rest.render.errors.VndErrorJsonRenderer
-import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
@@ -41,7 +40,6 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
-import org.grails.core.lifecycle.ShutdownOperations
 import spock.lang.Specification
 
 /**
@@ -52,69 +50,6 @@ class VndErrorRenderingSpec extends Specification{
 
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
-    }
-
-    void "Test VND error rendering in XML" () {
-        given:"A registry with VND error registered"
-            def registry = new DefaultRendererRegistry()
-            final vndRenderer = new VndErrorXmlRenderer()
-            final messageSource = new StaticMessageSource()
-            final request = GrailsWebMockUtil.bindMockWebRequest()
-            final response = request.response
-            messageSource.addMessage("title.invalid", request.locale, "Bad Title")
-            vndRenderer.messageSource = messageSource
-            vndRenderer.linkGenerator = getLinkGenerator {
-                "/books"(resources:"book")
-            }
-            registry.addRenderer(vndRenderer)
-
-
-        when:"A renderer is looked up"
-            final book = new Book()
-            book.id = 1
-            def error = new BeanPropertyBindingResult(book, Book.name)
-            error.rejectValue("title", "title.invalid")
-            final renderer = registry.findContainerRenderer(MimeType.XML, Errors, book)
-
-        then:"It is a VND error renderer"
-            renderer instanceof VndErrorXmlRenderer
-
-
-        when:"The renderer renders an error"
-            renderer.render(error, new ServletRenderContext(request))
-
-        then:"The response is correct"
-            response.status == HttpStatus.UNPROCESSABLE_ENTITY.value()
-            response.contentType == GrailsWebUtil.getContentType(VndErrorXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><errors xml:lang="en"><error logref="book.title.invalid.1"><message>Bad Title</message><link rel="resource" href="http://localhost/books/1" /></error></errors>'
-
-    }
-
-    void "Vnd.Error XML rendering warns once per application that it is scheduled for removal in Grails 11"() {
-        given:
-        ShutdownOperations.runOperations()
-        def vndRenderer = new VndErrorXmlRenderer()
-        def messageSource = new StaticMessageSource()
-        messageSource.addMessage("title.invalid", Locale.ENGLISH, "Bad Title")
-        vndRenderer.messageSource = messageSource
-        vndRenderer.linkGenerator = getLinkGenerator {
-            "/books"(resources:"book")
-        }
-        def book = new Book()
-        book.id = 1
-        def error = new BeanPropertyBindingResult(book, Book.name)
-        error.rejectValue("title", "title.invalid")
-
-        when:
-        String log = stderrWhile {
-            2.times { vndRenderer.render(error, new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest())) }
-        }
-
-        then:
-        log.readLines().count { it.contains('Vnd.Error XML rendering is scheduled for removal in Grails 11.') } == 1
-
-        cleanup:
-        ShutdownOperations.runOperations()
     }
 
     void "Test VND error rendering in JSON" () {
@@ -168,19 +103,6 @@ class VndErrorRenderingSpec extends Specification{
         return new DefaultUrlMappingsHolder(allMappings)
     }
 
-
-    private static String stderrWhile(Closure<?> work) {
-        PrintStream original = System.err
-        def buffer = new ByteArrayOutputStream()
-        System.setErr(new PrintStream(buffer, true))
-        try {
-            work.call()
-        }
-        finally {
-            System.setErr(original)
-        }
-        buffer.toString()
-    }
 }
 
 @Entity
