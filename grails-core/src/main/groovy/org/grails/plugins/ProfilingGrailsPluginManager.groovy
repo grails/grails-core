@@ -16,21 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.plugins
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.plugins;
 
-import groovy.transform.CompileStatic
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.springframework.context.ApplicationContext
-import org.springframework.core.io.Resource
+import groovy.transform.CompileStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
 
-import grails.core.GrailsApplication
-import grails.plugins.DefaultGrailsPluginManager
-import grails.plugins.GrailsPlugin
-import grails.plugins.exceptions.PluginException
-import org.apache.grails.core.plugins.PluginDiscovery
-import org.grails.core.exceptions.GrailsConfigurationException
-import org.grails.spring.RuntimeSpringConfiguration
+import grails.core.GrailsApplication;
+import grails.plugins.DefaultGrailsPluginManager;
+import grails.plugins.GrailsPlugin;
+import grails.plugins.exceptions.PluginException;
+import org.apache.grails.core.plugins.PluginDiscovery;
+import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.spring.RuntimeSpringConfiguration;
 
 /**
  * A GrailsPluginManager implementation that outputs profile data to a logger.
@@ -38,57 +39,59 @@ import org.grails.spring.RuntimeSpringConfiguration
  * @author Graeme Rocher
  * @since 2.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultGrailsPluginManager)
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultGrailsPluginManager);
 
-    ProfilingGrailsPluginManager(GrailsApplication application, PluginDiscovery pluginDiscovery) {
-        super(application, pluginDiscovery)
+    public ProfilingGrailsPluginManager(GrailsApplication application, PluginDiscovery pluginDiscovery) {
+        super(application, pluginDiscovery);
     }
 
-    ProfilingGrailsPluginManager(Class<?>[] plugins, GrailsApplication application) {
-        this(application, reinitDiscovery(application, plugins))
+    public ProfilingGrailsPluginManager(Class<?>[] plugins, GrailsApplication application) {
+        this(application, reinitDiscovery(application, plugins));
     }
 
-    ProfilingGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
-        this(application, reinitDiscovery(application, pluginFiles))
+    public ProfilingGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
+        this(application, reinitDiscovery(application, pluginFiles));
     }
 
-    ProfilingGrailsPluginManager(String resourcePath, GrailsApplication application) {
-        this(application, reinitDiscovery(application, resourcePath))
+    public ProfilingGrailsPluginManager(String resourcePath, GrailsApplication application) {
+        this(application, reinitDiscovery(application, resourcePath));
     }
 
-    ProfilingGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
-        this(application, reinitDiscovery(application, pluginResources))
+    public ProfilingGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
+        this(application, reinitDiscovery(application, pluginResources));
     }
 
     private static PluginDiscovery reinitDiscovery(GrailsApplication application, Class<?>[] plugins) {
-        PluginDiscovery discovery = resolveAndResetDiscovery(application)
-        discovery.setPluginClasses(plugins)
-        discovery.init(application.getMainContext().getEnvironment())
-        return discovery
+        PluginDiscovery discovery = resolveAndResetDiscovery(application);
+        discovery.setPluginClasses(plugins);
+        discovery.init(application.getMainContext().getEnvironment());
+        return discovery;
     }
 
     private static PluginDiscovery reinitDiscovery(GrailsApplication application, String[] pluginResources) {
-        PluginDiscovery discovery = resolveAndResetDiscovery(application)
-        discovery.setPluginResources(pluginResources)
-        discovery.init(application.getMainContext().getEnvironment())
-        return discovery
+        PluginDiscovery discovery = resolveAndResetDiscovery(application);
+        discovery.setPluginResources(pluginResources);
+        discovery.init(application.getMainContext().getEnvironment());
+        return discovery;
     }
 
     private static PluginDiscovery reinitDiscovery(GrailsApplication application, Resource[] pluginResources) {
-        PluginDiscovery discovery = resolveAndResetDiscovery(application)
-        discovery.setPluginResources(pluginResources)
-        discovery.init(application.getMainContext().getEnvironment())
-        return discovery
+        PluginDiscovery discovery = resolveAndResetDiscovery(application);
+        discovery.setPluginResources(pluginResources);
+        discovery.init(application.getMainContext().getEnvironment());
+        return discovery;
     }
 
     private static PluginDiscovery reinitDiscovery(GrailsApplication application, String resourcePath) {
-        PluginDiscovery discovery = resolveAndResetDiscovery(application)
-        discovery.setPluginResources(resourcePath)
-        discovery.init(application.getMainContext().getEnvironment())
-        return discovery
+        PluginDiscovery discovery = resolveAndResetDiscovery(application);
+        discovery.setPluginResources(resourcePath);
+        discovery.init(application.getMainContext().getEnvironment());
+        return discovery;
     }
 
     /**
@@ -96,89 +99,89 @@ class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
      * resets it.
      */
     private static PluginDiscovery resolveAndResetDiscovery(GrailsApplication application) {
-        ApplicationContext ctx = application.getMainContext()
-        PluginDiscovery discovery = (PluginDiscovery) ctx.getBean(PluginDiscovery.BEAN_NAME)
+        ApplicationContext ctx = application.getMainContext();
+        PluginDiscovery discovery = (PluginDiscovery) ctx.getBean(PluginDiscovery.BEAN_NAME);
         LOG.warn('Using deprecated DefaultGrailsPluginManager constructor. ' +
                 'Plugin discovery should be configured through the GrailsPluginDiscovery bean. ' +
-                'Reinitializing plugin discovery.')
-        discovery.reset()
-        return discovery
+                'Reinitializing plugin discovery.');
+        discovery.reset();
+        return discovery;
     }
 
     @Override
     void loadPlugins() throws PluginException {
-        long time = System.currentTimeMillis()
-        LOG.info('Loading plugins started')
-        super.loadPlugins()
-        LOG.info('Loading plugins took {}', System.currentTimeMillis() - time)
+        long time = System.currentTimeMillis();
+        LOG.info('Loading plugins started');
+        super.loadPlugins();
+        LOG.info('Loading plugins took {}', System.currentTimeMillis() - time);
     }
 
     @Override
     void doDynamicMethods() {
-        long time = System.currentTimeMillis()
-        LOG.info('doWithDynamicMethods started')
-        checkInitialised()
+        long time = System.currentTimeMillis();
+        LOG.info('doWithDynamicMethods started');
+        checkInitialised();
         // remove common meta classes just to be sure
-        MetaClassRegistry registry = GroovySystem.getMetaClassRegistry()
-        for (Class<?> COMMON_CLASS in COMMON_CLASSES) {
-            registry.removeMetaClass(COMMON_CLASS)
+        MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+        for (Class<?> COMMON_CLASS : COMMON_CLASSES) {
+            registry.removeMetaClass(COMMON_CLASS);
         }
-        for (GrailsPlugin plugin in getAllPlugins()) {
+        for (GrailsPlugin plugin : getAllPlugins()) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 try {
-                    long pluginTime = System.currentTimeMillis()
-                    LOG.info('doWithDynamicMethods for plugin [{}] started', plugin.getName())
+                    long pluginTime = System.currentTimeMillis();
+                    LOG.info('doWithDynamicMethods for plugin [{}] started', plugin.getName());
 
-                    plugin.doWithDynamicMethods(applicationContext)
+                    plugin.doWithDynamicMethods(applicationContext);
 
-                    LOG.info('doWithDynamicMethods for plugin [{}] took {}', plugin.getName(), System.currentTimeMillis() - pluginTime)
+                    LOG.info('doWithDynamicMethods for plugin [{}] took {}', plugin.getName(), System.currentTimeMillis() - pluginTime);
                 } catch (Throwable t) {
-                    throw new GrailsConfigurationException('Error configuring dynamic methods for plugin ' + plugin + ': ' + t.getMessage(), t)
+                    throw new GrailsConfigurationException('Error configuring dynamic methods for plugin ' + plugin + ': ' + t.getMessage(), t);
                 }
             }
         }
-        LOG.info('doWithDynamicMethods took {}', System.currentTimeMillis() - time)
+        LOG.info('doWithDynamicMethods took {}', System.currentTimeMillis() - time);
     }
 
     @Override
     void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
-        long time = System.currentTimeMillis()
+        long time = System.currentTimeMillis();
 
-        LOG.info('doWithSpring started')
-        checkInitialised()
-        for (GrailsPlugin plugin in getAllPlugins()) {
+        LOG.info('doWithSpring started');
+        checkInitialised();
+        for (GrailsPlugin plugin : getAllPlugins()) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
-                long pluginTime = System.currentTimeMillis()
-                LOG.info('doWithSpring for plugin [{}] started', plugin.getName())
-                plugin.doWithRuntimeConfiguration(springConfig)
-                LOG.info('doWithSpring for plugin [{}] took {}', plugin.getName(), System.currentTimeMillis() - pluginTime)
+                long pluginTime = System.currentTimeMillis();
+                LOG.info('doWithSpring for plugin [{}] started', plugin.getName());
+                plugin.doWithRuntimeConfiguration(springConfig);
+                LOG.info('doWithSpring for plugin [{}] took {}', plugin.getName(), System.currentTimeMillis() - pluginTime);
             }
         }
-        LOG.info('doWithSpring took {}', System.currentTimeMillis() - time)
+        LOG.info('doWithSpring took {}', System.currentTimeMillis() - time);
     }
 
     @Override
     void doPostProcessing(ApplicationContext ctx) {
-        long time = System.currentTimeMillis()
-        LOG.info('doWithApplicationContext started')
-        checkInitialised()
-        for (GrailsPlugin plugin in getAllPlugins()) {
+        long time = System.currentTimeMillis();
+        LOG.info('doWithApplicationContext started');
+        checkInitialised();
+        for (GrailsPlugin plugin : getAllPlugins()) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
-                long pluginTime = System.currentTimeMillis()
-                LOG.info('doWithApplicationContext for plugin [{}] started', plugin.getName())
-                plugin.doWithApplicationContext(ctx)
-                LOG.info('doWithApplicationContext for plugin [{}] took {}', plugin.getName(), System.currentTimeMillis() - pluginTime)
+                long pluginTime = System.currentTimeMillis();
+                LOG.info('doWithApplicationContext for plugin [{}] started', plugin.getName());
+                plugin.doWithApplicationContext(ctx);
+                LOG.info('doWithApplicationContext for plugin [{}] took {}', plugin.getName(), System.currentTimeMillis() - pluginTime);
             }
         }
-        LOG.info('doWithApplicationContext took {}', System.currentTimeMillis() - time)
+        LOG.info('doWithApplicationContext took {}', System.currentTimeMillis() - time);
     }
 
     @Override
     void doArtefactConfiguration() {
-        long time = System.currentTimeMillis()
-        LOG.info('doArtefactConfiguration started')
-        super.doArtefactConfiguration()
-        LOG.info('doArtefactConfiguration took {}', System.currentTimeMillis() - time)
+        long time = System.currentTimeMillis();
+        LOG.info('doArtefactConfiguration started');
+        super.doArtefactConfiguration();
+        LOG.info('doArtefactConfiguration took {}', System.currentTimeMillis() - time);
     }
 
 }

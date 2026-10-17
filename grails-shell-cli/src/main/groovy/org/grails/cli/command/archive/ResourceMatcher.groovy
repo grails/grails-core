@@ -16,138 +16,142 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.command.archive
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.cli.command.archive;
 
-import groovy.transform.CompileStatic
-import org.springframework.core.io.DefaultResourceLoader
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.util.AntPathMatcher
-import org.springframework.util.StringUtils
+import groovy.transform.CompileStatic;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StringUtils;
 
 /**
  * Used to match resources for inclusion in a CLI application's jar file.
  *
  * @author Andy Wilkinson
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class ResourceMatcher {
 
-    private static final String[] DEFAULT_INCLUDES = [
+    private static final String[] DEFAULT_INCLUDES = new String[] {
         'public/**',
         'resources/**',
         'static/**',
         'templates/**',
         'META-INF/**',
         '*'
-    ] as String[]
+    };
 
-    private static final String[] DEFAULT_EXCLUDES = [
+    private static final String[] DEFAULT_EXCLUDES = new String[] {
         '.*',
         'repository/**',
         'build/**',
         'target/**',
         '**/*.jar',
         '**/*.groovy'
-    ] as String[]
+    };
 
-    private final AntPathMatcher pathMatcher = new AntPathMatcher()
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    private final List<String> includes
+    private final List<String> includes;
 
-    private final List<String> excludes
+    private final List<String> excludes;
 
     ResourceMatcher(List<String> includes, List<String> excludes) {
-        this.includes = getOptions(includes, DEFAULT_INCLUDES)
-        this.excludes = getOptions(excludes, DEFAULT_EXCLUDES)
+        this.includes = getOptions(includes, DEFAULT_INCLUDES);
+        this.excludes = getOptions(excludes, DEFAULT_EXCLUDES);
     }
 
     List<MatchedResource> find(List<File> roots) throws IOException {
-        List<MatchedResource> matchedResources = new ArrayList<>()
-        for (File root in roots) {
+        List<MatchedResource> matchedResources = new ArrayList<>();
+        for (File root : roots) {
             if (root.isFile()) {
-                matchedResources.add(new MatchedResource(root))
+                matchedResources.add(new MatchedResource(root));
             }
             else {
-                matchedResources.addAll(findInDirectory(root))
+                matchedResources.addAll(findInDirectory(root));
             }
         }
-        return matchedResources
+        return matchedResources;
     }
 
     private List<MatchedResource> findInDirectory(File directory) throws IOException {
-        List<MatchedResource> matchedResources = new ArrayList<>()
+        List<MatchedResource> matchedResources = new ArrayList<>();
 
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(
-                new DirectoryResourceLoader(directory))
+                new DirectoryResourceLoader(directory));
 
-        for (String include in this.includes) {
-            for (Resource candidate in resolver.getResources(include)) {
-                File file = candidate.getFile()
+        for (String include : this.includes) {
+            for (Resource candidate : resolver.getResources(include)) {
+                File file = candidate.getFile();
                 if (file.isFile()) {
-                    MatchedResource matchedResource = new MatchedResource(directory, file)
+                    MatchedResource matchedResource = new MatchedResource(directory, file);
                     if (!isExcluded(matchedResource)) {
-                        matchedResources.add(matchedResource)
+                        matchedResources.add(matchedResource);
                     }
                 }
             }
         }
 
-        return matchedResources
+        return matchedResources;
     }
 
     private boolean isExcluded(MatchedResource matchedResource) {
-        for (String exclude in this.excludes) {
+        for (String exclude : this.excludes) {
             if (this.pathMatcher.match(exclude, matchedResource.getName())) {
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
 
     private List<String> getOptions(List<String> values, String[] defaults) {
-        Set<String> result = new LinkedHashSet<>()
-        Set<String> minus = new LinkedHashSet<>()
-        boolean deltasFound = false
-        for (String value in values) {
+        Set<String> result = new LinkedHashSet<>();
+        Set<String> minus = new LinkedHashSet<>();
+        boolean deltasFound = false;
+        for (String value : values) {
             if (value.startsWith('+')) {
-                deltasFound = true
-                value = value.substring(1)
-                result.add(value)
+                deltasFound = true;
+                value = value.substring(1);
+                result.add(value);
             }
             else if (value.startsWith('-')) {
-                deltasFound = true
-                value = value.substring(1)
-                minus.add(value)
+                deltasFound = true;
+                value = value.substring(1);
+                minus.add(value);
             }
             else if (!value.trim().isEmpty()) {
-                result.add(value)
+                result.add(value);
             }
         }
-        for (String value in defaults) {
+        for (String value : defaults) {
             if (!minus.contains(value) || !deltasFound) {
-                result.add(value)
+                result.add(value);
             }
         }
-        return new ArrayList<>(result)
+        return new ArrayList<>(result);
     }
 
     /**
      * {@link org.springframework.core.io.ResourceLoader} to get load resource from a directory.
      */
+    @SuppressWarnings('UnnecessarySemicolon')
     private static class DirectoryResourceLoader extends DefaultResourceLoader {
 
-        private final File rootDirectory
+        private final File rootDirectory;
 
         DirectoryResourceLoader(File root) throws MalformedURLException {
-            super(new DirectoryClassLoader(root))
-            this.rootDirectory = root
+            super(new DirectoryClassLoader(root));
+            this.rootDirectory = root;
         }
 
         @Override
         protected Resource getResourceByPath(String path) {
-            return new FileSystemResource(new File(this.rootDirectory, path))
+            return new FileSystemResource(new File(this.rootDirectory, path));
         }
 
     }
@@ -155,20 +159,21 @@ class ResourceMatcher {
     /**
      * {@link ClassLoader} backed by a directory.
      */
+    @SuppressWarnings('UnnecessarySemicolon')
     private static class DirectoryClassLoader extends URLClassLoader {
 
         DirectoryClassLoader(File rootDirectory) throws MalformedURLException {
-            super([rootDirectory.toURI().toURL()] as URL[])
+            super(new URL[] { rootDirectory.toURI().toURL() });
         }
 
         @Override
         Enumeration<URL> getResources(String name) throws IOException {
-            return findResources(name)
+            return findResources(name);
         }
 
         @Override
         URL getResource(String name) {
-            return findResource(name)
+            return findResource(name);
         }
 
     }
@@ -176,49 +181,50 @@ class ResourceMatcher {
     /**
      * A single matched resource.
      */
-    public static final class MatchedResource {
+    @SuppressWarnings('UnnecessarySemicolon')
+    static final class MatchedResource {
 
-        private final File file
+        private final File file;
 
-        private final String name
+        private final String name;
 
-        private final boolean root
+        private final boolean root;
 
         private MatchedResource(File file) {
-            this.name = file.getName()
-            this.file = file
-            this.root = this.name.endsWith('.jar')
+            this.name = file.getName();
+            this.file = file;
+            this.root = this.name.endsWith('.jar');
         }
 
         private MatchedResource(File rootDirectory, File file) {
-            String filePath = file.getAbsolutePath()
-            String rootDirectoryPath = rootDirectory.getAbsolutePath()
-            this.name = StringUtils.cleanPath(filePath.substring(rootDirectoryPath.length() + 1))
-            this.file = file
-            this.root = false
+            String filePath = file.getAbsolutePath();
+            String rootDirectoryPath = rootDirectory.getAbsolutePath();
+            this.name = StringUtils.cleanPath(filePath.substring(rootDirectoryPath.length() + 1));
+            this.file = file;
+            this.root = false;
         }
 
         private MatchedResource(File resourceFile, String path, boolean root) {
-            this.file = resourceFile
-            this.name = path
-            this.root = root
+            this.file = resourceFile;
+            this.name = path;
+            this.root = root;
         }
 
         String getName() {
-            return this.name
+            return this.name;
         }
 
         File getFile() {
-            return this.file
+            return this.file;
         }
 
         boolean isRoot() {
-            return this.root
+            return this.root;
         }
 
         @Override
         String toString() {
-            return this.file.getAbsolutePath()
+            return this.file.getAbsolutePath();
         }
 
     }

@@ -109,6 +109,10 @@ class SbomPlugin implements Plugin<Project> {
             'pkg:maven/jline/jline@2.14.6?type=jar'                           : 'BSD-2-Clause', // legacy jline:jline group, BSD-2; maps incorrectly because of https://github.com/CycloneDX/cyclonedx-core-java/issues/205
             'pkg:maven/opensymphony/sitemesh@2.6.0?type=jar'                  : 'OpenSymphony', // custom license approved by legal LEGAL-707
             'pkg:maven/org.antlr/antlr4-runtime@4.7.2?type=jar'               : 'BSD-3-Clause', // maps incorrectly because of https://github.com/CycloneDX/cyclonedx-core-java/issues/205
+            // StringTemplate and the ANTLR 3 runtime it uses, which Spring AI's prompt templates bring in, declare
+            // "The BSD License" / "BSD licence" with http://www.antlr.org/license.html or http://antlr.org/license.html as the URL: the 3-clause text.
+            'pkg:maven/org.antlr/ST4@4.3.4?type=jar'                          : 'BSD-3-Clause',
+            'pkg:maven/org.antlr/antlr-runtime@3.5.3?type=jar'                : 'BSD-3-Clause',
             // mongo-java-server declares only "The BSD License" so it maps to BSD-4-Clause for the same
             // reason as the org.jline group below. https://github.com/bwaldvogel/mongo-java-server/blob/main/LICENSE
             // has three numbered clauses and no advertising clause, making it BSD-3-Clause.
@@ -132,7 +136,7 @@ class SbomPlugin implements Plugin<Project> {
             'pkg:maven/org.jline/jline-terminal-jni@3.30.16?type=jar'          : 'BSD-3-Clause',
             'pkg:maven/org.jruby/jzlib@1.1.5?type=jar'                        : 'BSD-3-Clause', // https://web.archive.org/web/20240822213507/http://www.jcraft.com/jzlib/LICENSE.txt shows it's a 3 clause
             'pkg:maven/org.liquibase.ext/liquibase-hibernate5@4.27.0?type=jar': 'Apache-2.0', // maps incorrectly because of https://github.com/liquibase/liquibase/issues/2445 & the base pom does not define a license
-            'pkg:maven/org.json/json@20251224?type=jar'                       : 'Public-Domain', // required due to jedis, https://issues.apache.org/jira/browse/LEGAL-666 approves this usage
+            'pkg:maven/org.json/json@20260719?type=jar'                       : 'Public-Domain', // required due to jedis, https://issues.apache.org/jira/browse/LEGAL-666 approves this usage
             // Bouncy Castle Licence is the MIT license (https://www.bouncycastle.org/licence.html); pulled in transitively by the CAS client
             'pkg:maven/org.bouncycastle/bcpkix-jdk18on@1.84?type=jar'         : 'MIT',
             'pkg:maven/org.bouncycastle/bcprov-jdk18on@1.84?type=jar'         : 'MIT',
