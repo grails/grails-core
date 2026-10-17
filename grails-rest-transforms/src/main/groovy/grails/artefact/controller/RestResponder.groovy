@@ -211,7 +211,7 @@ trait RestResponder {
                 } else {
                     renderer = registry.findRenderer(mimeType, value)
                 }
-                if (problem && !args.view && renderer instanceof DefaultHtmlRenderer && !(mimeType.extension in ['json', 'xml'])) {
+                if (problem && !args.view && rendersActionView(renderer, mimeType)) {
                     renderer = null
                 }
             }
@@ -234,6 +234,15 @@ trait RestResponder {
             return
         }
         callRender([status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
+    }
+
+    /**
+     * Whether a renderer is Grails' HTML renderer of an object, which renders the action's view, rather than one an
+     * application registers for problems.
+     */
+    private boolean rendersActionView(Renderer renderer, MimeType mimeType) {
+        renderer instanceof DefaultHtmlRenderer && !ProblemDetail.isAssignableFrom(renderer.targetType) &&
+                !(mimeType.extension in ['json', 'xml'])
     }
 
     private callRender(Map args) {

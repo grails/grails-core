@@ -26,12 +26,15 @@ import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomize
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import grails.converters.json.NamedJsonConfigurationRegistry
+import grails.rest.render.RenderContext
 import grails.rest.render.json.JsonRenderer
 import grails.testing.web.controllers.ControllerUnitTest
+import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
@@ -336,6 +339,30 @@ class ControllerJsonMapperOverrideSpec extends Specification implements Controll
     }
 }
 
+class ControllerProblemPageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    @Configuration
+    static class ProblemPageConfiguration {
+        @Bean
+        ProblemPageRenderer problemPageRenderer() {
+            new ProblemPageRenderer()
+        }
+    }
+
+    void 'an HTML renderer an application registers for problems renders them'() {
+        given:
+        response.format = 'html'
+        def problem = ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem)
+
+        then:
+        view == '/errors/problem'
+        model.problem.is(problem)
+    }
+}
+
 class ControllerTextJsonSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
 
     Closure doWithConfig() {
@@ -357,6 +384,19 @@ class ControllerTextJsonSpec extends Specification implements ControllerUnitTest
 
 @Artefact('Controller')
 class JsonResponseController { }
+
+class ProblemPageRenderer extends DefaultHtmlRenderer<ProblemDetail> {
+
+    ProblemPageRenderer() {
+        super(ProblemDetail)
+    }
+
+    @Override
+    void render(Object object, RenderContext context) {
+        context.setViewName('/errors/problem')
+        context.setModel([problem: object])
+    }
+}
 
 class JsonResponseBody {
     String title
