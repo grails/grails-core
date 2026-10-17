@@ -110,8 +110,9 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         for (String token in header.split(',')) {
             String candidate = token.trim()
             try {
-                if (candidate == '*') {
-                    // Spring reads a bare * as */*; Grails never has, and a configured type is not a match
+                if (candidate.split(';', 2)[0].trim() == '*') {
+                    // Spring reads a bare *, with parameters or without, as */*; Grails never has, and a configured type
+                    // is not a match
                     throw new InvalidMediaTypeException(candidate, 'Not a media type')
                 }
                 MediaType mediaType = MediaType.parseMediaType(candidate)

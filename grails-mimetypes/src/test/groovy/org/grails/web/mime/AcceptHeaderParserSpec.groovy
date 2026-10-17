@@ -90,6 +90,12 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                 ['atom', 'json', 'xml']
     }
 
+    void 'a bare * with parameters, which Java clients send, is not a match, as in Grails 8'() {
+        expect:
+        getAcceptHeaderParser().parse('text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2')*.name == ['text/html', '*/*']
+        getAcceptHeaderParser().parse('*;q=0.5')*.name == MimeType.createDefaults()*.name
+    }
+
     protected DefaultAcceptHeaderParser getAcceptHeaderParser() {
         final application = new DefaultGrailsApplication()
         application.setConfig(config)
