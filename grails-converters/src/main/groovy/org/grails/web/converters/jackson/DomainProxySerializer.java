@@ -23,6 +23,7 @@ import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.impl.PropertySerializerMap;
 import tools.jackson.databind.util.NameTransformer;
 
 /**
@@ -41,6 +42,9 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
 
     /** The names of the properties of the instance, when it is written into the object that encloses it. */
     private final NameTransformer unwrapper;
+
+    /** The serializers of the classes of the instances proxied, found once each, as Jackson's property writers keep them. */
+    private volatile PropertySerializerMap serializers = PropertySerializerMap.emptyForProperties();
 
     DomainProxySerializer(DomainRendering rendering) {
         this(rendering, null, null);
@@ -110,16 +114,21 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
     }
 
     private ValueSerializer<Object> serializer(Object instance, JsonGenerator generator, SerializationContext context) {
-        ValueSerializer<Object> serializer = context.findPrimaryPropertySerializer(instance.getClass(), property);
-        if (unwrapper == null) {
-            return serializer;
+        Class<?> type = instance.getClass();
+        PropertySerializerMap found = serializers;
+        ValueSerializer<Object> serializer = found.serializerFor(type);
+        if (serializer == null) {
+            serializer = context.findPrimaryPropertySerializer(type, property);
+            if (unwrapper != null) {
+                serializer = serializer.unwrappingSerializer(unwrapper);
+            }
+            serializers = found.newWith(type, serializer);
         }
-        ValueSerializer<Object> unwrapping = serializer.unwrappingSerializer(unwrapper);
-        if (!unwrapping.isUnwrappingSerializer()) {
+        if (unwrapper != null && !serializer.isUnwrappingSerializer()) {
             // a serializer that cannot unwrap the instance writes it under the name of the property, as Jackson does
             generator.writeName(property.getName());
         }
-        return unwrapping;
+        return serializer;
     }
 
     private Object unwrapped(Object value, SerializationContext context) {

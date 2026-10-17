@@ -32,6 +32,7 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.ser.impl.PropertySerializerMap;
 import tools.jackson.databind.ser.std.DelegatingSerializer;
 import tools.jackson.databind.type.ArrayType;
 import tools.jackson.databind.type.CollectionLikeType;
@@ -57,6 +58,9 @@ final class NestedValueSerializer extends DelegatingSerializer {
 
     /** The property the values are written for, or {@code null} for values that are not the values of a property. */
     private final BeanProperty property;
+
+    /** The property's serializers of the instances written in the place of a proxy, found once for each class. */
+    private volatile PropertySerializerMap standInSerializers = PropertySerializerMap.emptyForProperties();
 
     NestedValueSerializer(ValueSerializer<?> delegatee) {
         this(delegatee, null);
@@ -224,7 +228,7 @@ final class NestedValueSerializer extends DelegatingSerializer {
             return false;
         }
         Object previous = context.getAttribute(HANDED_BACK);
-        context.setAttribute(HANDED_BACK, new HandedBack(generator, value, _delegatee, typeSerializer, property, null));
+        context.setAttribute(HANDED_BACK, new HandedBack(generator, value, _delegatee, typeSerializer, this, null));
         try {
             return frame.nestedValueWriter.test(value);
         }
@@ -233,15 +237,26 @@ final class NestedValueSerializer extends DelegatingSerializer {
         }
     }
 
+    private ValueSerializer<Object> standInSerializer(Class<?> type, SerializationContext context) {
+        PropertySerializerMap found = standInSerializers;
+        ValueSerializer<Object> serializer = found.serializerFor(type);
+        if (serializer == null) {
+            serializer = context.findPrimaryPropertySerializer(type, property);
+            standInSerializers = found.newWith(type, serializer);
+        }
+        return serializer;
+    }
+
     /**
-     * A nested value handed to the nested value writer, with the serializer of the property it is the value of, and the
-     * instance the nested value writer writes in its place, if it stands for one.
+     * A nested value handed to the nested value writer, with the serializer of the property it is the value of, the
+     * nested value serializer that handed it, and the instance the nested value writer writes in its place, if it stands
+     * for one.
      */
     private record HandedBack(JsonGenerator generator, Object value, ValueSerializer<Object> serializer,
-            TypeSerializer typeSerializer, BeanProperty property, Object standIn) {
+            TypeSerializer typeSerializer, NestedValueSerializer handedBy, Object standIn) {
 
         HandedBack withStandIn(Object instance) {
-            return new HandedBack(generator, value, serializer, typeSerializer, property, instance);
+            return new HandedBack(generator, value, serializer, typeSerializer, handedBy, instance);
         }
 
         void write(SerializationContext context) {
@@ -249,7 +264,7 @@ final class NestedValueSerializer extends DelegatingSerializer {
         }
 
         void writeStandIn(SerializationContext context) {
-            write(context.findPrimaryPropertySerializer(standIn.getClass(), property), standIn, context);
+            write(handedBy.standInSerializer(standIn.getClass(), context), standIn, context);
         }
 
         private void write(ValueSerializer<Object> written, Object instance, SerializationContext context) {
