@@ -134,7 +134,7 @@ final class DomainReferences {
                     return;
                 }
                 Object written = DomainWrites.copied(unwrapped);
-                context.findPrimaryPropertySerializer(written.getClass(), property).serialize(written, generator, context);
+                serializer(written, context).serialize(written, generator, context);
             }
             else if (!toMany) {
                 references.write(value, associated, generator, context, current);
@@ -177,6 +177,17 @@ final class DomainReferences {
             else {
                 serialize(value, generator, context);
             }
+        }
+
+        /**
+         * The serializer of an association written in full: of the type it is declared with, for a collection or map, so
+         * that its instances are written with the type ids their declared type asks for, as Jackson writes them.
+         */
+        private ValueSerializer<Object> serializer(Object written, SerializationContext context) {
+            if (toMany && property != null && property.getType().getRawClass().isInstance(written)) {
+                return context.findPrimaryPropertySerializer(property.getType(), property);
+            }
+            return context.findPrimaryPropertySerializer(written.getClass(), property);
         }
 
         @Override

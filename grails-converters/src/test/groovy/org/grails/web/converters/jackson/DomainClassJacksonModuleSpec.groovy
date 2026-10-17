@@ -519,6 +519,19 @@ class DomainClassJacksonModuleSpec extends Specification {
                 .writeValueAsString(kennel) == '{"id":5,"resident":{"@type":"Dog","id":2,"name":"Rex"}}'
     }
 
+    void "rendering deep, the instances of an association declared with a type that writes type ids are written with theirs"() {
+        given:
+        def dog = new Dog(name: 'Rex')
+        dog.id = 2
+        def shelter = new Shelter(residents: [dog])
+        shelter.id = 9
+
+        expect:
+        mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
+                .writeValueAsString(shelter) == '{"id":9,"residents":[{"@type":"Dog","id":2,"name":"Rex"}]}'
+        JSON.use('deep') { new JSON(shelter).toString() } == '{"id":9,"residents":[{"@type":"Dog","id":2,"name":"Rex"}]}'
+    }
+
     void "JSON.use('deep') renders associated instances in full with the converter"() {
         expect:
         JSON.use('deep') { new JSON(volume()).toString() } ==
@@ -671,14 +684,14 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
+                Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
                 Identified, Ordered, Filtered)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
+                Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
                 Ordered, Filtered)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
@@ -876,6 +889,12 @@ class Pet {
 @Entity
 class Kennel {
     Animal resident
+}
+
+@Entity
+class Shelter {
+    static hasMany = [residents: Animal]
+    List<Animal> residents
 }
 
 @Entity
