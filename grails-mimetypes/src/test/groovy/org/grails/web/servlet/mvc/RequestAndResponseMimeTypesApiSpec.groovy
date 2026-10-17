@@ -28,6 +28,7 @@ import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.plugins.web.mime.MimeTypesConfiguration
+import grails.web.mime.MimeUtility
 import org.grails.web.mime.DefaultMimeUtility
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
@@ -204,6 +205,31 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         then: "as in Grails 8, the whole configured list is the answer, not */* alone"
             webRequest.currentResponse.format == 'all'
             webRequest.currentResponse.mimeTypes.size() > 1
+    }
+
+    @Unroll
+    void "with the strategy MimeTypesConfiguration defines, as in an application, an Accept header of #accept resolves to #format"() {
+        given: "the configurer MimeTypesConfiguration defines over the application's MIME types and settings"
+            final webRequest = boundMimeTypeRequest()
+            def context = (GenericWebApplicationContext) webRequest.applicationContext
+            def configurer = Spy(MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(
+                    context.getBeanProvider(MimeUtility), (GrailsApplication) application))
+            context.beanFactory.registerSingleton('grailsMimeTypesWebMvcConfigurer', configurer)
+            webRequest.currentRequest.addHeader('Accept', accept)
+
+        when:
+            String resolved = webRequest.currentResponse.format
+
+        then: "its strategy resolves the format"
+            (1.._) * configurer.getContentNegotiationStrategy()
+            resolved == format
+
+        where:
+            accept                      || format
+            'Application/JSON'          || 'json'
+            'application/vnd.acme+json' || 'acme'
+            '*'                         || 'all'
+            'image/avif, image/webp'    || 'all'
     }
 
     void "the format parameter overrides the Accept header"() {
