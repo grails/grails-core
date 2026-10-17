@@ -34,6 +34,7 @@ import org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller;
  *
  * @since 9.0
  */
+@SuppressWarnings("removal")
 public class XmlConvertersConfigurationInitializer extends AbstractConvertersConfigurationInitializer {
 
     public static final String SETTING_CONVERTERS_XML_DEEP = "grails.converters.xml.default.deep";

@@ -35,6 +35,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("removal")
 public class ToStringBeanMarshaller implements ObjectMarshaller<XML> {
 
     private final Set<Class<?>> classes;

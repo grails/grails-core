@@ -36,6 +36,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("removal")
 public class DateMarshaller implements ObjectMarshaller<XML> {
 
     private static final DateTimeFormatter DEFAULT_FORMATTER =

@@ -31,6 +31,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("removal")
 public class Base64ByteArrayMarshaller implements ObjectMarshaller<XML> {
 
     public boolean supports(Object object) {

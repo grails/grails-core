@@ -64,6 +64,7 @@ import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
  * @author Graeme Rocher
  * @since 1.1
  */
+@SuppressWarnings("removal")
 public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML> {
 
     protected final boolean includeVersion;

@@ -29,6 +29,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("removal")
 public class ArrayMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller {
 
     public boolean supports(Object object) {

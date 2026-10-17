@@ -42,6 +42,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
  * @since 1.1
  */
 @Deprecated(since = "9.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class ValidationErrorsMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller, ApplicationContextAware {
 
     private ApplicationContext applicationContext;

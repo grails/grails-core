@@ -32,6 +32,7 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
  *
  * @since 7.0.2
  */
+@SuppressWarnings("removal")
 public class SimpleEnumMarshaller implements ObjectMarshaller<XML> {
 
     public boolean supports(Object object) {

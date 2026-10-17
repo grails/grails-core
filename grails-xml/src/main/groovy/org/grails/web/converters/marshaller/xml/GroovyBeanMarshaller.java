@@ -42,6 +42,7 @@ import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+@SuppressWarnings("removal")
 public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> {
 
     public boolean supports(Object object) {
