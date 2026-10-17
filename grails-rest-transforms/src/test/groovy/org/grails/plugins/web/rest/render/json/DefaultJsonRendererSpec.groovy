@@ -39,6 +39,7 @@ import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.ModelAndView
 
 import grails.converters.JSON
 import grails.core.DefaultGrailsApplication
@@ -48,7 +49,10 @@ import grails.rest.render.json.JsonCollectionRenderer
 import grails.util.GrailsWebMockUtil
 import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.gsp.io.GroovyPageScriptSource
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.exceptions.ConverterException
@@ -215,6 +219,38 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         log.contains("A ProblemDetail is written through Spring's message converters, but no Spring message converter writes")
         log.readLines().count { it.contains('so the legacy JSON converter writes it as a bean') } == 1
+    }
+
+    void 'a ProblemDetail is rendered by the format view respond names, with the status it carries, and by no other'() {
+        given: 'a JSON view of the action, and one that respond names'
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'show', 'json') >> Stub(GroovyPageScriptSource)
+            findViewForFormat('book', 'conflict', 'json') >> Stub(GroovyPageScriptSource)
+        }
+        def renderer = new DefaultJsonRenderer<Object>(Object, locator)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+        def problem = ProblemDetail.forStatus(409)
+
+        when:
+        renderer.render(problem, new ServletRenderContext(webRequest, [view: 'conflict']))
+        ModelAndView modelAndView = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:
+        modelAndView.viewName == 'conflict'
+        modelAndView.model == [problemDetail: problem]
+        webRequest.response.status == 409
+
+        when: 'respond names no view'
+        webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+        renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(webRequest))
+
+        then: 'the view of the action does not render the problem'
+        webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW) == null
+        webRequest.response.contentAsString.contains('"status":409')
     }
 
     void 'a named JSON configuration does not apply to a ProblemDetail the legacy converter writes'() {

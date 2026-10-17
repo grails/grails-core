@@ -153,9 +153,11 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         final mimeType = context.acceptMimeType ?: MimeType.XML
         context.setContentType(GrailsWebUtil.getContentType(mimeType.name, encoding))
 
-        def viewName = context.viewName ?: context.actionName
-        final view = object instanceof Errors || object instanceof ProblemDetail ? null :
-                resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
+        // A problem is rendered only by the view respond names, as in any other format
+        def viewName = object instanceof ProblemDetail ? context.arguments?.view?.toString() :
+                (context.viewName ?: context.actionName)
+        final view = viewName && !(object instanceof Errors) ?
+                resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
         if (view) {
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view
             RendererRegistry registry = resolveRendererRegistry()

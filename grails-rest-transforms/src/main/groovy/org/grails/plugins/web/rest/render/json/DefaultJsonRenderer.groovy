@@ -157,9 +157,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     void render(Object object, RenderContext context) {
         final mimeType = resolveMimeType(context)
         context.setContentType(GrailsWebUtil.getContentType(mimeType.name, encoding))
-        def viewName = context.viewName ?: context.actionName
-        final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
-        if (view && !(object instanceof Errors) && !(object instanceof ProblemDetail)) {
+        // A problem is rendered only by the view respond names, as in any other format
+        def viewName = object instanceof ProblemDetail ? context.arguments?.view?.toString() :
+                (context.viewName ?: context.actionName)
+        final view = viewName && !(object instanceof Errors) ?
+                groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
+        if (view) {
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view
             Renderer htmlRenderer = rendererRegistry?.findRenderer(MimeType.HTML, object)
             if (htmlRenderer == null) {

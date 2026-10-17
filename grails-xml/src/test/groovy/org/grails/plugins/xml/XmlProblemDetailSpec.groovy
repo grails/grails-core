@@ -27,13 +27,17 @@ import org.springframework.http.ProblemDetail
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
+import org.springframework.web.servlet.ModelAndView
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
+import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Specification
 
 class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<ProblemXmlController> {
@@ -136,6 +140,52 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then:
         new XmlSlurper().parseText(spring).balance.text() == '12.5'
         tree(fallback.contentAsString) == tree(spring)
+    }
+
+    void 'a ProblemDetail is rendered by the XML view respond names, with the status it carries'() {
+        given: 'an XML view of the action, and one that respond names'
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'show', 'xml') >> Stub(GroovyPageScriptSource)
+            findViewForFormat('book', 'conflict', 'xml') >> Stub(GroovyPageScriptSource)
+        }
+        def renderer = new DefaultXmlRenderer<Object>(Object, locator)
+        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        def named = xmlRequest()
+
+        when:
+        renderer.render(problem, new ServletRenderContext(named, [view: 'conflict']) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+        })
+        ModelAndView modelAndView = named.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:
+        modelAndView.viewName == 'conflict'
+        modelAndView.model == [problemDetail: problem]
+        named.currentResponse.status == 409
+
+        when: 'respond names no view'
+        def unnamed = xmlRequest()
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        renderer.render(ProblemDetail.forStatus(HttpStatus.CONFLICT), new ServletRenderContext(unnamed) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+        })
+
+        then: 'the view of the action does not render the problem'
+        unnamed.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW) == null
+        unnamed.currentResponse.contentType.startsWith('application/problem+xml')
+    }
+
+    private static GrailsWebRequest xmlRequest() {
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+        webRequest
     }
 
     private static MockHttpServletResponse renderProblem(DefaultXmlRenderer<Object> renderer, ProblemDetail problem) {
