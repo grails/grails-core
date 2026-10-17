@@ -20,7 +20,9 @@ package org.grails.web.converters.jackson;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.BaseStream;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.TokenStreamContext;
@@ -80,8 +82,8 @@ final class Cycles {
             case EXCEPTION -> throw DatabindException.from(generator, "Circular Reference detected: class " + type);
             case INSERT_NULL -> generator.writeNull();
             case IGNORE -> {
-                // An array element can be left out; a property name has already been written.
-                if (!generator.streamWriteContext().inArray()) {
+                // An element of a list can be left out; a property name has already been written, or its position counts
+                if (!inElementArray(generator)) {
                     generator.writeNull();
                 }
             }
@@ -100,5 +102,20 @@ final class Cycles {
                 generator.writeEndObject();
             }
         }
+    }
+
+    /**
+     * Whether the generator is about to write an element of an array that a collection or an array is written as, which
+     * can be left out, rather than a property of a bean written as an array, whose position has to be kept: Jackson starts
+     * the array of a bean with the bean as its current value.
+     */
+    private static boolean inElementArray(JsonGenerator generator) {
+        TokenStreamContext context = generator.streamWriteContext();
+        if (!context.inArray()) {
+            return false;
+        }
+        Object current = context.currentValue();
+        return current == null || current instanceof Iterable || current instanceof Iterator ||
+                current instanceof BaseStream || current.getClass().isArray();
     }
 }

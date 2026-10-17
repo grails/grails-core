@@ -18,11 +18,12 @@
  */
 package org.grails.web.converters.jackson
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.JsonView
 import tools.jackson.databind.PropertyNamingStrategies
@@ -412,6 +413,15 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         'INSERT_NULL' || [null]   | 'written as null'
     }
 
+    void 'with the IGNORE behaviour, a cycle reached as a property of a bean written as an array is null, so that the positions are kept'() {
+        given:
+        def lone = new JacksonRowNode(name: 'lone')
+        lone.parent = lone
+
+        expect:
+        beanCycleMapper('IGNORE').writeValueAsString(lone) == '["lone",null]'
+    }
+
     void 'a bean that refers to itself fails when the behaviour is EXCEPTION'() {
         given:
         def node = new JacksonNode(name: 'self')
@@ -595,6 +605,13 @@ class SpecialJacksonBook extends JacksonBook {
 class JacksonNode {
     String name
     JacksonNode next
+}
+
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+@JsonPropertyOrder(['name', 'parent'])
+class JacksonRowNode {
+    String name
+    JacksonRowNode parent
 }
 
 class JacksonListNode {

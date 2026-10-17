@@ -10,13 +10,16 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Stack;
+import java.util.stream.BaseStream;
 
 import groovy.lang.Writable;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.PrettyPrinter;
+import tools.jackson.core.TokenStreamContext;
 
 import static org.grails.web.json.JSONWriter.Mode.ARRAY;
 import static org.grails.web.json.JSONWriter.Mode.DONE;
@@ -382,7 +385,8 @@ public class JSONWriter {
      * serializer writes with {@link JsonGenerator#writePOJO(Object)}, from the value's nested value writer. The writer
      * accepts one value, as at the start of a JSON text, and then returns to the state it was in. A value that writes
      * nothing, as the converter writes a value reached again with the {@code IGNORE} circular reference behaviour, is left
-     * out of an array, and is {@code null} for a property, whose name is written already, as the mapper writes it.
+     * out of an array that a collection or an array is written as, and is {@code null} for a property, whose name is
+     * written already or whose position in a bean written as an array counts, as the mapper writes it.
      *
      * @param writeValue writes one value to this writer, or nothing
      * @throws JSONException if {@code writeValue} starts a value it does not complete
@@ -398,7 +402,7 @@ public class JSONWriter {
         try {
             writeValue.run();
             if (this.mode == INIT && generator != null) {
-                if (!generator.streamWriteContext().inArray()) {
+                if (!inElementArray(generator)) {
                     generator.writeNull();
                 }
             }
@@ -412,6 +416,21 @@ public class JSONWriter {
             this.comma = outerComma;
             this.nesting--;
         }
+    }
+
+    /**
+     * Whether the generator is about to write an element of an array that a collection or an array is written as, which
+     * can be left out, rather than a property of a bean written as an array, whose position has to be kept: Jackson starts
+     * the array of a bean with the bean as its current value.
+     */
+    private static boolean inElementArray(JsonGenerator generator) {
+        TokenStreamContext context = generator.streamWriteContext();
+        if (!context.inArray()) {
+            return false;
+        }
+        Object current = context.currentValue();
+        return current == null || current instanceof Iterable || current instanceof Iterator ||
+                current instanceof BaseStream || current.getClass().isArray();
     }
 
     /**
