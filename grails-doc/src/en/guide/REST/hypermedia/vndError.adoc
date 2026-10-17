@@ -99,7 +99,7 @@ Content-Type: application/vnd.error+json;charset=UTF-8
 
 [
     {
-        "logref": "book.nullable,
+        "logref": "book.nullable",
         "message": "Property [title] of class [class rest.test.Book] cannot be null",
         "_links": {
             "resource": {
