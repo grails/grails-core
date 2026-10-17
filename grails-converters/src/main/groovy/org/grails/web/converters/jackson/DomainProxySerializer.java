@@ -26,7 +26,8 @@ import tools.jackson.databind.jsontype.TypeSerializer;
 
 /**
  * Writes a proxy of a domain class instance as the instance it proxies, in its own serializer, so that a proxy narrowed
- * to a subclass is written as the subclass.
+ * to a subclass is written as the subclass. A proxy of an instance that no longer exists, which has no target, is
+ * written as {@code null}.
  *
  * @since 9.0
  */
@@ -54,6 +55,10 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
     @Override
     public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
         Object unwrapped = unwrapped(value, context);
+        if (unwrapped == null) {
+            generator.writeNull();
+            return;
+        }
         context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serialize(unwrapped, generator, context);
     }
 
@@ -61,6 +66,10 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
     public void serializeWithType(Object value, JsonGenerator generator, SerializationContext context,
             TypeSerializer typeSerializer) {
         Object unwrapped = unwrapped(value, context);
+        if (unwrapped == null) {
+            generator.writeNull();
+            return;
+        }
         context.findPrimaryPropertySerializer(unwrapped.getClass(), property).serializeWithType(unwrapped, generator, context,
                 typeSerializer);
     }

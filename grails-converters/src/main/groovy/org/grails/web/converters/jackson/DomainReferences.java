@@ -127,7 +127,13 @@ final class DomainReferences {
         public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
             DomainClassRendering current = rendering.ofOwner(context, generator);
             if (current.isDeep()) {
-                Object written = DomainWrites.copied(current.unwrap(value));
+                Object unwrapped = current.unwrap(value);
+                if (unwrapped == null) {
+                    // a proxy of an instance that no longer exists
+                    generator.writeNull();
+                    return;
+                }
+                Object written = DomainWrites.copied(unwrapped);
                 context.findPrimaryPropertySerializer(written.getClass(), property).serialize(written, generator, context);
             }
             else if (!toMany) {

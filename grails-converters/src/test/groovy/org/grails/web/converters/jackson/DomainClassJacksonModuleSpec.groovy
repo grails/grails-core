@@ -169,6 +169,21 @@ class DomainClassJacksonModuleSpec extends Specification {
         new JSON(volume).toString() == '{"id":1,"title":"Grails","shelf":null,"writers":[{"id":9}],"writersByName":null}'
     }
 
+    void "a GORM proxy of an instance that no longer exists is written as null"() {
+        given: 'a proxy that loads no target, as GORM gives one whose row was deleted'
+        def rendering = new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, false)
+        def deep = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
+        def shelf = new Shelf(name: 'top')
+        shelf.id = 3
+        def library = new Library(name: 'main', shelf: shelf, writers: [new WriterProxy(proxyId: 9)])
+        library.id = 7
+
+        expect:
+        mapper(rendering).writeValueAsString(new WriterProxy(proxyId: 9)) == 'null'
+        deep.writeValueAsString(library) == '{"id":7,"name":"main","shelf":{"id":3},"writers":[null]}'
+        new JSON(new WriterProxy(proxyId: 9)).toString() == 'null'
+    }
+
     void "properties annotated @JsonIgnore or write-only are not written, and those @JsonIgnoreProperties names are not"() {
         given: 'GORM adds @JsonIgnoreProperties to every domain class, naming properties such as the version'
         def member = new Member(name: 'a', password: 'secret', pin: '1234', token: 'abc')
