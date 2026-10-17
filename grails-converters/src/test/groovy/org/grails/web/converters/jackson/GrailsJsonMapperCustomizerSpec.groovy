@@ -328,6 +328,9 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def written = mapper.readValue(mapper.writeValueAsString(root ? [person] : person), Object)
         (root ? written[0] : written).address.geo.owner == owner
 
+        and: 'a property, whose name is written, is written whatever the behaviour'
+        (root ? written[0] : written).address.geo.containsKey('owner')
+
         where:
         behaviour     | root  || owner
         'DEFAULT'     | false || [_ref: '../..', class: JacksonPerson.name]
@@ -381,6 +384,9 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         def written = mapper.readValue(mapper.writeValueAsString(root ? [first] : first), Object)
         (root ? written[0] : written).next.next == repeated
 
+        and: 'a property, whose name is written, is written whatever the behaviour'
+        (root ? written[0] : written).next.containsKey('next')
+
         where:
         behaviour     | root  || repeated
         'DEFAULT'     | false || [_ref: '..', class: JacksonNode.name]
@@ -389,6 +395,21 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         'PATH'        | true  || [ref: 'root[0]', class: JacksonNode.name]
         'INSERT_NULL' | false || null
         'IGNORE'      | false || null
+    }
+
+    void 'a cycle reached as an element of a list is #outcome when the behaviour is #behaviour'() {
+        given:
+        def first = new JacksonListNode(name: 'first')
+        first.children = [new JacksonListNode(name: 'second', children: [first])]
+
+        expect:
+        def mapper = beanCycleMapper(behaviour)
+        mapper.readValue(mapper.writeValueAsString(first), Map).children[0].children == elements
+
+        where:
+        behaviour     || elements | outcome
+        'IGNORE'      || []       | 'left out'
+        'INSERT_NULL' || [null]   | 'written as null'
     }
 
     void 'a bean that refers to itself fails when the behaviour is EXCEPTION'() {
@@ -574,6 +595,11 @@ class SpecialJacksonBook extends JacksonBook {
 class JacksonNode {
     String name
     JacksonNode next
+}
+
+class JacksonListNode {
+    String name
+    List<JacksonListNode> children
 }
 
 class JsonCommand {
