@@ -19,6 +19,7 @@
 package org.grails.web.converters.jackson
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.JsonView
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import spock.lang.Specification
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.MapperFeature
@@ -229,6 +231,19 @@ class DomainClassJacksonModuleSpec extends Specification {
 
         and: 'to a proxy of an instance in the association as well'
         deep.writeValueAsString(proxied) == '{"id":8,"name":"main","shelf":{"id":3},"writers":[{"id":1}]}'
+    }
+
+    void "a domain class with @JsonIdentityInfo writes a repeated instance as Jackson's object id"() {
+        given:
+        def first = new Identified(name: 'first')
+        first.id = 1
+        def second = new Identified(name: 'second', partner: first)
+        second.id = 2
+        first.partner = second
+
+        expect:
+        mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true))
+                .writeValueAsString(first) == '{"@id":1,"id":1,"name":"first","partner":{"@id":2,"id":2,"name":"second","partner":1}}'
     }
 
     void "a domain class with its own @JsonSerialize serializer keeps it"() {
@@ -478,13 +493,13 @@ class DomainClassJacksonModuleSpec extends Specification {
 
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
-                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library)
+                Titled, Kebab, Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
-                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library)
+                Kennel, Pair, Annotated, ViewedId, StringId, HiddenId, Library, Identified)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -570,6 +585,13 @@ class Library {
     Shelf shelf
     @JsonIgnoreProperties(['name'])
     List writers
+}
+
+@Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator)
+class Identified {
+    String name
+    Identified partner
 }
 
 @Entity

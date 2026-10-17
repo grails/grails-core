@@ -59,16 +59,20 @@ final class CycleTracking extends ValueSerializer<Object> {
      * and the converter writes it again through the mapper: tracked outside, the second write would find the value already
      * being written.</p>
      *
+     * <p>A bean serializer that writes object ids, for a class or a property annotated {@code @JsonIdentityInfo}, is not
+     * tracked: it writes the id of an object it has written already, a reached again one included.</p>
+     *
      * @param serializer a serializer, which may wrap a bean serializer
      * @param onCycle what to write for a value reached again
-     * @return the serializer, with its bean serializer tracked, or {@code null} if it wraps none
+     * @return the serializer, with its bean serializer tracked, or {@code null} if it wraps none, or one that writes
+     *         object ids
      */
     static ValueSerializer<?> around(ValueSerializer<?> serializer, OnCycle onCycle) {
         if (serializer instanceof CycleTracking tracking) {
             return around(tracking.delegate, onCycle);
         }
         if (serializer instanceof BeanSerializerBase) {
-            return new CycleTracking(serializer, onCycle);
+            return serializer.usesObjectId() ? null : new CycleTracking(serializer, onCycle);
         }
         ValueSerializer<?> delegatee = serializer.getDelegatee();
         if (delegatee == null || delegatee == serializer) {
@@ -130,7 +134,11 @@ final class CycleTracking extends ValueSerializer<Object> {
     @Override
     public ValueSerializer<?> createContextual(SerializationContext ctxt, BeanProperty property) {
         ValueSerializer<?> contextual = delegate.createContextual(ctxt, property);
-        return contextual == delegate ? this : new CycleTracking(contextual, onCycle);
+        if (contextual == delegate) {
+            return this;
+        }
+        // a property annotated @JsonIdentityInfo makes the serializer write object ids
+        return contextual.usesObjectId() ? contextual : new CycleTracking(contextual, onCycle);
     }
 
     @Override
