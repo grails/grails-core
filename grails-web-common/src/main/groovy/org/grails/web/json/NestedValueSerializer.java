@@ -141,11 +141,13 @@ final class NestedValueSerializer extends DelegatingSerializer {
 
     /**
      * An unwrapped value is written into the object that encloses it, as the property's serializer writes it: the nested
-     * value writer writes a complete value, which cannot be written there.
+     * value writer writes a complete value, which cannot be written there. A serializer that cannot unwrap its value
+     * writes it under the name of the property, as a complete value, so it stays wrapped.
      */
     @Override
     public ValueSerializer<Object> unwrappingSerializer(NameTransformer unwrapper) {
-        return _delegatee.unwrappingSerializer(unwrapper);
+        ValueSerializer<Object> unwrapping = _delegatee.unwrappingSerializer(unwrapper);
+        return unwrapping == _delegatee ? this : unwrapping;
     }
 
     /**

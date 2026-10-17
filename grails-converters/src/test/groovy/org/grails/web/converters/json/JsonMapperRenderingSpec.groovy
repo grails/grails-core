@@ -140,6 +140,16 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(holder).toString() == jackson.writeValueAsString(holder)
     }
 
+    void "a @JsonUnwrapped property whose serializer does not unwrap renders as the converter renders it"() {
+        given: 'a value Jackson writes under the name of the property, as its serializer cannot unwrap it'
+        JSON.registerObjectMarshaller(Role) { Role role -> role.name().toLowerCase() }
+        def holder = new UnwrapRoleHolder(role: Role.HEAD, note: 'n')
+
+        expect:
+        jackson.writeValueAsString(holder) == '{"note":"n","role":"HEAD"}'
+        new JSON(holder).toString() == '{"note":"n","role":"head"}'
+    }
+
     void "the annotations of a property apply to the bean, collection or map it holds, as the JsonMapper applies them"() {
         given:
         def account = new Account(user: 'ada', secret: 's3cret')
@@ -898,6 +908,12 @@ class UnwrapAddress {
 class UnwrapHolder {
     @JsonUnwrapped
     UnwrapAddress address
+    String note
+}
+
+class UnwrapRoleHolder {
+    @JsonUnwrapped
+    Role role
     String note
 }
 
