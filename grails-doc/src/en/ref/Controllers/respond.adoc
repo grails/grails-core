@@ -87,7 +87,7 @@ registered renderer renders any type it is registered for:
 ----
 respond validationProblemDetailFactory.create(book.errors)   // 422 application/problem+json
 respond ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The book is checked out')
-respond problem, view: 'conflict'                            // the conflict view, with the problem's status
+respond problem, view: 'conflict'                            // the conflict view in each format it exists for, with the problem's status
 ----
 
 WARNING: Due to the way Groovy works, while responding with a Map and arguments it is important to respond in this manner `respond([:], status: 200)` instead of this manner `respond([:], [status: 200])`. Failure to do so will result in the arguments being reversed.
