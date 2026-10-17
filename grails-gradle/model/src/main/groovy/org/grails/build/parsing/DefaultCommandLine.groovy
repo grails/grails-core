@@ -98,7 +98,7 @@ class DefaultCommandLine implements CommandLine {
 
     String lookupEnvironmentForCommand() {
         String fallbackEnv = System.getProperty(Environment.KEY) != null ? System.getProperty(Environment.KEY) : Environment.DEVELOPMENT.getName()
-        String env = CommandLineParser.DEFAULT_ENVS.get(commandName)
+        String env = CommandLineParser.DEFAULT_ENVS[commandName]
         return env == null ? fallbackEnv : env
     }
 
@@ -107,7 +107,7 @@ class DefaultCommandLine implements CommandLine {
     }
 
     void setCommandName(String cmd) {
-        if (REFRESH_DEPENDENCIES_ARGUMENT.equals(cmd)) {
+        if (REFRESH_DEPENDENCIES_ARGUMENT == cmd) {
             addUndeclaredOption(REFRESH_DEPENDENCIES_ARGUMENT)
         }
         commandName = cmd
@@ -139,11 +139,11 @@ class DefaultCommandLine implements CommandLine {
 
     Object optionValue(String name) {
         if (declaredOptions.containsKey(name)) {
-            SpecifiedOption specifiedOption = declaredOptions.get(name)
+            SpecifiedOption specifiedOption = declaredOptions[name]
             return specifiedOption.value
         }
         if (undeclaredOptions.containsKey(name)) {
-            return undeclaredOptions.get(name)
+            return undeclaredOptions[name]
         }
         return null
     }
@@ -178,17 +178,17 @@ class DefaultCommandLine implements CommandLine {
         String sep = ''
         List<String> args = new ArrayList<>(remainingArgs)
         if (includeOptions) {
-            for (Map.Entry<String, Object> entry : undeclaredOptions.entrySet()) {
-                if (entry.getValue() instanceof Boolean && ((Boolean) entry.getValue())) {
-                    args.add('-' + entry.getKey())
+            for (Map.Entry<String, Object> entry in undeclaredOptions.entrySet()) {
+                if (entry.value instanceof Boolean && ((Boolean) entry.value)) {
+                    args.add('-' + entry.key)
                 }
                 else {
-                    args.add('-' + entry.getKey() + '=' + entry.getValue())
+                    args.add('-' + entry.key + '=' + entry.value)
                 }
             }
         }
         for (String arg in args) {
-            sb.append(sep).append(arg)
+            sb << sep << arg
             sep = separator
         }
         return sb.toString()
@@ -199,7 +199,7 @@ class DefaultCommandLine implements CommandLine {
     }
 
     void addSystemProperty(String name, String value) {
-        if (Environment.KEY.equals(name)) {
+        if (name == Environment.KEY) {
             setEnvironment(value)
         }
         systemProperties.put(name, value)
