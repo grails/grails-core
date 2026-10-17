@@ -44,7 +44,8 @@ final class ProblemXml {
 
     private static final String XSI = 'http://www.w3.org/2001/XMLSchema-instance'
 
-    private static final XMLOutputFactory OUTPUT = XMLOutputFactory.newFactory()
+    // The JDK's own writer, whatever StAX implementation another library puts on the classpath
+    private static final XMLOutputFactory OUTPUT = XMLOutputFactory.newDefaultFactory()
 
     private ProblemXml() {
     }
