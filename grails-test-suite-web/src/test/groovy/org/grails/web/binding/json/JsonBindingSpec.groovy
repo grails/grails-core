@@ -131,8 +131,8 @@ class JsonBindingSpec extends Specification implements ControllerUnitTest<Bindin
             it.objectName == 'family'
         }
         
-        then:
-        familyError?.defaultMessage?.startsWith 'Error occurred initializing command object [family].'
+        then: 'by the JsonSlurper parser, which binds JSON bodies until grails.databinding.json.jackson is set'
+        familyError?.defaultMessage?.contains 'Error occurred initializing command object [family]. groovy.json.JsonException'
     }
     
     @Issue('GRAILS-11646')
