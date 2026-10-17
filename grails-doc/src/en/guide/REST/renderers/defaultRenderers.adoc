@@ -19,6 +19,8 @@ under the License.
 
 The default renderers for XML and JSON can be found in the `grails.rest.render.xml` and `grails.rest.render.json` packages respectively. These use the Grails converters (`grails.converters.XML` and `grails.converters.JSON`) by default for response rendering. The XML renderers and `grails.converters.XML` are part of the `grails-xml` module, which the Grails 9 web starter includes; from Grails 10 it is added explicitly.
 
+WARNING: `XmlRenderer`, `XmlCollectionRenderer` and `grails.converters.XML` are deprecated and scheduled for removal in Grails 11. The examples below use `JsonRenderer`; `XmlRenderer` takes the same `includes` and `excludes` until it is removed.
+
 You can easily customize response rendering using these default renderers. A common change you may want to make is to include or exclude certain properties from rendering. 
 
 
@@ -29,10 +31,10 @@ As mentioned previously, Grails maintains a registry of `grails.rest.render.Rend
 
 [source,groovy]
 ----
-import grails.rest.render.xml.*
+import grails.rest.render.json.*
 
 beans = {
-    bookRenderer(XmlRenderer, Book) {
+    bookRenderer(JsonRenderer, Book) {
         includes = ['title']
     }
 }
@@ -41,14 +43,14 @@ beans = {
 
 NOTE: The bean name is not important (Grails will scan the application context for all registered renderer beans), but for organizational and readability purposes it is recommended you name it something meaningful.
 
-To exclude a property, the `excludes` property of the `XmlRenderer` class can be used:
+To exclude a property, the `excludes` property of the `JsonRenderer` class can be used:
 
 [source,groovy]
 ----
-import grails.rest.render.xml.*
+import grails.rest.render.json.*
 
 beans = {
-    bookRenderer(XmlRenderer, Book) {
+    bookRenderer(JsonRenderer, Book) {
         excludes = ['isbn']
     }
 }
@@ -65,9 +67,7 @@ As mentioned previously, the default renders use the `grails.converters` package
 import grails.converters.*
 
 ...
-render book as XML
-
-// or render book as JSON
+render book as JSON
 ----
 
 Why the separation between converters and renderers? Well a renderer has more flexibility to use whatever rendering technology you chose. When implementing a custom renderer you could use https://github.com/FasterXML/jackson/[Jackson], https://github.com/google/gson[Google Gson] or any Java library to implement the renderer. Converters on the other hand use Grails' object marshallers, and can write JSON through the application's Jackson `JsonMapper`, as described below.

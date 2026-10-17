@@ -360,7 +360,7 @@ enable the matching Jackson read features, for example `spring.jackson.json.read
 accepted. Text after the value, such as a second JSON document, is rejected as well, unless
 `spring.jackson.deserialization.fail-on-trailing-tokens` is set to `false`. What comes back does not change: the same `JSONObject` and `JSONArray` containers, which implement `Map` and `List`,
 with the same number types (`Integer`, `Long`, `BigInteger`, `Double` or `BigDecimal`, depending on the number). With the
-setting `true`, the default in Grails 9, both parse with Grails' own `JSONTokener` as before. `new JSONObject(String)` and
+setting `true`, the default in Grails 9, both parse with Grails' own parser as before. `new JSONObject(String)` and
 `new JSONArray(String)` always do, whatever the setting.
 
 With the setting `false`, the mapper writes every value, as Spring Boot writes it: collections, maps, arrays, records,

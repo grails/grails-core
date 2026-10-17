@@ -236,8 +236,9 @@ class GrailsApplicationBuilder {
     /**
      * A web test gets the beans of the converters and XML plugins without including the plugins,
      * whose controllers and urlMappings dependencies would be discovered too: Jackson and data
-     * binding read them during the refresh. They are registered once the test's {@code doWithConfig}
-     * has reached the environment, which their registrars read.
+     * binding read them during the refresh. They are registered after the test's post-processor has
+     * registered the plugin beans: creating the default one applies the test's {@code doWithConfig}
+     * to the environment, which their registrars read.
      */
     protected void registerWebPluginBeans(ConfigurableApplicationContext context, BeanDefinitionRegistry registry) {
         if (!isWebTest()) {

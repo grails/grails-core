@@ -27,8 +27,8 @@ import org.springframework.util.ClassUtils;
 import org.grails.encoder.impl.BasicXMLEncoder;
 
 /**
- * Escapes text for inclusion in XML documents. Any other object is rendered by the XML converter of the
- * {@code grails-xml} module when the application includes it, and is otherwise escaped as its string.
+ * Escapes text and primitive values for inclusion in XML documents. Any other object is rendered by the XML converter of
+ * the {@code grails-xml} module when the application includes it, and is otherwise escaped as its string.
  */
 public class XMLEncoder extends BasicXMLEncoder {
 
