@@ -111,6 +111,7 @@ An application that applies GraalVM's plugin compiles every Groovy class with in
 Starting an application needs reflection the framework does on its own behalf, and an image keeps none of it unless asked. The framework asks while the code is being generated, so an image starts without anything having to be recorded first. It registers:
 
 * the plugin descriptors and the plugin classes they name, which is how the plugins are found at all;
+* each plugin's own configuration, its `plugin.yml`, which is otherwise read from beside the plugin's classes, in its JAR -- and an image has no JARs, so it is copied under the plugin's name while the code is generated;
 * the classes listed in `META-INF/grails.factories`, such as the artefact handlers;
 * the beans the plugins declare, through a `BeanRegistrar` or the bean DSL, which are declared again as the application starts and created and wired from there;
 * the artefacts the application holds -- including ones it did not write, such as the default URL mappings -- and the artefacts the plugins provide, such as the codecs;
