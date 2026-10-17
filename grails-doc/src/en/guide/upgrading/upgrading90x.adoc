@@ -108,8 +108,8 @@ dependencies {
 
 The module preserves the established Grails XML APIs and compatibility marshalling for domain-shaped
 payloads, collections, maps, validation errors, named converter configurations, and include/exclude
-projections. Its `DefaultXmlRenderer` finds the view locator and the renderer registry in the
-application context when it writes a response, so their `groovyPageLocator` and `rendererRegistry`
+projections. Its XML renderers, and an application's `XmlRenderer` beans, find the view locator and the renderer
+registry in the application context when they write a response, so their `groovyPageLocator` and `rendererRegistry`
 properties are no longer autowired; they are set only where an application sets them.
 
 Without the module, a request for an XML format that nothing else renders is answered like a request for
