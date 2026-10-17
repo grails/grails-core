@@ -220,6 +220,9 @@ class DefaultJsonRendererSpec extends Specification {
     void 'a named JSON configuration does not apply to a ProblemDetail the legacy converter writes'() {
         given: 'a configuration of the JSON mapper, which the legacy converter does not have'
         def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.namedJsonRenderer = Stub(NamedJsonRenderer) {
+            contains('catalog') >> true
+        }
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
@@ -278,17 +281,22 @@ class DefaultJsonRendererSpec extends Specification {
         !log.contains('set grails.web.rendering.json.spring=true')
     }
 
-    void 'unknown named JSON configurations have the same error as render json'() {
+    void 'unknown named JSON configurations have the same error as render json, for #description'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when:
-        renderer.render([ok: true], new ServletRenderContext(webRequest, [jsonConfiguration: 'missing']))
+        renderer.render(value, new ServletRenderContext(webRequest, [jsonConfiguration: 'missing']))
 
         then:
         def error = thrown(IllegalArgumentException)
         error.message == 'Named JSON configuration [missing] is not registered.'
+
+        where: 'also for a problem, which no configuration writes'
+        description | value
+        'a value'   | [ok: true]
+        'a problem' | ProblemDetail.forStatus(409)
     }
 
     void setup() {
