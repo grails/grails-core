@@ -16,16 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.CompilationFailedException
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring Rabbit.
@@ -34,18 +34,20 @@ import org.grails.cli.compiler.DependencyCustomizer
  * @author Stephane Nicoll
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class RabbitCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
         return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableRabbit') ||
-                AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableRabbitMessaging')
+                AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableRabbitMessaging');
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) throws CompilationFailedException {
-        dependencies.add('spring-rabbit')
+        dependencies.add('spring-rabbit');
 
     }
 
@@ -54,7 +56,7 @@ class RabbitCompilerAutoConfiguration extends CompilerAutoConfiguration {
         imports.addStarImports('org.springframework.amqp.rabbit.annotation', 'org.springframework.amqp.rabbit.core',
                 'org.springframework.amqp.rabbit.config', 'org.springframework.amqp.rabbit.connection',
                 'org.springframework.amqp.rabbit.listener', 'org.springframework.amqp.rabbit.listener.adapter',
-                'org.springframework.amqp.core')
+                'org.springframework.amqp.core');
     }
 
 }
