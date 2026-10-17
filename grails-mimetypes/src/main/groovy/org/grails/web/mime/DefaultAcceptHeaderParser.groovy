@@ -129,6 +129,12 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         return mimeTypes
     }
 
+    private static MimeType problemFormat(String name, MimeType[] mimeConfig) {
+        String extension = name.equalsIgnoreCase('application/problem+json') ? 'json' :
+                name.equalsIgnoreCase('application/problem+xml') ? 'xml' : null
+        extension ? mimeConfig.find { MimeType mt -> mt.extension == extension } : null
+    }
+
     protected void createMimeTypeAndAddToList(MimeType mime, MimeType[] mimeConfig, List<MimeType> mimes) {
         String name = mime.name
         //First try to find the exact match for the mime type using name and version. If version is not set,  consider
@@ -139,6 +145,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         }
         //Fallback: Try to find match using the name (if version match is not found).
         foundMime = foundMime ?: mimeConfig.find { MimeType mt -> mt.name.equalsIgnoreCase(name) }
+        // The problem types of RFC 9457 are JSON and XML documents: unless they are configured, they are those formats
+        foundMime = foundMime ?: problemFormat(name, mimeConfig)
         if (foundMime) {
             mime.name = foundMime.name
             mime.extension = foundMime.extension

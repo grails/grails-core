@@ -75,7 +75,7 @@ resource path. A `status` argument decides the status of the response, as the st
 Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client that accepts neither JSON
 nor XML, such as one asking only for HTML, is answered with `application/problem+json`, as Spring MVC answers it. A
 browser's `Accept` header lists `application/xml` after HTML, so a browser is answered with `application/problem+xml`,
-as Spring MVC answers it when it has an XML converter. XML is rendered by the `grails-xml` module, without which a client
+as Spring MVC answers it when it has an XML converter, and so is a client that asks for `application/problem+xml`. XML is rendered by the `grails-xml` module, without which a client
 asking for XML is answered with `application/problem+json` as well. Spring writes XML problems with
 `jackson-dataformat-xml`; without it, Grails writes them in the same format. A view, whether a GSP, a JSON view or a
 markup view, renders a problem only when `respond` names it with the `view` argument, and the response keeps the problem's
