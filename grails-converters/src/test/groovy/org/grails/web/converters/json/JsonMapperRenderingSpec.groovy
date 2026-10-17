@@ -33,6 +33,7 @@ import java.util.regex.Pattern
 
 import groovy.json.JsonSlurper
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -112,6 +113,15 @@ class JsonMapperRenderingSpec extends Specification {
 
         expect:
         new JSON(map).toString(true) == jackson.writerWithDefaultPrettyPrinter().writeValueAsString(map)
+    }
+
+    void "a property's @JsonFormat shape applies, as the JsonMapper applies it"() {
+        given:
+        def bean = new ShapedValues(count: 5L, born: new Date(0))
+
+        expect:
+        new JSON(bean).toString() == '{"born":"1970-01-01","count":"5"}'
+        new JSON(bean).toString() == jackson.writeValueAsString(bean)
     }
 
     void "enums render by name, as in Grails 8, and a Month as its number"() {
@@ -767,6 +777,13 @@ enum Labelled {
 record Point(int x, int y) {}
 
 record Dated(Date when) {}
+
+class ShapedValues {
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    Long count
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = 'yyyy-MM-dd', timezone = 'UTC')
+    Date born
+}
 
 class AnnotatedBean {
     @JsonProperty('first_name')

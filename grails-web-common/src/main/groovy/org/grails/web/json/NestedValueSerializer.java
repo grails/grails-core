@@ -20,6 +20,7 @@ package org.grails.web.json;
 
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.TokenStreamContext;
 import tools.jackson.databind.BeanDescription;
@@ -120,6 +121,16 @@ final class NestedValueSerializer extends DelegatingSerializer {
     @Override
     protected ValueSerializer<Object> newDelegatingInstance(ValueSerializer<?> newDelegatee) {
         return new NestedValueSerializer(newDelegatee);
+    }
+
+    /**
+     * A serializer that does not write the shape a property's {@code @JsonFormat} asks for gives none, so that Jackson finds
+     * one that does, as it does for its own serializers.
+     */
+    @Override
+    public ValueSerializer<?> withFormatOverrides(SerializationConfig config, JsonFormat.Value formatOverrides) {
+        ValueSerializer<?> overridden = _delegatee.withFormatOverrides(config, formatOverrides);
+        return overridden == null ? null : _newIfChanged(overridden);
     }
 
     @Override
