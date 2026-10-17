@@ -237,12 +237,11 @@ trait RestResponder {
     }
 
     /**
-     * Whether a renderer is Grails' HTML renderer of an object, which renders the action's view, rather than one an
-     * application registers for problems.
+     * Whether a renderer is Grails' HTML renderer of any object, which renders the action's view, rather than one an
+     * application registers for problems, or for a type they share, such as {@link Serializable}.
      */
     private boolean rendersActionView(Renderer renderer, MimeType mimeType) {
-        renderer instanceof DefaultHtmlRenderer && !ProblemDetail.isAssignableFrom(renderer.targetType) &&
-                !(mimeType.extension in ['json', 'xml'])
+        renderer instanceof DefaultHtmlRenderer && renderer.targetType == Object && !(mimeType.extension in ['json', 'xml'])
     }
 
     private callRender(Map args) {

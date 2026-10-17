@@ -407,6 +407,30 @@ class ControllerProblemPageSpec extends Specification implements ControllerUnitT
     }
 }
 
+class ControllerSerializablePageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    @Configuration
+    static class SerializablePageConfiguration {
+        @Bean
+        ProblemPageRenderer serializablePageRenderer() {
+            new ProblemPageRenderer(Serializable)
+        }
+    }
+
+    void 'an HTML renderer an application registers for a type problems share renders them'() {
+        given:
+        response.format = 'html'
+        def problem = ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem)
+
+        then:
+        view == '/errors/problem'
+        model.problem.is(problem)
+    }
+}
+
 class ControllerTextJsonSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
 
     Closure doWithConfig() {
@@ -429,10 +453,10 @@ class ControllerTextJsonSpec extends Specification implements ControllerUnitTest
 @Artefact('Controller')
 class JsonResponseController { }
 
-class ProblemPageRenderer extends DefaultHtmlRenderer<ProblemDetail> {
+class ProblemPageRenderer extends DefaultHtmlRenderer<Object> {
 
-    ProblemPageRenderer() {
-        super(ProblemDetail)
+    ProblemPageRenderer(Class<?> targetType = ProblemDetail) {
+        super(targetType)
     }
 
     @Override
