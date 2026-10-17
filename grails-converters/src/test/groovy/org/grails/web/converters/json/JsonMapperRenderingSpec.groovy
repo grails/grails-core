@@ -50,6 +50,7 @@ import spock.lang.Timeout
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.cfg.ContextAttributes
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.ser.std.StdSerializer
@@ -155,6 +156,25 @@ class JsonMapperRenderingSpec extends Specification {
         expect:
         new JSON(holder).toString() == jackson.writeValueAsString(holder)
         new JSON(holder).toString().contains('"RED"')
+    }
+
+    void "the default attributes of the application's JsonMapper reach its serializers"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, {
+                JsonMapper.builder()
+                        .defaultAttributes(ContextAttributes.getEmpty().withSharedAttribute('who', 'app'))
+                        .addModule(new SimpleModule().addSerializer(Echo, new EchoSerializer()))
+                        .build()
+            })
+        }
+        initialize([:], context)
+
+        expect:
+        new JSON([echo: new Echo()]).toString() == '{"echo":"app"}'
+
+        cleanup:
+        context.close()
     }
 
     void "enums render by name, as in Grails 8, and a Month as its number"() {
@@ -869,6 +889,21 @@ class AccountHolder {
     List<Account> accounts
     @JsonIgnoreProperties(['secret'])
     Map<String, Account> accountsByName
+}
+
+class Echo { }
+
+/** Writes the attribute a write carries. */
+class EchoSerializer extends StdSerializer<Echo> {
+
+    EchoSerializer() {
+        super(Echo)
+    }
+
+    @Override
+    void serialize(Echo value, JsonGenerator generator, SerializationContext context) {
+        generator.writeString(String.valueOf(context.getAttribute('who')))
+    }
 }
 
 class AnnotatedBean {

@@ -31,7 +31,9 @@ import tools.jackson.core.JacksonException
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.cfg.ContextAttributes
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.module.SimpleModule
 
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
@@ -237,6 +239,19 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         value << [[password: 'secret'], 'secret', [[password: 'secret']], [['secret']]]
     }
 
+    void "a configuration's attributes are added to the mapper's own"() {
+        given:
+        def mapper = JsonMapper.builder()
+                .defaultAttributes(ContextAttributes.getEmpty().withSharedAttribute('who', 'app'))
+                .addModule(new SimpleModule().addSerializer(NamedJsonEcho, new NamedJsonEchoSerializer()))
+                .build()
+        def registry = new NamedJsonConfigurationRegistry(mapper)
+        registry.register('attributed') { it.attribute('what', 'named') }
+
+        expect:
+        registry.writeValueAsString('attributed', new NamedJsonEcho()) == '"app/named"'
+    }
+
     void 'the writer for a configuration is derived once and reused'() {
         given:
         def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
@@ -314,6 +329,17 @@ class NamedJsonRenamed {
     @JsonProperty('display')
     String displayName
     String secret
+}
+
+class NamedJsonEcho { }
+
+/** Writes the attributes a write carries. */
+class NamedJsonEchoSerializer extends ValueSerializer<NamedJsonEcho> {
+
+    @Override
+    void serialize(NamedJsonEcho value, JsonGenerator generator, SerializationContext context) {
+        generator.writeString("${context.getAttribute('who')}/${context.getAttribute('what')}".toString())
+    }
 }
 
 class NamedJsonValueSerializer extends ValueSerializer<NamedJsonValue> {

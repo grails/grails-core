@@ -75,7 +75,11 @@ public final class NamedJsonConfiguration {
         JsonMapper configuredMapper = mapper.rebuild().addModule(module).build();
         ObjectWriter writer = serializationView == null ? configuredMapper.writer() :
                 configuredMapper.writerWithView(serializationView);
-        return attributes.isEmpty() ? writer : writer.withAttributes(attributes);
+        // added to the attributes the mapper gives every write, which they leave in place
+        for (Map.Entry<Object, Object> attribute : attributes.entrySet()) {
+            writer = writer.withAttribute(attribute.getKey(), attribute.getValue());
+        }
+        return writer;
     }
 
     /**

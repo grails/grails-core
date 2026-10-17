@@ -173,9 +173,8 @@ public final class JsonMapperSupport {
      */
     public JsonGenerator createGenerator(Writer out, boolean prettyPrint) {
         // not indented unless asked to be, even when the mapper indents its output (spring.jackson.serialization.indent-output)
-        ObjectWriter writer = (prettyPrint ? writingMapper.writerWithDefaultPrettyPrinter() :
+        ObjectWriter writer = withAttributes(prettyPrint ? writingMapper.writerWithDefaultPrettyPrinter() :
                 writingMapper.writer().without(SerializationFeature.INDENT_OUTPUT))
-                .withAttributes(attributes)
                 .without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                 .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM);
         return writer.createGenerator(new HtmlSafeJsonWriter(out));
@@ -190,11 +189,19 @@ public final class JsonMapperSupport {
      * @return a generator writing to {@code out}
      */
     public JsonGenerator createGenerator(Writer out, PrettyPrinter prettyPrinter) {
-        ObjectWriter writer = writingMapper.writer().with(prettyPrinter)
-                .withAttributes(attributes)
+        ObjectWriter writer = withAttributes(writingMapper.writer().with(prettyPrinter))
                 .without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                 .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM);
         return writer.createGenerator(new HtmlSafeJsonWriter(out));
+    }
+
+    /** The writer with this support's attributes added to those the mapper gives every write, which they leave in place. */
+    private ObjectWriter withAttributes(ObjectWriter writer) {
+        ObjectWriter attributed = writer;
+        for (Map.Entry<Object, Object> attribute : attributes.entrySet()) {
+            attributed = attributed.withAttribute(attribute.getKey(), attribute.getValue());
+        }
+        return attributed;
     }
 
     /**
