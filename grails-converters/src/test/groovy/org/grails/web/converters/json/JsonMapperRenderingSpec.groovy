@@ -163,11 +163,11 @@ class JsonMapperRenderingSpec extends Specification {
 
     void "an enum written with a type id renders by name, with the type id the JsonMapper writes"() {
         given:
-        def holder = new TypedValueHolder(value: Tint.RED)
+        def holder = new TypedValueHolder(value: Status.ACTIVE)
 
-        expect:
-        new JSON(holder).toString() == jackson.writeValueAsString(holder)
-        new JSON(holder).toString().contains('"RED"')
+        expect: 'the type id the mapper writes, with the name rather than the @JsonValue'
+        jackson.writeValueAsString(holder) == '{"value":["org.grails.web.converters.json.Status","A"]}'
+        new JSON(holder).toString() == '{"value":["org.grails.web.converters.json.Status","ACTIVE"]}'
     }
 
     void "the default attributes of the application's JsonMapper reach its serializers"() {
@@ -809,8 +809,6 @@ class JsonMapperRenderingSpec extends Specification {
 }
 
 enum Role { HEAD, DISPATCHER, ADMIN }
-
-enum Tint { RED }
 
 class TypedValueHolder {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
