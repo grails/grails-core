@@ -27,6 +27,8 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
+import org.grails.web.converters.jackson.DomainClassJacksonModule;
+
 /**
  * Defines serializers, a view, and writer attributes for one named Jackson response configuration.
  *
@@ -55,6 +57,16 @@ public final class NamedJsonConfiguration {
         assertMutable();
         this.serializationView = view;
         return this;
+    }
+
+    /**
+     * Writes the associated instances of the domain class instances written in full, rather than as references of their
+     * ids, as {@code JSON.use('deep')} rendered them. The registry has a configuration named {@code deep} that does.
+     *
+     * @return this configuration
+     */
+    public NamedJsonConfiguration deep() {
+        return attribute(DomainClassJacksonModule.DEEP, Boolean.TRUE);
     }
 
     public NamedJsonConfiguration attribute(Object name, Object value) {

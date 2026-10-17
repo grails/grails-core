@@ -532,6 +532,22 @@ class DomainClassJacksonModuleSpec extends Specification {
         JSON.use('deep') { new JSON(shelter).toString() } == '{"id":9,"residents":[{"@type":"Dog","id":2,"name":"Rex"}]}'
     }
 
+    void "the registry's deep configuration, and any that asks for it, writes associated instances in full"() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(
+                new GrailsJsonMapperCustomizer(grailsApplication, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build()))
+        registry.register('catalog') { it.deep() }
+        def full = '{"id":1,"title":"Grails","shelf":{"id":3,"name":"top"},"writers":[{"id":1,"name":"a"},{"id":2,"name":"b"}],' +
+                '"writersByName":{"a":{"id":1,"name":"a"},"b":{"id":2,"name":"b"}}}'
+
+        expect:
+        registry.writeValueAsString('deep', volume()) == full
+        registry.writeValueAsString('catalog', volume()) == full
+
+        and: 'as references, otherwise'
+        registry.writeValueAsString(null, volume()) == mapper().writeValueAsString(volume())
+    }
+
     void "JSON.use('deep') renders associated instances in full with the converter"() {
         expect:
         JSON.use('deep') { new JSON(volume()).toString() } ==

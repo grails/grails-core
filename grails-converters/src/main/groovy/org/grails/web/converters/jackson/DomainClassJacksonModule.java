@@ -74,6 +74,13 @@ public class DomainClassJacksonModule extends JacksonModule {
      */
     public static final String RENDERINGS = DomainClassRendering.class.getName() + ".renderings";
 
+    /**
+     * A writer attribute for a writer that writes the associated instances of the domain class instances it writes in
+     * full, rather than as references of their ids, as {@code grails.converters.json.default.deep} does for every write.
+     * Its value is {@link Boolean#TRUE}.
+     */
+    public static final String DEEP = DomainClassRendering.class.getName() + ".deep";
+
     @Override
     public String getModuleName() {
         return "grails-domain-classes";

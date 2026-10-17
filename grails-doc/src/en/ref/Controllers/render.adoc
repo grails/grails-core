@@ -121,5 +121,5 @@ Parameters:
 * `fileName` (optional) - For specifying an attachment file name while rendering a file. Unsafe characters in the filename are escaped before they are written to the header.
 * `inline` (optional) - Set to `true` while rendering a file to omit the default attachment `Content-Disposition` header.
 * `json` (optional) - A value to write as JSON with Spring Boot's Jackson `JsonMapper`, whatever `grails.converters.json.legacy` is set to
-* `jsonConfiguration` (optional) - With `json`, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with. A name that is not registered throws `IllegalArgumentException`
+* `jsonConfiguration` (optional) - With `json`, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with, such as `deep`, which Grails registers to write the associations of domain class instances in full. A name that is not registered throws `IllegalArgumentException`
 * `includes`, `excludes` (optional) - With `json`, the properties of the value written, or of each element of a collection or array, to include or leave out

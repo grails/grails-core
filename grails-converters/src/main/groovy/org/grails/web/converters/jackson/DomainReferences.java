@@ -126,7 +126,7 @@ final class DomainReferences {
         @Override
         public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
             DomainClassRendering current = rendering.ofOwner(context, generator);
-            if (current.isDeep()) {
+            if (deep(current, context)) {
                 Object unwrapped = current.unwrap(value);
                 if (unwrapped == null) {
                     // a proxy of an instance that no longer exists
@@ -163,7 +163,7 @@ final class DomainReferences {
         public void serializeWithType(Object value, JsonGenerator generator, SerializationContext context,
                 TypeSerializer typeSerializer) {
             DomainClassRendering current = rendering.ofOwner(context, generator);
-            if (current.isDeep() && !toMany) {
+            if (deep(current, context) && !toMany) {
                 // In full, an instance is written with its type id; a reference carries none
                 Object unwrapped = current.unwrap(value);
                 if (unwrapped == null) {
@@ -177,6 +177,11 @@ final class DomainReferences {
             else {
                 serialize(value, generator, context);
             }
+        }
+
+        /** Whether associated instances are written in full: for every write, or for this one. */
+        private static boolean deep(DomainClassRendering rendering, SerializationContext context) {
+            return rendering.isDeep() || Boolean.TRUE.equals(context.getAttribute(DomainClassJacksonModule.DEEP));
         }
 
         /**

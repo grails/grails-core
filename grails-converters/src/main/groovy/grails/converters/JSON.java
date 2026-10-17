@@ -517,7 +517,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     /**
      * @deprecated Scheduled for removal in Grails 11. Inject {@link grails.converters.json.NamedJsonConfigurationRegistry} and call
      * {@link grails.converters.json.NamedJsonConfigurationRegistry#writeValueAsString(String, Object)} or
-     * {@link grails.converters.json.NamedJsonConfigurationRegistry#writeValue(String, java.io.Writer, Object)}.
+     * {@link grails.converters.json.NamedJsonConfigurationRegistry#writeValue(String, java.io.Writer, Object)} with a
+     * configuration such as {@link grails.converters.json.NamedJsonConfigurationRegistry#DEEP}.
      */
     @Deprecated(since = "9.0", forRemoval = true)
     public static Object use(String configName, Closure<?> callable) throws ConverterException {
@@ -534,7 +535,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
 
     /**
      * @deprecated Scheduled for removal in Grails 11. Inject {@link grails.converters.json.NamedJsonConfigurationRegistry} and select the
-     * configuration explicitly for each write. The replacement does not mutate thread-local state.
+     * configuration explicitly for each write, such as {@link grails.converters.json.NamedJsonConfigurationRegistry#DEEP}. The
+     * replacement does not mutate thread-local state.
      */
     @Deprecated(since = "9.0", forRemoval = true)
     public static void use(String cfgName) throws ConverterException {

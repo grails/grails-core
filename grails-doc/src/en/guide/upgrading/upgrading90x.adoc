@@ -322,7 +322,10 @@ register the name again to replace a configuration rather than mutating a retain
 For direct serialization, inject the same registry and use
 `namedJsonConfigurationRegistry.writeValueAsString('catalog', book)` or
 `namedJsonConfigurationRegistry.writeValue('catalog', writer, book)`. These explicit operations replace the
-thread-local scope established by `JSON.use('deep')`. The legacy `JSON.createNamedConfig(...)` and `JSON.use(...)`
+thread-local scope established by `JSON.use(...)`. Every registry has a `deep` configuration, which writes the
+associations of domain class instances in full, as `JSON.use('deep')` did, so `JSON.use('deep') { render book as JSON }`
+becomes `render json: book, jsonConfiguration: 'deep'`. A configuration of the application's own does the same with
+`it.deep()`. The legacy `JSON.createNamedConfig(...)` and `JSON.use(...)`
 APIs, along with `JSON.getNamedConfig(...)` and `JSON.withDefaultConfiguration(...)`, are deprecated
 and scheduled for removal in Grails 11 in favor of the request-safe Jackson registry. This timetable
 does not deprecate `JSON.registerObjectMarshaller(...)`.

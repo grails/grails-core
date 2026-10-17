@@ -39,6 +39,12 @@ import org.grails.web.converters.jackson.JsonProjection;
  */
 public final class NamedJsonConfigurationRegistry {
 
+    /**
+     * The name of the configuration every registry has, which writes the associated instances of domain class instances
+     * in full, as {@code JSON.use('deep')} rendered them. Registering the name again replaces it.
+     */
+    public static final String DEEP = "deep";
+
     private final Supplier<JsonMapper> jsonMapper;
     private volatile JsonMapper resolvedMapper;
     private final ConcurrentMap<String, NamedJsonConfiguration> configurations = new ConcurrentHashMap<>();
@@ -56,6 +62,7 @@ public final class NamedJsonConfigurationRegistry {
      */
     public NamedJsonConfigurationRegistry(Supplier<JsonMapper> jsonMapper) {
         this.jsonMapper = Objects.requireNonNull(jsonMapper, "jsonMapper");
+        register(DEEP, NamedJsonConfiguration::deep);
     }
 
     public void register(String name, Consumer<NamedJsonConfiguration> customizer) {
