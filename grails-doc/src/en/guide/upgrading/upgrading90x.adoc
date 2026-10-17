@@ -338,8 +338,10 @@ associations of domain class instances in full, as `JSON.use('deep')` did, so `J
 becomes `render json: book, jsonConfiguration: 'deep'`. A configuration of the application's own does the same with
 `it.deep()`. The legacy `JSON.createNamedConfig(...)` and `JSON.use(...)`
 APIs, along with `JSON.getNamedConfig(...)` and `JSON.withDefaultConfiguration(...)`, are deprecated
-and scheduled for removal in Grails 11 in favor of the request-safe Jackson registry. This timetable
-does not deprecate `JSON.registerObjectMarshaller(...)`.
+and scheduled for removal in Grails 11 in favor of the request-safe Jackson registry. So are the `namedConfiguration`
+property of `JsonRenderer` and `JsonCollectionRenderer` beans, which selects one of those legacy configurations, and
+the `renderJson(JSON, RenderContext)` method their subclasses override to render with the legacy converter. This
+timetable does not deprecate `JSON.registerObjectMarshaller(...)`.
 
 ==== 6. `grails.converters.JSON` Can Write JSON With Spring Boot's JsonMapper
 
