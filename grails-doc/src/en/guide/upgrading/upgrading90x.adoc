@@ -378,8 +378,9 @@ enable the matching Jackson read features, for example `spring.jackson.json.read
 accepted. Text after the value, such as a second JSON document, is rejected as well, unless
 `spring.jackson.deserialization.fail-on-trailing-tokens` is set to `false`. What comes back does not change: the same `JSONObject` and `JSONArray` containers, which implement `Map` and `List`,
 with the same number types (`Integer`, `Long`, `BigInteger`, `Double` or `BigDecimal`, depending on the number). With the
-setting `true`, the default in Grails 9, both parse with Grails' own parser as before. `new JSONObject(String)` and
-`new JSONArray(String)` always do, whatever the setting.
+setting `true`, the default in Grails 9, both parse with Grails' own parser as before, except that a number beyond the
+range of a `double`, such as `1e400`, is a `BigDecimal`, where Grails 8 threw a `NumberFormatException`.
+`new JSONObject(String)` and `new JSONArray(String)` always parse with Grails' own parser, whatever the setting.
 
 With the setting `false`, the mapper writes every value, as Spring Boot writes it: collections, maps, arrays, records,
 `Optional` values, enums and beans, besides the single values above. The converter renders each value in them, so the
