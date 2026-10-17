@@ -16,22 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.util
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.util;
 
-import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.InvocationTargetException;
 
-import groovy.transform.CompileStatic
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
-import org.springframework.context.ApplicationContext
-import org.springframework.context.Lifecycle
-import org.springframework.util.Assert
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import grails.config.Config
-import grails.core.GrailsApplication
-import grails.plugins.GrailsPluginManager
-import org.grails.core.io.support.GrailsFactoriesLoader
-import org.grails.core.support.GrailsApplicationDiscoveryStrategy
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
+import org.springframework.util.Assert;
+
+import grails.config.Config;
+import grails.core.GrailsApplication;
+import grails.plugins.GrailsPluginManager;
+import org.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.core.support.GrailsApplicationDiscoveryStrategy;
 
 /**
  * Allows looking up key classes in a static context
@@ -42,64 +43,65 @@ import org.grails.core.support.GrailsApplicationDiscoveryStrategy
  *
  * @since 2.0
  */
-@CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 class Holders {
 
-    private static final Log LOG = LogFactory.getLog(Holders)
-    private static Holder<GrailsPluginManager> pluginManagers = new Holder<>('PluginManager')
-    private static Holder<Boolean> pluginManagersInCreation = new Holder<>('PluginManagers in creation')
-    private static Holder<Config> configs = new Holder<>('config')
-    private static Holder<Map<?, ?>> flatConfigs = new Holder<>('flat config')
+    private static final Log LOG = LogFactory.getLog(Holders);
+    private static Holder<GrailsPluginManager> pluginManagers = new Holder<>('PluginManager');
+    private static Holder<Boolean> pluginManagersInCreation = new Holder<>('PluginManagers in creation');
+    private static Holder<Config> configs = new Holder<>('config');
+    private static Holder<Map<?, ?>> flatConfigs = new Holder<>('flat config');
 
-    private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy, Holders.getClassLoader())
-    private static Holder servletContexts
+    private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy, Holders.getClassLoader());
+    private static Holder servletContexts;
 
     static {
 
-        createServletContextsHolder()
+        createServletContextsHolder();
     }
 
-    private static GrailsApplication applicationSingleton // TODO remove
+    private static GrailsApplication applicationSingleton; // TODO remove
 
     private Holders() {
         // static only
     }
 
     static void addApplicationDiscoveryStrategy(GrailsApplicationDiscoveryStrategy strategy) {
-        applicationDiscoveryStrategies.add(strategy)
+        applicationDiscoveryStrategies.add(strategy);
     }
 
     static void clear() {
-        pluginManagers.set(null)
-        pluginManagersInCreation.set(null)
-        configs.set(null)
-        flatConfigs.set(null)
+        pluginManagers.set(null);
+        pluginManagersInCreation.set(null);
+        configs.set(null);
+        flatConfigs.set(null);
         if (servletContexts != null) {
-            servletContexts.set(null)
+            servletContexts.set(null);
         }
-        applicationDiscoveryStrategies.clear()
-        applicationSingleton = null
+        applicationDiscoveryStrategies.clear();
+        applicationSingleton = null;
     }
 
     static void setServletContext(final Object servletContext) {
-        servletContexts.set(servletContext)
+        servletContexts.set(servletContext);
     }
 
     static Object getServletContext() {
-        return get(servletContexts, 'servletContext')
+        return get(servletContexts, 'servletContext');
     }
 
     static ApplicationContext getApplicationContext() {
-        for (GrailsApplicationDiscoveryStrategy strategy in applicationDiscoveryStrategies) {
-            ApplicationContext applicationContext = strategy.findApplicationContext()
+        for (GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+            ApplicationContext applicationContext = strategy.findApplicationContext();
             if (applicationContext != null) {
-                boolean running = ((Lifecycle) applicationContext).isRunning()
+                boolean running = ((Lifecycle) applicationContext).isRunning();
                 if (running) {
-                    return applicationContext
+                    return applicationContext;
                 }
             }
         }
-        throw new IllegalStateException('Could not find ApplicationContext, configure Grails correctly first')
+        throw new IllegalStateException('Could not find ApplicationContext, configure Grails correctly first');
     }
 
     /**
@@ -107,13 +109,13 @@ class Holders {
      * @return The ApplicationContext or null if it doesn't exist
      */
     static ApplicationContext findApplicationContext() {
-        for (GrailsApplicationDiscoveryStrategy strategy in applicationDiscoveryStrategies) {
-            ApplicationContext applicationContext = strategy.findApplicationContext()
+        for (GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+            ApplicationContext applicationContext = strategy.findApplicationContext();
             if (applicationContext != null) {
-                return applicationContext
+                return applicationContext;
             }
         }
-        return null
+        return null;
     }
 
     /**
@@ -121,111 +123,111 @@ class Holders {
      * @return The ApplicationContext or null if it doesn't exist
      */
     static GrailsApplication findApplication() {
-        for (GrailsApplicationDiscoveryStrategy strategy in applicationDiscoveryStrategies) {
-            GrailsApplication grailsApplication = strategy.findGrailsApplication()
+        for (GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+            GrailsApplication grailsApplication = strategy.findGrailsApplication();
             if (grailsApplication != null) {
-                return grailsApplication
+                return grailsApplication;
             }
         }
-        return applicationSingleton
+        return applicationSingleton;
     }
 
     static GrailsApplication getGrailsApplication() {
-        GrailsApplication grailsApplication = findApplication()
-        Assert.notNull(grailsApplication, 'GrailsApplication not found')
-        return grailsApplication
+        GrailsApplication grailsApplication = findApplication();
+        Assert.notNull(grailsApplication, 'GrailsApplication not found');
+        return grailsApplication;
     }
 
     static void setGrailsApplication(GrailsApplication application) {
-        applicationSingleton = application
+        applicationSingleton = application;
     }
 
     static void setConfig(Config config) {
-        configs.set(config)
+        configs.set(config);
 
         // reset flat config
-        flatConfigs.set(config == null ? null : config)
+        flatConfigs.set(config == null ? null : config);
     }
 
     static Config getConfig() {
-        return get(configs, 'config')
+        return get(configs, 'config');
     }
 
     static Map<?, ?> getFlatConfig() {
-        Map<?, ?> flatConfig = get(flatConfigs, 'flatConfig')
-        return flatConfig == null ? Collections.emptyMap() : flatConfig
+        Map<?, ?> flatConfig = get(flatConfigs, 'flatConfig');
+        return flatConfig == null ? Collections.emptyMap() : flatConfig;
     }
 
     static void setPluginManagerInCreation(boolean inCreation) {
-        pluginManagersInCreation.set(inCreation)
+        pluginManagersInCreation.set(inCreation);
     }
 
     static void setPluginManager(GrailsPluginManager pluginManager) {
         if (pluginManager != null) {
-            pluginManagersInCreation.set(false)
+            pluginManagersInCreation.set(false);
         }
-        pluginManagers.set(pluginManager)
+        pluginManagers.set(pluginManager);
     }
 
     static GrailsPluginManager getPluginManager() {
-        return getPluginManager(false)
+        return getPluginManager(false);
     }
 
     static GrailsPluginManager getPluginManager(boolean mappedOnly) {
         while (true) {
-            Boolean inCreation = get(pluginManagersInCreation, 'PluginManager in creation', mappedOnly)
+            Boolean inCreation = get(pluginManagersInCreation, 'PluginManager in creation', mappedOnly);
             if (inCreation == null) {
-                inCreation = false
+                inCreation = false;
             }
             if (!inCreation) {
-                break
+                break;
             }
 
             try {
-                Thread.sleep(100)
+                Thread.sleep(100);
             }
             catch (InterruptedException e) {
-                break
+                break;
             }
         }
 
-        return get(pluginManagers, 'PluginManager', mappedOnly)
+        return get(pluginManagers, 'PluginManager', mappedOnly);
     }
 
     static GrailsPluginManager currentPluginManager() {
-        GrailsPluginManager current = getPluginManager()
-        Assert.notNull(current, 'No PluginManager set')
-        return current
+        GrailsPluginManager current = getPluginManager();
+        Assert.notNull(current, 'No PluginManager set');
+        return current;
     }
 
     static void reset() {
-        setPluginManager(null)
-        setGrailsApplication(null)
+        setPluginManager(null);
+        setGrailsApplication(null);
         if (servletContexts != null) {
-            setServletContext(null)
+            setServletContext(null);
         }
-        setPluginManager(null)
-        setPluginManagerInCreation(false)
-        setConfig(null)
+        setPluginManager(null);
+        setPluginManagerInCreation(false);
+        setConfig(null);
     }
 
     private static <T> T get(Holder<T> holder, String type) {
-        return get(holder, type, false)
+        return get(holder, type, false);
     }
 
     private static <T> T get(Holder<T> holder, String type, boolean mappedOnly) {
-        return holder.get(mappedOnly)
+        return holder.get(mappedOnly);
     }
 
     @SuppressWarnings('unchecked')
     private static void createServletContextsHolder() {
         try {
-            Class<?> clazz = Holders.getClassLoader().loadClass('grails.web.context.WebRequestServletHolder')
-            servletContexts = (Holder) clazz.getDeclaredConstructor().newInstance()
+            Class<?> clazz = Holders.getClassLoader().loadClass('grails.web.context.WebRequestServletHolder');
+            servletContexts = (Holder) clazz.getDeclaredConstructor().newInstance();
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             // shouldn't happen
-            LOG.debug('Error initializing servlet context holder, not running in Servlet environment: ' + e.getMessage(), e)
+            LOG.debug('Error initializing servlet context holder, not running in Servlet environment: ' + e.getMessage(), e);
         }
     }
 
