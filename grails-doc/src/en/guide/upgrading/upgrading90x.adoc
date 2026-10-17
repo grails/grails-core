@@ -686,9 +686,11 @@ Applications can also inject the factory when they need to create or customize t
 When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem, selects
 `application/problem+json`, or `application/problem+xml` for an XML response, and fills in an absent
 `instance` with the current resource path. A `status` argument decides the status instead, as the status of a
-`ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client that accepts neither JSON nor XML, such as a browser
-asking for HTML, is answered with `application/problem+json`, as Spring MVC answers it, where Grails 8
-rendered the action's view with a 200. A view renders a problem only when `respond` names it with the
+`ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client
+that accepts neither JSON nor XML, such as one asking only for HTML, is answered with `application/problem+json`, as
+Spring MVC answers it, where Grails 8 rendered the action's view with a 200. A browser's `Accept` header lists
+`application/xml` after HTML, so a browser is answered with `application/problem+xml`, as Spring MVC answers it when it
+has an XML converter. A view renders a problem only when `respond` names it with the
 `view` argument, and the response keeps the problem's status. A `ProblemDetail` is written through Spring's message
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
 to, so the example above answers with `application/problem+json` in Grails 9 as well. A web

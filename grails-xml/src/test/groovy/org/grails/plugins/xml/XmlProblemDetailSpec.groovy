@@ -56,6 +56,20 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         problem.detail.text() == 'The title is taken'
     }
 
+    void 'a browser, whose Accept header lists XML, is answered with application/problem+xml, as Spring MVC answers it with an XML converter'() {
+        given:
+        request.addHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8')
+        request.addHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT))
+
+        then:
+        response.status == 409
+        response.contentType.startsWith('application/problem+xml')
+        new XmlSlurper().parseText(response.contentAsString).status.text() == '409'
+    }
+
     void 'a status respond is given decides the status of the response, and the problem keeps its own'() {
         given:
         response.format = 'xml'
