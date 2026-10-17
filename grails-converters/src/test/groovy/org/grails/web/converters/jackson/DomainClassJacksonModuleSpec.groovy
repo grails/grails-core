@@ -560,20 +560,20 @@ class DomainClassJacksonModuleSpec extends Specification {
         def mapper = mapper(new DomainClassRendering(grailsApplication, new LazyProxyHandler(), false, false, false))
 
         expect:
-        mapper.writeValueAsString(holder) == '{"writer":{"id":1},"writers":[{"id":2}]}'
-        new JSON(holder).toString() == '{"writer":{"id":1},"writers":[{"id":2}]}'
+        mapper.writeValueAsString(holder) == '{"writer":{"name":"a"},"writers":[{"name":"a"}]}'
+        new JSON(holder).toString() == '{"writer":{"name":"a"},"writers":[{"name":"a"}]}'
 
         and: 'a proxy narrowed to a subclass, with the type id of the subclass'
-        mapper.writeValueAsString(pet) == '{"animal":{"@type":"Dog","id":3}}'
-        new JSON(pet).toString() == '{"animal":{"@type":"Dog","id":3}}'
+        mapper.writeValueAsString(pet) == '{"animal":{"@type":"Dog","name":"Rex"}}'
+        new JSON(pet).toString() == '{"animal":{"@type":"Dog","name":"Rex"}}'
 
         when: 'the converter has a proxy handler that does not unwrap it, so that its proxy marshaller does'
         ConvertersConfigurationHolder.clear()
         new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
 
         then:
-        new JSON(holder).toString() == '{"writer":{"id":1},"writers":[{"id":2}]}'
-        new JSON(pet).toString() == '{"animal":{"@type":"Dog","id":3}}'
+        new JSON(holder).toString() == '{"writer":{"name":"a"},"writers":[{"name":"a"}]}'
+        new JSON(pet).toString() == '{"animal":{"@type":"Dog","name":"Rex"}}'
     }
 
     void "a module's wrapper around the serializer of a domain class writes the instance a proxy stands for, in the JSON converter"() {
@@ -596,7 +596,7 @@ class DomainClassJacksonModuleSpec extends Specification {
 
         expect:
         new JSON(new IgnoringWriterHolder(writer: new LazyWriterProxy(target: writer), writers: [])).toString() ==
-                '{"writer":{"id":1},"writers":[]}'
+                '{"writer":{"name":"a"},"writers":[]}'
 
         cleanup:
         context.close()
@@ -1115,9 +1115,9 @@ class Code {
 }
 
 class IgnoringWriterHolder {
-    @JsonIgnoreProperties('name')
+    @JsonIgnoreProperties('id')
     Writer writer
-    @JsonIgnoreProperties('name')
+    @JsonIgnoreProperties('id')
     List<Writer> writers
 }
 
@@ -1265,7 +1265,7 @@ class LazyAnimalProxy extends Animal implements HibernateProxy {
 }
 
 class IgnoringPet {
-    @JsonIgnoreProperties('name')
+    @JsonIgnoreProperties('id')
     Animal animal
 }
 
