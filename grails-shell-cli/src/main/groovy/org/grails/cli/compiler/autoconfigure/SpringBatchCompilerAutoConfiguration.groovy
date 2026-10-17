@@ -16,15 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring Batch.
@@ -33,35 +33,37 @@ import org.grails.cli.compiler.DependencyCustomizer
  * @author Phillip Webb
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons and double-quoted strings kept to clear the 50% rename-similarity threshold against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class SpringBatchCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableBatchProcessing')
+        return AstUtils.hasAtLeastOneAnnotation(classNode, "EnableBatchProcessing");
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
-        dependencies.ifAnyMissingClasses('org.springframework.batch.core.Job').add('spring-boot-starter-batch')
-        dependencies.ifAnyMissingClasses('org.springframework.jdbc.core.JdbcTemplate').add('spring-jdbc')
+        dependencies.ifAnyMissingClasses("org.springframework.batch.core.Job").add("spring-boot-starter-batch");
+        dependencies.ifAnyMissingClasses("org.springframework.jdbc.core.JdbcTemplate").add("spring-jdbc");
     }
 
     @Override
     void applyImports(ImportCustomizer imports) {
-        imports.addImports('org.springframework.batch.repeat.RepeatStatus',
-                'org.springframework.batch.core.scope.context.ChunkContext',
-                'org.springframework.batch.core.step.tasklet.Tasklet',
-                'org.springframework.batch.core.configuration.annotation.StepScope',
-                'org.springframework.batch.core.configuration.annotation.JobBuilderFactory',
-                'org.springframework.batch.core.configuration.annotation.StepBuilderFactory',
-                'org.springframework.batch.core.configuration.annotation.EnableBatchProcessing',
-                'org.springframework.batch.core.Step', 'org.springframework.batch.core.StepExecution',
-                'org.springframework.batch.core.StepContribution', 'org.springframework.batch.core.Job',
-                'org.springframework.batch.core.JobExecution', 'org.springframework.batch.core.JobParameter',
-                'org.springframework.batch.core.JobParameters', 'org.springframework.batch.core.launch.JobLauncher',
-                'org.springframework.batch.core.converter.JobParametersConverter',
-                'org.springframework.batch.core.converter.DefaultJobParametersConverter')
+        imports.addImports("org.springframework.batch.repeat.RepeatStatus",
+                "org.springframework.batch.core.scope.context.ChunkContext",
+                "org.springframework.batch.core.step.tasklet.Tasklet",
+                "org.springframework.batch.core.configuration.annotation.StepScope",
+                "org.springframework.batch.core.configuration.annotation.JobBuilderFactory",
+                "org.springframework.batch.core.configuration.annotation.StepBuilderFactory",
+                "org.springframework.batch.core.configuration.annotation.EnableBatchProcessing",
+                "org.springframework.batch.core.Step", "org.springframework.batch.core.StepExecution",
+                "org.springframework.batch.core.StepContribution", "org.springframework.batch.core.Job",
+                "org.springframework.batch.core.JobExecution", "org.springframework.batch.core.JobParameter",
+                "org.springframework.batch.core.JobParameters", "org.springframework.batch.core.launch.JobLauncher",
+                "org.springframework.batch.core.converter.JobParametersConverter",
+                "org.springframework.batch.core.converter.DefaultJobParametersConverter");
     }
 
 }

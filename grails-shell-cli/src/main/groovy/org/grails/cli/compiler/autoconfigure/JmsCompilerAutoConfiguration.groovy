@@ -16,16 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.CompilationFailedException
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring JMS.
@@ -34,25 +34,27 @@ import org.grails.cli.compiler.DependencyCustomizer
  * @author Stephane Nicoll
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class JmsCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
         return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableJms') ||
-                AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableJmsMessaging')
+                AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableJmsMessaging');
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) throws CompilationFailedException {
-        dependencies.add('spring-jms', 'javax.jms-api')
+        dependencies.add('spring-jms', 'javax.jms-api');
     }
 
     @Override
     void applyImports(ImportCustomizer imports) throws CompilationFailedException {
         imports.addStarImports('javax.jms', 'org.springframework.jms.annotation', 'org.springframework.jms.config',
                 'org.springframework.jms.core', 'org.springframework.jms.listener',
-                'org.springframework.jms.listener.adapter')
+                'org.springframework.jms.listener.adapter');
     }
 
 }
