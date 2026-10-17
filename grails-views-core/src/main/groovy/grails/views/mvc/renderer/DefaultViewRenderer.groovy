@@ -22,6 +22,7 @@ package grails.views.mvc.renderer
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 
+import org.springframework.http.ProblemDetail
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.view.AbstractUrlBasedView
 
@@ -65,6 +66,11 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
 
     @Override
     void render(Object object, RenderContext context) {
+        if (object instanceof ProblemDetail) {
+            // A problem carries its own status and content type, which rendering a view would replace
+            defaultRenderer.render(object, context)
+            return
+        }
         def arguments = context.arguments
         def ct = arguments?.contentType
 

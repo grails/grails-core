@@ -1,0 +1,75 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *    https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+package grails.plugin.json.renderer
+
+import org.springframework.http.ProblemDetail
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.ModelAndView
+
+import grails.plugin.json.view.mvc.JsonViewResolver
+import grails.rest.render.Renderer
+import grails.util.GrailsWebMockUtil
+import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.web.util.GrailsApplicationAttributes
+import spock.lang.Specification
+
+class JsonViewJsonRendererSpec extends Specification {
+
+    Renderer defaultRenderer = Mock(Renderer)
+
+    JsonViewJsonRenderer<Object> renderer = new JsonViewJsonRenderer<Object>(Object, new JsonViewResolver(), null, null,
+            defaultRenderer)
+
+    ModelAndView modelAndView = new ModelAndView()
+
+    void cleanup() {
+        RequestContextHolder.resetRequestAttributes()
+    }
+
+    void 'a view renders an object when one exists for the action'() {
+        given:
+        def context = context()
+
+        when:
+        renderer.render([title: 'Grails'], context)
+
+        then:
+        0 * defaultRenderer.render(_, _)
+        modelAndView.view != null
+    }
+
+    void 'a ProblemDetail is written by the default renderer, even when a view exists for the action'() {
+        given:
+        def context = context()
+        def problem = ProblemDetail.forStatus(422)
+
+        when:
+        renderer.render(problem, context)
+
+        then: 'the problem keeps its status and content type rather than becoming the model of the view'
+        1 * defaultRenderer.render(problem, context)
+        modelAndView.view == null
+    }
+
+    private ServletRenderContext context() {
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
+        new ServletRenderContext(webRequest, [view: '/foo'])
+    }
+}
