@@ -31,8 +31,8 @@ Activate this skill when developing with Grails, including:
 ## Technology Stack
 
 Grails is built on:
-- **Spring Boot**: 4.1.x
-- **Spring Framework**: 7.0.x
+- **Spring Boot**: 4.2.x
+- **Spring Framework**: 7.1.x
 - **Groovy**: 6.0.x
 - **Gradle**: 9.7 or later
 - **Spock**: 2.5-groovy-6.0
@@ -781,6 +781,9 @@ implementation 'org.apache.grails.plugins:grails-cache:7.0.0'
 
 // Async support
 implementation 'org.apache.grails.plugins:grails-async:7.0.0'
+
+// AI models through Spring AI (Grails 8.1+); see the grails-ai-developer skill
+implementation 'org.apache.grails:grails-spring-ai'
 
 // Fields plugin for form rendering
 implementation 'org.apache.grails.plugins:grails-fields:7.0.0'

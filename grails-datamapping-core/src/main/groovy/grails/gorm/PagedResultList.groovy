@@ -16,11 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gorm
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.gorm;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import org.grails.datastore.mapping.query.Query
+import org.grails.datastore.mapping.query.Query;
 
 /**
  * A result list implementation that provides an additional property called 'totalCount' to obtain the total number of
@@ -29,179 +30,181 @@ import org.grails.datastore.mapping.query.Query
  * @author Graeme Rocher
  * @since 1.0
  */
-@SuppressWarnings(['rawtypes', 'unchecked'])
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'rawtypes', 'unchecked'])
 @CompileStatic
 class PagedResultList<E> implements PagedList<E> {
 
-    private static final long serialVersionUID = -5820655628956173929L
+    private static final long serialVersionUID = -5820655628956173929L;
 
-    private final Query query
-    protected List<E> resultList
-    protected int totalCount = Integer.MIN_VALUE
+    private final Query query;
+    protected List<E> resultList;
+    protected int totalCount = Integer.MIN_VALUE;
 
     PagedResultList(Query query) {
-        this.query = query
-        this.resultList = query == null ? Collections.<E> emptyList() : query.list()
+        this.query = query;
+        this.resultList = query == null ? Collections.<E>emptyList() : query.list();
     }
 
     @Override
     List<E> getResultList() {
-        return resultList
+        return resultList;
     }
 
     Query getQuery() {
-        return query
+        return query;
     }
 
     @Override
     int getMax() {
         if (query == null) {
-            return -1
+            return -1;
         }
-        Integer max = query.getMax()
-        return max != null ? max : -1
+        Integer max = query.getMax();
+        return max != null ? max : -1;
     }
 
     @Override
     int getOffset() {
         if (query == null) {
-            return 0
+            return 0;
         }
-        Integer offset = query.getOffset()
-        return offset != null ? offset : 0
+        Integer offset = query.getOffset();
+        return offset != null ? offset : 0;
     }
 
     /**
      * @return The total number of records for this query
      */
     int getTotalCount() {
-        initialize()
-        return totalCount
+        initialize();
+        return totalCount;
     }
 
     E get(int i) {
-        return resultList.get(i)
+        return resultList.get(i);
     }
 
     E set(int i, E o) {
-        return resultList.set(i, o)
+        return resultList.set(i, o);
     }
 
     E remove(int i) {
-        return resultList.remove(i)
+        return resultList.remove(i);
     }
 
     int indexOf(Object o) {
-        return resultList.indexOf(o)
+        return resultList.indexOf(o);
     }
 
     int lastIndexOf(Object o) {
-        return resultList.lastIndexOf(o)
+        return resultList.lastIndexOf(o);
     }
 
     ListIterator<E> listIterator() {
-        return resultList.listIterator()
+        return resultList.listIterator();
     }
 
     ListIterator<E> listIterator(int index) {
-        return resultList.listIterator(index)
+        return resultList.listIterator(index);
     }
 
     List<E> subList(int fromIndex, int toIndex) {
-        return resultList.subList(fromIndex, toIndex)
+        return resultList.subList(fromIndex, toIndex);
     }
 
     void add(int i, E o) {
-        resultList.add(i, o)
+        resultList.add(i, o);
     }
 
     protected void initialize() {
         if (totalCount == Integer.MIN_VALUE) {
             if (query == null) {
-                totalCount = 0
+                totalCount = 0;
             }
             else {
-                Query newQuery = (Query) query.clone()
-                newQuery.offset(0)
-                newQuery.max(-1)
-                newQuery.clearOrders()
-                newQuery.projections().count()
-                Number result = (Number) newQuery.singleResult()
-                totalCount = result == null ? 0 : result.intValue()
+                Query newQuery = (Query) query.clone();
+                newQuery.offset(0);
+                newQuery.max(-1);
+                newQuery.clearOrders();
+                newQuery.projections().count();
+                Number result = (Number) newQuery.singleResult();
+                totalCount = result == null ? 0 : result.intValue();
             }
         }
     }
 
     int size() {
-        return resultList.size()
+        return resultList.size();
     }
 
     boolean isEmpty() {
-        return size() == 0
+        return size() == 0;
     }
 
     boolean contains(Object o) {
-        return resultList.contains(o)
+        return resultList.contains(o);
     }
 
     Iterator<E> iterator() {
-        return resultList.iterator()
+        return resultList.iterator();
     }
 
     Object[] toArray() {
-        return resultList.toArray()
+        return resultList.toArray();
     }
 
     def <T> T[] toArray(T[] a) {
-        return resultList.toArray(a)
+        return resultList.toArray(a);
     }
 
     boolean add(E e) {
-        return resultList.add(e)
+        return resultList.add(e);
     }
 
     boolean remove(Object o) {
-        return resultList.remove(o)
+        return resultList.remove(o);
     }
 
     boolean containsAll(Collection<?> c) {
-        return resultList.containsAll(c)
+        return resultList.containsAll(c);
     }
 
     boolean addAll(Collection<? extends E> c) {
-        return resultList.addAll(c)
+        return resultList.addAll(c);
     }
 
     boolean addAll(int index, Collection<? extends E> c) {
-        return resultList.addAll(index, c)
+        return resultList.addAll(index, c);
     }
 
     boolean removeAll(Collection<?> c) {
-        return resultList.removeAll(c)
+        return resultList.removeAll(c);
     }
 
     boolean retainAll(Collection<?> c) {
-        return resultList.retainAll(c)
+        return resultList.retainAll(c);
     }
 
     void clear() {
-        resultList.clear()
+        resultList.clear();
     }
 
     boolean equals(Object o) {
-        return resultList.equals(o)
+        return resultList.equals(o);
     }
 
     int hashCode() {
-        return resultList.hashCode()
+        return resultList.hashCode();
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
+
         // find the total count if it hasn't been done yet so when this is deserialized
         // the null GrailsHibernateTemplate won't be an issue
-        getTotalCount()
+        getTotalCount();
 
-        out.defaultWriteObject()
+        out.defaultWriteObject();
     }
 
 }

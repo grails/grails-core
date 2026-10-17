@@ -16,17 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
-import org.grails.cli.groovy.EnableGroovyTemplates
-import org.grails.cli.groovy.GroovyTemplate
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
+import org.grails.cli.groovy.EnableGroovyTemplates;
+import org.grails.cli.groovy.GroovyTemplate;
 
 /**
  * {@link CompilerAutoConfiguration} for Groovy Templates (outside MVC).
@@ -34,24 +34,26 @@ import org.grails.cli.groovy.GroovyTemplate
  * @author Dave Syer
  * @since 1.1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class GroovyTemplatesCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableGroovyTemplates')
+        return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableGroovyTemplates');
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
-        dependencies.ifAnyMissingClasses('groovy.text.TemplateEngine').add('groovy-templates')
+        dependencies.ifAnyMissingClasses('groovy.text.TemplateEngine').add('groovy-templates');
     }
 
     @Override
     void applyImports(ImportCustomizer imports) {
-        imports.addStarImports('groovy.text')
-        imports.addImports(EnableGroovyTemplates.getCanonicalName())
-        imports.addStaticImport(GroovyTemplate.getName(), 'template')
+        imports.addStarImports('groovy.text');
+        imports.addImports(EnableGroovyTemplates.getCanonicalName());
+        imports.addStaticImport(GroovyTemplate.getName(), 'template');
     }
 
 }
