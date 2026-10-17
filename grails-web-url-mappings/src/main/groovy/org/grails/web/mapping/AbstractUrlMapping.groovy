@@ -16,18 +16,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.mapping
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.mapping;
 
-import jakarta.servlet.ServletContext
+import jakarta.servlet.ServletContext;
 
-import groovy.transform.CompileStatic
-import org.springframework.context.ApplicationContext
-import org.springframework.web.context.WebApplicationContext
+import groovy.transform.CompileStatic;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
-import grails.core.GrailsApplication
-import grails.gorm.validation.Constrained
-import grails.gorm.validation.ConstrainedProperty
-import grails.web.mapping.UrlMapping
+import grails.core.GrailsApplication;
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
+import grails.web.mapping.UrlMapping;
 
 /**
  * Abstract UrlMapping implementation that provides common basic functionality.
@@ -35,25 +36,27 @@ import grails.web.mapping.UrlMapping
  * @author Graeme Rocher
  * @since 0.5.5
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 abstract class AbstractUrlMapping implements UrlMapping {
 
-    protected final ConstrainedProperty[] constraints
-    protected Object controllerName
-    protected Object actionName
-    protected Object namespace
-    protected Object pluginName
-    protected Object viewName
-    protected Object forwardURI
-    protected Object redirectInfo
-    protected ServletContext servletContext
-    protected GrailsApplication grailsApplication
-    protected Map<String, Object> parameterValues = Collections.emptyMap()
-    protected boolean parseRequest
-    protected String mappingName
-    protected String httpMethod = ANY_HTTP_METHOD
-    protected String version = ANY_VERSION
-    protected Integer pluginIndex
+    protected final ConstrainedProperty[] constraints;
+    protected Object controllerName;
+    protected Object actionName;
+    protected Object namespace;
+    protected Object pluginName;
+    protected Object viewName;
+    protected Object forwardURI;
+    protected Object redirectInfo;
+    protected ServletContext servletContext;
+    protected GrailsApplication grailsApplication;
+    protected Map<String, Object> parameterValues = Collections.emptyMap();
+    protected boolean parseRequest;
+    protected String mappingName;
+    protected String httpMethod = ANY_HTTP_METHOD;
+    protected String version = ANY_VERSION;
+    protected Integer pluginIndex;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -64,127 +67,127 @@ abstract class AbstractUrlMapping implements UrlMapping {
      * @param grailsApplication The GrailsApplication instance
      */
     AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
-        this.controllerName = controllerName
-        this.actionName = actionName
-        this.namespace = namespace
-        this.pluginName = pluginName
-        this.constraints = constraints
-        this.viewName = viewName
-        setGrailsApplication(grailsApplication)
-        this.redirectInfo = redirectInfo
+        this.controllerName = controllerName;
+        this.actionName = actionName;
+        this.namespace = namespace;
+        this.pluginName = pluginName;
+        this.constraints = constraints;
+        this.viewName = viewName;
+        setGrailsApplication(grailsApplication);
+        this.redirectInfo = redirectInfo;
     }
 
     private void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication
+        this.grailsApplication = grailsApplication;
         if (grailsApplication != null) {
 
-            final ApplicationContext applicationContext = grailsApplication.getMainContext()
+            final ApplicationContext applicationContext = grailsApplication.getMainContext();
             if (applicationContext instanceof WebApplicationContext) {
-                this.servletContext = ((WebApplicationContext) applicationContext).getServletContext()
+                this.servletContext = ((WebApplicationContext) applicationContext).getServletContext();
             }
         }
     }
 
     protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
-        this.viewName = viewName
-        this.constraints = constraints
-        this.grailsApplication = grailsApplication
-        setGrailsApplication(grailsApplication)
+        this.viewName = viewName;
+        this.constraints = constraints;
+        this.grailsApplication = grailsApplication;
+        setGrailsApplication(grailsApplication);
     }
 
     protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
-        this.forwardURI = uri
-        this.constraints = constraints
-        this.grailsApplication = grailsApplication
-        setGrailsApplication(grailsApplication)
+        this.forwardURI = uri;
+        this.constraints = constraints;
+        this.grailsApplication = grailsApplication;
+        setGrailsApplication(grailsApplication);
     }
 
     @Override
     String getHttpMethod() {
-        return httpMethod
+        return httpMethod;
     }
 
     @Override
     String getVersion() {
-        return version
+        return version;
     }
 
     /**
      * @see UrlMapping#getConstraints()
      */
     Constrained[] getConstraints() {
-        return constraints
+        return constraints;
     }
 
     /**
      * @see UrlMapping#getControllerName()
      */
     Object getControllerName() {
-        return controllerName
+        return controllerName;
     }
 
     /**
      * @see grails.web.mapping.UrlMapping#getActionName()
      */
     Object getActionName() {
-        return actionName
+        return actionName;
     }
 
     Object getPluginName() {
-        return pluginName
+        return pluginName;
     }
 
     Object getNamespace() {
-        return namespace
+        return namespace;
     }
 
     /**
      * @see grails.web.mapping.UrlMapping#getViewName()
      */
     Object getViewName() {
-        return viewName
+        return viewName;
     }
 
     void setParameterValues(Map<String, Object> parameterValues) {
-        this.parameterValues = Collections.unmodifiableMap(parameterValues)
+        this.parameterValues = Collections.unmodifiableMap(parameterValues);
     }
 
     void setParseRequest(boolean shouldParse) {
-        this.parseRequest = shouldParse
+        this.parseRequest = shouldParse;
     }
 
     String getMappingName() {
-        return mappingName
+        return mappingName;
     }
 
     void setMappingName(String name) {
-        mappingName = name
+        mappingName = name;
     }
 
     boolean hasRuntimeVariable(String name) {
         if (constraints != null) {
             for (int i = 0; i < constraints.length; i++) {
-                ConstrainedProperty cp = constraints[i]
-                if (cp.getPropertyName().equals(name)) return true
+                ConstrainedProperty cp = constraints[i];
+                if (cp.getPropertyName().equals(name)) return true;
             }
         }
-        return false
+        return false;
     }
 
     Object getRedirectInfo() {
-        return redirectInfo
+        return redirectInfo;
     }
 
     void setPluginIndex(int pluginIndex) {
-        this.pluginIndex = pluginIndex
+        this.pluginIndex = pluginIndex;
     }
 
     Integer getPluginIndex() {
-        return this.pluginIndex
+        return this.pluginIndex;
     }
 
     boolean isDefinedInPlugin() {
-        return pluginIndex != null
+        return pluginIndex != null;
     }
 
 }
