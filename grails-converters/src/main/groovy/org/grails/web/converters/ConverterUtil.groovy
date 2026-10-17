@@ -16,24 +16,25 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.converters
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.converters;
 
-import java.lang.reflect.Array
-import java.lang.reflect.Constructor
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
-import org.codehaus.groovy.runtime.NullObject
-import org.codehaus.groovy.runtime.ResourceGroovyMethods
-import org.codehaus.groovy.runtime.StringGroovyMethods
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.NullObject;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
-import org.springframework.beans.BeanWrapper
-import org.springframework.beans.BeanWrapperImpl
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-import org.grails.web.converters.exceptions.ConverterException
+import org.grails.web.converters.exceptions.ConverterException;
 
 /**
  * A utility class for creating and dealing with Converter objects.
@@ -41,120 +42,121 @@ import org.grails.web.converters.exceptions.ConverterException
  * @author Siegfried Puchbauer
  * @since 0.6
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class ConverterUtil {
 
-    private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = 'org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper'
+    private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = 'org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper';
 
-    private static final Object[] EMPTY_OBJECT_ARRAY = []
+    private static final Object[] EMPTY_OBJECT_ARRAY = [];
 
     private ConverterUtil() {
         // static only
     }
 
     static BeanWrapper createBeanWrapper(Object o) {
-        BeanWrapper beanWrapper
+        BeanWrapper beanWrapper;
         try {
-            Class<?> c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS, true, Thread.currentThread().getContextClassLoader())
-            Constructor<?> init = c.getConstructor([Object] as Class[])
-            beanWrapper = (BeanWrapper) init.newInstance([o] as Object[])
+            Class<?> c = Class.forName(PERSISTENCE_BEAN_WRAPPER_CLASS, true, Thread.currentThread().getContextClassLoader());
+            Constructor<?> init = c.getConstructor([Object] as Class[]);
+            beanWrapper = (BeanWrapper) init.newInstance([o] as Object[]);
         }
         catch (Exception e) {
-            beanWrapper = new BeanWrapperImpl(o)
+            beanWrapper = new BeanWrapperImpl(o);
         }
-        return beanWrapper
+        return beanWrapper;
     }
 
     static Object createConverter(Class<?> converterClass, Object target) throws ConverterException {
-        return createConverter(converterClass, target, null)
+        return createConverter(converterClass, target, null);
     }
 
     static <T> T createConverter(Class<T> converterClass, Object target, ApplicationContext applicationContext) throws ConverterException {
         try {
-            T converter = converterClass.getDeclaredConstructor().newInstance()
+            T converter = converterClass.getDeclaredConstructor().newInstance();
             if (converter instanceof ApplicationContextAware && applicationContext != null) {
-                ((ApplicationContextAware) converter).setApplicationContext(applicationContext)
+                ((ApplicationContextAware) converter).setApplicationContext(applicationContext);
             }
-            ((AbstractConverter) converter).setTarget(target)
-            return converter
+            ((AbstractConverter) converter).setTarget(target);
+            return converter;
         }
         catch (Exception e) {
             throw new ConverterException('Initialization of Converter Object ' + converterClass.getName() +
-                    ' failed for target ' + target.getClass().getName(), e)
+                    ' failed for target ' + target.getClass().getName(), e);
         }
     }
 
     static String trimProxySuffix(String name) {
-        int i = name.indexOf('$$')
+        int i = name.indexOf('$$');
         if (i > -1) {
-            name = name.substring(0, i)
+            name = name.substring(0, i);
             while (name.endsWith('_')) {
-                name = name.substring(0, name.length() - 1)
+                name = name.substring(0, name.length() - 1);
             }
         }
-        return name
+        return name;
     }
 
     static boolean isConverterClass(Class<?> clazz) {
-        return Converter.isAssignableFrom(clazz)
+        return Converter.isAssignableFrom(clazz);
     }
 
     @SuppressWarnings('rawtypes')
     static Object invokeOriginalAsTypeMethod(Object delegate, Class<?> clazz) {
         if (clazz.isInstance(delegate)) {
-            return delegate
+            return delegate;
         }
 
         if (delegate instanceof NullObject) {
-            return ((NullObject) delegate).asType(clazz)
+            return ((NullObject) delegate).asType(clazz);
         }
         if (delegate instanceof Collection<?> && clazz.isArray()) {
-            int size = ((Collection<?>) delegate).size()
+            int size = ((Collection<?>) delegate).size();
             if (clazz.getComponentType() == Object) {
                 if (size == 0) {
-                    return EMPTY_OBJECT_ARRAY
+                    return EMPTY_OBJECT_ARRAY;
                 }
-                return ((Collection<?>) delegate).toArray((Object[]) Array.newInstance(clazz.getComponentType(), size))
+                return ((Collection<?>) delegate).toArray((Object[]) Array.newInstance(clazz.getComponentType(), size));
             }
             if (size == 0) {
-                return Array.newInstance(clazz.getComponentType(), 0)
+                return Array.newInstance(clazz.getComponentType(), 0);
             }
-            return DefaultTypeTransformation.asArray(delegate, clazz)
+            return DefaultTypeTransformation.asArray(delegate, clazz);
         }
 
         if (delegate instanceof Collection<?>) {
-            return DefaultGroovyMethods.asType((Collection<?>) delegate, clazz)
+            return DefaultGroovyMethods.asType((Collection<?>) delegate, clazz);
         }
 
         if (delegate instanceof Closure) {
-            return DefaultGroovyMethods.asType((Closure) delegate, clazz)
+            return DefaultGroovyMethods.asType((Closure) delegate, clazz);
         }
 
         if (delegate instanceof Map) {
-            return DefaultGroovyMethods.asType((Map) delegate, clazz)
+            return DefaultGroovyMethods.asType((Map) delegate, clazz);
         }
 
         if (delegate instanceof Number) {
-            return DefaultGroovyMethods.asType((Number) delegate, clazz)
+            return DefaultGroovyMethods.asType((Number) delegate, clazz);
         }
 
         if (delegate instanceof File) {
-            return ResourceGroovyMethods.asType((File) delegate, clazz)
+            return ResourceGroovyMethods.asType((File) delegate, clazz);
         }
 
         if (delegate instanceof String) {
-            return StringGroovyMethods.asType((String) delegate, clazz)
+            return StringGroovyMethods.asType((String) delegate, clazz);
         }
 
-        return DefaultGroovyMethods.asType(delegate, clazz)
+        return DefaultGroovyMethods.asType(delegate, clazz);
     }
 
     static ConverterException resolveConverterException(Throwable t) {
-        return t instanceof ConverterException ? (ConverterException) t : new ConverterException(t)
+        return t instanceof ConverterException ? (ConverterException) t : new ConverterException(t);
     }
 
     static Converter.CircularReferenceBehaviour resolveCircularReferenceBehaviour(String str) {
-        return Converter.CircularReferenceBehaviour.valueOf(str)
+        return Converter.CircularReferenceBehaviour.valueOf(str);
     }
-
 }

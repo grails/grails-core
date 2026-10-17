@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  'License'); you may not use this file except in compliance
+ *  "License"); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *    https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -28,37 +28,38 @@ import org.grails.datastore.mapping.model.PersistentEntity
 /**
  * @author Burt Beckwith
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class ValidationEvent extends AbstractPersistenceEvent {
 
-    private static final long serialVersionUID = 1
+    private static final long serialVersionUID = 1;
 
-    private List<?> validatedFields
+    private List<?> validatedFields;
 
     ValidationEvent(final Datastore source, final PersistentEntity entity,
             final EntityAccess entityAccess) {
-        super(source, entity, entityAccess)
+        super(source, entity, entityAccess);
     }
 
     ValidationEvent(final Datastore source, final Object entity) {
-        super(source, entity)
+        super(source, entity);
     }
 
     ValidationEvent(Object source, PersistentEntity entity, EntityAccess entityAccess) {
-        super(source, entity, entityAccess)
+        super(source, entity, entityAccess);
     }
 
     List<?> getValidatedFields() {
-        return validatedFields
+        return validatedFields;
     }
 
     void setValidatedFields(final List<?> fields) {
-        validatedFields = fields
+        validatedFields = fields;
     }
 
     @Override
     EventType getEventType() {
-        return EventType.Validation
+        return EventType.Validation;
     }
-
 }

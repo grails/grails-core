@@ -16,185 +16,188 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.taglib.encoder
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.taglib.encoder;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import org.grails.encoder.Encoder
+import org.grails.encoder.Encoder;
 
 @CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 class OutputEncodingStackAttributes {
 
-    private final Writer topWriter
-    private final Encoder staticEncoder
-    private final Encoder outEncoder
-    private final Encoder expressionEncoder
-    private final Encoder taglibEncoder
-    private final Encoder defaultTaglibEncoder
-    private final boolean allowCreate
-    private final boolean pushTop
-    private final boolean autoSync
-    private final boolean inheritPreviousEncoders
-    private final boolean replaceOnly
-    private final OutputContext outputContext
+    private final Writer topWriter;
+    private final Encoder staticEncoder;
+    private final Encoder outEncoder;
+    private final Encoder expressionEncoder;
+    private final Encoder taglibEncoder;
+    private final Encoder defaultTaglibEncoder;
+    private final boolean allowCreate;
+    private final boolean pushTop;
+    private final boolean autoSync;
+    private final boolean inheritPreviousEncoders;
+    private final boolean replaceOnly;
+    private final OutputContext outputContext;
 
     boolean isInheritPreviousEncoders() {
-        return inheritPreviousEncoders
+        return inheritPreviousEncoders;
     }
 
     boolean isReplaceOnly() {
-        return replaceOnly
+        return replaceOnly;
     }
 
     Writer getTopWriter() {
-        return topWriter
+        return topWriter;
     }
 
     Encoder getStaticEncoder() {
-        return staticEncoder
+        return staticEncoder;
     }
 
     Encoder getOutEncoder() {
-        return outEncoder
+        return outEncoder;
     }
 
     Encoder getExpressionEncoder() {
-        return expressionEncoder
+        return expressionEncoder;
     }
 
     Encoder getTaglibEncoder() {
-        return taglibEncoder
+        return taglibEncoder;
     }
 
     Encoder getDefaultTaglibEncoder() {
-        return defaultTaglibEncoder
+        return defaultTaglibEncoder;
     }
 
     boolean isAllowCreate() {
-        return allowCreate
+        return allowCreate;
     }
 
     boolean isPushTop() {
-        return pushTop
+        return pushTop;
     }
 
     boolean isAutoSync() {
-        return autoSync
+        return autoSync;
     }
 
     OutputContext getOutputContext() {
-        return outputContext
+        return outputContext;
     }
 
     static class Builder {
-        private Writer topWriter
-        private Encoder staticEncoder
-        private Encoder outEncoder
-        private Encoder expressionEncoder
-        private Encoder taglibEncoder
-        private Encoder defaultTaglibEncoder
-        private boolean allowCreate = true
-        private boolean pushTop = true
-        private boolean autoSync = true
-        private OutputContext outputContext
-        private boolean inheritPreviousEncoders = false
-        private boolean replaceOnly = false
+        private Writer topWriter;
+        private Encoder staticEncoder;
+        private Encoder outEncoder;
+        private Encoder expressionEncoder;
+        private Encoder taglibEncoder;
+        private Encoder defaultTaglibEncoder;
+        private boolean allowCreate = true;
+        private boolean pushTop = true;
+        private boolean autoSync = true;
+        private OutputContext outputContext;
+        private boolean inheritPreviousEncoders = false;
+        private boolean replaceOnly = false;
 
         Builder() {
         }
 
         Builder(OutputEncodingStackAttributes attributes) {
-            this.topWriter = attributes.topWriter
-            this.staticEncoder = attributes.staticEncoder
-            this.outEncoder = attributes.outEncoder
-            this.expressionEncoder = attributes.expressionEncoder
-            this.taglibEncoder = attributes.taglibEncoder
-            this.defaultTaglibEncoder = attributes.defaultTaglibEncoder
-            this.allowCreate = attributes.allowCreate
-            this.pushTop = attributes.pushTop
-            this.autoSync = attributes.autoSync
-            this.outputContext = attributes.outputContext
-            this.inheritPreviousEncoders = attributes.inheritPreviousEncoders
-            this.replaceOnly = attributes.replaceOnly
+            this.topWriter = attributes.topWriter;
+            this.staticEncoder = attributes.staticEncoder;
+            this.outEncoder = attributes.outEncoder;
+            this.expressionEncoder = attributes.expressionEncoder;
+            this.taglibEncoder = attributes.taglibEncoder;
+            this.defaultTaglibEncoder = attributes.defaultTaglibEncoder;
+            this.allowCreate = attributes.allowCreate;
+            this.pushTop = attributes.pushTop;
+            this.autoSync = attributes.autoSync;
+            this.outputContext = attributes.outputContext;
+            this.inheritPreviousEncoders = attributes.inheritPreviousEncoders;
+            this.replaceOnly = attributes.replaceOnly;
         }
 
         Builder topWriter(Writer topWriter) {
-            this.topWriter = topWriter
-            return this
+            this.topWriter = topWriter;
+            return this;
         }
 
         Builder staticEncoder(Encoder staticEncoder) {
-            this.staticEncoder = staticEncoder
-            return this
+            this.staticEncoder = staticEncoder;
+            return this;
         }
 
         Builder outEncoder(Encoder outEncoder) {
-            this.outEncoder = outEncoder
-            return this
+            this.outEncoder = outEncoder;
+            return this;
         }
 
         Builder expressionEncoder(Encoder expressionEncoder) {
-            this.expressionEncoder = expressionEncoder
-            return this
+            this.expressionEncoder = expressionEncoder;
+            return this;
         }
 
         Builder taglibEncoder(Encoder taglibEncoder) {
-            this.taglibEncoder = taglibEncoder
-            return this
+            this.taglibEncoder = taglibEncoder;
+            return this;
         }
 
         Builder defaultTaglibEncoder(Encoder defaultTaglibEncoder) {
-            this.defaultTaglibEncoder = defaultTaglibEncoder
-            return this
+            this.defaultTaglibEncoder = defaultTaglibEncoder;
+            return this;
         }
 
         Builder allowCreate(boolean allowCreate) {
-            this.allowCreate = allowCreate
-            return this
+            this.allowCreate = allowCreate;
+            return this;
         }
 
         Builder pushTop(boolean pushTop) {
-            this.pushTop = pushTop
-            return this
+            this.pushTop = pushTop;
+            return this;
         }
 
         Builder autoSync(boolean autoSync) {
-            this.autoSync = autoSync
-            return this
+            this.autoSync = autoSync;
+            return this;
         }
 
         Builder inheritPreviousEncoders(boolean inheritPreviousEncoders) {
-            this.inheritPreviousEncoders = inheritPreviousEncoders
-            return this
+            this.inheritPreviousEncoders = inheritPreviousEncoders;
+            return this;
         }
 
         Builder replaceOnly(boolean replaceOnly) {
-            this.replaceOnly = replaceOnly
-            return this
+            this.replaceOnly = replaceOnly;
+            return this;
         }
 
         Builder outputContext(OutputContext outputContext) {
-            this.outputContext = outputContext
-            return this
+            this.outputContext = outputContext;
+            return this;
         }
 
         OutputEncodingStackAttributes build() {
-            return new OutputEncodingStackAttributes(this)
+            return new OutputEncodingStackAttributes(this);
         }
     }
 
     private OutputEncodingStackAttributes(Builder builder) {
-        this.topWriter = builder.topWriter
-        this.staticEncoder = builder.staticEncoder
-        this.outEncoder = builder.outEncoder
-        this.taglibEncoder = builder.taglibEncoder
-        this.defaultTaglibEncoder = builder.defaultTaglibEncoder
-        this.expressionEncoder = builder.expressionEncoder
-        this.allowCreate = builder.allowCreate
-        this.pushTop = builder.pushTop
-        this.autoSync = builder.autoSync
-        this.outputContext = builder.outputContext
-        this.inheritPreviousEncoders = builder.inheritPreviousEncoders
-        this.replaceOnly = builder.replaceOnly
+        this.topWriter = builder.topWriter;
+        this.staticEncoder = builder.staticEncoder;
+        this.outEncoder = builder.outEncoder;
+        this.taglibEncoder = builder.taglibEncoder;
+        this.defaultTaglibEncoder = builder.defaultTaglibEncoder;
+        this.expressionEncoder = builder.expressionEncoder;
+        this.allowCreate = builder.allowCreate;
+        this.pushTop = builder.pushTop;
+        this.autoSync = builder.autoSync;
+        this.outputContext = builder.outputContext;
+        this.inheritPreviousEncoders = builder.inheritPreviousEncoders;
+        this.replaceOnly = builder.replaceOnly;
     }
 }

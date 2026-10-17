@@ -16,13 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.taglib.discovery
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.taglib.discovery;
 
-import java.lang.reflect.Field
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 /**
  * A tag library read from its compiled class, as an application reads one when it registers it.
@@ -30,43 +31,45 @@ import groovy.transform.CompileStatic
  * @since 8.0.0
  */
 @CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 final class ReflectedTagLibraryView implements TagLibraryView {
 
-    private final Class<?> type
+    private final Class<?> type;
 
     ReflectedTagLibraryView(Class<?> type) {
-        this.type = type
+        this.type = type;
     }
 
     @Override
     List<TagMethodView> declaredMethods() {
-        List<TagMethodView> declared = new ArrayList<>()
+        List<TagMethodView> declared = new ArrayList<>();
         for (Method method in type.getDeclaredMethods()) {
-            declared.add(new ReflectedTagMethodView(method))
+            declared.add(new ReflectedTagMethodView(method));
         }
-        return declared
+        return declared;
     }
 
     @Override
     List<String> declaredClosureFieldNames() {
-        List<String> names = new ArrayList<>()
+        List<String> names = new ArrayList<>();
         for (Field field in type.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) {
-                continue
+                continue;
             }
             if (Closure.isAssignableFrom(field.getType())) {
-                names.add(field.getName())
+                names.add(field.getName());
             }
         }
-        return names
+        return names;
     }
 
     @Override
     TagLibraryView superclassView() {
-        Class<?> superClass = type.getSuperclass()
+        Class<?> superClass = type.getSuperclass();
         if (superClass == null || superClass == Object) {
-            return null
+            return null;
         }
-        return new ReflectedTagLibraryView(superClass)
+        return new ReflectedTagLibraryView(superClass);
     }
 }

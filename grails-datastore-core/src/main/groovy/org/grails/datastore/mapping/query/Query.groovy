@@ -18,16 +18,18 @@
  */
 package org.grails.datastore.mapping.query
 
+import groovy.transform.CompileStatic
+
 import java.util.regex.Pattern
 
-import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
 import jakarta.persistence.FetchType
 import jakarta.persistence.FlushModeType
 import jakarta.persistence.LockModeType
 import jakarta.persistence.criteria.JoinType
+
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.util.Assert
@@ -50,62 +52,61 @@ import org.grails.datastore.mapping.query.event.PreQueryEvent
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['rawtypes', 'unchecked', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings(['rawtypes', 'unchecked'])
 abstract class Query implements Cloneable, Serializable {
 
-    protected final transient PersistentEntity entity
-    protected final transient Session session
-    protected transient Log logger = LogFactory.getLog(this.getClass())
+    protected final transient PersistentEntity entity;
+    protected final transient Session session;
+    protected transient Log logger = LogFactory.getLog(this.getClass());
 
-    protected Junction criteria = new Conjunction()
-    protected ProjectionList projections = new ProjectionList()
-    protected Integer max
-    protected Integer offset
-    protected List<Order> orderBy = new ArrayList<>()
-    protected boolean uniqueResult
-    protected Map<String, FetchType> fetchStrategies = new HashMap<>()
-    protected Map<String, JoinType> joinTypes = new HashMap<>()
-    protected Boolean queryCache
-    protected LockModeType lockResult
+    protected Junction criteria = new Conjunction();
+    protected ProjectionList projections = new ProjectionList();
+    protected Integer max;
+    protected Integer offset;
+    protected List<Order> orderBy = new ArrayList<>();
+    protected boolean uniqueResult;
+    protected Map<String, FetchType> fetchStrategies = new HashMap<>();
+    protected Map<String, JoinType> joinTypes = new HashMap<>();
+    protected Boolean queryCache;
+    protected LockModeType lockResult;
 
     protected Query(Session session, PersistentEntity entity) {
-        this.entity = entity
-        this.session = session
+        this.entity = entity;
+        this.session = session;
     }
 
     @Override
     Object clone() {
-        Session currentSession = getSession()
-        if (currentSession == null) {
-            throw new IllegalStateException('Cannot clone a stateless query')
+        Session session = getSession();
+        if (session == null) throw new IllegalStateException('Cannot clone a stateless query');
+        Query newQuery = session.createQuery(entity.getJavaClass());
+        for (Criterion criterion : criteria.getCriteria()) {
+            newQuery.add(criterion);
         }
-        Query newQuery = currentSession.createQuery(entity.getJavaClass())
-        for (Criterion criterion in criteria.getCriteria()) {
-            newQuery.add(criterion)
-        }
-        return newQuery
+        return newQuery;
     }
 
     /**
      * @return The maximum number of results to return
      */
     Integer getMax() {
-        return max
+        return max;
     }
 
     /**
      * @return The offset of the first result
      */
     Integer getOffset() {
-        return offset
+        return offset;
     }
 
     /**
      * @return The criteria defined by this query
      */
     Junction getCriteria() {
-        return criteria
+        return criteria;
     }
 
     /**
@@ -115,8 +116,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The query
      */
     Query join(String property) {
-        fetchStrategies.put(property, FetchType.EAGER)
-        return this
+        fetchStrategies.put(property, FetchType.EAGER);
+        return this;
     }
 
     /**
@@ -126,9 +127,9 @@ abstract class Query implements Cloneable, Serializable {
      * @return The query
      */
     Query join(String property, JoinType joinType) {
-        fetchStrategies.put(property, FetchType.EAGER)
-        joinTypes.put(property, joinType)
-        return this
+        fetchStrategies.put(property, FetchType.EAGER);
+        joinTypes.put(property, joinType);
+        return this;
     }
 
     /**
@@ -138,8 +139,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The query
      */
     Query select(String property) {
-        fetchStrategies.put(property, FetchType.LAZY)
-        return this
+        fetchStrategies.put(property, FetchType.LAZY);
+        return this;
     }
 
     /**
@@ -149,8 +150,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The query
      */
     Query cache(boolean cache) {
-        queryCache = cache
-        return this
+        queryCache = cache;
+        return this;
     }
 
     /**
@@ -160,8 +161,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The query
      */
     Query lock(boolean lock) {
-        lockResult = LockModeType.PESSIMISTIC_WRITE
-        return this
+        lockResult = LockModeType.PESSIMISTIC_WRITE;
+        return this;
     }
 
     /**
@@ -171,12 +172,12 @@ abstract class Query implements Cloneable, Serializable {
      * @return The query
      */
     Query lock(LockModeType lock) {
-        lockResult = lock
-        return this
+        lockResult = lock;
+        return this;
     }
 
     ProjectionList projections() {
-        return projections
+        return projections;
     }
 
     /**
@@ -185,8 +186,8 @@ abstract class Query implements Cloneable, Serializable {
      * @param criterion The criterion instance
      */
     void add(Criterion criterion) {
-        Junction currentJunction = criteria
-        add(currentJunction, criterion)
+        Junction currentJunction = criteria;
+        add(currentJunction, criterion);
     }
 
     /**
@@ -196,21 +197,21 @@ abstract class Query implements Cloneable, Serializable {
      * @param criterion The criterion instance
      */
     void add(Junction currentJunction, Criterion criterion) {
-        addToJunction(currentJunction, criterion)
+        addToJunction(currentJunction, criterion);
     }
 
     /**
      * @return The session that created the query
      */
     Session getSession() {
-        return session
+        return session;
     }
 
     /**
      * @return The PersistentEntity being query
      */
     PersistentEntity getEntity() {
-        return entity
+        return entity;
     }
 
     /**
@@ -218,8 +219,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The Junction instance
      */
     Junction disjunction() {
-        Junction currentJunction = criteria
-        return disjunction(currentJunction)
+        Junction currentJunction = criteria;
+        return disjunction(currentJunction);
     }
 
     /**
@@ -227,8 +228,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The Junction instance
      */
     Junction conjunction() {
-        Junction currentJunction = criteria
-        return conjunction(currentJunction)
+        Junction currentJunction = criteria;
+        return conjunction(currentJunction);
     }
 
     /**
@@ -236,14 +237,14 @@ abstract class Query implements Cloneable, Serializable {
      * @return The negation
      */
     Junction negation() {
-        Junction currentJunction = criteria
-        return negation(currentJunction)
+        Junction currentJunction = criteria;
+        return negation(currentJunction);
     }
 
-    private Junction negation(Junction currentJunction) {
-        Negation dis = new Negation()
-        currentJunction.add(dis)
-        return dis
+    Junction negation(Junction currentJunction) {
+        Negation dis = new Negation();
+        currentJunction.add(dis);
+        return dis;
     }
 
     /**
@@ -252,8 +253,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query max(int max) {
-        this.max = max
-        return this
+        this.max = max;
+        return this;
     }
 
     /**
@@ -262,7 +263,7 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query maxResults(int max) {
-        return this.max(max)
+        return this.max(max);
     }
 
     /**
@@ -271,8 +272,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query offset(int offset) {
-        this.offset = offset
-        return this
+        this.offset = offset;
+        return this;
     }
 
     /**
@@ -281,7 +282,7 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query firstResult(int offset) {
-        return this.offset(offset)
+        return this.offset(offset);
     }
 
     /**
@@ -291,9 +292,9 @@ abstract class Query implements Cloneable, Serializable {
      */
     Query order(Order order) {
         if (order != null) {
-            orderBy.add(order)
+            orderBy.add(order);
         }
-        return this
+        return this;
     }
 
     /**
@@ -301,8 +302,8 @@ abstract class Query implements Cloneable, Serializable {
      * Subclasses that store orders in additional structures (e.g. JPA criteria) should override this.
      */
     Query clearOrders() {
-        orderBy.clear()
-        return this
+        orderBy.clear();
+        return this;
     }
 
     /**
@@ -310,7 +311,7 @@ abstract class Query implements Cloneable, Serializable {
      * @return The order entries
      */
     List<Order> getOrderBy() {
-        return orderBy
+        return orderBy;
     }
 
     /**
@@ -321,27 +322,26 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query eq(String property, Object value) {
-        Object resolved = resolvePropertyValue(entity, property, value)
-        if (resolved.is(value)) {
-            criteria.add(Restrictions.eq(property, value))
+        Object resolved = resolvePropertyValue(entity, property, value);
+        if (resolved == value) {
+            criteria.add(Restrictions.eq(property, value));
         }
         else {
-            criteria.add(Restrictions.eq(property, resolved))
+            criteria.add(Restrictions.eq(property, resolved));
         }
-        return this
+        return this;
     }
 
-    @PackageScope
     Object resolvePropertyValue(PersistentEntity entity, String property, Object value) {
-        PersistentProperty persistentProperty = entity.getPropertyByName(property)
-        Object resolved
+        PersistentProperty persistentProperty = entity.getPropertyByName(property);
+        Object resolved;
         if (persistentProperty instanceof Embedded) {
-            resolved = value
+            resolved = value;
         }
         else {
-            resolved = resolveIdIfEntity(value)
+            resolved = resolveIdIfEntity(value);
         }
-        return resolved
+        return resolved;
     }
 
     /**
@@ -351,13 +351,13 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query allEq(Map<String, Object> values) {
-        Junction conjunction = conjunction()
-        for (String property in values.keySet()) {
-            Object value = values.get(property)
-            Object resolved = resolvePropertyValue(entity, property, value)
-            conjunction.add(Restrictions.eq(property, resolved))
+        Junction conjunction = conjunction();
+        for (String property : values.keySet()) {
+            Object value = values.get(property);
+            Object resolved = resolvePropertyValue(entity, property, value);
+            conjunction.add(Restrictions.eq(property, resolved));
         }
-        return this
+        return this;
     }
 
     /**
@@ -366,8 +366,8 @@ abstract class Query implements Cloneable, Serializable {
      * @param property The property name
     */
     Query isEmpty(String property) {
-        criteria.add(Restrictions.isEmpty(property))
-        return this
+        criteria.add(Restrictions.isEmpty(property));
+        return this;
     }
 
     /**
@@ -376,8 +376,8 @@ abstract class Query implements Cloneable, Serializable {
      * @param property The property name
     */
     Query isNotEmpty(String property) {
-        criteria.add(Restrictions.isNotEmpty(property))
-        return this
+        criteria.add(Restrictions.isNotEmpty(property));
+        return this;
     }
 
     /**
@@ -386,8 +386,8 @@ abstract class Query implements Cloneable, Serializable {
      * @param property The property name
     */
     Query isNull(String property) {
-        criteria.add(Restrictions.isNull(property))
-        return this
+        criteria.add(Restrictions.isNull(property));
+        return this;
     }
 
     /**
@@ -396,8 +396,8 @@ abstract class Query implements Cloneable, Serializable {
      * @param property The property name
     */
     Query isNotNull(String property) {
-        criteria.add(Restrictions.isNotNull(property))
-        return this
+        criteria.add(Restrictions.isNotNull(property));
+        return this;
     }
 
     /**
@@ -407,18 +407,18 @@ abstract class Query implements Cloneable, Serializable {
      * @return The Query instance
      */
     AssociationQuery createQuery(String associationName) {
-        final PersistentProperty property = entity.getPropertyByName(associationName)
+        final PersistentProperty property = entity.getPropertyByName(associationName);
         if (property == null || !(property instanceof Association)) {
             throw new InvalidDataAccessResourceUsageException('Cannot query association [' +
                   associationName + '] of class [' + entity +
-                  ']. The specified property is not an association.')
+                  ']. The specified property is not an association.');
         }
 
-        Association association = (Association) property
+        Association association = (Association) property;
 
-        final PersistentEntity associatedEntity = association.getAssociatedEntity()
+        final PersistentEntity associatedEntity = association.getAssociatedEntity();
 
-        return new AssociationQuery(session, associatedEntity, association)
+        return new AssociationQuery(session, associatedEntity, association);
     }
 
     /**
@@ -428,10 +428,10 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query idEq(Object value) {
-        Object resolved = resolveIdIfEntity(value)
+        value = resolveIdIfEntity(value);
 
-        criteria.add(Restrictions.idEq(resolved))
-        return this
+        criteria.add(Restrictions.idEq(value));
+        return this;
     }
 
     /**
@@ -442,8 +442,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query gt(String property, Object value) {
-        criteria.add(Restrictions.gt(property, value))
-        return this
+        criteria.add(Restrictions.gt(property, value));
+        return this;
     }
 
     /**
@@ -454,8 +454,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query gte(String property, Object value) {
-        criteria.add(Restrictions.gte(property, value))
-        return this
+        criteria.add(Restrictions.gte(property, value));
+        return this;
     }
 
     /**
@@ -466,8 +466,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query lte(String property, Object value) {
-        criteria.add(Restrictions.lte(property, value))
-        return this
+        criteria.add(Restrictions.lte(property, value));
+        return this;
     }
 
     /**
@@ -478,7 +478,7 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query ge(String property, Object value) {
-        return gte(property, value)
+        return gte(property, value);
     }
 
     /**
@@ -489,7 +489,7 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query le(String property, Object value) {
-        return lte(property, value)
+        return lte(property, value);
     }
 
     /**
@@ -500,8 +500,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query lt(String property, Object value) {
-        criteria.add(Restrictions.lt(property, value))
-        return this
+        criteria.add(Restrictions.lt(property, value));
+        return this;
     }
 
     /**
@@ -512,8 +512,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query in(String property, List values) {
-        criteria.add(Restrictions.in(property, values))
-        return this
+        criteria.add(Restrictions.in(property, values));
+        return this;
     }
 
     /**
@@ -525,8 +525,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query between(String property, Object start, Object end) {
-        criteria.add(Restrictions.between(property, start, end))
-        return this
+        criteria.add(Restrictions.between(property, start, end));
+        return this;
     }
 
     /**
@@ -537,8 +537,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query like(String property, String expr) {
-        criteria.add(Restrictions.like(property, expr))
-        return this
+        criteria.add(Restrictions.like(property, expr));
+        return this;
     }
 
     /**
@@ -549,8 +549,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query ilike(String property, String expr) {
-        criteria.add(Restrictions.ilike(property, expr))
-        return this
+        criteria.add(Restrictions.ilike(property, expr));
+        return this;
     }
 
     /**
@@ -561,8 +561,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query rlike(String property, String expr) {
-        criteria.add(Restrictions.rlike(property, expr))
-        return this
+        criteria.add(Restrictions.rlike(property, expr));
+        return this;
     }
 
     /**
@@ -573,10 +573,10 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query and(Criterion a, Criterion b) {
-        Assert.notNull(a, 'Left hand side of AND cannot be null')
-        Assert.notNull(b, 'Right hand side of AND cannot be null')
-        criteria.add(Restrictions.and(a, b))
-        return this
+        Assert.notNull(a, 'Left hand side of AND cannot be null');
+        Assert.notNull(b, 'Right hand side of AND cannot be null');
+        criteria.add(Restrictions.and(a, b));
+        return this;
     }
 
     /**
@@ -587,10 +587,10 @@ abstract class Query implements Cloneable, Serializable {
      * @return This query instance
      */
     Query or(Criterion a, Criterion b) {
-        Assert.notNull(a, 'Left hand side of AND cannot be null')
-        Assert.notNull(b, 'Right hand side of AND cannot be null')
-        criteria.add(Restrictions.or(a, b))
-        return this
+        Assert.notNull(a, 'Left hand side of AND cannot be null');
+        Assert.notNull(b, 'Right hand side of AND cannot be null');
+        criteria.add(Restrictions.or(a, b));
+        return this;
     }
 
     /**
@@ -599,8 +599,8 @@ abstract class Query implements Cloneable, Serializable {
      * @return The results
      */
     List list() {
-        uniqueResult = false
-        return doList()
+        uniqueResult = false;
+        return doList();
     }
 
     /**
@@ -608,9 +608,9 @@ abstract class Query implements Cloneable, Serializable {
      * @return The result
      */
     Object singleResult() {
-        uniqueResult = true
-        List results = doList()
-        return results.isEmpty() ? null : results.get(0)
+        uniqueResult = true;
+        List results = doList();
+        return results.isEmpty() ? null : results.get(0);
     }
 
     /**
@@ -631,30 +631,30 @@ abstract class Query implements Cloneable, Serializable {
             // Hibernate 7 resolves this via HibernateQuery.countResults() using derived-table subqueries.
             logger.warn('DetachedCriteria.count() with user-defined projections cannot use a SQL count query ' +
                 'due to a datastore limitation. All grouped result rows will be loaded into memory to ' +
-                'determine the count. This may impact performance on large result sets.')
-            return list().size()
+                'determine the count. This may impact performance on large result sets.');
+            return list().size();
         }
-        projections().count()
-        return (Number) singleResult()
+        projections().count();
+        return (Number) singleResult();
     }
 
     private List doList() {
-        flushBeforeQuery()
+        flushBeforeQuery();
 
-        ApplicationEventPublisher publisher = session.getDatastore().getApplicationEventPublisher()
+        ApplicationEventPublisher publisher = session.getDatastore().getApplicationEventPublisher();
         if (publisher != null) {
-            publisher.publishEvent(new PreQueryEvent(this))
+            publisher.publishEvent(new PreQueryEvent(this));
         }
 
-        List results = executeQuery(entity, criteria)
+        List results = executeQuery(entity, criteria);
 
         if (publisher != null) {
-            PostQueryEvent postQueryEvent = new PostQueryEvent(this, results)
-            publisher.publishEvent(postQueryEvent)
-            results = postQueryEvent.getResults()
+            PostQueryEvent postQueryEvent = new PostQueryEvent(this, results);
+            publisher.publishEvent(postQueryEvent);
+            results = postQueryEvent.getResults();
         }
 
-        return results
+        return results;
     }
 
     /**
@@ -665,7 +665,7 @@ abstract class Query implements Cloneable, Serializable {
      */
     @Deprecated
     void setUniqueResult(boolean uniqueResult) {
-        this.uniqueResult = uniqueResult
+        this.uniqueResult = uniqueResult;
     }
 
     /**
@@ -675,17 +675,17 @@ abstract class Query implements Cloneable, Serializable {
      * @return A specific strategy or lazy by default
      */
     protected FetchType fetchStrategy(String property) {
-        final FetchType fetchType = fetchStrategies.get(property)
+        final FetchType fetchType = fetchStrategies.get(property);
         if (fetchType != null) {
-            return fetchType
+            return fetchType;
         }
         else {
-            final PersistentProperty prop = entity.getPropertyByName(property)
+            final PersistentProperty prop = entity.getPropertyByName(property);
             if (prop != null) {
-                return prop.getMapping().getMappedForm().getFetchStrategy()
+                return prop.getMapping().getMappedForm().getFetchStrategy();
             }
         }
-        return FetchType.LAZY
+        return FetchType.LAZY;
     }
 
     /**
@@ -696,33 +696,33 @@ abstract class Query implements Cloneable, Serializable {
      * @param criteria The criteria
      * @return The results
      */
-    protected abstract List executeQuery(PersistentEntity entity, Junction criteria)
+    protected abstract List executeQuery(PersistentEntity entity, Junction criteria);
 
     protected Object resolveIdIfEntity(Object value) {
         // use the object id as the value if its a persistent entity
-        MappingContext mappingContext = entity.getMappingContext()
+        MappingContext mappingContext = entity.getMappingContext();
         if (mappingContext.getProxyFactory().isProxy(value)) {
-            return mappingContext.getProxyFactory().getIdentifier(value)
+            return mappingContext.getProxyFactory().getIdentifier(value);
         }
-        return mappingContext.isPersistentEntity(value) ? findInstanceId(value) : value
+        return mappingContext.isPersistentEntity(value) ? findInstanceId(value) : value;
     }
 
     private Serializable findInstanceId(Object value) {
-        MappingContext ctx = entity.getMappingContext()
-        PersistentEntity pe = ctx.getPersistentEntity(value.getClass().getName())
-        return ctx.getEntityReflector(pe).getIdentifier(value)
+        MappingContext ctx = entity.getMappingContext();
+        PersistentEntity pe = ctx.getPersistentEntity(value.getClass().getName());
+        return ctx.getEntityReflector(pe).getIdentifier(value);
     }
 
-    private Junction disjunction(Junction currentJunction) {
-        Disjunction dis = new Disjunction()
-        currentJunction.add(dis)
-        return dis
+    Junction disjunction(Junction currentJunction) {
+        Disjunction dis = new Disjunction();
+        currentJunction.add(dis);
+        return dis;
     }
 
-    private Junction conjunction(Junction currentJunction) {
-        Conjunction con = new Conjunction()
-        currentJunction.add(con)
-        return con
+    Junction conjunction(Junction currentJunction) {
+        Conjunction con = new Conjunction();
+        currentJunction.add(con);
+        return con;
     }
 
     /**
@@ -732,20 +732,20 @@ abstract class Query implements Cloneable, Serializable {
      * @return The pattern
      */
     static String patternToRegex(Object value) {
-        Object pattern = value == null ? 'null' : value
+        if (value == null) value = 'null';
 
-        String[] array = pattern.toString().split('%', -1)
+        String[] array = value.toString().split('%', -1);
         for (int i = 0; i < array.length; i++) {
-            array[i] = Pattern.quote(array[i])
+            array[i] = Pattern.quote(array[i]);
         }
-        String expr = StringUtils.arrayToDelimitedString(array, '.*')
+        String expr = StringUtils.arrayToDelimitedString(array, '.*');
         if (!expr.startsWith('.*')) {
-            expr = '^' + expr
+            expr = '^' + expr;
         }
         if (!expr.endsWith('.*')) {
-            expr = expr + '$'
+            expr = expr + '$';
         }
-        return expr
+        return expr;
     }
 
     /**
@@ -755,7 +755,7 @@ abstract class Query implements Cloneable, Serializable {
     protected void flushBeforeQuery() {
         // flush before query execution in FlushModeType.AUTO
         if (session != null && session.getFlushMode() == FlushModeType.AUTO) {
-            session.flush()
+            session.flush();
         }
     }
 
@@ -764,37 +764,36 @@ abstract class Query implements Cloneable, Serializable {
      */
     private void addToJunction(Junction currentJunction, Criterion criterion) {
         if (criterion instanceof PropertyCriterion) {
-            final PropertyCriterion pc = (PropertyCriterion) criterion
-            String property = pc.getProperty()
-            Object value = resolvePropertyValue(entity, property, pc.getValue())
-            pc.setValue(value)
+            final PropertyCriterion pc = (PropertyCriterion) criterion;
+            String property = pc.getProperty();
+            Object value = resolvePropertyValue(entity, property, pc.getValue());
+            pc.setValue(value);
         }
         if (criterion instanceof AssociationCriteria) {
-            AssociationCriteria ac = (AssociationCriteria) criterion
-            AssociationQuery associationQuery = createQuery(ac.getAssociation().getName())
-            for (Criterion associationCriterion in ac.getCriteria()) {
-                associationQuery.add(associationCriterion)
+            AssociationCriteria ac = (AssociationCriteria) criterion;
+            AssociationQuery associationQuery = createQuery(ac.getAssociation().getName());
+            for (Criterion associationCriterion : ac.getCriteria()) {
+                associationQuery.add(associationCriterion);
             }
-            currentJunction.add(associationQuery)
+            currentJunction.add(associationQuery);
         }
         else if (criterion instanceof Junction) {
-            Junction j = (Junction) criterion
-            Junction newj
+            Junction j = (Junction) criterion;
+            Junction newj;
             if (j instanceof Disjunction) {
-                newj = disjunction(currentJunction)
-            }
-            else if (j instanceof Negation) {
-                newj = negation(currentJunction)
+                newj = disjunction(currentJunction);
+            } else if (j instanceof Negation) {
+                newj = negation(currentJunction);
             }
             else {
-                newj = conjunction(currentJunction)
+                newj = conjunction(currentJunction);
             }
-            for (Criterion c in j.getCriteria()) {
-                addToJunction(newj, c)
+            for (Criterion c : j.getCriteria()) {
+                addToJunction(newj, c);
             }
         }
         else {
-            currentJunction.add(criterion)
+            currentJunction.add(criterion);
         }
     }
 
@@ -804,27 +803,33 @@ abstract class Query implements Cloneable, Serializable {
     /**
      * Common interface for all query elements
      */
-    static interface QueryElement extends Serializable { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static interface QueryElement extends Serializable {}
 
-    static interface Criterion extends QueryElement { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static interface Criterion extends QueryElement {}
 
     /**
      * The ordering of results.
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Order implements Serializable {
 
-        private static final long serialVersionUID = 1L
-        private Direction direction = Direction.ASC
-        private String property
-        private boolean ignoreCase = false
+        private static final long serialVersionUID = 1L;
+        private Direction direction = Direction.ASC;
+        private String property;
+        private boolean ignoreCase = false;
 
         Order(String property) {
-            this.property = property
+            this.property = property;
         }
 
         Order(String property, Direction direction) {
-            this.direction = direction
-            this.property = property
+            this.direction = direction;
+            this.property = property;
         }
 
         /**
@@ -833,26 +838,26 @@ abstract class Query implements Cloneable, Serializable {
          * @return This order instance
          */
         Order ignoreCase() {
-            this.ignoreCase = true
-            return this
+            this.ignoreCase = true;
+            return this;
         }
 
         boolean isIgnoreCase() {
-            return ignoreCase
+            return ignoreCase;
         }
 
         /**
          * @return The direction order by
          */
         Direction getDirection() {
-            return direction
+            return direction;
         }
 
         /**
          * @return The property name to order by
          */
         String getProperty() {
-            return property
+            return property;
         }
 
         /**
@@ -862,7 +867,7 @@ abstract class Query implements Cloneable, Serializable {
          * @return The order instance
          */
         static Order desc(String property) {
-            return new Order(property, Direction.DESC)
+            return new Order(property, Direction.DESC);
         }
 
         /**
@@ -872,832 +877,901 @@ abstract class Query implements Cloneable, Serializable {
          * @return The order instance
          */
         static Order asc(String property) {
-            return new Order(property, Direction.ASC)
+            return new Order(property, Direction.ASC);
         }
 
         /**
          * Represents the direction of the ordering
          */
+        // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+        @SuppressWarnings('UnnecessarySemicolon')
         static enum Direction {
+
             ASC, DESC
         }
-
     }
 
     /**
      * Restricts a property to be null
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class IsNull extends PropertyNameCriterion {
 
         IsNull(String name) {
-            super(name)
+            super(name);
         }
-
     }
 
     /**
      * Restricts a property to be empty (such as a blank string)
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class IsEmpty extends PropertyNameCriterion {
 
         IsEmpty(String name) {
-            super(name)
+            super(name);
         }
-
     }
 
     /**
      * Restricts a property to be empty (such as a blank string)
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class IsNotEmpty extends PropertyNameCriterion {
 
         IsNotEmpty(String name) {
-            super(name)
+            super(name);
         }
-
     }
 
     /**
      * Restricts a property to be not null
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class IsNotNull extends PropertyNameCriterion {
 
         IsNotNull(String name) {
-            super(name)
+            super(name);
         }
-
     }
 
     /**
      * A Criterion that applies to a property
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class PropertyNameCriterion implements Criterion {
 
-        protected String name
+        protected String name;
 
         PropertyNameCriterion(String name) {
-            this.name = name
+            this.name = name;
         }
 
         String getProperty() {
-            return name
+            return name;
         }
-
     }
 
     /**
      * A Criterion that compares to properties
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class PropertyComparisonCriterion extends PropertyNameCriterion {
 
-        protected String otherProperty
+        protected String otherProperty;
 
         PropertyComparisonCriterion(String property, String otherProperty) {
-            super(property)
-            this.otherProperty = otherProperty
+            super(property);
+            this.otherProperty = otherProperty;
         }
 
         String getOtherProperty() {
-            return otherProperty
+            return otherProperty;
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class EqualsProperty extends PropertyComparisonCriterion {
 
         EqualsProperty(String property, String otherProperty) {
-            super(property, otherProperty)
+            super(property, otherProperty);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class NotEqualsProperty extends PropertyComparisonCriterion {
 
         NotEqualsProperty(String property, String otherProperty) {
-            super(property, otherProperty)
+            super(property, otherProperty);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanProperty extends PropertyComparisonCriterion {
 
         GreaterThanProperty(String property, String otherProperty) {
-            super(property, otherProperty)
+            super(property, otherProperty);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanEqualsProperty extends PropertyComparisonCriterion {
 
         GreaterThanEqualsProperty(String property, String otherProperty) {
-            super(property, otherProperty)
+            super(property, otherProperty);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanProperty extends PropertyComparisonCriterion {
 
         LessThanProperty(String property, String otherProperty) {
-            super(property, otherProperty)
+            super(property, otherProperty);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanEqualsProperty extends PropertyComparisonCriterion {
 
         LessThanEqualsProperty(String property, String otherProperty) {
-            super(property, otherProperty)
+            super(property, otherProperty);
         }
-
     }
 
     /**
      * Criterion that applies to a property and value
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class PropertyCriterion extends PropertyNameCriterion {
 
-        protected Object value
+        protected Object value;
 
         PropertyCriterion(String name, Object value) {
-            super(name)
-            this.value = value
+            super(name);
+            this.value = value;
         }
 
         Object getValue() {
-            return value
+            return value;
         }
 
         void setValue(Object v) {
-            this.value = v
+            this.value = v;
         }
-
     }
 
     /**
      * Used to differentiate criterion that require a subquery
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SubqueryCriterion extends PropertyCriterion {
 
         SubqueryCriterion(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
 
         @Override
         QueryableCriteria getValue() {
-            return (QueryableCriteria) super.getValue()
+            return (QueryableCriteria) super.getValue();
         }
-
     }
 
     /**
      * Restricts a value to be equal to all the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class EqualsAll extends SubqueryCriterion {
 
         EqualsAll(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be not equal to all the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class NotEqualsAll extends SubqueryCriterion {
 
         NotEqualsAll(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be greater than all the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanAll extends SubqueryCriterion {
 
         GreaterThanAll(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be greater than some of the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanSome extends SubqueryCriterion {
 
         GreaterThanSome(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be greater than some of the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanEqualsSome extends SubqueryCriterion {
 
         GreaterThanEqualsSome(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be less than some of the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanSome extends SubqueryCriterion {
 
         LessThanSome(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be less than some of the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanEqualsSome extends SubqueryCriterion {
 
         LessThanEqualsSome(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be less than all the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanAll extends SubqueryCriterion {
 
         LessThanAll(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be greater than or equal to all the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanEqualsAll extends SubqueryCriterion {
 
         GreaterThanEqualsAll(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Restricts a value to be less than or equal to all the given values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanEqualsAll extends SubqueryCriterion {
 
         LessThanEqualsAll(String name, QueryableCriteria value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * A criterion that restricts the results based on equality
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Equals extends PropertyCriterion {
 
         Equals(String name, Object value) {
-            super(name, value)
+            super(name, value);
         }
 
         @Override
         void setValue(Object value) {
-            this.@value = value
+            this.@value = value;
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SizeEquals extends PropertyCriterion {
 
         SizeEquals(String name, int value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SizeNotEquals extends PropertyCriterion {
 
         SizeNotEquals(String name, int value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SizeGreaterThan extends PropertyCriterion {
 
         SizeGreaterThan(String name, int value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SizeGreaterThanEquals extends PropertyCriterion {
 
         SizeGreaterThanEquals(String name, int value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SizeLessThanEquals extends PropertyCriterion {
 
         SizeLessThanEquals(String name, int value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SizeLessThan extends PropertyCriterion {
 
         SizeLessThan(String name, int value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * A criterion that restricts the results based on the equality of the identifier
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class IdEquals extends PropertyCriterion {
 
-        private static final String ID = 'id'
+        private static final String ID = 'id';
 
         IdEquals(Object value) {
-            super(ID, value)
+            super(ID, value);
         }
 
         @Override
         void setValue(Object value) {
-            this.@value = value
+            this.@value = value;
         }
-
     }
 
     /**
      * A criterion that restricts the results based on equality
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class NotEquals extends PropertyCriterion {
 
         NotEquals(String name, Object value) {
-            super(name, value)
+            super(name, value);
         }
 
         @Override
         void setValue(Object value) {
-            this.@value = value
+            this.@value = value;
         }
-
     }
 
     /**
      * Criterion used to restrict the results based on a list of values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class In extends PropertyCriterion {
 
-        private Collection values = Collections.emptyList()
-        private QueryableCriteria subquery
+        private Collection values = Collections.emptyList();
+        private QueryableCriteria subquery;
 
         In(String name, Collection values) {
-            super(name, values)
-            this.values = convertCharSequenceValuesIfNecessary(values)
+            super(name, values);
+            this.values = convertCharSequenceValuesIfNecessary(values);
         }
 
         private static Collection convertCharSequenceValuesIfNecessary(Collection values) {
-            boolean requiresConversion = false
-            for (Object val in values) {
+            boolean requiresConversion = false;
+            for (Object val : values) {
                 if (!(val instanceof String) && val instanceof CharSequence) {
-                    requiresConversion = true
-                    break
+                    requiresConversion = true;
+                    break;
                 }
             }
             if (requiresConversion) {
-                List newList = new ArrayList(values.size())
-                for (Object val in values) {
-                    newList.add(val instanceof CharSequence ? val.toString() : val)
+                List newList = new ArrayList(values.size());
+                for (Object val : values) {
+                    newList.add(val instanceof CharSequence ? val.toString() : val);
                 }
-                return newList
-            }
-            else {
-                return values
+                return newList;
+            } else {
+                return values;
             }
         }
 
         In(String name, QueryableCriteria subquery) {
-            super(name, subquery)
-            this.subquery = subquery
+            super(name, subquery);
+            this.subquery = subquery;
         }
 
         String getName() {
-            return getProperty()
+            return getProperty();
         }
 
         Collection getValues() {
-            return Collections.unmodifiableCollection(values)
+            return Collections.unmodifiableCollection(values);
         }
 
         QueryableCriteria getSubquery() {
-            return subquery
+            return subquery;
         }
-
     }
 
     /**
      * Criterion used to restrict the results based on a list of values
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class NotIn extends SubqueryCriterion {
 
-        private QueryableCriteria subquery
+        private QueryableCriteria subquery;
 
         NotIn(String name, QueryableCriteria subquery) {
-            super(name, subquery)
-            this.subquery = subquery
+            super(name, subquery);
+            this.subquery = subquery;
         }
 
         String getName() {
-            return getProperty()
+            return getProperty();
         }
 
         QueryableCriteria getSubquery() {
-            return subquery
+            return subquery;
         }
-
     }
 
     /**
      * Used for exists subquery
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Exists implements Criterion {
 
-        private QueryableCriteria subquery
+        private QueryableCriteria subquery;
 
         Exists(QueryableCriteria subquery) {
-            this.subquery = subquery
+            this.subquery = subquery;
         }
 
         QueryableCriteria getSubquery() {
-            return subquery
+            return subquery;
         }
-
     }
 
     /**
      * Used for exists subquery
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class NotExists implements Criterion {
 
-        private QueryableCriteria subquery
+        private QueryableCriteria subquery;
 
         NotExists(QueryableCriteria subquery) {
-            this.subquery = subquery
+            this.subquery = subquery;
         }
 
         QueryableCriteria getSubquery() {
-            return subquery
+            return subquery;
         }
-
     }
 
     /**
      * Used to restrict a value to be greater than the given value
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThan extends PropertyCriterion {
 
         GreaterThan(String name, Object value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Used to restrict a value to be greater than or equal to the given value
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GreaterThanEquals extends PropertyCriterion {
 
         GreaterThanEquals(String name, Object value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Used to restrict a value to be less than the given value
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThan extends PropertyCriterion {
 
         LessThan(String name, Object value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Used to restrict a value to be less than the given value
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class LessThanEquals extends PropertyCriterion {
 
         LessThanEquals(String name, Object value) {
-            super(name, value)
+            super(name, value);
         }
-
     }
 
     /**
      * Criterion used to restrict the result to be between values (range query)
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Between extends PropertyCriterion {
 
-        private String property
-        private Object from
-        private Object to
+        private String property;
+        private Object from;
+        private Object to;
 
         Between(String property, Object from, Object to) {
-            super(property, from)
-            this.property = property
-            this.from = from
-            this.to = to
+            super(property, from);
+            this.property = property;
+            this.from = from;
+            this.to = to;
         }
 
         @Override
         String getProperty() {
-            return property
+            return property;
         }
 
         Object getFrom() {
-            return from
+            return from;
         }
 
         Object getTo() {
-            return to
+            return to;
         }
-
     }
 
     /**
      * Criterion used to restrict the results based on a pattern (likeness)
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Like extends PropertyCriterion {
 
         Like(String name, String expression) {
-            super(name, expression)
+            super(name, expression);
         }
 
         String getPattern() {
-            return getValue().toString()
+            return getValue().toString();
         }
-
     }
 
     /**
      * Criterion used to restrict the results based on a pattern (likeness)
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class ILike extends Like {
 
         ILike(String name, String expression) {
-            super(name, expression)
+            super(name, expression);
         }
-
     }
 
     /**
      * Criterion used to restrict the results based on a regular expression pattern
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class RLike extends Like {
 
         RLike(String name, String expression) {
-            super(name, expression)
+            super(name, expression);
         }
 
         @Override
         String getPattern() {
-            return getValue().toString()
+            return getValue().toString();
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static abstract class Junction implements Criterion {
 
-        private List<Criterion> criteria = new ArrayList<>()
+        private List<Criterion> criteria = new ArrayList<>();
 
         protected Junction() {
         }
 
         Junction(List<Criterion> criteria) {
-            this.criteria = criteria
+            this.criteria = criteria;
         }
 
         Junction add(Criterion c) {
             if (c != null) {
-                criteria.add(c)
+                criteria.add(c);
             }
-            return this
+            return this;
         }
 
         List<Criterion> getCriteria() {
-            return criteria
+            return criteria;
         }
 
         boolean isEmpty() {
-            return criteria.isEmpty()
+            return criteria.isEmpty();
         }
-
     }
 
     /**
      * A Criterion used to combine to criterion in a logical AND
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Conjunction extends Junction {
 
         Conjunction() {
         }
 
         Conjunction(List<Criterion> criteria) {
-            super(criteria)
+            super(criteria);
         }
-
     }
 
     /**
      * A Criterion used to combine to criterion in a logical OR
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class Disjunction extends Junction {
 
         Disjunction() {
         }
 
         Disjunction(List<Criterion> criteria) {
-            super(criteria)
+            super(criteria);
         }
-
     }
 
     /**
      * A criterion used to negate several other criterion
      */
-    static class Negation extends Junction { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static class Negation extends Junction {}
 
     /**
      * A projection
      */
-    static class Projection implements QueryElement { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static class Projection implements QueryElement {}
 
     /**
      * A projection used to obtain the identifier of an object
      */
-    static class IdProjection extends Projection { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static class IdProjection extends Projection {}
 
     /**
      * Used to count the results of a query
      */
-    static class CountProjection extends Projection { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static class CountProjection extends Projection {}
 
-    static class DistinctProjection extends Projection { }
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
+    static class DistinctProjection extends Projection {}
 
     /**
      * A projection that obtains the value of a property of an entity
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class PropertyProjection extends Projection {
 
-        private String propertyName
+        private String propertyName;
 
         protected PropertyProjection(String propertyName) {
-            this.propertyName = propertyName
+            this.propertyName = propertyName;
         }
 
         String getPropertyName() {
-            return propertyName
+            return propertyName;
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class DistinctPropertyProjection extends PropertyProjection {
 
         protected DistinctPropertyProjection(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class CountDistinctProjection extends PropertyProjection {
 
         CountDistinctProjection(String property) {
-            super(property)
+            super(property);
         }
-
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class GroupPropertyProjection extends PropertyProjection {
 
         GroupPropertyProjection(String property) {
-            super(property)
+            super(property);
         }
-
     }
 
     /**
      * Computes the average value of a property
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class AvgProjection extends PropertyProjection {
 
         protected AvgProjection(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
-
     }
 
     /**
      * Computes the max value of a property
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class MaxProjection extends PropertyProjection {
 
         protected MaxProjection(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
-
     }
 
     /**
      * Computes the min value of a property
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class MinProjection extends PropertyProjection {
 
         protected MinProjection(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
-
     }
 
     /**
      * Computes the sum of a property
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class SumProjection extends PropertyProjection {
 
         protected SumProjection(String propertyName) {
-            super(propertyName)
+            super(propertyName);
         }
-
     }
 
     /**
      * A list of projections
      */
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     static class ProjectionList implements org.grails.datastore.mapping.query.api.ProjectionList {
 
-        private List<Projection> projections = new ArrayList()
+        private List<Projection> projections = new ArrayList();
 
         List<Projection> getProjectionList() {
-            return Collections.unmodifiableList(projections)
+            return Collections.unmodifiableList(projections);
         }
 
         ProjectionList add(Projection p) {
-            projections.add(p)
-            return this
+            projections.add(p);
+            return this;
         }
 
         org.grails.datastore.mapping.query.api.ProjectionList id() {
-            add(Projections.id())
-            return this
+            add(Projections.id());
+            return this;
         }
 
         org.grails.datastore.mapping.query.api.ProjectionList count() {
-            add(Projections.count())
-            return this
+            add(Projections.count());
+            return this;
         }
 
         org.grails.datastore.mapping.query.api.ProjectionList countDistinct(String property) {
-            add(Projections.countDistinct(property))
-            return this
+            add(Projections.countDistinct(property));
+            return this;
         }
 
         @Override
         org.grails.datastore.mapping.query.api.ProjectionList groupProperty(String property) {
-            add(Projections.groupProperty(property))
-            return this
+            add(Projections.groupProperty(property));
+            return this;
         }
 
         boolean isEmpty() {
-            return projections.isEmpty()
+            return projections.isEmpty();
         }
 
         ProjectionList distinct() {
-            add(Projections.distinct())
-            return this
+            add(Projections.distinct());
+            return this;
         }
 
         org.grails.datastore.mapping.query.api.ProjectionList distinct(String property) {
-            add(Projections.distinct(property))
-            return this
+            add(Projections.distinct(property));
+            return this;
         }
 
         org.grails.datastore.mapping.query.api.ProjectionList rowCount() {
-            return count()
+            return count();
         }
 
         /**
@@ -1706,8 +1780,8 @@ abstract class Query implements Cloneable, Serializable {
          * @return The PropertyProjection instance
          */
         org.grails.datastore.mapping.query.api.ProjectionList property(String name) {
-            add(Projections.property(name))
-            return this
+            add(Projections.property(name));
+            return this;
         }
 
         /**
@@ -1717,8 +1791,8 @@ abstract class Query implements Cloneable, Serializable {
          * @return The PropertyProjection instance
          */
         org.grails.datastore.mapping.query.api.ProjectionList sum(String name) {
-            add(Projections.sum(name))
-            return this
+            add(Projections.sum(name));
+            return this;
         }
 
         /**
@@ -1728,8 +1802,8 @@ abstract class Query implements Cloneable, Serializable {
          * @return The PropertyProjection instance
          */
         org.grails.datastore.mapping.query.api.ProjectionList min(String name) {
-            add(Projections.min(name))
-            return this
+            add(Projections.min(name));
+            return this;
         }
 
         /**
@@ -1739,8 +1813,8 @@ abstract class Query implements Cloneable, Serializable {
          * @return The PropertyProjection instance
          */
         org.grails.datastore.mapping.query.api.ProjectionList max(String name) {
-            add(Projections.max(name))
-            return this
+            add(Projections.max(name));
+            return this;
         }
 
         /**
@@ -1750,10 +1824,8 @@ abstract class Query implements Cloneable, Serializable {
          * @return The PropertyProjection instance
          */
         org.grails.datastore.mapping.query.api.ProjectionList avg(String name) {
-            add(Projections.avg(name))
-            return this
+            add(Projections.avg(name));
+            return this;
         }
-
     }
-
 }
