@@ -18,7 +18,6 @@
  */
 package org.grails.web.mime
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 
 import jakarta.servlet.http.HttpServletRequest
@@ -184,12 +183,10 @@ class HttpServletResponseExtension {
         apiSupport.withFormat(response, callable)
     }
 
-    @CompileDynamic
     private static MimeType[] getMimeTypesInternal(HttpServletRequest request) {
         MimeType[] result = (MimeType[]) request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
         if (!result) {
-
-            def applicationContext = GrailsWebRequest.lookup()?.applicationContext
+            ApplicationContext applicationContext = GrailsWebRequest.lookup()?.applicationContext
             if (applicationContext == null && request.servletContext != null) {
                 applicationContext = WebApplicationContextUtils.getWebApplicationContext(request.servletContext)
             }
