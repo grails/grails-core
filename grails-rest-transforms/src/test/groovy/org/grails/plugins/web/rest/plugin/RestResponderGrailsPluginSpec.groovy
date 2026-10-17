@@ -18,6 +18,7 @@
  */
 package org.grails.plugins.web.rest.plugin
 
+import org.springframework.beans.factory.support.BeanDefinitionBuilder
 import org.springframework.beans.factory.support.BeanRegistryAdapter
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.core.env.MapPropertySource
@@ -85,9 +86,31 @@ class RestResponderGrailsPluginSpec extends Specification {
         expect: 'a lookup by type, as the renderer registry autowires, finds the application bean'
         beanFactory.getBean(ValidationProblemDetailFactory).is(application)
 
-        and: 'the plugin bean is still there for an application that defines none'
-        beanFactory.getBeanNamesForType(ValidationProblemDetailFactory) as Set ==
-                ['validationProblemDetailFactory', 'includingRejectedValues'] as Set
+        and: 'so does a lookup by name, as a controller autowires'
+        beanFactory.getBean('validationProblemDetailFactory').is(application)
+    }
+
+    void "without an application factory, a lookup by name and one by type find the plugin's"() {
+        given:
+        def beanFactory = new DefaultListableBeanFactory()
+        applyRegistrar(beanFactory, new StandardEnvironment())
+
+        expect:
+        beanFactory.getBean('validationProblemDetailFactory').is(beanFactory.getBean(ValidationProblemDetailFactory))
+        beanFactory.getBean(ValidationProblemDetailFactory).is(beanFactory.getBean('defaultValidationProblemDetailFactory'))
+    }
+
+    void "an application factory bean under the conventional name replaces the plugin's"() {
+        given:
+        def beanFactory = new DefaultListableBeanFactory()
+        applyRegistrar(beanFactory, new StandardEnvironment())
+        def application = new ValidationProblemDetailFactory(true)
+        beanFactory.registerBeanDefinition('validationProblemDetailFactory',
+                BeanDefinitionBuilder.genericBeanDefinition(ValidationProblemDetailFactory, { application }).beanDefinition)
+
+        expect:
+        beanFactory.getBean(ValidationProblemDetailFactory).is(application)
+        beanFactory.getBean('validationProblemDetailFactory').is(application)
     }
 
     private static void applyRegistrar(DefaultListableBeanFactory beanFactory, StandardEnvironment environment) {

@@ -621,8 +621,9 @@ converters; where none can write the problem, Grails logs a warning and the lega
 as a bean.
 Rejected field values are excluded by default because they can contain passwords, tokens, or other
 sensitive request data. Applications that deliberately need those values can define their own factory
-bean after reviewing that exposure risk. It replaces the default one whatever its name, and takes the
-`MessageSource` so that messages stay localized:
+bean after reviewing that exposure risk. It replaces the default one whatever its name, both for `respond` and
+for a controller that declares a `validationProblemDetailFactory` property, and takes the `MessageSource` so that
+messages stay localized:
 
 [source,groovy]
 .grails-app/init/Application.groovy

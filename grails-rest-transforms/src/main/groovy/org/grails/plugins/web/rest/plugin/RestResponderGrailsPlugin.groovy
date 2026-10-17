@@ -67,7 +67,7 @@ class RestResponderGrailsPlugin extends Plugin {
                     return rendererRegistry
                 }
             }
-            registry.registerBean('validationProblemDetailFactory', ValidationProblemDetailFactory) {
+            registry.registerBean('defaultValidationProblemDetailFactory', ValidationProblemDetailFactory) {
                 // A fallback candidate: an application's own factory bean, whatever its name, is
                 // the one the renderers autowire.
                 it.fallback().supplier {
@@ -76,6 +76,11 @@ class RestResponderGrailsPlugin extends Plugin {
                     // substituted rather than the raw default template.
                     new ValidationProblemDetailFactory(false, it.bean('messageSource', MessageSource))
                 }
+            }
+            registry.registerBean('validationProblemDetailFactory', ValidationProblemDetailFactory) {
+                // Controllers autowire by name: under this name, the factory the renderers autowire
+                // by type, which this bean is left out of.
+                it.notAutowirable().supplier { it.bean(ValidationProblemDetailFactory) }
             }
             registry.registerBean('springMessageConverters', SpringMessageConverters)
         }
