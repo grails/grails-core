@@ -110,7 +110,7 @@ public class DomainClassJacksonModule extends JacksonModule {
             }
             DomainClassRendering current = rendering.get();
             // A proxy is written as the instance it proxies, which is a domain class and so written as one
-            return current.isDomainClass(raw) && current.isProxyType(raw) ? serializer : null;
+            return current.isDomainClass(raw) && DomainClassRendering.isProxyClass(raw) ? serializer : null;
         }
     }
 }

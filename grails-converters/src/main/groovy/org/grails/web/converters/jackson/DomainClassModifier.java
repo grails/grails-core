@@ -80,7 +80,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
      */
     private PersistentEntity entity(Class<?> type) {
         DomainClassRendering current = rendering.get();
-        return current.isDomainClass(type) && !current.isProxyType(type) ? current.findEntityOfType(type) : null;
+        return current.isDomainClass(type) && !DomainClassRendering.isProxyClass(type) ? current.findEntityOfType(type) : null;
     }
 
     @Override
@@ -247,7 +247,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
             ValueSerializer<?> serializer) {
         DomainClassRendering current = rendering.get();
         Class<?> type = beanDescription.get().getBeanClass();
-        if (!current.isDomainClass(type) || current.isProxyType(type)) {
+        if (!current.isDomainClass(type) || DomainClassRendering.isProxyClass(type)) {
             return serializer;
         }
         ValueSerializer<?> tracked = CycleTracking.around(serializer, this::onCycle);

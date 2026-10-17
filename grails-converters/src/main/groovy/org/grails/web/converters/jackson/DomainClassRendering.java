@@ -183,7 +183,7 @@ public class DomainClassRendering {
     /**
      * Whether the type is a GORM or Hibernate proxy class, which subclasses the class it proxies.
      */
-    private static boolean isProxyClass(Class<?> type) {
+    static boolean isProxyClass(Class<?> type) {
         if (EntityProxy.class.isAssignableFrom(type)) {
             return true;
         }
@@ -239,14 +239,6 @@ public class DomainClassRendering {
             entity = mappingContext != null ? mappingContext.getPersistentEntity(type.getName()) : null;
         }
         return entity;
-    }
-
-    /**
-     * @param type a type
-     * @return whether it is a GORM or Hibernate proxy class
-     */
-    boolean isProxyType(Class<?> type) {
-        return isProxyClass(type);
     }
 
     /**

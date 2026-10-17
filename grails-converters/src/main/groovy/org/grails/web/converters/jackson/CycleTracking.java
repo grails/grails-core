@@ -88,10 +88,6 @@ final class CycleTracking extends ValueSerializer<Object> {
         this.onCycle = onCycle;
     }
 
-    ValueSerializer<Object> getDelegate() {
-        return delegate;
-    }
-
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt) {
         Map<Object, Cycles.Frame> instances = Cycles.instances(ctxt);
