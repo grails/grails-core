@@ -16,27 +16,28 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.compiler.injection
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.compiler.injection;
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentHashMap;
 
-import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
-import groovy.transform.stc.POJO
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.PropertyNode
-import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.ast.expr.Expression
-import org.codehaus.groovy.ast.expr.ListExpression
-import org.codehaus.groovy.ast.expr.MapEntryExpression
-import org.codehaus.groovy.ast.expr.MapExpression
-import org.codehaus.groovy.control.CompilationFailedException
-import org.codehaus.groovy.control.SourceUnit
+import groovy.transform.CompileStatic;
+import groovy.transform.PackageScope;
+import groovy.transform.stc.POJO;
+import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.SourceUnit;
 
-import grails.plugins.GrailsPluginInfo
-import grails.util.GrailsNameUtils
-import org.grails.io.support.Resource
+import grails.plugins.GrailsPluginInfo;
+import grails.util.GrailsNameUtils;
+import org.grails.io.support.Resource;
 
 /**
  * Reads plugin info from the AST
@@ -44,28 +45,30 @@ import org.grails.io.support.Resource
  * @author Graeme Rocher
  * @since 3.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 @PackageScope
 class PluginAstReader {
 
-    private BasicGrailsPluginInfo pluginInfo
+    private BasicGrailsPluginInfo pluginInfo;
 
-    PluginAstReader() {
-        this.pluginInfo = new BasicGrailsPluginInfo()
+    public PluginAstReader() {
+        this.pluginInfo = new BasicGrailsPluginInfo();
     }
 
     @PackageScope
     GrailsPluginInfo getPluginInfo() {
-        return this.pluginInfo
+        return this.pluginInfo;
     }
 
     GrailsPluginInfo readPluginInfo(ClassNode classNode) throws CompilationFailedException {
-        String className = classNode.getNameWithoutPackage()
+        String className = classNode.getNameWithoutPackage();
 
         if (className.endsWith('GrailsPlugin')) {
-            visitContents(className, classNode)
+            visitContents(className, classNode);
         }
-        return pluginInfo
+        return pluginInfo;
     }
 
     protected void visitContents(String className, final ClassNode classNode) {
@@ -73,48 +76,48 @@ class PluginAstReader {
 
             @Override
             void visitProperty(PropertyNode node) {
-                String name = node.getName()
+                String name = node.getName();
 
-                final Expression expr = node.getField().getInitialExpression()
+                final Expression expr = node.getField().getInitialExpression();
 
                 if (expr != null) {
-                    Object value = null
+                    Object value = null;
                     if (expr instanceof ListExpression) {
-                        final List<String> list = new ArrayList<>()
-                        for (Expression i in ((ListExpression) expr).getExpressions()) {
-                            list.add(i.getText())
+                        final List<String> list = new ArrayList<>();
+                        for (Expression i : ((ListExpression) expr).getExpressions()) {
+                            list.add(i.getText());
                         }
-                        value = list
+                        value = list;
                     }
                     else if (expr instanceof MapExpression) {
-                        final Map<String, String> map = new LinkedHashMap<>()
-                        value = map
-                        for (MapEntryExpression mee in ((MapExpression) expr).getMapEntryExpressions()) {
-                            map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText())
+                        final Map<String, String> map = new LinkedHashMap<>();
+                        value = map;
+                        for (MapEntryExpression mee : ((MapExpression) expr).getMapEntryExpressions()) {
+                            map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
                         }
                     }
                     else {
                         if (expr instanceof ConstantExpression) {
-                            value = expr.getText()
+                            value = expr.getText();
                         }
                     }
                     if (value != null) {
-                        pluginInfo.setProperty(name, value)
-                        super.visitProperty(node)
+                        pluginInfo.setProperty(name, value);
+                        super.visitProperty(node);
                     }
                 }
             }
 
             @Override
             protected SourceUnit getSourceUnit() {
-                return classNode.getModule().getContext()
+                return classNode.getModule().getContext();
             }
 
-        }
+        };
 
-        classNode.visitContents(visitor)
+        classNode.visitContents(visitor);
 
-        pluginInfo.setName(GrailsNameUtils.getPluginName(className + '.groovy'))
+        pluginInfo.setName(GrailsNameUtils.getPluginName(className + '.groovy'));
     }
 
     /**
@@ -127,53 +130,53 @@ class PluginAstReader {
     @CompileStatic
     class BasicGrailsPluginInfo implements GrailsPluginInfo {
 
-        private String name
-        private String version
-        private Map<String, Object> attributes = new ConcurrentHashMap<>()
+        private String name;
+        private String version;
+        private Map<String, Object> attributes = new ConcurrentHashMap<>();
 
         String getName() {
-            return name
+            return name;
         }
 
         void setName(String name) {
-            this.name = name
+            this.name = name;
         }
 
         String getVersion() {
-            return version
+            return version;
         }
 
         void setVersion(String version) {
-            this.version = version
+            this.version = version;
         }
 
         void setProperty(String property, Object newValue) {
-            attributes.put(property, newValue)
+            attributes.put(property, newValue);
         }
 
         Object getProperty(String property) {
-            return attributes.get(property)
+            return attributes.get(property);
         }
 
         String getFullName() {
-            return name + '-' + version
+            return name + '-' + version;
         }
 
         Resource getDescriptor() {
-            return null
+            return null;
         }
 
         Resource getPluginDir() {
-            return null
+            return null;
         }
 
-        @SuppressWarnings([ 'unchecked', 'rawtypes' ])
+        @SuppressWarnings(['unchecked', 'rawtypes'])
         Map getProperties() {
-            Map props = new HashMap()
-            props.putAll(attributes)
-            props.put(NAME, name)
-            props.put(VERSION, version)
-            return props
+            Map props = new HashMap();
+            props.putAll(attributes);
+            props.put(NAME, name);
+            props.put(VERSION, version);
+            return props;
         }
 
     }
