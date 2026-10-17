@@ -762,6 +762,6 @@ the beans in its application context sees these additions.
 
 The traits still do not load the controllers, URL mappings or i18n plugins themselves. A spec that includes one of
 them, or defines its own URL mappings holder, link generator or locale resolver, now keeps that bean, where the traits
-replaced it with their own. Without `grails-xml` on the test classpath, setting `request.xml` or reading
-`request.XML` fails with an `IllegalStateException` that names the module. `GrailsUnitTest` and `ServiceUnitTest` do
+replaced it with their own. Without `grails-xml` on the test classpath, setting `request.xml` to an object to convert,
+rather than to a `String` of XML, or reading `request.XML` fails with an `IllegalStateException` that names the module. `GrailsUnitTest` and `ServiceUnitTest` do
 not load XML or the web plugins just because those modules are on the classpath. See <<unitTesting,Unit Testing>>.
