@@ -22,7 +22,10 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.function.Supplier
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+
+import tools.jackson.databind.ObjectMapper
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +38,7 @@ import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.http.converter.json.ProblemDetailJacksonMixin
 import org.springframework.validation.Errors
 
 import grails.converters.XML
@@ -92,6 +96,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
 
     private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
     private volatile RendererRegistry resolvedRendererRegistry
+
+    private volatile Tuple2<ObjectMapper, ObjectMapper> problemMapper
 
     private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
         if (groovyPageLocator != null) {
@@ -191,8 +197,24 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             renderWithSpringConverter(converter, problem, problemXml, context)
             return
         }
+        ProblemXml.write(problem, context.writer, problemMapper(converters))
+    }
+
+    /**
+     * The mapper of Spring's JSON converter, with Spring's mix-in for problems, derived once for the mapper it derives
+     * from.
+     */
+    @CompileDynamic
+    private ObjectMapper problemMapper(List<HttpMessageConverter<?>> converters) {
         def json = (JacksonJsonHttpMessageConverter) converters.find { it instanceof JacksonJsonHttpMessageConverter }
-        ProblemXml.write(problem, context.writer, json?.mapper ?: JsonMapperSupport.DEFAULT.mapper)
+        ObjectMapper source = json?.mapper ?: JsonMapperSupport.DEFAULT.mapper
+        Tuple2<ObjectMapper, ObjectMapper> derived = problemMapper
+        if (derived == null || !derived.v1.is(source)) {
+            derived = new Tuple2<ObjectMapper, ObjectMapper>(source,
+                    source.rebuild().addMixIn(ProblemDetail, ProblemDetailJacksonMixin).build())
+            problemMapper = derived
+        }
+        derived.v2
     }
 
     /**

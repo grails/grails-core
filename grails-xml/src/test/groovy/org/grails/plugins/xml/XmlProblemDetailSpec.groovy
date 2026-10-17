@@ -83,6 +83,23 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         tree(fallback.contentAsString) == tree(spring)
     }
 
+    void 'without a converter for problems, the properties of a subclass of ProblemDetail are written as Spring writes them'() {
+        given:
+        def problem = { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { instance = URI.create('/books/1') } }
+        response.format = 'xml'
+        controller.respond(problem())
+        def spring = response.contentAsString
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+
+        when:
+        def fallback = renderProblem(renderer, problem())
+
+        then:
+        new XmlSlurper().parseText(spring).balance.text() == '12.5'
+        tree(fallback.contentAsString) == tree(spring)
+    }
+
     private static MockHttpServletResponse renderProblem(DefaultXmlRenderer<Object> renderer, ProblemDetail problem) {
         def response = new MockHttpServletResponse()
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
@@ -101,7 +118,8 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
     }
 
     private static List node(Node element) {
-        QName name = (QName) element.name()
+        def named = element.name()
+        QName name = named instanceof QName ? (QName) named : new QName('', named.toString())
         Object nil = null
         element.attributes().each { Object key, Object value ->
             if (key instanceof QName && ((QName) key).localPart == 'nil') {
@@ -119,3 +137,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
 @Artefact('Controller')
 class ProblemXmlController { }
+
+class OutOfStock extends ProblemDetail {
+    BigDecimal balance
+    String product
+
+    OutOfStock() {
+        super(409)
+    }
+}
