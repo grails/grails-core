@@ -18,6 +18,8 @@
  */
 package grails.boot
 
+import groovy.xml.XmlSlurper
+
 import org.springframework.util.ClassUtils
 
 import spock.lang.Specification
@@ -32,5 +34,13 @@ class GrailsWebBootXmlSpec extends Specification {
         expect:
         ClassUtils.isPresent('grails.converters.XML', getClass().classLoader)
         ClassUtils.isPresent('org.grails.plugins.xml.XmlGrailsPlugin', getClass().classLoader)
+    }
+
+    void 'an application compiles against grails-xml, which grails-web-boot is published with as an api dependency'() {
+        given: 'the POM grails-web-boot is published with'
+        def pom = new XmlSlurper().parse(new File(System.getProperty('grails.web.boot.pom')))
+
+        expect:
+        pom.dependencies.dependency.find { it.artifactId.text() == 'grails-xml' }.scope.text() == 'compile'
     }
 }
