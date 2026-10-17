@@ -1,27 +1,26 @@
-/*
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/* Copyright (C) 2010-2025 the original author or authors.
  *
- *    https://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.grails.datastore.mapping.core
 
 import groovy.transform.CompileStatic
+
 import jakarta.annotation.PreDestroy
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.ConfigurableApplicationContext
@@ -49,25 +48,26 @@ import org.grails.datastore.mapping.transactions.SessionHolder
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['rawtypes', 'unchecked', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings(['rawtypes', 'unchecked'])
 abstract class AbstractDatastore implements Datastore, StatelessDatastore, ServiceRegistry {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractDatastore)
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractDatastore);
 
-    private ApplicationContext applicationContext
-    protected ApplicationEventPublisher applicationEventPublisher
+    private ApplicationContext applicationContext;
+    protected ApplicationEventPublisher applicationEventPublisher;
 
-    protected final MappingContext mappingContext
-    protected final ServiceRegistry serviceRegistry
-    protected final PropertyResolver connectionDetails
-    protected final TPCacheAdapterRepository cacheAdapterRepository
+    protected final MappingContext mappingContext;
+    protected final ServiceRegistry serviceRegistry;
+    protected final PropertyResolver connectionDetails;
+    protected final TPCacheAdapterRepository cacheAdapterRepository;
 
     /**
      * Created lazily by {@link #getSessionResolver()} so that {@code this} does not escape the
      * constructor into the resolver while the datastore is still under construction.
      */
-    private volatile SessionResolver sessionResolver
+    private volatile SessionResolver sessionResolver;
 
     /**
      * @return The session resolver for this datastore: a stateless view over the same
@@ -75,61 +75,61 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * this datastore. The same instance is returned on every call.
      */
     SessionResolver getSessionResolver() {
-        SessionResolver resolver = this.sessionResolver
+        SessionResolver resolver = this.sessionResolver;
         if (resolver == null) {
             synchronized (this) {
-                resolver = this.sessionResolver
+                resolver = this.sessionResolver;
                 if (resolver == null) {
-                    resolver = new TransactionSynchronizationSessionResolver(this)
-                    this.sessionResolver = resolver
+                    resolver = new TransactionSynchronizationSessionResolver(this);
+                    this.sessionResolver = resolver;
                 }
             }
         }
-        return resolver
+        return resolver;
     }
 
     AbstractDatastore(MappingContext mappingContext) {
-        this(mappingContext, (PropertyResolver) null, null)
+        this(mappingContext, (PropertyResolver) null, null);
     }
 
     AbstractDatastore(MappingContext mappingContext, Map<String, Object> connectionDetails,
               ConfigurableApplicationContext ctx) {
-        this(mappingContext, connectionDetails, ctx, null)
+        this(mappingContext, connectionDetails, ctx, null);
     }
 
     AbstractDatastore(MappingContext mappingContext, PropertyResolver connectionDetails,
-                      ConfigurableApplicationContext ctx) {
-        this(mappingContext, connectionDetails, ctx, null)
+                             ConfigurableApplicationContext ctx) {
+        this(mappingContext, connectionDetails, ctx, null);
     }
 
     AbstractDatastore(MappingContext mappingContext, PropertyResolver connectionDetails,
-                      ConfigurableApplicationContext ctx, TPCacheAdapterRepository cacheAdapterRepository) {
-        this.mappingContext = mappingContext
-        this.connectionDetails = connectionDetails
-        this.cacheAdapterRepository = cacheAdapterRepository
-        setApplicationContext(ctx)
-        DefaultServiceRegistry defaultServiceRegistry = new DefaultServiceRegistry(this)
-        this.serviceRegistry = defaultServiceRegistry
-        defaultServiceRegistry.initialize()
+                             ConfigurableApplicationContext ctx, TPCacheAdapterRepository cacheAdapterRepository) {
+        this.mappingContext = mappingContext;
+        this.connectionDetails = connectionDetails;
+        this.cacheAdapterRepository = cacheAdapterRepository;
+        setApplicationContext(ctx);
+        DefaultServiceRegistry defaultServiceRegistry = new DefaultServiceRegistry(this);
+        this.serviceRegistry = defaultServiceRegistry;
+        defaultServiceRegistry.initialize();
     }
 
     AbstractDatastore(MappingContext mappingContext, Map<String, Object> connectionDetails,
               ConfigurableApplicationContext ctx, TPCacheAdapterRepository cacheAdapterRepository) {
-        this(mappingContext, mapToPropertyResolver(connectionDetails), ctx, cacheAdapterRepository)
+        this(mappingContext, mapToPropertyResolver(connectionDetails), ctx, cacheAdapterRepository);
     }
 
     protected static PropertyResolver mapToPropertyResolver(Map<String, Object> connectionDetails) {
-        return DatastoreUtils.createPropertyResolver(connectionDetails)
+        return DatastoreUtils.createPropertyResolver(connectionDetails);
     }
 
     @Override
-    def <T> T getService(Class<T> interfaceType) throws ServiceNotFoundException {
-        return serviceRegistry.getService(interfaceType)
+    <T> T getService(Class<T> interfaceType) throws ServiceNotFoundException {
+        return serviceRegistry.getService(interfaceType);
     }
 
     @Override
-    def <T extends Service> Iterable<T> getServices() {
-        return serviceRegistry.getServices()
+    <T extends Service> Iterable<T> getServices() {
+        return serviceRegistry.getServices();
     }
 
     /**
@@ -143,53 +143,52 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
     @PreDestroy
     void destroy() {
         Object resource = TransactionSynchronizationManager.hasResource(this) ?
-                TransactionSynchronizationManager.getResource(this) : null
+                TransactionSynchronizationManager.getResource(this) : null;
         if (resource instanceof SessionHolder && !((SessionHolder) resource).isSynchronizedWithTransaction()) {
-            TransactionSynchronizationManager.unbindResource(this)
-            for (Session session in new ArrayList<Session>(((SessionHolder) resource).getSessions())) {
-                DatastoreUtils.closeSession(session)
+            TransactionSynchronizationManager.unbindResource(this);
+            for (Session session : new ArrayList<Session>(((SessionHolder) resource).getSessions())) {
+                DatastoreUtils.closeSession(session);
             }
         }
-        FieldEntityAccess.clearReflectors()
-        final MetaClassRegistry registry = GroovySystem.getMetaClassRegistry()
-        for (PersistentEntity persistentEntity in getMappingContext().getPersistentEntities()) {
-            final Class cls = persistentEntity.getJavaClass()
+        FieldEntityAccess.clearReflectors();
+        final MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+        for (PersistentEntity persistentEntity : getMappingContext().getPersistentEntities()) {
+            final Class cls = persistentEntity.getJavaClass();
             try {
-                registry.removeMetaClass(cls)
-            }
-            catch (Exception e) {
-                LOG.error('There was an error shutting down GORM for entity [' + cls.getName() + ']: ' + e.getMessage(), e)
+                registry.removeMetaClass(cls);
+            } catch (Exception e) {
+                LOG.error('There was an error shutting down GORM for entity [' + cls.getName() + ']: ' + e.getMessage(), e);
             }
         }
     }
 
     void setApplicationContext(ApplicationContext ctx) {
-        applicationContext = ctx
-        this.applicationEventPublisher = ctx
+        applicationContext = ctx;
+        this.applicationEventPublisher = ctx;
     }
 
     Session connect() {
-        return connect(connectionDetails)
+        return connect(connectionDetails);
     }
 
     final Session connect(PropertyResolver connDetails) {
-        Session session = createSession(connDetails)
-        publishSessionCreationEvent(session)
-        return session
+        Session session = createSession(connDetails);
+        publishSessionCreationEvent(session);
+        return session;
     }
 
     private void publishSessionCreationEvent(Session session) {
-        ApplicationEventPublisher eventPublisher = getApplicationEventPublisher()
-        if (eventPublisher != null) {
-            eventPublisher.publishEvent(new SessionCreationEvent(session))
+        ApplicationEventPublisher applicationEventPublisher = getApplicationEventPublisher();
+        if (applicationEventPublisher != null) {
+            applicationEventPublisher.publishEvent(new SessionCreationEvent(session));
         }
     }
 
     @Override
     Session connectStateless() {
-        Session session = createStatelessSession(connectionDetails)
-        publishSessionCreationEvent(session)
-        return session
+        Session session = createStatelessSession(connectionDetails);
+        publishSessionCreationEvent(session);
+        return session;
     }
 
     /**
@@ -198,7 +197,7 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * @param connectionDetails The session details
      * @return The session object
      */
-    protected abstract Session createSession(PropertyResolver connectionDetails)
+    protected abstract Session createSession(PropertyResolver connectionDetails);
 
     /**
      * Creates the native stateless session
@@ -207,11 +206,11 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * @return The session object
      */
     protected Session createStatelessSession(PropertyResolver connectionDetails) {
-        return createSession(connectionDetails)
+        return createSession(connectionDetails);
     }
 
     Session getCurrentSession() throws ConnectionNotFoundException {
-        return DatastoreUtils.doGetSession(this, false)
+        return DatastoreUtils.doGetSession(this, false);
     }
 
     /**
@@ -223,7 +222,7 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * datastore whose session state this call has no other reason to touch.
      */
     boolean hasCurrentSession() {
-        return getSessionResolver().hasResolvedSession()
+        return getSessionResolver().hasResolvedSession();
     }
 
     /**
@@ -232,7 +231,7 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * @throws ConnectionNotFoundException If no session has been created
      */
     static Session retrieveSession() throws ConnectionNotFoundException {
-        return retrieveSession(Datastore)
+        return retrieveSession(Datastore);
     }
 
     /**
@@ -242,28 +241,28 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * @throws ConnectionNotFoundException If no session has been created
      */
     static Session retrieveSession(Class datastoreClass) throws ConnectionNotFoundException {
-        final Map<Object, Object> resourceMap = TransactionSynchronizationManager.getResourceMap()
-        Session session = null
+        final Map<Object, Object> resourceMap = TransactionSynchronizationManager.getResourceMap();
+        Session session = null;
 
         if (resourceMap != null && !resourceMap.isEmpty()) {
-            for (Object key in resourceMap.keySet()) {
+            for (Object key : resourceMap.keySet()) {
                 if (datastoreClass.isInstance(key)) {
-                    SessionHolder sessionHolder = (SessionHolder) resourceMap.get(key)
+                    SessionHolder sessionHolder = (SessionHolder) resourceMap.get(key);
                     if (sessionHolder != null) {
-                        session = sessionHolder.getSession()
+                        session = sessionHolder.getSession();
                     }
                 }
             }
         }
 
         if (session == null) {
-            throw new ConnectionNotFoundException('No datastore session found. Call Datastore.connect(..) before calling Datastore.getCurrentSession()')
+            throw new ConnectionNotFoundException('No datastore session found. Call Datastore.connect(..) before calling Datastore.getCurrentSession()');
         }
-        return session
+        return session;
     }
 
     MappingContext getMappingContext() {
-        return mappingContext
+        return mappingContext;
     }
 
     /**
@@ -271,7 +270,7 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      */
     @Deprecated
     ConfigurableApplicationContext getApplicationContext() {
-        return (ConfigurableApplicationContext) applicationContext
+        return (ConfigurableApplicationContext) applicationContext;
     }
 
     /**
@@ -279,30 +278,32 @@ abstract class AbstractDatastore implements Datastore, StatelessDatastore, Servi
      * {@link ApplicationContext} and no subclass provides its own publisher
      */
     ApplicationEventPublisher getApplicationEventPublisher() {
-        return applicationEventPublisher
+        return applicationEventPublisher;
     }
 
     protected void initializeConverters(MappingContext mappingContext) {
-        final ConverterRegistry conversionService = mappingContext.getConverterRegistry()
-        BasicTypeConverterRegistrar registrar = new BasicTypeConverterRegistrar()
-        registrar.register(conversionService)
+        final ConverterRegistry conversionService = mappingContext.getConverterRegistry();
+        BasicTypeConverterRegistrar registrar = new BasicTypeConverterRegistrar();
+        registrar.register(conversionService);
     }
 
     protected boolean isIndexed(PersistentProperty property) {
-        PropertyMapping<Property> pm = property.getMapping()
-        final Property keyValue = pm.getMappedForm()
-        return keyValue != null && keyValue.isIndex()
+        PropertyMapping<Property> pm = property.getMapping();
+        final Property keyValue = pm.getMappedForm();
+        return keyValue != null && keyValue.isIndex();
     }
 
     boolean isSchemaless() {
-        return false
+        return false;
     }
 
     @Override
-    def <T> T withSession(final Closure<T> callable) {
-        return DatastoreUtils.execute(this, { Session session ->
-            callable.call(session)
-        } as SessionCallback<T>)
+    <T> T withSession(final Closure<T> callable) {
+        return DatastoreUtils.execute(this, new SessionCallback<>() {
+            @Override
+            T doInSession(Session session) {
+                return callable.call(session);
+            }
+        });
     }
-
 }
