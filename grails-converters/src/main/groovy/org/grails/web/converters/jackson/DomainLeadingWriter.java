@@ -122,6 +122,6 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
             case ID -> true;
             case VERSION -> current.isIncludeVersion();
         };
-        return enabled && current.includes(bean, property) && DomainWrites.projected(context, bean, property, getName());
+        return enabled && current.includes(bean, property) && JsonProjection.projects(context, bean, property, getName());
     }
 }

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
@@ -164,6 +165,18 @@ public final class JsonProjection {
     }
 
     /**
+     * @param context the context of a write
+     * @param bean the bean being written
+     * @param property the property, as the bean's class names it
+     * @param written the property, as it is written
+     * @return whether the projection of the write, if there is one, keeps the property
+     */
+    static boolean projects(SerializationContext context, Object bean, String property, String written) {
+        return !(context.getAttribute(ATTRIBUTE) instanceof JsonProjection projection) ||
+                projection.appliesTo(bean.getClass()) == null || projection.includes(property, written);
+    }
+
+    /**
      * @param names the names of one property: its bean name and, where Jackson renames it, its JSON name
      * @return whether the projection keeps the property
      */
@@ -200,8 +213,9 @@ public final class JsonProjection {
                     }
                     List<BeanPropertyWriter> projected = new ArrayList<>(properties.size());
                     for (BeanPropertyWriter property : properties) {
-                        projected.add(new ProjectedPropertyWriter(property,
-                                beanNames.getOrDefault(property.getName(), property.getName())));
+                        String beanName = beanNames.getOrDefault(property.getName(), property.getName());
+                        projected.add(GatedPropertyWriter.gated(property,
+                                (bean, context, writer) -> projects(context, bean, beanName, writer.getName())));
                     }
                     return projected;
                 }

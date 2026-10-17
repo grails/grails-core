@@ -22,34 +22,60 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
+import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.util.NameTransformer;
 
 /**
- * Writes a persistent property of a domain class instance as Jackson writes it, when the rendering of the write and its
- * projection include the property.
+ * Writes a property of a bean as Jackson writes it, when every gate of the write includes it: the JSON converter's
+ * includes and excludes, the projection of a response, and the rendering of a domain class instance. Each module that
+ * gates a property adds its gate to the same writer.
  *
  * @since 9.0
  */
-final class DomainPropertyWriter extends BeanPropertyWriter {
+final class GatedPropertyWriter extends BeanPropertyWriter {
+
+    /** Whether a property of a bean is written. */
+    @FunctionalInterface
+    interface Gate {
+
+        /**
+         * @param bean the bean being written
+         * @param context the context of the write
+         * @param writer the writer of the property, which names it as it is written
+         * @return whether the property is written
+         */
+        boolean includes(Object bean, SerializationContext context, BeanPropertyWriter writer) throws Exception;
+    }
 
     private final BeanPropertyWriter delegate;
 
-    private final String property;
+    private final Gate gate;
 
-    private final DomainRendering rendering;
-
-    DomainPropertyWriter(BeanPropertyWriter delegate, String property, DomainRendering rendering) {
+    private GatedPropertyWriter(BeanPropertyWriter delegate, Gate gate) {
         super(delegate);
         this.delegate = delegate;
-        this.property = property;
-        this.rendering = rendering;
+        this.gate = gate;
+    }
+
+    /**
+     * @param writer a property writer, which may be gated already
+     * @param gate a gate to add
+     * @return a writer that writes the property when its gates, and this one, include it
+     */
+    static BeanPropertyWriter gated(BeanPropertyWriter writer, Gate gate) {
+        if (writer instanceof GatedPropertyWriter gated) {
+            Gate first = gated.gate;
+            return new GatedPropertyWriter(gated.delegate,
+                    (bean, context, property) -> first.includes(bean, context, property) && gate.includes(bean, context, property));
+        }
+        return new GatedPropertyWriter(writer, gate);
     }
 
     @Override
     public BeanPropertyWriter rename(NameTransformer transformer) {
         BeanPropertyWriter renamed = delegate.rename(transformer);
-        return renamed == delegate ? this : new DomainPropertyWriter(renamed, property, rendering);
+        return renamed == delegate ? this : new GatedPropertyWriter(renamed, gate);
     }
 
     @Override
@@ -63,15 +89,40 @@ final class DomainPropertyWriter extends BeanPropertyWriter {
     }
 
     @Override
+    public void assignTypeSerializer(TypeSerializer typeSerializer) {
+        delegate.assignTypeSerializer(typeSerializer);
+    }
+
+    @Override
+    public ValueSerializer<Object> getSerializer() {
+        return delegate.getSerializer();
+    }
+
+    @Override
+    public boolean hasSerializer() {
+        return delegate.hasSerializer();
+    }
+
+    @Override
+    public boolean hasNullSerializer() {
+        return delegate.hasNullSerializer();
+    }
+
+    @Override
+    public boolean isUnwrapping() {
+        return delegate.isUnwrapping();
+    }
+
+    @Override
     public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
-        if (included(bean, context)) {
+        if (gate.includes(bean, context, this)) {
             delegate.serializeAsProperty(bean, generator, context);
         }
     }
 
     @Override
     public void serializeAsElement(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
-        if (included(bean, context)) {
+        if (gate.includes(bean, context, this)) {
             delegate.serializeAsElement(bean, generator, context);
         }
         else {
@@ -82,9 +133,5 @@ final class DomainPropertyWriter extends BeanPropertyWriter {
     @Override
     public void depositSchemaProperty(JsonObjectFormatVisitor visitor, SerializationContext context) {
         delegate.depositSchemaProperty(visitor, context);
-    }
-
-    private boolean included(Object bean, SerializationContext context) {
-        return rendering.of(context, bean).includes(bean, property) && DomainWrites.projected(context, bean, property, getName());
     }
 }

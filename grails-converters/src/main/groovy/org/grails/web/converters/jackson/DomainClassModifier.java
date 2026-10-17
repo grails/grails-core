@@ -102,7 +102,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
         for (PersistentProperty property : persistent) {
             for (BeanPropertyWriter writer : properties) {
                 if (property.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
-                    written.add(new DomainPropertyWriter(withReferences(writer, property), property.getName(), rendering));
+                    written.add(GatedPropertyWriter.gated(withReferences(writer, property), included(property.getName())));
                 }
             }
         }
@@ -119,6 +119,12 @@ final class DomainClassModifier extends ValueSerializerModifier {
             return ordered;
         }
         return written;
+    }
+
+    /** The rendering of the write, and its projection, for a property of the instance being written. */
+    private GatedPropertyWriter.Gate included(String property) {
+        return (bean, context, writer) -> rendering.of(context, bean).includes(bean, property) &&
+                JsonProjection.projects(context, bean, property, writer.getName());
     }
 
     private BeanPropertyWriter withReferences(BeanPropertyWriter writer, PersistentProperty property) {

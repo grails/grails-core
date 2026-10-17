@@ -29,8 +29,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import tools.jackson.databind.SerializationContext;
-
 /**
  * Decisions that the writers of a domain class instance share.
  *
@@ -39,18 +37,6 @@ import tools.jackson.databind.SerializationContext;
 final class DomainWrites {
 
     private DomainWrites() {
-    }
-
-    /**
-     * @param context the context of the write
-     * @param bean the instance being written
-     * @param property the property, as the instance's class names it
-     * @param written the property, as it is written
-     * @return whether the projection of the write, if there is one, keeps the property
-     */
-    static boolean projected(SerializationContext context, Object bean, String property, String written) {
-        return !(context.getAttribute(JsonProjection.ATTRIBUTE) instanceof JsonProjection projection) ||
-                projection.appliesTo(bean.getClass()) == null || projection.includes(property, written);
     }
 
     /**

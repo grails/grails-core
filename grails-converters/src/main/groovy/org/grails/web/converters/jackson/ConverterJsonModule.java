@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import tools.jackson.core.JsonGenerator;
@@ -101,7 +103,8 @@ public final class ConverterJsonModule extends JacksonModule {
                 for (BeanPropertyWriter writer : properties) {
                     if (writer.getAnnotation(PersistenceMethod.class) == null &&
                             writer.getAnnotation(ControllerMethod.class) == null) {
-                        written.add(new ConverterPropertyWriter(writer, internalNames.getOrDefault(writer.getName(), writer.getName())));
+                        written.add(GatedPropertyWriter.gated(writer,
+                                included(internalNames.getOrDefault(writer.getName(), writer.getName()))));
                     }
                 }
                 return written;
@@ -119,6 +122,21 @@ public final class ConverterJsonModule extends JacksonModule {
                 return byName(valueType.getRawClass(), serializer);
             }
         });
+    }
+
+    /**
+     * The converter's includes and excludes for the class of the bean being written, which name its properties as the
+     * class does.
+     */
+    @SuppressWarnings("unchecked")
+    private static GatedPropertyWriter.Gate included(String property) {
+        return (bean, context, writer) -> {
+            if (context.getAttribute(PROPERTY_FILTERS) instanceof Function<?, ?> filters) {
+                Predicate<String> filter = ((Function<Object, Predicate<String>>) filters).apply(bean);
+                return filter == null || filter.test(property);
+            }
+            return true;
+        };
     }
 
     /**
