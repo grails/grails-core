@@ -19,6 +19,7 @@
 package org.grails.plugins.xml
 
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+import org.springframework.beans.factory.support.BeanDefinitionBuilder
 import org.springframework.beans.factory.support.BeanRegistryAdapter
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver
@@ -34,6 +35,7 @@ import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.errors.VndErrorXmlRenderer
+import grails.rest.render.xml.XmlRenderer
 import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.SpringMessageConverters
@@ -72,11 +74,23 @@ class XmlGrailsPluginSpec extends Specification {
             getBeanDefinition('xmlDataBindingSourceCreator').beanClassName == XmlDataBindingSourceCreator.name
             getBeanDefinition('halXmlDataBindingSourceCreator').beanClassName ==
                     HalXmlDataBindingSourceCreator.name
-            getBeanDefinition('xmlRenderer').beanClassName == XmlFallbackRenderer.name
-            getBeanDefinition('xmlErrorsRenderer').beanClassName == XmlErrorsRenderer.name
+            getBeanDefinition('grailsXmlRenderer').beanClassName == XmlFallbackRenderer.name
+            getBeanDefinition('grailsXmlErrorsRenderer').beanClassName == XmlErrorsRenderer.name
             containsBeanDefinition('errorsXmlMarshallerRegisterer')
             !containsBeanDefinition('grailsJacksonXmlHttpMessageConverter')
         }
+    }
+
+    void "an application's renderer beans, whatever their names, do not replace the plugin's"() {
+        given: 'renderer beans declared after the plugin, as resources.groovy declares them, under names an application may use'
+        beanFactory.registerBeanDefinition('xmlRenderer',
+                BeanDefinitionBuilder.genericBeanDefinition(XmlRenderer).addConstructorArgValue(String).beanDefinition)
+        beanFactory.registerBeanDefinition('xmlErrorsRenderer',
+                BeanDefinitionBuilder.genericBeanDefinition(VndErrorXmlRenderer).beanDefinition)
+
+        expect:
+        beanFactory.getBeansOfType(XmlFallbackRenderer).size() == 1
+        beanFactory.getBeansOfType(XmlErrorsRenderer).size() == 1
     }
 
     void 'the errors marshaller registerer targets XML'() {
@@ -106,8 +120,8 @@ class XmlGrailsPluginSpec extends Specification {
         def rendererRegistry = new DefaultRendererRegistry()
         rendererRegistry.initialize()
         rendererRegistry.setRenderers([
-                beanFactory.getBean('xmlRenderer', DefaultXmlRenderer),
-                beanFactory.getBean('xmlErrorsRenderer', XmlErrorsRenderer),
+                beanFactory.getBean('grailsXmlRenderer', DefaultXmlRenderer),
+                beanFactory.getBean('grailsXmlErrorsRenderer', XmlErrorsRenderer),
         ] as Renderer[])
 
         then: "both are reachable, configured from the environment and the converter holder"
@@ -130,7 +144,7 @@ class XmlGrailsPluginSpec extends Specification {
             getTargetType() >> CharSequence
             getMimeTypes() >> ([MimeType.XML] as MimeType[])
         }
-        registry.setRenderers([custom, beanFactory.getBean('xmlRenderer', DefaultXmlRenderer)] as Renderer[])
+        registry.setRenderers([custom, beanFactory.getBean('grailsXmlRenderer', DefaultXmlRenderer)] as Renderer[])
 
         expect:
         registry.findRenderer(MimeType.XML, 'value').is(custom)
@@ -142,7 +156,7 @@ class XmlGrailsPluginSpec extends Specification {
             getTargetType() >> Object
             getMimeTypes() >> ([MimeType.XML] as MimeType[])
         }
-        def fallback = beanFactory.getBean('xmlRenderer', XmlFallbackRenderer)
+        def fallback = beanFactory.getBean('grailsXmlRenderer', XmlFallbackRenderer)
         def registry = new DefaultRendererRegistry()
 
         when: 'Spring injects the renderer beans before the registry initializes'
@@ -162,7 +176,7 @@ class XmlGrailsPluginSpec extends Specification {
     void "the plugin's renderer of validation errors answers XML over an application's renderer bean, as in Grails 8, whichever is collected first"() {
         given: 'a Vnd.Error renderer bean, which also names the XML media types'
         def vndError = new VndErrorXmlRenderer()
-        def plugin = beanFactory.getBean('xmlErrorsRenderer', XmlErrorsRenderer)
+        def plugin = beanFactory.getBean('grailsXmlErrorsRenderer', XmlErrorsRenderer)
         def registry = new DefaultRendererRegistry()
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
 
@@ -188,7 +202,7 @@ class XmlGrailsPluginSpec extends Specification {
             getComponentType() >> Object
             getMimeTypes() >> ([MimeType.XML] as MimeType[])
         }
-        def plugin = beanFactory.getBean('xmlErrorsRenderer', XmlErrorsRenderer)
+        def plugin = beanFactory.getBean('grailsXmlErrorsRenderer', XmlErrorsRenderer)
         def registry = new DefaultRendererRegistry()
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         registry.setRenderers([plugin] as Renderer[])
@@ -204,7 +218,7 @@ class XmlGrailsPluginSpec extends Specification {
 
     void 'a renderer discovers a GSP locator registered after its creation'() {
         given:
-        def renderer = beanFactory.getBean('xmlRenderer', DefaultXmlRenderer)
+        def renderer = beanFactory.getBean('grailsXmlRenderer', DefaultXmlRenderer)
         def locator = Mock(GrailsConventionGroovyPageLocator)
         beanFactory.registerSingleton('groovyPageLocator', locator)
         def context = Mock(RenderContext) {
@@ -244,7 +258,7 @@ class XmlGrailsPluginSpec extends Specification {
         rendererRegistry.findContainerRenderer(MimeType.XML, Errors, new BeanPropertyBindingResult('value', 'target')) == null
 
         and: 'the renderers were autowired with the registry they could have reached'
-        beanFactory.getBean('xmlRenderer', DefaultXmlRenderer).rendererRegistryProvider.getIfAvailable().is(rendererRegistry)
+        beanFactory.getBean('grailsXmlRenderer', DefaultXmlRenderer).rendererRegistryProvider.getIfAvailable().is(rendererRegistry)
     }
 
     void 'Atom feed rendering remains opt-in'() {

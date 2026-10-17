@@ -28,7 +28,7 @@ class ControllerXmlRenderingSpec extends Specification implements ControllerUnit
         given:
         def beanFactory = applicationContext.beanFactory
         assert beanFactory.containsBeanDefinition('groovyPageLocator')
-        ['xmlRenderer', 'rendererRegistry', 'groovyPageLocator', 'mimeTypeResolver', 'mimeTypesConfiguration'].each {
+        ['grailsXmlRenderer', 'rendererRegistry', 'groovyPageLocator', 'mimeTypeResolver', 'mimeTypesConfiguration'].each {
             beanFactory.destroySingleton(it)
         }
 
@@ -44,12 +44,12 @@ class ControllerXmlRenderingSpec extends Specification implements ControllerUnit
         response.xml.text() == 'ok'
 
         where:
-        firstBean << ['xmlRenderer', 'mimeTypeResolver']
+        firstBean << ['grailsXmlRenderer', 'mimeTypeResolver']
     }
 
     void 'XML responses find GSP views registered after the renderer was created'() {
         given:
-        assert applicationContext.beanFactory.containsSingleton('xmlRenderer')
+        assert applicationContext.beanFactory.containsSingleton('grailsXmlRenderer')
         views['/xmlResponse/show.xml.gsp'] = '<message>${xmlResponseBody.message}</message>'
         request.addHeader('Accept', 'application/xml')
         webRequest.actionName = 'show'

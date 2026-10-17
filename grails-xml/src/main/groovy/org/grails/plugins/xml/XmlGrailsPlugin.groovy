@@ -67,7 +67,7 @@ class XmlGrailsPlugin extends Plugin {
             // Contributed as Renderer beans, which DefaultRendererRegistry autowires: registering
             // them from a bean that holds a registry reference can write into an instance nothing
             // reads, because the harness rebuilds that singleton.
-            registry.registerBean('xmlRenderer', XmlFallbackRenderer) {
+            registry.registerBean('grailsXmlRenderer', XmlFallbackRenderer) {
                 it.supplier {
                     XmlFallbackRenderer renderer = new XmlFallbackRenderer()
                     // Set here as well as autowired, so the bean works in a factory that does not
@@ -76,7 +76,7 @@ class XmlGrailsPlugin extends Plugin {
                     configure(renderer, environment, it.beanProvider(SpringMessageConverters).getIfAvailable())
                 }
             }
-            registry.registerBean('xmlErrorsRenderer', XmlErrorsRenderer) {
+            registry.registerBean('grailsXmlErrorsRenderer', XmlErrorsRenderer) {
                 it.supplier {
                     configure(new XmlErrorsRenderer(), environment,
                             it.beanProvider(SpringMessageConverters).getIfAvailable())

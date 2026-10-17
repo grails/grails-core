@@ -53,7 +53,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         applicationContext.getBean(grails.plugins.GrailsPluginManager).allPlugins*.name as Set ==
                 ['core', 'restResponder'] as Set
         grailsApplication.getArtefacts('UrlMappings').length == 0
-        applicationContext.containsBean('xmlRenderer')
+        applicationContext.containsBean('grailsXmlRenderer')
         applicationContext.containsBean('namedJsonConfigurationRegistry')
         applicationContext.getBean(JsonNamingCustomizer).appliedCustomizer.is(
                 applicationContext.getBean(GrailsJsonMapperCustomizer))

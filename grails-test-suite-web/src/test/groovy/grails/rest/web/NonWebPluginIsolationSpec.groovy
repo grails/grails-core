@@ -27,7 +27,7 @@ class NonWebPluginIsolationSpec extends Specification implements ServiceUnitTest
         expect:
         Class.forName('org.grails.plugins.xml.XmlGrailsPlugin')
         service.greeting() == 'hello'
-        !applicationContext.containsBean('xmlRenderer')
+        !applicationContext.containsBean('grailsXmlRenderer')
         !applicationContext.containsBean('rendererRegistry')
         !applicationContext.containsBean('namedJsonConfigurationRegistry')
     }

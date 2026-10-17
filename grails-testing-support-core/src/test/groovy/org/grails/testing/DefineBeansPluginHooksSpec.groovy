@@ -29,7 +29,7 @@ class DefineBeansPluginHooksSpec extends Specification implements GrailsUnitTest
     void "plain unit tests do not load web or optional XML beans"() {
         expect:
         !applicationContext.containsBean('rendererRegistry')
-        !applicationContext.containsBean('xmlRenderer')
+        !applicationContext.containsBean('grailsXmlRenderer')
         !applicationContext.containsBean('namedJsonConfigurationRegistry')
     }
 
