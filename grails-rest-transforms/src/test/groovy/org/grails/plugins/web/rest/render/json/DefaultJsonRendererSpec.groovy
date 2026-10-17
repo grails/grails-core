@@ -399,7 +399,7 @@ class DefaultJsonRendererSpec extends Specification {
         webRequest.response.contentAsString == '{"configured":true}'
     }
 
-    void 'validation errors render as problem JSON through Spring conversion by default'() {
+    void 'with Spring JSON on, validation errors render as problem JSON through Spring conversion'() {
         given:
         def converter = Mock(HttpMessageConverter) {
             getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON]
