@@ -754,6 +754,8 @@ test classpath, and add the `grails-xml` beans when that module is on the test c
 loading the XML plugin's dependency graph. A spec that overrides `getIncludePlugins()` or asserts on
 the beans in its application context sees these additions.
 
-The traits still do not load the controllers, URL mappings or i18n plugins; link generation keeps the
-curated unit-test setup. `GrailsUnitTest` and `ServiceUnitTest` do not load XML or the web plugins
-just because those modules are on the classpath. See <<unitTesting,Unit Testing>>.
+The traits still do not load the controllers, URL mappings or i18n plugins themselves. A spec that includes one of
+them, or defines its own URL mappings holder, link generator or locale resolver, now keeps that bean, where the traits
+replaced it with their own. Without `grails-xml` on the test classpath, setting `request.xml` or reading
+`request.XML` fails with an `IllegalStateException` that names the module. `GrailsUnitTest` and `ServiceUnitTest` do
+not load XML or the web plugins just because those modules are on the classpath. See <<unitTesting,Unit Testing>>.
