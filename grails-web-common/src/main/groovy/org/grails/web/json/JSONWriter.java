@@ -380,10 +380,12 @@ public class JSONWriter {
     /**
      * Writes a value nested in a {@link JsonMapperValue} that this writer is writing, such as a value that a Jackson
      * serializer writes with {@link JsonGenerator#writePOJO(Object)}, from the value's nested value writer. The writer
-     * accepts one value, as at the start of a JSON text, and then returns to the state it was in.
+     * accepts one value, as at the start of a JSON text, and then returns to the state it was in. A value that writes
+     * nothing, as the converter writes a value reached again with the {@code IGNORE} circular reference behaviour, is left
+     * out of an array, and is {@code null} for a property, whose name is written already, as the mapper writes it.
      *
-     * @param writeValue writes one value to this writer
-     * @throws JSONException if {@code writeValue} does not write one complete value
+     * @param writeValue writes one value to this writer, or nothing
+     * @throws JSONException if {@code writeValue} starts a value it does not complete
      * @since 9.0
      */
     public void writeNested(Runnable writeValue) {
@@ -395,7 +397,12 @@ public class JSONWriter {
         this.nesting++;
         try {
             writeValue.run();
-            if (this.mode != DONE) {
+            if (this.mode == INIT && generator != null) {
+                if (!generator.streamWriteContext().inArray()) {
+                    generator.writeNull();
+                }
+            }
+            else if (this.mode != DONE) {
                 throw new JSONException("Incomplete nested value: expected mode of DONE but was " + this.mode);
             }
         }

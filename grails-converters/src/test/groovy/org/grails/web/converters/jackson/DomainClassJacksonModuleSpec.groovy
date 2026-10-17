@@ -150,6 +150,7 @@ class DomainClassJacksonModuleSpec extends Specification {
         'DEFAULT'     || '{"_ref":"..","class":"' + Partner.name + '"}'
         'PATH'        || '{"class":"' + Partner.name + '","ref":"root"}'
         'INSERT_NULL' || 'null'
+        'IGNORE'      || 'null'
     }
 
     void "a proxy is written as the instance it proxies, and a reference to one from its identifier, without loading it"() {

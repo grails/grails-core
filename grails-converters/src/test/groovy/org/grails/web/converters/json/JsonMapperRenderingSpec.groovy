@@ -184,6 +184,24 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(new MarkedMethods(title: 'Grails')).toString() == '{"title":"Grails"}'
     }
 
+    void "with the IGNORE circular reference behaviour, a value reached again is left out of a list, and a property is null"() {
+        given:
+        initialize(['grails.converters.json.circular.reference.behaviour': 'IGNORE'])
+        def first = new Node(name: 'first')
+        first.children = [new Node(name: 'second', children: [first])]
+        def lone = new Node(name: 'lone')
+        lone.parent = lone
+
+        when:
+        def list = new JsonSlurper().parseText(new JSON(first).toString())
+        def property = new JsonSlurper().parseText(new JSON(lone).toString())
+
+        then: 'as the mapper respond writes with does'
+        list.children[0].children == []
+        property.containsKey('parent')
+        property.parent == null
+    }
+
     void "enums render by name, as in Grails 8, and a Month as its number"() {
         expect:
         new JSON([role: Role.HEAD, unit: ChronoUnit.SECONDS, labelled: Labelled.ONE, month: Month.MAY]).toString() ==
