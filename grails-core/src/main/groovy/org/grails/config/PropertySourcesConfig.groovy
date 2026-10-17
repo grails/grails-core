@@ -16,152 +16,155 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.config
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.config;
 
-import groovy.transform.CompileStatic
-import groovy.transform.stc.POJO
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
-import org.springframework.core.convert.support.ConfigurableConversionService
-import org.springframework.core.env.EnumerablePropertySource
-import org.springframework.core.env.MapPropertySource
-import org.springframework.core.env.MutablePropertySources
-import org.springframework.core.env.PropertySource
-import org.springframework.core.env.PropertySources
-import org.springframework.core.env.PropertySourcesPropertyResolver
+import groovy.transform.CompileStatic;
+import groovy.transform.stc.POJO;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
+import org.springframework.core.env.PropertySourcesPropertyResolver;
 
-import grails.util.GrailsStringUtils
+import grails.util.GrailsStringUtils;
 
 /**
  * @author Graeme Rocher
  * @since 3.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 @POJO
 class PropertySourcesConfig extends NavigableMapConfig {
 
-    protected PropertySources propertySources
-    protected PropertySourcesPropertyResolver propertySourcesPropertyResolver
+    protected PropertySources propertySources;
+    protected PropertySourcesPropertyResolver propertySourcesPropertyResolver;
 
-    PropertySourcesConfig(PropertySources propertySources) {
-        this.propertySources = propertySources
-        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources)
-        initializeFromPropertySources(propertySources)
+    public PropertySourcesConfig(PropertySources propertySources) {
+        this.propertySources = propertySources;
+        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
+        initializeFromPropertySources(propertySources);
     }
 
-    PropertySourcesConfig() {
-        this.propertySources = new MutablePropertySources()
-        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources)
+    public PropertySourcesConfig() {
+        this.propertySources = new MutablePropertySources();
+        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
     }
 
-    PropertySourcesConfig(Map<String, Object> mapPropertySource) {
-        MutablePropertySources mutablePropertySources = new MutablePropertySources()
-        NavigableMap map = new NavigableMap()
-        map.merge(mapPropertySource, true)
+    public PropertySourcesConfig(Map<String, Object> mapPropertySource) {
+        MutablePropertySources mutablePropertySources = new MutablePropertySources();
+        NavigableMap map = new NavigableMap();
+        map.merge(mapPropertySource, true);
 
-        mutablePropertySources.addFirst(new MapPropertySource('config', map))
-        this.propertySources = mutablePropertySources
-        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources)
-        initializeFromPropertySources(propertySources)
+        mutablePropertySources.addFirst(new MapPropertySource('config', map));
+        this.propertySources = mutablePropertySources;
+        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
+        initializeFromPropertySources(propertySources);
     }
 
-    PropertySourcesConfig(PropertySource propertySource) {
-        MutablePropertySources mutablePropertySources = new MutablePropertySources()
-        mutablePropertySources.addFirst(propertySource)
-        this.propertySources = mutablePropertySources
-        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources)
-        initializeFromPropertySources(propertySources)
+    public PropertySourcesConfig(PropertySource propertySource) {
+        MutablePropertySources mutablePropertySources = new MutablePropertySources();
+        mutablePropertySources.addFirst(propertySource);
+        this.propertySources = mutablePropertySources;
+        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
+        initializeFromPropertySources(propertySources);
     }
 
     PropertySources getPropertySources() {
-        return propertySources
+        return propertySources;
     }
 
     void refresh() {
-        initializeFromPropertySources(propertySources)
+        initializeFromPropertySources(propertySources);
     }
 
     protected void initializeFromPropertySources(PropertySources propertySources) {
 
-        EnvironmentAwarePropertySource environmentAwarePropertySource = new EnvironmentAwarePropertySource(propertySources)
+        EnvironmentAwarePropertySource environmentAwarePropertySource = new EnvironmentAwarePropertySource(propertySources);
         if (propertySources instanceof MutablePropertySources) {
-            final String applicationConfig = 'applicationConfigurationProperties'
+            final String applicationConfig = 'applicationConfigurationProperties';
             if (propertySources.contains(applicationConfig)) {
-                ((MutablePropertySources) propertySources).addBefore(applicationConfig, environmentAwarePropertySource)
+                ((MutablePropertySources) propertySources).addBefore(applicationConfig, environmentAwarePropertySource);
             } else {
-                ((MutablePropertySources) propertySources).addLast(environmentAwarePropertySource)
+                ((MutablePropertySources) propertySources).addLast(environmentAwarePropertySource);
             }
         }
 
-        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources)
-        Collections.reverse(propertySourceList)
-        for (PropertySource propertySource in propertySourceList) {
+        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources);
+        Collections.reverse(propertySourceList);
+        for (PropertySource propertySource : propertySourceList) {
             if (propertySource instanceof EnumerablePropertySource) {
-                EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource) propertySource
-                mergeEnumerablePropertySource(enumerablePropertySource)
+                EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource) propertySource;
+                mergeEnumerablePropertySource(enumerablePropertySource);
             }
         }
     }
 
     private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
         if (enumerablePropertySource instanceof NavigableMapPropertySource) {
-            this.@configMap.merge(((NavigableMapPropertySource) enumerablePropertySource).getSource(), false)
+            this.@configMap.merge(((NavigableMapPropertySource) enumerablePropertySource).getSource(), false);
         } else {
-            Map<String, Object> map = new LinkedHashMap<>()
+            Map<String, Object> map = new LinkedHashMap<>();
 
-            final String[] propertyNames = enumerablePropertySource.getPropertyNames()
-            for (String propertyName in propertyNames) {
-                Object value = enumerablePropertySource.getProperty(propertyName)
+            final String[] propertyNames = enumerablePropertySource.getPropertyNames();
+            for (String propertyName : propertyNames) {
+                Object value = enumerablePropertySource.getProperty(propertyName);
                 if (value instanceof ConfigObject) {
-                    if (((ConfigObject) value).isEmpty()) continue
+                    if (((ConfigObject) value).isEmpty()) continue;
                 } else {
-                    value = processAndEvaluate(value)
+                    value = processAndEvaluate(value);
                 }
-                map.put(propertyName, value)
+                map.put(propertyName, value);
             }
 
-            this.@configMap.merge(map, true)
+            this.@configMap.merge(map, true);
         }
     }
 
     private Object processAndEvaluate(Object value) {
         if (value instanceof CharSequence) {
-            value = resolvePlaceholders(value.toString())
+            value = resolvePlaceholders(value.toString());
         } else if (value instanceof List) {
-            List<Object> result = new ArrayList<>()
-            for (Object element in (List) value) {
-                result.add(processAndEvaluate(element))
+            List<Object> result = new ArrayList<>();
+            for (Object element : (List) value) {
+                result.add(processAndEvaluate(element));
             }
-            return result
+            return result;
         } else if (value instanceof Map) {
-            Map<Object, Object> result = new LinkedHashMap<>()
-            for (Object key in ((Map) value).keySet()) {
-                result.put(key, processAndEvaluate(((Map) value).get(key)))
+            Map<Object, Object> result = new LinkedHashMap<>();
+            for (Object key : ((Map) value).keySet()) {
+                result.put(key, processAndEvaluate(((Map) value).get(key)));
             }
-            return result
+            return result;
         }
 
-        return value
+        return value;
     }
 
     void setClassLoader(ClassLoader classLoader) {
-        this.@classLoader = classLoader
+        this.@classLoader = classLoader;
     }
 
     void setConversionService(ConfigurableConversionService conversionService) {
-        this.@conversionService = conversionService
+        this.@conversionService = conversionService;
     }
 
     @Override
     String resolvePlaceholders(String text) {
         if (!GrailsStringUtils.isBlank(text)) {
-            return propertySourcesPropertyResolver.resolvePlaceholders(text)
+            return propertySourcesPropertyResolver.resolvePlaceholders(text);
         }
-        return text
+        return text;
     }
 
     @Override
     String resolveRequiredPlaceholders(String text) throws IllegalArgumentException {
-        return propertySourcesPropertyResolver.resolveRequiredPlaceholders(text)
+        return propertySourcesPropertyResolver.resolveRequiredPlaceholders(text);
     }
 
 }

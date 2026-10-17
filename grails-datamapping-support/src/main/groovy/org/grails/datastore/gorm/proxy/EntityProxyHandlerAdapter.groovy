@@ -16,72 +16,75 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.proxy
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.proxy;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.core.support.proxy.EntityProxyHandler
-import org.grails.datastore.mapping.core.Session
-import org.grails.datastore.mapping.engine.AssociationQueryExecutor
-import org.grails.datastore.mapping.proxy.ProxyFactory
+import grails.core.support.proxy.EntityProxyHandler;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.engine.AssociationQueryExecutor;
+import org.grails.datastore.mapping.proxy.ProxyFactory;
 
 /**
  * Adapts the proxy handler interface
  *
  * @author Graeme Rocher
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class EntityProxyHandlerAdapter implements ProxyFactory {
 
-    final EntityProxyHandler proxyHandler
+    final EntityProxyHandler proxyHandler;
 
     EntityProxyHandlerAdapter(EntityProxyHandler proxyHandler) {
-        this.proxyHandler = proxyHandler
+        this.proxyHandler = proxyHandler;
     }
 
     @Override
     boolean isProxy(Object object) {
-        return proxyHandler.isProxy(object)
+        return proxyHandler.isProxy(object);
     }
 
     @Override
     boolean isInitialized(Object object) {
-        return proxyHandler.isInitialized(object)
+        return proxyHandler.isInitialized(object);
     }
 
     @Override
     boolean isInitialized(Object object, String associationName) {
-        return proxyHandler.isInitialized(object, associationName)
+        return proxyHandler.isInitialized(object, associationName);
     }
 
     @Override
     Object unwrap(Object object) {
-        return proxyHandler.unwrapIfProxy(object)
+        return proxyHandler.unwrapIfProxy(object);
     }
 
     @Override
     Serializable getIdentifier(Object obj) {
-        return (Serializable) proxyHandler.getProxyIdentifier(obj)
+        return (Serializable) proxyHandler.getProxyIdentifier(obj);
     }
 
     @Override
     Class<?> getProxiedClass(Object o) {
-        return proxyHandler.getProxiedClass(o)
+        return proxyHandler.getProxiedClass(o);
     }
 
     @Override
     void initialize(Object o) {
-        proxyHandler.initialize(o)
+        proxyHandler.initialize(o);
     }
 
     @Override
     def <T> T createProxy(Session session, Class<T> type, Serializable key) {
-        throw new UnsupportedOperationException('Method createProxy is not supported by this implementation')
+        throw new UnsupportedOperationException('Method createProxy is not supported by this implementation');
     }
 
     @Override
     def <T, K extends Serializable> T createProxy(Session session, AssociationQueryExecutor<K, T> executor, K associationKey) {
-        throw new UnsupportedOperationException('Method createProxy is not supported by this implementation')
+        throw new UnsupportedOperationException('Method createProxy is not supported by this implementation');
     }
 
 }

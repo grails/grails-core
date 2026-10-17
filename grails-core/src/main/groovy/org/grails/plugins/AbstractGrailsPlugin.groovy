@@ -16,53 +16,56 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.plugins
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.plugins;
 
-import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
-import groovy.transform.stc.POJO
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.springframework.beans.BeansException
-import org.springframework.context.ApplicationContext
-import org.springframework.core.env.ConfigurableEnvironment
-import org.springframework.core.env.PropertySource
-import org.springframework.util.Assert
+import groovy.transform.CompileStatic;
+import groovy.transform.PackageScope;
+import groovy.transform.stc.POJO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertySource;
+import org.springframework.util.Assert;
 
-import grails.config.Config
-import grails.core.GrailsApplication
-import grails.plugins.GrailsPlugin
-import grails.plugins.GrailsPluginManager
-import grails.util.GrailsNameUtils
-import org.apache.grails.core.plugins.PluginUtils
-import org.grails.core.AbstractGrailsClass
-import org.grails.plugins.support.WatchPattern
+import grails.config.Config;
+import grails.core.GrailsApplication;
+import grails.plugins.GrailsPlugin;
+import grails.plugins.GrailsPluginManager;
+import grails.util.GrailsNameUtils;
+import org.apache.grails.core.plugins.PluginUtils;
+import org.grails.core.AbstractGrailsClass;
+import org.grails.plugins.support.WatchPattern;
 
 /**
  * Abstract implementation that provides some default behaviours
  *
  * @author Graeme Rocher
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements GrailsPlugin {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractGrailsPlugin)
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractGrailsPlugin);
 
-    public static final String PLUGIN_YML = PluginUtils.PLUGIN_YML_CONFIG
-    public static final String PLUGIN_YML_PATH = PluginUtils.PLUGIN_YML_CONFIG_PATH
-    public static final String PLUGIN_GROOVY = PluginUtils.PLUGIN_GROOVY_CONFIG
-    public static final String PLUGIN_GROOVY_PATH = PluginUtils.PLUGIN_GROOVY_CONFIG_PATH
+    public static final String PLUGIN_YML = PluginUtils.PLUGIN_YML_CONFIG;
+    public static final String PLUGIN_YML_PATH = PluginUtils.PLUGIN_YML_CONFIG_PATH;
+    public static final String PLUGIN_GROOVY = PluginUtils.PLUGIN_GROOVY_CONFIG;
+    public static final String PLUGIN_GROOVY_PATH = PluginUtils.PLUGIN_GROOVY_CONFIG_PATH;
 
-    protected GrailsApplication grailsApplication
-    protected boolean isBase = false
-    protected String version = '1.0'
-    protected Map<String, Object> dependencies = new HashMap<>()
-    protected String[] dependencyNames = [] as String[]
-    protected Class<?> pluginClass
-    protected ApplicationContext applicationContext
-    protected GrailsPluginManager manager
-    protected String[] evictionList = [] as String[]
-    protected Config config
+    protected GrailsApplication grailsApplication;
+    protected boolean isBase = false;
+    protected String version = '1.0';
+    protected Map<String, Object> dependencies = new HashMap<>();
+    protected String[] dependencyNames = [] as String[];
+    protected Class<?> pluginClass;
+    protected ApplicationContext applicationContext;
+    protected GrailsPluginManager manager;
+    protected String[] evictionList = [] as String[];
+    protected Config config;
 
     /**
      * Wrapper Grails class for plugins.
@@ -73,18 +76,18 @@ abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements Grail
     @CompileStatic
     @PackageScope
     class GrailsPluginClass extends AbstractGrailsClass {
-        GrailsPluginClass(Class<?> clazz) {
-            super(clazz, TRAILING_NAME)
+        public GrailsPluginClass(Class<?> clazz) {
+            super(clazz, TRAILING_NAME);
         }
     }
 
-    AbstractGrailsPlugin(Class<?> pluginClass, GrailsApplication application) {
-        Assert.notNull(pluginClass, 'Argument [pluginClass] cannot be null')
+    public AbstractGrailsPlugin(Class<?> pluginClass, GrailsApplication application) {
+        Assert.notNull(pluginClass, 'Argument [pluginClass] cannot be null');
         Assert.isTrue(pluginClass.getName().endsWith(TRAILING_NAME),
                 'Argument [pluginClass] with value [' + pluginClass +
-                        "] is not a Grails plugin (class name must end with 'GrailsPlugin')")
-        this.grailsApplication = application
-        this.pluginClass = pluginClass
+                        "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
+        this.grailsApplication = application;
+        this.pluginClass = pluginClass;
     }
 
     /**
@@ -101,21 +104,21 @@ abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements Grail
      */
     @Override
     PropertySource<?> getPropertySource() {
-        ApplicationContext mainContext = grailsApplication != null ? grailsApplication.getMainContext() : null
+        ApplicationContext mainContext = grailsApplication != null ? grailsApplication.getMainContext() : null;
         if (mainContext == null) {
-            return null
+            return null;
         }
-        var environment = mainContext.getEnvironment()
+        var environment = mainContext.getEnvironment();
         if (environment instanceof ConfigurableEnvironment configurableEnv) {
-            var propertySources = configurableEnv.getPropertySources()
-            String pluginName = GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), 'GrailsPlugin')
-            PropertySource<?> ps = propertySources.get(pluginName + '-' + PluginUtils.PLUGIN_YML_CONFIG)
+            var propertySources = configurableEnv.getPropertySources();
+            String pluginName = GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), 'GrailsPlugin');
+            PropertySource<?> ps = propertySources.get(pluginName + '-' + PluginUtils.PLUGIN_YML_CONFIG);
             if (ps != null) {
-                return ps
+                return ps;
             }
-            return propertySources.get(pluginName + '-' + PluginUtils.PLUGIN_GROOVY_CONFIG)
+            return propertySources.get(pluginName + '-' + PluginUtils.PLUGIN_GROOVY_CONFIG);
         }
-        return null
+        return null;
     }
 
     /* (non-Javadoc)
@@ -127,136 +130,136 @@ abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements Grail
 
     @Override
     boolean isEnabled(String[] profiles) {
-        return true
+        return true;
     }
 
     String getFileSystemName() {
-        return getFileSystemShortName() + '-' + getVersion()
+        return getFileSystemShortName() + '-' + getVersion();
     }
 
     String getFileSystemShortName() {
-        return GrailsNameUtils.getScriptName(getName())
+        return GrailsNameUtils.getScriptName(getName());
     }
 
     Class<?> getPluginClass() {
-        return pluginClass
+        return pluginClass;
     }
 
     boolean isBasePlugin() {
-        return isBase
+        return isBase;
     }
 
     void setBasePlugin(boolean isBase) {
-        this.isBase = isBase
+        this.isBase = isBase;
     }
 
     List<WatchPattern> getWatchedResourcePatterns() {
-        return Collections.emptyList()
+        return Collections.emptyList();
     }
 
     boolean hasInterestInChange(String path) {
-        return false
+        return false;
     }
 
     String[] getDependencyNames() {
-        return dependencyNames
+        return dependencyNames;
     }
 
     String getDependentVersion(String name) {
-        return null
+        return null;
     }
 
     String getName() {
-        return pluginClass.getName()
+        return pluginClass.getName();
     }
 
     String getVersion() {
-        return version
+        return version;
     }
 
     String getPluginPath() {
-        return PLUGINS_PATH + '/' + GrailsNameUtils.getScriptName(getName()) + '-' + getVersion()
+        return PLUGINS_PATH + '/' + GrailsNameUtils.getScriptName(getName()) + '-' + getVersion();
     }
 
     // https://github.com/apache/grails-core/issues/9406
     // The name of the plugin for my-plug on the path is myPlugin the GrailsNameUtils.getScriptName(getName()) will always use my-plugin
     String getPluginPathCamelCase() {
-        return PLUGINS_PATH + '/' + GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(getName()) + '-' + getVersion()
+        return PLUGINS_PATH + '/' + GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(getName()) + '-' + getVersion();
     }
 
     GrailsPluginManager getManager() {
-        return manager
+        return manager;
     }
 
     String[] getLoadAfterNames() {
-        return new String[0]
+        return new String[0];
     }
 
     String[] getLoadBeforeNames() {
-        return new String[0]
+        return new String[0];
     }
 
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.@applicationContext = applicationContext
+        this.@applicationContext = applicationContext;
     }
 
     /* (non-Javadoc)
      * @see grails.plugins.GrailsPlugin#setManager(grails.plugins.GrailsPluginManager)
      */
     void setManager(GrailsPluginManager manager) {
-        this.@manager = manager
+        this.@manager = manager;
     }
 
     /* (non-Javadoc)
      * @see grails.plugins.GrailsPlugin#setApplication(grails.core.GrailsApplication)
      */
     void setApplication(GrailsApplication application) {
-        this.grailsApplication = application
+        this.grailsApplication = application;
     }
 
     String[] getEvictionNames() {
-        return evictionList
+        return evictionList;
     }
 
     @Override
     boolean equals(Object o) {
-        if (this.is(o)) return true
-        if (!(o instanceof AbstractGrailsPlugin)) return false
+        if (this.is(o)) return true;
+        if (!(o instanceof AbstractGrailsPlugin)) return false;
 
-        AbstractGrailsPlugin that = (AbstractGrailsPlugin) o
+        AbstractGrailsPlugin that = (AbstractGrailsPlugin) o;
 
-        if (!pluginClass.equals(that.@pluginClass)) return false
-        if (!version.equals(that.@version)) return false
+        if (!pluginClass.equals(that.@pluginClass)) return false;
+        if (!version.equals(that.@version)) return false;
 
-        return true
+        return true;
     }
 
     @Override
     int hashCode() {
-        int result = version.hashCode()
-        result = 31 * result + pluginClass.hashCode()
-        return result
+        int result = version.hashCode();
+        result = 31 * result + pluginClass.hashCode();
+        return result;
     }
 
     int compareTo(Object o) {
-        AbstractGrailsPlugin that = (AbstractGrailsPlugin) o
-        if (equals(that)) return 0
+        AbstractGrailsPlugin that = (AbstractGrailsPlugin) o;
+        if (equals(that)) return 0;
 
-        String thatName = that.getName()
-        for (String pluginName in getLoadAfterNames()) {
-            if (pluginName.equals(thatName)) return -1
+        String thatName = that.getName();
+        for (String pluginName : getLoadAfterNames()) {
+            if (pluginName.equals(thatName)) return -1;
         }
-        for (String pluginName in getLoadBeforeNames()) {
-            if (pluginName.equals(thatName)) return 1
+        for (String pluginName : getLoadBeforeNames()) {
+            if (pluginName.equals(thatName)) return 1;
         }
-        for (String pluginName in that.getLoadAfterNames()) {
-            if (pluginName.equals(getName())) return 1
+        for (String pluginName : that.getLoadAfterNames()) {
+            if (pluginName.equals(getName())) return 1;
         }
-        for (String pluginName in that.getLoadBeforeNames()) {
-            if (pluginName.equals(getName())) return -1
+        for (String pluginName : that.getLoadBeforeNames()) {
+            if (pluginName.equals(getName())) return -1;
         }
 
-        return 0
+        return 0;
     }
 
 }

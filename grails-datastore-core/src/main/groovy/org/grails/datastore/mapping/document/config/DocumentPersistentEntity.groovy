@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  'License'); you may not use this file except in compliance
+ *  "License"); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *    https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -28,54 +28,58 @@ import org.grails.datastore.mapping.model.IdentityMapping
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class DocumentPersistentEntity extends AbstractPersistentEntity<Collection> {
 
-    private final DocumentCollectionMapping classMapping
+    private final DocumentCollectionMapping classMapping;
 
     DocumentPersistentEntity(@SuppressWarnings('rawtypes') Class javaClass, MappingContext context, boolean external) {
-        super(javaClass, context)
-        setExternal(external)
-        this.classMapping = new DocumentCollectionMapping(this, context)
+        super(javaClass, context);
+        setExternal(external);
+        this.classMapping = new DocumentCollectionMapping(this, context);
     }
 
     DocumentPersistentEntity(@SuppressWarnings('rawtypes') Class javaClass, MappingContext context) {
-        this(javaClass, context, false)
+        this(javaClass, context, false);
     }
 
     @SuppressWarnings('unchecked')
     @Override
     ClassMapping<Collection> getMapping() {
-        return classMapping
+        return classMapping;
     }
 
+    // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+    @SuppressWarnings('UnnecessarySemicolon')
     class DocumentCollectionMapping extends AbstractClassMapping<Collection> {
-        private final Collection mappedForm
 
-        private IdentityMapping identityMapping
+        private final Collection mappedForm;
+
+        private IdentityMapping identityMapping;
 
         DocumentCollectionMapping(PersistentEntity entity, MappingContext context) {
-            super(entity, context)
+            super(entity, context);
             if (entity.isExternal()) {
-                this.mappedForm = null
+                this.mappedForm = null;
             }
             else {
-                this.mappedForm = (Collection) context.getMappingFactory().createMappedForm(DocumentPersistentEntity.this)
+                this.mappedForm = (Collection) context.getMappingFactory().createMappedForm(DocumentPersistentEntity.this);
             }
         }
 
         @Override
         Collection getMappedForm() {
-            return mappedForm
+            return mappedForm;
         }
 
         @Override
         IdentityMapping getIdentifier() {
             if (identityMapping == null) {
-                identityMapping = context.getMappingFactory().createIdentityMapping(this)
+                identityMapping = context.getMappingFactory().createIdentityMapping(this);
             }
-            return identityMapping
+            return identityMapping;
         }
     }
-
 }
