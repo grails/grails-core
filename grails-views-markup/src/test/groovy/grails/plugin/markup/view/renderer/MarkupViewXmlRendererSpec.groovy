@@ -19,6 +19,7 @@
 package grails.plugin.markup.view.renderer
 
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
@@ -28,13 +29,14 @@ import grails.util.GrailsWebMockUtil
 import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Specification
 
 /**
  * Without the grails-xml module, which this module's tests do not include, the registry has no XML renderer of its own,
- * so the markup view renderer answers 406 for what no view renders, as {@code respond} answers for a format no
- * renderer writes.
+ * so the markup view renderer answers 406 for what no view renders, and a problem as JSON, as {@code respond} answers
+ * for a format no renderer writes.
  */
 class MarkupViewXmlRendererSpec extends Specification {
 
@@ -62,7 +64,30 @@ class MarkupViewXmlRendererSpec extends Specification {
         webRequest.response.committed
 
         where:
-        value << [new MarkupBody(title: 'Grails'), ProblemDetail.forStatus(422)]
+        value << [new MarkupBody(title: 'Grails')]
+    }
+
+    void 'without a view or an XML renderer, a problem is written as problem JSON, as respond writes it'() {
+        given: "a registry with Spring MVC's JSON converter, which writes problems"
+        def registry = new DefaultRendererRegistry()
+        registry.springMessageConverters = new SpringMessageConverters()
+        registry.springMessageConverters.setConverters([new JacksonJsonHttpMessageConverter()])
+        registry.initialize()
+        def resolver = new MarkupViewResolver(new MarkupViewConfiguration())
+        resolver.rendererRegistry = registry
+        resolver.initialize()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, new ModelAndView())
+        def problem = ProblemDetail.forStatus(422)
+
+        when:
+        def renderer = registry.findRenderer(MimeType.XML, problem)
+        renderer.render(problem, new ServletRenderContext(webRequest, [view: '/missing']))
+
+        then:
+        renderer instanceof MarkupViewXmlRenderer
+        webRequest.response.status == 422
+        webRequest.response.contentType.startsWith('application/problem+json')
     }
 }
 

@@ -160,11 +160,17 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
     /**
      * Without a view, the object is rendered by the renderer the format had before views were added. A format nothing
      * else renders, such as XML without the {@code grails-xml} module, is not acceptable: the error is sent, as
-     * {@code respond} sends it when it finds no renderer, so that the application's error page applies.
+     * {@code respond} sends it when it finds no renderer, so that the application's error page applies. A problem is
+     * written as {@code application/problem+json} instead, as {@code respond} writes one in a format nothing writes.
      */
     private void renderDefault(Object object, RenderContext context) {
+        Renderer<?> problemRenderer = defaultRenderer == null && object instanceof ProblemDetail ?
+                rendererRegistry?.findRenderer(MimeType.JSON, object) : null
         if (defaultRenderer != null) {
             defaultRenderer.render(object, context)
+        }
+        else if (problemRenderer != null) {
+            problemRenderer.render(object, context)
         }
         else if (context instanceof ServletRenderContext) {
             ((ServletRenderContext) context).webRequest.currentResponse.sendError(HttpStatus.NOT_ACCEPTABLE.value())
