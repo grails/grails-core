@@ -336,9 +336,11 @@ For direct serialization, inject the same registry and use
 `namedJsonConfigurationRegistry.writeValueAsString('catalog', book)` or
 `namedJsonConfigurationRegistry.writeValue('catalog', writer, book)`. These explicit operations replace the
 thread-local scope established by `JSON.use(...)`. Every registry has a `deep` configuration, which writes the
-associations of domain class instances in full, as `JSON.use('deep')` did, so `JSON.use('deep') { render book as JSON }`
-becomes `render json: book, jsonConfiguration: 'deep'`. A configuration of the application's own does the same with
-`it.deep()`. The legacy `JSON.createNamedConfig(...)` and `JSON.use(...)`
+associations of domain class instances in full, as `JSON.use('deep')` did, so `render json: book, jsonConfiguration: 'deep'`
+writes the associations as `JSON.use('deep') { render book as JSON }` does. The rest is written as the mapper writes it
+rather than as the converter does: marshallers registered with `JSON.registerObjectMarshaller(...)` do not apply, an enum
+is written as Jackson writes it, such as by its `@JsonValue`, rather than by its name, and `</` is not escaped. A
+configuration of the application's own writes associations in full with `it.deep()`. The legacy `JSON.createNamedConfig(...)` and `JSON.use(...)`
 APIs, along with `JSON.getNamedConfig(...)` and `JSON.withDefaultConfiguration(...)`, are deprecated
 and scheduled for removal in Grails 11 in favor of the request-safe Jackson registry. So are the `namedConfiguration`
 property of `JsonRenderer` and `JsonCollectionRenderer` beans, which selects one of those legacy configurations, and
