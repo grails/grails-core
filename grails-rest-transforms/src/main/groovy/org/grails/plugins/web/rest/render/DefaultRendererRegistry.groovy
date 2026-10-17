@@ -102,8 +102,8 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     private final AtomicBoolean legacyJsonFallbackReported = new AtomicBoolean()
     private final AtomicBoolean missingJsonConvertersReported = new AtomicBoolean()
 
-    /** The container renderers plugins contribute as defaults, collected with the renderer beans, by component type. */
-    private final Map<Renderer, Class> pendingDefaultContainerRenderers = new LinkedHashMap<>()
+    /** The container renderers plugins contribute as defaults, collected with the renderer beans, with their component types. */
+    private final List<Tuple2<Class, Renderer>> pendingDefaultContainerRenderers = []
 
     private boolean initialized
 
@@ -136,8 +136,8 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.ALL), defaultContainerHtmlRenderer)
         // The defaults plugins contribute take their keys as the registry's own do, over the renderer beans
         initialized = true
-        pendingDefaultContainerRenderers.each { Renderer renderer, Class componentType ->
-            addContainerRenderer(componentType, renderer)
+        pendingDefaultContainerRenderers.each { Tuple2<Class, Renderer> pending ->
+            addContainerRenderer(pending.v1, pending.v2)
         }
         pendingDefaultContainerRenderers.clear()
     }
@@ -205,7 +205,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     void addContainerRenderer(Class objectType, Renderer renderer) {
         configureJsonRenderer(renderer)
         if (renderer instanceof FallbackRenderer && !initialized) {
-            pendingDefaultContainerRenderers.put(renderer, objectType)
+            pendingDefaultContainerRenderers.add(new Tuple2<Class, Renderer>(objectType, renderer))
             return
         }
         for (MimeType mt in renderer.mimeTypes) {

@@ -92,6 +92,24 @@ class DefaultRendererRegistrySpec extends Specification {
         registry.findRenderer(MimeType.XML, 42).is(fallback)
     }
 
+    void 'a fallback container renderer added for several component types before the registry initializes answers for each'() {
+        given:
+        def fallback = Stub(Renderer, additionalInterfaces: [FallbackRenderer]) {
+            getTargetType() >> List
+            getMimeTypes() >> ([MimeType.XML] as MimeType[])
+        }
+        def registry = new DefaultRendererRegistry()
+
+        when:
+        registry.addContainerRenderer(String, fallback)
+        registry.addContainerRenderer(Integer, fallback)
+        registry.initialize()
+
+        then:
+        registry.findContainerRenderer(MimeType.XML, List, ['a']).is(fallback)
+        registry.findContainerRenderer(MimeType.XML, List, [1]).is(fallback)
+    }
+
     void 'a JSON renderer bean takes the registry settings it does not set itself'() {
         given:
         def holder = new SpringMessageConverters()
