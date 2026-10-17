@@ -739,7 +739,7 @@ with them only when the application enables parameter negotiation with
 `spring.mvc.contentnegotiation.favor-parameter: true`. Spring Boot leaves it disabled, so after the
 upgrade `?format=json` still does not change what a Spring MVC endpoint returns. Browser formats such
 as `html` and `js` are not registered, preserving Spring's reflected-file-download protection.
-Application media types are preferred for aliases with multiple names, and Boot's
+Where a format has several media types, an `application/*` one is preferred over a `text/*` one, and Boot's
 `spring.mvc.contentnegotiation.media-types.*` overrides these defaults. Invalid names are skipped.
 
 ==== 13. Web Unit Tests Set Up More of the Web Layer
