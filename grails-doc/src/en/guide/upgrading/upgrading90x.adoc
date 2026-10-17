@@ -70,9 +70,19 @@ A library compiled with classic call sites needs the module too, whatever the ap
 ==== 3. XML Web Support Moves to a Separate Module
 
 XML conversion, request-body binding, and REST renderers now live in the optional
-`grails-xml` module. The web starter still includes it in Grails 9, preserving existing XML endpoints.
-JSON-only applications can exclude `org.apache.grails:grails-xml` from their starter dependency now.
-In Grails 10 the starter will stop including it and `@Resource` will default to JSON only.
+`grails-xml` module. In Grails 9 the web starter still brings it, and so does `grails-web-boot`, which the
+applications forge and the profiles generate list instead of the starter, preserving existing XML endpoints.
+JSON-only applications can exclude `org.apache.grails:grails-xml` now:
+
+[source,groovy]
+.build.gradle
+----
+configurations.configureEach {
+    exclude group: 'org.apache.grails', module: 'grails-xml'
+}
+----
+
+In Grails 10 neither will bring it, and `@Resource` will default to JSON only.
 Legacy XML conversion is scheduled for removal in Grails 11: `grails.converters.XML`, the `XmlRenderer`,
 `XmlCollectionRenderer`, HAL XML, Atom and Vnd.Error XML renderers, and the XML validation errors
 marshaller are deprecated for removal, and the converter and each of those formats logs one warning on use.
@@ -85,7 +95,8 @@ New REST controllers, RESTful controllers, resources, and scaffolded controllers
 
 Applications that expose XML endpoints or use `grails.converters.XML`, XML object marshallers, XML data
 binding, or the XML and Atom renderers need this module. It is supplied transitively by the Grails 9
-web starter; applications without that starter, and applications upgrading to Grails 10, add it explicitly:
+web starter and `grails-web-boot`; applications without either, and applications upgrading to Grails 10, add it
+explicitly:
 
 [source,groovy]
 .build.gradle
