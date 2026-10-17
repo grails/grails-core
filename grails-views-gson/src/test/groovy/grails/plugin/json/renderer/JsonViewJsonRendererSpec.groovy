@@ -60,36 +60,39 @@ class JsonViewJsonRendererSpec extends Specification {
     }
 
     void 'a ProblemDetail is written by the default renderer, even where a view is found by convention'() {
-        given: 'no view named, where the object template renders any other object'
+        given: 'no view named, where the action has a view'
+        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolving('/book/show': new ProblemView()), null, null,
+                defaultRenderer)
         def context = context([:])
+        context.webRequest.controllerName = 'book'
+        context.webRequest.actionName = 'show'
         def problem = ProblemDetail.forStatus(422)
 
         when:
-        renderer.render(problem, context)
+        viewRenderer.render(problem, context)
 
         then: 'the problem keeps its status and content type rather than becoming the model of the view'
         1 * defaultRenderer.render(problem, context)
         modelAndView.view == null
     }
 
-    void 'a ProblemDetail is rendered with the view respond names'() {
+    void 'a ProblemDetail is rendered with the view respond names, with the status it carries'() {
         given:
         def problemView = new ProblemView()
-        def resolver = new JsonViewResolver() {
-            @Override
-            View resolveView(String viewName, HttpServletRequest request, HttpServletResponse response) {
-                viewName == '/problem' ? problemView : null
-            }
-        }
-        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolver, null, null, defaultRenderer)
+        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolving('/problem': problemView), null, null,
+                defaultRenderer)
+        def context = context([view: '/problem'])
+        context.webRequest.currentRequest.requestURI = '/books/1'
         def problem = ProblemDetail.forStatus(422)
 
         when:
-        viewRenderer.render(problem, context([view: '/problem']))
+        viewRenderer.render(problem, context)
 
         then:
         0 * defaultRenderer.render(_, _)
         modelAndView.view.is(problemView)
+        context.webRequest.currentResponse.status == 422
+        problem.instance == URI.create('/books/1')
     }
 
     void 'a ProblemDetail is written by the default renderer when the view respond names does not exist'() {
@@ -103,6 +106,15 @@ class JsonViewJsonRendererSpec extends Specification {
         then: 'rather than by the object template'
         1 * defaultRenderer.render(problem, context)
         modelAndView.view == null
+    }
+
+    private static JsonViewResolver resolving(Map<String, View> views) {
+        new JsonViewResolver() {
+            @Override
+            View resolveView(String viewName, HttpServletRequest request, HttpServletResponse response) {
+                views[viewName]
+            }
+        }
     }
 
     private ServletRenderContext context(Map<String, Object> arguments = [view: '/foo']) {

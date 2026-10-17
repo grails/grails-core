@@ -34,6 +34,7 @@ import grails.rest.render.RendererRegistry
 import grails.views.mvc.SmartViewResolver
 import grails.views.resolve.TemplateResolverUtils
 import grails.web.mime.MimeType
+import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.util.GrailsApplicationAttributes
@@ -68,8 +69,8 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
     @Override
     void render(Object object, RenderContext context) {
         def arguments = context.arguments
-        // A problem carries its own status and content type, which a view would replace: only the view that respond
-        // names renders it
+        // A problem carries its own content type, which a view would replace: only the view that respond names renders
+        // it, answering with the status the problem carries
         boolean problem = object instanceof ProblemDetail
         if (problem && !arguments?.view) {
             renderDefault(object, context)
@@ -127,6 +128,9 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
         }
 
         if (view != null) {
+            if (problem) {
+                ProblemDetailResponse.prepare((ProblemDetail) object, context)
+            }
             Map<String, Object> model
             if (object instanceof Map) {
                 def map = (Map) object
