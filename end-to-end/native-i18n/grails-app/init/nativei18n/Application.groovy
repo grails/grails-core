@@ -47,6 +47,9 @@ import org.springframework.context.MessageSource
  * only the configured base name, which is not at the root, is carried into an image by the hints
  * derived from {@code spring.messages.basename} alone.</p>
  *
+ * <p>It also reads a value from the plugin's {@code plugin.yml}, which on a JVM is found beside the plugin's
+ * classes and in an image only through the copy the build makes of it under the plugin's name.</p>
+ *
  * <p>Compiled statically, as a generated application's {@code Application} class is, so that the
  * image depends on resource hints for what this checks and not on reflection metadata for how it
  * checks it.</p>
@@ -95,7 +98,17 @@ class Application extends GrailsAutoConfiguration {
                         "the message source; an unknown code gave '${unknown}'")
             }
 
-            println 'i18n-check: every message bundle resolved'
+            // Not a bundle, but the plugin's own configuration, read from its plugin.yml. Here because the
+            // image is built anyway: on a JVM the file is found beside the plugin's classes, in its JAR, and
+            // an image has no JARs, so in one this proves the copy the build makes under the plugin's name
+            // was carried into it.
+            String configured = context.environment.getProperty('native.plugin.configuration')
+            if (configured != 'from the plugin configuration') {
+                throw new IllegalStateException("The plugin's plugin.yml did not reach the environment; " +
+                        "native.plugin.configuration was '${configured}'")
+            }
+
+            println 'i18n-check: every message bundle resolved, and the plugin configuration was read'
         }
         catch (Throwable failure) {
             failure.printStackTrace()

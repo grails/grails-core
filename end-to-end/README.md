@@ -38,7 +38,7 @@ applications at via `GRAILS_REPO_URL`.
 | `legacy-commands-plugin` | A Grails 8 plugin whose legacy commands are recompiled under Groovy 5. |
 | `legacy-commands` | A Grails 8 application that consumes both and runs their commands through the registry. |
 | `native-i18n` | An application that resolves messages from three kinds of bundle, on a JVM always and inside a GraalVM binary when asked. |
-| `native-i18n-plugin` | A plugin shipping a namespaced message bundle (`native-messages.properties`), with a multi-word plugin name. |
+| `native-i18n-plugin` | A plugin shipping a namespaced message bundle (`native-messages.properties`) and a `plugin.yml`, with a multi-word plugin name. |
 | `spring-dependency-management` | A Grails 8 application that manages its versions with the legacy `io.spring.dependency-management` plugin instead of the Grails Gradle plugin's native `platform(grails-bom)`, as an upgraded Grails 7 application does. |
 | `taglib-index-incremental` | Builds a Grails 8 application **twice, without a clean**, to prove a renamed or deleted tag library cannot survive in the published tag library index. Incremental behaviour is the whole point, so it cannot be expressed by a project the core build builds once for itself. |
 
@@ -75,6 +75,11 @@ Each is resolved in English and in a locale variant. The locale half is the asse
 fail if the hints registered *bundles* rather than resource *patterns* and the image were built with
 a narrower locale set than the bundles cover — the open question recorded in
 https://github.com/apache/grails-core/issues/16176.
+
+It also reads a value from the plugin's `plugin.yml`, because the image is built anyway and nothing
+else checks that a plugin's configuration reaches one. On a JVM the file is found beside the plugin's
+classes, in its JAR; an image has no JARs, so there it is found only through the copy the build makes
+of it under the plugin's name.
 
 ```bash
 cd end-to-end
