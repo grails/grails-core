@@ -66,7 +66,7 @@ Supported `arguments`:
 * `model` - The model to use in case of HTML rendering
 * `status` - The response status
 * `formats` - A list of formats to respond with
-* `includes`, `excludes` - For a JSON or XML response, the properties of the value written, or of each element of a collection or array, to include or leave out. For JSON written through Spring, they apply to domain class instances and to beans, and a value without properties, such as a map or a string, throws `IllegalArgumentException`
+* `includes`, `excludes` - For a JSON or XML response, the properties to include or leave out. JSON written through Spring applies them to the instances of the value's class, or of its elements' classes for a collection or array, which must be domain class instances or beans: a value without properties, such as a map or a string, throws `IllegalArgumentException`. The legacy JSON converter and XML apply them to the instances of the value's class only, so not to the elements of a collection
 * `jsonConfiguration` - For a JSON response, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with, such as `deep`, which Grails registers to write the associations of domain class instances in full. A name that is not registered throws `IllegalArgumentException`
 
 A Spring `ProblemDetail` is written as `application/problem+json`, or as `application/problem+xml` for an XML response,
