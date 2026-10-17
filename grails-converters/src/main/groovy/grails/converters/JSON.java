@@ -61,6 +61,7 @@ import org.grails.web.converters.jackson.DomainClassRenderer;
 import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
+import org.grails.web.converters.marshaller.json.JsonMapperValueMarshaller;
 import org.grails.web.json.JSONArray;
 import org.grails.web.json.JSONElement;
 import org.grails.web.json.JSONException;
@@ -229,14 +230,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 writer.value(o);
             }
             else {
-                // A value the mapper writes with object ids is written again: the mapper writes its id
-                if (referenceStack.contains(o) && (ConvertersConfigurationHolder.isLegacyJson() ||
-                        !getJsonMapperSupport().writesObjectIds(o.getClass()))) {
+                ObjectMarshaller<JSON> marshaller = config.getMarshaller(o);
+                if (referenceStack.contains(o) && !writesObjectId(o, marshaller)) {
                     handleCircularRelationship(o);
                 }
                 else {
                     referenceStack.push(o);
-                    ObjectMarshaller<JSON> marshaller = config.getMarshaller(o);
                     if (marshaller == null) {
                         throw new ConverterException("Unconvertable Object of class: " + o.getClass().getName());
                     }
@@ -251,6 +250,15 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         catch (JSONException e) {
             throw new ConverterException(e);
         }
+    }
+
+    /**
+     * Whether a value reached again is written as the object id the mapper gives it, rather than as a circular
+     * reference: only when the mapper writes the value, and writes it with object ids.
+     */
+    private boolean writesObjectId(Object o, ObjectMarshaller<JSON> marshaller) {
+        return !ConvertersConfigurationHolder.isLegacyJson() && JsonMapperValueMarshaller.writesWithMapper(marshaller) &&
+                getJsonMapperSupport().writesObjectIds(o.getClass());
     }
 
     private static boolean isJdkNumber(Number number) {

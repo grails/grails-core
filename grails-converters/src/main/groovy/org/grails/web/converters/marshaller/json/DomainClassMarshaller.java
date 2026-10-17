@@ -85,6 +85,8 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
 
     private final boolean overridesAsShortObject;
 
+    private final boolean overridesMarshalObject;
+
     private List<DomainClassFetcher> domainClassFetchers;
 
     public DomainClassMarshaller(boolean includeVersion, GrailsApplication application) {
@@ -103,6 +105,16 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
         Method asShortObject = ReflectionUtils.findMethod(getClass(), "asShortObject", Object.class, JSON.class,
                 PersistentProperty.class, PersistentEntity.class);
         this.overridesAsShortObject = asShortObject != null && asShortObject.getDeclaringClass() != DomainClassMarshaller.class;
+        Method marshalObject = ReflectionUtils.findMethod(getClass(), "marshalObject", Object.class, JSON.class);
+        this.overridesMarshalObject = marshalObject != null && marshalObject.getDeclaringClass() != DomainClassMarshaller.class;
+    }
+
+    /**
+     * @return whether this marshaller writes an instance with the converter's {@code JsonMapper}: without
+     *         {@code grails.converters.json.legacy}, unless a subclass writes it itself
+     */
+    public boolean writesWithMapper() {
+        return !ConvertersConfigurationHolder.isLegacyJson() && !overridesMarshalObject;
     }
 
     public boolean isIncludeVersion() {

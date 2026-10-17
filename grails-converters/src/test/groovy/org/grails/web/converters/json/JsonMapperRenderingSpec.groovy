@@ -282,6 +282,23 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(first).toString() == '{"@id":1,"name":"first","next":{"@id":2,"name":"second","next":1}}'
     }
 
+    @Timeout(10)
+    void "a bean with @JsonIdentityInfo that a registered marshaller writes is a circular reference when reached again"() {
+        given:
+        JSON.registerObjectMarshaller(IdentifiedNode) { IdentifiedNode node -> [name: node.name, next: node.next] }
+        def first = new IdentifiedNode(name: 'first')
+        first.next = new IdentifiedNode(name: 'second', next: first)
+
+        when:
+        def json = JSON.parse(new JSON(first).toString())
+
+        then: 'the mapper never writes the bean, so it has no object id to write'
+        json.name == 'first'
+        json.next.name == 'second'
+        json.next.next._ref
+        json.next.next['class'] == IdentifiedNode.name
+    }
+
     void "with the PATH circular reference behaviour, a reference through a module serializer has the path of the value it writes"() {
         given:
         def context = moduleContext()
