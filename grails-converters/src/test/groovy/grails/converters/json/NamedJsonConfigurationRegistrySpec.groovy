@@ -101,18 +101,20 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         given:
         JsonMapper mapper = JsonMapper.builder().build()
         def registry = new NamedJsonConfigurationRegistry(mapper)
-        registry.register('deep') {
+        boolean containedBefore = registry.contains('custom')
+        registry.register('custom') {
             it.serializer(NamedJsonValue, new NamedJsonValueSerializer())
         }
         def value = new NamedJsonValue(name: 'Grails')
         def output = new StringWriter()
 
         when:
-        String named = registry.writeValueAsString('deep', value)
-        registry.writeValue('deep', output, value)
+        String named = registry.writeValueAsString('custom', value)
+        registry.writeValue('custom', output, value)
 
         then:
-        registry.contains('deep')
+        !containedBefore
+        registry.contains('custom')
         named == '{"configured":"GRAILS"}'
         output.toString() == named
         mapper.writeValueAsString(value) == '{"name":"Grails"}'

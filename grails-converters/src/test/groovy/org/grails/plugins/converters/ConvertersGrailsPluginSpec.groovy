@@ -90,19 +90,20 @@ class ConvertersGrailsPluginSpec extends Specification {
 
         then: "creating it does not fail the application context"
         configurationRegistry != null
+        !configurationRegistry.contains('catalog')
 
         and: "configurations still register, since that needs no mapper"
-        configurationRegistry.register('deep') { it.attribute('depth', 'deep') }
-        configurationRegistry.contains('deep')
+        configurationRegistry.register('catalog') { it.attribute('depth', 'deep') }
+        configurationRegistry.contains('catalog')
     }
 
     void "using a named configuration without a JsonMapper says so rather than substituting one"() {
         given:
         def configurationRegistry = beanFactory.getBean('namedJsonConfigurationRegistry', NamedJsonConfigurationRegistry)
-        configurationRegistry.register('deep') { it.attribute('depth', 'deep') }
+        configurationRegistry.register('catalog') { it.attribute('depth', 'deep') }
 
         when: "a writer is needed but Jackson auto-configuration never ran"
-        configurationRegistry.writeValueAsString('deep', [title: 'Grails'])
+        configurationRegistry.writeValueAsString('catalog', [title: 'Grails'])
 
         then: "the failure names the cause instead of silently using a differently configured mapper"
         IllegalStateException e = thrown()
