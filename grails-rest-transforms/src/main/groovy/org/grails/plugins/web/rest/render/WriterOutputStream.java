@@ -38,7 +38,8 @@ import java.nio.charset.CodingErrorAction;
  * Multi-byte sequences split across writes are carried over rather than corrupted.</p>
  *
  * <p>Not thread safe, and intended to wrap a single response body. {@link #close()} flushes the
- * decoder but deliberately leaves the underlying writer open, since the container owns it.</p>
+ * decoder but deliberately leaves the underlying writer open and unflushed, since the container owns it: a body
+ * that fails part-way leaves the response uncommitted, so that the error page applies.</p>
  *
  * @since 9.0
  */
@@ -97,7 +98,6 @@ public final class WriterOutputStream extends OutputStream {
             drain();
         }
         while (result.isOverflow());
-        writer.flush();
     }
 
     private void decode(boolean endOfInput) throws IOException {

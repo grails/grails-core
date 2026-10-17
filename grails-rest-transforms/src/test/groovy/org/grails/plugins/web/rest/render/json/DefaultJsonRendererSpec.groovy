@@ -26,6 +26,7 @@ import org.springframework.context.support.StaticMessageSource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
@@ -427,6 +428,28 @@ class DefaultJsonRendererSpec extends Specification {
 
         and: "the content type was set before the body was written, so it is not lost"
         webRequest.response.contentType == 'application/problem+json;charset=UTF-8'
+    }
+
+    void 'a write that fails part-way leaves the response uncommitted, so that the error page applies'() {
+        given:
+        def converter = Mock(HttpMessageConverter) {
+            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON]
+            canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
+            write(_, _, _) >> { arguments ->
+                arguments[2].body.write('{"status":'.bytes)
+                throw new HttpMessageNotWritableException('failed part-way')
+            }
+        }
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(webRequest))
+
+        then:
+        thrown(HttpMessageNotWritableException)
+        !webRequest.response.committed
     }
 
     void 'the negotiated content type is restored when no converter can write the problem'() {
