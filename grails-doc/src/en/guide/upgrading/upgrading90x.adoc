@@ -321,7 +321,8 @@ render json: [ok: true]
 
 Both accept `includes` and `excludes`. A projection applies to the properties of the type written,
 or of each element's type when a collection or array is written, unlike the legacy converter, which
-projected only a single root object. It applies to domain objects and other beans alike; objects of
+projects only the objects of the class of the value written, so not the elements of a collection unless a
+`JsonCollectionRenderer` bean renders it. It applies to domain objects and other beans alike; objects of
 other types inside them are written in full. Properties are named by their bean property names, and a JSON name given by a Jackson
 annotation or naming strategy matches as well. A value with no properties to project, such as a map
 or a string, throws `IllegalArgumentException` before anything is written. A type that a Jackson
