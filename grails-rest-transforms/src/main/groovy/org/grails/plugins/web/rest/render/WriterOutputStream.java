@@ -39,7 +39,8 @@ import java.nio.charset.CodingErrorAction;
  *
  * <p>Not thread safe, and intended to wrap a single response body. {@link #close()} flushes the
  * decoder but deliberately leaves the underlying writer open and unflushed, since the container owns it: a body
- * that fails part-way leaves the response uncommitted, so that the error page applies.</p>
+ * that fails part-way before filling the response buffer leaves the response uncommitted, so that the error page
+ * applies. A larger body has been sent in part by then, as with any response.</p>
  *
  * @since 9.0
  */
