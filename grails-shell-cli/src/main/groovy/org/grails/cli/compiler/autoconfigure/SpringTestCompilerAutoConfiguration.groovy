@@ -16,22 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.expr.ClassExpression
-import org.codehaus.groovy.classgen.GeneratorContext
-import org.codehaus.groovy.control.CompilationFailedException
-import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
-import org.grails.cli.compiler.GroovyCompilerConfiguration
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
+import org.grails.cli.compiler.GroovyCompilerConfiguration;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring Test.
@@ -39,17 +39,19 @@ import org.grails.cli.compiler.GroovyCompilerConfiguration
  * @author Dave Syer
  * @since 1.1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class SpringTestCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return AstUtils.hasAtLeastOneAnnotation(classNode, 'SpringBootTest')
+        return AstUtils.hasAtLeastOneAnnotation(classNode, 'SpringBootTest');
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
-        dependencies.ifAnyMissingClasses('org.springframework.http.HttpHeaders').add('spring-boot-starter-webmvc')
+        dependencies.ifAnyMissingClasses('org.springframework.http.HttpHeaders').add('spring-boot-starter-webmvc');
     }
 
     @Override
@@ -57,9 +59,9 @@ class SpringTestCompilerAutoConfiguration extends CompilerAutoConfiguration {
             GeneratorContext generatorContext, SourceUnit source, ClassNode classNode)
             throws CompilationFailedException {
         if (!AstUtils.hasAtLeastOneAnnotation(classNode, 'RunWith')) {
-            AnnotationNode runWith = new AnnotationNode(ClassHelper.make('RunWith'))
-            runWith.addMember('value', new ClassExpression(ClassHelper.make('SpringRunner')))
-            classNode.addAnnotation(runWith)
+            AnnotationNode runWith = new AnnotationNode(ClassHelper.make('RunWith'));
+            runWith.addMember('value', new ClassExpression(ClassHelper.make('SpringRunner')));
+            classNode.addAnnotation(runWith);
         }
     }
 
@@ -71,7 +73,7 @@ class SpringTestCompilerAutoConfiguration extends CompilerAutoConfiguration {
                     'org.springframework.http', 'org.springframework.test.context.junit4',
                     'org.springframework.test.annotation')
             .addImports('org.springframework.boot.test.context.SpringBootTest.WebEnvironment',
-                    'org.springframework.boot.test.web.client.TestRestTemplate')
+                    'org.springframework.boot.test.web.client.TestRestTemplate');
     }
 
 }
