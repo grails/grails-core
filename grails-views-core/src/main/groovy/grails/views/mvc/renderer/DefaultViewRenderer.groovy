@@ -67,12 +67,14 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
 
     @Override
     void render(Object object, RenderContext context) {
-        if (object instanceof ProblemDetail) {
-            // A problem carries its own status and content type, which rendering a view would replace
+        def arguments = context.arguments
+        // A problem carries its own status and content type, which a view would replace: only the view that respond
+        // names renders it
+        boolean problem = object instanceof ProblemDetail
+        if (problem && !arguments?.view) {
             renderDefault(object, context)
             return
         }
-        def arguments = context.arguments
         def ct = arguments?.contentType
 
         if (ct) {
@@ -114,7 +116,7 @@ abstract class DefaultViewRenderer<T> extends DefaultHtmlRenderer<T> {
             view = (AbstractUrlBasedView) viewResolver.resolveView(viewUri, request, response)
         }
 
-        if (view == null) {
+        if (view == null && !problem) {
             if (proxyHandler != null) {
                 object = (T) proxyHandler.unwrapIfProxy(object)
             }

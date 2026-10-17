@@ -18,9 +18,14 @@
  */
 package grails.plugin.json.renderer
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+
 import org.springframework.http.ProblemDetail
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.View
+import org.springframework.web.servlet.view.AbstractUrlBasedView
 
 import grails.plugin.json.view.mvc.JsonViewResolver
 import grails.rest.render.Renderer
@@ -54,9 +59,9 @@ class JsonViewJsonRendererSpec extends Specification {
         modelAndView.view != null
     }
 
-    void 'a ProblemDetail is written by the default renderer, even when a view exists for the action'() {
-        given:
-        def context = context()
+    void 'a ProblemDetail is written by the default renderer, even where a view is found by convention'() {
+        given: 'no view named, where the object template renders any other object'
+        def context = context([:])
         def problem = ProblemDetail.forStatus(422)
 
         when:
@@ -67,9 +72,49 @@ class JsonViewJsonRendererSpec extends Specification {
         modelAndView.view == null
     }
 
-    private ServletRenderContext context() {
+    void 'a ProblemDetail is rendered with the view respond names'() {
+        given:
+        def problemView = new ProblemView()
+        def resolver = new JsonViewResolver() {
+            @Override
+            View resolveView(String viewName, HttpServletRequest request, HttpServletResponse response) {
+                viewName == '/problem' ? problemView : null
+            }
+        }
+        def viewRenderer = new JsonViewJsonRenderer<Object>(Object, resolver, null, null, defaultRenderer)
+        def problem = ProblemDetail.forStatus(422)
+
+        when:
+        viewRenderer.render(problem, context([view: '/problem']))
+
+        then:
+        0 * defaultRenderer.render(_, _)
+        modelAndView.view.is(problemView)
+    }
+
+    void 'a ProblemDetail is written by the default renderer when the view respond names does not exist'() {
+        given:
+        def context = context([view: '/missing'])
+        def problem = ProblemDetail.forStatus(422)
+
+        when:
+        renderer.render(problem, context)
+
+        then: 'rather than by the object template'
+        1 * defaultRenderer.render(problem, context)
+        modelAndView.view == null
+    }
+
+    private ServletRenderContext context(Map<String, Object> arguments = [view: '/foo']) {
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
-        new ServletRenderContext(webRequest, [view: '/foo'])
+        new ServletRenderContext(webRequest, arguments)
+    }
+}
+
+class ProblemView extends AbstractUrlBasedView {
+
+    @Override
+    protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) {
     }
 }
