@@ -225,19 +225,6 @@ class GrailsApplicationBuilder {
             }
         }
         prepareContext(context, beanFactory)
-        if (isWebTest()) {
-            // Contribute beans without discovering the plugins' controllers/urlMappings dependencies.
-            // Both Jackson and data binding must see these definitions during context refresh.
-            PluginDiscovery discovery = beanFactory.getBean(PluginDiscovery.BEAN_NAME, PluginDiscovery)
-            String convertersPlugin = 'org.grails.plugins.converters.ConvertersGrailsPlugin'
-            if (discovery.findPlugin('converters') == null && ClassUtils.isPresent(convertersPlugin, classLoader)) {
-                registerPluginBeans(context, beanFactory, convertersPlugin)
-            }
-            String xmlPlugin = 'org.grails.plugins.xml.XmlGrailsPlugin'
-            if (discovery.findPlugin('xml') == null && ClassUtils.isPresent(xmlPlugin, classLoader)) {
-                registerPluginBeans(context, beanFactory, xmlPlugin)
-            }
-        }
         // Added by hand, so it runs before the configuration classes are read, as an application's
         // early phase does
         context.addBeanFactoryPostProcessor(new IncludedPluginBeansPostProcessor(this, context))
@@ -246,12 +233,34 @@ class GrailsApplicationBuilder {
         return context
     }
 
+    /**
+     * A web test gets the beans of the converters and XML plugins without including the plugins,
+     * whose controllers and urlMappings dependencies would be discovered too: Jackson and data
+     * binding read them during the refresh. They are registered once the test's {@code doWithConfig}
+     * has reached the environment, which their registrars read.
+     */
+    protected void registerWebPluginBeans(ConfigurableApplicationContext context, BeanDefinitionRegistry registry) {
+        if (!isWebTest()) {
+            return
+        }
+        ClassLoader classLoader = this.class.classLoader
+        PluginDiscovery discovery = context.beanFactory.getBean(PluginDiscovery.BEAN_NAME, PluginDiscovery)
+        String convertersPlugin = 'org.grails.plugins.converters.ConvertersGrailsPlugin'
+        if (discovery.findPlugin('converters') == null && ClassUtils.isPresent(convertersPlugin, classLoader)) {
+            registerPluginBeans(context, registry, convertersPlugin)
+        }
+        String xmlPlugin = 'org.grails.plugins.xml.XmlGrailsPlugin'
+        if (discovery.findPlugin('xml') == null && ClassUtils.isPresent(xmlPlugin, classLoader)) {
+            registerPluginBeans(context, registry, xmlPlugin)
+        }
+    }
+
     private static void registerPluginBeans(ConfigurableApplicationContext context,
-            DefaultListableBeanFactory beanFactory, String className) {
+            BeanDefinitionRegistry registry, String className) {
         Class<?> pluginClass = ClassUtils.forName(className, GrailsApplicationBuilder.classLoader)
         Object plugin = pluginClass.getDeclaredConstructor().newInstance()
         BeanRegistrar registrar = (BeanRegistrar) pluginClass.getMethod('beanRegistrar').invoke(plugin)
-        new BeanRegistryAdapter(beanFactory, context.environment, registrar.getClass()).register(registrar)
+        new BeanRegistryAdapter(registry, context.beanFactory, context.environment, registrar.getClass()).register(registrar)
     }
 
     protected void prepareContext(ConfigurableApplicationContext applicationContext, ConfigurableBeanFactory beanFactory) {
@@ -523,22 +532,23 @@ class GrailsApplicationBuilder {
             // A subclass whose registerGrailsAppPostProcessorBean registers another post-processor, or
             // none, is left to register plugin beans the way that post-processor does
             ConfigurableListableBeanFactory beanFactory = context.beanFactory
-            if (!beanFactory.containsBean(POST_PROCESSOR_BEAN_NAME) ||
-                    !beanFactory.isTypeMatch(POST_PROCESSOR_BEAN_NAME, TestRuntimeGrailsApplicationPostProcessor)) {
-                return
-            }
-            def processor = beanFactory.getBean(POST_PROCESSOR_BEAN_NAME, TestRuntimeGrailsApplicationPostProcessor)
-            Map<String, BeanDefinition> before = [:]
-            for (String name : registry.beanDefinitionNames) {
-                before[name] = registry.getBeanDefinition(name)
-            }
-            processor.registerPluginBeans(registry)
-            for (String name : registry.beanDefinitionNames) {
-                BeanDefinition definition = registry.getBeanDefinition(name)
-                if (!before[name].is(definition)) {
-                    builder.pluginBeanDefinitions[name] = definition
+            if (beanFactory.containsBean(POST_PROCESSOR_BEAN_NAME) &&
+                    beanFactory.isTypeMatch(POST_PROCESSOR_BEAN_NAME, TestRuntimeGrailsApplicationPostProcessor)) {
+                // Creating the processor applies the test's doWithConfig
+                def processor = beanFactory.getBean(POST_PROCESSOR_BEAN_NAME, TestRuntimeGrailsApplicationPostProcessor)
+                Map<String, BeanDefinition> before = [:]
+                for (String name : registry.beanDefinitionNames) {
+                    before[name] = registry.getBeanDefinition(name)
+                }
+                processor.registerPluginBeans(registry)
+                for (String name : registry.beanDefinitionNames) {
+                    BeanDefinition definition = registry.getBeanDefinition(name)
+                    if (!before[name].is(definition)) {
+                        builder.pluginBeanDefinitions[name] = definition
+                    }
                 }
             }
+            builder.registerWebPluginBeans(context, registry)
         }
 
         @Override
