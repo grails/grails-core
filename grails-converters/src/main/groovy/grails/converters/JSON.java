@@ -361,7 +361,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     /**
      * Parses the given JSON String and returns either a JSONObject or a JSONArray. With
      * {@code grails.converters.json.legacy} set to {@code false}, the application's Jackson mapper parses it, and what it
-     * accepts is what its parser features allow, such as {@code spring.jackson.parser.allow-comments}; otherwise Grails'
+     * accepts is what its read features allow, such as {@code spring.jackson.json.read.allow-java-comments}; otherwise Grails'
      * own parser does, which also accepts single quotes, comments, unquoted values and the like.
      *
      * @param source A string containing some JSON

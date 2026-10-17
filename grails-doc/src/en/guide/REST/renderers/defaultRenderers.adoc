@@ -118,7 +118,8 @@ JSON as Grails 8 did; the upgrade guide lists the differences.
 
 With `legacy` left `true`, `JSON.parse` and `request.JSON` parse with Grails' own parser, which also accepts JSON that
 strict parsers reject, such as single-quoted strings and comments. With `legacy` set to `false`, the application's
-Jackson mapper parses, and the `spring.jackson.parser.*` properties decide what it accepts.
+Jackson mapper parses, and the `spring.jackson.json.read.*` properties, such as
+`spring.jackson.json.read.allow-java-comments`, decide what it accepts.
 
 
 ==== Domain Classes and the JsonMapper

@@ -28,6 +28,7 @@ import grails.converters.JSON
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
+import org.grails.web.converters.exceptions.ConverterException
 import spock.lang.Specification
 
 /**
@@ -76,6 +77,44 @@ class ConverterDomainModuleSettingUnitTestSpec extends Specification
 
         then: 'the association is a reference of its id'
         written == [id: book.id, title: 'Grails', shelf: [id: shelf.id]]
+    }
+}
+
+class ConverterReadFeatureSettingUnitTestSpec extends Specification implements ControllerUnitTest<ConverterSettingsController> {
+
+    Closure doWithConfig() {
+        { config ->
+            config['grails.converters.json.legacy'] = false
+            config['spring.jackson.json.read.allow-java-comments'] = true
+        }
+    }
+
+    void "Spring Boot's JSON read features decide what request.JSON accepts"() {
+        given:
+        request.contentType = 'application/json'
+        request.content = '{"name":"Ada" /* a note */}'.bytes
+
+        expect:
+        request.JSON == [name: 'Ada']
+    }
+}
+
+class ConverterStrictParsingUnitTestSpec extends Specification implements ControllerUnitTest<ConverterSettingsController> {
+
+    Closure doWithConfig() {
+        { config -> config['grails.converters.json.legacy'] = false }
+    }
+
+    void 'request.JSON rejects comments unless a read feature accepts them'() {
+        given:
+        request.contentType = 'application/json'
+        request.content = '{"name":"Ada" /* a note */}'.bytes
+
+        when:
+        request.JSON
+
+        then:
+        thrown(ConverterException)
     }
 }
 
