@@ -38,6 +38,7 @@ import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
@@ -55,6 +56,11 @@ class XmlGrailsPluginSpec extends Specification {
     void setup() {
         def registrar = new XmlGrailsPlugin().beanRegistrar()
         new BeanRegistryAdapter(beanFactory, new StandardEnvironment(), registrar.getClass()).register(registrar)
+    }
+
+    void cleanup() {
+        // Creating the plugin's converters initializer configures the XML converter for the whole JVM
+        ConvertersConfigurationHolder.clear()
     }
 
     void 'beanRegistrar registers optional XML infrastructure'() {
