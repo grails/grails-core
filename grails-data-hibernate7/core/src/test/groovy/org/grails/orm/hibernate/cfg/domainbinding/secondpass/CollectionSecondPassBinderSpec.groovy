@@ -20,7 +20,6 @@
 package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 
 
-import org.grails.orm.hibernate.cfg.domainbinding.binder.CompositeIdentifierToManyToOneBinder
 import grails.gorm.annotation.Entity
 import grails.gorm.hibernate.HibernateEntity
 import grails.gorm.tests.HibernateGormDatastoreSpec

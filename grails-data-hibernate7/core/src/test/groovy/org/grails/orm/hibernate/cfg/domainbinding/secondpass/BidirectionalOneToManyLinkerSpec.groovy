@@ -27,6 +27,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToOnePr
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
 import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsPropertyResolver
 import org.hibernate.mapping.Collection
+import org.hibernate.mapping.Component
 import org.hibernate.mapping.ManyToOne
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.DependantValue
@@ -129,7 +130,17 @@ class BidirectionalOneToManyLinkerSpec extends HibernateGormDatastoreSpec {
         otherSideProperty.setValue(toOneValue)
         rootClass.addProperty(otherSideProperty)
         Collection collection = new Bag(metadataContext, rootClass)
-        DependantValue key = new DependantValue(metadataContext, new Table("collection_table"), null)
+        Component identifierPrototype = new Component(metadataContext, rootClass)
+        identifierPrototype.setEmbedded(true)
+        Property zetaProperty = new Property()
+        zetaProperty.setName('zeta')
+        zetaProperty.setValue(new BasicValue(metadataContext, table))
+        identifierPrototype.addProperty(zetaProperty)
+        Property alphaProperty = new Property()
+        alphaProperty.setName('alpha')
+        alphaProperty.setValue(new BasicValue(metadataContext, table))
+        identifierPrototype.addProperty(alphaProperty)
+        DependantValue key = new DependantValue(metadataContext, new Table("collection_table"), identifierPrototype)
         HibernateCompositeIdentity compositeId = Mock(HibernateCompositeIdentity)
         GrailsHibernatePersistentEntity ownerEntity = Mock(GrailsHibernatePersistentEntity) {
             getHibernateCompositeIdentity() >> Optional.of(compositeId)

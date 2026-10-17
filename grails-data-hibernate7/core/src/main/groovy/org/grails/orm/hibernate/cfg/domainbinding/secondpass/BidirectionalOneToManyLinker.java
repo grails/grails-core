@@ -44,6 +44,11 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsPropertyResolver;
  * composite identifier of the owner, so the copy is aligned already and Hibernate must not apply the
  * identifier's permutation to it a second time. The to-one side is aligned first here, because its own
  * deferred alignment may not have run yet when this second pass does.
+ * <p>
+ * Marking the copied key sorted is required, not only a way to skip the permutation: for a composite
+ * identifier, {@code MappingModelCreationHelper.getPropertyOrder} asserts the collection key is sorted
+ * and, for one that is not, maps its columns through the identifier component's original property
+ * order, which is this already-aligned order applied yet again.
  */
 public class BidirectionalOneToManyLinker {
 
