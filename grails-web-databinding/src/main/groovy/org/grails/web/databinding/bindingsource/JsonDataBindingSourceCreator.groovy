@@ -74,7 +74,13 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     @Value('${grails.databinding.json.jackson:false}')
     boolean useJackson = false
 
-    /** Parses request bodies on the legacy path; an application bean replaces it, as on Grails 8. */
+    /**
+     * Parses request bodies on the legacy path; an application bean replaces it, as on Grails 8.
+     *
+     * @deprecated Scheduled for removal in Grails 11, with legacy JSON request parsing. Configure the application's
+     * Jackson mapper, which {@code grails.databinding.json.jackson} parses request bodies with.
+     */
+    @Deprecated(since = '9.0', forRemoval = true)
     @Autowired(required = false)
     JsonSlurper jsonSlurper = new JsonSlurper()
 

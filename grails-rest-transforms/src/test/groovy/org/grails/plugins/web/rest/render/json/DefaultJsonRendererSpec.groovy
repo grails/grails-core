@@ -40,7 +40,9 @@ import org.springframework.validation.ObjectError
 
 import grails.converters.JSON
 import grails.core.DefaultGrailsApplication
+import grails.rest.render.RenderContext
 import grails.rest.render.errors.ValidationProblemDetailFactory
+import grails.rest.render.json.JsonCollectionRenderer
 import grails.util.GrailsWebMockUtil
 import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
@@ -73,6 +75,15 @@ class DefaultJsonRendererSpec extends Specification {
 
         where: 'a problem may carry a status that has no HttpStatus constant'
         status << [422, 499, 299, 599]
+    }
+
+    void 'the hooks of the legacy JSON path are deprecated for removal in Grails 11'() {
+        expect:
+        [DefaultJsonRenderer.getDeclaredField('namedConfiguration').getAnnotation(Deprecated),
+         DefaultJsonRenderer.getDeclaredMethod('renderJson', JSON, RenderContext).getAnnotation(Deprecated),
+         JsonCollectionRenderer.getDeclaredMethod('renderJson', JSON, RenderContext).getAnnotation(Deprecated)].every {
+            it.forRemoval() && it.since() == '9.0'
+        }
     }
 
     void 'text JSON uses Jackson and preserves source converter prefixes'() {

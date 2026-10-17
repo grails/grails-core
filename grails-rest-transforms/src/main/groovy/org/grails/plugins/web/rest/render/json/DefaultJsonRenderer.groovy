@@ -86,6 +86,14 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     RendererRegistry rendererRegistry
 
+    /**
+     * The legacy {@link JSON} named configuration the renderer writes with.
+     *
+     * @deprecated Scheduled for removal in Grails 11, with the legacy JSON converter's named configurations. Register
+     * a configuration with {@link grails.converters.json.NamedJsonConfigurationRegistry} and select it with the
+     * {@code jsonConfiguration} argument of {@code respond}.
+     */
+    @Deprecated(since = '9.0', forRemoval = true)
     String namedConfiguration
     HttpStatus errorsHttpStatus = HttpStatus.UNPROCESSABLE_CONTENT
 
@@ -354,6 +362,13 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         return mimeType == null || mimeType == MimeType.ALL ? MimeType.JSON : mimeType
     }
 
+    /**
+     * Writes a response with the legacy {@link JSON} converter.
+     *
+     * @deprecated Scheduled for removal in Grails 11, with the legacy {@code respond()} JSON path. Write the value with a
+     * Jackson serializer, which {@code grails.web.rendering.json.spring} uses.
+     */
+    @Deprecated(since = '9.0', forRemoval = true)
     protected void renderJson(JSON converter, RenderContext context) {
         converter.setExcludes(getEffectiveExcludes(context))
         converter.setIncludes(getEffectiveIncludes(context))

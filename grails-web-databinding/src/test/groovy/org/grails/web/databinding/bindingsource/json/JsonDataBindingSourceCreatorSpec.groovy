@@ -232,6 +232,12 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         !output.contains(LEGACY_PARSING_NOTICE)
     }
 
+    void 'the JsonSlurper of the legacy path is deprecated for removal in Grails 11'() {
+        expect:
+        JsonDataBindingSourceCreator.getDeclaredField('jsonSlurper').getAnnotation(Deprecated).forRemoval()
+        JsonDataBindingSourceCreator.getDeclaredField('jsonSlurper').getAnnotation(Deprecated).since() == '9.0'
+    }
+
     void 'an application JsonSlurper bean parses bodies on the legacy path, as on Grails 8'() {
         given: 'a lax parser, which accepts unquoted keys'
         def context = new AnnotationConfigApplicationContext()
