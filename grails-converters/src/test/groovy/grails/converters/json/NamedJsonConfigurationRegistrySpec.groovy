@@ -27,11 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger
 import groovy.json.JsonSlurper
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonUnwrapped
 import tools.jackson.core.JacksonException
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.ValueSerializer
 import tools.jackson.databind.cfg.ContextAttributes
+import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
 
@@ -184,6 +186,28 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
 
         where:
         characters << [60000, 6]
+    }
+
+    void 'a property a bean unwraps with the name of one of its own is rejected, as the JsonMapper rejects it'() {
+        given:
+        def plain = JsonMapper.builder().build()
+        def registry = new NamedJsonConfigurationRegistry(plain)
+
+        when:
+        plain.writeValueAsString(new NamedJsonUnwrapping(id: 5, inner: new NamedJsonInner(id: 1, name: 'a')))
+
+        then:
+        thrown(InvalidDefinitionException)
+
+        when:
+        registry.writeValueAsString(null, new NamedJsonUnwrapping(id: 5, inner: new NamedJsonInner(id: 1, name: 'a')))
+
+        then:
+        thrown(InvalidDefinitionException)
+
+        expect: 'a property it unwraps without a conflict is written into it'
+        registry.writeValueAsString(null, new NamedJsonPrefixedUnwrapping(id: 5, inner: new NamedJsonInner(id: 1, name: 'a'))) ==
+                '{"id":5,"inner_id":1,"inner_name":"a"}'
     }
 
     void 'unknown configurations fail clearly'() {
@@ -390,6 +414,23 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         }
         buffer.toString()
     }
+}
+
+class NamedJsonUnwrapping {
+    Long id
+    @JsonUnwrapped
+    NamedJsonInner inner
+}
+
+class NamedJsonPrefixedUnwrapping {
+    Long id
+    @JsonUnwrapped(prefix = 'inner_')
+    NamedJsonInner inner
+}
+
+class NamedJsonInner {
+    Long id
+    String name
 }
 
 class NamedJsonFailing {

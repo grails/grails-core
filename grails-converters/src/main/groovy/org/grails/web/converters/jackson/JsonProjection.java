@@ -218,7 +218,7 @@ public final class JsonProjection {
                     for (BeanPropertyWriter property : properties) {
                         String beanName = beanNames.getOrDefault(property.getName(), property.getName());
                         projected.add(GatedPropertyWriter.gated(property,
-                                (bean, context, writer) -> projects(context, bean, beanName, writer.getName())));
+                                (bean, context, writer) -> projects(context, bean, beanName, writer.getName()), true));
                     }
                     return projected;
                 }

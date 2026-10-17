@@ -24,6 +24,7 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.bean.UnwrappingBeanPropertyWriter;
 import tools.jackson.databind.util.NameTransformer;
 
 /**
@@ -69,11 +70,19 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
     /**
      * @param writer a property writer, which may be gated already
      * @param gate a gate to add
+     * @param checked whether Jackson checks the names an unwrapped property writes against the bean's other properties,
+     *        as it does for its own writers, which requires that the bean's writers are those that may be written
      * @return a writer that writes the property when its gates, and this one, include it
      */
-    static BeanPropertyWriter gated(BeanPropertyWriter writer, Gate gate) {
+    static BeanPropertyWriter gated(BeanPropertyWriter writer, Gate gate, boolean checked) {
         if (writer instanceof GatedPropertyWriter gated) {
-            return new GatedPropertyWriter(gated.delegate, gated.gate.and(gate));
+            return gated(gated.delegate, gated.gate.and(gate), checked);
+        }
+        if (writer instanceof Unwrapping gated) {
+            return gated(gated.delegate, gated.gate.and(gate), checked);
+        }
+        if (checked && writer instanceof UnwrappingBeanPropertyWriter unwrapping) {
+            return new Unwrapping(unwrapping, gate);
         }
         return new GatedPropertyWriter(writer, gate);
     }
@@ -139,5 +148,88 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
     @Override
     public void depositSchemaProperty(JsonObjectFormatVisitor visitor, SerializationContext context) {
         delegate.depositSchemaProperty(visitor, context);
+    }
+
+    /**
+     * A gated writer of an unwrapped property, which Jackson takes for one, so that it checks the names the property
+     * writes against the bean's other properties.
+     */
+    private static final class Unwrapping extends UnwrappingBeanPropertyWriter {
+
+        private final UnwrappingBeanPropertyWriter delegate;
+
+        private final Gate gate;
+
+        private Unwrapping(UnwrappingBeanPropertyWriter delegate, Gate gate) {
+            // the delegate unwraps the value, as it names the properties it writes
+            super(delegate, NameTransformer.NOP);
+            this.delegate = delegate;
+            this.gate = gate;
+        }
+
+        @Override
+        public UnwrappingBeanPropertyWriter rename(NameTransformer transformer) {
+            UnwrappingBeanPropertyWriter renamed = delegate.rename(transformer);
+            return renamed == delegate ? this : new Unwrapping(renamed, gate);
+        }
+
+        @Override
+        public ValueSerializer<Object> findUnwrappingSerializer(SerializationContext context) {
+            return delegate.findUnwrappingSerializer(context);
+        }
+
+        @Override
+        public void assignSerializer(ValueSerializer<Object> serializer) {
+            delegate.assignSerializer(serializer);
+        }
+
+        @Override
+        public void assignNullSerializer(ValueSerializer<Object> serializer) {
+            delegate.assignNullSerializer(serializer);
+        }
+
+        @Override
+        public void assignTypeSerializer(TypeSerializer typeSerializer) {
+            delegate.assignTypeSerializer(typeSerializer);
+        }
+
+        @Override
+        public ValueSerializer<Object> getSerializer() {
+            return delegate.getSerializer();
+        }
+
+        @Override
+        public boolean hasSerializer() {
+            return delegate.hasSerializer();
+        }
+
+        @Override
+        public boolean hasNullSerializer() {
+            return delegate.hasNullSerializer();
+        }
+
+        @Override
+        public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context)
+                throws Exception {
+            if (gate.includes(bean, context, this)) {
+                delegate.serializeAsProperty(bean, generator, context);
+            }
+        }
+
+        @Override
+        public void serializeAsElement(Object bean, JsonGenerator generator, SerializationContext context)
+                throws Exception {
+            if (gate.includes(bean, context, this)) {
+                delegate.serializeAsElement(bean, generator, context);
+            }
+            else {
+                delegate.serializeAsOmittedElement(bean, generator, context);
+            }
+        }
+
+        @Override
+        public void depositSchemaProperty(JsonObjectFormatVisitor visitor, SerializationContext context) {
+            delegate.depositSchemaProperty(visitor, context);
+        }
     }
 }

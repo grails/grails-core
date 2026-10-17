@@ -106,6 +106,9 @@ final class DomainClassModifier extends ValueSerializerModifier {
             }
         }
         List<BeanPropertyWriter> written = new ArrayList<>();
+        // Jackson checks the names an unwrapped property writes against the other properties where these are the ones that
+        // may be written, which a rendering for each write may change
+        boolean checked = !rendering.renderingsPerWrite();
         PersistentProperty identity = entity.getIdentity();
         if (identity != null) {
             // The writer Jackson, or another module, gives the id writes it, so that what they apply to a property applies
@@ -113,14 +116,15 @@ final class DomainClassModifier extends ValueSerializerModifier {
             for (BeanPropertyWriter writer : properties) {
                 if (identity.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
                     written.add(GatedPropertyWriter.gated(new DomainIdWriter(writer, identity, rendering),
-                            included(identity.getName())));
+                            included(identity.getName()), checked));
                 }
             }
         }
         for (PersistentProperty property : persistent) {
             for (BeanPropertyWriter writer : properties) {
                 if (property.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
-                    written.add(GatedPropertyWriter.gated(withReferences(writer, property), included(property.getName())));
+                    written.add(GatedPropertyWriter.gated(withReferences(writer, property), included(property.getName()),
+                            checked));
                 }
             }
         }

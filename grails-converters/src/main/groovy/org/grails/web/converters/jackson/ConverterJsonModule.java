@@ -103,8 +103,10 @@ public final class ConverterJsonModule extends JacksonModule {
                 for (BeanPropertyWriter writer : properties) {
                     if (writer.getAnnotation(PersistenceMethod.class) == null &&
                             writer.getAnnotation(ControllerMethod.class) == null) {
+                        // Not checked: a domain class instance the converter writes may have a class name or a version it
+                        // does not write, which the rendering of each write decides
                         written.add(GatedPropertyWriter.gated(writer,
-                                included(internalNames.getOrDefault(writer.getName(), writer.getName()))));
+                                included(internalNames.getOrDefault(writer.getName(), writer.getName())), false));
                     }
                 }
                 return written;
