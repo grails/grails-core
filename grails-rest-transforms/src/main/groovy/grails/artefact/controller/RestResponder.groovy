@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletResponse
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -40,6 +41,7 @@ import grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.util.GrailsApplicationAttributes
 
 /**
@@ -158,6 +160,9 @@ trait RestResponder {
         }
 
         Renderer renderer = null
+        // A problem is written in JSON or XML, as Spring MVC writes it: the HTML renderer renders one only with the view
+        // respond names, and a client that accepts neither format is answered with application/problem+json
+        boolean problem = value instanceof ProblemDetail && !args.view
 
         for (MimeType mimeType in mimeTypes) {
             if (mimeType == MimeType.ALL && formats) {
@@ -205,9 +210,15 @@ trait RestResponder {
                 } else {
                     renderer = registry.findRenderer(mimeType, value)
                 }
+                if (problem && renderer instanceof DefaultHtmlRenderer && !(mimeType.extension in ['json', 'xml'])) {
+                    renderer = null
+                }
             }
 
             if (renderer) break
+        }
+        if (renderer == null && problem) {
+            renderer = registry.findRenderer(MimeType.JSON, value)
         }
 
         if (renderer) {

@@ -156,6 +156,38 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json.instance == '/books'
     }
 
+    void 'a problem a client asks for as #format is written as problem JSON, as Spring MVC writes it'() {
+        given:
+        request.requestURI = '/books'
+        response.format = format
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatus(409))
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+        response.json.instance == '/books'
+
+        where:
+        format << ['html', 'csv']
+    }
+
+    void 'a problem is rendered as HTML with the view respond names, with the status it carries'() {
+        given:
+        response.format = 'html'
+        def problem = org.springframework.http.ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem, view: 'conflict')
+
+        then:
+        response.status == 409
+        view == 'conflict'
+        model.problemDetail.is(problem)
+    }
+
     void 'render and respond share named configurations in ControllerUnitTest'() {
         given:
         def registry = applicationContext.getBean(NamedJsonConfigurationRegistry)
