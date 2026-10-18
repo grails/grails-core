@@ -18,212 +18,203 @@
  */
 package org.grails.config
 
-import org.springframework.core.env.MapPropertySource
-import org.springframework.core.env.MutablePropertySources
-import spock.lang.Specification
-
 import org.grails.core.exceptions.GrailsConfigurationException
+import spock.lang.Specification
 
 class CompositeConfigSpec extends Specification {
 
-    private PropertySourcesConfig configOf(Map values, String name = 'test') {
-        def propertySources = new MutablePropertySources()
-        propertySources.addLast(new MapPropertySource(name, values))
-        new PropertySourcesConfig(propertySources)
-    }
-
-    void 'addFirst gives its config the highest precedence'() {
+    void 'first config takes precedence and last config supplies missing values'() {
         given:
-        def low = configOf([key: 'low'])
-        def high = configOf([key: 'high'])
-        def composite = new CompositeConfig()
-
-        when:
-        composite.addFirst(low)
-        composite.addFirst(high)
-
-        then:
-        composite.getProperty('key', String) == 'high'
-    }
-
-    void 'addLast gives its config the lowest precedence'() {
-        given:
-        def high = configOf([key: 'high'])
-        def low = configOf([key: 'low'])
-        def composite = new CompositeConfig()
-
-        when:
-        composite.addFirst(high)
-        composite.addLast(low)
-
-        then:
-        composite.getProperty('key', String) == 'high'
-        composite.getProperty('onlyInLow', String, null) == null
-    }
-
-    void 'a key missing from the first config falls through to the next'() {
-        given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([a: '1']))
-        composite.addLast(configOf([b: '2']))
+        def config = new CompositeConfig()
+        config.addLast(new PrefixedConfig('scope', new PropertySourcesConfig([scope: [shared: 'middle', fallback: 42]])))
+        config.addLast(new PrefixedConfig('scope', new PropertySourcesConfig([scope: [shared: 'last', lastOnly: 'last']])))
+        config.addFirst(new PrefixedConfig('scope', new PropertySourcesConfig([scope: [shared: 'first', firstOnly: 'first']])))
 
         expect:
-        composite.getProperty('a', String) == '1'
-        composite.getProperty('b', String) == '2'
-        composite.getProperty('missing', String) == null
+        config.getAt('shared') == 'first'
+        config.get('shared') == 'first'
+        config.getProperty('shared') == 'first'
+        config.getProperty('fallback', Integer) == 42
+        config.getAt('lastOnly') == 'last'
+        config.getAt('firstOnly') == 'first'
+        config.getAt('missing') == null
+        config.get('missing') == null
+        config.getProperty('missing', Integer) == null
+        config.getProperty('missing', Integer, 7) == 7
+        config.getProperty('missing', 'default') == 'default'
     }
 
-    void 'size, isEmpty, keySet, values and entrySet aggregate across all configs'() {
+    void 'navigate searches nested paths across configs'() {
         given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([a: '1']))
-        composite.addLast(configOf([b: '2']))
+        def config = new CompositeConfig()
+        config.addFirst(new PropertySourcesConfig([service: [host: 'first']]))
+        config.addLast(new PropertySourcesConfig([service: [host: 'last', port: 8080]]))
 
         expect:
-        composite.size() == 2
-        !composite.isEmpty()
-        composite.keySet().containsAll(['a', 'b'])
-        composite.values().containsAll(['1', '2'])
-        composite.entrySet().size() == 2
-        composite.containsKey('a')
-        composite.containsValue('2')
-        !composite.containsKey('missing')
+        config.navigate('service', 'host') == 'first'
+        config.navigate('service', 'port') == 8080
+        config.navigate('service', 'missing') == null
     }
 
-    void 'an empty composite reports isEmpty true'() {
-        expect:
-        new CompositeConfig().isEmpty()
-        new CompositeConfig().size() == 0
-    }
-
-    void 'getProperty with a default value falls back when no config resolves the key'() {
+    void 'flatten and properties resolve a shared key to the highest precedence config'() {
         given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([a: '1']))
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig([shared: 'middle', middleOnly: 'mid']))
+        config.addLast(new PropertySourcesConfig([shared: 'last', lastOnly: 'two']))
+        config.addFirst(new PropertySourcesConfig([shared: 'first', firstOnly: 'one']))
 
         expect:
-        composite.getProperty('missing', String, 'default') == 'default'
-        composite.getProperty('a', String, 'default') == '1'
+        config.flatten() == [shared: 'first', firstOnly: 'one', middleOnly: 'mid', lastOnly: 'two']
+        config.toProperties() == [shared: 'first', firstOnly: 'one', middleOnly: 'mid', lastOnly: 'two'] as Properties
+        config.flatten().shared == config.getProperty('shared')
+        config.toProperties().getProperty('shared') == config.getProperty('shared')
     }
 
-    void 'getRequiredProperty throws when the key cannot be resolved'() {
+    void 'flatten and properties resolve disjoint configs completely'() {
         given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([a: '1']))
-
-        when:
-        composite.getRequiredProperty('missing')
-
-        then:
-        IllegalStateException e = thrown()
-        e.message == 'Value for key [missing] cannot be resolved'
-
-        when:
-        composite.getRequiredProperty('missing', Integer)
-
-        then:
-        e = thrown()
-        e.message == 'Value for key [missing] cannot be resolved'
-
-        when:
-        String value = composite.getRequiredProperty('a')
-
-        then:
-        value == '1'
-    }
-
-    void 'getProperty with allowed values returns a permitted value or the default'() {
-        given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([mode: 'fast']))
+        def config = new CompositeConfig()
+        config.addFirst(new PropertySourcesConfig([firstOnly: 'one']))
+        config.addLast(new PropertySourcesConfig([lastOnly: 'two']))
 
         expect:
-        composite.getProperty('mode', String, 'slow', ['fast', 'slow']) == 'fast'
-        composite.getProperty('missing', String, 'slow', ['fast', 'slow']) == 'slow'
+        config.flatten() == [firstOnly: 'one', lastOnly: 'two']
+        config.toProperties() == [firstOnly: 'one', lastOnly: 'two'] as Properties
+        config.size() == 2
     }
 
-    void 'getProperty with allowed values rejects a value outside the list and names the key, value and choices'() {
+    void 'map views carry every key once with its highest precedence value'() {
         given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([mode: 'fast']))
-
-        when:
-        composite.getProperty('mode', String, 'slow', ['slow', 'medium'])
-
-        then:
-        GrailsConfigurationException e = thrown()
-        e.message == 'Invalid configuration value [fast] for key [mode]. Possible values [slow, medium]'
-    }
-
-    void 'mutating methods are unsupported since a composite cannot be modified'() {
-        given:
-        def composite = new CompositeConfig()
-
-        when:
-        composite.put('a', '1')
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        composite.remove('a')
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        composite.putAll([a: '1'])
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        composite.clear()
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        composite.merge([a: '1'])
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        composite.setAt('a', '1')
-
-        then:
-        thrown(UnsupportedOperationException)
-    }
-
-    void 'resolvePlaceholders and resolveRequiredPlaceholders are unsupported'() {
-        given:
-        def composite = new CompositeConfig()
-
-        when:
-        composite.resolvePlaceholders('${a}')
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        composite.resolveRequiredPlaceholders('${a}')
-
-        then:
-        thrown(UnsupportedOperationException)
-    }
-
-    void 'getAt returns the first non-null match by config precedence'() {
-        given:
-        def composite = new CompositeConfig()
-        composite.addFirst(configOf([a: 'first']))
-        composite.addLast(configOf([a: 'second']))
+        def first = new PropertySourcesConfig([shared: 'first', firstOnly: 'one'])
+        def last = new PropertySourcesConfig([shared: 'last', lastOnly: 'two'])
+        def config = new CompositeConfig()
+        config.addFirst(first)
+        config.addLast(last)
 
         expect:
-        composite.getAt('a') == 'first'
-        // a NavigableMapConfig-backed Config never returns null for getAt - a missing key
-        // navigates to an empty (falsy) NavigableMap, not null, so getAt('missing') isn't
-        // itself null and the composite loop returns it from the first config it tries.
-        !composite.getAt('missing')
+        !config.isEmpty()
+        config.size() == 3
+        config.get('lastOnly') == 'two'
+        config.getAt('lastOnly') == 'two'
+        config.get('shared') == 'first'
+        config.keySet() == ['shared', 'firstOnly', 'lastOnly'] as Set
+        config.containsKey('firstOnly')
+        config.containsKey('lastOnly')
+        !config.containsKey('missing')
+        config.containsProperty('shared')
+        !config.containsProperty('missing')
+        config.containsValue('first')
+        config.containsValue('two')
+        !config.containsValue('missing')
+        !config.containsValue('last')
+        config.values().size() == 3
+        config.values().toSet() == ['first', 'one', 'two'] as Set
+        config.entrySet().size() == 3
+        config.entrySet()*.key.toSet() == config.keySet()
+        config.entrySet().find { it.key == 'shared' }.value == 'first'
+        config.entrySet().find { it.key == 'firstOnly' }.value == 'one'
+        config.entrySet().find { it.key == 'lastOnly' }.value == 'two'
+        config.iterator().toList().toSet() == config.entrySet()
+    }
+
+    void 'map views keep the precedence order of the configs that contribute keys'() {
+        given:
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig([lastOnly: 'two', shared: 'last']))
+        config.addFirst(new PropertySourcesConfig([shared: 'first', firstOnly: 'one']))
+
+        expect: 'the keys of the highest precedence config come first, then the keys only lower configs have'
+        config.keySet().toList().take(2).toSet() == ['shared', 'firstOnly'] as Set
+        config.keySet().toList().last() == 'lastOnly'
+        config.entrySet()*.key == config.keySet().toList()
+        config.values().toList() == config.keySet().collect { config.get(it) }
+    }
+
+    void 'empty composites and empty delegates have empty views'() {
+        given:
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig())
+
+        expect:
+        config.isEmpty()
+        config.size() == 0
+        config.keySet().isEmpty()
+        !config.iterator().hasNext()
+        config.flatten().isEmpty()
+        config.toProperties().isEmpty()
+    }
+
+    void 'allowed values accept configured and default values'() {
+        given:
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig([mode: 'enabled']))
+
+        expect:
+        config.getProperty('mode', String, 'disabled', ['enabled', 'disabled']) == 'enabled'
+        config.getProperty('missing', String, 'disabled', ['enabled', 'disabled']) == 'disabled'
+    }
+
+    void 'invalid allowed values throw a configuration exception'() {
+        given:
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig([mode: 'invalid']))
+
+        when:
+        config.getProperty('mode', String, 'disabled', ['enabled', 'disabled'])
+
+        then:
+        thrown(GrailsConfigurationException)
+    }
+
+    void 'required properties return values and blank strings use defaults'() {
+        given:
+        def config = new CompositeConfig()
+        config.addFirst(new PropertySourcesConfig([name: 'Grails', count: 2, blank: '  ']))
+
+        expect:
+        config.getRequiredProperty('name') == 'Grails'
+        config.getRequiredProperty('count', Integer) == 2
+        config.getProperty('blank', 'default') == 'default'
+    }
+
+    void 'missing required properties are rejected'() {
+        given:
+        def config = new CompositeConfig()
+
+        when:
+        operation(config)
+
+        then:
+        thrown(IllegalStateException)
+
+        where:
+        operation << [
+            { it.getRequiredProperty('missing') },
+            { it.getRequiredProperty('missing', Integer) }
+        ]
+    }
+
+    void 'modification and placeholder resolution are unsupported'() {
+        given:
+        def config = new CompositeConfig()
+        config.addLast(new PropertySourcesConfig([name: 'original']))
+
+        when:
+        operation(config)
+
+        then:
+        thrown(UnsupportedOperationException)
+        config.getProperty('name') == 'original'
+
+        where:
+        operation << [
+            { it.merge([name: 'changed']) },
+            { it.setAt('name', 'changed') },
+            { it.put('name', 'changed') },
+            { it.remove('name') },
+            { it.putAll([name: 'changed']) },
+            { it.clear() },
+            { it.resolvePlaceholders('${name}') },
+            { it.resolveRequiredPlaceholders('${name}') }
+        ]
     }
 }

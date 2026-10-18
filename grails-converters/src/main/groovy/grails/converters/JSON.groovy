@@ -48,6 +48,7 @@ import org.grails.web.json.JSONObject;
 import org.grails.web.json.JSONTokener;
 import org.grails.web.json.JSONWriter;
 import org.grails.web.json.JsonDateFormat;
+import org.grails.web.json.JsonMapperSupport;
 import org.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.grails.web.json.PrettyPrintJSONWriter;
 
@@ -71,6 +72,8 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
     protected boolean prettyPrint;
     protected JSONWriter writer;
     protected Stack<Object> referenceStack;
+    protected JsonMapperSupport jsonMapperSupport;
+    private JSONWriter jsonWriter;
 
     protected ConverterConfiguration<JSON> initConfig() {
         return ConvertersConfigurationHolder.getConverterConfiguration(JSON);
@@ -101,8 +104,13 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
         this.prettyPrint = prettyPrint;
     }
 
+    @SuppressWarnings("deprecation")
     private void prepareRender(Writer out) {
-        writer = prettyPrint ? new PrettyPrintJSONWriter(out) : new JSONWriter(out);
+        jsonMapperSupport = ConvertersConfigurationHolder.getJsonMapperSupport();
+        jsonWriter = prettyPrint && ConvertersConfigurationHolder.isLegacyJson() ?
+                new PrettyPrintJSONWriter(out, jsonMapperSupport, PrettyPrintJSONWriter.DEFAULT_INDENT_STR) :
+                new JSONWriter(out, jsonMapperSupport, prettyPrint);
+        writer = jsonWriter;
         if (circularReferenceBehaviour == CircularReferenceBehaviour.PATH) {
             if (log.isInfoEnabled()) {
                 log.info(String.format('Using experimental CircularReferenceBehaviour.PATH for %s', getClass().getName()));
@@ -114,6 +122,7 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
 
     private void finalizeRender(Writer out) {
         try {
+            jsonWriter.flush();
             out.flush();
             out.close();
         }
@@ -183,8 +192,9 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
             else if (o instanceof Class<?>) {
                 writer.value(((Class<?>) o).getName());
             }
-            else if (o instanceof Number) {
-                writer.value((Number) o);
+            else if (o instanceof Number number && (ConvertersConfigurationHolder.isLegacyJson() || isJdkNumber(number))) {
+                // another Number is rendered by its marshaller, such as one the JsonMapper has a serializer for
+                writer.value(number);
             } else if (o instanceof Boolean) {
                 writer.value((Boolean) o);
             } else if (o.getClass().isPrimitive() && !o.getClass().equals(byte[].class)) {
@@ -213,6 +223,32 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
         }
     }
 
+    private static boolean isJdkNumber(Number number) {
+        return number instanceof Integer || number instanceof Long || number instanceof Double || number instanceof BigDecimal ||
+                number instanceof Short || number instanceof Byte || number instanceof Float || number instanceof BigInteger;
+    }
+
+    /**
+     * @return the JsonMapper this converter writes with
+     * @since 9.0
+     */
+    JsonMapperSupport getJsonMapperSupport() {
+        return jsonMapperSupport != null ? jsonMapperSupport : ConvertersConfigurationHolder.getJsonMapperSupport();
+    }
+
+    /**
+     * The JSON object key for a map key, as the JsonMapper writes it: a {@code String} key as it is, and a
+     * {@code Date} key, for example, in the mapper's date format. Rendering as Grails 8 did
+     * ({@code grails.converters.json.legacy}), a date key as a UTC instant and any other key as its {@code toString()}.
+     *
+     * @param key a non-null map key
+     * @return the JSON object key
+     * @since 9.0
+     */
+    String formatKey(Object key) {
+        return ConvertersConfigurationHolder.isLegacyJson() ? JsonDateFormat.formatKey(key) : getJsonMapperSupport().formatKey(key);
+    }
+
     ObjectMarshaller<JSON> lookupObjectMarshaller(Object target) {
         return config.getMarshaller(target);
     }
@@ -234,17 +270,28 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
      * @throws JSONException
      */
     String toString(boolean prettyPrint) throws JSONException {
-        String json = super.toString();
-        if (prettyPrint) {
-            Object jsonObject = new JSONTokener(json).nextValue();
-            if (jsonObject instanceof JSONObject) {
-                return ((JSONObject) jsonObject).toString(3);
+        if (ConvertersConfigurationHolder.isLegacyJson()) {
+            // as Grails 8 rendered it: with the configured pretty printing, and indented by three spaces for true
+            String json = super.toString();
+            if (prettyPrint) {
+                Object value = new JSONTokener(json).nextValue();
+                if (value instanceof JSONObject) {
+                    return ((JSONObject) value).toString(3);
+                }
+                if (value instanceof JSONArray) {
+                    return ((JSONArray) value).toString(3);
+                }
             }
-            if (jsonObject instanceof JSONArray) {
-                return ((JSONArray) jsonObject).toString(3);
-            }
+            return json;
         }
-        return json;
+        boolean configuredPrettyPrint = this.prettyPrint;
+        this.prettyPrint = prettyPrint;
+        try {
+            return super.toString();
+        }
+        finally {
+            this.prettyPrint = configuredPrettyPrint;
+        }
     }
 
     /**
@@ -541,7 +588,7 @@ class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConver
                 for (Object o : valueMap.entrySet()) {
                     Map.Entry element = (Map.Entry) o;
                     Object elementKey = element.getKey();
-                    writer.key(elementKey == null ? 'null' : JsonDateFormat.formatKey(elementKey));
+                    writer.key(elementKey == null ? 'null' : json.formatKey(elementKey));
                     json.convertAnother(element.getValue());
                 }
                 writer.endObject();
