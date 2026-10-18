@@ -200,6 +200,16 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         'Application/Problem+XML'                                     || ['xml']
     }
 
+    void "a problem type grails.mime.types configures is its own format"() {
+        given:
+        def parser = new DefaultAcceptHeaderParser(
+                [new MimeType('application/problem+json', 'problem'), MimeType.JSON, MimeType.XML] as MimeType[])
+
+        expect:
+        parser.parse('application/problem+json')*.extension == ['problem']
+        parser.parse('application/problem+xml')*.extension == ['xml']
+    }
+
     void "a lenient quality value is still recognised when a space precedes the parameter"() {
         when: "Spring rejects the header, so the lenient path parses it"
         MimeType[] mimeTypes = getAcceptHeaderParser().parse('application/json;q=1.5, text/html ; q=2.0')

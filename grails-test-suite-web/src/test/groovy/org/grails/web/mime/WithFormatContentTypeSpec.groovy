@@ -85,6 +85,20 @@ class WithFormatContentTypeSpec extends Specification implements ControllerUnitT
         contentType << ['Application/JSON', 'application/json;charset=UTF-8']
     }
 
+    void 'a content type of application/problem+json is the json format, whose body binds as JSON'() {
+        given:
+        request.method = 'POST'
+        request.contentType = 'application/problem+json'
+        request.content = '{"title":"Conflict","status":409}'.getBytes('UTF-8')
+
+        when:
+        controller.problem()
+
+        then:
+        request.format == 'json'
+        response.text == 'Conflict 409'
+    }
+
     @Issue('GRAILS-11093')
     void 'Test specifying request format'() {
         when: 'a request format is specified'
@@ -110,4 +124,13 @@ class FormatController {
             }
         }
     }
+
+    def problem(ProblemCommand command) {
+        render "${command.title} ${command.status}"
+    }
+}
+
+class ProblemCommand {
+    String title
+    Integer status
 }
