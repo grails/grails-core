@@ -19,6 +19,8 @@
 @SuppressWarnings('UnnecessarySemicolon')
 package grails.core;
 
+import groovy.transform.CompileStatic;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -44,6 +46,7 @@ import org.grails.io.support.UrlResource;
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings(['UnnecessarySemicolon', 'deprecation'])
+@CompileStatic
 abstract class ArtefactHandlerAdapter implements ArtefactHandler {
 
     protected String type;
