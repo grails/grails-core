@@ -18,11 +18,13 @@
  */
 package org.grails.web.converters.jackson;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import groovy.lang.GroovyObject;
 
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 import grails.core.GrailsApplication;
 import grails.core.support.proxy.DefaultProxyHandler;
@@ -77,6 +79,8 @@ public class DomainClassRendering {
     private final CircularReferenceBehaviour circularReferenceBehaviour;
 
     private final List<DomainClassFetcher> domainClassFetchers;
+
+    private final boolean overridesWriteReference = overridesWriteReference(getClass());
 
     /**
      * @param grailsApplication the application whose domain classes are rendered
@@ -285,7 +289,7 @@ public class DomainClassRendering {
     /**
      * Writes the reference to an associated domain class instance itself, in place of what the serializer writes for it:
      * the {@code {"class": …, "id": …}} object, or what the serializer of its class writes, for a class with a
-     * serializer of its own. A subclass that overrides it overrides {@link #writesReferences()} as well.
+     * serializer of its own. A subclass that overrides it writes them, as {@link #writesReferences()} then says.
      *
      * @param reference an associated domain class instance
      * @param idProperty the id property of its domain class
@@ -297,13 +301,20 @@ public class DomainClassRendering {
     }
 
     /**
-     * Whether {@link #writeReference} writes the references to associated instances itself, which a subclass that
-     * overrides it says, so that an association left out when it is empty is left out by what is written for it.
+     * Whether {@link #writeReference} writes the references to associated instances itself, so that an association left
+     * out when it is empty is left out by what is written for it. A subclass that overrides {@link #writeReference} but
+     * writes no reference itself, or only some, says so by overriding this method too.
      *
-     * @return {@code false}, by default
+     * @return whether the class of this rendering overrides {@link #writeReference}
      * @since 9.0
      */
     public boolean writesReferences() {
-        return false;
+        return overridesWriteReference;
+    }
+
+    private static boolean overridesWriteReference(Class<?> type) {
+        Method writeReference = ReflectionUtils.findMethod(type, "writeReference", Object.class, PersistentProperty.class,
+                PersistentEntity.class);
+        return writeReference != null && writeReference.getDeclaringClass() != DomainClassRendering.class;
     }
 }

@@ -737,6 +737,12 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(aviary) == '{"id":1,"birds":[["Parrot","Polly"]]}'
     }
 
+    void "a rendering writes the references itself when it overrides writeReference, unless it says otherwise"() {
+        expect:
+        !new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, false).writesReferences()
+        new WritingRendering(grailsApplication).writesReferences()
+    }
+
     void "a DomainClassMarshaller that writes references itself writes the reference to an instance whose class has a serializer of its own"() {
         given:
         JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
@@ -1630,6 +1636,18 @@ class SummaryConverter extends StdConverter<Summarized, Summary> {
     @Override
     Summary convert(Summarized summarized) {
         new Summary(summary: "summary of ${summarized.name}")
+    }
+}
+
+class WritingRendering extends DomainClassRendering {
+
+    WritingRendering(GrailsApplication grailsApplication) {
+        super(grailsApplication, new DefaultProxyHandler(), false, false, false)
+    }
+
+    @Override
+    boolean writeReference(Object reference, PersistentProperty idProperty, PersistentEntity entity) {
+        true
     }
 }
 
