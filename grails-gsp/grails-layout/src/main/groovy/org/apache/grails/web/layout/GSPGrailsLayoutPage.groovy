@@ -20,6 +20,7 @@
 package org.apache.grails.web.layout;
 
 import groovy.transform.CompileStatic;
+import groovy.transform.stc.POJO;
 
 import com.opensymphony.module.sitemesh.HTMLPage;
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
@@ -38,6 +39,9 @@ import org.grails.buffer.StreamCharBuffer;
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings(['UnnecessarySemicolon'])
+// SiteMesh declares String getProperty(String); as a GroovyObject that method would become the property-access hook and
+// page.head or page.titleBuffer would look up SiteMesh properties instead of calling the getters, so stay a plain Java object
+@POJO
 @CompileStatic
 class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
 
@@ -78,16 +82,6 @@ class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
     void addProperty(String name, String value) {
         super.addProperty(name, value);
         used = true;
-    }
-
-    /**
-     * Sitemesh declares {@code String getProperty(String)} while {@code GroovyObject} declares
-     * {@code Object getProperty(String)}. Without this override a dynamic call can bind to the
-     * metaclass lookup and fail with a MissingPropertyException for names like {@code meta.title}.
-     */
-    @Override
-    String getProperty(String name) {
-        return super.getProperty(name);
     }
 
     @Override
