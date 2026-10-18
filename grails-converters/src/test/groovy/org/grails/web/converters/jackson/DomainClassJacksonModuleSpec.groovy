@@ -702,6 +702,29 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(shelter) == '{"id":7,"residents":[["Cat","Tom"]]}'
     }
 
+    void "the serializer an associated instance with a serializer of its own is written with is found once for each class and property"() {
+        given:
+        def tally = new Tally(single: counted('a'), counts: [counted('b'), counted('c'), counted('d')])
+        tally.id = 1
+        def mapper = mapper()
+        CountedSerializer.CONTEXTUALIZED.set(0)
+
+        when:
+        def first = mapper.writeValueAsString(tally)
+        def second = mapper.writeValueAsString(tally)
+
+        then:
+        first == '{"id":1,"single":"a","counts":["b","c","d"]}'
+        second == first
+        CountedSerializer.CONTEXTUALIZED.get() == 2
+    }
+
+    private static Counted counted(String name) {
+        def counted = new Counted(name: name)
+        counted.id = name.charAt(0) as long
+        counted
+    }
+
     void "the instances of a to-many association written with a serializer of their own have the type ids the property asks for"() {
         given: 'an association that names the type ids of its elements, of a class that names none'
         def parrot = new Parrot(name: 'Polly')
@@ -1235,14 +1258,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1437,6 +1460,41 @@ class Animal {
 @Entity
 class Dog extends Animal {
     String name
+}
+
+@Entity
+@JsonSerialize(using = CountedSerializer)
+class Counted {
+    String name
+}
+
+class CountedSerializer extends StdSerializer<Counted> {
+
+    static final java.util.concurrent.atomic.AtomicInteger CONTEXTUALIZED = new java.util.concurrent.atomic.AtomicInteger()
+
+    CountedSerializer() {
+        super(Counted)
+    }
+
+    @Override
+    ValueSerializer<?> createContextual(SerializationContext context, tools.jackson.databind.BeanProperty property) {
+        if (property != null) {
+            CONTEXTUALIZED.incrementAndGet()
+        }
+        this
+    }
+
+    @Override
+    void serialize(Counted counted, JsonGenerator generator, SerializationContext context) {
+        generator.writeString(counted.name)
+    }
+}
+
+@Entity
+class Tally {
+    static hasMany = [counts: Counted]
+    Counted single
+    List<Counted> counts
 }
 
 @Entity
