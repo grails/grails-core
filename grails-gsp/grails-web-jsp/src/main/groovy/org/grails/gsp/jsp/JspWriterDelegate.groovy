@@ -16,11 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.gsp.jsp
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.gsp.jsp;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import jakarta.servlet.jsp.JspWriter
+import jakarta.servlet.jsp.JspWriter;
 
 /**
  * Delegates to another java.io.Writer.
@@ -28,164 +29,166 @@ import jakarta.servlet.jsp.JspWriter
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class JspWriterDelegate extends JspWriter {
 
-    static final char[] LINE_BREAK = System.getProperty('line.separator').toCharArray()
+    static final char[] LINE_BREAK = System.getProperty('line.separator').toCharArray();
 
-    private final Writer out
+    private final Writer out;
 
     JspWriterDelegate(Writer out) {
-        super(0, true)
-        this.out = out
+        super(0, true);
+        this.out = out;
     }
 
     @Override
     String toString() {
-        return out.toString()
+        return out.toString();
     }
 
     @Override
     void clear() throws IOException {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     void clearBuffer() throws IOException {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     void close() throws IOException {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     void flush() throws IOException {
-        out.flush()
+        out.flush();
     }
 
     @Override
     int getRemaining() {
-        return 0
+        return 0;
     }
 
     @Override
     void newLine() throws IOException {
-        out.write(LINE_BREAK)
+        out.write(LINE_BREAK);
     }
 
     @Override
     void print(boolean b) throws IOException {
-        out.write(b ? Boolean.TRUE.toString() : Boolean.FALSE.toString())
+        out.write(b ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
     }
 
     @Override
     void print(char c) throws IOException {
-        out.write((int) c)
+        out.write((int) c);
     }
 
     @Override
     void print(char[] cArray) throws IOException {
-        out.write(cArray)
+        out.write(cArray);
     }
 
     @Override
     void print(double d) throws IOException {
-        out.write(Double.toString(d))
+        out.write(Double.toString(d));
     }
 
     @Override
     void print(float f) throws IOException {
-        out.write(Float.toString(f))
+        out.write(Float.toString(f));
     }
 
     @Override
     void print(int i) throws IOException {
-        out.write(Integer.toString(i))
+        out.write(Integer.toString(i));
     }
 
     @Override
     void print(long l) throws IOException {
-        out.write(Long.toString(l))
+        out.write(Long.toString(l));
     }
 
     @Override
     void print(Object o) throws IOException {
-        out.write(o == null ? 'null' : o.toString())
+        out.write(o == null ? 'null' : o.toString());
     }
 
     @Override
     void print(String s) throws IOException {
-        out.write(s)
+        out.write(s);
     }
 
     @Override
     void println() throws IOException {
-        newLine()
+        newLine();
     }
 
     @Override
     void println(boolean b) throws IOException {
-        print(b)
-        newLine()
+        print(b);
+        newLine();
     }
 
     @Override
     void println(char c) throws IOException {
-        print(c)
-        newLine()
+        print(c);
+        newLine();
     }
 
     @Override
     void println(char[] chars) throws IOException {
-        print(chars)
-        newLine()
+        print(chars);
+        newLine();
     }
 
     @Override
     void println(double d) throws IOException {
-        print(d)
-        newLine()
+        print(d);
+        newLine();
     }
 
     @Override
     void println(float f) throws IOException {
-        print(f)
-        newLine()
+        print(f);
+        newLine();
     }
 
     @Override
     void println(int i) throws IOException {
-        print(i)
-        newLine()
+        print(i);
+        newLine();
     }
 
     @Override
     void println(long l) throws IOException {
-        print(l)
-        newLine()
+        print(l);
+        newLine();
     }
 
     @Override
     void println(Object o) throws IOException {
-        print(o)
-        newLine()
+        print(o);
+        newLine();
     }
 
     @Override
     void println(String s) throws IOException {
-        print(s)
-        newLine()
+        print(s);
+        newLine();
     }
 
     @Override
     void write(int c) throws IOException {
-        out.write(c)
+        out.write(c);
     }
 
     @Override
     void write(char[] cbuf, int off, int len) throws IOException {
-        out.write(cbuf, off, len)
+        out.write(cbuf, off, len);
     }
 }

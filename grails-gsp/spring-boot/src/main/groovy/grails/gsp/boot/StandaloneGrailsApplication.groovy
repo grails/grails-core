@@ -16,56 +16,59 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.gsp.boot
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.gsp.boot;
 
-import groovy.transform.CompileStatic
-import org.springframework.core.env.ConfigurableEnvironment
-import org.springframework.core.env.MutablePropertySources
-import org.springframework.core.io.Resource
+import groovy.transform.CompileStatic;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.io.Resource;
 
-import grails.config.Config
-import grails.core.ArtefactHandler
-import grails.core.ArtefactInfo
-import grails.core.GrailsClass
-import org.grails.config.PropertySourcesConfig
-import org.grails.core.AbstractGrailsApplication
-import org.grails.datastore.mapping.model.MappingContext
+import grails.config.Config;
+import grails.core.ArtefactHandler;
+import grails.core.ArtefactInfo;
+import grails.core.GrailsClass;
+import org.grails.config.PropertySourcesConfig;
+import org.grails.core.AbstractGrailsApplication;
+import org.grails.datastore.mapping.model.MappingContext;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class StandaloneGrailsApplication extends AbstractGrailsApplication {
 
     Config getConfig() {
         if (this.@config == null) {
-            Config created
+            Config created;
             if (parentContext != null) {
-                org.springframework.core.env.Environment environment = parentContext.getEnvironment()
+                org.springframework.core.env.Environment environment = parentContext.getEnvironment();
                 if (environment instanceof ConfigurableEnvironment) {
-                    MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources()
-                    created = new PropertySourcesConfig(propertySources)
+                    MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
+                    created = new PropertySourcesConfig(propertySources);
                 } else {
-                    created = new PropertySourcesConfig()
+                    created = new PropertySourcesConfig();
                 }
             } else {
-                created = new PropertySourcesConfig()
+                created = new PropertySourcesConfig();
             }
-            setConfig(created)
+            setConfig(created);
         }
-        return this.@config
+        return this.@config;
     }
 
     @Override
     Class[] getAllClasses() {
-        return new Class[0]
+        return new Class[0];
     }
 
     @Override
     Class[] getAllArtefacts() {
-        return new Class[0]
+        return new Class[0];
     }
 
     @Override
     MappingContext getMappingContext() {
-        return null
+        return null;
     }
 
     @Override
@@ -79,57 +82,57 @@ class StandaloneGrailsApplication extends AbstractGrailsApplication {
 
     @Override
     Resource getResourceForClass(Class theClazz) {
-        return null
+        return null;
     }
 
     @Override
     boolean isArtefact(Class theClazz) {
-        return false
+        return false;
     }
 
     @Override
     boolean isArtefactOfType(String artefactType, Class theClazz) {
-        return false
+        return false;
     }
 
     @Override
     boolean isArtefactOfType(String artefactType, String className) {
-        return false
+        return false;
     }
 
     @Override
     GrailsClass getArtefact(String artefactType, String name) {
-        return null
+        return null;
     }
 
     @Override
     ArtefactHandler getArtefactType(Class theClass) {
-        return null
+        return null;
     }
 
     @Override
     ArtefactInfo getArtefactInfo(String artefactType) {
-        return null
+        return null;
     }
 
     @Override
     GrailsClass[] getArtefacts(String artefactType) {
-        return new GrailsClass[0]
+        return new GrailsClass[0];
     }
 
     @Override
     GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
-        return null
+        return null;
     }
 
     @Override
     GrailsClass addArtefact(String artefactType, Class artefactClass) {
-        return null
+        return null;
     }
 
     @Override
     GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass) {
-        return null
+        return null;
     }
 
     @Override
@@ -137,12 +140,12 @@ class StandaloneGrailsApplication extends AbstractGrailsApplication {
 
     @Override
     boolean hasArtefactHandler(String type) {
-        return false
+        return false;
     }
 
     @Override
     ArtefactHandler[] getArtefactHandlers() {
-        return new ArtefactHandler[0]
+        return new ArtefactHandler[0];
     }
 
     @Override
@@ -150,12 +153,12 @@ class StandaloneGrailsApplication extends AbstractGrailsApplication {
 
     @Override
     boolean isInitialised() {
-        return false
+        return false;
     }
 
     @Override
     GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
-        return null
+        return null;
     }
 
     @Override
@@ -166,7 +169,6 @@ class StandaloneGrailsApplication extends AbstractGrailsApplication {
 
     @Override
     ArtefactHandler getArtefactHandler(String type) {
-        return null
+        return null;
     }
-
 }

@@ -16,42 +16,45 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.support
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.support;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.persistence.support.PersistenceContextInterceptor
+import grails.persistence.support.PersistenceContextInterceptor;
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class AggregatePersistenceContextInterceptor implements PersistenceContextInterceptor {
 
-    private final List<PersistenceContextInterceptor> interceptors
+    private final List<PersistenceContextInterceptor> interceptors;
 
     /**
      * Constructor.
      * @param interceptors the real interceptors
      */
     AggregatePersistenceContextInterceptor(final List<PersistenceContextInterceptor> interceptors) {
-        this.interceptors = interceptors
+        this.interceptors = interceptors;
     }
 
     boolean isOpen() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
             if (interceptor.isOpen()) {
                 // true at least one is true
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
 
     void reconnect() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.reconnect()
+            interceptor.reconnect();
         }
     }
 
@@ -59,7 +62,7 @@ class AggregatePersistenceContextInterceptor implements PersistenceContextInterc
         for (PersistenceContextInterceptor interceptor in interceptors) {
             try {
                 if (interceptor.isOpen()) {
-                    interceptor.destroy()
+                    interceptor.destroy();
                 }
             } catch (Exception ignored) {
                 // ignore exception
@@ -69,37 +72,37 @@ class AggregatePersistenceContextInterceptor implements PersistenceContextInterc
 
     void clear() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.clear()
+            interceptor.clear();
         }
     }
 
     void disconnect() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.disconnect()
+            interceptor.disconnect();
         }
     }
 
     void flush() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.flush()
+            interceptor.flush();
         }
     }
 
     void init() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.init()
+            interceptor.init();
         }
     }
 
     void setReadOnly() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.setReadOnly()
+            interceptor.setReadOnly();
         }
     }
 
     void setReadWrite() {
         for (PersistenceContextInterceptor interceptor in interceptors) {
-            interceptor.setReadWrite()
+            interceptor.setReadWrite();
         }
     }
 

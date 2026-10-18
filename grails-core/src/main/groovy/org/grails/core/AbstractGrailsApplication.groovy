@@ -16,79 +16,83 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.core
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.core;
 
-import groovy.transform.CompileStatic
-import org.springframework.beans.BeansException
-import org.springframework.beans.factory.BeanClassLoaderAware
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-import org.springframework.context.ApplicationEvent
-import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.context.event.SmartApplicationListener
-import org.springframework.core.Ordered
-import org.springframework.util.ClassUtils
+import groovy.transform.CompileStatic;
 
-import grails.config.Config
-import grails.core.ArtefactHandler
-import grails.core.GrailsApplication
-import grails.core.support.GrailsConfigurationAware
-import grails.util.Environment
-import grails.util.Holders
-import grails.util.Metadata
-import org.grails.config.PropertySourcesConfig
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.SmartApplicationListener;
+import org.springframework.core.Ordered;
+import org.springframework.util.ClassUtils;
 
+import grails.config.Config;
+import grails.core.ArtefactHandler;
+import grails.core.GrailsApplication;
+import grails.core.support.GrailsConfigurationAware;
+import grails.util.Environment;
+import grails.util.Holders;
+import grails.util.Metadata;
+import org.grails.config.PropertySourcesConfig;
+
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, SmartApplicationListener {
 
-    protected ClassLoader classLoader
-    protected Config config
+    protected ClassLoader classLoader;
+    protected Config config;
 
     @SuppressWarnings('rawtypes')
-    protected ApplicationContext parentContext
-    protected Metadata applicationMeta = Metadata.getCurrent()
-    protected boolean contextInitialized
+    protected ApplicationContext parentContext;
+    protected Metadata applicationMeta = Metadata.getCurrent();
+    protected boolean contextInitialized;
 
     @Override
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.parentContext = applicationContext
+        this.parentContext = applicationContext;
         if (applicationContext instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext) applicationContext).addApplicationListener(this)
+            ((ConfigurableApplicationContext) applicationContext).addApplicationListener(this);
         }
     }
 
     @Override
     Metadata getMetadata() {
-        return applicationMeta
+        return applicationMeta;
     }
 
     @Override
     boolean isWarDeployed() {
-        return Environment.isWarDeployed()
+        return Environment.isWarDeployed();
     }
 
     Config getConfig() {
-        return config
+        return config;
     }
 
     void setConfig(Config config) {
-        this.config = config
-        Holders.setConfig(config)
+        this.config = config;
+        Holders.setConfig(config);
     }
 
     void setConfig(ConfigObject config) {
-        this.config = new PropertySourcesConfig().merge(config)
-        Holders.setConfig(this.config)
+        this.config = new PropertySourcesConfig().merge(config);
+        Holders.setConfig(this.config);
     }
 
     @Override
     void configChanged() {
-        final ArtefactHandler[] handlers = getArtefactHandlers()
+        final ArtefactHandler[] handlers = getArtefactHandlers();
         if (handlers != null) {
-            for (ArtefactHandler handler in handlers) {
+            for (ArtefactHandler handler : handlers) {
                 if (handler instanceof GrailsConfigurationAware) {
-                    ((GrailsConfigurationAware) handler).setConfiguration(config)
+                    ((GrailsConfigurationAware) handler).setConfiguration(config);
                 }
             }
         }
@@ -96,52 +100,52 @@ abstract class AbstractGrailsApplication extends GroovyObjectSupport implements 
 
     @Override
     void setBeanClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader
+        this.classLoader = classLoader;
     }
 
     @Override
     ClassLoader getClassLoader() {
-        return classLoader
+        return classLoader;
     }
 
     @SuppressWarnings('rawtypes')
     @Override
     Class getClassForName(String className) {
-        return ClassUtils.resolveClassName(className, getClassLoader())
+        return ClassUtils.resolveClassName(className, getClassLoader());
     }
 
     ApplicationContext getMainContext() {
-        return parentContext
+        return parentContext;
     }
 
     void setMainContext(ApplicationContext context) {
-        this.parentContext = context
+        this.parentContext = context;
     }
 
     ApplicationContext getParentContext() {
-        return parentContext
+        return parentContext;
     }
 
     @Override
     void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) {
-            this.contextInitialized = true
+            this.contextInitialized = true;
         }
     }
 
     @Override
     boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
-        return ContextRefreshedEvent.isAssignableFrom(eventType)
+        return ContextRefreshedEvent.isAssignableFrom(eventType);
     }
 
     @Override
     boolean supportsSourceType(Class<?> sourceType) {
-        return true
+        return true;
     }
 
     @Override
     int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE
+        return Ordered.LOWEST_PRECEDENCE;
     }
 
 }
