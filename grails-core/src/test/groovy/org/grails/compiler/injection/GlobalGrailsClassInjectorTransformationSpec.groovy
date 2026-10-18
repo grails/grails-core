@@ -540,11 +540,9 @@ class GlobalGrailsClassInjectorTransformationSpec extends Specification {
             handAuthored.text = 'com.elsewhere.FromAnotherJar\n'
 
         when: "it compiles"
-            // TEMPORARY CI DIAGNOSTIC (revert before merge): this feature fails only on GitHub-hosted
-            // runners with an empty warning list and cannot be reproduced locally. The compilation is
-            // inlined here so the power assertion below prints which branch of the registration ran.
-            def sourceFile = new File(tempDir, 'WarnOnceGrailsPlugin.groovy')
-            sourceFile.text = '''
+            def warnings = compileCollectingWarnings(
+                    new File(tempDir, 'WarnOnceGrailsPlugin.groovy'),
+                    '''
                         @org.springframework.boot.autoconfigure.AutoConfiguration
                         class WarnOnceGrailsPlugin extends grails.plugins.Plugin {
                             def version = '1.0'
@@ -552,33 +550,12 @@ class GlobalGrailsClassInjectorTransformationSpec extends Specification {
                                 bean('greeting', String) { 'hello' }
                             }
                         }
-                    '''
-            def cu = new CompilationUnit(new CompilerConfiguration(targetDirectory: targetDir))
-            cu.addSource(sourceFile)
-            cu.compile(Phases.CANONICALIZATION)
-            def warnings = (cu.errorCollector.warnings ?: []).collect { it.message?.toString() ?: it.toString() }
-            def generatedImports = new File(targetDir,
-                    'META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports')
-            def diag = [
-                    baseDirProp: System.getProperty('base.dir'),
-                    groovyWarningsProp: System.getProperty('groovy.warnings'),
-                    disabledGlobalTransformsProp: System.getProperty('groovy.disabled.global.ast.transformations'),
-                    warningLevel: cu.configuration.warningLevel,
-                    javaIoTmpdir: System.getProperty('java.io.tmpdir'),
-                    userDir: System.getProperty('user.dir'),
-                    tempDir: tempDir.absolutePath,
-                    targetDir: targetDir.absolutePath,
-                    handAuthoredIsFile: handAuthored.isFile(),
-                    siblingGenerated: cu.AST.getClass('WarnOnceAutoConfiguration') != null,
-                    generatedImportsExists: generatedImports.exists(),
-                    generatedImportsText: generatedImports.exists() ? generatedImports.text : null,
-                    errorCount: cu.errorCollector.errorCount,
-                    warningCount: cu.errorCollector.warningCount,
-                    allWarnings: warnings,
-            ]
+                    ''',
+                    targetDir
+            )
 
         then: "the entry that has to be added by hand is named"
-            warnings.any { it.contains('WarnOnceAutoConfiguration') && it.contains('AutoConfiguration.imports') } || diag == null
+            warnings.any { it.contains('WarnOnceAutoConfiguration') && it.contains('AutoConfiguration.imports') }
 
         and: "and the module's own file is left as the only one"
             !new File(targetDir,
