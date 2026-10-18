@@ -35,6 +35,7 @@ import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.BeanSerializerBuilder;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 
 import org.springframework.beans.BeanUtils;
@@ -237,6 +238,14 @@ public final class JsonProjection {
                                 (bean, context, writer) -> projects(context, bean, beanName, writer.getName()), true));
                     }
                     return projected;
+                }
+
+                @Override
+                public BeanSerializerBuilder updateBuilder(SerializationConfig config,
+                        BeanDescription.Supplier beanDescription, BeanSerializerBuilder builder) {
+                    // the entries of a @JsonAnyGetter, as the property it is, which Jackson writes with a writer of its own
+                    return GatedPropertyWriter.gateAnyGetter(builder, beanDescription.get(), beanName ->
+                            (bean, context, writer) -> projects(context, bean, beanName, writer.getName()), true);
                 }
             });
         }

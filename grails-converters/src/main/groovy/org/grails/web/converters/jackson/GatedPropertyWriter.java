@@ -18,16 +18,26 @@
  */
 package org.grails.web.converters.jackson;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.AnyGetterWriter;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.BeanSerializerBuilder;
 import tools.jackson.databind.ser.PropertyFilter;
 import tools.jackson.databind.ser.bean.UnwrappingBeanPropertyWriter;
+import tools.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
 import tools.jackson.databind.util.NameTransformer;
 
 /**
@@ -95,6 +105,63 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
             return new Unwrapping(unwrapping, gate);
         }
         return new GatedPropertyWriter(writer, gate);
+    }
+
+    /**
+     * Gates the writer of the entries of a class's {@code @JsonAnyGetter}, which Jackson adds once the properties are
+     * gated: in the place of the writer of the property its field or getter is, or after the other writers.
+     *
+     * @param builder the builder of the bean serializer
+     * @param description the bean's description
+     * @param gates the gate of a property, by the name the class gives it: that of the property the {@code @JsonAnyGetter}
+     *        is the field or the getter of, or else the name of the {@code @JsonAnyGetter} itself
+     * @param checked whether Jackson checks the names an unwrapped property writes, as for {@link #gated}
+     * @return the builder
+     */
+    static BeanSerializerBuilder gateAnyGetter(BeanSerializerBuilder builder, BeanDescription description,
+            Function<String, Gate> gates, boolean checked) {
+        List<BeanPropertyWriter> properties = builder.getProperties();
+        for (int i = 0; i < properties.size(); i++) {
+            if (properties.get(i) instanceof AnyGetterWriter anyGetter) {
+                BeanPropertyDefinition property = anyGetterProperty(description);
+                BeanPropertyWriter gated = gated(anyGetter,
+                        gates.apply(property != null ? property.getInternalName() : anyGetter.getName()), checked);
+                List<BeanPropertyWriter> kept = new ArrayList<>(properties);
+                kept.set(i, gated);
+                builder.setProperties(kept);
+                BeanPropertyWriter[] filtered = builder.getFilteredProperties();
+                if (filtered != null && filtered[i] != null) {
+                    // the writer of the views Jackson writes the entries in
+                    BeanPropertyWriter[] keptFiltered = filtered.clone();
+                    keptFiltered[i] = filtered[i] == anyGetter ? gated :
+                            FilteredBeanPropertyWriter.constructViewBased(gated, anyGetter.getViews());
+                    builder.setFilteredProperties(keptFiltered);
+                }
+                break;
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * @param description a bean's description
+     * @return the property whose field or getter is the class's {@code @JsonAnyGetter}, or {@code null}
+     */
+    static BeanPropertyDefinition anyGetterProperty(BeanDescription description) {
+        AnnotatedMember anyGetter = description.findAnyGetter();
+        if (anyGetter == null) {
+            return null;
+        }
+        for (BeanPropertyDefinition definition : description.findProperties()) {
+            if (accessedBy(definition.getField(), anyGetter) || accessedBy(definition.getGetter(), anyGetter)) {
+                return definition;
+            }
+        }
+        return null;
+    }
+
+    private static boolean accessedBy(AnnotatedMember accessor, AnnotatedMember anyGetter) {
+        return accessor != null && Objects.equals(accessor.getMember(), anyGetter.getMember());
     }
 
     @Override

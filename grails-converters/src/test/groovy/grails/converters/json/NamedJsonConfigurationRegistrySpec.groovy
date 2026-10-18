@@ -27,6 +27,7 @@ import java.util.function.Function
 
 import groovy.json.JsonSlurper
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import tools.jackson.core.JacksonException
@@ -345,6 +346,28 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         new JsonSlurper().parseText(output.toString()) == [name: 'main', credentials: [user: 'a', password: 'b']]
     }
 
+    void 'a projection applies to the entries of a @JsonAnyGetter by the name of the property it is, or its own'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        def secrets = new NamedJsonAnyGetterProperty(name: 'a', secrets: [token: 't'])
+        def extras = new NamedJsonAnyGetterMethod(name: 'a')
+
+        expect:
+        projected(registry, secrets, null, ['secrets']) == '{"name":"a"}'
+        projected(registry, secrets, ['name'], null) == '{"name":"a"}'
+        projected(registry, secrets, [], null) == '{}'
+        projected(registry, secrets, ['secrets'], null) == '{"token":"t"}'
+        projected(registry, extras, ['name'], null) == '{"name":"a"}'
+        projected(registry, extras, null, ['name']) == '{"extra":"v"}'
+    }
+
+    private static String projected(NamedJsonConfigurationRegistry registry, Object value, List<String> includes,
+                                     List<String> excludes) {
+        def output = new StringWriter()
+        registry.writeValue(null, output, value, includes, excludes)
+        output.toString()
+    }
+
     void 'a projection a serializer of its own bypasses is reported, once for each type'() {
         given: 'an application started afresh, which has reported nothing'
         ShutdownOperations.runOperations()
@@ -525,6 +548,21 @@ class NamedJsonValue {
 class NamedJsonCredentials {
     String user
     String password
+}
+
+class NamedJsonAnyGetterProperty {
+    String name
+    @JsonAnyGetter
+    Map<String, String> secrets
+}
+
+class NamedJsonAnyGetterMethod {
+    String name
+
+    @JsonAnyGetter
+    Map<String, Object> getExtras() {
+        [extra: 'v']
+    }
 }
 
 class NamedJsonAccount {

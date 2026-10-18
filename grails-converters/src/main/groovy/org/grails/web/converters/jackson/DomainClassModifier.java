@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 
@@ -42,7 +41,6 @@ import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
-import tools.jackson.databind.introspect.AnnotatedMember;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.introspect.VirtualAnnotatedMember;
 import tools.jackson.databind.ser.AnyGetterWriter;
@@ -355,23 +353,14 @@ final class DomainClassModifier extends ValueSerializerModifier {
      *         ignores it, or {@code null}
      */
     private static String persistentAnyGetter(BeanDescription description, PersistentEntity entity) {
-        AnnotatedMember anyGetter = description.findAnyGetter();
-        if (anyGetter == null) {
+        BeanPropertyDefinition definition = GatedPropertyWriter.anyGetterProperty(description);
+        if (definition == null) {
             return null;
         }
         Set<String> ignored = ignoredByClass(description);
-        for (BeanPropertyDefinition definition : description.findProperties()) {
-            if (accessedBy(definition.getField(), anyGetter) || accessedBy(definition.getGetter(), anyGetter)) {
-                PersistentProperty property = entity.getPropertyByName(definition.getInternalName());
-                return property != null && !ignored.contains(property.getName()) && !ignored.contains(definition.getName()) ?
-                        property.getName() : null;
-            }
-        }
-        return null;
-    }
-
-    private static boolean accessedBy(AnnotatedMember accessor, AnnotatedMember anyGetter) {
-        return accessor != null && Objects.equals(accessor.getMember(), anyGetter.getMember());
+        PersistentProperty property = entity.getPropertyByName(definition.getInternalName());
+        return property != null && !ignored.contains(property.getName()) && !ignored.contains(definition.getName()) ?
+                property.getName() : null;
     }
 
     /** The place of the writer of a property, other than the writer of the entries of a {@code @JsonAnyGetter}. */
