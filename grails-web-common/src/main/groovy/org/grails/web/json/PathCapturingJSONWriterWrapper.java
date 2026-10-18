@@ -89,6 +89,11 @@ public class PathCapturingJSONWriterWrapper extends JSONWriter {
     }
 
     @Override
+    public int nestingDepth() {
+        return delegate.nestingDepth();
+    }
+
+    @Override
     public void comma() {
         if (log.isDebugEnabled()) {
             if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());

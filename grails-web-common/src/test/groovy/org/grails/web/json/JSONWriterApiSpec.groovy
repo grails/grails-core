@@ -25,6 +25,7 @@ import java.util.Date
 import groovy.lang.Writable
 import groovy.transform.CompileStatic
 import spock.lang.Specification
+import tools.jackson.databind.json.JsonMapper
 
 class JSONWriterApiSpec extends Specification {
 
@@ -131,6 +132,28 @@ class JSONWriterApiSpec extends Specification {
 
         and: 'a writer that writes to no generator does not know it'
         new JSONWriter(null).nestingDepth() == -1
+    }
+
+    void "the nesting depth of a nested value is that of the place the mapper writes it in"() {
+        given:
+        def output = new StringWriter()
+        def support = new JsonMapperSupport(JsonMapper.builder().build())
+        def writer = new JSONWriter(output, support, false)
+        List<Integer> depths = []
+
+        when: 'the mapper writes a map and hands back the list of one of its properties'
+        writer.value(new JsonMapperValue([list: [1]], support, { Object nested ->
+            writer.writeNested {
+                depths << writer.nestingDepth()
+                writer.value('x')
+            }
+            true
+        }))
+        writer.flush()
+
+        then:
+        depths == [1]
+        output.toString() == '{"list":"x"}'
     }
 
     void "primitive overloads are available without Groovy dispatch"() {
