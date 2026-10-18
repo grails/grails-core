@@ -64,7 +64,6 @@ dependencies {
 
     testImplementation 'jakarta.servlet:jakarta.servlet-api'
     testImplementation 'org.springframework:spring-test'
-    testImplementation 'org.springframework.boot:spring-boot-jackson' // Spring Boot's JsonMapper picks up the domain class module
 
     testImplementation 'org.apache.groovy:groovy-test-junit5'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
