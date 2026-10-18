@@ -100,14 +100,21 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
 
     @Override
     public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
-        if (included(bean, context)) {
+        DomainClassRendering current = rendering.of(context, bean);
+        if (written(current) && included(current, bean, context)) {
             super.serializeAsProperty(bean, generator, context);
         }
     }
 
     @Override
     public void serializeAsElement(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
-        if (included(bean, context)) {
+        DomainClassRendering current = rendering.of(context, bean);
+        if (!written(current)) {
+            // A class name or a version the rendering does not write has no position, as an instance written by a mapper
+            // whose rendering never writes it has none
+            return;
+        }
+        if (included(current, bean, context)) {
             super.serializeAsElement(bean, generator, context);
         }
         else {
@@ -115,14 +122,16 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
         }
     }
 
-    private boolean included(Object bean, SerializationContext context) {
-        DomainClassRendering current = rendering.of(context, bean);
-        String property = kind == Kind.ID ? entity.getIdentity().getName() : kind.property;
-        boolean enabled = switch (kind) {
+    private boolean written(DomainClassRendering current) {
+        return switch (kind) {
             case CLASS -> current.isIncludeClass();
             case ID -> true;
             case VERSION -> current.isIncludeVersion();
         };
-        return enabled && current.includes(bean, property) && JsonProjection.projects(context, bean, property, getName());
+    }
+
+    private boolean included(DomainClassRendering current, Object bean, SerializationContext context) {
+        String property = kind == Kind.ID ? entity.getIdentity().getName() : kind.property;
+        return current.includes(bean, property) && JsonProjection.projects(context, bean, property, getName());
     }
 }

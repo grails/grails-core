@@ -519,6 +519,25 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"partner":[1,"first",{"id":2,"name":"second","partner":{"id":1}}]}'
     }
 
+    void "an instance written as an array has a position for each property its rendering writes, whichever writes it"() {
+        given:
+        def positioned = new Positioned(name: 'first')
+        positioned.id = 1
+        positioned.version = 5
+
+        expect: 'the id and the name, without positions for a class name and a version the rendering does not write'
+        mapper().writeValueAsString(positioned) == '[1,"first"]'
+        new JSON(positioned).toString() == '[1,"first"]'
+
+        when: 'the rendering writes the version'
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(true, grailsApplication))
+
+        then:
+        mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, false, false))
+                .writeValueAsString(positioned) == '[1,5,"first"]'
+        new JSON(positioned).toString() == '[1,5,"first"]'
+    }
+
     void "a domain class with a @JsonValue is written by Jackson"() {
         given:
         def code = new Code(code: 'X1')
@@ -959,14 +978,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1211,6 +1230,12 @@ class PartnerLabelSerializer extends StdSerializer<Partner> {
         context.writeValue(generator, partner.partner)
         generator.writeEndObject()
     }
+}
+
+@Entity
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+class Positioned {
+    String name
 }
 
 class ShapedPartnerHolder {
