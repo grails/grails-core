@@ -18,13 +18,14 @@
  */
 package org.grails.web.converters.jackson;
 
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import tools.jackson.core.Version;
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 
@@ -46,12 +47,25 @@ final class CircularReferenceModule extends JacksonModule {
 
     private final CycleTracking.OnCycle onCycle;
 
-    private final BooleanSupplier paths;
+    private final Predicate<SerializationContext> paths;
 
     CircularReferenceModule(Supplier<CircularReferenceBehaviour> behaviour) {
         this.behaviour = behaviour;
-        this.onCycle = (value, enclosing, generator, context) -> Cycles.write(value, enclosing, generator, behaviour.get());
-        this.paths = () -> behaviour.get() == CircularReferenceBehaviour.PATH;
+        this.onCycle = (value, enclosing, generator, context) -> Cycles.write(value, enclosing, generator, behaviour(context));
+        this.paths = context -> behaviour(context) == CircularReferenceBehaviour.PATH;
+    }
+
+    /**
+     * The behaviour of a write, read once for it, as what decides it, such as the configuration, does not change while it
+     * writes.
+     */
+    private CircularReferenceBehaviour behaviour(SerializationContext context) {
+        if (context.getAttribute(behaviour) instanceof CircularReferenceBehaviour read) {
+            return read;
+        }
+        CircularReferenceBehaviour read = behaviour.get();
+        context.setAttribute(behaviour, read);
+        return read;
     }
 
     @Override

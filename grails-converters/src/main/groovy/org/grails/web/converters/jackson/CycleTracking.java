@@ -21,7 +21,7 @@ package org.grails.web.converters.jackson;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.core.JsonGenerator;
@@ -55,7 +55,7 @@ final class CycleTracking extends ValueSerializer<Object> {
 
     private final OnCycle onCycle;
 
-    private final BooleanSupplier paths;
+    private final Predicate<SerializationContext> paths;
 
     /**
      * Tracks the bean serializer a serializer wraps, if any.
@@ -75,7 +75,7 @@ final class CycleTracking extends ValueSerializer<Object> {
      * @return the serializer, with its bean serializer tracked, or {@code null} if it wraps none, or one that writes
      *         object ids
      */
-    static ValueSerializer<?> around(ValueSerializer<?> serializer, OnCycle onCycle, BooleanSupplier paths) {
+    static ValueSerializer<?> around(ValueSerializer<?> serializer, OnCycle onCycle, Predicate<SerializationContext> paths) {
         if (serializer instanceof CycleTracking tracking) {
             return around(tracking.delegate, onCycle, paths);
         }
@@ -91,7 +91,7 @@ final class CycleTracking extends ValueSerializer<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    CycleTracking(ValueSerializer<?> delegate, OnCycle onCycle, BooleanSupplier paths) {
+    CycleTracking(ValueSerializer<?> delegate, OnCycle onCycle, Predicate<SerializationContext> paths) {
         this.delegate = (ValueSerializer<Object>) delegate;
         this.onCycle = onCycle;
         this.paths = paths;
@@ -105,7 +105,7 @@ final class CycleTracking extends ValueSerializer<Object> {
         if (context.getAttribute(paths) instanceof Boolean decided) {
             return decided;
         }
-        boolean decided = paths.getAsBoolean();
+        boolean decided = paths.test(context);
         context.setAttribute(paths, decided);
         return decided;
     }

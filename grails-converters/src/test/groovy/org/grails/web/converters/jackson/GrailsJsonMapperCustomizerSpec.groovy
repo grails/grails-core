@@ -472,11 +472,12 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         application.initialise()
         application.config = config
         def mapper = new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build())
-        def nodes = (1..20).collect { new JacksonNode(name: "node $it") }
+        def nodes = (1..10).collect { new JacksonNode(name: "node $it").tap { next = it } } +
+                (1..10).collect { new JacksonKeyedNode(name: "keyed $it").tap { byName = [self: it] } }
         mapper.writeValueAsString(nodes)
         config.behaviourReads = 0
 
-        when: 'a write once the mapper has its serializers'
+        when: 'a write of objects of several classes, each reached again, once the mapper has its serializers'
         mapper.writeValueAsString(nodes)
 
         then:

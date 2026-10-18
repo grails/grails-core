@@ -29,7 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -39,6 +39,7 @@ import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
@@ -83,7 +84,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
 
     private final CycleTracking.OnCycle onCycle = this::onCycle;
 
-    private final BooleanSupplier paths = this::writesPaths;
+    private final Predicate<SerializationContext> paths = context -> writesPaths();
 
     DomainClassModifier(DomainRendering rendering) {
         this.rendering = rendering;
