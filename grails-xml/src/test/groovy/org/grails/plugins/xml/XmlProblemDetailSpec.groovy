@@ -22,8 +22,11 @@ import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -142,6 +145,27 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         fallback.status == 409
         fallback.contentType.startsWith('application/problem+xml')
         tree(fallback.contentAsString) == tree(spring)
+    }
+
+    void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
+        given:
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        problem.setProperty('value', value)
+
+        when:
+        renderProblem(renderer, problem)
+
+        then:
+        HttpMessageConversionException e = thrown()
+        e.class == type
+        e.message.startsWith(message)
+
+        where:
+        description               | value                                                           || type                            | message
+        'a value that fails'      | new UnreadableXmlValue()                                        || HttpMessageNotWritableException | 'Could not write JSON: '
+        'a type definition error' | new ClashingXmlValue(id: 1, inner: new ClashingXmlInner(id: 2)) || HttpMessageConversionException  | 'Type definition error: '
     }
 
     void 'without a converter for problems, the properties of a subclass of ProblemDetail are written as Spring writes them'() {
@@ -318,4 +342,20 @@ class OutOfStock extends ProblemDetail {
     OutOfStock() {
         super(409)
     }
+}
+
+class UnreadableXmlValue {
+    String getTitle() {
+        throw new IllegalStateException('unreadable')
+    }
+}
+
+class ClashingXmlValue {
+    Integer id
+    @JsonUnwrapped
+    ClashingXmlInner inner
+}
+
+class ClashingXmlInner {
+    Integer id
 }

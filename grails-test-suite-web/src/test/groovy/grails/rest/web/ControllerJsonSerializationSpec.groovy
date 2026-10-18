@@ -140,13 +140,15 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         thrown(DatabindException)
         !response.committed
 
-        when: 'respond with a named configuration'
+        when: 'respond with a named configuration, which reports it as respond does without one, as Spring MVC does'
         response.reset()
         response.format = 'json'
         controller.respond(new FailingJsonBody(title: 'Grails'), jsonConfiguration: 'plain')
 
         then:
-        thrown(DatabindException)
+        HttpMessageNotWritableException e = thrown()
+        e.message.startsWith('Could not write JSON: ')
+        e.cause instanceof DatabindException
         !response.committed
     }
 

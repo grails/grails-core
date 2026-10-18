@@ -227,6 +227,38 @@ class DefaultJsonRendererSpec extends Specification {
         'a mapper registered for the class written' | upperCamelCaseConverter()   | '{"Hidden":true,"Title":"Grails"}'
     }
 
+    void 'a response writer that fails as the prefix of the converter is written fails as Spring MVC reports it'() {
+        given:
+        def source = new JacksonJsonHttpMessageConverter()
+        source.setPrefixJson(true)
+        def renderer = grailsMapperRenderer(source)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def failing = new Writer() {
+            @Override
+            void write(char[] buffer, int offset, int length) throws IOException {
+                throw new IOException('Broken pipe')
+            }
+
+            @Override
+            void flush() { }
+
+            @Override
+            void close() { }
+        }
+        def context = new ServletRenderContext(webRequest) {
+            @Override
+            Writer getWriter() { failing }
+        }
+
+        when:
+        renderer.render(new ProjectionBody(title: 'Grails', hidden: true), context)
+
+        then:
+        HttpMessageNotWritableException e = thrown()
+        e.message == 'Could not write JSON: Broken pipe'
+        e.cause instanceof IOException
+    }
+
     void 'a type definition error of the Grails mapper is reported as Spring MVC reports it, leaving the response uncommitted'() {
         given: 'a bean whose @JsonUnwrapped property writes a name the bean writes too, which Jackson rejects'
         def renderer = grailsMapperRenderer(new JacksonJsonHttpMessageConverter())

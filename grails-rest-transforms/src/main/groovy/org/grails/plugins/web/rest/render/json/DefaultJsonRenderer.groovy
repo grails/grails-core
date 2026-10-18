@@ -34,9 +34,7 @@ import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
-import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.HttpMessageConverter
-import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.validation.Errors
 
@@ -46,7 +44,6 @@ import tools.jackson.core.StreamWriteFeature
 import tools.jackson.databind.JacksonSerializable
 import tools.jackson.databind.ObjectWriter
 import tools.jackson.databind.SerializationContext
-import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.jsontype.TypeSerializer
 
@@ -58,6 +55,7 @@ import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
 import grails.web.render.NamedJsonRenderer
+import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
@@ -197,8 +195,14 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         }
         // validation errors are written as the problem they make, as a problem is
         if (selectedConfiguration && !(object instanceof ProblemDetail || object instanceof Errors)) {
-            namedJsonRenderer.render(selectedConfiguration, object, context.writer,
-                    getEffectiveIncludes(context), getEffectiveExcludes(context))
+            try {
+                namedJsonRenderer.render(selectedConfiguration, object, context.writer,
+                        getEffectiveIncludes(context), getEffectiveExcludes(context))
+            }
+            catch (JacksonException | IOException e) {
+                // as respond reports it without a configuration, as Spring MVC does
+                throw JacksonWriteFailures.reported(e)
+            }
             return
         }
         String springFallbackReason = null
@@ -361,11 +365,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             output.write(prefix)
             writer.writeValue(output, value)
         }
-        catch (InvalidDefinitionException e) {
-            throw new HttpMessageConversionException("Type definition error: ${e.type}", e)
-        }
-        catch (JacksonException e) {
-            throw new HttpMessageNotWritableException("Could not write JSON: ${e.originalMessage}", e)
+        catch (JacksonException | IOException e) {
+            // the converter writes its prefix with its generator, which reports a failure of the writer as Jackson's
+            throw JacksonWriteFailures.reported(e)
         }
     }
 

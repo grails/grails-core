@@ -21,10 +21,12 @@ package org.grails.plugins.web.rest.render.xml
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.function.Supplier
+import javax.xml.stream.XMLStreamException
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 
+import tools.jackson.core.JacksonException
 import tools.jackson.databind.ObjectMapper
 
 import org.springframework.beans.factory.ObjectProvider
@@ -49,6 +51,7 @@ import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
@@ -199,7 +202,13 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             renderWithSpringConverter(converter, problem, problemXml, context)
             return
         }
-        ProblemXml.write(problem, context.writer, problemMapper(converters))
+        try {
+            ProblemXml.write(problem, context.writer, problemMapper(converters))
+        }
+        catch (JacksonException | XMLStreamException e) {
+            // as Spring's converter reports it
+            throw JacksonWriteFailures.reported(e)
+        }
     }
 
     /**

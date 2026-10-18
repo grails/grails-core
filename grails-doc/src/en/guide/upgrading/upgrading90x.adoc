@@ -271,6 +271,12 @@ precedence over the default renderer.
 Jackson conversion uses UTF-8 for intermediate bytes; the response writer applies
 `grails.converters.encoding`, so non-UTF response encodings do not corrupt the intermediate JSON.
 
+A response `respond` writes with a Jackson mapper fails as Spring MVC's Jackson converters fail, whichever writes it:
+a type definition error, such as a property a bean unwraps with the name of one of its own, is an
+`HttpMessageConversionException`, and any other failure, one of the response's writer included, an
+`HttpMessageNotWritableException`. So are those of a response written with a named configuration, and of a
+`ProblemDetail` written as XML without `jackson-dataformat-xml`.
+
 Controller unit tests use Boot's Jackson configuration and the same setting. Supply a mapper or
 `JsonMapperBuilderCustomizer` from a nested Spring `@Configuration` class, so Boot can see it before
 evaluating its conditional beans. A mapper registered by the deprecated `doWithSpring` callback is too
