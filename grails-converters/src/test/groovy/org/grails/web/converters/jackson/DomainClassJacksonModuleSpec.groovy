@@ -560,8 +560,9 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"note":"n","w_id":1,"w_name":"a","id":1,"name":"a"}'
     }
 
-    void "what a property is annotated with applies to the instance a Hibernate proxy in it stands for, whichever part of the JSON converter unwraps it"() {
+    void "what a property is annotated with applies to the instance a Hibernate proxy in it stands for, whichever part of the JSON converter unwraps it, with the #behaviour circular reference behaviour"() {
         given: 'a proxy with a lazy initializer and a proxy handler that unwraps it, as Hibernate has'
+        grailsApplication.config.setAt('grails.converters.json.circular.reference.behaviour', behaviour)
         ConvertersConfigurationHolder.clear()
         def initializer = new ConvertersConfigurationInitializer() {
             @Override
@@ -597,6 +598,9 @@ class DomainClassJacksonModuleSpec extends Specification {
         then:
         new JSON(holder).toString() == '{"writer":{"name":"a"},"writers":[{"name":"a"}]}'
         new JSON(pet).toString() == '{"animal":{"@type":"Dog","name":"Rex"}}'
+
+        where:
+        behaviour << ['DEFAULT', 'PATH']
     }
 
     void "a module's wrapper around the serializer of a domain class writes the instance a proxy stands for, in the JSON converter"() {
