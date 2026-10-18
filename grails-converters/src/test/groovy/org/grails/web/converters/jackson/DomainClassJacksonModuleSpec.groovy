@@ -57,6 +57,7 @@ import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
 import tools.jackson.databind.ser.std.StdSerializer
 import tools.jackson.databind.ser.std.ToStringSerializer
+import tools.jackson.databind.util.StdConverter
 
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
@@ -553,21 +554,27 @@ class DomainClassJacksonModuleSpec extends Specification {
     }
 
     void "an associated instance whose class has a serializer of its own is written with it, rather than as a reference"() {
-        given: 'associations to a class with a @JsonValue, to one with a @JsonSerialize serializer, and to one without'
+        given: 'associations to a class with a @JsonValue, to one with a @JsonSerialize serializer, to one with a ' +
+                '@JsonSerialize converter, and to one without'
         def shelf = new Shelf(name: 'top')
         shelf.id = 3
-        def coded = new Coded(code: new Code(code: 'X1'), label: new Label(text: 'x'), shelf: shelf)
+        def summarized = new Summarized(name: 's')
+        summarized.id = 4
+        def coded = new Coded(code: new Code(code: 'X1'), label: new Label(text: 'x'), summarized: summarized, shelf: shelf)
         coded.id = 1
 
         expect: 'as the classes are written anywhere else'
-        mapper().writeValueAsString(coded) == '{"id":1,"code":"X1","label":"label:x","shelf":{"id":3}}'
+        mapper().writeValueAsString(summarized) == '{"summary":"summary of s"}'
+        mapper().writeValueAsString(coded) ==
+                '{"id":1,"code":"X1","label":"label:x","summarized":{"summary":"summary of s"},"shelf":{"id":3}}'
         new JSON(coded).toString() == mapper().writeValueAsString(coded)
 
         when: 'the association is a proxy'
         coded.code = new CodeProxy(target: new Code(code: 'X2'), proxyId: 2)
 
         then: 'the instance it stands for'
-        mapper().writeValueAsString(coded) == '{"id":1,"code":"X2","label":"label:x","shelf":{"id":3}}'
+        mapper().writeValueAsString(coded) ==
+                '{"id":1,"code":"X2","label":"label:x","summarized":{"summary":"summary of s"},"shelf":{"id":3}}'
     }
 
     void "the instances of a to-many association whose class a module has a serializer for are written with it"() {
@@ -1037,14 +1044,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1295,7 +1302,26 @@ class PartnerLabelSerializer extends StdSerializer<Partner> {
 class Coded {
     Code code
     Label label
+    Summarized summarized
     Shelf shelf
+}
+
+@Entity
+@JsonSerialize(converter = SummaryConverter)
+class Summarized {
+    String name
+}
+
+class Summary {
+    String summary
+}
+
+class SummaryConverter extends StdConverter<Summarized, Summary> {
+
+    @Override
+    Summary convert(Summarized summarized) {
+        new Summary(summary: "summary of ${summarized.name}")
+    }
 }
 
 class WriterNameSerializer extends StdSerializer<Writer> {

@@ -135,7 +135,9 @@ final class DomainReferences {
 
     private static boolean findsSerializerOfItsOwn(Class<?> type, SerializationContext context) {
         ValueSerializer<?> serializer = context.findValueSerializer(type);
-        while (!(serializer instanceof BeanSerializerBase)) {
+        // a bean serializer of another class, such as the one a @JsonSerialize converter converts the instances to,
+        // is not that of the domain class
+        while (!(serializer instanceof BeanSerializerBase) || !serializer.handledType().isAssignableFrom(type)) {
             ValueSerializer<?> delegatee = serializer.getDelegatee();
             if (delegatee == null || delegatee == serializer) {
                 return true;
