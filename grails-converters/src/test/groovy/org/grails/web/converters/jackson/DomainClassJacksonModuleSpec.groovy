@@ -207,6 +207,31 @@ class DomainClassJacksonModuleSpec extends Specification {
         'a proxy handler that leaves a GORM proxy as it is' | new DefaultProxyHandler()
     }
 
+    void "the includes and excludes the JSON converter is given for a Hibernate proxy that the proxy handler leaves as it is apply to the instance it writes in its place"() {
+        given:
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def json = new JSON(new LazyWriterProxy(target: writer))
+        json.setExcludes(['name'])
+
+        expect:
+        json.toString() == '{"id":1}'
+    }
+
+    void "the JSON converter writes the same text each time it renders, where it gave the includes of a proxy to the class it stands for"() {
+        given: 'a writer, then a proxy of another, whose class has excludes'
+        def other = new Writer(name: 'b')
+        other.id = 2
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def json = new JSON([other, new WriterProxy(target: writer, proxyId: 1)])
+        json.setExcludes(WriterProxy, ['name'])
+
+        expect: 'the excludes apply from the proxy on, in each render'
+        json.toString() == '[{"id":2,"name":"b"},{"id":1}]'
+        json.toString() == '[{"id":2,"name":"b"},{"id":1}]'
+    }
+
     void "a GORM proxy is unwrapped by itself when the application's proxy handler does not unwrap it, as on MongoDB"() {
         given: 'only Hibernate registers a proxy handler; other datastores leave the default one, which unwraps nothing'
         def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, false))

@@ -50,7 +50,7 @@ public class ProxyUnwrappingMarshaller<C extends Converter> implements ObjectMar
     public void marshalObject(Object object, C converter) throws ConverterException {
         Object unwrapped = unwrap(object);
         if (converter instanceof JSON json && unwrapped != null) {
-            json.getWriter().standIn(object, unwrapped);
+            json.standIn(object, unwrapped);
         }
         converter.lookupObjectMarshaller(unwrapped).marshalObject(unwrapped, converter);
     }

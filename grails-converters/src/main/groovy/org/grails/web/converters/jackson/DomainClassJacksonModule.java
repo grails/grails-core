@@ -94,6 +94,15 @@ public class DomainClassJacksonModule extends JacksonModule {
     public static final String RENDERINGS = DomainClassRendering.class.getName() + ".renderings";
 
     /**
+     * A writer attribute for a writer that is told of each proxy the module writes as the instance it proxies, before it
+     * writes the instance. Its value is a {@code BiConsumer<Object, Object>} that is given the proxy and the instance. The
+     * JSON converter applies the includes and excludes it has for the class of the proxy to the instance this way.
+     *
+     * @since 9.0
+     */
+    public static final String STAND_INS = DomainClassRendering.class.getName() + ".standIns";
+
+    /**
      * A writer attribute for a writer that writes the associated instances of the domain class instances it writes in
      * full, rather than as references of their ids, as {@code grails.converters.json.default.deep} does for every write.
      * Its value is {@link Boolean#TRUE}.

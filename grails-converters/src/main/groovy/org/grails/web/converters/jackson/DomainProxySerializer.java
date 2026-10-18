@@ -18,6 +18,8 @@
  */
 package org.grails.web.converters.jackson;
 
+import java.util.function.BiConsumer;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.SerializationContext;
@@ -131,6 +133,7 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
         return serializer;
     }
 
+    @SuppressWarnings("unchecked")
     private Object unwrapped(Object value, SerializationContext context) {
         Object unwrapped = rendering.of(context, value).unwrap(value);
         if (unwrapped == value) {
@@ -138,6 +141,9 @@ final class DomainProxySerializer extends ValueSerializer<Object> {
         }
         if (context.getAttribute(JsonProjection.ATTRIBUTE) instanceof JsonProjection projection) {
             projection.narrowed(value.getClass(), unwrapped == null ? null : unwrapped.getClass());
+        }
+        if (unwrapped != null && context.getAttribute(DomainClassJacksonModule.STAND_INS) instanceof BiConsumer<?, ?> standIns) {
+            ((BiConsumer<Object, Object>) standIns).accept(value, unwrapped);
         }
         return unwrapped;
     }

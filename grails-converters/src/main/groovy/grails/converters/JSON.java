@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -47,7 +48,6 @@ import org.apache.commons.logging.LogFactory;
 import grails.io.IOUtils;
 import grails.util.GrailsWebUtil;
 import grails.web.mime.MimeType;
-import org.grails.datastore.mapping.proxy.EntityProxy;
 import org.grails.web.converters.AbstractConverter;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.ConverterUtil;
@@ -94,6 +94,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
 
     /** How many JSON objects and arrays each object on the reference stack is written in, where the writer knows it. */
     private Map<Object, Integer> referenceDepths = new IdentityHashMap<>();
+
+    /** For each class written in the place of a proxy in this render, the class of the proxy, whose includes apply to it. */
+    private Map<Class<?>, Class<?>> projectedAs = new ConcurrentHashMap<>();
     protected JsonMapperSupport jsonMapperSupport;
 
     private Map<Class<?>, DomainClassRendering> domainClassRenderings = new ConcurrentHashMap<>();
@@ -141,6 +144,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         // The legacy converter's mapper writes only the JSON text, so neither attribute is read
         jsonMapperSupport = ConvertersConfigurationHolder.isLegacyJson() ? configured : configured
                 .withAttribute(DomainClassJacksonModule.RENDERINGS, (Function<Object, DomainClassRendering>) this::domainClassRendering)
+                .withAttribute(DomainClassJacksonModule.STAND_INS, (BiConsumer<Object, Object>) this::projectAs)
                 .withAttribute(ConverterJsonModule.PROPERTY_FILTERS, (Function<Object, BiPredicate<String, String>>) this::propertyFilter);
         jsonWriter = prettyPrint && ConvertersConfigurationHolder.isLegacyJson() ?
                 new PrettyPrintJSONWriter(out, jsonMapperSupport, PrettyPrintJSONWriter.DEFAULT_INDENT_STR) :
@@ -154,6 +158,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         }
         referenceStack = new Stack<>();
         referenceDepths = new IdentityHashMap<>();
+        projectedAs = new ConcurrentHashMap<>();
     }
 
     private void finalizeRender(Writer out) {
@@ -219,9 +224,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     public void value(Object o) throws ConverterException {
         Object unwrapped = config.getProxyHandler().unwrapIfProxy(o);
         if (unwrapped != o && unwrapped != null) {
-            writer.standIn(o, unwrapped);
+            standIn(o, unwrapped);
         }
-        projectAsWritten(o, unwrapped);
         o = unwrapped;
         try {
             if (o == null) {
@@ -279,28 +283,51 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * Gives the includes and excludes the converter has for the class of a proxy to the class of the instance it writes in
-     * its place, as the projection of {@code respond} is given it: the proxy handler unwraps the proxy, or, where the
-     * handler leaves a GORM proxy as it is, the domain class serializer writes its target. Includes and excludes set for
-     * that class itself are kept.
+     * Records that an instance is written in the place of a value that stands for it, such as the instance a proxy
+     * proxies: it is written as the {@code JsonMapper} writes it in the place of the value, and, from then on in this
+     * render, the includes and excludes the converter has for the class of the value apply to the instances of the class
+     * of the instance that have none of their own, as the projection of {@code respond} is given it. A marshaller that
+     * writes such an instance calls it before it writes the instance.
+     *
+     * @param value the value, such as a proxy
+     * @param instance the instance written in its place
+     * @since 9.0
      */
-    private void projectAsWritten(Object value, Object unwrapped) {
-        if (value == null || !includes.containsKey(value.getClass()) && !excludes.containsKey(value.getClass())) {
+    public void standIn(Object value, Object instance) {
+        writer.standIn(value, instance);
+        projectAs(value, instance);
+    }
+
+    /**
+     * The includes and excludes for the class of a proxy apply to the class of the instance written in its place, until the
+     * render ends; the domain class serializer tells of a proxy it unwraps itself, where the proxy handler leaves a GORM
+     * proxy as it is.
+     */
+    private void projectAs(Object value, Object instance) {
+        Class<?> type = value.getClass();
+        if (instance == null || instance.getClass() == type || !includes.containsKey(type) && !excludes.containsKey(type)) {
             return;
         }
-        Object instance = unwrapped != value ? unwrapped : value instanceof EntityProxy<?> proxy ? proxy.getTarget() : null;
-        if (instance == null || instance.getClass() == value.getClass()) {
-            return;
+        if (projectedAs.putIfAbsent(instance.getClass(), type) == null) {
+            propertyFilters.remove(instance.getClass());
+            domainClassRenderings.remove(instance.getClass());
         }
-        Class<?> written = instance.getClass();
-        if (includes.containsKey(value.getClass())) {
-            includes.putIfAbsent(written, includes.get(value.getClass()));
-        }
-        if (excludes.containsKey(value.getClass())) {
-            excludes.putIfAbsent(written, excludes.get(value.getClass()));
-        }
-        propertyFilters.remove(written);
-        domainClassRenderings.remove(written);
+    }
+
+    /** The includes for a class, or else those of the proxy class whose instances it was written in the place of. */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public List<String> getIncludes(Class type) {
+        Class<?> proxy = projectedAs.get(type);
+        return includes.containsKey(type) || proxy == null ? includes.get(type) : includes.get(proxy);
+    }
+
+    /** The excludes for a class, or else those of the proxy class whose instances it was written in the place of. */
+    @Override
+    @SuppressWarnings("rawtypes")
+    public List<String> getExcludes(Class type) {
+        Class<?> proxy = projectedAs.get(type);
+        return excludes.containsKey(type) || proxy == null ? excludes.get(type) : excludes.get(proxy);
     }
 
     private static boolean isJdkNumber(Number number) {
