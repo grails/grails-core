@@ -52,8 +52,16 @@ public final class NamedJsonConfigurationRegistry {
     private volatile JsonMapper resolvedMapper;
     private final ConcurrentMap<String, NamedJsonConfiguration> configurations = new ConcurrentHashMap<>();
 
+    /**
+     * @param jsonMapper the mapper each configuration derives from
+     * @throws NullPointerException if it is {@code null}
+     */
     public NamedJsonConfigurationRegistry(JsonMapper jsonMapper) {
-        this(() -> Objects.requireNonNull(jsonMapper, "jsonMapper"));
+        this(supplierOf(Objects.requireNonNull(jsonMapper, "jsonMapper")));
+    }
+
+    private static Supplier<JsonMapper> supplierOf(JsonMapper jsonMapper) {
+        return () -> jsonMapper;
     }
 
     /**

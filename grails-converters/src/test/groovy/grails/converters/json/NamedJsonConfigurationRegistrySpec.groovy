@@ -52,6 +52,15 @@ import spock.lang.Specification
 
 class NamedJsonConfigurationRegistrySpec extends Specification {
 
+    void "a registry is not created without a mapper, rather than failing on its first write"() {
+        when:
+        new NamedJsonConfigurationRegistry((JsonMapper) null)
+
+        then:
+        NullPointerException e = thrown()
+        e.message == 'jsonMapper'
+    }
+
     void 'mapper resolution retries absence and caches the first successful lookup'() {
         given:
         int lookups = 0
