@@ -579,6 +579,11 @@ an object with a `null` property, or a single value, now renders instead of fail
 number now has the right path: `"root.x.other"` where Grails 8 wrote `"root.x.n"`, after a property `n` that is a
 number.
 
+Whatever the setting, the includes and excludes a converter is given for the value it renders, with `setIncludes(List)`
+and `setExcludes(List)` or by `respond`, apply where the value is a proxy, such as a lazy association Hibernate returns,
+to the instance the proxy stands for. Grails 8 kept them for the class of the proxy, which it does not render, and so
+rendered every property.
+
 JSON views, the XML converter and the HAL renderer are not changed.
 
 [[renderingJsonAsGrails8]]
@@ -590,7 +595,9 @@ writes with a default `JsonMapper`, so that the application's `spring.jackson.*`
 change the text: `render ... as JSON` and `JSON#toString` return the same text as in Grails 8. What Grails 8 failed to
 render, or rendered as invalid JSON, such as a single value, `NaN`, or a to-many association whose value is a `Map` with
 other than one entry, renders as it does with the setting `false`. A reference that the `PATH` circular reference
-behaviour writes after a number also has the right path, as described above, where Grails 8 wrote a wrong one. A later
+behaviour writes after a number also has the right path, as described above, where Grails 8 wrote a wrong one, the
+`DEFAULT` behaviour writes a reference of `.` for an object that refers to itself, where Grails 8 failed, and the
+includes and excludes given for a proxy apply to the instance it stands for, where Grails 8 ignored them. A later
 release makes `false` the default; setting `grails.converters.json.legacy` to `true` explicitly keeps the Grails 8
 rendering, and turns off the warning that Grails logs while it is not set. With
 `grails.converters.json.domain.jackson.enabled` set to `true` as well, the JSON converter still renders as Grails 8 did,

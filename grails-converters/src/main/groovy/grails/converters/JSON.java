@@ -46,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.io.IOUtils;
 import grails.util.GrailsWebUtil;
 import grails.web.mime.MimeType;
+import org.grails.datastore.mapping.proxy.EntityProxy;
 import org.grails.web.converters.AbstractConverter;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.ConverterUtil;
@@ -215,6 +216,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         if (unwrapped != o && unwrapped != null) {
             writer.standIn(o, unwrapped);
         }
+        projectAsWritten(o, unwrapped);
         o = unwrapped;
         try {
             if (o == null) {
@@ -264,6 +266,31 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     private boolean writesObjectId(Object o, ObjectMarshaller<JSON> marshaller) {
         return !ConvertersConfigurationHolder.isLegacyJson() && JsonMapperValueMarshaller.writesWithMapper(marshaller) &&
                 getJsonMapperSupport().writesObjectIds(o.getClass());
+    }
+
+    /**
+     * Gives the includes and excludes the converter has for the class of a proxy to the class of the instance it writes in
+     * its place, as the projection of {@code respond} is given it: the proxy handler unwraps the proxy, or, where the
+     * handler leaves a GORM proxy as it is, the domain class serializer writes its target. Includes and excludes set for
+     * that class itself are kept.
+     */
+    private void projectAsWritten(Object value, Object unwrapped) {
+        if (value == null || !includes.containsKey(value.getClass()) && !excludes.containsKey(value.getClass())) {
+            return;
+        }
+        Object instance = unwrapped != value ? unwrapped : value instanceof EntityProxy<?> proxy ? proxy.getTarget() : null;
+        if (instance == null || instance.getClass() == value.getClass()) {
+            return;
+        }
+        Class<?> written = instance.getClass();
+        if (includes.containsKey(value.getClass())) {
+            includes.putIfAbsent(written, includes.get(value.getClass()));
+        }
+        if (excludes.containsKey(value.getClass())) {
+            excludes.putIfAbsent(written, excludes.get(value.getClass()));
+        }
+        propertyFilters.remove(written);
+        domainClassRenderings.remove(written);
     }
 
     private static boolean isJdkNumber(Number number) {

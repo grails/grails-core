@@ -182,6 +182,11 @@ class Grails8JsonRenderingSpec extends Specification {
         new JSON(only).toString() == '{"n":1,"other":{"_ref":".","class":"' + Link.name + '"}}'
     }
 
+    void "the includes the converter is given for a proxy apply to the instance it writes in its place, where Grails 8 ignored them"() {
+        expect: 'Grails 8.0.x kept them for the class of the proxy, which it does not write'
+        Grails8DomainRendering.renderProxyIncluding(LEGACY, ['title']) == '{"title":"The Dispossessed"}'
+    }
+
     private static JsonMapper configuredMapper() {
         JsonMapper.builder()
                 .enable(SerializationFeature.INDENT_OUTPUT)
