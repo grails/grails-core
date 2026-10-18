@@ -159,6 +159,24 @@
             "defaultValue": false
         },
         {
+            "name": "grails.converters.json.domain.include.version",
+            "type": "java.lang.Boolean",
+            "description": "Whether to include the version property when rendering domain objects to JSON, with the JSON converter, respond's Spring JSON, the named JSON configurations and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper.",
+            "defaultValue": false
+        },
+        {
+            "name": "grails.converters.json.default.deep",
+            "type": "java.lang.Boolean",
+            "description": "Whether the associated domain class instances of a domain object rendered to JSON are rendered in full rather than as references of their id, with the JSON converter, respond's Spring JSON and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper.",
+            "defaultValue": false
+        },
+        {
+            "name": "grails.converters.json.circular.reference.behaviour",
+            "type": "java.lang.String",
+            "description": "How an object that is reached again while it is being rendered to JSON is written: DEFAULT writes a reference to it, EXCEPTION fails, INSERT_NULL writes null, IGNORE leaves it out, and PATH writes its path. It applies to the JSON converter, to respond's Spring JSON and the named JSON configurations, and, with grails.converters.json.domain.jackson.enabled, to the domain objects the application's JsonMapper renders. Defaults to grails.converters.default.circular.reference.behaviour.",
+            "defaultValue": "DEFAULT"
+        },
+        {
             "name": "grails.converters.xml.domain.include.class",
             "type": "java.lang.Boolean",
             "description": "Whether to include the class attribute when marshalling domain objects to XML.",
