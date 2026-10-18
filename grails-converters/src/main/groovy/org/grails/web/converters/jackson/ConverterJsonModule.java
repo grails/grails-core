@@ -37,6 +37,7 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.module.SimpleSerializers;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.BeanSerializerBuilder;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.jackson.JsonValueSerializer;
 import tools.jackson.databind.ser.jdk.EnumSerializer;
@@ -110,6 +111,13 @@ public final class ConverterJsonModule extends JacksonModule {
                     }
                 }
                 return written;
+            }
+
+            @Override
+            public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription.Supplier beanDescription,
+                    BeanSerializerBuilder builder) {
+                // the entries of a @JsonAnyGetter, as the property it is, which Jackson writes with a writer of its own
+                return GatedPropertyWriter.gateAnyGetter(builder, beanDescription.get(), ConverterJsonModule::included, false);
             }
 
             @Override

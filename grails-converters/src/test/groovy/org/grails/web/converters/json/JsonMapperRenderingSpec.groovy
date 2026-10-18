@@ -33,6 +33,7 @@ import java.util.regex.Pattern
 
 import groovy.json.JsonSlurper
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -715,6 +716,25 @@ class JsonMapperRenderingSpec extends Specification {
         json.toString() == '{}'
     }
 
+    void "the includes and excludes of the converter apply to the entries of a @JsonAnyGetter, as to the property it is"() {
+        expect:
+        written(['secrets'], null) == '{"name":"a"}'
+        written(null, ['name']) == '{"name":"a"}'
+        written(null, []) == '{}'
+        written(null, ['secrets']) == '{"token":"t"}'
+    }
+
+    private static String written(List<String> excludes, List<String> includes) {
+        def json = new JSON(new AnyGetterHolder(name: 'a', secrets: [token: 't']))
+        if (excludes != null) {
+            json.setExcludes(AnyGetterHolder, excludes)
+        }
+        if (includes != null) {
+            json.setIncludes(AnyGetterHolder, includes)
+        }
+        json.toString()
+    }
+
     void "beans and map entries are rendered by the mapper"() {
         given:
         def bean = new Holder(name: 'Fred', created: new Date(1790305200000L), role: Role.ADMIN, unit: ChronoUnit.DAYS,
@@ -1142,4 +1162,10 @@ class WrapperSerializer extends StdSerializer<Wrapper> {
         generator.writeEndArray()
         generator.writeEndObject()
     }
+}
+
+class AnyGetterHolder {
+    String name
+    @JsonAnyGetter
+    Map<String, String> secrets
 }
