@@ -76,13 +76,15 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         MimeType textXml = mimes.find { MimeType it -> it.name == 'text/xml' }
         MimeType appXml = mimes.find { MimeType it -> it.name ==  MimeType.XML.name }
         if (textXml && appXml) {
-            // take the largest q value, with a type of its own, since a type reads its quality once
+            // take the largest q value, with a type of its own, since a type reads its quality once, in the place of the
+            // one the header lists first, which decides between types of equal quality
             BigDecimal quality = [textXml.qualityAsNumber, appXml.qualityAsNumber].max()
             MimeType merged = new MimeType(appXml.name, appXml.extension, appXml.parameters + [q: quality.toString()])
-            mimes[mimes.indexOf(appXml)] = merged
-            appXml = merged
-
+            int place = Math.min(mimes.indexOf(textXml), mimes.indexOf(appXml))
             mimes.remove(textXml)
+            mimes.remove(appXml)
+            mimes.add(place, merged)
+            appXml = merged
         }
         else if (textXml) {
             textXml.name = MimeType.XML.name
