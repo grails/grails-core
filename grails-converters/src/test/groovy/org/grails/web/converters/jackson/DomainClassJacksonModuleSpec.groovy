@@ -538,6 +538,13 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, false, false))
                 .writeValueAsString(positioned) == '[1,5,"first"]'
         new JSON(positioned).toString() == '[1,5,"first"]'
+
+        when: 'the converter excludes the version its rendering writes'
+        def json = new JSON(positioned)
+        json.setExcludes(Positioned, ['version'])
+
+        then: 'its position is kept, as Jackson keeps that of a property it leaves out'
+        json.toString() == '[1,null,"first"]'
     }
 
     void "only the persistent properties of a domain class are written, without those of a @JsonAnyGetter, as in Grails 8"() {
@@ -620,6 +627,13 @@ class DomainClassJacksonModuleSpec extends Specification {
         then: 'the instance it stands for'
         mapper().writeValueAsString(coded) ==
                 '{"id":1,"code":"X2","label":"label:x","summarized":{"summary":"summary of s"},"shelf":{"id":3}}'
+
+        when: 'the association is a proxy of an instance that no longer exists'
+        coded.code = new CodeProxy(target: null, proxyId: 2)
+
+        then:
+        mapper().writeValueAsString(coded) ==
+                '{"id":1,"code":null,"label":"label:x","summarized":{"summary":"summary of s"},"shelf":{"id":3}}'
     }
 
     void "an associated instance written with a serializer of its own is written as Jackson writes the value of the property"() {
