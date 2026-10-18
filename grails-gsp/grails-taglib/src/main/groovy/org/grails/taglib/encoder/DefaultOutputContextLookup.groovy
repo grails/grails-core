@@ -16,100 +16,103 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.taglib.encoder
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.taglib.encoder;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import org.springframework.core.Ordered
+import org.springframework.core.Ordered;
 
-import grails.core.GrailsApplication
-import grails.util.Holders
-import org.grails.encoder.DefaultEncodingStateRegistry
-import org.grails.encoder.EncodingStateRegistry
-import org.grails.encoder.EncodingStateRegistryLookup
-import org.grails.encoder.EncodingStateRegistryLookupHolder
-import org.grails.taglib.AbstractTemplateVariableBinding
-import org.grails.taglib.TemplateVariableBinding
+import grails.core.GrailsApplication;
+import grails.util.Holders;
+import org.grails.encoder.DefaultEncodingStateRegistry;
+import org.grails.encoder.EncodingStateRegistry;
+import org.grails.encoder.EncodingStateRegistryLookup;
+import org.grails.encoder.EncodingStateRegistryLookupHolder;
+import org.grails.taglib.AbstractTemplateVariableBinding;
+import org.grails.taglib.TemplateVariableBinding;
 
 @CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 class DefaultOutputContextLookup implements OutputContextLookup, EncodingStateRegistryLookup, Ordered {
 
     private ThreadLocal<OutputContext> outputContextThreadLocal = new ThreadLocal<OutputContext>() {
         @Override
         protected OutputContext initialValue() {
-            return new DefaultOutputContext()
+            return new DefaultOutputContext();
         }
-    }
+    };
 
     @Override
     OutputContext lookupOutputContext() {
         if (EncodingStateRegistryLookupHolder.getEncodingStateRegistryLookup() == null) {
             // TODO: improve EncodingStateRegistry solution so that global state doesn't have to be used
-            EncodingStateRegistryLookupHolder.setEncodingStateRegistryLookup(this)
+            EncodingStateRegistryLookupHolder.setEncodingStateRegistryLookup(this);
         }
-        return outputContextThreadLocal.get()
+        return outputContextThreadLocal.get();
     }
 
     @Override
     int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE
+        return Ordered.LOWEST_PRECEDENCE;
     }
 
     @Override
     EncodingStateRegistry lookup() {
-        return lookupOutputContext().getEncodingStateRegistry()
+        return lookupOutputContext().getEncodingStateRegistry();
     }
 
     static class DefaultOutputContext implements OutputContext {
-        private OutputEncodingStack outputEncodingStack
-        private Writer currentWriter
-        private AbstractTemplateVariableBinding binding
-        private EncodingStateRegistry encodingStateRegistry = new DefaultEncodingStateRegistry()
+        private OutputEncodingStack outputEncodingStack;
+        private Writer currentWriter;
+        private AbstractTemplateVariableBinding binding;
+        private EncodingStateRegistry encodingStateRegistry = new DefaultEncodingStateRegistry();
 
         @Override
         EncodingStateRegistry getEncodingStateRegistry() {
-            return encodingStateRegistry
+            return encodingStateRegistry;
         }
 
         @Override
         void setCurrentOutputEncodingStack(OutputEncodingStack outputEncodingStack) {
-            this.outputEncodingStack = outputEncodingStack
+            this.outputEncodingStack = outputEncodingStack;
         }
 
         @Override
         OutputEncodingStack getCurrentOutputEncodingStack() {
-            return outputEncodingStack
+            return outputEncodingStack;
         }
 
         @Override
         Writer getCurrentWriter() {
-            return currentWriter
+            return currentWriter;
         }
 
         @Override
         void setCurrentWriter(Writer currentWriter) {
-            this.currentWriter = currentWriter
+            this.currentWriter = currentWriter;
         }
 
         @Override
         AbstractTemplateVariableBinding createAndRegisterRootBinding() {
-            binding = new TemplateVariableBinding()
-            return binding
+            binding = new TemplateVariableBinding();
+            return binding;
         }
 
         @Override
         AbstractTemplateVariableBinding getBinding() {
-            return binding
+            return binding;
         }
 
         @Override
         void setBinding(AbstractTemplateVariableBinding binding) {
-            this.binding = binding
+            this.binding = binding;
         }
 
         @Override
         GrailsApplication getGrailsApplication() {
-            return Holders.findApplication()
+            return Holders.findApplication();
         }
 
         @Override
@@ -119,7 +122,7 @@ class DefaultOutputContextLookup implements OutputContextLookup, EncodingStateRe
 
         @Override
         boolean isContentTypeAlreadySet() {
-            return true
+            return true;
         }
     }
 }

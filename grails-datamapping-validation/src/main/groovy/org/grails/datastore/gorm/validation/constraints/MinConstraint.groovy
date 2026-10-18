@@ -16,16 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.validation.constraints;
 
-package org.grails.datastore.gorm.validation.constraints
+import groovy.transform.CompileStatic;
+import org.springframework.context.MessageSource;
+import org.springframework.validation.Errors;
 
-import groovy.transform.CompileStatic
-import org.springframework.context.MessageSource
-import org.springframework.validation.Errors
-
-import grails.gorm.validation.ConstrainedProperty
-import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
-import org.grails.datastore.mapping.reflect.ClassUtils
+import grails.gorm.validation.ConstrainedProperty;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
+import org.grails.datastore.mapping.reflect.ClassUtils;
 
 /**
  * Implements a minimum value constraint.
@@ -33,21 +33,23 @@ import org.grails.datastore.mapping.reflect.ClassUtils
  * @author Graeme Rocher
  * @since 0.4
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class MinConstraint extends AbstractConstraint {
 
-    private final Comparable minValue
+    private final Comparable minValue;
 
     MinConstraint(Class<?> constraintOwningClass, String constraintPropertyName, Object constraintParameter, MessageSource messageSource) {
-        super(constraintOwningClass, constraintPropertyName, constraintParameter, messageSource)
-        this.minValue = (Comparable) this.constraintParameter
+        super(constraintOwningClass, constraintPropertyName, constraintParameter, messageSource);
+        this.minValue = (Comparable) this.constraintParameter;
     }
 
     /**
      * @return Returns the minValue.
      */
     Comparable getMinValue() {
-        return minValue
+        return minValue;
     }
 
     /* (non-Javadoc)
@@ -56,7 +58,7 @@ class MinConstraint extends AbstractConstraint {
     boolean supports(Class type) {
         return type != null && (
                 Comparable.isAssignableFrom(type) ||
-                        ClassUtils.isAssignableOrConvertibleFrom(Number, type))
+                        ClassUtils.isAssignableOrConvertibleFrom(Number, type));
     }
 
     @Override
@@ -64,38 +66,38 @@ class MinConstraint extends AbstractConstraint {
         if (constraintParameter == null) {
             throw new IllegalArgumentException('Parameter for constraint [' +
                     ConstrainedProperty.MIN_CONSTRAINT + '] of property [' +
-                    constraintPropertyName + '] of class [' + constraintOwningClass + '] cannot be null')
+                    constraintPropertyName + '] of class [' + constraintOwningClass + '] cannot be null');
         }
 
         if (!(constraintParameter instanceof Comparable<?>) && (!constraintParameter.getClass().isPrimitive())) {
             throw new IllegalArgumentException('Parameter for constraint [' +
                     ConstrainedProperty.MIN_CONSTRAINT + '] of property [' +
                     constraintPropertyName + '] of class [' + constraintOwningClass +
-                    '] must implement the interface [java.lang.Comparable]')
+                    '] must implement the interface [java.lang.Comparable]');
         }
 
-        Class<?> propertyClass = ClassPropertyFetcher.getPropertyType(constraintOwningClass, constraintPropertyName)
+        Class<?> propertyClass = ClassPropertyFetcher.getPropertyType(constraintOwningClass, constraintPropertyName);
         if (!ClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(), propertyClass)) {
             throw new IllegalArgumentException('Parameter for constraint [' + ConstrainedProperty.MIN_CONSTRAINT +
                     '] of property [' + constraintPropertyName + '] of class [' + constraintOwningClass +
-                    '] must be the same type as property: [' + propertyClass.getName() + ']')
+                    '] must be the same type as property: [' + propertyClass.getName() + ']');
         }
-        return constraintParameter
+        return constraintParameter;
     }
 
     String getName() {
-        return ConstrainedProperty.MIN_CONSTRAINT
+        return ConstrainedProperty.MIN_CONSTRAINT;
     }
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         if (minValue.compareTo(propertyValue) <= 0) {
-            return
+            return;
         }
 
-        Object[] args = [constraintPropertyName, constraintOwningClass, propertyValue, minValue] as Object[]
+        Object[] args = [constraintPropertyName, constraintOwningClass, propertyValue, minValue] as Object[];
         rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE,
-                ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args)
+                ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
     }
 
 }

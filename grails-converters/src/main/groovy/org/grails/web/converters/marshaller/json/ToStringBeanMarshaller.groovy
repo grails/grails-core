@@ -16,39 +16,41 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.converters.marshaller.json
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.converters.marshaller.json;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.converters.JSON
-import org.grails.web.converters.exceptions.ConverterException
-import org.grails.web.converters.marshaller.ObjectMarshaller
+import grails.converters.JSON;
+import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class ToStringBeanMarshaller implements ObjectMarshaller<JSON> {
 
-    private final Set<Class<?>> classes
+    private final Set<Class<?>> classes;
 
     ToStringBeanMarshaller(Set<Class<?>> classes) {
-        this.classes = classes
+        this.classes = classes;
     }
 
     @SuppressWarnings('unchecked')
     ToStringBeanMarshaller() {
         classes = Collections.unmodifiableSet(new HashSet<Class<?>>(Arrays.asList(
-                Currency, TimeZone, Locale, URL)))
+                Currency, TimeZone, Locale, URL)));
     }
 
     boolean supports(Object object) {
-        return classes.contains(object.getClass())
+        return classes.contains(object.getClass());
     }
 
     void marshalObject(Object object, JSON converter) throws ConverterException {
-        converter.convertAnother(object.toString())
+        converter.convertAnother(object.toString());
     }
-
 }
