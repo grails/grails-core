@@ -26,6 +26,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
@@ -44,6 +45,8 @@ final class DomainReferences {
     private final Map<Class<?>, String> idNames = new ConcurrentHashMap<>();
 
     private final Map<Class<?>, String> classNames = new ConcurrentHashMap<>();
+
+    private final Map<Class<?>, Boolean> ownSerializers = new ConcurrentHashMap<>();
 
     /**
      * Writes an associated instance that is not written in full: a reference to it, or what the rendering writes in its
@@ -114,9 +117,23 @@ final class DomainReferences {
 
     /**
      * Whether Jackson writes the instances of a domain class with a serializer other than its bean serializer, inside
-     * the serializers modules wrap it with.
+     * the serializers modules wrap it with. A class whose serializer Jackson cannot build, such as one that unwraps a
+     * property with the name of one of its own, has none: its instances are referenced, which needs none of their
+     * properties, rather than failing the write of every instance that references one.
      */
-    private static boolean hasSerializerOfItsOwn(Class<?> type, SerializationContext context) {
+    private boolean hasSerializerOfItsOwn(Class<?> type, SerializationContext context) {
+        // Jackson does not keep a serializer it cannot build, and would try again for every reference
+        return ownSerializers.computeIfAbsent(type, t -> {
+            try {
+                return findsSerializerOfItsOwn(t, context);
+            }
+            catch (InvalidDefinitionException e) {
+                return false;
+            }
+        });
+    }
+
+    private static boolean findsSerializerOfItsOwn(Class<?> type, SerializationContext context) {
         ValueSerializer<?> serializer = context.findValueSerializer(type);
         while (!(serializer instanceof BeanSerializerBase)) {
             ValueSerializer<?> delegatee = serializer.getDelegatee();

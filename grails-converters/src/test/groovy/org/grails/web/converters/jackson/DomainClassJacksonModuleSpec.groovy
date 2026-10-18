@@ -630,6 +630,20 @@ class DomainClassJacksonModuleSpec extends Specification {
         json == '{"id":1,"name":"library","city":"Paris","name":"main"}'
     }
 
+    void "an associated instance of a domain class the mapper rejects is written as a reference, which needs none of its properties"() {
+        given: 'an association to a domain class that unwraps a property with the name of one of its own'
+        def located = new Located(name: 'library', address: new Address(name: 'main', city: 'Paris'))
+        located.id = 1
+        def branch = new Branch(name: 'east', location: located)
+        branch.id = 2
+        def mapper = mapper()
+
+        expect: 'for every write, though Jackson tries to build the serializer it rejects again for each'
+        mapper.writeValueAsString(branch) == '{"id":2,"name":"east","location":{"id":1}}'
+        mapper.writeValueAsString(branch) == '{"id":2,"name":"east","location":{"id":1}}'
+        new JSON(branch).toString() == '{"id":2,"name":"east","location":{"id":1}}'
+    }
+
     void "an association after a @JsonUnwrapped property is written with the rendering of the instance that has it"() {
         given: 'a DomainClassMarshaller that writes the ids with a prefix'
         JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
@@ -1023,14 +1037,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1366,6 +1380,12 @@ class Located {
 class Address {
     String name
     String city
+}
+
+@Entity
+class Branch {
+    String name
+    Located location
 }
 
 @Entity
