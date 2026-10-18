@@ -18,6 +18,7 @@
  */
 package org.grails.spring;
 
+import groovy.transform.CompileStatic;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.PropertyValue;
@@ -39,8 +40,19 @@ import org.springframework.util.Assert;
  * @author Graeme
  * @since 0.3
  */
+// Whole-class @CompileStatic: every method body here is plain typed Java-equivalent logic (only
+// getProperty()/setProperty() override GroovyObjectSupport for the builder DSL). Annotating only
+// those two override methods left calls like setParent() from within setProperty() still routed
+// through Groovy's indy machinery -- the static compiler, with the enclosing class left dynamic,
+// keeps sibling calls going through the metaclass to preserve possible overrides -- which hit a
+// Groovy indy/reflective call-site NPE ("MetaClass.initialize() because mc is null") when
+// setProperty() itself is invoked cold via reflection (as it is, being a GroovyObject override)
+// and then makes that further dynamic self-call. External dynamic callers (BeanBuilder, the
+// property-assignment DSL) are unaffected: Groovy always routes `obj.prop = x` through the
+// overridden getProperty()/setProperty() below regardless of this class's own compile mode.
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfiguration {
 
     private static final String AUTOWIRE = 'autowire';
@@ -83,7 +95,7 @@ class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfig
     @Override
     void setProperty(String property, Object newValue) {
         if (PARENT.equals(property)) {
-            setParent(newValue);
+            this.setParent(newValue);
             return;
         }
 
