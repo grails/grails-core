@@ -679,6 +679,29 @@ class ControllerTextJsonSpec extends Specification implements ControllerUnitTest
     }
 }
 
+class LegacyValidationErrorsConfigurationSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    void 'with the legacy JSON respond, validation errors are written as they are without the configuration respond names'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
+        def errors = new BeanPropertyBindingResult(new JsonResponseBody(title: 'private'), 'book')
+        errors.rejectValue('title', 'invalid', 'Title is invalid')
+        response.format = 'json'
+        controller.respond(errors)
+        def without = response.contentAsString
+
+        when:
+        response.reset()
+        response.format = 'json'
+        controller.respond(errors, jsonConfiguration: 'plain')
+
+        then:
+        response.status == 422
+        response.contentAsString == without
+        response.json.errors.first().message == 'Title is invalid'
+    }
+}
+
 @Artefact('Controller')
 class JsonResponseController { }
 
