@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -78,6 +79,10 @@ final class DomainClassModifier extends ValueSerializerModifier {
     private final DomainRendering rendering;
 
     private final DomainReferences references = new DomainReferences();
+
+    private final CycleTracking.OnCycle onCycle = this::onCycle;
+
+    private final BooleanSupplier paths = this::writesPaths;
 
     DomainClassModifier(DomainRendering rendering) {
         this.rendering = rendering;
@@ -357,7 +362,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
         if (!current.isDomainClass(type) || DomainClassRendering.isProxyClass(type)) {
             return serializer;
         }
-        ValueSerializer<?> tracked = CycleTracking.around(serializer, this::onCycle, this::writesPaths);
+        ValueSerializer<?> tracked = CycleTracking.around(serializer, onCycle, paths);
         return tracked != null ? tracked : serializer;
     }
 

@@ -70,7 +70,8 @@ final class CycleTracking extends ValueSerializer<Object> {
      *
      * @param serializer a serializer, which may wrap a bean serializer
      * @param onCycle what to write for a value reached again
-     * @param paths whether a value reached again may be written as its path, so that the path of each value is kept
+     * @param paths whether a value reached again may be written as its path, so that the path of each value is kept,
+     *        asked once for each write, which it is the key of an attribute of, so the same one for every serializer
      * @return the serializer, with its bean serializer tracked, or {@code null} if it wraps none, or one that writes
      *         object ids
      */
@@ -96,6 +97,19 @@ final class CycleTracking extends ValueSerializer<Object> {
         this.paths = paths;
     }
 
+    /**
+     * Whether the values of a write may be written as their paths, decided once for the write, as what decides it, such
+     * as the configuration, does not change while it writes.
+     */
+    private boolean paths(SerializationContext context) {
+        if (context.getAttribute(paths) instanceof Boolean decided) {
+            return decided;
+        }
+        boolean decided = paths.getAsBoolean();
+        context.setAttribute(paths, decided);
+        return decided;
+    }
+
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt) {
         Map<Object, Cycles.Frame> instances = Cycles.instances(ctxt);
@@ -104,7 +118,7 @@ final class CycleTracking extends ValueSerializer<Object> {
             onCycle.write(value, enclosing, gen, ctxt);
             return;
         }
-        instances.put(value, Cycles.upcoming(gen, paths.getAsBoolean()));
+        instances.put(value, Cycles.upcoming(gen, paths(ctxt)));
         try {
             delegate.serialize(value, gen, ctxt);
         }
@@ -121,7 +135,7 @@ final class CycleTracking extends ValueSerializer<Object> {
             onCycle.write(value, enclosing, gen, ctxt);
             return;
         }
-        instances.put(value, Cycles.upcoming(gen, paths.getAsBoolean()));
+        instances.put(value, Cycles.upcoming(gen, paths(ctxt)));
         try {
             delegate.serializeWithType(value, gen, ctxt, typeSer);
         }

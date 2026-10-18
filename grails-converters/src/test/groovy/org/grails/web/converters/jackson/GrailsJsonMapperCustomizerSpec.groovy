@@ -46,6 +46,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 
 import tools.jackson.databind.json.JsonMapper
 
+import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.datastore.mapping.model.MappingContext
 
@@ -463,6 +464,25 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
                 [[name: 'shared', next: null], [name: 'shared', next: null]]
     }
 
+    void 'the circular reference behaviour is read once for a write, however many objects it writes'() {
+        given:
+        def config = new BehaviourReadsConfig()
+        config.setAt('grails.converters.json.circular.reference.behaviour', 'PATH')
+        def application = new DefaultGrailsApplication()
+        application.initialise()
+        application.config = config
+        def mapper = new GrailsJsonMapperCustomizer(application, new DefaultProxyHandler()).forGrails(JsonMapper.builder().build())
+        def nodes = (1..20).collect { new JacksonNode(name: "node $it") }
+        mapper.writeValueAsString(nodes)
+        config.behaviourReads = 0
+
+        when: 'a write once the mapper has its serializers'
+        mapper.writeValueAsString(nodes)
+
+        then:
+        config.behaviourReads == 1
+    }
+
     private static JsonMapper beanCycleMapper(String behaviour) {
         def application = new DefaultGrailsApplication()
         application.initialise()
@@ -623,6 +643,19 @@ class SpecialJacksonBook extends JacksonBook {
 class JacksonNode {
     String name
     JacksonNode next
+}
+
+class BehaviourReadsConfig extends PropertySourcesConfig {
+
+    int behaviourReads
+
+    @Override
+    <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues) {
+        if (key == 'grails.converters.json.circular.reference.behaviour') {
+            behaviourReads++
+        }
+        super.getProperty(key, targetType, defaultValue, allowedValues)
+    }
 }
 
 class JacksonKeyedNode {

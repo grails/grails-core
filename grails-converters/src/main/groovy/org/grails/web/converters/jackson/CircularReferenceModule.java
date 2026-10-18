@@ -18,6 +18,7 @@
  */
 package org.grails.web.converters.jackson;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import tools.jackson.core.Version;
@@ -43,8 +44,14 @@ final class CircularReferenceModule extends JacksonModule {
 
     private final Supplier<CircularReferenceBehaviour> behaviour;
 
+    private final CycleTracking.OnCycle onCycle;
+
+    private final BooleanSupplier paths;
+
     CircularReferenceModule(Supplier<CircularReferenceBehaviour> behaviour) {
         this.behaviour = behaviour;
+        this.onCycle = (value, enclosing, generator, context) -> Cycles.write(value, enclosing, generator, behaviour.get());
+        this.paths = () -> behaviour.get() == CircularReferenceBehaviour.PATH;
     }
 
     @Override
@@ -63,9 +70,7 @@ final class CircularReferenceModule extends JacksonModule {
             @Override
             public ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier beanDescription,
                     ValueSerializer<?> serializer) {
-                ValueSerializer<?> tracked = CycleTracking.around(serializer, (value, enclosing, generator, context) ->
-                        Cycles.write(value, enclosing, generator, behaviour.get()),
-                        () -> behaviour.get() == CircularReferenceBehaviour.PATH);
+                ValueSerializer<?> tracked = CycleTracking.around(serializer, onCycle, paths);
                 return tracked != null ? tracked : serializer;
             }
         });
