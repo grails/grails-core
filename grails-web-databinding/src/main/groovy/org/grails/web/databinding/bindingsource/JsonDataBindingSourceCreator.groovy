@@ -66,11 +66,17 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     // Jackson's auto-configuration into this bean's graph, and MimeTypesConfiguration depends on
     // this creator, so Boot's mapper would be built before GORM has initialized.
     @Autowired(required = false)
-    ObjectProvider<JsonMapper> jsonMapperProvider
+    private ObjectProvider<JsonMapper> jsonMapperProvider
 
     @Autowired(required = false)
-    ApplicationContext applicationContext
+    private ApplicationContext applicationContext
 
+    /**
+     * Whether request bodies are parsed with the application's Jackson mapper, as {@code grails.databinding.json.jackson}
+     * sets it, rather than with the legacy parser.
+     *
+     * @since 9.0
+     */
     @Value('${grails.databinding.json.jackson:false}')
     boolean useJackson = false
 
@@ -102,6 +108,11 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     private volatile JsonMapper resolvedJsonMapper
 
+    /**
+     * @return the mapper request bodies are parsed with when {@link #useJackson} is set: the application's
+     *         {@code JsonMapper}, found when a body is first parsed, or the one {@link #setJsonMapper} sets
+     * @since 9.0
+     */
     JsonMapper getJsonMapper() {
         JsonMapper mapper = this.resolvedJsonMapper
         if (mapper == null) {
@@ -115,6 +126,10 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         return mapper
     }
 
+    /**
+     * @param jsonMapper the mapper to parse request bodies with, in the place of the application's
+     * @since 9.0
+     */
     void setJsonMapper(JsonMapper jsonMapper) {
         this.resolvedJsonMapper = jsonMapper
     }
