@@ -115,6 +115,26 @@ class WriterOutputStreamSpec extends Specification {
         writer.toString() == 'body'
     }
 
+    void 'flushing the stream decodes what it holds into the writer, without flushing the writer, which would commit the response'() {
+        given:
+        def flushes = 0
+        def writer = new StringWriter() {
+            @Override
+            void flush() {
+                flushes++
+            }
+        }
+        def stream = new WriterOutputStream(writer, UTF_8)
+
+        when:
+        stream.write('body'.getBytes(UTF_8))
+        stream.flush()
+
+        then:
+        flushes == 0
+        writer.toString() == 'body'
+    }
+
     void 'an I/O failure surfaces rather than truncating the response'() {
         given:
         def writer = new StringWriter()

@@ -38,6 +38,7 @@ import grails.web.mime.MimeType
 import grails.rest.render.json.JsonRenderer
 import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.validation.BeanPropertyBindingResult
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
@@ -133,6 +134,20 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         then:
         thrown(DatabindException)
         !response.committed
+    }
+
+    void 'a respond Spring MVC writes that fails part-way leaves the response uncommitted, so that the error page applies, for #description'() {
+        when:
+        controller.respond(value)
+
+        then:
+        thrown(HttpMessageNotWritableException)
+        !response.committed
+
+        where:
+        description | value
+        'a bean'    | new FailingJsonBody(title: 'Grails')
+        'a problem' | ProblemDetail.forStatus(409).tap { it.setProperty('unreadable', new FailingJsonBody(title: 'Grails')) }
     }
 
     void 'a domain class response leaves out a @JsonIgnore property, as the shared Boot mapper does'() {

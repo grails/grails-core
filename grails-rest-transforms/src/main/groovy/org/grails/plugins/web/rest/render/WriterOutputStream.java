@@ -37,10 +37,11 @@ import java.nio.charset.CodingErrorAction;
  * to decode it in one go holds the entire response in memory twice; this streams it instead.
  * Multi-byte sequences split across writes are carried over rather than corrupted.</p>
  *
- * <p>Not thread safe, and intended to wrap a single response body. {@link #close()} flushes the
- * decoder but deliberately leaves the underlying writer open and unflushed, since the container owns it: a body
- * that fails part-way before filling the response buffer leaves the response uncommitted, so that the error page
- * applies. A larger body has been sent in part by then, as with any response.</p>
+ * <p>Not thread safe, and intended to wrap a single response body. {@link #flush()} and {@link #close()} decode
+ * what the stream holds into the writer but deliberately leave the underlying writer open and unflushed, since the
+ * container owns it: a body that fails part-way before filling the response buffer leaves the response uncommitted,
+ * so that the error page applies, even when what writes it flushes the stream first. A larger body has been sent in
+ * part by then, as with any response.</p>
  *
  * @since 9.0
  */
@@ -83,7 +84,6 @@ public final class WriterOutputStream extends OutputStream {
     @Override
     public void flush() throws IOException {
         decode(false);
-        writer.flush();
     }
 
     @Override
