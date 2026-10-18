@@ -23,6 +23,7 @@ import org.grails.forge.application.OperatingSystem
 import org.grails.forge.application.Project
 import org.grails.forge.application.generator.ProjectGenerator
 import org.grails.forge.cli.Application
+import org.grails.forge.cli.GeneratedBuild
 import org.grails.forge.io.ConsoleOutput
 import org.grails.forge.io.FileSystemOutputHandler
 import org.grails.forge.io.OutputHandler
@@ -72,14 +73,12 @@ abstract class CommandSpec extends Specification {
     }
 
     BuildResult executeGradle(String command) {
-        gradleRunner.withProjectDir(dir)
-                .withArguments(command.split(' '))
-                .build()
+        executeGradle(command.split(' '))
     }
 
     BuildResult executeGradle(String... arguments) {
         gradleRunner.withProjectDir(dir)
-                .withArguments(arguments)
+                .withArguments(GeneratedBuild.arguments() + arguments.toList())
                 .build()
     }
 
