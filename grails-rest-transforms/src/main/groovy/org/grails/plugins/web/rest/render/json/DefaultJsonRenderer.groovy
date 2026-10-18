@@ -34,16 +34,19 @@ import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
+import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.validation.Errors
 
-import tools.jackson.core.JsonEncoding
+import tools.jackson.core.JacksonException
 import tools.jackson.core.JsonGenerator
 import tools.jackson.core.StreamWriteFeature
 import tools.jackson.databind.JacksonSerializable
 import tools.jackson.databind.ObjectWriter
 import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.jsontype.TypeSerializer
 
@@ -320,37 +323,80 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             // Only the Grails mapper applies a projection; the legacy converter applies it otherwise.
             return 'includes and excludes need the Grails JSON mapper, which the application\'s message converter replaces'
         }
-        JsonProjection projection = null
-        if (grailsMapper) {
-            projection = JsonProjection.of(object, includes, excludes)
-            // Keep the source converter itself: its prefix, media types and charset are application
-            // configuration. Only the value's JSON representation uses the isolated Grails mapper.
-            object = new GrailsJsonValue(object, grailsJsonMapperCustomizer.forGrails(
-                    ((JacksonJsonHttpMessageConverter) converter).mapper), projection)
-        }
         // Jackson only writes UTF encodings. Use UTF-8 for the intermediate byte stream;
         // the servlet writer still applies the configured response encoding.
         Charset charset = converter instanceof AbstractJacksonHttpMessageConverter ?
                 StandardCharsets.UTF_8 : Charset.forName(encoding)
         MediaType contentType = new MediaType(mediaType, charset)
-        WriterOutputStream.writeThrough(context.writer, charset) { OutputStream body ->
-            HttpOutputMessage message = new HttpOutputMessage() {
-                private final HttpHeaders headers = new HttpHeaders()
-
-                @Override
-                OutputStream getBody() {
-                    return body
-                }
-
-                @Override
-                HttpHeaders getHeaders() {
-                    return headers
-                }
-            }
-            converter.write(object, contentType, message)
+        if (grailsMapper) {
+            JacksonJsonHttpMessageConverter source = (JacksonJsonHttpMessageConverter) converter
+            JsonProjection projection = JsonProjection.of(object, includes, excludes)
+            writeWithGrailsMapper(object, grailsJsonMapperCustomizer.forGrails(source.mapper), projection,
+                    prefixOf(source, contentType), context.writer)
+            projection?.reportUnapplied()
+            return null
         }
-        projection?.reportUnapplied()
+        WriterOutputStream.writeThrough(context.writer, charset) { OutputStream body ->
+            converter.write(object, contentType, outputMessage(body))
+        }
         return null
+    }
+
+    /**
+     * Writes a value as Spring MVC's converter writes it, with the isolated Grails mapper: the converter's prefix is
+     * application configuration, and the mapper, which is derived from the converter's, writes the wrapper of a root
+     * value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value itself. The writer is
+     * left unflushed, so that a value that fails part-way leaves the response uncommitted.
+     */
+    private static void writeWithGrailsMapper(Object value, JsonMapper mapper, JsonProjection projection, String prefix,
+                                              Writer output) {
+        ObjectWriter writer = mapper.writer().without(StreamWriteFeature.AUTO_CLOSE_TARGET)
+                .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)
+        if (projection != null) {
+            writer = writer.withAttribute(JsonProjection.ATTRIBUTE, projection)
+        }
+        try (JsonGenerator generator = writer.createGenerator(output)) {
+            generator.writeRaw(prefix)
+            writer.writeValue(generator, value)
+        }
+        catch (InvalidDefinitionException e) {
+            throw new HttpMessageConversionException("Type definition error: ${e.type}", e)
+        }
+        catch (JacksonException e) {
+            throw new HttpMessageNotWritableException("Could not write JSON: ${e.originalMessage}", e)
+        }
+    }
+
+    /**
+     * What a converter writes before a value, such as a JSON prefix, which it has no accessor for: what it writes for a
+     * marker, less the JSON its mapper writes for the marker, which includes the wrapper of a root value.
+     */
+    private static String prefixOf(JacksonJsonHttpMessageConverter converter, MediaType contentType) {
+        ByteArrayOutputStream written = new ByteArrayOutputStream()
+        converter.write(PrefixMarker.INSTANCE, contentType, outputMessage(written))
+        String output = written.toString(StandardCharsets.UTF_8)
+        String marker = converter.mapper.writeValueAsString(PrefixMarker.INSTANCE)
+        if (!output.endsWith(marker)) {
+            throw new IllegalStateException("[${converter.getClass().name}] writes [${output}] for a value its mapper " +
+                    "writes as [${marker}].")
+        }
+        return output.substring(0, output.length() - marker.length())
+    }
+
+    private static HttpOutputMessage outputMessage(OutputStream body) {
+        return new HttpOutputMessage() {
+            private final HttpHeaders headers = new HttpHeaders()
+
+            @Override
+            OutputStream getBody() {
+                return body
+            }
+
+            @Override
+            HttpHeaders getHeaders() {
+                return headers
+            }
+        }
     }
 
     private MimeType resolveMimeType(RenderContext context) {
@@ -371,40 +417,19 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         converter.render(context.getWriter())
     }
 
-    private static final class GrailsJsonValue implements JacksonSerializable {
-        private final Object value
-        private final JsonMapper mapper
-        private final JsonProjection projection
+    /** A value a converter writes as {@code null}, whatever it writes around it. */
+    private static final class PrefixMarker implements JacksonSerializable {
 
-        GrailsJsonValue(Object value, JsonMapper mapper, JsonProjection projection) {
-            this.value = value
-            this.mapper = mapper
-            this.projection = projection
-        }
+        static final PrefixMarker INSTANCE = new PrefixMarker()
 
-        /**
-         * Writes the value with a generator of the Grails mapper, on the output of the converter's generator: a generator
-         * writes a value a serializer hands it with {@link JsonGenerator#writePOJO(Object)} with the mapper that created
-         * it, which for the converter's is the application's.
-         */
         @Override
         void serialize(JsonGenerator generator, SerializationContext context) {
-            ObjectWriter writer = mapper.writer().without(StreamWriteFeature.AUTO_CLOSE_TARGET)
-            if (projection != null) {
-                writer = writer.withAttribute(JsonProjection.ATTRIBUTE, projection)
-            }
-            // what the converter wrote before the value, such as a prefix, comes first
-            generator.flush()
-            Object output = generator.streamWriteOutputTarget()
-            JsonGenerator grailsGenerator = output instanceof Writer ? writer.createGenerator((Writer) output) :
-                    writer.createGenerator((OutputStream) output, JsonEncoding.UTF8)
-            grailsGenerator.writePOJO(value)
-            grailsGenerator.close()
+            generator.writeNull()
         }
 
         @Override
         void serializeWithType(JsonGenerator generator, SerializationContext context, TypeSerializer typeSerializer) {
-            serialize(generator, context)
+            generator.writeNull()
         }
     }
 }

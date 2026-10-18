@@ -30,8 +30,10 @@ import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.mock.http.MockHttpOutputMessage
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.SerializationFeature
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
@@ -169,6 +171,27 @@ class DefaultJsonRendererSpec extends Specification {
         webRequest.response.contentAsString == ")]}'\u002c \"QUI=\""
         webRequest.response.contentType.startsWith('text/json')
         !renderer.legacyFallbackReported.get()
+    }
+
+    void 'a source mapper that wraps root values names the wrapper after the value, after the prefix, as Spring MVC writes it'() {
+        given:
+        def mapper = JsonMapper.builder().enable(SerializationFeature.WRAP_ROOT_VALUE).build()
+        def source = new JacksonJsonHttpMessageConverter(mapper)
+        source.setPrefixJson(true)
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [source] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def spring = new MockHttpOutputMessage()
+        source.write(new ProjectionBody(title: 'Grails', hidden: true), new MediaType(MediaType.APPLICATION_JSON, UTF_8), spring)
+
+        when:
+        renderer.render(new ProjectionBody(title: 'Grails', hidden: true), new ServletRenderContext(webRequest))
+
+        then:
+        webRequest.response.contentAsString == spring.bodyAsString
+        spring.bodyAsString.contains('{"ProjectionBody":')
     }
 
     void 'Spring JSON without MVC converters falls back to the legacy converter'() {
