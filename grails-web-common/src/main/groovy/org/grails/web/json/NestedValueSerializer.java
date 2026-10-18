@@ -18,6 +18,7 @@
  */
 package org.grails.web.json;
 
+import java.util.Set;
 import java.util.function.Predicate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -39,6 +40,7 @@ import tools.jackson.databind.type.CollectionLikeType;
 import tools.jackson.databind.type.CollectionType;
 import tools.jackson.databind.type.MapLikeType;
 import tools.jackson.databind.type.MapType;
+import tools.jackson.databind.util.ClassUtil;
 import tools.jackson.databind.util.NameTransformer;
 
 /**
@@ -301,9 +303,18 @@ final class NestedValueSerializer extends DelegatingSerializer {
 
         private static final long serialVersionUID = 1L;
 
+        /** The types whose values Jackson writes as natural JSON values, without a type id of their own. */
+        private static final Set<Class<?>> NATURAL_TYPES = Set.of(String.class, Integer.class, Boolean.class, Double.class,
+                int.class, boolean.class, double.class);
+
         @Override
         public ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier beanDesc,
                 ValueSerializer<?> serializer) {
+            // Jackson's own serializer of a natural JSON type is left as it is: the nested value writer writes such a value
+            // as the mapper does, and Jackson writes the type id of a @JsonValue that gives one only with that serializer
+            if (NATURAL_TYPES.contains(beanDesc.getBeanClass()) && ClassUtil.isJacksonStdImpl(serializer)) {
+                return serializer;
+            }
             return wrap(serializer);
         }
 

@@ -735,6 +735,15 @@ class JsonMapperRenderingSpec extends Specification {
         json.toString()
     }
 
+    void "a value the mapper writes with a type id is written with it, rather than by a marshaller that cannot write one"() {
+        given: 'a value of a type with a type id, which writes a string with its @JsonValue'
+        def typed = new TypedPayload(shape: new Circle(name: 'round'))
+
+        expect: 'as the mapper writes it'
+        JsonMapper.builder().build().writeValueAsString(typed) == '{"shape":["Circle","round"]}'
+        new JSON(typed).toString() == '{"shape":["Circle","round"]}'
+    }
+
     void "beans and map entries are rendered by the mapper"() {
         given:
         def bean = new Holder(name: 'Fred', created: new Date(1790305200000L), role: Role.ADMIN, unit: ChronoUnit.DAYS,
@@ -1168,4 +1177,19 @@ class AnyGetterHolder {
     String name
     @JsonAnyGetter
     Map<String, String> secrets
+}
+
+class TypedPayload {
+    TypedShape shape
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+class TypedShape {
+}
+
+class Circle extends TypedShape {
+    String name
+
+    @JsonValue
+    String jsonValue() { name }
 }
