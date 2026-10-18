@@ -118,6 +118,30 @@ class ConverterStrictParsingUnitTestSpec extends Specification implements Contro
     }
 }
 
+class ConverterEncodingSettingUnitTestSpec extends Specification implements ControllerUnitTest<ConverterSettingsController> {
+
+    Closure doWithConfig() {
+        { config -> config['grails.converters.encoding'] = 'ISO-8859-1' }
+    }
+
+    void 'render json: writes the encoding grails.converters.encoding sets, as respond and the JSON converter write it'() {
+        when:
+        controller.render(json: [name: 'caf\u00e9'])
+
+        then:
+        response.contentType == 'application/json;charset=ISO-8859-1'
+        response.contentAsByteArray == '{"name":"caf\u00e9"}'.getBytes('ISO-8859-1')
+
+        when: 'the encoding is named'
+        response.reset()
+        controller.render(json: [name: 'caf\u00e9'], encoding: 'UTF-8')
+
+        then:
+        response.contentType == 'application/json;charset=UTF-8'
+        response.contentAsByteArray == '{"name":"caf\u00e9"}'.getBytes('UTF-8')
+    }
+}
+
 @Artefact('Controller')
 class ConverterSettingsController { }
 

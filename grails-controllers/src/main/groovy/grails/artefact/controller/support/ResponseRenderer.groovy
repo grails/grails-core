@@ -291,7 +291,7 @@ trait ResponseRenderer extends WebAttributes {
             throw new IllegalArgumentException("Named JSON configuration [$configurationName] is not registered.")
         }
         if (!applyContentType(response, argMap, value, false)) {
-            setContentType(response, MimeType.JSON.name, argMap.get(ARGUMENT_ENCODING)?.toString() ?: DEFAULT_ENCODING)
+            setContentType(response, MimeType.JSON.name, argMap.get(ARGUMENT_ENCODING)?.toString() ?: jsonEncoding(webRequest))
         }
         try {
             namedJsonRenderer.render(configurationName, value, response.writer,
@@ -303,6 +303,16 @@ trait ResponseRenderer extends WebAttributes {
                     "I/O error rendering named JSON configuration [$configurationName].", e)
         }
         webRequest.renderView = false
+    }
+
+    /**
+     * The encoding of a JSON response, as {@code respond} and the JSON converter write it: {@code grails.converters.encoding},
+     * which defaults to UTF-8.
+     */
+    @Generated
+    private static String jsonEncoding(GrailsWebRequest webRequest) {
+        return webRequest.attributes?.grailsApplication?.config?.getProperty('grails.converters.encoding', String,
+                DEFAULT_ENCODING) ?: DEFAULT_ENCODING
     }
 
     /**
