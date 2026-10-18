@@ -22,36 +22,130 @@ import spock.lang.Specification
 
 class StopWatchSpec extends Specification {
 
-    void 'not running before any task is started'() {
+    void 'new watches have no tasks or elapsed time'() {
         given:
-        def stopWatch = new StopWatch('my watch')
+        def watch = new StopWatch()
 
         expect:
-        !stopWatch.running
-        stopWatch.taskCount == 0
-        stopWatch.totalTimeMillis == 0
+        !watch.isRunning()
+        watch.getTaskCount() == 0
+        watch.getTaskInfo().length == 0
+        watch.getTotalTimeMillis() == 0
+        watch.getTotalTimeSeconds() == 0.0
+        watch.shortSummary() == "StopWatch '': running time (millis) = 0"
+        watch.prettyPrint().contains('Task name')
+        watch.toString() == watch.shortSummary()
     }
 
-    void 'start and stop records a task'() {
+    void 'start and stop record an unnamed task and complete ends the watch'() {
         given:
-        def stopWatch = new StopWatch()
+        def watch = new StopWatch('startup')
 
         when:
-        stopWatch.start('task-1')
+        watch.start()
 
         then:
-        stopWatch.running
-        stopWatch.taskCount == 1
+        watch.isRunning()
+        watch.getTaskCount() == 1
+        watch.getLastTaskName() == ''
 
         when:
-        stopWatch.stop()
+        watch.stop()
+        watch.complete()
 
         then:
-        stopWatch.lastTaskName == 'task-1'
-        stopWatch.lastTaskInfo.taskName == 'task-1'
-        stopWatch.totalTimeMillis >= 0
-        stopWatch.totalTimeSeconds == stopWatch.totalTimeMillis / 1000.0
-        stopWatch.taskInfo.length == 1
+        !watch.isRunning()
+        watch.getTaskInfo().length == 1
+        watch.getLastTaskTimeMillis() >= 0
+        watch.getLastTaskInfo().is(watch.getTaskInfo()[0])
+        watch.getTotalTimeMillis() == watch.getLastTaskTimeMillis()
+        watch.getTotalTimeSeconds() == watch.getTotalTimeMillis() / 1000.0
+        watch.getLastTaskInfo().getTimeSeconds() == watch.getLastTaskTimeMillis() / 1000.0
+    }
+
+    void 'multiple named tasks contribute to totals and reports'() {
+        given:
+        def watch = new StopWatch('startup')
+
+        when:
+        watch.start('configuration')
+        watch.stop()
+        watch.start('beans')
+        watch.stop()
+        watch.complete()
+
+        then:
+        watch.getTaskCount() == 2
+        watch.getTaskInfo()*.taskName == ['configuration', 'beans']
+        watch.getLastTaskName() == 'beans'
+        watch.getTotalTimeMillis() == watch.getTaskInfo()*.timeMillis.sum()
+        watch.getTaskInfo().every { it.timeMillis >= 0 }
+        watch.shortSummary() == "StopWatch 'startup': running time (millis) = ${watch.getTotalTimeMillis()}"
+        watch.prettyPrint().startsWith(watch.shortSummary())
+        watch.prettyPrint().contains('Task name')
+        watch.prettyPrint().readLines().any { it.endsWith('configuration') }
+        watch.prettyPrint().readLines().any { it.endsWith('beans') }
+        watch.toString().contains('[configuration] took ')
+        watch.toString().contains('[beans] took ')
+    }
+
+    void 'starting twice supports nested tasks stopped in reverse order'() {
+        given:
+        def watch = new StopWatch('nested')
+
+        when:
+        watch.start('outer')
+        watch.start('inner')
+        watch.stop()
+        watch.stop()
+        watch.complete()
+
+        then:
+        watch.getTaskCount() == 2
+        watch.getTaskInfo()*.taskName == ['inner', 'outer']
+        watch.getTaskInfo()[1].timeMillis >= watch.getTaskInfo()[0].timeMillis
+        watch.getTotalTimeMillis() == watch.getTaskInfo()*.timeMillis.sum()
+        !watch.isRunning()
+    }
+
+    void 'stopping without starting throws'() {
+        when:
+        new StopWatch().stop()
+
+        then:
+        thrown(IllegalStateException)
+    }
+
+    void 'last task accessors throw before any task is started'() {
+        given:
+        def watch = new StopWatch()
+
+        when:
+        operation(watch)
+
+        then:
+        thrown(IllegalStateException)
+
+        where:
+        operation << [
+            { it.getLastTaskName() },
+            { it.getLastTaskTimeMillis() },
+            { it.getLastTaskInfo() }
+        ]
+    }
+
+    void 'completed watches reject stop'() {
+        given:
+        def watch = new StopWatch()
+        watch.start('task')
+        watch.stop()
+        watch.complete()
+
+        when:
+        watch.stop()
+
+        then:
+        thrown(IllegalStateException)
     }
 
     void 'nested tasks are both tracked and totalled'() {
@@ -69,64 +163,5 @@ class StopWatchSpec extends Specification {
         stopWatch.taskInfo.length == 2
         // lastTaskInfo tracks the most recently *started* task, not the most recently stopped one
         stopWatch.lastTaskName == 'inner'
-    }
-
-    void 'stop without a running task throws IllegalStateException'() {
-        given:
-        def stopWatch = new StopWatch()
-
-        when:
-        stopWatch.stop()
-
-        then:
-        thrown(IllegalStateException)
-    }
-
-    void 'querying the last task before any task ran throws IllegalStateException'() {
-        given:
-        def stopWatch = new StopWatch()
-
-        when:
-        stopWatch.lastTaskTimeMillis
-
-        then:
-        thrown(IllegalStateException)
-
-        when:
-        stopWatch.lastTaskName
-
-        then:
-        thrown(IllegalStateException)
-
-        when:
-        stopWatch.lastTaskInfo
-
-        then:
-        thrown(IllegalStateException)
-    }
-
-    void 'complete stops the watch running without recording a task'() {
-        given:
-        def stopWatch = new StopWatch()
-        stopWatch.start('a task')
-
-        when:
-        stopWatch.complete()
-
-        then:
-        !stopWatch.running
-    }
-
-    void 'shortSummary, prettyPrint and toString describe the recorded tasks'() {
-        given:
-        def stopWatch = new StopWatch('id')
-        stopWatch.start('task-a')
-        Thread.sleep(5)
-        stopWatch.stop()
-
-        expect:
-        stopWatch.shortSummary().contains("StopWatch 'id'")
-        stopWatch.prettyPrint().contains('task-a')
-        stopWatch.toString().contains('task-a')
     }
 }
