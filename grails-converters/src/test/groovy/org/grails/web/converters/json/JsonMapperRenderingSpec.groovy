@@ -853,6 +853,16 @@ class JsonMapperRenderingSpec extends Specification {
         'INSERT_NULL' | 'null'                      || null
     }
 
+    void "with the DEFAULT circular reference behaviour, a bean that references itself renders as a reference to the object that holds the reference"() {
+        given:
+        initialize('grails.converters.json.circular.reference.behaviour': 'DEFAULT')
+        def only = new Node(name: 'only')
+        only.parent = only
+
+        expect:
+        new JSON(only).toString() == '{"children":null,"name":"only","parent":{"_ref":".","class":"' + Node.name + '"}}'
+    }
+
     void "with the PATH circular reference behaviour, a single value renders"() {
         given:
         initialize('grails.converters.json.circular.reference.behaviour': 'PATH')

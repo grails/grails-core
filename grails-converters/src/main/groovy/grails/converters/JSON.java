@@ -479,7 +479,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                     for (int i = referenceStack.size() - 1; i > idx; i--) {
                         ref.append("../");
                     }
-                    props.put("_ref", ref.substring(0, ref.length() - 1));
+                    // "." where the object repeats the one the reference is written in, where Grails 8 failed
+                    props.put("_ref", ref.length() == 0 ? "." : ref.substring(0, ref.length() - 1));
                     value(props);
                 }
                 else {

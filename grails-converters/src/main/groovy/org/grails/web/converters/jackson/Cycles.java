@@ -101,10 +101,11 @@ final class Cycles {
                 generator.writeEndObject();
             }
             default -> {
-                // One step up for each object or array between this value and the one it repeats
-                int levels = Math.max(1, generator.streamWriteContext().getNestingDepth() - enclosing.depth());
+                // One step up from the object or array the reference is written in for each one between it and the value it
+                // repeats, or none, written ".", where it repeats the object it is written in
+                int levels = generator.streamWriteContext().getNestingDepth() - enclosing.depth();
                 generator.writeStartObject();
-                generator.writeStringProperty("_ref", String.join("/", Collections.nCopies(levels, "..")));
+                generator.writeStringProperty("_ref", levels > 0 ? String.join("/", Collections.nCopies(levels, "..")) : ".");
                 generator.writeStringProperty("class", type);
                 generator.writeEndObject();
             }

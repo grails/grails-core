@@ -258,8 +258,9 @@ for an HTML `<script>` element. Ordinary non-domain beans retain Jackson's prope
 subclasses and per-type mapper registrations keep their configured behavior and precedence.
 
 A domain object that leads back to itself while it is being written, such as an embedded value that points at its owner,
-is written as `{"_ref": "..", "class": "..."}` by default, or as `grails.converters.json.circular.reference.behaviour`
-selects, by the mapper as well as by a response and the converter. With `IGNORE`, an element of a list is left out and a
+is written as `{"_ref": "..", "class": "..."}` by default, with a `..` for each object or list between the reference and the
+object it repeats, or `.` where an object refers to itself, on which Grails 8 failed; or as
+`grails.converters.json.circular.reference.behaviour` selects, by the mapper as well as by a response and the converter. With `IGNORE`, an element of a list is left out and a
 property is written as `null`, where the legacy converter fails on the property. A plain bean that leads back to itself is written the same way by a response
 and by the converter, and fails on the mapper, as it does in a plain Spring MVC controller.
 

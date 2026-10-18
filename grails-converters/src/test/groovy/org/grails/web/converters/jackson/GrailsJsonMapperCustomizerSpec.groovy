@@ -484,6 +484,16 @@ class GrailsJsonMapperCustomizerSpec extends Specification {
         config.behaviourReads == 1
     }
 
+    void 'with the DEFAULT behaviour, a bean that references itself is a reference to the object that holds the reference'() {
+        given:
+        def only = new JacksonNode(name: 'only')
+        only.next = only
+
+        expect: 'as ".." from the second of two beans that reference each other is the first'
+        beanCycleMapper('DEFAULT').writeValueAsString(only) ==
+                '{"name":"only","next":{"_ref":".","class":"' + JacksonNode.name + '"}}'
+    }
+
     private static JsonMapper beanCycleMapper(String behaviour) {
         def application = new DefaultGrailsApplication()
         application.initialise()

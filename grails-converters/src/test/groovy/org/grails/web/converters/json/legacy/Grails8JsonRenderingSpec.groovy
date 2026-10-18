@@ -173,6 +173,15 @@ class Grails8JsonRenderingSpec extends Specification {
                 '{"a":5,"x":[7,{"n":2,"other":{"ref":"root.x[1]","class":"' + Link.name + '"}}]}'
     }
 
+    void "with the DEFAULT circular reference behaviour, a bean that references itself renders as a reference to the object that holds the reference, where Grails 8 failed"() {
+        given:
+        def only = new Link(n: 1)
+        only.other = only
+
+        expect: 'Grails 8.0.x failed with an index out of bounds'
+        new JSON(only).toString() == '{"n":1,"other":{"_ref":".","class":"' + Link.name + '"}}'
+    }
+
     private static JsonMapper configuredMapper() {
         JsonMapper.builder()
                 .enable(SerializationFeature.INDENT_OUTPUT)
