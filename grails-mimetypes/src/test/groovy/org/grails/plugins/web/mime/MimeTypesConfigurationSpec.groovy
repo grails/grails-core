@@ -18,8 +18,11 @@
  */
 package org.grails.plugins.web.mime
 
+import java.util.function.Supplier
+
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.AnnotatedBeanDefinitionReader
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -27,6 +30,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+import org.springframework.web.context.support.GenericWebApplicationContext
 import org.springframework.web.servlet.LocaleResolver
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
@@ -149,6 +153,69 @@ class MimeTypesConfigurationSpec extends Specification {
         infrastructure                    | configuration
         'a locale resolver'               | CycleConfiguration
         "Spring MVC's handler adapter"    | HandlerAdapterCycleConfiguration
+    }
+
+    void 'the data formats grails.mime.types declares are registered with Spring MVC, in place of the defaults'() {
+        when:
+        Map<String, MediaType> mappings = mediaTypeMappings([json: 'application/vnd.acme+json', csv: 'text/csv', html: 'text/html'])
+
+        then:
+        mappings.json == MediaType.parseMediaType('application/vnd.acme+json')
+        mappings.csv == MediaType.parseMediaType('text/csv')
+        !mappings.containsKey('hal')
+    }
+
+    void 'with mergeDefaults, the defaults grails.mime.types does not declare are registered with Spring MVC too'() {
+        when:
+        Map<String, MediaType> mappings = mediaTypeMappings([json: 'application/vnd.acme+json'], true)
+
+        then:
+        mappings.json == MediaType.parseMediaType('application/vnd.acme+json')
+        mappings.hal == MediaType.parseMediaType('application/hal+json')
+        mappings.csv == MediaType.parseMediaType('text/csv')
+    }
+
+    void 'the MIME types a provider adds are not registered with Spring MVC, which asks for its formats while it starts'() {
+        given:
+        def provider = new MimeTypeProvider() {
+            @Override
+            MimeType[] getMimeTypes() {
+                [new MimeType('application/vnd.acme+xml', 'xml')] as MimeType[]
+            }
+        }
+
+        when:
+        Map<String, MediaType> mappings = mediaTypeMappings([json: 'application/vnd.acme+json'], false, provider)
+
+        then:
+        mappings.json == MediaType.parseMediaType('application/vnd.acme+json')
+        mappings.xml != MediaType.parseMediaType('application/vnd.acme+xml')
+    }
+
+    private static Map<String, MediaType> mediaTypeMappings(Map types, boolean mergeDefaults = false, MimeTypeProvider... providers) {
+        def application = new DefaultGrailsApplication()
+        application.config['grails.mime.types'] = types
+        application.config['grails.mime.mergeDefaults'] = mergeDefaults
+        def context = new GenericWebApplicationContext(new MockServletContext())
+        application.setApplicationContext(context)
+        context.registerBean('grailsApplication', GrailsApplication, { application } as Supplier<GrailsApplication>)
+        providers.eachWithIndex { MimeTypeProvider provider, int index ->
+            context.registerBean("mimeTypeProvider${index}".toString(), MimeTypeProvider, { provider } as Supplier<MimeTypeProvider>)
+        }
+        new AnnotatedBeanDefinitionReader(context).register(MvcConfiguration)
+        context.refresh()
+        try {
+            return context.getBean(ContentNegotiationManager).mediaTypeMappings
+        }
+        finally {
+            context.close()
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @EnableWebMvc
+    @Import(MimeTypesConfiguration)
+    static class MvcConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
