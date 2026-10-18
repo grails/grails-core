@@ -248,6 +248,64 @@ class DomainClassJacksonModuleSpec extends Specification {
         json.toString() == '[{"id":2,"name":"b"},{"id":1}]'
     }
 
+    void "the includes of a proxy written in full as an association apply to the instance it stands for, not to the instance being written around it, #description"() {
+        given:
+        grailsApplication.config.setAt('grails.converters.json.default.deep', true)
+        ConvertersConfigurationHolder.clear()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
+        def second = type.getDeclaredConstructor().newInstance()
+        second.name = 'b'
+        second.tail = 'y'
+        second.id = 2
+        def first = type.getDeclaredConstructor().newInstance()
+        first.name = 'a'
+        first.tail = 'x'
+        first.id = 1
+        first.next = proxyType.getDeclaredConstructor().newInstance()
+        first.next.target = second
+        first.next.proxyId = 2
+        def json = new JSON(first)
+        json.setExcludes(proxyType, ['tail'])
+
+        expect: 'the first chain is written whole, its tail after the proxy too'
+        json.toString() == written
+
+        where:
+        description            | type       | proxyType       || written
+        'without a type id'    | Chain      | ChainProxy      || '{"id":1,"name":"a","next":{"id":2,"name":"b","next":null},"tail":"x"}'
+        'with the type id the association asks for' | TypedChain | TypedChainProxy ||
+                '{"id":1,"name":"a","next":{"kind":"TypedChain","id":2,"name":"b","next":null},"tail":"x"}'
+    }
+
+    void "a class's own includes and excludes are the only ones that apply to it, where a proxy of it has others"() {
+        given:
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def json = new JSON(new WriterProxy(target: writer, proxyId: 1))
+        json.setExcludes(['name'])
+        json.setIncludes(Writer, ['id', 'name'])
+
+        expect:
+        json.toString() == '{"id":1,"name":"a"}'
+    }
+
+    void "the JSON converter has no includes or excludes for no class, and is told of a stand-in before it renders without failing"() {
+        given:
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def proxy = new WriterProxy(target: writer, proxyId: 1)
+        def json = new JSON(proxy)
+        json.setExcludes(['name'])
+
+        when:
+        json.standIn(proxy, writer)
+
+        then:
+        json.getIncludes(null) == null
+        json.getExcludes(null) == null
+        json.toString() == '{"id":1}'
+    }
+
     void "a GORM proxy is unwrapped by itself when the application's proxy handler does not unwrap it, as on MongoDB"() {
         given: 'only Hibernate registers a proxy handler; other datastores leave the default one, which unwraps nothing'
         def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, false))
@@ -1427,14 +1485,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo, RenamedId, TypedKennel, KennelPet)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo, RenamedId, TypedKennel, KennelPet, Chain, TypedChain)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo, RenamedId, TypedKennel, KennelPet)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo, RenamedId, TypedKennel, KennelPet, Chain, TypedChain)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1664,6 +1722,43 @@ class Tally {
     static hasMany = [counts: Counted]
     Counted single
     List<Counted> counts
+}
+
+@Entity
+class Chain {
+    String name
+    Chain next
+    String tail
+}
+
+class ChainProxy extends Chain implements EntityProxy<Chain> {
+    Chain target
+    Long proxyId
+
+    void initialize() {}
+
+    boolean isInitialized() { target != null }
+
+    Serializable getProxyKey() { proxyId }
+}
+
+@Entity
+class TypedChain {
+    String name
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = 'kind')
+    TypedChain next
+    String tail
+}
+
+class TypedChainProxy extends TypedChain implements EntityProxy<TypedChain> {
+    TypedChain target
+    Long proxyId
+
+    void initialize() {}
+
+    boolean isInitialized() { target != null }
+
+    Serializable getProxyKey() { proxyId }
 }
 
 @Entity

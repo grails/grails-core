@@ -21,6 +21,7 @@ package org.grails.web.converters.jackson;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
@@ -246,6 +247,7 @@ final class DomainReferences {
                     generator.writeNull();
                     return;
                 }
+                standIn(context, value, unwrapped);
                 Object written = DomainWrites.copied(unwrapped);
                 serializer(written, context).serialize(written, generator, context);
             }
@@ -286,6 +288,7 @@ final class DomainReferences {
                     generator.writeNull();
                     return;
                 }
+                standIn(context, value, unwrapped);
                 Object written = DomainWrites.copied(unwrapped);
                 valueSerializer(written, context).serializeWithType(written, generator, context, typeSerializer);
             }
@@ -328,6 +331,14 @@ final class DomainReferences {
                 return named;
             }
             return null;
+        }
+
+        /** Tells the writer of a proxy that is written in full as the instance it proxies, as the proxy serializer does. */
+        @SuppressWarnings("unchecked")
+        private static void standIn(SerializationContext context, Object value, Object unwrapped) {
+            if (unwrapped != value && context.getAttribute(DomainClassJacksonModule.STAND_INS) instanceof BiConsumer<?, ?> standIns) {
+                ((BiConsumer<Object, Object>) standIns).accept(value, unwrapped);
+            }
         }
 
         /** Whether associated instances are written in full: for every write, or for this one. */

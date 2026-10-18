@@ -98,6 +98,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
 
     /** For each class written in the place of a proxy in this render, the class of the proxy, whose includes apply to it. */
     private Map<Class<?>, Class<?>> projectedAs = new ConcurrentHashMap<>();
+
+    /** The filters and renderings of the objects being written when a proxy's includes came to apply to their class. */
+    private Map<Object, BiPredicate<String, String>> pinnedFilters = new IdentityHashMap<>();
+    private Map<Object, DomainClassRendering> pinnedRenderings = new IdentityHashMap<>();
     protected JsonMapperSupport jsonMapperSupport;
 
     private Map<Class<?>, DomainClassRendering> domainClassRenderings = new ConcurrentHashMap<>();
@@ -160,6 +164,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         referenceStack = new Stack<>();
         referenceDepths = new IdentityHashMap<>();
         projectedAs = new ConcurrentHashMap<>();
+        pinnedFilters = new IdentityHashMap<>();
+        pinnedRenderings = new IdentityHashMap<>();
     }
 
     private void finalizeRender(Writer out) {
@@ -287,48 +293,69 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * Records that an instance is written in the place of a value that stands for it, such as the instance a proxy
      * proxies: it is written as the {@code JsonMapper} writes it in the place of the value, and, from then on in this
      * render, the includes and excludes the converter has for the class of the value apply to the instances of the class
-     * of the instance that have none of their own, as the projection of {@code respond} is given it. A marshaller that
-     * writes such an instance calls it before it writes the instance.
+     * of the instance that have none of their own, as the projection of {@code respond} is given it; an object of that
+     * class the converter is already writing keeps those it started with. A marshaller that writes such an instance calls
+     * it before it writes the instance.
      *
      * @param value the value, such as a proxy
      * @param instance the instance written in its place
      * @since 9.0
      */
     public void standIn(Object value, Object instance) {
-        writer.standIn(value, instance);
+        if (writer != null) {
+            writer.standIn(value, instance);
+        }
         projectAs(value, instance);
     }
 
     /**
      * The includes and excludes for the class of a proxy apply to the class of the instance written in its place, until the
      * render ends; the domain class serializer tells of a proxy it unwraps itself, where the proxy handler leaves a GORM
-     * proxy as it is.
+     * proxy as it is. An object of that class the converter is writing keeps the includes and excludes it started with.
      */
     private void projectAs(Object value, Object instance) {
         Class<?> type = value.getClass();
         if (instance == null || instance.getClass() == type || !includes.containsKey(type) && !excludes.containsKey(type)) {
             return;
         }
-        if (projectedAs.putIfAbsent(instance.getClass(), type) == null) {
-            propertyFilters.remove(instance.getClass());
-            domainClassRenderings.remove(instance.getClass());
+        Class<?> written = instance.getClass();
+        if (projectedAs.containsKey(written)) {
+            return;
         }
+        for (Object being : referenceStack != null ? referenceStack : List.of()) {
+            if (being.getClass() == written) {
+                pinnedFilters.putIfAbsent(being, propertyFilters.computeIfAbsent(written, this::createPropertyFilter));
+                pinnedRenderings.putIfAbsent(being, domainClassRendering(being));
+            }
+        }
+        projectedAs.put(written, type);
+        propertyFilters.remove(written);
+        domainClassRenderings.remove(written);
+    }
+
+    /**
+     * The class whose includes and excludes apply to a class: the proxy class it was written in the place of, where it has
+     * none of its own, or else itself.
+     */
+    private Class<?> projectionClass(Class<?> type) {
+        if (type == null || includes.containsKey(type) || excludes.containsKey(type)) {
+            return type;
+        }
+        return projectedAs.getOrDefault(type, type);
     }
 
     /** The includes for a class, or else those of the proxy class whose instances it was written in the place of. */
     @Override
     @SuppressWarnings("rawtypes")
     public List<String> getIncludes(Class type) {
-        Class<?> proxy = projectedAs.get(type);
-        return includes.containsKey(type) || proxy == null ? includes.get(type) : includes.get(proxy);
+        return includes.get(projectionClass(type));
     }
 
     /** The excludes for a class, or else those of the proxy class whose instances it was written in the place of. */
     @Override
     @SuppressWarnings("rawtypes")
     public List<String> getExcludes(Class type) {
-        Class<?> proxy = projectedAs.get(type);
-        return excludes.containsKey(type) || proxy == null ? excludes.get(type) : excludes.get(proxy);
+        return excludes.get(projectionClass(type));
     }
 
     private static boolean isJdkNumber(Number number) {
@@ -342,7 +369,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * {@code render} and {@code respond} do.
      */
     private BiPredicate<String, String> propertyFilter(Object bean) {
-        BiPredicate<String, String> filter = propertyFilters.computeIfAbsent(bean.getClass(), this::createPropertyFilter);
+        BiPredicate<String, String> filter = pinnedFilters.get(bean);
+        if (filter == null) {
+            filter = propertyFilters.computeIfAbsent(bean.getClass(), this::createPropertyFilter);
+        }
         return filter == NO_FILTER ? null : filter;
     }
 
@@ -358,6 +388,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     private DomainClassRendering domainClassRendering(Object instance) {
+        if (pinnedRenderings.containsKey(instance)) {
+            return pinnedRenderings.get(instance);
+        }
         if (!(lookupObjectMarshaller(instance) instanceof DomainClassRenderer renderer)) {
             return null;
         }
