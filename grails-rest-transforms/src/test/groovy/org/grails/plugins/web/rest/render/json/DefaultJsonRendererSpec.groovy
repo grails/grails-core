@@ -31,6 +31,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.mock.http.MockHttpOutputMessage
+import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationFeature
@@ -195,6 +196,29 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         webRequest.response.contentAsString == spring.bodyAsString
         spring.bodyAsString.contains('{"ProjectionBody":')
+    }
+
+    void 'an application converter writes the value as it writes it, rather than the Grails mapper, with #description'() {
+        given:
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def spring = new MockHttpOutputMessage()
+        converter.write(new ProjectionBody(title: 'Grails', hidden: true), new MediaType(MediaType.APPLICATION_JSON, UTF_8), spring)
+
+        when:
+        renderer.render(new ProjectionBody(title: 'Grails', hidden: true), new ServletRenderContext(webRequest))
+
+        then:
+        webRequest.response.contentAsString == spring.bodyAsString
+        spring.bodyAsString == written
+
+        where:
+        description                                 | converter                   | written
+        'a subclass that writes a suffix'           | new SuffixedJsonConverter() | '{"hidden":true,"title":"Grails"};'
+        'a mapper registered for the class written' | upperCamelCaseConverter()   | '{"Hidden":true,"Title":"Grails"}'
     }
 
     void 'Spring JSON without MVC converters falls back to the legacy converter'() {
@@ -866,6 +890,15 @@ class DefaultJsonRendererSpec extends Specification {
     private static final String LEGACY_RESPOND_WARNING =
             'Legacy respond() JSON rendering is deprecated and will be removed in Grails 11.'
 
+    private static JacksonJsonHttpMessageConverter upperCamelCaseConverter() {
+        def converter = new JacksonJsonHttpMessageConverter()
+        converter.registerMappersForType(ProjectionBody) { Map<MediaType, JsonMapper> mappers ->
+            mappers.put(MediaType.APPLICATION_JSON,
+                    JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())
+        }
+        converter
+    }
+
     private static String stderrWhile(Closure<?> work) {
         PrintStream original = System.err
         def buffer = new ByteArrayOutputStream()
@@ -883,4 +916,11 @@ class DefaultJsonRendererSpec extends Specification {
 class ProjectionBody {
     String title
     boolean hidden
+}
+
+class SuffixedJsonConverter extends JacksonJsonHttpMessageConverter {
+    @Override
+    protected void writeSuffix(JsonGenerator generator, Object object) {
+        generator.writeRaw(';')
+    }
 }
