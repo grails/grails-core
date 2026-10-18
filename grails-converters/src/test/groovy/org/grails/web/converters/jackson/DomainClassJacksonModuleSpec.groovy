@@ -667,6 +667,24 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(rated) == '{"id":1,"rating":"5","ratings":["6","7"],"code":"X1"}'
     }
 
+    void "an associated instance written in full is left out where its property leaves out an empty value, as a reference is"() {
+        given:
+        def rated = new Rated(rating: rating(5), ratings: [rating(6), rating(7)], code: new Code(code: ''))
+        rated.id = 1
+        def coded = new Coded(code: new CodeProxy(target: null, proxyId: 2), label: new Label(text: 'x'))
+        coded.id = 1
+        def deep = new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, true)
+        def nonEmpty = JsonMapper.builder()
+                .changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_EMPTY) }
+                .addModule(new DomainClassJacksonModule(deep)).build()
+
+        expect: 'an instance its serializer finds empty'
+        mapper(deep).writeValueAsString(rated) == '{"id":1,"rating":"5","ratings":["6","7"]}'
+
+        and: 'a proxy of an instance that no longer exists'
+        nonEmpty.writeValueAsString(coded) == '{"id":1,"label":"label:x"}'
+    }
+
     void "an associated instance written with a serializer of its own has the type id its declared type asks for, as a reference has none"() {
         given:
         def cat = new Cat(name: 'Tom')

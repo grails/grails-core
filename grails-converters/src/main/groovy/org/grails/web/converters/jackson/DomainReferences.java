@@ -344,7 +344,17 @@ final class DomainReferences {
             // Jackson asks before it writes the name of the property, inside the object of the instance that has it
             JsonGenerator generator = context.getGenerator();
             DomainClassRendering current = generator != null ? rendering.ofOwner(context, generator) : rendering.get();
-            return !deep(current, context) && references.isEmpty(value, associated, context, current, property);
+            if (deep(current, context)) {
+                // in full, as the serializer it is written with has it; a proxy of an instance that no longer exists is
+                // written as null
+                Object unwrapped = current.unwrap(value);
+                if (unwrapped == null) {
+                    return true;
+                }
+                Object written = DomainWrites.copied(unwrapped);
+                return context.findPrimaryPropertySerializer(written.getClass(), property).isEmpty(context, written);
+            }
+            return references.isEmpty(value, associated, context, current, property);
         }
 
         private static void writeKey(Object key, JsonGenerator generator, SerializationContext context) {
