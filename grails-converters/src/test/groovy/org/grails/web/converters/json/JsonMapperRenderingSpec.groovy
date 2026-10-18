@@ -922,6 +922,18 @@ class JsonMapperRenderingSpec extends Specification {
         owner
     }
 
+    void "an object equal to one being written is written in full, as the JsonMapper writes it, not as a reference, with the #behaviour behaviour"() {
+        given:
+        initialize('grails.converters.json.circular.reference.behaviour': behaviour)
+        def outer = new EqualLink(name: 'a', next: new EqualLink(name: 'a'))
+
+        expect:
+        new JSON(outer).toString() == '{"name":"a","next":{"name":"a","next":null}}'
+
+        where:
+        behaviour << ['DEFAULT', 'PATH', 'INSERT_NULL', 'IGNORE', 'EXCEPTION']
+    }
+
     void "with the PATH circular reference behaviour, a single value renders"() {
         given:
         initialize('grails.converters.json.circular.reference.behaviour': 'PATH')
@@ -1345,4 +1357,19 @@ class WrappedItemOwner {
 class WrappedItem {
     String name
     WrappedItemOwner owner
+}
+
+class EqualLink {
+    String name
+    EqualLink next
+
+    @Override
+    boolean equals(Object other) {
+        other instanceof EqualLink && other.name == name
+    }
+
+    @Override
+    int hashCode() {
+        name.hashCode()
+    }
 }

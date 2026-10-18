@@ -334,7 +334,12 @@ class CycleFixture {
                     (CircularReferenceBehaviour.INSERT_NULL): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":null}]],"name":"o"}',
                     (CircularReferenceBehaviour.IGNORE): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":null}]],"name":"o"}',
                     (CircularReferenceBehaviour.PATH): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":' + path('root', CycleArrayWrappedOwner) + '}]],"name":"o"}'
-            ], false)
+            ], false),
+            new CycleFixture('a bean holding another that is equal to it, which is not a cycle', {
+                new CycleEqualNode(name: 'a', next: new CycleEqualNode(name: 'a'))
+            }, CircularReferenceBehaviour.values().collectEntries {
+                [(it): '{"name":"a","next":{"name":"a","next":null}}']
+            }, false)
     ]
 
     private static String ref(String levels, Class<?> type) {
@@ -423,4 +428,19 @@ class CycleArrayWrappedOwner {
 class CycleArrayWrappedItem {
     String name
     CycleArrayWrappedOwner owner
+}
+
+class CycleEqualNode {
+    String name
+    CycleEqualNode next
+
+    @Override
+    boolean equals(Object other) {
+        other instanceof CycleEqualNode && other.name == name
+    }
+
+    @Override
+    int hashCode() {
+        name.hashCode()
+    }
 }

@@ -431,7 +431,9 @@ values they contain are rendered as any other value is. A marshaller that an app
 `JSON.registerObjectMarshaller(...)` or an `ObjectMarshallerRegisterer`, still takes precedence over the mapper for the types
 it supports, and a serializer of a Jackson module registered with the application's mapper takes precedence over those
 Grails adds, such as the one for validation errors, as it does in `respond`. A collection, a map or a bean that contains itself is written as before, as an empty collection or map where it
-repeats, or as the `grails.converters.json.circular.reference.behaviour` selects.
+repeats, or as the `grails.converters.json.circular.reference.behaviour` selects. An object is reached again only where it
+is the very object being written, as Jackson and `respond` find it: one that is only equal to it, such as a domain class
+instance loaded twice, is written in full, where Grails 8 wrote a reference to it.
 
 What Jackson applies to a bean applies to a bean the converter renders, where Grails 8 ignored it: `@JsonProperty`,
 `@JsonIgnore`, `@JsonInclude`, `@JsonView`, `@JsonFormat`, `@JsonPropertyOrder`, mix-ins and the mapper's naming strategy and

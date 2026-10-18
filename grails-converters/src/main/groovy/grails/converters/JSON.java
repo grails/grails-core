@@ -248,7 +248,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
             }
             else {
                 ObjectMarshaller<JSON> marshaller = config.getMarshaller(o);
-                if (referenceStack.contains(o) && !writesObjectId(o, marshaller)) {
+                if (referenceIndex(o) >= 0 && !writesObjectId(o, marshaller)) {
                     handleCircularRelationship(o);
                 }
                 else {
@@ -541,8 +541,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                     // object is written as, its type wrapper included, as respond counts them; the legacy converter, and a
                     // writer that writes to no generator, count one for each object the converter is writing in between, as
                     // Grails 8 did, which a marshaller that writes an object as another value counts twice
-                    int idx = referenceStack.indexOf(o);
-                    Integer start = ConvertersConfigurationHolder.isLegacyJson() ? null : referenceDepths.get(referenceStack.get(idx));
+                    int idx = referenceIndex(o);
+                    Integer start = ConvertersConfigurationHolder.isLegacyJson() ? null : referenceDepths.get(o);
                     int current = jsonWriter != null ? jsonWriter.nestingDepth() : -1;
                     int levels = start != null && current >= 0 ? Math.max(0, current - start - 1) : referenceStack.size() - 1 - idx;
                     // "." where the object repeats the one the reference is written in, where Grails 8 failed
@@ -563,13 +563,32 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 value(null);
                 break;
             case PATH:
-                int idx = referenceStack.indexOf(o);
+                int idx = referenceIndex(o);
                 PathCapturingJSONWriterWrapper pcWriter = (PathCapturingJSONWriterWrapper) writer;
                 writeReference("ref", String.format("root%s", pcWriter.getStackReference(idx)), o);
                 break;
             case IGNORE:
                 break;
         }
+    }
+
+    /**
+     * Where an object is on the stack of the objects being written: the first that is the object itself, as Jackson and
+     * {@code respond} find an object reached again, or, in the legacy converter, the first equal to it, as Grails 8 found
+     * it.
+     *
+     * @return its index, or {@code -1} where it is not being written
+     */
+    private int referenceIndex(Object o) {
+        if (ConvertersConfigurationHolder.isLegacyJson()) {
+            return referenceStack.indexOf(o);
+        }
+        for (int i = 0; i < referenceStack.size(); i++) {
+            if (referenceStack.get(i) == o) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
