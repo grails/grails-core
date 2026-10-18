@@ -271,6 +271,26 @@ class DomainClassJacksonModuleSpec extends Specification {
         new JSON(hiddenId).toString() == '{"name":"a"}'
     }
 
+    void "a property the domain class ignores is left out, whatever name the #name naming strategy gives it"() {
+        given: 'properties a class names in @JsonIgnoreProperties, as GORM names the tenant id of every domain class'
+        def mapper = JsonMapper.builder().propertyNamingStrategy(strategy)
+                .addModule(new DomainClassJacksonModule(ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                        grailsApplication, new DefaultProxyHandler()))).build()
+        def scoped = new TenantScoped(name: 'a', tenantId: 't1')
+        scoped.id = 1
+        def hidden = new HiddenId(name: 'a')
+        hidden.id = 1
+
+        expect:
+        mapper.writeValueAsString(scoped) == scopedJson
+        mapper.writeValueAsString(hidden) == hiddenJson
+
+        where:
+        name               | strategy                                  | scopedJson            | hiddenJson
+        'SNAKE_CASE'       | PropertyNamingStrategies.SNAKE_CASE       | '{"id":1,"name":"a"}' | '{"name":"a"}'
+        'UPPER_CAMEL_CASE' | PropertyNamingStrategies.UPPER_CAMEL_CASE | '{"Id":1,"Name":"a"}' | '{"Name":"a"}'
+    }
+
     void "the version and the class name are written in the view the class names for its properties, as the id is"() {
         given:
         def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, true, false))
@@ -939,14 +959,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed)
+                Ordered, Filtered, Located, Filed, TenantScoped)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1020,6 +1040,13 @@ class StringId {
 @JsonIgnoreProperties(['id'])
 class HiddenId {
     String name
+}
+
+@Entity
+@JsonIgnoreProperties(['tenantId'])
+class TenantScoped {
+    String name
+    String tenantId
 }
 
 @Entity

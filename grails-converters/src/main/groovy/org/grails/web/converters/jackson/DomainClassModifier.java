@@ -99,9 +99,15 @@ final class DomainClassModifier extends ValueSerializerModifier {
         for (BeanPropertyDefinition definition : beanDescription.get().findProperties()) {
             internalNames.put(definition.getName(), definition.getInternalName());
         }
+        // Jackson leaves out the properties a class names in @JsonIgnoreProperties by the names it writes them with;
+        // they are left out here by the names the class gives them, so that a naming strategy writes none of them, such
+        // as the tenant id GORM names for every domain class
+        JsonIgnoreProperties.Value ignorals = beanDescription.get().getPropertyIgnorals();
+        Set<String> ignored = ignorals != null ? ignorals.findIgnoredForSerialization() : Set.of();
         List<PersistentProperty> persistent = new ArrayList<>();
         for (PersistentProperty property : entity.getPersistentProperties()) {
-            if (!property.equals(entity.getVersion()) && !property.equals(entity.getIdentity())) {
+            if (!property.equals(entity.getVersion()) && !property.equals(entity.getIdentity()) &&
+                    !ignored.contains(property.getName())) {
                 persistent.add(property);
             }
         }
@@ -110,7 +116,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
         // may be written, which a rendering for each write may change
         boolean checked = !rendering.renderingsPerWrite();
         PersistentProperty identity = entity.getIdentity();
-        if (identity != null) {
+        if (identity != null && !ignored.contains(identity.getName())) {
             // The writer Jackson, or another module, gives the id writes it, so that what they apply to a property applies
             // to it; it is moved ahead of the other properties once Jackson has left out the properties the class ignores
             for (BeanPropertyWriter writer : properties) {

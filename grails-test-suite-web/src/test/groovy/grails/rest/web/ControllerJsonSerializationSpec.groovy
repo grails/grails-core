@@ -20,6 +20,7 @@ package grails.rest.web
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import grails.artefact.Artefact
+import grails.gorm.MultiTenant
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer
@@ -160,6 +161,19 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         description | value
         'a bean'    | new FailingJsonBody(title: 'Grails')
         'a problem' | ProblemDetail.forStatus(409).tap { it.setProperty('unreadable', new FailingJsonBody(title: 'Grails')) }
+    }
+
+    void 'a domain class response leaves out the tenant id GORM ignores, whatever name the naming strategy gives it'() {
+        given: 'a multi-tenant domain class, whose tenantId GORM names in the @JsonIgnoreProperties it adds'
+        mockDomain(TenantResponseDomain)
+        def tenanted = new TenantResponseDomain(name: 'first', tenantId: 'acme')
+        tenanted.id = 1
+
+        when: 'the mapper writes property names in snake case'
+        controller.respond(tenanted)
+
+        then:
+        response.json == [id: 1, name: 'first']
     }
 
     void 'a domain class response leaves out a @JsonIgnore property, as the shared Boot mapper does'() {
@@ -648,6 +662,12 @@ class FailingJsonBody {
 class JsonResponseBody {
     String title
     String firstName
+}
+
+@Entity
+class TenantResponseDomain implements MultiTenant<TenantResponseDomain> {
+    String name
+    String tenantId
 }
 
 @Entity
