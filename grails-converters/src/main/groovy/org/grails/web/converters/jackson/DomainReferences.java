@@ -28,13 +28,14 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.bean.BeanSerializerBase;
 
 import org.grails.datastore.mapping.model.PersistentEntity;
 
 /**
  * Writes the references to associated domain class instances: an object of the class name, when it is included, and the
  * id, named as the referenced class names them for the mapper, by its naming strategy, {@code @JsonProperty} and
- * {@code @JsonNaming}.
+ * {@code @JsonNaming}. An associated instance of a class with a serializer of its own is written with it.
  *
  * @since 9.0
  */
@@ -45,7 +46,37 @@ final class DomainReferences {
     private final Map<Class<?>, String> classNames = new ConcurrentHashMap<>();
 
     /**
-     * Writes a reference to an associated instance, or what the rendering writes in its place.
+     * Writes an associated instance that is not written in full: a reference to it, or what the rendering writes in its
+     * place, unless its class has a serializer of its own, such as one with a {@code @JsonValue}, one annotated
+     * {@code @JsonSerialize} or one a module has a serializer for, which writes it, as it does wherever else it is written.
+     */
+    private void writeAssociated(Object associated, PersistentEntity entity, JsonGenerator generator,
+            SerializationContext context, DomainClassRendering rendering) {
+        if (associated == null) {
+            generator.writeNull();
+            return;
+        }
+        if (rendering.writeReference(associated, entity.getIdentity(), entity)) {
+            return;
+        }
+        boolean proxy = DomainClassRendering.isProxyClass(associated.getClass());
+        if (hasSerializerOfItsOwn(proxy ? entity.getJavaClass() : associated.getClass(), context)) {
+            Object written = proxy ? rendering.unwrap(associated) : associated;
+            if (written == null) {
+                // a proxy of an instance that no longer exists
+                generator.writeNull();
+            }
+            else {
+                context.writeValue(generator, written);
+            }
+            return;
+        }
+        writeReference(associated, entity, generator, context, rendering);
+    }
+
+    /**
+     * Writes a reference to an instance, such as one reached again while it is being written, or what the rendering
+     * writes in its place.
      */
     void write(Object reference, PersistentEntity entity, JsonGenerator generator, SerializationContext context,
             DomainClassRendering rendering) {
@@ -56,6 +87,11 @@ final class DomainReferences {
         if (rendering.writeReference(reference, entity.getIdentity(), entity)) {
             return;
         }
+        writeReference(reference, entity, generator, context, rendering);
+    }
+
+    private void writeReference(Object reference, PersistentEntity entity, JsonGenerator generator,
+            SerializationContext context, DomainClassRendering rendering) {
         Object id = rendering.referenceId(reference, entity.getIdentity());
         generator.writeStartObject();
         if (rendering.isIncludeClass()) {
@@ -74,6 +110,22 @@ final class DomainReferences {
             }
         }
         generator.writeEndObject();
+    }
+
+    /**
+     * Whether Jackson writes the instances of a domain class with a serializer other than its bean serializer, inside
+     * the serializers modules wrap it with.
+     */
+    private static boolean hasSerializerOfItsOwn(Class<?> type, SerializationContext context) {
+        ValueSerializer<?> serializer = context.findValueSerializer(type);
+        while (!(serializer instanceof BeanSerializerBase)) {
+            ValueSerializer<?> delegatee = serializer.getDelegatee();
+            if (delegatee == null || delegatee == serializer) {
+                return true;
+            }
+            serializer = delegatee;
+        }
+        return false;
     }
 
     private static String name(Map<Class<?>, String> cache, SerializationContext context, Class<?> type, String property) {
@@ -137,12 +189,12 @@ final class DomainReferences {
                 serializer(written, context).serialize(written, generator, context);
             }
             else if (!toMany) {
-                references.write(value, associated, generator, context, current);
+                references.writeAssociated(value, associated, generator, context, current);
             }
             else if (value instanceof Collection<?> collection) {
                 generator.writeStartArray();
                 for (Object reference : collection) {
-                    references.write(reference, associated, generator, context, current);
+                    references.writeAssociated(reference, associated, generator, context, current);
                 }
                 generator.writeEndArray();
             }
@@ -150,7 +202,7 @@ final class DomainReferences {
                 generator.writeStartObject();
                 for (Map.Entry<?, ?> entry : map.entrySet()) {
                     writeKey(entry.getKey(), generator, context);
-                    references.write(entry.getValue(), associated, generator, context, current);
+                    references.writeAssociated(entry.getValue(), associated, generator, context, current);
                 }
                 generator.writeEndObject();
             }

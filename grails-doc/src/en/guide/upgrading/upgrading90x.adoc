@@ -598,8 +598,10 @@ the tenant identifier of a multi-tenant domain class (`tenantId`) and the `dbo` 
 Grails 8 rendered. The version is written when it is included, as before.
 * A to-many association whose value is a `Map` renders as an object of references, such as `{"a":{"id":1}}`, where it
 failed before.
-* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
-is written by Jackson, and so is a subclass of a domain class that is neither a domain class nor a proxy of one.
+* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, that implements `JacksonSerializable`, or
+that a Jackson module provides a serializer for, is written by that serializer, also where it is the value of an
+association, which is otherwise written as a reference; a subclass of a domain class that is neither a domain class nor a
+proxy of one is written by Jackson, as any class is.
 * `DomainClassMarshaller` and `DeepDomainClassMarshaller` render through the serializer. Their constructors and
 protected methods (`includesProperty`, `excludesProperty`, `extractValue`, `asShortObject` and
 `isRenderDomainClassRelations`) are unchanged, and a subclass that overrides them still renders as it did. They are

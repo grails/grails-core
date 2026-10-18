@@ -552,6 +552,37 @@ class DomainClassJacksonModuleSpec extends Specification {
         JsonMapper.builder().build().writeValueAsString(new ExtendedBean(name: 'a')) == '{"name":"a","extra":"value"}'
     }
 
+    void "an associated instance whose class has a serializer of its own is written with it, rather than as a reference"() {
+        given: 'associations to a class with a @JsonValue, to one with a @JsonSerialize serializer, and to one without'
+        def shelf = new Shelf(name: 'top')
+        shelf.id = 3
+        def coded = new Coded(code: new Code(code: 'X1'), label: new Label(text: 'x'), shelf: shelf)
+        coded.id = 1
+
+        expect: 'as the classes are written anywhere else'
+        mapper().writeValueAsString(coded) == '{"id":1,"code":"X1","label":"label:x","shelf":{"id":3}}'
+        new JSON(coded).toString() == mapper().writeValueAsString(coded)
+
+        when: 'the association is a proxy'
+        coded.code = new CodeProxy(target: new Code(code: 'X2'), proxyId: 2)
+
+        then: 'the instance it stands for'
+        mapper().writeValueAsString(coded) == '{"id":1,"code":"X2","label":"label:x","shelf":{"id":3}}'
+    }
+
+    void "the instances of a to-many association whose class a module has a serializer for are written with it"() {
+        given: 'a module with a serializer of writers, which take precedence over the bean serializer of the domain class'
+        def mapper = JsonMapper.builder()
+                .addModule(new SimpleModule().addSerializer(Writer, new WriterNameSerializer()))
+                .addModule(new DomainClassJacksonModule(ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                        grailsApplication, new DefaultProxyHandler())))
+                .build()
+
+        expect:
+        mapper.writeValueAsString(volume()) ==
+                '{"id":1,"title":"Grails","shelf":{"id":3},"writers":["a","b"],"writersByName":{"a":"a","b":"b"}}'
+    }
+
     void "a domain class with a @JsonValue is written by Jackson"() {
         given:
         def code = new Code(code: 'X1')
@@ -992,14 +1023,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1243,6 +1274,25 @@ class PartnerLabelSerializer extends StdSerializer<Partner> {
         generator.writeName('partner')
         context.writeValue(generator, partner.partner)
         generator.writeEndObject()
+    }
+}
+
+@Entity
+class Coded {
+    Code code
+    Label label
+    Shelf shelf
+}
+
+class WriterNameSerializer extends StdSerializer<Writer> {
+
+    WriterNameSerializer() {
+        super(Writer)
+    }
+
+    @Override
+    void serialize(Writer writer, JsonGenerator generator, SerializationContext context) {
+        generator.writeString(writer.name)
     }
 }
 

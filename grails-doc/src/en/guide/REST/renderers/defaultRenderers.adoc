@@ -150,8 +150,9 @@ in references; `@JsonInclude` and `spring.jackson.default-property-inclusion` de
 `@JsonView`, `@JsonFormat`, a `@JsonSerialize` serializer on a property, mix-ins, filters and `@JsonPropertyOrder` apply; a
 domain class with `@JsonTypeInfo` is written with its type id, and an instance in a `@JsonUnwrapped` property is written into
 the enclosing object.
-* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
-is written by Jackson, as any class is.
+* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, that implements `JacksonSerializable`, or
+that a Jackson module provides a serializer for, is written by that serializer, as any class is, also where it is the value
+of an association, which is otherwise written as a reference.
 
 The property values are rendered by the converter's marshallers. The application's `JsonMapper` itself renders domain
 classes as Jackson beans, as it does any class. To have it render them as the JSON converter does, including when a
