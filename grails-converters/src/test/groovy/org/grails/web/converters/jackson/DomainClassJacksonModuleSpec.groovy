@@ -585,6 +585,19 @@ class DomainClassJacksonModuleSpec extends Specification {
         json.toString() == '{"id":1,"name":"a","note":"n"}'
     }
 
+    void "a @JsonFilter filters the entries of a persistent property annotated @JsonAnyGetter one by one, as for a bean"() {
+        given:
+        def filtered = new FilteredAttributes(name: 'a', attributes: [colour: 'red', size: 'L'])
+        filtered.id = 1
+        def filters = new SimpleFilterProvider().addFilter('attributes',
+                SimpleBeanPropertyFilter.filterOutAllExcept('id', 'name', 'colour'))
+
+        expect:
+        JsonMapper.builder().build().writer(filters).writeValueAsString(
+                new FilteredAttributesBean(name: 'a', attributes: [colour: 'red', size: 'L'])) == '{"name":"a","colour":"red"}'
+        mapper().writer(filters).writeValueAsString(filtered) == '{"id":1,"name":"a","colour":"red"}'
+    }
+
     void "the entries of a persistent property annotated @JsonAnyGetter are written in the views the property is written in"() {
         given:
         def attributed = new Attributed(name: 'a', customAttributes: [colour: 'red'])
@@ -1159,14 +1172,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1504,6 +1517,21 @@ class Attributed {
     @JsonView(Everyone)
     Map<String, String> customAttributes
     String note = 'n'
+}
+
+@Entity
+@JsonFilter('attributes')
+class FilteredAttributes {
+    String name
+    @JsonAnyGetter
+    Map<String, String> attributes
+}
+
+@JsonFilter('attributes')
+class FilteredAttributesBean {
+    String name
+    @JsonAnyGetter
+    Map<String, String> attributes
 }
 
 @Entity

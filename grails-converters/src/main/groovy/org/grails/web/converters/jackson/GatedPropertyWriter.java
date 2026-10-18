@@ -19,11 +19,14 @@
 package org.grails.web.converters.jackson;
 
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.AnyGetterWriter;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.PropertyFilter;
 import tools.jackson.databind.ser.bean.UnwrappingBeanPropertyWriter;
 import tools.jackson.databind.util.NameTransformer;
 
@@ -76,6 +79,12 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
      * @return a writer that writes the property when its gates, and this one, include it
      */
     static BeanPropertyWriter gated(BeanPropertyWriter writer, Gate gate, boolean checked) {
+        if (writer instanceof AnyGetter gated) {
+            return new AnyGetter(gated.delegate, gated.gate.and(gate));
+        }
+        if (writer instanceof AnyGetterWriter anyGetter) {
+            return new AnyGetter(anyGetter, gate);
+        }
         if (writer instanceof GatedPropertyWriter gated) {
             return gated(gated.delegate, gated.gate.and(gate), checked);
         }
@@ -244,6 +253,64 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
         @Override
         public void depositSchemaProperty(JsonObjectFormatVisitor visitor, SerializationContext context) {
             delegate.depositSchemaProperty(visitor, context);
+        }
+    }
+
+    /**
+     * A gated writer of the entries of a {@code @JsonAnyGetter}, which Jackson takes for its own: it resolves the
+     * serializer of the entries, and a {@code @JsonFilter} filters the entries one by one, as it does those of any bean.
+     */
+    private static final class AnyGetter extends AnyGetterWriter {
+
+        private final AnyGetterWriter delegate;
+
+        private final Gate gate;
+
+        private AnyGetter(AnyGetterWriter delegate, Gate gate) {
+            // the delegate has the accessor and the serializer of the entries
+            super(delegate, null, null, null);
+            this.delegate = delegate;
+            this.gate = gate;
+        }
+
+        @Override
+        public void fixAccess(SerializationConfig config) {
+            delegate.fixAccess(config);
+        }
+
+        @Override
+        public void resolve(SerializationContext context) {
+            delegate.resolve(context);
+        }
+
+        @Override
+        public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
+            getAndSerialize(bean, generator, context);
+        }
+
+        @Override
+        public void getAndSerialize(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
+            if (gate.includes(bean, context, this)) {
+                delegate.getAndSerialize(bean, generator, context);
+            }
+        }
+
+        @Override
+        public void getAndFilter(Object bean, JsonGenerator generator, SerializationContext context, PropertyFilter filter)
+                throws Exception {
+            if (gate.includes(bean, context, this)) {
+                delegate.getAndFilter(bean, generator, context, filter);
+            }
+        }
+
+        @Override
+        public void serializeAsElement(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
+            if (gate.includes(bean, context, this)) {
+                delegate.serializeAsElement(bean, generator, context);
+            }
+            else {
+                delegate.serializeAsOmittedElement(bean, generator, context);
+            }
         }
     }
 }
