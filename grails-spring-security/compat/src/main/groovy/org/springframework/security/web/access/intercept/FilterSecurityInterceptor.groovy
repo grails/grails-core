@@ -28,6 +28,7 @@ import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 
 import org.springframework.security.access.intercept.AbstractSecurityInterceptor
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.FilterInvocation
 
@@ -51,6 +52,9 @@ class FilterSecurityInterceptor extends AbstractSecurityInterceptor implements F
         }
 
         def authentication = SecurityContextHolder.context?.authentication
+        if (authentication == null) {
+            throw new AuthenticationCredentialsNotFoundException('An Authentication object was not found in the SecurityContext')
+        }
         accessDecisionManager?.decide(authentication, invocation, attributes)
         if (!invocation.response.committed) {
             chain.doFilter(request, response)

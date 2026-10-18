@@ -28,9 +28,13 @@ import org.grails.web.converters.marshaller.ObjectMarshaller;
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
+ * @deprecated with {@code grails.converters.json.legacy} set to {@code false}, as a later release does by default,
+ *     the converter writes URL, Locale and other values with the application's {@code JsonMapper}; this marshaller is registered while
+ *     it is {@code true}, the default in Grails 9, to render JSON as Grails 8 did.
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings(['UnnecessarySemicolon'])
+@Deprecated(since = '9.0')
 @CompileStatic
 class ToStringBeanMarshaller implements ObjectMarshaller<JSON> {
 
