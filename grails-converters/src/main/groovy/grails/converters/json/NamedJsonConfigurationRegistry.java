@@ -110,6 +110,12 @@ public final class NamedJsonConfigurationRegistry {
         return mapper;
     }
 
+    /**
+     * @param name the registered configuration, or null for the default one
+     * @param value the value to write
+     * @return the JSON of the value
+     * @throws JacksonException if the value cannot be written, such as by a serializer that fails
+     */
     public String writeValueAsString(String name, Object value) {
         return writer(name).writeValueAsString(value);
     }
@@ -122,7 +128,8 @@ public final class NamedJsonConfigurationRegistry {
      * @param name the registered configuration, or null for the default one
      * @param output the writer
      * @param value the value to write
-     * @throws IOException if writing to the writer fails
+     * @throws IOException if the writer fails, with the exception Jackson reports the failure in suppressed
+     * @throws JacksonException if the value cannot be written otherwise, such as by a serializer that fails
      */
     public void writeValue(String name, Writer output, Object value) throws IOException {
         write(writer(name), output, value);
@@ -141,7 +148,8 @@ public final class NamedJsonConfigurationRegistry {
      * @param value the value to write
      * @param includes property names to include, or null for all
      * @param excludes property names to exclude, or null for none
-     * @throws IOException if writing to the writer fails
+     * @throws IOException if the writer fails, with the exception Jackson reports the failure in suppressed
+     * @throws JacksonException if the value cannot be written otherwise, such as by a serializer that fails
      * @throws IllegalArgumentException if a projection is requested for a value it cannot apply to
      */
     public void writeValue(String name, Writer output, Object value,

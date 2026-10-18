@@ -620,9 +620,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * @deprecated Scheduled for removal in Grails 11. Prefer a Spring Boot
-     * {@code JsonMapperBuilderCustomizer} for application-wide JSON defaults, or use
-     * {@link #registerObjectMarshaller(Class, Closure)} to customize converter marshalling.
+     * @deprecated Scheduled for removal in Grails 11. Register marshallers with
+     * {@link #registerObjectMarshaller(Class, Closure)}, and set what else the default configuration held with the
+     * converter's settings: {@code grails.converters.json.pretty.print}, {@code grails.converters.encoding} and
+     * {@code grails.converters.json.circular.reference.behaviour}. A Spring Boot {@code JsonMapperBuilderCustomizer}
+     * configures the {@code JsonMapper} the converter writes values with when {@code grails.converters.json.legacy} is
+     * {@code false}, though not how it lays out what it writes, which the converter decides.
      */
     @Deprecated(since = "9.0", forRemoval = true)
     public static void withDefaultConfiguration(Closure<?> callable) throws ConverterException {

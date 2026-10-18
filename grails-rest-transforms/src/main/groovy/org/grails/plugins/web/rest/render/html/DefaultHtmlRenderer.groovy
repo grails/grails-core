@@ -68,7 +68,8 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     /**
      * A renderer for the view of another format, such as a JSON or XML view, that gives the view the model the
      * renderer registry gives the views it renders: under the name of the value's class with the registry's model
-     * suffix.
+     * suffix. Only a {@link DefaultRendererRegistry} has a model suffix and a proxy handler; with another registry, or
+     * none, the model is named after the value's class without a suffix, and that of a proxy after the proxy's class.
      *
      * @param targetType the type of the values rendered
      * @param registry the renderer registry, if any

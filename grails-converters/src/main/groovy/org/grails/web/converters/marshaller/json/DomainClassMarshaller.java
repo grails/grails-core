@@ -112,6 +112,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
     /**
      * @return whether this marshaller writes an instance with the converter's {@code JsonMapper}: without
      *         {@code grails.converters.json.legacy}, unless a subclass writes it itself
+     * @since 9.0
      */
     public boolean writesWithMapper() {
         return !ConvertersConfigurationHolder.isLegacyJson() && !overridesMarshalObject;
@@ -149,6 +150,8 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
 
     /**
      * Renders an instance with the includes and excludes the converter has for its class.
+     *
+     * @since 9.0
      */
     @Override
     public DomainClassRendering getRendering(JSON json, Class<?> type) {

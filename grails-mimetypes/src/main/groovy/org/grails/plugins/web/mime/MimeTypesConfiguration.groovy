@@ -158,6 +158,15 @@ class MimeTypesConfiguration {
         return new GrailsMimeTypesWebMvcConfigurer(strategy, formats)
     }
 
+    /**
+     * The MIME types the {@code mimeTypes} bean, and so the application's {@code MimeUtility}, starts from, before those
+     * of the {@code MimeTypeProvider} beans. The formats registered with Spring MVC are those {@code grails.mime.types}
+     * declares, whatever a subclass returns here, since they are read before this configuration may be created (see
+     * {@link #grailsMimeTypesWebMvcConfigurer}).
+     *
+     * @param config the application's configuration
+     * @return the MIME types by format, or {@code null} for the defaults
+     */
     protected Map<CharSequence, Object> getMimeConfig(Config config) {
         return declaredMimeTypes(config)
     }

@@ -65,7 +65,8 @@ import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 /**
  * Makes the bean serializer of a domain class write what {@code grails.converters.JSON} writes for an instance: the
  * class name, the id and the version when they apply, then the persistent properties in the order the domain class
- * declares them, and an association as a reference of its id, or in full when rendering deep.
+ * declares them, and an association as a reference of its id, in full when rendering deep, or with the serializer of
+ * the associated class, for a class with one of its own.
  *
  * <p>The serializer is otherwise Jackson's, so what Jackson applies to a bean applies to the instance: the naming
  * strategy, {@code @JsonIgnore}, {@code @JsonInclude}, {@code @JsonView}, {@code @JsonFormat}, mixins, filters, type

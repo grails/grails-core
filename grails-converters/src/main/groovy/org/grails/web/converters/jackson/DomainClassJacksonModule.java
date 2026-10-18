@@ -44,10 +44,14 @@ import tools.jackson.databind.ser.Serializers;
  * associated instance as a reference of its id, or in full when rendering deep. What Jackson applies to a bean
  * therefore applies to an instance: the mapper's naming strategy and inclusion, {@code @JsonIgnore},
  * {@code @JsonInclude}, {@code @JsonView}, {@code @JsonFormat}, {@code @JsonProperty}, {@code @JsonNaming},
- * {@code @JsonTypeInfo}, {@code @JsonUnwrapped}, mixins and filters. A domain class with its own
- * {@code @JsonSerialize} serializer keeps it, and so does one with a {@code @JsonValue}, or that implements
- * {@code JacksonSerializable}, which Jackson writes as it writes any class. A subclass of a domain class that is neither a
- * domain class nor a proxy class of one is written as a Jackson bean.</p>
+ * {@code @JsonTypeInfo}, {@code @JsonUnwrapped}, {@code @JsonAnyGetter} on a persistent property, mixins and filters. A
+ * domain class with its own {@code @JsonSerialize} serializer keeps it, and so does one with a {@code @JsonValue}, that
+ * implements {@code JacksonSerializable}, or that a module has a serializer for, which Jackson writes as it writes any
+ * class; an associated instance of such a class is written with that serializer too, unless the rendering writes the
+ * references itself, or Jackson cannot build the serializer, which a reference does not need. Whether a proxy is written
+ * with such a serializer is decided by the domain class the association declares, since the class of the instance it
+ * stands for is known only once it is loaded. A subclass of a domain
+ * class that is neither a domain class nor a proxy class of one is written as a Jackson bean.</p>
  *
  * @since 9.0
  */
