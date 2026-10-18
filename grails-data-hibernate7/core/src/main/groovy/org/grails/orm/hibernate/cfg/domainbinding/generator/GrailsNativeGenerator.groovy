@@ -16,79 +16,79 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.generator
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.cfg.domainbinding.generator;
 
-import groovy.transform.CompileStatic
-import jakarta.persistence.GenerationType
-import org.hibernate.HibernateException
-import org.hibernate.engine.spi.SharedSessionContractImplementor
-import org.hibernate.generator.EventType
-import org.hibernate.generator.GeneratorCreationContext
-import org.hibernate.id.NativeGenerator
-import org.hibernate.id.enhanced.SequenceStyleGenerator
+import groovy.transform.CompileStatic;
+import jakarta.persistence.GenerationType;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.generator.EventType;
+import org.hibernate.generator.GeneratorCreationContext;
+import org.hibernate.id.NativeGenerator;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-import java.lang.reflect.Field
+import java.lang.reflect.Field;
 
 /**
  * A native generator that supports Grails assigned identifiers and fixes Hibernate 7 ClassCastException.
  *
  * @since 8.0
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class GrailsNativeGenerator extends NativeGenerator {
 
-    private static final long serialVersionUID = 1L
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     GrailsNativeGenerator(GeneratorCreationContext context) {
         // This triggers the internal switch logic in NativeGenerator,
         // which calls setIdentity(true) on the column for H2.
         try {
-            this.initialize(null, null, context)
-        }
-        catch (Exception ignored) {
+            this.initialize(null, null, context);
+        } catch (Exception ignored) {
             // ignore for now, helps with testing robustness where context might be incomplete
         }
     }
 
     @Override
-    @SuppressWarnings('PMD.AvoidAccessibilityAlteration')
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     Object generate(
             SharedSessionContractImplementor session, Object entity, Object currentValue, EventType eventType) {
         // 1. Support Grails assigned identifiers
         if (currentValue != null) {
-            return currentValue
+            return currentValue;
         }
 
         // 2. Fix the Hibernate 7 ClassCastException
         // NativeGenerator.generate() tries to cast the delegate to BeforeExecutionGenerator.
         // If the dialect chose IDENTITY, that cast fails. We bypass it by returning null.
-        if (this.generationType == GenerationType.IDENTITY) {
-            return null
+        if (this.getGenerationType() == GenerationType.IDENTITY) {
+            return null;
         }
 
         // 3. Prevent NPE if configuration failed (e.g. DDL error)
         // Access private field dialectNativeGenerator in NativeGenerator
         try {
-            Field field = NativeGenerator.getDeclaredField('dialectNativeGenerator')
-            field.accessible = true
-            Object delegate = field.get(this)
+            Field field = NativeGenerator.getDeclaredField("dialectNativeGenerator");
+            field.setAccessible(true);
+            Object delegate = field.get(this);
             if (delegate instanceof SequenceStyleGenerator) {
-                SequenceStyleGenerator ssg = (SequenceStyleGenerator) delegate
-                if (ssg.databaseStructure == null) {
+                SequenceStyleGenerator ssg = (SequenceStyleGenerator) delegate;
+                if (ssg.getDatabaseStructure() == null) {
                     throw new HibernateException(
-                            'Identifier generator (SequenceStyleGenerator) was not properly initialized. This usually happens if table creation failed (check previous logs for DDL errors).')
+                            "Identifier generator (SequenceStyleGenerator) was not properly initialized. This usually happens if table creation failed (check previous logs for DDL errors).");
                 }
             }
-        }
-        catch (HibernateException e) {
-            throw e
-        }
-        catch (Exception ignored) {
+        } catch (HibernateException e) {
+            throw e;
+        } catch (Exception ignored) {
             // ignore reflection errors
         }
 
         // 4. For Sequences/UUIDs, delegate to the standard logic
-        return super.generate(session, entity, null, eventType)
+        return super.generate(session, entity, null, eventType);
     }
-
 }

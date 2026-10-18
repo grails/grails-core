@@ -16,32 +16,34 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.secondpass
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
 
-import groovy.transform.CompileStatic
-import org.hibernate.MappingException
-import org.hibernate.boot.spi.SecondPass
+import groovy.transform.CompileStatic;
+import org.hibernate.MappingException;
+import org.hibernate.boot.spi.SecondPass;
 
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.NonSerializableClass', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings('PMD.NonSerializableClass')
 class MapSecondPass implements SecondPass, GrailsSecondPass, Serializable {
 
-    private static final long serialVersionUID = -3244991685626409031L
+    @Serial
+    private static final long serialVersionUID = -3244991685626409031L;
 
-    protected final HibernateToManyProperty property
-    private final MapSecondPassBinder mapSecondPassBinder
+    protected final HibernateToManyProperty property;
+    private final MapSecondPassBinder mapSecondPassBinder;
 
     MapSecondPass(MapSecondPassBinder mapSecondPassBinder, HibernateToManyProperty property) {
-        this.mapSecondPassBinder = mapSecondPassBinder
-        this.property = property
+        this.mapSecondPassBinder = mapSecondPassBinder;
+        this.property = property;
     }
 
     @Override
     void doSecondPass(Map persistentClasses) throws MappingException {
-        mapSecondPassBinder.bindMapSecondPass(property)
-        createCollectionKeys(property.collection)
+        mapSecondPassBinder.bindMapSecondPass(property);
+        createCollectionKeys(property.getCollection());
     }
-
 }

@@ -16,32 +16,34 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.secondpass
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
 
-import groovy.transform.CompileStatic
-import org.hibernate.MappingException
-import org.hibernate.boot.spi.SecondPass
+import groovy.transform.CompileStatic;
+import org.hibernate.MappingException;
+import org.hibernate.boot.spi.SecondPass;
 
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.NonSerializableClass', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings('PMD.NonSerializableClass')
 class ListSecondPass implements SecondPass, GrailsSecondPass, Serializable {
 
-    private static final long serialVersionUID = -3024674993774205193L
+    @Serial
+    private static final long serialVersionUID = -3024674993774205193L;
 
-    protected final HibernateToManyProperty property
-    private final ListSecondPassBinder listSecondPassBinder
+    protected final HibernateToManyProperty property;
+    private final ListSecondPassBinder listSecondPassBinder;
 
     ListSecondPass(ListSecondPassBinder listSecondPassBinder, HibernateToManyProperty property) {
-        this.listSecondPassBinder = listSecondPassBinder
-        this.property = property
+        this.listSecondPassBinder = listSecondPassBinder;
+        this.property = property;
     }
 
     @Override
     void doSecondPass(Map persistentClasses) throws MappingException {
-        listSecondPassBinder.bindListSecondPass(property)
-        createCollectionKeys(property.collection)
+        listSecondPassBinder.bindListSecondPass(property);
+        createCollectionKeys(property.getCollection());
     }
-
 }
