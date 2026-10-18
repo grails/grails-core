@@ -109,6 +109,12 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         mimes as MimeType[]
     }
 
+    /**
+     * @param header an {@code Accept} header
+     * @return the media types it lists, in the order it lists them, read with Spring's parser, and a token Spring
+     *         rejects as Grails 8 read it
+     * @since 9.0
+     */
     protected List<MimeType> parseRequestedMimeTypes(String header) {
         List<MimeType> mimeTypes = []
 
@@ -140,6 +146,16 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         extension ? mimeConfig.find { MimeType mt -> mt.extension == extension } : null
     }
 
+    /**
+     * Adds a requested media type to the list, as the configured type it matches, if it matches one. It replaces the
+     * method of Grails 8 that took the name and the parameters of the type, which a subclass that overrode it no longer
+     * overrides.
+     *
+     * @param mime a requested media type
+     * @param mimeConfig the configured types
+     * @param mimes the types the header resolves to
+     * @since 9.0
+     */
     protected void createMimeTypeAndAddToList(MimeType mime, MimeType[] mimeConfig, List<MimeType> mimes) {
         String name = mime.name
         //First try to find the exact match for the mime type using name and version. If version is not set,  consider

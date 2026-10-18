@@ -98,6 +98,12 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         ShutdownOperations.addOperation({ LEGACY_PARSING_REPORTED.set(false) } as Runnable, true)
     }
 
+    /**
+     * Logs, once for each application, that request bodies are parsed by the legacy parser, unless {@link #useJackson}
+     * has the application's Jackson mapper parse them.
+     *
+     * @since 9.0
+     */
     @PostConstruct
     void initialize() {
         if (!useJackson && LEGACY_PARSING_REPORTED.compareAndSet(false, true)) {
@@ -109,8 +115,9 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     private volatile JsonMapper resolvedJsonMapper
 
     /**
-     * @return the mapper request bodies are parsed with when {@link #useJackson} is set: the application's
-     *         {@code JsonMapper}, found when a body is first parsed, or the one {@link #setJsonMapper} sets
+     * @return the mapper request bodies are parsed with when {@link #useJackson} is set: the one
+     *         {@link #setJsonMapper} sets, or else the application's {@code JsonMapper}, found when a body is first
+     *         parsed, or a default {@code JsonMapper} where the application has none
      * @since 9.0
      */
     JsonMapper getJsonMapper() {
@@ -138,6 +145,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
      * Reads untyped JSON values. Decimals are read as {@link BigDecimal} so that binding a
      * fractional value to a BigDecimal property keeps the digits the request sent; reading them
      * as doubles first would round them before the binder ever saw them.
+     *
+     * @since 9.0
      */
     protected ObjectReader untypedReader() {
         return getJsonMapper().reader().forType(Object).with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)

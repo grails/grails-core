@@ -186,9 +186,9 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      * {@code grails.web.rendering.xml.spring} is set to. Where none can write it, as without
      * {@code jackson-dataformat-xml}, it is written in the format Spring's converter writes, with the extension members
      * converted by the mapper of Spring's JSON converter with Spring's mix-in for problems, as Spring's own XML
-     * converter converts them: without the Grails serializers of the problem written in JSON, so that an extension
-     * member that is a domain class instance, validation errors or a value that leads back to itself is converted as
-     * Jackson converts any bean.
+     * converter converts them: without the Grails serializers of the problem written in JSON, so that validation errors
+     * or a value that leads back to itself are converted as Jackson converts any bean, and a domain class instance too,
+     * unless {@code grails.converters.json.domain.jackson.enabled} gives the application's mapper the domain serializer.
      */
     private void renderProblem(ProblemDetail problem, RenderContext context) {
         ProblemDetailResponse.prepare(problem, context)

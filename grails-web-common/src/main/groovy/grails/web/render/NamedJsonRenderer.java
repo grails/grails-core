@@ -29,6 +29,10 @@ import java.util.List;
  */
 public interface NamedJsonRenderer {
 
+    /**
+     * @param name a configuration's name, or {@code null} for the default one
+     * @return whether it is registered; the default one always is
+     */
     boolean contains(String name);
 
     /**
@@ -40,9 +44,10 @@ public interface NamedJsonRenderer {
      * @param name the registered configuration, or null for the default
      * @param value the value to write
      * @param writer the response writer
-     * @param includes property names to include, or null for all
+     * @param includes property names to include, or null for all; an empty list includes none
      * @param excludes property names to exclude, or null for none
      * @throws IOException if writing fails
+     * @throws IllegalArgumentException if no configuration of the name is registered
      */
     void render(String name, Object value, Writer writer,
             List<String> includes, List<String> excludes) throws IOException;

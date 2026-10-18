@@ -173,7 +173,7 @@
         {
             "name": "grails.converters.json.circular.reference.behaviour",
             "type": "java.lang.String",
-            "description": "How an object that is reached again while it is being rendered to JSON is written: DEFAULT writes a reference to it, EXCEPTION fails, INSERT_NULL writes null, IGNORE leaves an element of a list out and writes a property, or the value of a map, as null, and PATH writes its path. It applies to the JSON converter, to respond's Spring JSON, render json: and the named JSON configurations, and, with grails.converters.json.domain.jackson.enabled, to the domain objects the application's JsonMapper renders. Defaults to grails.converters.default.circular.reference.behaviour.",
+            "description": "How an object that is reached again while it is being rendered to JSON is written: DEFAULT writes a reference to it, EXCEPTION fails, INSERT_NULL writes null, IGNORE leaves an element of a list out and writes a property, or the value of a map, as null, where the legacy JSON converter fails on such a property, and PATH writes its path. It applies to the JSON converter, to respond's Spring JSON, render json: and the named JSON configurations, and, with grails.converters.json.domain.jackson.enabled, to the domain objects the application's JsonMapper renders. Defaults to grails.converters.default.circular.reference.behaviour.",
             "defaultValue": "DEFAULT"
         },
         {
@@ -181,6 +181,18 @@
             "type": "java.lang.String",
             "description": "How an object that is reached again while it is being rendered is written, by the converters whose grails.converters.json.circular.reference.behaviour or grails.converters.xml.circular.reference.behaviour is not set: DEFAULT, EXCEPTION, INSERT_NULL, IGNORE or PATH.",
             "defaultValue": "DEFAULT"
+        },
+        {
+            "name": "grails.converters.json.pretty.print",
+            "type": "java.lang.Boolean",
+            "description": "Whether the JSON converter indents the JSON it renders. Defaults to grails.converters.default.pretty.print.",
+            "defaultValue": false
+        },
+        {
+            "name": "grails.converters.default.pretty.print",
+            "type": "java.lang.Boolean",
+            "description": "Whether the converters whose grails.converters.json.pretty.print or grails.converters.xml.pretty.print is not set indent what they render.",
+            "defaultValue": false
         },
         {
             "name": "grails.converters.domain.include.class",

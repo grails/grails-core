@@ -79,11 +79,20 @@ public final class NamedJsonConfigurationRegistry {
         configurations.put(name, configuration);
     }
 
+    /**
+     * @param name a configuration's name, or {@code null} for the default one
+     * @return whether it is registered; the default one always is
+     */
     public boolean contains(String name) {
         return name == null || configurations.containsKey(name);
     }
 
-    /** @param name the registered name, or null to use the default Grails writer */
+    /**
+     * @param name the registered name, or null to use the default Grails writer
+     * @return the writer of the configuration
+     * @throws IllegalArgumentException if no configuration of the name is registered
+     * @throws IllegalStateException if the application has no {@code JsonMapper} to derive the writer from
+     */
     public ObjectWriter writer(String name) {
         NamedJsonConfiguration configuration = name == null ? null : configurations.get(name);
         if (name != null && configuration == null) {
@@ -115,6 +124,7 @@ public final class NamedJsonConfigurationRegistry {
      * @param value the value to write
      * @return the JSON of the value
      * @throws JacksonException if the value cannot be written, such as by a serializer that fails
+     * @throws IllegalArgumentException if no configuration of the name is registered
      */
     public String writeValueAsString(String name, Object value) {
         return writer(name).writeValueAsString(value);
@@ -130,6 +140,7 @@ public final class NamedJsonConfigurationRegistry {
      * @param value the value to write
      * @throws IOException if the writer fails, with the exception Jackson reports the failure in suppressed
      * @throws JacksonException if the value cannot be written otherwise, such as by a serializer that fails
+     * @throws IllegalArgumentException if no configuration of the name is registered
      */
     public void writeValue(String name, Writer output, Object value) throws IOException {
         write(writer(name), output, value);
@@ -146,11 +157,12 @@ public final class NamedJsonConfigurationRegistry {
      * @param name the registered configuration, or null for the default one
      * @param output the response writer
      * @param value the value to write
-     * @param includes property names to include, or null for all
+     * @param includes property names to include, or null for all; an empty list includes none
      * @param excludes property names to exclude, or null for none
      * @throws IOException if the writer fails, with the exception Jackson reports the failure in suppressed
      * @throws JacksonException if the value cannot be written otherwise, such as by a serializer that fails
-     * @throws IllegalArgumentException if a projection is requested for a value it cannot apply to
+     * @throws IllegalArgumentException if no configuration of the name is registered, or if a projection is requested
+     *         for a value it cannot apply to
      */
     public void writeValue(String name, Writer output, Object value,
             List<String> includes, List<String> excludes) throws IOException {
