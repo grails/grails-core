@@ -44,7 +44,7 @@ abstract class JsonDeepMatrix extends Specification {
     static final String CONVERTER = 'the JSON converter'
     static final String REGISTRY = 'the named configuration registry'
 
-    static final Class<?>[] DOMAIN_CLASSES = [MatrixAuthor, MatrixBook, DeepNode] as Class<?>[]
+    static final Class<?>[] DOMAIN_CLASSES = [MatrixAuthor, MatrixBook, DeepNode, MatrixShelf, MatrixVolume] as Class<?>[]
 
     abstract List<String> paths()
 
@@ -87,7 +87,7 @@ abstract class JsonDeepMatrix extends Specification {
         legacy() ? sameObjects(written, expected) : canonical(written) == canonical(expected)
 
         where:
-        [fixture, path] << [DeepFixture.ALL, paths()].combinations()
+        [fixture, path] << [DeepFixture.ALL.findAll { !legacy() || it.legacy }, paths()].combinations()
     }
 
     private static String canonical(String json) {
@@ -215,17 +215,25 @@ class DeepFixture {
             }, { List<MatrixBook> books ->
                 '[{"id":1,"title":"A","pages":1,"author":{"id":7,"name":"Ada"},"reviewers":[]},' +
                         '{"id":2,"title":"B","pages":2,"author":{"id":7,"name":"Ada"},"reviewers":[]}]'
-            })
+            }),
+            new DeepFixture('domain associations whose property gives their type ids', { MatrixShelf.sample() }, { MatrixShelf shelf ->
+                '{"id":1,"name":"top","featured":{"kind":"volume","id":2,"title":"Grails"},' +
+                        '"volumes":[{"kind":"volume","id":2,"title":"Grails"}]}'
+            }, false)
     ]
 
     final String description
     final Closure<?> instance
     final Closure<String> expected
 
-    DeepFixture(String description, Closure<?> instance, Closure<String> expected) {
+    /** Whether Grails 8 could write it, which it could not for what only Jackson knows, such as a type id. */
+    final boolean legacy
+
+    DeepFixture(String description, Closure<?> instance, Closure<String> expected, boolean legacy = true) {
         this.description = description
         this.instance = instance
         this.expected = expected
+        this.legacy = legacy
     }
 
     @Override

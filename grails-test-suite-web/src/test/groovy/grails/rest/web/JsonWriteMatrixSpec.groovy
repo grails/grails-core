@@ -332,7 +332,7 @@ class MatrixFixture {
 
     static final Class<?>[] DOMAIN_CLASSES = [MatrixAuthor, MatrixBook, MatrixRenamedBook, MatrixSnakeBook, MatrixAttributedBook,
             MatrixTypedBook, MatrixIgnoringBook, MatrixIncludingBook, MatrixCodedBook, MatrixViewedBook, MatrixDatedBook,
-            MatrixIdentifiedBook] as Class<?>[]
+            MatrixIdentifiedBook, MatrixShelf, MatrixVolume] as Class<?>[]
 
     static final List<MatrixFixture> ALL = [
             of('a bean', { new MatrixPlain() }, [(MatrixPlain): [name: ['name'], count: ['count']]]),
@@ -417,7 +417,9 @@ class MatrixFixture {
                 withId(new MatrixBook(title: 'Grails', pages: 2, author: proxiedAuthor(), reviewers: []))
             }, [(MatrixBook): [id: ['id'], title: ['title'], pages: ['pages'], author: ['author'], reviewers: ['reviewers']]]),
             of('a proxy of a domain class that is not loaded', { proxiedAuthor() },
-                    [(MatrixAuthor): [id: ['id'], name: ['name']]])
+                    [(MatrixAuthor): [id: ['id'], name: ['name']]]),
+            of('domain associations whose property gives their type ids', { MatrixShelf.sample() },
+                    [(MatrixShelf): [id: ['id'], name: ['name'], featured: ['featured'], volumes: ['volumes']]])
     ]
 
     final String description
@@ -966,5 +968,30 @@ class MatrixAuthorSerializer extends ValueSerializer<MatrixAuthor> {
     @Override
     void serialize(MatrixAuthor value, JsonGenerator generator, SerializationContext context) {
         generator.writeString("author:${value.name}".toString())
+    }
+}
+
+@Entity
+class MatrixVolume {
+    String title
+}
+
+@Entity
+class MatrixShelf {
+    static hasMany = [volumes: MatrixVolume]
+    String name
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = 'kind')
+    @JsonSubTypes([@JsonSubTypes.Type(value = MatrixVolume, name = 'volume')])
+    MatrixVolume featured
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = 'kind')
+    @JsonSubTypes([@JsonSubTypes.Type(value = MatrixVolume, name = 'volume')])
+    List<MatrixVolume> volumes
+
+    static MatrixShelf sample() {
+        def volume = new MatrixVolume(title: 'Grails')
+        volume.id = 2
+        def shelf = new MatrixShelf(name: 'top', featured: volume, volumes: [volume])
+        shelf.id = 1
+        shelf
     }
 }

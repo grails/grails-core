@@ -32,6 +32,7 @@ import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.ser.impl.PropertySerializerMap;
+import tools.jackson.databind.ser.std.StdContainerSerializer;
 
 import org.grails.datastore.mapping.model.PersistentEntity;
 
@@ -219,6 +220,8 @@ final class DomainReferences {
 
         private volatile PropertySerializerMap valueSerializers = PropertySerializerMap.emptyForProperties();
 
+        private volatile ValueSerializer<Object> containerSerializer;
+
         private ReferenceSerializer(DomainReferences references, PersistentEntity associated, boolean toMany,
                 DomainRendering rendering, BeanProperty property) {
             this.references = references;
@@ -310,13 +313,21 @@ final class DomainReferences {
             if (property == null || property.getType().getContentType() == null) {
                 return null;
             }
-            // Jackson gives the type the property is written as the type serializer the property names for its elements
+            TypeSerializer named = elementTypeSerializerNamedByProperty();
+            return named != null ? named : context.findTypeSerializer(property.getType().getContentType());
+        }
+
+        /**
+         * The type serializer the property's {@code @JsonTypeInfo} names for its elements, which Jackson gives the type the
+         * property is written as, or {@code null}.
+         */
+        private TypeSerializer elementTypeSerializerNamedByProperty() {
             if (property instanceof BeanPropertyWriter writer && writer.getSerializationType() != null &&
                     writer.getSerializationType().getContentType() != null &&
                     writer.getSerializationType().getContentType().getTypeHandler() instanceof TypeSerializer named) {
                 return named;
             }
-            return context.findTypeSerializer(property.getType().getContentType());
+            return null;
         }
 
         /** Whether associated instances are written in full: for every write, or for this one. */
@@ -326,13 +337,33 @@ final class DomainReferences {
 
         /**
          * The serializer of an association written in full: of the type it is declared with, for a collection or map, so
-         * that its instances are written with the type ids their declared type asks for, as Jackson writes them.
+         * that its instances are written with the type ids their declared type, or the property's {@code @JsonTypeInfo},
+         * asks for, as Jackson writes them.
          */
         private ValueSerializer<Object> serializer(Object written, SerializationContext context) {
             if (toMany && property != null && property.getType().getRawClass().isInstance(written)) {
-                return context.findPrimaryPropertySerializer(property.getType(), property);
+                ValueSerializer<Object> found = containerSerializer;
+                if (found == null) {
+                    found = findContainerSerializer(context);
+                    containerSerializer = found;
+                }
+                return found;
             }
             return valueSerializer(written, context);
+        }
+
+        /**
+         * The serializer of the collection or map of a to-many association, given the type serializer the property names
+         * for its elements, as Jackson gives it the serializer of any other property of a container type.
+         */
+        @SuppressWarnings("unchecked")
+        private ValueSerializer<Object> findContainerSerializer(SerializationContext context) {
+            ValueSerializer<Object> serializer = context.findPrimaryPropertySerializer(property.getType(), property);
+            TypeSerializer named = elementTypeSerializerNamedByProperty();
+            if (named != null && serializer instanceof StdContainerSerializer<?> container) {
+                return (ValueSerializer<Object>) container.withValueTypeSerializer(named);
+            }
+            return serializer;
         }
 
         /**
