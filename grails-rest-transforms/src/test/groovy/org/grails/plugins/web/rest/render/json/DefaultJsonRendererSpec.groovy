@@ -29,10 +29,15 @@ import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
+import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.mock.http.MockHttpOutputMessage
+import com.fasterxml.jackson.annotation.JsonUnwrapped
 import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.module.SimpleModule
+import tools.jackson.databind.ser.std.StdSerializer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationFeature
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
@@ -65,6 +70,7 @@ import org.grails.web.converters.exceptions.ConverterException
 
 import spock.lang.Specification
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1
 import static java.nio.charset.StandardCharsets.UTF_8
 
 class DefaultJsonRendererSpec extends Specification {
@@ -219,6 +225,52 @@ class DefaultJsonRendererSpec extends Specification {
         description                                 | converter                   | written
         'a subclass that writes a suffix'           | new SuffixedJsonConverter() | '{"hidden":true,"title":"Grails"};'
         'a mapper registered for the class written' | upperCamelCaseConverter()   | '{"Hidden":true,"Title":"Grails"}'
+    }
+
+    void 'a type definition error of the Grails mapper is reported as Spring MVC reports it, leaving the response uncommitted'() {
+        given: 'a bean whose @JsonUnwrapped property writes a name the bean writes too, which Jackson rejects'
+        def renderer = grailsMapperRenderer(new JacksonJsonHttpMessageConverter())
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        renderer.render(new ClashingBody(id: 5, inner: new ClashingInner(id: 1)), new ServletRenderContext(webRequest))
+
+        then: 'as a conversion error, which is not a failure to write'
+        HttpMessageConversionException e = thrown()
+        e.class == HttpMessageConversionException
+        e.message.startsWith('Type definition error: ')
+        !webRequest.response.committed
+    }
+
+    void 'the Grails mapper writes the configured encoding of the response, as Spring MVC writes it'() {
+        given:
+        def renderer = grailsMapperRenderer(new JacksonJsonHttpMessageConverter())
+        renderer.encoding = 'ISO-8859-1'
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        renderer.render(new ProjectionBody(title: 'caf\u00e9'), new ServletRenderContext(webRequest))
+
+        then:
+        webRequest.response.contentType == 'application/json;charset=ISO-8859-1'
+        webRequest.response.contentAsByteArray == '{"hidden":false,"title":"caf\u00e9"}'.getBytes(ISO_8859_1)
+    }
+
+    void 'a projection a serializer of its own bypasses on the Spring path is reported'() {
+        given: 'a mapper with a serializer of the projected type, which writes it without its properties'
+        def mapper = JsonMapper.builder().addModule(new SimpleModule().addSerializer(ProjectionBody, new TitleOnlySerializer())).build()
+        def renderer = grailsMapperRenderer(new JacksonJsonHttpMessageConverter(mapper))
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        String log = stderrWhile {
+            renderer.render(new ProjectionBody(title: 'Grails', hidden: true),
+                    new ServletRenderContext(webRequest, [excludes: ['title']]))
+        }
+
+        then:
+        webRequest.response.contentAsString == '"Grails"'
+        log.contains("JSON includes/excludes were not applied to [class ${ProjectionBody.name}]")
     }
 
     void 'Spring JSON without MVC converters falls back to the legacy converter'() {
@@ -890,6 +942,14 @@ class DefaultJsonRendererSpec extends Specification {
     private static final String LEGACY_RESPOND_WARNING =
             'Legacy respond() JSON rendering is deprecated and will be removed in Grails 11.'
 
+    private static DefaultJsonRenderer<Object> grailsMapperRenderer(JacksonJsonHttpMessageConverter converter) {
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        renderer
+    }
+
     private static JacksonJsonHttpMessageConverter upperCamelCaseConverter() {
         def converter = new JacksonJsonHttpMessageConverter()
         converter.registerMappersForType(ProjectionBody) { Map<MediaType, JsonMapper> mappers ->
@@ -916,6 +976,28 @@ class DefaultJsonRendererSpec extends Specification {
 class ProjectionBody {
     String title
     boolean hidden
+}
+
+class ClashingBody {
+    Integer id
+    @JsonUnwrapped
+    ClashingInner inner
+}
+
+class ClashingInner {
+    Integer id
+}
+
+class TitleOnlySerializer extends StdSerializer<ProjectionBody> {
+
+    TitleOnlySerializer() {
+        super(ProjectionBody)
+    }
+
+    @Override
+    void serialize(ProjectionBody body, JsonGenerator generator, SerializationContext context) {
+        generator.writeString(body.title)
+    }
 }
 
 class SuffixedJsonConverter extends JacksonJsonHttpMessageConverter {
