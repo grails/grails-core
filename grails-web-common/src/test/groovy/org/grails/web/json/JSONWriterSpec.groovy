@@ -21,6 +21,9 @@ package org.grails.web.json
 import java.util.function.Predicate
 
 import groovy.transform.CompileStatic
+
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import spock.lang.Issue
 import spock.lang.Specification
 import tools.jackson.core.JsonGenerator
@@ -310,7 +313,7 @@ class JSONWriterSpec extends Specification {
         out.toString() == '{"map":{"content":{"size":2}},"date":{"content":"1970-01-01T00:00:00.000Z"},"after":1}'
     }
 
-    void "a nested value writer that writes nothing leaves the value out of a list, and writes null for a property"() {
+    void "a nested value writer that writes nothing leaves the value out of a list, and writes null for a property, also of a bean written as an array"() {
         given: 'a nested value writer that writes nothing for a map, as the converter writes a value IGNORE leaves out'
         def writer = new JSONWriter(out, boxes, false)
         def nested = { Object value ->
@@ -325,10 +328,11 @@ class JSONWriterSpec extends Specification {
         writer.object()
                 .key('property').value(new JsonMapperValue(new Box(content: [a: 1]), boxes, nested))
                 .key('elements').value(new JsonMapperValue(new Box(content: [[a: 1], 2]), boxes, nested))
+                .key('row').value(new JsonMapperValue(new Box(content: new PositionalRow(first: [a: 1], second: 2)), boxes, nested))
                 .endObject()
 
         then: 'as the mapper writes them'
-        out.toString() == '{"property":{"content":null},"elements":{"content":[2]}}'
+        out.toString() == '{"property":{"content":null},"elements":{"content":[2]},"row":{"content":[null,2]}}'
     }
 
     void "a nested value writer that starts a value must complete it"() {
@@ -385,6 +389,13 @@ class JSONWriterSpec extends Specification {
 
 class Box {
     Object content
+}
+
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+@JsonPropertyOrder(['first', 'second'])
+class PositionalRow {
+    Object first
+    Object second
 }
 
 class BoxSerializer extends StdSerializer<Box> {
