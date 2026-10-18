@@ -155,26 +155,44 @@
         {
             "name": "grails.converters.json.domain.include.class",
             "type": "java.lang.Boolean",
-            "description": "Whether to include the class property when marshalling domain objects to JSON.",
+            "description": "Whether to include the class name when rendering domain objects to JSON, with the JSON converter, respond's Spring JSON, render json:, the named JSON configurations and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper. Defaults to grails.converters.domain.include.class.",
             "defaultValue": false
         },
         {
             "name": "grails.converters.json.domain.include.version",
             "type": "java.lang.Boolean",
-            "description": "Whether to include the version property when rendering domain objects to JSON, with the JSON converter, respond's Spring JSON, the named JSON configurations and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper.",
+            "description": "Whether to include the version property when rendering domain objects to JSON, with the JSON converter, respond's Spring JSON, render json:, the named JSON configurations and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper. Defaults to grails.converters.domain.include.version.",
             "defaultValue": false
         },
         {
             "name": "grails.converters.json.default.deep",
             "type": "java.lang.Boolean",
-            "description": "Whether the associated domain class instances of a domain object rendered to JSON are rendered in full rather than as references of their id, with the JSON converter, respond's Spring JSON and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper.",
+            "description": "Whether the associated domain class instances of a domain object rendered to JSON are rendered in full rather than as references of their id, with the JSON converter, respond's Spring JSON, render json:, the named JSON configurations, which cannot render references while it is set, and, with grails.converters.json.domain.jackson.enabled, the application's JsonMapper.",
             "defaultValue": false
         },
         {
             "name": "grails.converters.json.circular.reference.behaviour",
             "type": "java.lang.String",
-            "description": "How an object that is reached again while it is being rendered to JSON is written: DEFAULT writes a reference to it, EXCEPTION fails, INSERT_NULL writes null, IGNORE leaves it out, and PATH writes its path. It applies to the JSON converter, to respond's Spring JSON and the named JSON configurations, and, with grails.converters.json.domain.jackson.enabled, to the domain objects the application's JsonMapper renders. Defaults to grails.converters.default.circular.reference.behaviour.",
+            "description": "How an object that is reached again while it is being rendered to JSON is written: DEFAULT writes a reference to it, EXCEPTION fails, INSERT_NULL writes null, IGNORE leaves an element of a list out and writes a property, or the value of a map, as null, and PATH writes its path. It applies to the JSON converter, to respond's Spring JSON, render json: and the named JSON configurations, and, with grails.converters.json.domain.jackson.enabled, to the domain objects the application's JsonMapper renders. Defaults to grails.converters.default.circular.reference.behaviour.",
             "defaultValue": "DEFAULT"
+        },
+        {
+            "name": "grails.converters.default.circular.reference.behaviour",
+            "type": "java.lang.String",
+            "description": "How an object that is reached again while it is being rendered is written, by the converters whose grails.converters.json.circular.reference.behaviour or grails.converters.xml.circular.reference.behaviour is not set: DEFAULT, EXCEPTION, INSERT_NULL, IGNORE or PATH.",
+            "defaultValue": "DEFAULT"
+        },
+        {
+            "name": "grails.converters.domain.include.class",
+            "type": "java.lang.Boolean",
+            "description": "Whether to include the class name when rendering domain objects, for the converters whose grails.converters.json.domain.include.class or grails.converters.xml.domain.include.class is not set.",
+            "defaultValue": false
+        },
+        {
+            "name": "grails.converters.domain.include.version",
+            "type": "java.lang.Boolean",
+            "description": "Whether to include the version when rendering domain objects, for the converters whose grails.converters.json.domain.include.version or grails.converters.xml.domain.include.version is not set.",
+            "defaultValue": false
         },
         {
             "name": "grails.converters.xml.domain.include.class",
