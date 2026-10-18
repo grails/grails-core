@@ -110,6 +110,29 @@ class JSONWriterApiSpec extends Specification {
         ({ JSONWriter w -> w.array().endArray() })    | ({ w -> w.value(1L) })            | 'Value out of sequence'
     }
 
+    void "the nesting depth is the number of objects and arrays the next value is written in"() {
+        given:
+        def writer = new JSONWriter(new StringWriter())
+
+        expect:
+        writer.nestingDepth() == 0
+
+        when:
+        writer.object().key('list').array()
+
+        then:
+        writer.nestingDepth() == 2
+
+        when:
+        writer.endArray()
+
+        then:
+        writer.nestingDepth() == 1
+
+        and: 'a writer that writes to no generator does not know it'
+        new JSONWriter(null).nestingDepth() == -1
+    }
+
     void "primitive overloads are available without Groovy dispatch"() {
         given:
         def output = new StringWriter()
