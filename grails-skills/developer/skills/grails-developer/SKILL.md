@@ -31,8 +31,8 @@ Activate this skill when developing with Grails, including:
 ## Technology Stack
 
 Grails is built on:
-- **Spring Boot**: 4.1.x
-- **Spring Framework**: 7.0.x
+- **Spring Boot**: 4.2.x
+- **Spring Framework**: 7.1.x
 - **Groovy**: 6.0.x
 - **Gradle**: 9.7 or later
 - **Spock**: 2.5-groovy-6.0
@@ -546,6 +546,36 @@ class BookTagLib {
 
 ## Configuration
 
+### Groovy Call Sites (invokedynamic)
+
+Grails 9 compiles Groovy with invokedynamic, the Groovy 6 compiler's default, and does not ship the `groovy-callsite` module. There is nothing to configure, so the default is to **remove** what Grails 7 and 8 builds carried for the old classic-call-site default:
+
+- `grails { indy = true }` (now redundant) and any `tasks.withType(GroovyCompile) { groovyOptions.optimizationOptions.indy = ... }` block
+- an `org.apache.groovy:groovy-callsite` dependency
+
+Offer classic call sites only as the alternative, for an application that has measured a difference and wants them. It opts out and declares the module itself, at the version the Grails BOM manages, once per source set that does not see `implementation` (for example the test fixtures of `java-test-fixtures`):
+
+```groovy
+grails {
+    indy = false
+}
+
+dependencies {
+    implementation 'org.apache.groovy:groovy-callsite'
+}
+```
+
+Without the dependency the Groovy compiler stops and names the module. An application that applies GraalVM's native image plugin cannot opt out: a classic call site defines a class at run time, which an image cannot do, so the build fails with the reason.
+
+One more case needs the module whatever the application's own setting: a library compiled with classic call sites, which Groovy 6 can load only with it. The symptom is `NoClassDefFoundError: org.codehaus.groovy.runtime.callsite.CallSiteArray` when the class is first used. Spock 2.5, Geb 8 and the Asset Pipeline 5.2 are fine; `org.testcontainers:testcontainers-spock` is not, so declare the module next to it, in the configuration that library is in:
+
+```groovy
+dependencies {
+    testImplementation 'org.testcontainers:testcontainers-spock'
+    testRuntimeOnly 'org.apache.groovy:groovy-callsite'
+}
+```
+
 ### application.yml
 ```yaml
 grails:
@@ -781,6 +811,9 @@ implementation 'org.apache.grails.plugins:grails-cache:7.0.0'
 
 // Async support
 implementation 'org.apache.grails.plugins:grails-async:7.0.0'
+
+// AI models through Spring AI (Grails 8.1+); see the grails-ai-developer skill
+implementation 'org.apache.grails:grails-spring-ai'
 
 // Fields plugin for form rendering
 implementation 'org.apache.grails.plugins:grails-fields:7.0.0'

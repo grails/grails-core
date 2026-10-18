@@ -36,11 +36,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Validate grails-core dependency versions"
         run: >
@@ -69,11 +72,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Validate grails-core BOM properties"
         run: >
@@ -127,11 +133,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -167,11 +176,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -192,6 +204,7 @@ jobs:
           - os: ubuntu-latest
             java: 21
             job_name: Ubuntu JDK 21
+            cache_writer: true
             gradle_task: 'build :grails-shell-cli:installDist groovydoc'
           - os: ubuntu-latest
             java: 25
@@ -200,6 +213,7 @@ jobs:
           - os: macos-latest
             java: 21
             job_name: macOS JDK 21
+            cache_writer: true
             gradle_task: 'build :grails-shell-cli:installDist groovydoc'
             # The macOS runner has ~7 GB of RAM and 3 CPUs, against ~16 GB and 4 CPUs on the
             # Linux and Windows runners, so it has the least room for concurrent JVMs.
@@ -213,6 +227,7 @@ jobs:
           - os: windows-latest
             java: 25
             job_name: Windows JDK 25 shard 0
+            cache_writer: true
             gradle_task: 'build :grails-shell-cli:installDist groovydoc'
             shard_arguments: '-PtestShardCount=3 -PtestShardIndex=0'
           - os: windows-latest
@@ -236,11 +251,16 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
+        with:
+          cache-writer: ${{ matrix.cache_writer }}
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -292,11 +312,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -330,11 +353,14 @@ jobs:
         with:
           distribution: 'liberica'
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -436,11 +462,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -538,11 +567,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -567,7 +599,7 @@ jobs:
         # config only runs when TESTCONFIG matches. TESTCONFIG is applied at app startup, so every config
         # must be its own run. Carried over from the standalone grails-spring-security CI — do not drop
         # configs (add, don't remove) when the app's security configurations change.
-        test-config: [ 'static', 'annotation', 'requestmap', 'basic', 'basicCacheUsers', 'misc', 'putWithParams', 'bcrypt', 'issue503' ]
+        test-config: [ 'static', 'annotation', 'requestmap', 'basic', 'basicCacheUsers', 'misc', 'putWithParams', 'bcrypt', 'issue503', 'noAnonymous' ]
     runs-on: ubuntu-24.04
     steps:
       - name: "Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -579,11 +611,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -622,11 +657,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -659,11 +697,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -701,8 +742,9 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
-      - name: "🗄️ Cache the mongod the embedded server runs"
-        uses: actions/cache@v6.1.0
+      - name: "🗄️ Restore the mongod the embedded server runs"
+        id: embedmongo-cache
+        uses: actions/cache/restore@v6.1.0
         with:
           # Outside the Gradle User Home that setup-gradle caches: this holds an immutable download from
           # fastdl.mongodb.org - the archive and the binary extracted out of it - and no database,
@@ -712,11 +754,14 @@ jobs:
           # of a binary it cannot use. No restore-keys, for that same reason.
           path: ~/.embedmongo
           key: embedmongo-${{ runner.os }}-${{ matrix.mongodb-version }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
         env:
@@ -730,6 +775,14 @@ jobs:
           -PonlyMongodbTests
           -PmongodbContainerVersion=${{ matrix.mongodb-version }}
           -PskipCodeStyle
+      - name: "🗄️ Save the mongod the embedded server runs"
+        # The download is the same on every branch, and every branch can restore the default branch's entries,
+        # so only a push to the default branch saves it; other branches and pull requests only restore it.
+        if: ${{ success() && github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch && steps.embedmongo-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.embedmongo
+          key: ${{ steps.embedmongo-cache.outputs.cache-primary-key }}
   hibernate5Functional:
     if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
     name: "Hibernate5 Functional Tests (Java ${{ matrix.java }}, indy=${{ matrix.indy }})"
@@ -753,11 +806,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
         env:
@@ -824,11 +880,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
         env:
@@ -865,11 +924,14 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🏃 Run Functional Tests"
         env:
@@ -891,11 +953,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -948,11 +1013,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -1004,11 +1072,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
@@ -1105,11 +1176,14 @@ jobs:
         with:
           distribution: liberica
           java-version: 21
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
-          # Every push writes, so each release branch keeps its own entries; a pull request only reads its base branch's.
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
           develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🔨 Build Snapshot Documentation"
         run: >

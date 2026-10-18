@@ -41,14 +41,21 @@ class GrailsBytecodeProvider implements BytecodeProvider, Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private final ByteBuddyState byteBuddyState;
     private final ByteBuddyProxyHelper proxyHelper;
 
     GrailsBytecodeProvider() {
+        this.byteBuddyState = new ByteBuddyState();
         this.proxyHelper = createProxyHelper();
     }
 
     protected ByteBuddyProxyHelper createProxyHelper() {
-        return new ByteBuddyProxyHelper(new ByteBuddyState());
+        return new ByteBuddyProxyHelper(byteBuddyState);
+    }
+
+    /** The state the proxy classes are loaded through, which the Groovy proxy wrapper is loaded through as well. */
+    ByteBuddyState getByteBuddyState() {
+        return byteBuddyState;
     }
 
     ByteBuddyProxyHelper getProxyHelper() {
