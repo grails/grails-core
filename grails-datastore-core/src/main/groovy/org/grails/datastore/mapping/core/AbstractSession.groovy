@@ -1,33 +1,29 @@
-/*
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/* Copyright (C) 2010-2025 the original author or authors.
  *
- *    https://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.grails.datastore.mapping.core
 
+import groovy.transform.CompileStatic
+
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.Executor
+
+import jakarta.persistence.FlushModeType
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.github.benmanes.caffeine.cache.RemovalCause
 import com.github.benmanes.caffeine.cache.RemovalListener
-import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
-import jakarta.persistence.FlushModeType
+
 import org.springframework.beans.BeanWrapper
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.context.ApplicationEventPublisher
@@ -70,351 +66,345 @@ import org.grails.datastore.mapping.transactions.Transaction
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['rawtypes', 'unchecked', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings(['rawtypes', 'unchecked'])
 abstract class AbstractSession<N> extends AbstractAttributeStoringSession implements SessionImplementor {
 
-    public static final String ENTITY_ACCESS = 'org.grails.gorm.ENTITY_ACCESS'
+    public static final String ENTITY_ACCESS = 'org.grails.gorm.ENTITY_ACCESS';
 
     private static final RemovalListener<PersistentEntity, Collection<PendingInsert>> EXCEPTION_THROWING_INSERT_LISTENER =
-            evictionGuard('Maximum number (5000) of insert operations to flush() exceeded. Flush the session periodically to avoid this error for batch operations.')
+            (key, value, cause) -> {
+        if (cause.wasEvicted()) {
+            throw new DataAccessResourceFailureException('Maximum number (5000) of insert operations to flush() exceeded. Flush the session periodically to avoid this error for batch operations.');
+        }
+            };
 
     private static final RemovalListener<PersistentEntity, Collection<PendingUpdate>> EXCEPTION_THROWING_UPDATE_LISTENER =
-            evictionGuard('Maximum number (5000) of update operations to flush() exceeded. Flush the session periodically to avoid this error for batch operations.')
+            (key, value, cause) -> {
+        if (cause.wasEvicted()) {
+            throw new DataAccessResourceFailureException('Maximum number (5000) of update operations to flush() exceeded. Flush the session periodically to avoid this error for batch operations.');
+        }
+            };
 
     private static final RemovalListener<PersistentEntity, Collection<PendingDelete>> EXCEPTION_THROWING_DELETE_LISTENER =
-            evictionGuard('Maximum number (5000) of delete operations to flush() exceeded. Flush the session periodically to avoid this error for batch operations.')
+            (key, value, cause) -> {
+        if (cause.wasEvicted()) {
+            throw new DataAccessResourceFailureException('Maximum number (5000) of delete operations to flush() exceeded. Flush the session periodically to avoid this error for batch operations.');
+        }
+            };
+    private static final String NULL = 'null';
 
-    private static final Executor DIRECT_EXECUTOR = { Runnable runnable -> runnable.run() } as Executor
-    private static final String NULL = 'null'
-    private static final long MAX_PENDING_OPERATIONS = 5000
+    protected Map<Class, Persister> persisters = new ConcurrentHashMap<>();
+    protected boolean isSynchronizedWithTransaction = false;
+    private MappingContext mappingContext;
+    protected ConcurrentLinkedQueue lockedObjects = new ConcurrentLinkedQueue();
+    protected Transaction transaction;
+    private Datastore datastore;
+    private FlushModeType flushMode = FlushModeType.AUTO;
+    protected Map<Class, Map<Serializable, Object>> firstLevelCache = new ConcurrentHashMap<>();
+    protected Map<Class, Map<Serializable, Object>> firstLevelEntryCache = new ConcurrentHashMap<>();
+    protected Map<Class, Map<Serializable, Object>> firstLevelEntryCacheDirtyCheck = new ConcurrentHashMap<>();
+    protected Map<CollectionKey, Collection> firstLevelCollectionCache = new ConcurrentHashMap<>();
 
-    protected Map<Class, Persister> persisters = new ConcurrentHashMap<>()
-    protected boolean isSynchronizedWithTransaction = false
-    private MappingContext mappingContext
-    protected ConcurrentLinkedQueue lockedObjects = new ConcurrentLinkedQueue()
-    protected Transaction transaction
-    private Datastore datastore
-    private FlushModeType flushMode = FlushModeType.AUTO
-    protected Map<Class, Map<Serializable, Object>> firstLevelCache = new ConcurrentHashMap<>()
-    protected Map<Class, Map<Serializable, Object>> firstLevelEntryCache = new ConcurrentHashMap<>()
-    protected Map<Class, Map<Serializable, Object>> firstLevelEntryCacheDirtyCheck = new ConcurrentHashMap<>()
-    protected Map<CollectionKey, Collection> firstLevelCollectionCache = new ConcurrentHashMap<>()
+    protected TPCacheAdapterRepository cacheAdapterRepository;
 
-    protected TPCacheAdapterRepository cacheAdapterRepository
+    private Collection<Serializable> objectsPendingOperations = new ConcurrentLinkedQueue<>();
+    private Map<PersistentEntity, Collection<PendingInsert>> pendingInserts =
+            Caffeine.newBuilder()
+                    .removalListener(EXCEPTION_THROWING_INSERT_LISTENER)
+                    .executor(Runnable::run)
+                    .maximumSize(5000).build().asMap();
 
-    private Collection<Serializable> objectsPendingOperations = new ConcurrentLinkedQueue<>()
-    private Map<PersistentEntity, Collection<PendingInsert>> pendingInserts = boundedPendingMap(EXCEPTION_THROWING_INSERT_LISTENER)
+    private Map<PersistentEntity, Collection<PendingUpdate>> pendingUpdates =
+            Caffeine.newBuilder()
+                    .removalListener(EXCEPTION_THROWING_UPDATE_LISTENER)
+                    .executor(Runnable::run)
+                    .maximumSize(5000).build().asMap();
 
-    private Map<PersistentEntity, Collection<PendingUpdate>> pendingUpdates = boundedPendingMap(EXCEPTION_THROWING_UPDATE_LISTENER)
+    private Map<PersistentEntity, Collection<PendingDelete>> pendingDeletes =
+            Caffeine.newBuilder()
+                    .removalListener(EXCEPTION_THROWING_DELETE_LISTENER)
+                    .executor(Runnable::run)
+                    .maximumSize(5000).build().asMap();
 
-    private Map<PersistentEntity, Collection<PendingDelete>> pendingDeletes = boundedPendingMap(EXCEPTION_THROWING_DELETE_LISTENER)
+    protected Collection<Runnable> postFlushOperations = new ConcurrentLinkedQueue<>();
+    private boolean exceptionOccurred;
+    protected ApplicationEventPublisher publisher;
 
-    protected Collection<Runnable> postFlushOperations = new ConcurrentLinkedQueue<>()
-    private boolean exceptionOccurred
-    protected ApplicationEventPublisher publisher
-
-    protected boolean stateless = false
-    protected boolean flushActive = false
-
-    AbstractSession(Datastore datastore, MappingContext mappingContext,
-                    ApplicationEventPublisher publisher) {
-        this(datastore, mappingContext, publisher, false)
-    }
-
-    AbstractSession(Datastore datastore, MappingContext mappingContext,
-                    ApplicationEventPublisher publisher, boolean stateless) {
-        this.mappingContext = mappingContext
-        this.datastore = datastore
-        this.publisher = publisher
-        this.stateless = stateless
-    }
-
-    AbstractSession(Datastore datastore, MappingContext mappingContext,
-                    ApplicationEventPublisher publisher, TPCacheAdapterRepository cacheAdapterRepository) {
-        this(datastore, mappingContext, publisher, false)
-        this.cacheAdapterRepository = cacheAdapterRepository
-    }
+    protected boolean stateless = false;
+    protected boolean flushActive = false;
 
     AbstractSession(Datastore datastore, MappingContext mappingContext,
-                    ApplicationEventPublisher publisher, TPCacheAdapterRepository cacheAdapterRepository, boolean stateless) {
-        this(datastore, mappingContext, publisher, stateless)
-        this.cacheAdapterRepository = cacheAdapterRepository
+                           ApplicationEventPublisher publisher) {
+        this(datastore, mappingContext, publisher, false);
     }
 
-    private static <V> RemovalListener<PersistentEntity, V> evictionGuard(final String message) {
-        return { PersistentEntity key, V value, RemovalCause cause ->
-            if (cause.wasEvicted()) {
-                throw new DataAccessResourceFailureException(message)
-            }
-        } as RemovalListener<PersistentEntity, V>
+    AbstractSession(Datastore datastore, MappingContext mappingContext,
+                           ApplicationEventPublisher publisher, boolean stateless) {
+        this.mappingContext = mappingContext;
+        this.datastore = datastore;
+        this.publisher = publisher;
+        this.stateless = stateless;
     }
 
-    private static <K, V> Map<K, V> boundedPendingMap(RemovalListener<K, V> listener) {
-        Caffeine builder = Caffeine.newBuilder()
-        builder = builder.removalListener(listener).executor(DIRECT_EXECUTOR).maximumSize(MAX_PENDING_OPERATIONS)
-        return (Map<K, V>) builder.build().asMap()
+    AbstractSession(Datastore datastore, MappingContext mappingContext,
+                           ApplicationEventPublisher publisher, TPCacheAdapterRepository cacheAdapterRepository) {
+        this(datastore, mappingContext, publisher, false);
+        this.cacheAdapterRepository = cacheAdapterRepository;
+    }
+
+    AbstractSession(Datastore datastore, MappingContext mappingContext,
+                           ApplicationEventPublisher publisher, TPCacheAdapterRepository cacheAdapterRepository, boolean stateless) {
+        this(datastore, mappingContext, publisher, stateless);
+        this.cacheAdapterRepository = cacheAdapterRepository;
     }
 
     @Override
     boolean isSchemaless() {
-        return this.datastore.isSchemaless()
+        return this.datastore.isSchemaless();
     }
 
     @Override
     boolean isStateless() {
-        return this.stateless
+        return this.stateless;
     }
 
     void addPostFlushOperation(Runnable runnable) {
         if (runnable != null && !postFlushOperations.contains(runnable)) {
-            postFlushOperations.add(runnable)
+            postFlushOperations.add(runnable);
         }
     }
 
     void addPendingInsert(PendingInsert insert) {
-        final Object o = insert.getObject()
+        final Object o = insert.getObject();
         if (o != null) {
-            registerPending(o)
+            registerPending(o);
         }
-        Collection<PendingInsert> inserts = pendingInserts.get(insert.getEntity())
+        Collection<PendingInsert> inserts = pendingInserts.get(insert.getEntity());
         if (inserts == null) {
-            inserts = new ConcurrentLinkedQueue<>()
-            pendingInserts.put(insert.getEntity(), inserts)
+            inserts = new ConcurrentLinkedQueue<>();
+            pendingInserts.put(insert.getEntity(), inserts);
         }
 
-        inserts.add(insert)
+        inserts.add(insert);
     }
 
     @Override
     boolean isPendingAlready(Object obj) {
-        Serializable id = getPersister(obj).getObjectIdentifier(obj)
+        Serializable id = getPersister(obj).getObjectIdentifier(obj);
         if (id != null) {
-            return objectsPendingOperations.contains(id)
-        }
-        else {
-            return objectsPendingOperations.contains(System.identityHashCode(obj))
+            return objectsPendingOperations.contains(id);
+        } else {
+            return objectsPendingOperations.contains(System.identityHashCode(obj));
         }
     }
 
     @Override
     void registerPending(Object obj) {
         if (obj != null) {
-            Serializable id = getPersister(obj).getObjectIdentifier(obj)
+            Serializable id = getPersister(obj).getObjectIdentifier(obj);
             if (id != null) {
                 if (!objectsPendingOperations.contains(id)) {
-                    objectsPendingOperations.add(id)
+                    objectsPendingOperations.add(id);
                 }
-            }
-            else {
-                final int identityHashCode = System.identityHashCode(obj)
+            } else {
+
+                final int identityHashCode = System.identityHashCode(obj);
                 if (!objectsPendingOperations.contains(identityHashCode)) {
-                    objectsPendingOperations.add(identityHashCode)
+                    objectsPendingOperations.add(identityHashCode);
                 }
             }
         }
     }
 
     void addPendingUpdate(PendingUpdate update) {
-        final Object o = update.getObject()
+        final Object o = update.getObject();
         if (o != null) {
-            registerPending(o)
+            registerPending(o);
         }
 
-        Collection<PendingUpdate> inserts = pendingUpdates.get(update.getEntity())
+        Collection<PendingUpdate> inserts = pendingUpdates.get(update.getEntity());
         if (inserts == null) {
-            inserts = new ConcurrentLinkedQueue<>()
-            pendingUpdates.put(update.getEntity(), inserts)
+            inserts = new ConcurrentLinkedQueue<>();
+            pendingUpdates.put(update.getEntity(), inserts);
         }
 
-        inserts.add(update)
+        inserts.add(update);
     }
 
     void addPendingDelete(PendingDelete delete) {
-        final Object o = delete.getObject()
+        final Object o = delete.getObject();
         if (o != null) {
-            registerPending(o)
+            registerPending(o);
         }
 
-        Collection<PendingDelete> deletes = pendingDeletes.get(delete.getEntity())
+        Collection<PendingDelete> deletes = pendingDeletes.get(delete.getEntity());
         if (deletes == null) {
-            deletes = new ConcurrentLinkedQueue<>()
-            pendingDeletes.put(delete.getEntity(), deletes)
+            deletes = new ConcurrentLinkedQueue<>();
+            pendingDeletes.put(delete.getEntity(), deletes);
         }
 
-        deletes.add(delete)
+        deletes.add(delete);
     }
 
     Object getCachedEntry(PersistentEntity entity, Serializable key) {
-        if (isStateless(entity)) {
-            return null
-        }
-        return getCachedEntry(entity, key, false)
+        if (isStateless(entity)) return null;
+        return getCachedEntry(entity, key, false);
     }
 
     Object getCachedEntry(PersistentEntity entity, Serializable key, boolean forDirtyCheck) {
-        if (isStateless(entity)) {
-            return null
-        }
+        if (isStateless(entity)) return null;
         if (key == null) {
-            return null
+            return null;
         }
 
-        return getEntryCache(entity.getJavaClass(), forDirtyCheck).get(key)
+        return getEntryCache(entity.getJavaClass(), forDirtyCheck).get(key);
     }
 
     void cacheEntry(PersistentEntity entity, Serializable key, Object entry) {
-        if (isStateless(entity)) {
-            return
-        }
+        if (isStateless(entity)) return;
         if (key == null || entry == null) {
-            return
+            return;
         }
 
-        cacheEntry(key, entry, getEntryCache(entity.getJavaClass(), true), true)
-        cacheEntry(key, entry, getEntryCache(entity.getJavaClass(), false), false)
+        cacheEntry(key, entry, getEntryCache(entity.getJavaClass(), true), true);
+        cacheEntry(key, entry, getEntryCache(entity.getJavaClass(), false), false);
     }
 
     boolean isStateless(PersistentEntity entity) {
-        Entity mappedForm = entity != null ? entity.getMapping().getMappedForm() : null
-        return isStateless() || (mappedForm != null && mappedForm.isStateless())
+        Entity mappedForm = entity != null ? entity.getMapping().getMappedForm() : null;
+        return isStateless() || (mappedForm != null && mappedForm.isStateless());
     }
 
     protected void cacheEntry(Serializable key, Object entry, Map<Serializable, Object> entryCache, boolean forDirtyCheck) {
-        if (isStateless()) {
-            return
-        }
-        entryCache.put(key, entry)
+        if (isStateless()) return;
+        entryCache.put(key, entry);
     }
 
     Collection getCachedCollection(PersistentEntity entity, Serializable key, String name) {
-        if (isStateless(entity)) {
-            return null
-        }
+        if (isStateless(entity)) return null;
         if (key == null || name == null) {
-            return null
+            return null;
         }
 
         return firstLevelCollectionCache.get(
-                new CollectionKey(entity.getJavaClass(), key, name))
+                new CollectionKey(entity.getJavaClass(), key, name));
     }
 
     void cacheCollection(PersistentEntity entity, Serializable key, Collection collection, String name) {
-        if (isStateless(entity)) {
-            return
-        }
+        if (isStateless(entity)) return;
         if (key == null || collection == null || name == null) {
-            return
+            return;
         }
 
         firstLevelCollectionCache.put(
                 new CollectionKey(entity.getJavaClass(), key, name),
-                collection)
+                collection);
     }
 
     Map<PersistentEntity, Collection<PendingInsert>> getPendingInserts() {
-        return pendingInserts
+        return pendingInserts;
     }
 
     Map<PersistentEntity, Collection<PendingUpdate>> getPendingUpdates() {
-        return pendingUpdates
+        return pendingUpdates;
     }
 
     Map<PersistentEntity, Collection<PendingDelete>> getPendingDeletes() {
-        return pendingDeletes
+        return pendingDeletes;
     }
 
     FlushModeType getFlushMode() {
-        return flushMode
+        return flushMode;
     }
 
     void setFlushMode(FlushModeType flushMode) {
-        this.flushMode = flushMode
+        this.flushMode = flushMode;
     }
 
     Datastore getDatastore() {
-        return datastore
+        return datastore;
     }
 
     MappingContext getMappingContext() {
-        return mappingContext
+        return mappingContext;
     }
 
     void flush() {
-        if (flushActive) {
-            return
-        }
+        if (flushActive) return;
 
-        boolean hasInserts = false
+        boolean hasInserts;
         try {
             if (exceptionOccurred) {
                 throw new InvalidDataAccessResourceUsageException(
-                        'Do not flush() the Session after an exception occurs')
+                        'Do not flush() the Session after an exception occurs');
             }
 
-            flushActive = true
+            flushActive = true;
 
-            hasInserts = hasPendingOperations()
+            hasInserts = hasPendingOperations();
             if (hasInserts) {
-                flushPendingInserts(pendingInserts)
-                flushPendingUpdates(pendingUpdates)
-                flushPendingDeletes(pendingDeletes)
+                flushPendingInserts(pendingInserts);
+                flushPendingUpdates(pendingUpdates);
+                flushPendingDeletes(pendingDeletes);
 
-                firstLevelCollectionCache.clear()
+                firstLevelCollectionCache.clear();
 
-                executePendings(postFlushOperations)
+                executePendings(postFlushOperations);
             }
+
+        } finally {
+            clearPendingOperations();
+            flushActive = false;
         }
-        finally {
-            clearPendingOperations()
-            flushActive = false
-        }
-        postFlush(hasInserts)
+        postFlush(hasInserts);
     }
 
     protected void flushPendingDeletes(Map<PersistentEntity, Collection<PendingDelete>> pendingDeletes) {
-        final Collection<Collection<PendingDelete>> deletes = pendingDeletes.values()
-        for (Collection<PendingDelete> delete in deletes) {
-            flushPendingOperations(delete)
+        final Collection<Collection<PendingDelete>> deletes = pendingDeletes.values();
+        for (Collection<PendingDelete> delete : deletes) {
+            flushPendingOperations(delete);
         }
     }
 
     boolean isDirty(Object instance) {
+
         if (instance == null) {
-            return false
+            return false;
         }
 
-        EntityPersister persister = (EntityPersister) getPersister(instance)
+        EntityPersister persister = (EntityPersister) getPersister(instance);
         if (persister == null) {
-            return false
+            return false;
         }
 
         if (instance instanceof DirtyCheckable) {
-            return ((DirtyCheckable) instance).hasChanged() || DirtyCheckingSupport.areAssociationsDirty(persister.getPersistentEntity(), instance)
+            return ((DirtyCheckable) instance).hasChanged() || DirtyCheckingSupport.areAssociationsDirty(persister.getPersistentEntity(), instance);
         }
 
         if (!(persister instanceof NativeEntryEntityPersister)) {
-            return false
+            return false;
         }
 
-        Serializable id = persister.getObjectIdentifier(instance)
+        Serializable id = persister.getObjectIdentifier(instance);
         if (id == null) {
             // not persistent
-            return false
+            return false;
         }
 
-        Object entry = getCachedEntry(persister.getPersistentEntity(), id, false)
-        Object instance2 = getCachedInstance(instance.getClass(), id)
-        return !instance.is(instance2) || ((NativeEntryEntityPersister) persister).isDirty(instance, entry)
+        Object entry = getCachedEntry(persister.getPersistentEntity(), id, false);
+        Object instance2 = getCachedInstance(instance.getClass(), id);
+        return !instance.is(instance2) || ((NativeEntryEntityPersister) persister).isDirty(instance, entry);
     }
 
     @Override
     Serializable getObjectIdentifier(Object instance) {
-        Persister persister = getPersister(instance)
+        Persister persister = getPersister(instance);
         if (persister != null) {
-            return persister.getObjectIdentifier(instance)
+            return persister.getObjectIdentifier(instance);
         }
-        return null
+        return null;
     }
 
     /**
@@ -425,8 +415,8 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
      * @param updates
      */
     protected void flushPendingUpdates(Map<PersistentEntity, Collection<PendingUpdate>> updates) {
-        for (Collection<PendingUpdate> pending in updates.values()) {
-            flushPendingOperations(pending)
+        for (Collection<PendingUpdate> pending : updates.values()) {
+            flushPendingOperations(pending);
         }
     }
 
@@ -438,28 +428,27 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
      * @param inserts The insert operations
      */
     protected void flushPendingInserts(Map<PersistentEntity, Collection<PendingInsert>> inserts) {
-        for (Collection<PendingInsert> pending in inserts.values()) {
-            flushPendingOperations(pending)
+        for (Collection<PendingInsert> pending : inserts.values()) {
+            flushPendingOperations(pending);
         }
     }
 
     private void flushPendingOperations(Collection operations) {
-        for (Object o in operations) {
-            PendingOperation pendingOperation = (PendingOperation) o
+        for (Object o : operations) {
+            PendingOperation pendingOperation = (PendingOperation) o;
             try {
-                PendingOperationExecution.executePendingOperation(pendingOperation)
-            }
-            catch (RuntimeException e) {
-                setFlushMode(FlushModeType.COMMIT)
-                exceptionOccurred = true
-                throw e
+                PendingOperationExecution.executePendingOperation(pendingOperation);
+            } catch (RuntimeException e) {
+                setFlushMode(FlushModeType.COMMIT);
+                exceptionOccurred = true;
+                throw e;
             }
         }
     }
 
     @Override
     boolean hasPendingOperations() {
-        return !pendingInserts.isEmpty() || !pendingUpdates.isEmpty() || !pendingDeletes.isEmpty() || !postFlushOperations.isEmpty()
+        return !pendingInserts.isEmpty() || !pendingUpdates.isEmpty() || !pendingDeletes.isEmpty() || !postFlushOperations.isEmpty();
     }
 
     protected void postFlush(boolean hasUpdates) {
@@ -468,273 +457,258 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
 
     protected void executePendings(Collection<? extends Runnable> pendings) {
         try {
-            for (Runnable pending in pendings) {
-                pending.run()
+            for (Runnable pending : pendings) {
+                pending.run();
             }
-        }
-        catch (RuntimeException e) {
-            setFlushMode(FlushModeType.COMMIT)
-            exceptionOccurred = true
-            throw e
+        } catch (RuntimeException e) {
+            setFlushMode(FlushModeType.COMMIT);
+            exceptionOccurred = true;
+            throw e;
         }
     }
 
     void clear() {
-        clearMaps(firstLevelCache)
-        clearMaps(firstLevelEntryCache)
-        clearMaps(firstLevelEntryCacheDirtyCheck)
-        firstLevelCollectionCache.clear()
-        clearPendingOperations()
-        attributes.clear()
-        exceptionOccurred = false
+        clearMaps(firstLevelCache);
+        clearMaps(firstLevelEntryCache);
+        clearMaps(firstLevelEntryCacheDirtyCheck);
+        firstLevelCollectionCache.clear();
+        clearPendingOperations();
+        attributes.clear();
+        exceptionOccurred = false;
     }
 
     protected void clearPendingOperations() {
-        objectsPendingOperations.clear()
-        pendingInserts.clear()
-        pendingUpdates.clear()
-        pendingDeletes.clear()
-        postFlushOperations.clear()
+        objectsPendingOperations.clear();
+        pendingInserts.clear();
+        pendingUpdates.clear();
+        pendingDeletes.clear();
+        postFlushOperations.clear();
     }
 
     private void clearMaps(Map<Class, Map<Serializable, Object>> mapOfMaps) {
-        for (Map<Serializable, Object> cache in mapOfMaps.values()) {
-            cache.clear()
+        for (Map<Serializable, Object> cache : mapOfMaps.values()) {
+            cache.clear();
         }
     }
 
     final Persister getPersister(Object o) {
-        if (o == null) {
-            return null
-        }
-        Class cls
+        if (o == null) return null;
+        Class cls;
         if (o instanceof Class) {
-            cls = (Class) o
+            cls = (Class) o;
+        } else if (o instanceof PersistentEntity) {
+            cls = ((PersistentEntity) o).getJavaClass();
+        } else {
+            cls = o.getClass();
         }
-        else if (o instanceof PersistentEntity) {
-            cls = ((PersistentEntity) o).getJavaClass()
-        }
-        else {
-            cls = o.getClass()
-        }
-        Persister p = persisters.get(cls)
+        Persister p = persisters.get(cls);
         if (p == null) {
-            p = createPersister(cls, getMappingContext())
+            p = createPersister(cls, getMappingContext());
             if (p != null) {
                 if (!isStateless(((EntityPersister) p).getPersistentEntity())) {
-                    firstLevelCache.put(cls, new ConcurrentHashMap<>())
+                    firstLevelCache.put(cls, new ConcurrentHashMap<>());
                 }
-                persisters.put(cls, p)
+                persisters.put(cls, p);
             }
         }
-        return p
+        return p;
     }
 
-    protected abstract Persister createPersister(Class cls, MappingContext mappingContext)
+    protected abstract Persister createPersister(Class cls, MappingContext mappingContext);
 
     boolean contains(Object o) {
         if (o == null || isStateless()) {
-            return false
+            return false;
         }
 
-        final Serializable identifier = getObjectIdentifier(o)
+        final Serializable identifier = getObjectIdentifier(o);
         if (identifier != null) {
-            return getInstanceCache(o.getClass()).containsKey(identifier)
-        }
-        else {
-            return getInstanceCache(o.getClass()).containsValue(o)
+            return getInstanceCache(o.getClass()).containsKey(identifier);
+        } else {
+            return getInstanceCache(o.getClass()).containsValue(o);
         }
     }
 
     boolean isCached(Class type, Serializable key) {
-        PersistentEntity entity = getMappingContext().getPersistentEntity(type.getName())
+        PersistentEntity entity = getMappingContext().getPersistentEntity(type.getName());
         if (type == null || key == null || isStateless(entity)) {
-            return false
+            return false;
         }
 
-        return getInstanceCache(type).containsKey(key)
+        return getInstanceCache(type).containsKey(key);
     }
 
     void cacheInstance(Class type, Serializable key, Object instance) {
         if (type == null || key == null || instance == null) {
-            return
+            return;
         }
-        if (isStateless(getMappingContext().getPersistentEntity(type.getName()))) {
-            return
-        }
-        getInstanceCache(type).put(key, instance)
+        if (isStateless(getMappingContext().getPersistentEntity(type.getName()))) return;
+        getInstanceCache(type).put(key, instance);
     }
 
     Object getCachedInstance(Class type, Serializable key) {
-        if (isStateless()) {
-            return null
-        }
+        if (isStateless()) return null;
         if (type == null || key == null) {
-            return null
+            return null;
         }
-        if (isStateless(getMappingContext().getPersistentEntity(type.getName()))) {
-            return null
-        }
-        return getInstanceCache(type).get(key)
+        if (isStateless(getMappingContext().getPersistentEntity(type.getName()))) return null;
+        return getInstanceCache(type).get(key);
     }
 
     void clear(Object o) {
         if (o == null || isStateless()) {
-            return
+            return;
         }
 
-        final Map<Serializable, Object> cache = firstLevelCache.get(o.getClass())
+        final Map<Serializable, Object> cache = firstLevelCache.get(o.getClass());
         if (cache != null) {
-            Persister persister = getPersister(o)
-            Serializable key = persister.getObjectIdentifier(o)
+            Persister persister = getPersister(o);
+            Serializable key = persister.getObjectIdentifier(o);
             if (key != null) {
-                cache.remove(key)
+                cache.remove(key);
             }
         }
-        removeAttributesForEntity(o)
+        removeAttributesForEntity(o);
     }
 
     void attach(Object o) {
         if (o == null) {
-            return
+            return;
         }
 
-        EntityPersister p = (EntityPersister) getPersister(o)
+        EntityPersister p = (EntityPersister) getPersister(o);
         if (p == null) {
-            return
+            return;
         }
 
-        Serializable identifier = p.getObjectIdentifier(o)
+        Serializable identifier = p.getObjectIdentifier(o);
         if (identifier != null) {
-            cacheObject(identifier, o)
+            cacheObject(identifier, o);
         }
     }
 
     protected void cacheObject(Serializable identifier, Object o) {
         if (identifier == null || o == null) {
-            return
+            return;
         }
-        cacheInstance(o.getClass(), identifier, o)
+        cacheInstance(o.getClass(), identifier, o);
     }
 
     Serializable persist(Object o) {
-        Assert.notNull(o, 'Cannot persist null object')
-        Persister persister = getPersister(o)
+        Assert.notNull(o, 'Cannot persist null object');
+        Persister persister = getPersister(o);
         if (persister == null) {
             throw new NonPersistentTypeException('Object [' + o +
-                    '] cannot be persisted. It is not a known persistent type.')
+                    '] cannot be persisted. It is not a known persistent type.');
         }
 
-        final Serializable key = persister.persist(o)
-        cacheObject(key, o)
-        return key
+        final Serializable key = persister.persist(o);
+        cacheObject(key, o);
+        return key;
     }
 
     @Override
     Serializable insert(Object o) {
-        Assert.notNull(o, 'Cannot persist null object')
-        Persister persister = getPersister(o)
+        Assert.notNull(o, 'Cannot persist null object');
+        Persister persister = getPersister(o);
         if (persister == null) {
             throw new NonPersistentTypeException('Object [' + o +
-                    '] cannot be persisted. It is not a known persistent type.')
+                    '] cannot be persisted. It is not a known persistent type.');
         }
 
-        final Serializable key = persister.insert(o)
-        cacheObject(key, o)
-        return key
+        final Serializable key = persister.insert(o);
+        cacheObject(key, o);
+        return key;
     }
 
     void refresh(Object o) {
-        Assert.notNull(o, 'Cannot persist null object')
-        Persister persister = getPersister(o)
+        Assert.notNull(o, 'Cannot persist null object');
+        Persister persister = getPersister(o);
         if (persister == null) {
             throw new NonPersistentTypeException('Object [' + o +
-                    '] cannot be refreshed. It is not a known persistent type.')
+                    '] cannot be refreshed. It is not a known persistent type.');
         }
 
-        final Serializable key = persister.refresh(o)
-        cacheObject(key, o)
+        final Serializable key = persister.refresh(o);
+        cacheObject(key, o);
     }
 
     Object retrieve(Class type, Serializable key) {
         if (key == null || type == null || NULL.equals(key)) {
-            return null
+            return null;
         }
 
-        Persister persister = getPersister(type)
+        Persister persister = getPersister(type);
         if (persister == null) {
             throw new NonPersistentTypeException('Cannot retrieve object with key [' + key +
-                    ']. The class [' + type.getName() + '] is not a known persistent type.')
+                    ']. The class [' + type.getName() + '] is not a known persistent type.');
         }
 
-        Serializable resolvedKey = key
-        final PersistentEntity entity = ((EntityPersister) persister).getPersistentEntity()
+        final PersistentEntity entity = ((EntityPersister) persister).getPersistentEntity();
         if (entity != null) {
-            final PersistentProperty identity = entity.getIdentity()
+            final PersistentProperty identity = entity.getIdentity();
             if (!identity.getType().isAssignableFrom(key.getClass())) {
-                resolvedKey = convertIdentityIfNecessasry(identity, key)
+                key = convertIdentityIfNecessasry(identity, key);
             }
         }
 
-        if (resolvedKey == null) {
-            return null
+        if (key == null) {
+            return null;
         }
 
-        Object o = getInstanceCache(type).get(resolvedKey)
+        Object o = getInstanceCache(type).get(key);
         if (o == null) {
-            o = persister.retrieve(resolvedKey)
+            o = persister.retrieve(key);
             if (o != null) {
-                cacheObject(resolvedKey, o)
+                cacheObject(key, o);
             }
         }
-        return o
+        return o;
     }
 
     protected Serializable convertIdentityIfNecessasry(PersistentProperty identity, Serializable key) {
-        ConversionService conversionService = getMappingContext().getConversionService()
-        Serializable converted = key
+        ConversionService conversionService = getMappingContext().getConversionService();
         if (conversionService.canConvert(key.getClass(), identity.getType())) {
             try {
-                converted = (Serializable) conversionService.convert(key, identity.getType())
-            }
-            catch (ConversionFailedException ignored) {
+                key = (Serializable) conversionService.convert(key, identity.getType());
+            } catch (ConversionFailedException ignored) {
                 // ignore
             }
         }
-        return converted
+        return key;
     }
 
     Object proxy(Class type, Serializable key) {
         if (key == null || type == null) {
-            return null
+            return null;
         }
 
-        Persister persister = getPersister(type)
+        Persister persister = getPersister(type);
         if (persister == null) {
             throw new NonPersistentTypeException('Cannot retrieve object with key [' + key +
-                    ']. The class [' + type.getName() + '] is not a known persistent type.')
+                    ']. The class [' + type.getName() + '] is not a known persistent type.');
         }
 
         // only return proxy if real instance is not available.
-        Object o = getInstanceCache(type).get(key)
+        Object o = getInstanceCache(type).get(key);
         if (o == null) {
-            o = persister.proxy(key)
+            o = persister.proxy(key);
         }
 
-        return o
+        return o;
     }
 
     void lock(Object o) {
-        throw new UnsupportedOperationException('Datastore [' + getClass().getName() + '] does not support locking.')
+        throw new UnsupportedOperationException('Datastore [' + getClass().getName() + '] does not support locking.');
     }
 
     Object lock(Class type, Serializable key) {
-        throw new UnsupportedOperationException('Datastore [' + getClass().getName() + '] does not support locking.')
+        throw new UnsupportedOperationException('Datastore [' + getClass().getName() + '] does not support locking.');
     }
 
     void unlock(Object o) {
         if (o != null) {
-            lockedObjects.remove(o)
+            lockedObjects.remove(o);
         }
     }
 
@@ -746,9 +720,9 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
      * @param criteria The criteria
      */
     long deleteAll(QueryableCriteria criteria) {
-        List list = criteria.list()
-        delete(list)
-        return list.size()
+        List list = criteria.list();
+        delete(list);
+        return list.size();
     }
 
     /**
@@ -760,154 +734,153 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
      * @param properties The properties
      */
     long updateAll(QueryableCriteria criteria, Map<String, Object> properties) {
-        List list = criteria.list()
-        for (Object o in list) {
-            BeanWrapper bean = new BeanWrapperImpl(o)
-            for (String property in properties.keySet()) {
-                bean.setPropertyValue(property, properties.get(property))
+        List list = criteria.list();
+        for (Object o : list) {
+            BeanWrapper bean = new BeanWrapperImpl(o);
+            for (String property : properties.keySet()) {
+                bean.setPropertyValue(property, properties.get(property));
             }
         }
-        persist(list)
-        return list.size()
+        persist(list);
+        return list.size();
     }
 
     void delete(final Object obj) {
         if (obj == null) {
-            return
+            return;
         }
 
-        final EntityPersister p = (EntityPersister) getPersister(obj)
+        final EntityPersister p = (EntityPersister) getPersister(obj);
         if (p == null) {
-            return
+            return;
         }
 
-        p.delete(obj)
-        clear(obj)
+        p.delete(obj);
+        clear(obj);
     }
 
     void delete(final Iterable objects) {
         if (objects == null) {
-            return
+            return;
         }
 
         // sort the objects into sets by Persister, in case the objects are of different types.
-        Map<Persister, List> toDelete = new HashMap<>()
-        for (Object object in objects) {
+        Map<Persister, List> toDelete = new HashMap<>();
+        for (Object object : objects) {
             if (object == null) {
-                continue
+                continue;
             }
-            final Persister p = getPersister(object)
+            final Persister p = getPersister(object);
             if (p == null) {
-                continue
+                continue;
             }
-            List listForPersister = toDelete.get(p)
+            List listForPersister = toDelete.get(p);
             if (listForPersister == null) {
-                listForPersister = new ArrayList()
-                toDelete.put(p, listForPersister)
+                toDelete.put(p, listForPersister = new ArrayList());
             }
-            listForPersister.add(object)
+            listForPersister.add(object);
         }
         // for each type (usually only 1 type), set up a pendingDelete of that type
-        for (Map.Entry<Persister, List> entry in toDelete.entrySet()) {
-            final EntityPersister p = (EntityPersister) entry.getKey()
-            p.delete(entry.getValue())
+        for (Map.Entry<Persister, List> entry : toDelete.entrySet()) {
+            final EntityPersister p = (EntityPersister) entry.getKey();
+            p.delete(entry.getValue());
         }
     }
 
     List<Serializable> persist(Iterable objects) {
         if (objects == null) {
-            return Collections.emptyList()
+            return Collections.emptyList();
         }
 
-        final Iterator i = objects.iterator()
+        final Iterator i = objects.iterator();
         if (!i.hasNext()) {
-            return Collections.emptyList()
+            return Collections.emptyList();
         }
 
         // peek at the first object to get the persister
-        final Object obj = i.next()
-        final Persister p = getPersister(obj)
+        final Object obj = i.next();
+        final Persister p = getPersister(obj);
         if (p == null) {
             throw new NonPersistentTypeException('Cannot persist objects. The class [' +
-                    obj.getClass().getName() + '] is not a known persistent type.')
+                    obj.getClass().getName() + '] is not a known persistent type.');
         }
 
-        return p.persist(objects)
+        return p.persist(objects);
     }
 
     List retrieveAll(Class type, Iterable keys) {
-        EntityPersister p = (EntityPersister) getPersister(type)
+        EntityPersister p = (EntityPersister) getPersister(type);
         if (p == null) {
             throw new NonPersistentTypeException('Cannot retrieve objects with keys [' + keys +
-                    ']. The class [' + type.getName() + '] is not a known persistent type.')
+                    ']. The class [' + type.getName() + '] is not a known persistent type.');
         }
 
-        List list = new ArrayList()
-        List<Serializable> toRetrieve = new ArrayList<>()
-        final Map<Serializable, Object> cache = getInstanceCache(type)
-        for (Object key in keys) {
-            Serializable serializable = (Serializable) key
-            Object cached = cache.get(serializable)
-            list.add(cached)
+        List list = new ArrayList();
+        List<Serializable> toRetrieve = new ArrayList<>();
+        final Map<Serializable, Object> cache = getInstanceCache(type);
+        for (Object key : keys) {
+            Serializable serializable = (Serializable) key;
+            Object cached = cache.get(serializable);
+            list.add(cached);
             if (cached == null) {
-                toRetrieve.add(serializable)
+                toRetrieve.add(serializable);
             }
         }
-        List<Object> retrieved = p.retrieveAll(toRetrieve)
-        Iterator<Serializable> keyIterator = toRetrieve.iterator()
-        Map<Serializable, Object> retrievedMap = new HashMap<>()
-        for (Object o in retrieved) {
-            final Serializable identifier = p.getObjectIdentifier(o)
+        List<Object> retrieved = p.retrieveAll(toRetrieve);
+        Iterator<Serializable> keyIterator = toRetrieve.iterator();
+        Map<Serializable, Object> retrievedMap = new HashMap<>();
+        for (Object o : retrieved) {
+            final Serializable identifier = p.getObjectIdentifier(o);
             if (identifier != null) {
-                retrievedMap.put(identifier, o)
+                retrievedMap.put(identifier, o);
             }
         }
         // now fill in the null entries (possibly with more nulls)
         for (int i = 0; i < list.size(); i++) {
-            Object o = list.get(i)
+            Object o = list.get(i);
             if (o == null) {
                 if (keyIterator.hasNext()) {
-                    Serializable key = keyIterator.next()
-                    key = (Serializable) mappingContext.getConversionService().convert(key, p.getPersistentEntity().getIdentity().getType())
-                    final Object next = retrievedMap.get(key)
-                    list.set(i, next)
-                    cacheInstance(type, key, next)
+                    Serializable key = keyIterator.next();
+                    key = (Serializable) mappingContext.getConversionService().convert(key, p.getPersistentEntity().getIdentity().getType());
+                    final Object next = retrievedMap.get(key);
+                    list.set(i, next);
+                    cacheInstance(type, key, next);
                 }
             }
         }
-        return list
+        return list;
     }
 
     List retrieveAll(Class type, Serializable... keys) {
-        Persister p = getPersister(type)
+        Persister p = getPersister(type);
         if (p == null) {
             throw new NonPersistentTypeException('Cannot retrieve objects with keys [' + keys +
-                    ']. The class [' + type.getName() + '] is not a known persistent type.')
+                    ']. The class [' + type.getName() + '] is not a known persistent type.');
         }
-        return retrieveAll(type, Arrays.asList(keys))
+        return retrieveAll(type, Arrays.asList(keys));
     }
 
     Query createQuery(Class type) {
-        Persister p = getPersister(type)
+        Persister p = getPersister(type);
         if (p == null) {
             throw new NonPersistentTypeException('Cannot create query. The class [' + type +
-                    '] is not a known persistent type.')
+                    '] is not a known persistent type.');
         }
 
-        return p.createQuery()
+        return p.createQuery();
     }
 
     final Transaction beginTransaction() {
-        return beginTransaction(new DefaultTransactionDefinition())
+        return beginTransaction(new DefaultTransactionDefinition());
     }
 
     @Override
     Transaction beginTransaction(TransactionDefinition definition) {
-        transaction = beginTransactionInternal(definition)
-        return transaction
+        transaction = beginTransactionInternal(definition);
+        return transaction;
     }
 
-    protected abstract Transaction beginTransactionInternal()
+    protected abstract Transaction beginTransactionInternal();
 
     /**
      * Begins a transaction for the given definition. The default implementation ignores the
@@ -919,43 +892,43 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
      * @return the started transaction
      */
     protected Transaction beginTransactionInternal(TransactionDefinition definition) {
-        return beginTransactionInternal()
+        return beginTransactionInternal();
     }
 
     Transaction getTransaction() {
         if (transaction == null) {
-            throw new NoTransactionException('Transaction not started. Call beginTransaction() first')
+            throw new NoTransactionException('Transaction not started. Call beginTransaction() first');
         }
-        return transaction
+        return transaction;
     }
 
     @Override
     boolean hasTransaction() {
-        return transaction != null
+        return transaction != null;
     }
 
     private Map<Serializable, Object> getInstanceCache(Class c) {
-        Map<Serializable, Object> cache = firstLevelCache.get(c)
+        Map<Serializable, Object> cache = firstLevelCache.get(c);
         if (cache == null) {
-            cache = new ConcurrentHashMap<>()
-            firstLevelCache.put(c, cache)
+            cache = new ConcurrentHashMap<>();
+            firstLevelCache.put(c, cache);
         }
-        return cache
+        return cache;
     }
 
     private Map<Serializable, Object> getEntryCache(Class c, boolean forDirtyCheck) {
-        Map<Class, Map<Serializable, Object>> caches = forDirtyCheck ? firstLevelEntryCacheDirtyCheck : firstLevelEntryCache
-        Map<Serializable, Object> cache = caches.get(c)
+        Map<Class, Map<Serializable, Object>> caches = forDirtyCheck ? firstLevelEntryCacheDirtyCheck : firstLevelEntryCache;
+        Map<Serializable, Object> cache = caches.get(c);
         if (cache == null) {
-            cache = new ConcurrentHashMap<>()
-            caches.put(c, cache)
+            cache = new ConcurrentHashMap<>();
+            caches.put(c, cache);
         }
-        return cache
+        return cache;
     }
 
     @Override
     EntityAccess createEntityAccess(PersistentEntity entity, Object instance) {
-        return getMappingContext().createEntityAccess(entity, instance)
+        return getMappingContext().createEntityAccess(entity, instance);
     }
 
     /**
@@ -964,45 +937,40 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
      * @param isSynchronizedWithTransaction True if it is
      */
     void setSynchronizedWithTransaction(boolean isSynchronizedWithTransaction) {
-        this.isSynchronizedWithTransaction = isSynchronizedWithTransaction
+        this.isSynchronizedWithTransaction = isSynchronizedWithTransaction;
     }
 
-    @PackageScope
-    static class CollectionKey {
+    private static class CollectionKey {
+        final Class clazz;
+        final Serializable key;
+        final String collectionName;
 
-        private final Class clazz
-        private final Serializable key
-        private final String collectionName
-
-        @PackageScope
-        CollectionKey(Class clazz, Serializable key, String collectionName) {
-            this.clazz = clazz
-            this.key = key
-            this.collectionName = collectionName
+        private CollectionKey(Class clazz, Serializable key, String collectionName) {
+            this.clazz = clazz;
+            this.key = key;
+            this.collectionName = collectionName;
         }
 
         @Override
         int hashCode() {
-            int value = 17
-            value = value * 37 + clazz.getName().hashCode()
-            value = value * 37 + key.hashCode()
-            value = value * 37 + collectionName.hashCode()
-            return value
+            int value = 17;
+            value = value * 37 + clazz.getName().hashCode();
+            value = value * 37 + key.hashCode();
+            value = value * 37 + collectionName.hashCode();
+            return value;
         }
 
         @Override
         boolean equals(Object obj) {
-            CollectionKey other = (CollectionKey) obj
+            CollectionKey other = (CollectionKey) obj;
             return other.clazz.getName() == clazz.getName() &&
                     other.key.equals(key) &&
-                    other.collectionName.equals(collectionName)
+                    other.collectionName.equals(collectionName);
         }
 
         @Override
         String toString() {
-            return clazz.getName() + ':' + key + ':' + collectionName
+            return clazz.getName() + ':' + key + ':' + collectionName;
         }
-
     }
-
 }

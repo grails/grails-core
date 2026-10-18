@@ -16,16 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.grails.web.layout
+@SuppressWarnings('UnnecessarySemicolon')
+package org.apache.grails.web.layout;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import com.opensymphony.module.sitemesh.HTMLPage
-import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
-import com.opensymphony.sitemesh.Content
-import com.opensymphony.sitemesh.compatability.Content2HTMLPage
+import com.opensymphony.module.sitemesh.HTMLPage;
+import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
+import com.opensymphony.sitemesh.Content;
+import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
 
-import org.grails.buffer.StreamCharBuffer
+import org.grails.buffer.StreamCharBuffer;
 
 /**
  * Grails/GSP specific implementation of Sitemesh's AbstractHTMLPage
@@ -35,46 +36,48 @@ import org.grails.buffer.StreamCharBuffer
  *
  * @author Lari Hotari, Sagire Software Oy
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
 
-    StreamCharBuffer headBuffer
-    StreamCharBuffer bodyBuffer
-    StreamCharBuffer pageBuffer
-    StreamCharBuffer titleBuffer
-    boolean used
-    boolean titleCaptured
-    Map<String, StreamCharBuffer> contentBuffers
-    private boolean renderingLayout
+    StreamCharBuffer headBuffer;
+    StreamCharBuffer bodyBuffer;
+    StreamCharBuffer pageBuffer;
+    StreamCharBuffer titleBuffer;
+    boolean used;
+    boolean titleCaptured;
+    Map<String, StreamCharBuffer> contentBuffers;
+    private boolean renderingLayout;
 
     GSPGrailsLayoutPage() {
-        this(false)
+        this(false);
     }
 
     GSPGrailsLayoutPage(boolean renderingLayout) {
-        reset()
-        this.renderingLayout = renderingLayout
+        reset();
+        this.renderingLayout = renderingLayout;
     }
 
     void reset() {
-        headBuffer = null
-        bodyBuffer = null
-        pageBuffer = null
-        titleBuffer = null
-        used = false
-        titleCaptured = false
-        contentBuffers = null
-        renderingLayout = false
+        headBuffer = null;
+        bodyBuffer = null;
+        pageBuffer = null;
+        titleBuffer = null;
+        used = false;
+        titleCaptured = false;
+        contentBuffers = null;
+        renderingLayout = false;
     }
 
     void addProperty(String name, Object value) {
-        addProperty(name, (value == null ? null : String.valueOf(value)))
+        addProperty(name, (value == null ? null : String.valueOf(value)));
     }
 
     @Override
     void addProperty(String name, String value) {
-        super.addProperty(name, value)
-        used = true
+        super.addProperty(name, value);
+        used = true;
     }
 
     /**
@@ -84,120 +87,118 @@ class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
      */
     @Override
     String getProperty(String name) {
-        return super.getProperty(name)
+        return super.getProperty(name);
     }
 
     @Override
     void writeHead(Writer out) throws IOException {
         if (headBuffer == null) {
-            return
+            return;
         }
 
         if (titleCaptured) {
             if (titleBuffer != null) {
-                int headlen = headBuffer.length()
-                titleBuffer.clear()
+                int headlen = headBuffer.length();
+                titleBuffer.clear();
                 if (headBuffer.length() < headlen) {
-                    headBuffer.writeTo(out)
-                    return
+                    headBuffer.writeTo(out);
+                    return;
                 }
             }
-            String headAsString = headBuffer.toString()
+            String headAsString = headBuffer.toString();
             // strip out title for Grails Layout version of <head>
-            out.write(headAsString.replaceFirst('(?is)<title(\\s[^>]*)?>(.*?)</title>', ''))
-        }
-        else {
-            headBuffer.writeTo(out)
+            out.write(headAsString.replaceFirst('(?is)<title(\\s[^>]*)?>(.*?)</title>', ''));
+        } else {
+            headBuffer.writeTo(out);
         }
     }
 
     @Override
     void writeBody(Writer out) throws IOException {
         if (bodyBuffer != null) {
-            bodyBuffer.writeTo(out)
-        }
-        else if (pageBuffer != null) {
+            bodyBuffer.writeTo(out);
+        } else if (pageBuffer != null) {
             // no body was captured, so write the whole page content
-            pageBuffer.writeTo(out)
+            pageBuffer.writeTo(out);
         }
     }
 
     @Override
     void writePage(Writer out) throws IOException {
         if (pageBuffer != null) {
-            pageBuffer.writeTo(out)
+            pageBuffer.writeTo(out);
         }
     }
 
     String getHead() {
         if (headBuffer != null) {
-            return headBuffer.toString()
+            return headBuffer.toString();
         }
-        return null
+        return null;
     }
 
     @Override
     String getBody() {
         if (bodyBuffer != null) {
-            return bodyBuffer.toString()
+            return bodyBuffer.toString();
         }
-        return null
+        return null;
     }
 
     @Override
     String getPage() {
         if (pageBuffer != null) {
-            return pageBuffer.toString()
+            return pageBuffer.toString();
         }
-        return null
+        return null;
     }
 
     int originalLength() {
-        return pageBuffer.size()
+        return pageBuffer.size();
     }
 
     void writeOriginal(Writer writer) throws IOException {
-        writePage(writer)
+        writePage(writer);
     }
 
     void setHeadBuffer(StreamCharBuffer headBuffer) {
-        this.headBuffer = headBuffer
-        applyStreamCharBufferSettings(headBuffer)
-        used = true
+        this.headBuffer = headBuffer;
+        applyStreamCharBufferSettings(headBuffer);
+        used = true;
     }
 
     private void applyStreamCharBufferSettings(StreamCharBuffer buffer) {
         if (!renderingLayout && buffer != null) {
-            buffer.setPreferSubChunkWhenWritingToOtherBuffer(true)
+            buffer.setPreferSubChunkWhenWritingToOtherBuffer(true);
         }
     }
 
     void setBodyBuffer(StreamCharBuffer bodyBuffer) {
-        this.bodyBuffer = bodyBuffer
-        applyStreamCharBufferSettings(bodyBuffer)
-        used = true
+        this.bodyBuffer = bodyBuffer;
+        applyStreamCharBufferSettings(bodyBuffer);
+        used = true;
     }
 
     void setPageBuffer(StreamCharBuffer pageBuffer) {
-        this.pageBuffer = pageBuffer
-        applyStreamCharBufferSettings(pageBuffer)
+        this.pageBuffer = pageBuffer;
+        applyStreamCharBufferSettings(pageBuffer);
     }
 
     void setTitleBuffer(StreamCharBuffer titleBuffer) {
-        this.titleBuffer = titleBuffer
-        applyStreamCharBufferSettings(titleBuffer)
+        this.titleBuffer = titleBuffer;
+        applyStreamCharBufferSettings(titleBuffer);
     }
 
     StreamCharBuffer getTitleBuffer() {
-        return titleBuffer
+        return titleBuffer;
     }
 
     boolean isUsed() {
-        return used
+        return used;
     }
 
     void setUsed(boolean used) {
-        this.used = used
+        this.used = used;
     }
 
     /**
@@ -205,14 +206,14 @@ class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
      * @param buffer
      */
     void setContentBuffer(String tagName, StreamCharBuffer buffer) {
-        used = true
+        used = true;
         if (contentBuffers == null) {
-            contentBuffers = new HashMap<>()
+            contentBuffers = new HashMap<>();
         }
-        String propertyName = 'page.' + tagName
-        contentBuffers.put(propertyName, buffer)
+        String propertyName = 'page.' + tagName;
+        contentBuffers.put(propertyName, buffer);
         // just mark that the property is set
-        super.addProperty(propertyName, '')
+        super.addProperty(propertyName, '');
     }
 
     /**
@@ -221,30 +222,28 @@ class GSPGrailsLayoutPage extends AbstractHTMLPage implements Content {
      */
     Object getContentBuffer(String name) {
         if (contentBuffers == null) {
-            return null
+            return null;
         }
-        return contentBuffers.get(name)
+        return contentBuffers.get(name);
     }
 
     static HTMLPage content2htmlPage(Content content) {
-        HTMLPage htmlPage = null
+        HTMLPage htmlPage = null;
         if (content instanceof HTMLPage) {
-            htmlPage = (HTMLPage) content
+            htmlPage = (HTMLPage) content;
+        } else if (content instanceof TokenizedHTMLPage2Content) {
+            htmlPage = ((TokenizedHTMLPage2Content) content).getPage();
+        } else {
+            htmlPage = new Content2HTMLPage(content, null);
         }
-        else if (content instanceof TokenizedHTMLPage2Content) {
-            htmlPage = ((TokenizedHTMLPage2Content) content).getPage()
-        }
-        else {
-            htmlPage = new Content2HTMLPage(content, null)
-        }
-        return htmlPage
+        return htmlPage;
     }
 
     boolean isTitleCaptured() {
-        return titleCaptured
+        return titleCaptured;
     }
 
     void setTitleCaptured(boolean titleCaptured) {
-        this.titleCaptured = titleCaptured
+        this.titleCaptured = titleCaptured;
     }
 }

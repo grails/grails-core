@@ -16,14 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.xml
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.xml;
 
-import groovy.transform.CompileStatic
-import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter
+import groovy.transform.CompileStatic;
+import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter;
 
-import static org.grails.web.xml.XMLStreamWriter.Mode.CONTENT
-import static org.grails.web.xml.XMLStreamWriter.Mode.INIT
-import static org.grails.web.xml.XMLStreamWriter.Mode.TAG
+import static org.grails.web.xml.XMLStreamWriter.Mode.CONTENT;
+import static org.grails.web.xml.XMLStreamWriter.Mode.INIT;
+import static org.grails.web.xml.XMLStreamWriter.Mode.TAG;
 
 /**
  * A simple XML Stream Writer that leverages the StreamingMarkupWriter of Groovy
@@ -31,95 +32,97 @@ import static org.grails.web.xml.XMLStreamWriter.Mode.TAG
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class XMLStreamWriter {
 
-    protected StreamingMarkupWriter writer
+    protected StreamingMarkupWriter writer;
 
-    protected Mode mode = INIT
+    protected Mode mode = INIT;
 
-    protected Stack<String> tagStack = new Stack<>()
+    protected Stack<String> tagStack = new Stack<>();
 
-    private char quoteChar = '"'
+    private char quoteChar = '"';
 
     XMLStreamWriter(StreamingMarkupWriter writer) {
-        this.writer = writer
+        this.writer = writer;
     }
 
     XMLStreamWriter startDocument(String encoding, String version) throws IOException {
         if (mode != INIT) {
-            throw new IllegalStateException()
+            throw new IllegalStateException();
         }
-        writer.unescaped().write(String.format('<?xml version="%s" encoding="%s"?>', version, encoding))
-        return this
+        writer.unescaped().write(String.format('<?xml version="%s" encoding="%s"?>', version, encoding));
+        return this;
     }
 
     protected void startTag() throws IOException {
-        writer.unescaped().write('<')
+        writer.unescaped().write('<');
     }
 
     XMLStreamWriter startNode(String tag) throws IOException {
         if (mode == TAG)
-            endStartTag()
+            endStartTag();
 
-        startTag()
-        writer.unescaped().write(tag)
+        startTag();
+        writer.unescaped().write(tag);
 
-        tagStack.push(tag)
-        mode = TAG
-        return this
+        tagStack.push(tag);
+        mode = TAG;
+        return this;
     }
 
     XMLStreamWriter end() throws IOException {
-        Writer ue = writer.unescaped()
+        Writer ue = writer.unescaped();
         if (mode == TAG) {
-            ue.write(' />')
+            ue.write(' />');
             if (tagStack.pop() == null) {
-                throw new IllegalStateException()
+                throw new IllegalStateException();
             }
         } else if (mode == CONTENT) {
-            ue.write('<')
-            ue.write('/')
-            String t = tagStack.pop()
+            ue.write('<');
+            ue.write('/');
+            String t = tagStack.pop();
             if (t == null) {
-                throw new IllegalStateException()
+                throw new IllegalStateException();
             }
-            ue.write(t)
-            ue.write('>')
+            ue.write(t);
+            ue.write('>');
         }
-        mode = CONTENT
-        return this
+        mode = CONTENT;
+        return this;
     }
 
     XMLStreamWriter attribute(String name, String value) throws IOException {
         if (mode != TAG) {
-            throw new IllegalStateException()
+            throw new IllegalStateException();
         }
-        Writer ue = writer.unescaped()
-        ue.write(' ')
-        ue.write(name)
-        ue.write('=')
-        ue.write(quoteChar)
-        writer.setWritingAttribute(true)
-        writer.escaped().write(value)
-        writer.setWritingAttribute(false)
-        ue.write(quoteChar)
+        Writer ue = writer.unescaped();
+        ue.write(' ');
+        ue.write(name);
+        ue.write('=');
+        ue.write(quoteChar);
+        writer.setWritingAttribute(true);
+        writer.escaped().write(value);
+        writer.setWritingAttribute(false);
+        ue.write(quoteChar);
 
-        return this
+        return this;
     }
 
     protected void endStartTag() throws IOException {
-        writer.unescaped().write('>')
+        writer.unescaped().write('>');
     }
 
     XMLStreamWriter characters(String data) throws IOException {
         if (mode == TAG) {
-            endStartTag()
+            endStartTag();
         }
-        mode = CONTENT
-        writer.escaped().write(data)
+        mode = CONTENT;
+        writer.escaped().write(data);
 
-        return this
+        return this;
     }
 
     protected enum Mode {

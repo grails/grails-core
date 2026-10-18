@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  'License'); you may not use this file except in compliance
+ *  "License"); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *    https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -32,37 +32,38 @@ import org.grails.datastore.mapping.model.PersistentEntity
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 abstract class PendingUpdateAdapter<E, K> extends PendingOperationAdapter<E, K> implements PendingUpdate<E, K> {
 
-    private EntityAccess entityAccess
+    private EntityAccess entityAccess;
 
-    private boolean vetoed
+    private boolean vetoed;
 
     PendingUpdateAdapter(PersistentEntity entity, K nativeKey, E nativeEntry, EntityAccess ea) {
-        super(entity, nativeKey, nativeEntry)
-        this.entityAccess = ea
+        super(entity, nativeKey, nativeEntry);
+        this.entityAccess = ea;
     }
 
     boolean isVetoed() {
-        return vetoed
+        return vetoed;
     }
 
     void setVetoed(boolean vetoed) {
-        this.vetoed = vetoed
+        this.vetoed = vetoed;
     }
 
     EntityAccess getEntityAccess() {
-        return entityAccess
+        return entityAccess;
     }
 
     @Override
     Object getObject() {
-        final EntityAccess ea = getEntityAccess()
+        final EntityAccess ea = getEntityAccess();
         if (ea != null) {
-            return ea.getEntity()
+            return ea.getEntity();
         }
-        return null
+        return null;
     }
-
 }

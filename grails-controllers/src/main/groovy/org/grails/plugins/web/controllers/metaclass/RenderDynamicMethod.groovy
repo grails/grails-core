@@ -16,9 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.plugins.web.controllers.metaclass
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.plugins.web.controllers.metaclass;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 /**
  * Allows rendering of text, views, and templates to the response
@@ -26,32 +27,33 @@ import groovy.transform.CompileStatic
  * @author Graeme Rocher
  * @since 0.2
  */
-@SuppressWarnings(['unchecked', 'rawtypes'])
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['unchecked', 'rawtypes', 'UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class RenderDynamicMethod {
 
-    public static final String METHOD_SIGNATURE = 'render'
-    public static final String ARGUMENT_TEXT = 'text'
-    public static final String ARGUMENT_STATUS = 'status'
-    public static final String ARGUMENT_LAYOUT = 'layout'
-    public static final String ARGUMENT_CONTENT_TYPE = 'contentType'
-    public static final String ARGUMENT_ENCODING = 'encoding'
-    public static final String ARGUMENT_VIEW = 'view'
-    public static final String ARGUMENT_MODEL = 'model'
-    public static final String ARGUMENT_TEMPLATE = 'template'
-    public static final String ARGUMENT_CONTEXTPATH = 'contextPath'
-    public static final String ARGUMENT_BEAN = 'bean'
-    public static final String ARGUMENT_COLLECTION = 'collection'
-    public static final String ARGUMENT_BUILDER = 'builder'
-    public static final String ARGUMENT_VAR = 'var'
-    public static final String DISPOSITION_HEADER_PREFIX = 'attachment;filename='
-    public static final String ARGUMENT_PLUGIN = 'plugin'
-    public static final String DEFAULT_ARGUMENT = 'it'
-    public static final String BUILDER_TYPE_JSON = 'json'
-    public static final String TEXT_HTML = 'text/html'
-    public static final String APPLICATION_XML = 'application/xml'
-    public static final String DEFAULT_ENCODING = 'utf-8'
-    public static final String ARGUMENT_FILE = 'file'
-    public static final String ARGUMENT_FILE_NAME = 'fileName'
+    public static final String METHOD_SIGNATURE = "render";
+    public static final String ARGUMENT_TEXT = "text";
+    public static final String ARGUMENT_STATUS = "status";
+    public static final String ARGUMENT_LAYOUT = "layout";
+    public static final String ARGUMENT_CONTENT_TYPE = "contentType";
+    public static final String ARGUMENT_ENCODING = "encoding";
+    public static final String ARGUMENT_VIEW = "view";
+    public static final String ARGUMENT_MODEL = "model";
+    public static final String ARGUMENT_TEMPLATE = "template";
+    public static final String ARGUMENT_CONTEXTPATH = "contextPath";
+    public static final String ARGUMENT_BEAN = "bean";
+    public static final String ARGUMENT_COLLECTION = "collection";
+    public static final String ARGUMENT_BUILDER = "builder";
+    public static final String ARGUMENT_VAR = "var";
+    public static final String DISPOSITION_HEADER_PREFIX = "attachment;filename=";
+    public static final String ARGUMENT_PLUGIN = "plugin";
+    public static final String DEFAULT_ARGUMENT = "it";
+    public static final String BUILDER_TYPE_JSON = "json";
+    public static final String TEXT_HTML = "text/html";
+    public static final String APPLICATION_XML = "application/xml";
+    public static final String DEFAULT_ENCODING = "utf-8";
+    public static final String ARGUMENT_FILE = "file";
+    public static final String ARGUMENT_FILE_NAME = "fileName";
 
 }

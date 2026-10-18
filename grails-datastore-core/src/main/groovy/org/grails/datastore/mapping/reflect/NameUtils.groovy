@@ -1,26 +1,23 @@
-/*
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+/* Copyright (C) 2010-2025 the original author or authors.
  *
- *    https://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.grails.datastore.mapping.reflect
 
+import groovy.transform.CompileStatic
+
 import java.beans.Introspector
 
-import groovy.transform.CompileStatic
 import org.apache.groovy.util.BeanUtils
 
 import org.grails.datastore.mapping.model.config.GormProperties
@@ -29,40 +26,47 @@ import org.grails.datastore.mapping.model.config.GormProperties
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class NameUtils {
 
-    private static final String PROPERTY_SET_PREFIX = 'set'
-    private static final String PROPERTY_GET_PREFIX = 'get'
-    private static final String PROPERTY_IS_PREFIX = 'is'
+    private static final String PROPERTY_SET_PREFIX = 'set';
+    private static final String PROPERTY_GET_PREFIX = 'get';
+    private static final String PROPERTY_IS_PREFIX = 'is';
 
-    private static final Set<String> CONFIGURATIONAL_PROPERTIES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-            GormProperties.META_CLASS,
-            GormProperties.CLASS,
-            GormProperties.TRANSIENT,
-            GormProperties.ATTACHED,
-            GormProperties.DIRTY,
-            GormProperties.DIRTY_PROPERTY_NAMES,
-            GormProperties.HAS_MANY,
-            GormProperties.CONSTRAINTS,
-            GormProperties.MAPPING_STRATEGY,
-            GormProperties.MAPPED_BY,
-            GormProperties.BELONGS_TO,
-            GormProperties.ERRORS,
-            'transactionManager',
-            'dataSource',
-            'sessionFactory',
-            'messageSource',
-            'applicationContext',
-            'properties')))
-    public static final String DOLLAR_SEPARATOR = '$'
+    private static final Set<String> CONFIGURATIONAL_PROPERTIES;
+    public static final String DOLLAR_SEPARATOR = '$';
+
+    static {
+        Set<String> configurational = new HashSet<>(Arrays.asList(
+                GormProperties.META_CLASS,
+                GormProperties.CLASS,
+                GormProperties.TRANSIENT,
+                GormProperties.ATTACHED,
+                GormProperties.DIRTY,
+                GormProperties.DIRTY_PROPERTY_NAMES,
+                GormProperties.HAS_MANY,
+                GormProperties.CONSTRAINTS,
+                GormProperties.MAPPING_STRATEGY,
+                GormProperties.MAPPED_BY,
+                GormProperties.BELONGS_TO,
+                GormProperties.ERRORS,
+                'transactionManager',
+                'dataSource',
+                'sessionFactory',
+                'messageSource',
+                'applicationContext',
+                'properties'));
+        CONFIGURATIONAL_PROPERTIES = Collections.unmodifiableSet(configurational);
+    }
 
     static boolean isConfigurational(String name) {
-        return CONFIGURATIONAL_PROPERTIES.contains(name)
+        return CONFIGURATIONAL_PROPERTIES.contains(name);
     }
 
     static boolean isNotConfigurational(String name) {
-        return !isConfigurational(name)
+        return !isConfigurational(name);
     }
 
     /**
@@ -71,7 +75,7 @@ class NameUtils {
      * @return The setter equivalent
      */
     static String getSetterName(String propertyName) {
-        return PROPERTY_SET_PREFIX + capitalize(propertyName)
+        return PROPERTY_SET_PREFIX + capitalize(propertyName);
     }
 
     /**
@@ -80,7 +84,7 @@ class NameUtils {
      * @return The getter equivalent
      */
     static String getGetterName(String propertyName) {
-        return getGetterName(propertyName, false)
+        return getGetterName(propertyName, false);
     }
 
     /**
@@ -90,8 +94,8 @@ class NameUtils {
      * @return The getter equivalent
      */
     static String getGetterName(String propertyName, boolean useBooleanPrefix) {
-        String prefix = useBooleanPrefix ? PROPERTY_IS_PREFIX : PROPERTY_GET_PREFIX
-        return prefix + capitalize(propertyName)
+        String prefix = useBooleanPrefix ? PROPERTY_IS_PREFIX : PROPERTY_GET_PREFIX;
+        return prefix + capitalize(propertyName);
     }
 
     /**
@@ -101,11 +105,11 @@ class NameUtils {
      * @return The class name
      */
     static String getClassName(Class clazz) {
-        final String sn = clazz.getSimpleName()
+        final String sn = clazz.getSimpleName();
         if (sn.contains(DOLLAR_SEPARATOR)) {
-            return clazz.getSuperclass().getName()
+            return clazz.getSuperclass().getName();
         }
-        return clazz.getName()
+        return clazz.getName();
     }
 
     /**
@@ -114,17 +118,14 @@ class NameUtils {
      * @return The property name
      */
     static String getPropertyNameForGetterOrSetter(String getterOrSetterName) {
-        if (getterOrSetterName == null || getterOrSetterName.length() == 0) {
-            return null
-        }
+        if (getterOrSetterName == null || getterOrSetterName.length() == 0) return null;
 
         if (getterOrSetterName.startsWith(PROPERTY_GET_PREFIX) || getterOrSetterName.startsWith(PROPERTY_SET_PREFIX)) {
-            return decapitalize(getterOrSetterName.substring(3))
+            return decapitalize(getterOrSetterName.substring(3));
+        } else if (getterOrSetterName.startsWith(PROPERTY_IS_PREFIX)) {
+            return decapitalize(getterOrSetterName.substring(2));
         }
-        else if (getterOrSetterName.startsWith(PROPERTY_IS_PREFIX)) {
-            return decapitalize(getterOrSetterName.substring(2))
-        }
-        return null
+        return null;
     }
 
     /**
@@ -134,7 +135,7 @@ class NameUtils {
      * @return The decapitalized name
      */
     static String decapitalize(String name) {
-        return Introspector.decapitalize(name)
+        return Introspector.decapitalize(name);
     }
 
     /**
@@ -144,11 +145,11 @@ class NameUtils {
      */
     static String decapitalizeFirstChar(String name) {
         if (name == null || name.length() == 0) {
-            return name
+            return name;
         }
-        char[] chars = name.toCharArray()
-        chars[0] = Character.toLowerCase(chars[0])
-        return new String(chars)
+        char[] chars = name.toCharArray();
+        chars[0] = Character.toLowerCase(chars[0]);
+        return new String(chars);
     }
 
     /**
@@ -158,7 +159,7 @@ class NameUtils {
      * @return The class name
      */
     static String capitalize(String name) {
-        return BeanUtils.capitalize(name)
+        return BeanUtils.capitalize(name);
     }
 
     /**
@@ -174,27 +175,26 @@ class NameUtils {
      */
     static boolean isValidPropertyPath(String path) {
         if (path == null || path.isEmpty()) {
-            return false
+            return false;
         }
-        boolean expectSegmentStart = true
-        int i = 0
+        boolean expectSegmentStart = true;
+        int i = 0;
         while (i < path.length()) {
-            int codePoint = path.codePointAt(i)
+            int codePoint = path.codePointAt(i);
             if (expectSegmentStart) {
                 if (!Character.isJavaIdentifierStart(codePoint)) {
-                    return false
+                    return false;
                 }
-                expectSegmentStart = false
+                expectSegmentStart = false;
             }
-            else if (codePoint == (int) ('.' as char)) {
-                expectSegmentStart = true
+            else if (codePoint == '.') {
+                expectSegmentStart = true;
             }
             else if (!Character.isJavaIdentifierPart(codePoint) || Character.isIdentifierIgnorable(codePoint)) {
-                return false
+                return false;
             }
-            i += Character.charCount(codePoint)
+            i += Character.charCount(codePoint);
         }
-        !expectSegmentStart
+        return !expectSegmentStart;
     }
-
 }

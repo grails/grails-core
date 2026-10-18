@@ -4,14 +4,14 @@
  *  distributed with this work for additional information
  *  regarding copyright ownership.  The ASF licenses this file
  *  to you under the Apache License, Version 2.0 (the
- *  'License'); you may not use this file except in compliance
+ *  "License"); you may not use this file except in compliance
  *  with the License.  You may obtain a copy of the License at
  *
  *    https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
- *  'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
@@ -30,32 +30,33 @@ import org.grails.datastore.mapping.model.types.Association
  * @author Graeme Rocher
  * @since 1.0
  */
-@SuppressWarnings('rawtypes')
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['rawtypes', 'UnnecessarySemicolon'])
 @CompileStatic
 class PersistentSet extends AbstractPersistentCollection implements Set {
 
     PersistentSet(Association association, Serializable associationKey, Session session) {
-        super(association, associationKey, session, createCollection())
+        super(association, associationKey, session, createCollection());
     }
 
     PersistentSet(Association association, Serializable associationKey, Session session, Set collection) {
-        super(association, associationKey, session, collection)
+        super(association, associationKey, session, collection);
     }
 
     PersistentSet(Class childType, Session session, Collection collection) {
-        super(childType, session, collection)
+        super(childType, session, collection);
     }
 
     PersistentSet(Collection keys, Class childType, Session session) {
-        super(keys, childType, session, createCollection())
+        super(keys, childType, session, createCollection());
     }
 
     protected static HashSet createCollection() {
-        return new HashSet()
+        return new HashSet();
     }
 
     PersistentSet(Serializable associationKey, Session session, AssociationQueryExecutor indexer) {
-        super(associationKey, session, indexer, createCollection())
+        super(associationKey, session, indexer, createCollection());
     }
 
 }

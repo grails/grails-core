@@ -16,13 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.mapping
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.mapping;
 
-import groovy.transform.CompileStatic
-import org.springframework.util.Assert
+import groovy.transform.CompileStatic;
+import org.springframework.util.Assert;
 
-import grails.web.mapping.UrlMapping
-import grails.web.mapping.UrlMappingData
+import grails.web.mapping.UrlMapping;
+import grails.web.mapping.UrlMappingData;
 
 /**
  * Default implementating of the UrlMappingData interface.
@@ -30,172 +31,174 @@ import grails.web.mapping.UrlMappingData
  * @author Graeme Rocher
  * @since 0.4
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class DefaultUrlMappingData implements UrlMappingData {
 
-    private static final String CAPTURED_WILDCARD = '(*)'
-    private static final String CAPTURED_DOUBLE_WILDCARD = '(**)'
-    private static final String QUESTION_MARK = '?'
-    private static final String SLASH = '/'
+    private static final String CAPTURED_WILDCARD = '(*)';
+    private static final String CAPTURED_DOUBLE_WILDCARD = '(**)';
+    private static final String QUESTION_MARK = '?';
+    private static final String SLASH = '/';
 
-    private final String urlPattern
-    private final String[] logicalUrls
-    private final String[] tokens
+    private final String urlPattern;
+    private final String[] logicalUrls;
+    private final String[] tokens;
 
-    private List<Boolean> optionalTokens = new ArrayList<>()
-    private boolean hasOptionalExtension
-    private boolean hasGreedyExtensionParam
-    private int greedyTokenIndex = -1
+    private List<Boolean> optionalTokens = new ArrayList<>();
+    private boolean hasOptionalExtension;
+    private boolean hasGreedyExtensionParam;
+    private int greedyTokenIndex = -1;
 
     DefaultUrlMappingData(String urlPattern) {
-        Assert.hasLength(urlPattern, 'Argument [urlPattern] cannot be null or blank')
-        Assert.isTrue(urlPattern.startsWith(SLASH), "Argument [urlPattern] is not a valid URL. It must start with '/' !")
+        Assert.hasLength(urlPattern, 'Argument [urlPattern] cannot be null or blank');
+        Assert.isTrue(urlPattern.startsWith(SLASH), "Argument [urlPattern] is not a valid URL. It must start with '/' !");
 
-        String configuredPattern = configureUrlPattern(urlPattern)
-        this.urlPattern = configuredPattern
-        tokens = tokenizeUrlPattern(configuredPattern)
-        List<String> urls = new ArrayList<>()
-        parseUrls(urls, tokens, optionalTokens)
+        String configuredPattern = configureUrlPattern(urlPattern);
+        this.urlPattern = configuredPattern;
+        tokens = tokenizeUrlPattern(configuredPattern);
+        List<String> urls = new ArrayList<>();
+        parseUrls(urls, tokens, optionalTokens);
 
-        logicalUrls = urls.toArray(new String[urls.size()])
+        logicalUrls = urls.toArray(new String[urls.size()]);
     }
 
     @Override
     boolean hasOptionalExtension() {
-        return hasOptionalExtension
+        return hasOptionalExtension;
     }
 
     @Override
     boolean hasGreedyExtensionParam() {
-        return hasGreedyExtensionParam
+        return hasGreedyExtensionParam;
     }
 
     @Override
     int getGreedyTokenIndex() {
-        return greedyTokenIndex
+        return greedyTokenIndex;
     }
 
     private String[] tokenizeUrlPattern(String urlPattern) {
         // remove starting / and split
-        return urlPattern.substring(1).split(SLASH)
+        return urlPattern.substring(1).split(SLASH);
     }
 
     private String configureUrlPattern(String urlPattern) {
-        return urlPattern.replace('(*)**', CAPTURED_DOUBLE_WILDCARD)
+        return urlPattern.replace('(*)**', CAPTURED_DOUBLE_WILDCARD);
     }
 
     private DefaultUrlMappingData(String urlPattern, String[] logicalUrls, String[] tokens, List<Boolean> optionalTokens) {
-        this.urlPattern = urlPattern
-        this.logicalUrls = logicalUrls
-        this.tokens = tokens
-        this.optionalTokens = optionalTokens
+        this.urlPattern = urlPattern;
+        this.logicalUrls = logicalUrls;
+        this.tokens = tokens;
+        this.optionalTokens = optionalTokens;
     }
 
     private void parseUrls(List<String> urls, String[] tokens, List<Boolean> optionalTokens) {
-        StringBuilder buf = new StringBuilder()
+        StringBuilder buf = new StringBuilder();
 
-        String optionalExtensionPattern = UrlMapping.OPTIONAL_EXTENSION_WILDCARD + '?'
-        String optionalExtension = null
+        String optionalExtensionPattern = UrlMapping.OPTIONAL_EXTENSION_WILDCARD + '?';
+        String optionalExtension = null;
 
         if (tokens.length > 0) {
-            String lastToken = tokens[tokens.length - 1]
-            hasOptionalExtension = lastToken.endsWith(optionalExtensionPattern)
+            String lastToken = tokens[tokens.length - 1];
+            hasOptionalExtension = lastToken.endsWith(optionalExtensionPattern);
             if (hasOptionalExtension) {
-                int i = lastToken.indexOf(optionalExtensionPattern)
-                optionalExtension = lastToken.substring(i, lastToken.length())
-                String beforeExtension = lastToken.substring(0, i)
+                int i = lastToken.indexOf(optionalExtensionPattern);
+                optionalExtension = lastToken.substring(i, lastToken.length());
+                String beforeExtension = lastToken.substring(0, i);
 
                 // Check if the parameter before the extension ends with + (greedy marker)
                 // Can be either (*)+ for required greedy or (*)+? for optional greedy
                 if (beforeExtension.endsWith('+') || beforeExtension.endsWith('+?')) {
-                    hasGreedyExtensionParam = true
+                    hasGreedyExtensionParam = true;
                     // The greedy token is the last token (before extension is stripped)
-                    greedyTokenIndex = tokens.length - 1
+                    greedyTokenIndex = tokens.length - 1;
                     // Remove the + (keep ? if it follows)
                     if (beforeExtension.endsWith('+?')) {
                         // (*)+? -> (*)?  (optional greedy)
-                        beforeExtension = beforeExtension.substring(0, beforeExtension.length() - 2) + '?'
+                        beforeExtension = beforeExtension.substring(0, beforeExtension.length() - 2) + '?';
                     } else {
                         // (*)+ -> (*)  (required greedy)
-                        beforeExtension = beforeExtension.substring(0, beforeExtension.length() - 1)
+                        beforeExtension = beforeExtension.substring(0, beforeExtension.length() - 1);
                     }
                 }
 
-                tokens[tokens.length - 1] = beforeExtension
+                tokens[tokens.length - 1] = beforeExtension;
             }
 
         }
 
         for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i].trim()
+            String token = tokens[i].trim();
             if (token.equals(SLASH)) {
-                continue
+                continue;
             }
 
-            boolean isOptional = false
+            boolean isOptional = false;
             if (token.endsWith(QUESTION_MARK)) {
                 if (optionalExtension != null) {
-                    urls.add(buf.toString() + optionalExtension)
+                    urls.add(buf.toString() + optionalExtension);
                 }
                 else {
-                    urls.add(buf.toString())
+                    urls.add(buf.toString());
                 }
-                buf.append(SLASH).append(token)
-                isOptional = true
+                buf.append(SLASH).append(token);
+                isOptional = true;
             } else {
-                buf.append(SLASH).append(token)
+                buf.append(SLASH).append(token);
             }
             if (CAPTURED_WILDCARD.equals(token)) {
                 if (isOptional) {
-                    optionalTokens.add(Boolean.TRUE)
+                    optionalTokens.add(Boolean.TRUE);
                 } else {
-                    optionalTokens.add(Boolean.FALSE)
+                    optionalTokens.add(Boolean.FALSE);
                 }
             }
             if (CAPTURED_DOUBLE_WILDCARD.equals(token)) {
-                optionalTokens.add(Boolean.TRUE)
+                optionalTokens.add(Boolean.TRUE);
             }
         }
         if (optionalExtension != null) {
-            urls.add(buf.toString() + optionalExtension)
+            urls.add(buf.toString() + optionalExtension);
         }
         else {
-            urls.add(buf.toString())
+            urls.add(buf.toString());
         }
 
-        Collections.reverse(urls)
+        Collections.reverse(urls);
     }
 
     String[] getTokens() {
-        return tokens
+        return tokens;
     }
 
     String[] getLogicalUrls() {
-        return logicalUrls
+        return logicalUrls;
     }
 
     String getUrlPattern() {
-        return urlPattern
+        return urlPattern;
     }
 
     boolean isOptional(int index) {
-        if (index >= optionalTokens.size()) return true
-        return optionalTokens.get(index).equals(Boolean.TRUE)
+        if (index >= optionalTokens.size()) return true;
+        return optionalTokens.get(index).equals(Boolean.TRUE);
     }
 
     @Override
     UrlMappingData createRelative(String path) {
-        Assert.hasLength(path, 'Argument [path] cannot be null or blank')
+        Assert.hasLength(path, 'Argument [path] cannot be null or blank');
 
-        String newPattern = this.urlPattern + configureUrlPattern(path)
+        String newPattern = this.urlPattern + configureUrlPattern(path);
 
-        String[] tokens = tokenizeUrlPattern(newPattern)
-        List<String> urls = new ArrayList<>()
-        List<Boolean> optionalTokens = new ArrayList<>()
-        parseUrls(urls, tokens, optionalTokens)
-        String[] logicalUrls = urls.toArray(new String[urls.size()])
+        String[] tokens = tokenizeUrlPattern(newPattern);
+        List<String> urls = new ArrayList<>();
+        List<Boolean> optionalTokens = new ArrayList<>();
+        parseUrls(urls, tokens, optionalTokens);
+        String[] logicalUrls = urls.toArray(new String[urls.size()]);
 
-        return new DefaultUrlMappingData(newPattern, logicalUrls, tokens, optionalTokens)
+        return new DefaultUrlMappingData(newPattern, logicalUrls, tokens, optionalTokens);
     }
 
 }
