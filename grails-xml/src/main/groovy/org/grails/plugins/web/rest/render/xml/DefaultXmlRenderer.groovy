@@ -161,11 +161,10 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         if (view) {
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view; one an
             // application registers for problems renders their HTML page rather than the view respond names
-            RendererRegistry registry = object instanceof ProblemDetail ? null : resolveRendererRegistry()
-            Renderer htmlRenderer = registry?.findRenderer(MimeType.HTML, object)
+            RendererRegistry registry = resolveRendererRegistry()
+            Renderer htmlRenderer = object instanceof ProblemDetail ? null : registry?.findRenderer(MimeType.HTML, object)
             if (htmlRenderer == null) {
-                htmlRenderer = new DefaultHtmlRenderer(targetType)
-                htmlRenderer.encoding = encoding
+                htmlRenderer = DefaultHtmlRenderer.forFormatView(targetType, registry, encoding)
             }
             htmlRenderer.render((Object) object, context)
         } else if (object instanceof ProblemDetail) {

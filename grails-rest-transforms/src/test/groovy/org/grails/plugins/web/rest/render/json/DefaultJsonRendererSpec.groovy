@@ -52,6 +52,7 @@ import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.rest.render.json.JsonCollectionRenderer
 import grails.util.GrailsWebMockUtil
 import grails.web.render.NamedJsonRenderer
+import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
@@ -303,6 +304,34 @@ class DefaultJsonRendererSpec extends Specification {
         modelAndView.viewName == 'conflict'
         modelAndView.model == [problemDetail: problem]
         webRequest.response.status == 409
+    }
+
+    void 'the JSON view respond names gets a ProblemDetail under the model name its HTML view gets it'() {
+        given: 'a registry that names the model of a view with the domain suffix'
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'conflict', 'json') >> Stub(GroovyPageScriptSource)
+        }
+        def registry = new DefaultRendererRegistry(modelSuffix: 'Instance')
+        registry.initialize()
+        def renderer = new DefaultJsonRenderer<Object>(Object, locator, registry)
+        def problem = ProblemDetail.forStatus(409)
+        def html = GrailsWebMockUtil.bindMockWebRequest()
+        html.controllerName = 'book'
+
+        when: 'the HTML view'
+        registry.findRenderer(grails.web.mime.MimeType.HTML, problem).render(problem,
+                new ServletRenderContext(html, [view: 'conflict']))
+
+        then:
+        html.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW).model == [problemDetailInstance: problem]
+
+        when: 'the JSON view'
+        def json = GrailsWebMockUtil.bindMockWebRequest()
+        json.controllerName = 'book'
+        renderer.render(problem, new ServletRenderContext(json, [view: 'conflict']))
+
+        then:
+        json.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW).model == [problemDetailInstance: problem]
     }
 
     void 'a named JSON configuration does not apply to a ProblemDetail the legacy converter writes'() {

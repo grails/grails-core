@@ -36,6 +36,7 @@ import grails.rest.render.RendererRegistry
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
 import org.grails.gsp.io.GroovyPageScriptSource
+import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
@@ -212,6 +213,36 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         modelAndView.viewName == 'conflict'
         modelAndView.model == [problemDetail: problem]
         named.currentResponse.status == 409
+    }
+
+    void 'the XML view respond names gets a ProblemDetail under the model name its HTML view gets it'() {
+        given: 'a registry that names the model of a view with the domain suffix'
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'conflict', 'xml') >> Stub(GroovyPageScriptSource)
+        }
+        def registry = new DefaultRendererRegistry(modelSuffix: 'Instance')
+        registry.initialize()
+        def renderer = new DefaultXmlRenderer<Object>(Object, locator, registry)
+        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        def html = xmlRequest()
+
+        when: 'the HTML view'
+        registry.findRenderer(MimeType.HTML, problem).render(problem, new ServletRenderContext(html, [view: 'conflict']))
+
+        then:
+        html.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW).model == [problemDetailInstance: problem]
+
+        when: 'the XML view'
+        def xml = xmlRequest()
+        renderer.render(problem, new ServletRenderContext(xml, [view: 'conflict']) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+        })
+
+        then:
+        xml.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW).model == [problemDetailInstance: problem]
     }
 
     private static GrailsWebRequest xmlRequest() {

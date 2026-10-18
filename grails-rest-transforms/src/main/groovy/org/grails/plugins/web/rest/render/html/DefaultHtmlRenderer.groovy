@@ -29,9 +29,11 @@ import org.springframework.validation.Errors
 import grails.core.support.proxy.ProxyHandler
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
+import grails.rest.render.RendererRegistry
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
+import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 
 /**
@@ -61,6 +63,27 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     DefaultHtmlRenderer(Class<T> targetType, MimeType mimeType) {
         this.targetType = targetType
         this.mimeTypes = [mimeType] as MimeType[]
+    }
+
+    /**
+     * A renderer for the view of another format, such as a JSON or XML view, that gives the view the model the
+     * renderer registry gives the views it renders: under the name of the value's class with the registry's model
+     * suffix.
+     *
+     * @param targetType the type of the values rendered
+     * @param registry the renderer registry, if any
+     * @param encoding the character encoding of the response
+     * @return the renderer
+     * @since 9.0
+     */
+    static <T> DefaultHtmlRenderer<T> forFormatView(Class<T> targetType, RendererRegistry registry, String encoding) {
+        DefaultHtmlRenderer<T> renderer = new DefaultHtmlRenderer<T>(targetType)
+        renderer.encoding = encoding
+        if (registry instanceof DefaultRendererRegistry) {
+            renderer.suffix = registry.modelSuffix
+            renderer.proxyHandler = registry.proxyHandler
+        }
+        return renderer
     }
 
     Class<T> getTargetType() {

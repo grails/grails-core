@@ -170,8 +170,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             // application registers for problems renders their HTML page rather than the view respond names
             Renderer htmlRenderer = object instanceof ProblemDetail ? null : rendererRegistry?.findRenderer(MimeType.HTML, object)
             if (htmlRenderer == null) {
-                htmlRenderer = new DefaultHtmlRenderer(targetType)
-                htmlRenderer.encoding = encoding
+                htmlRenderer = DefaultHtmlRenderer.forFormatView(targetType, rendererRegistry, encoding)
             }
             htmlRenderer.render((Object) object, context)
         } else {
