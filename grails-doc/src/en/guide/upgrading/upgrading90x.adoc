@@ -590,8 +590,8 @@ null or empty property is written; `@JsonView`, `@JsonFormat`, a `@JsonSerialize
 and `@JsonPropertyOrder` apply; a domain class with `@JsonTypeInfo` is written with its type id, and an instance in a
 `@JsonUnwrapped` property is written into the enclosing object. As with Jackson's own unwrapping, an instance with a type
 id fails there, unless `SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS` is disabled.
-* Only the persistent properties are rendered, as in Grails 8: a transient property, or a getter with nothing persisted
-behind it, is not. They follow the class name, the id and the version, which are rendered ahead of them when they apply,
+* Only the persistent properties are rendered, as in Grails 8: a transient property, a getter with nothing persisted
+behind it, or what a `@JsonAnyGetter` returns, is not. They follow the class name, the id and the version, which are rendered ahead of them when they apply,
 in the order the domain class declares them, unless `@JsonPropertyOrder` says otherwise.
 * GORM names some properties in a `@JsonIgnoreProperties` it adds to every domain class, so Jackson leaves them out:
 the tenant identifier of a multi-tenant domain class (`tenantId`) and the `dbo` of a MongoDB domain class, which

@@ -42,7 +42,9 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.introspect.VirtualAnnotatedMember;
+import tools.jackson.databind.ser.AnyGetterWriter;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.BeanSerializerBuilder;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 
@@ -275,6 +277,37 @@ final class DomainClassModifier extends ValueSerializerModifier {
         Class<?>[] views = definition.findViews();
         return new DomainLeadingWriter(definition, description.getClassAnnotations(), object, kind, entity, rendering,
                 views != null ? views : description.findDefaultViews());
+    }
+
+    /**
+     * Leaves out the writer of a {@code @JsonAnyGetter}, which Jackson adds once the properties are ordered, since only
+     * the persistent properties of a domain class are written.
+     */
+    @Override
+    public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription.Supplier beanDescription,
+            BeanSerializerBuilder builder) {
+        if (entity(beanDescription.getBeanClass()) == null) {
+            return builder;
+        }
+        List<BeanPropertyWriter> properties = builder.getProperties();
+        BeanPropertyWriter[] filtered = builder.getFilteredProperties();
+        List<BeanPropertyWriter> kept = new ArrayList<>();
+        List<BeanPropertyWriter> keptFiltered = new ArrayList<>();
+        for (int i = 0; i < properties.size(); i++) {
+            if (!(properties.get(i) instanceof AnyGetterWriter)) {
+                kept.add(properties.get(i));
+                if (filtered != null) {
+                    keptFiltered.add(filtered[i]);
+                }
+            }
+        }
+        if (kept.size() < properties.size()) {
+            builder.setProperties(kept);
+            if (filtered != null) {
+                builder.setFilteredProperties(keptFiltered.toArray(new BeanPropertyWriter[0]));
+            }
+        }
+        return builder;
     }
 
     @Override
