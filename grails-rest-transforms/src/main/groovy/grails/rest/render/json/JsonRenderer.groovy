@@ -19,7 +19,6 @@
 package grails.rest.render.json
 
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 
 import jakarta.annotation.PostConstruct
 
@@ -37,6 +36,7 @@ import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.web.converters.marshaller.ObjectMarshaller
 import org.grails.web.converters.marshaller.json.DeepDomainClassMarshaller
 import org.grails.web.converters.marshaller.json.GroovyBeanMarshaller
+import org.grails.web.converters.marshaller.json.TargetTypeMarshaller
 
 /**
  *
@@ -117,11 +117,13 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
         }
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
+    /**
+     * Registers the marshaller for the instances of the target type, and of its subclasses, so that the converter still
+     * renders a domain class instance as the marshaller renders it, deep and with the version and class name the
+     * includes name, where it writes it with its {@code JsonMapper}.
+     */
     protected void registerCustomMarshaller(ObjectMarshaller marshaller) {
-        JSON.registerObjectMarshaller(targetType, { Object object, JSON json ->
-            marshaller.marshalObject(object, json)
-        })
+        JSON.registerObjectMarshaller(new TargetTypeMarshaller(targetType, (ObjectMarshaller<JSON>) marshaller))
     }
 
     @Override

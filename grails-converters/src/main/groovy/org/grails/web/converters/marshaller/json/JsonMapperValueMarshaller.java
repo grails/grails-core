@@ -65,9 +65,12 @@ public class JsonMapperValueMarshaller implements ObjectMarshaller<JSON> {
     /**
      * @param marshaller the marshaller of a value
      * @return whether it writes the value with the converter's mapper, as this marshaller and the domain class
-     *         marshaller do, unless a subclass writes it itself
+     *         marshaller do, unless a subclass writes it itself, also where a {@link TargetTypeMarshaller} marshals with it
      */
     public static boolean writesWithMapper(ObjectMarshaller<JSON> marshaller) {
+        if (marshaller instanceof TargetTypeMarshaller typed) {
+            return writesWithMapper(typed.getMarshaller());
+        }
         return marshaller instanceof JsonMapperValueMarshaller && !OVERRIDES_MARSHAL_OBJECT.get(marshaller.getClass()) ||
                 marshaller instanceof DomainClassMarshaller domainClassMarshaller && domainClassMarshaller.writesWithMapper();
     }

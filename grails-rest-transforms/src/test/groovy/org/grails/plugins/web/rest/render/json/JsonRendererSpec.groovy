@@ -172,6 +172,62 @@ class JsonRendererSpec extends Specification {
         webRequest.response.contentAsString == '{"class":"org.grails.plugins.web.rest.render.json.Song","title":"Undertow"}'
 
     }
+
+    void "a JsonRenderer of a domain class writes its associations in full and the version and class name it includes, with legacy #legacy"() {
+        given:
+        def app = domainApplication(legacy)
+        def renderer = new JsonRenderer(Record)
+        renderer.includes = includes
+        renderer.grailsApplication = app
+        renderer.registerCustomConverter()
+        def band = new Band(name: 'Low')
+        band.id = 7
+        def record = new Record(title: 'Things We Lost', band: band)
+        record.id = 1
+        record.version = 2
+
+        when:
+        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render(record, new ServletRenderContext(webRequest))
+
+        then:
+        webRequest.response.contentAsString == written
+
+        where:
+        legacy | includes                     || written
+        true   | ['title', 'band']            || '{"title":"Things We Lost","band":{"id":7,"name":"Low"}}'
+        false  | ['title', 'band']            || '{"title":"Things We Lost","band":{"id":7,"name":"Low"}}'
+        true   | ['class', 'version', 'title'] || '{"class":"org.grails.plugins.web.rest.render.json.Record","version":2,"title":"Things We Lost"}'
+        false  | ['class', 'version', 'title'] || '{"class":"org.grails.plugins.web.rest.render.json.Record","version":2,"title":"Things We Lost"}'
+    }
+
+    private DefaultGrailsApplication domainApplication(boolean legacy) {
+        def app = new DefaultGrailsApplication(Record, Band)
+        app.config.setAt('grails.converters.json.legacy', legacy)
+        def context = new KeyValueMappingContext("jsonrenderer")
+        context.addPersistentEntities(Record, Band)
+        app.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> {
+                context
+            }
+        })
+        app.setMappingContext(context)
+        app.initialise()
+        ConvertersConfigurationHolder.clear()
+        new ConvertersConfigurationInitializer(grailsApplication: app).initialize()
+        app
+    }
+}
+
+@Entity
+class Record {
+    String title
+    Band band
+}
+
+@Entity
+class Band {
+    String name
 }
 
 class Album {
