@@ -155,12 +155,20 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         "json" == mimes[0].extension
     }
 
-    void 'malformed tokens with empty parameters do not break negotiation'() {
+    void 'a malformed token is left out, whatever empty parameters it has: #token'() {
         expect:
         getAcceptHeaderParser().parse("${token},application/json")*.extension == ['json']
 
         where:
         token << ['text/ html;', 'text/ html;;', ';', 'text/ html;=']
+    }
+
+    void 'a type with a parameter without a name or a value is kept: #token'() {
+        expect:
+        getAcceptHeaderParser().parse("${token},application/json")*.extension == ['html', 'json']
+
+        where:
+        token << ['text/html;level=', 'text/html;=1']
     }
 
     void testFirefox2AcceptHeaderOrdering() {
