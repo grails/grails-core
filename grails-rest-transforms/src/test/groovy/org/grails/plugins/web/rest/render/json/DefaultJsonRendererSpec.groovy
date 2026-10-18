@@ -510,6 +510,25 @@ class DefaultJsonRendererSpec extends Specification {
         !log.contains('set grails.web.rendering.json.spring=true')
     }
 
+    void 'an application converter writes a problem whatever the includes, which do not apply to a problem'() {
+        given:
+        def converter = Mock(HttpMessageConverter) {
+            canWrite(ProblemDetail, _) >> true
+            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_PROBLEM_JSON]
+        }
+        def renderer = new DefaultJsonRenderer<ProblemDetail>(ProblemDetail)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(webRequest, [includes: ['title']]))
+
+        then:
+        1 * converter.write(_ as ProblemDetail, _, _)
+    }
+
     void 'empty includes are applied by the legacy converter in the place of an application converter, which writes none of the properties'() {
         given:
         def converter = Mock(HttpMessageConverter) {

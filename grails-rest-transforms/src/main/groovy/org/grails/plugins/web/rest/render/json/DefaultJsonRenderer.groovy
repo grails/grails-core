@@ -316,8 +316,10 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         if (converter == null) {
             return "no Spring message converter writes [${objectType.name}] as ${mediaType}"
         }
-        List<String> includes = getEffectiveIncludes(context)
-        List<String> excludes = getEffectiveExcludes(context)
+        // A problem is written as Spring MVC writes it, which no projection changes
+        boolean problem = object instanceof ProblemDetail
+        List<String> includes = problem ? null : getEffectiveIncludes(context)
+        List<String> excludes = problem ? null : getEffectiveExcludes(context)
 
         // Only adapt the standard converter. Application converter subclasses and per-type
         // mappers retain their own serialization contract.

@@ -265,6 +265,32 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         e.message == 'Named JSON configuration [missing] is not registered.'
     }
 
+    void 'includes and excludes leave a problem as Spring MVC writes it'() {
+        given:
+        def errors = new BeanPropertyBindingResult(new JsonResponseBody(title: 'private'), 'book')
+        errors.rejectValue('title', 'invalid', 'Title is invalid')
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatusAndDetail(
+                org.springframework.http.HttpStatus.CONFLICT, 'Taken'), excludes: ['title', 'detail'])
+
+        then:
+        response.status == 409
+        response.json.title == 'Conflict'
+        response.json.detail == 'Taken'
+
+        when: 'the problem respond makes of validation errors'
+        response.reset()
+        response.format = 'json'
+        controller.respond(errors, includes: [])
+
+        then:
+        response.status == 422
+        response.json.status == 422
+        response.json.title
+        response.json.errors.first().message == 'Title is invalid'
+    }
+
     void 'respond of an explicit problem preserves its HTTP semantics'() {
         given:
         request.requestURI = '/books'
