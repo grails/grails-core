@@ -43,6 +43,7 @@ import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingConte
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.marshaller.ObjectMarshaller
 import org.grails.web.json.DateTimeValues
 import org.grails.web.json.PrettyPrintJSONWriter
 
@@ -185,6 +186,28 @@ class Grails8JsonRenderingSpec extends Specification {
     void "the includes the converter is given for a proxy apply to the instance it writes in its place, where Grails 8 ignored them"() {
         expect: 'Grails 8.0.x kept them for the class of the proxy, which it does not write'
         Grails8DomainRendering.renderProxyIncluding(LEGACY, ['title']) == '{"title":"The Dispossessed"}'
+    }
+
+    void "with the DEFAULT circular reference behaviour, a reference counts the objects the converter writes, as Grails 8 did, also through a marshaller the application registers"() {
+        given: 'a marshaller that writes a link as a map, which the converter writes in its place'
+        JSON.registerObjectMarshaller(Link) { Link link -> [n: link.n, other: link.other] }
+        def only = new Link(n: 1)
+        only.other = only
+
+        expect: 'the link and the map are two objects, as in Grails 8'
+        new JSON(only).toString() == '{"n":1,"other":{"_ref":"..","class":"' + Link.name + '"}}'
+    }
+
+    void "a circular reference is written by the marshaller the application registers for maps, as in Grails 8"() {
+        given:
+        grailsApplication.config.setAt('grails.converters.json.circular.reference.behaviour', 'PATH')
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
+        JSON.registerObjectMarshaller(new SortedKeysMarshaller())
+        def only = new Link(n: 1)
+        only.other = only
+
+        expect:
+        new JSON(only).toString() == '{"n":1,"other":{"class":"' + Link.name + '","ref":"root"}}'
     }
 
     private static JsonMapper configuredMapper() {
@@ -408,4 +431,23 @@ class Holder {
 class Link {
     int n
     Link other
+}
+
+/**
+ * Writes a map with its keys sorted, as an application may for text that does not depend on the order of a map.
+ */
+class SortedKeysMarshaller implements ObjectMarshaller<JSON> {
+
+    boolean supports(Object object) {
+        object instanceof Map
+    }
+
+    void marshalObject(Object object, JSON json) {
+        json.writer.object()
+        new TreeMap((Map) object).each { key, value ->
+            json.writer.key(key.toString())
+            json.convertAnother(value)
+        }
+        json.writer.endObject()
+    }
 }

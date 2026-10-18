@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -252,7 +253,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 }
                 else {
                     referenceStack.push(o);
-                    int depth = jsonWriter != null ? jsonWriter.nestingDepth() : -1;
+                    int depth = jsonWriter != null && !ConvertersConfigurationHolder.isLegacyJson() ? jsonWriter.nestingDepth() : -1;
                     if (depth >= 0) {
                         referenceDepths.put(o, depth);
                     }
@@ -537,12 +538,13 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 final boolean isMap = Map.class.isAssignableFrom(o.getClass());
                 if (!(isMap || isCollection)) {
                     // One step up for each JSON object or array from the one the reference is written in to the value the
-                    // object is written as, its type wrapper included, as respond counts them; where the writer writes to no
-                    // generator, one for each object the converter is writing in between, as Grails 8 counted them
-                    Integer start = referenceDepths.get(o);
+                    // object is written as, its type wrapper included, as respond counts them; the legacy converter, and a
+                    // writer that writes to no generator, count one for each object the converter is writing in between, as
+                    // Grails 8 did, which a marshaller that writes an object as another value counts twice
+                    int idx = referenceStack.indexOf(o);
+                    Integer start = ConvertersConfigurationHolder.isLegacyJson() ? null : referenceDepths.get(referenceStack.get(idx));
                     int current = jsonWriter != null ? jsonWriter.nestingDepth() : -1;
-                    int levels = start != null && current >= 0 ? Math.max(0, current - start - 1) :
-                            referenceStack.size() - 1 - referenceStack.indexOf(o);
+                    int levels = start != null && current >= 0 ? Math.max(0, current - start - 1) : referenceStack.size() - 1 - idx;
                     // "." where the object repeats the one the reference is written in, where Grails 8 failed
                     writeReference("_ref", levels == 0 ? "." : String.join("/", Collections.nCopies(levels, "..")), o);
                 }
@@ -572,9 +574,17 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
 
     /**
      * Writes a reference to an object reached again with its keys in the order Grails 8 wrote them, whatever order the
-     * mapper writes the entries of a map in.
+     * mapper writes the entries of a map in. The legacy converter writes it as a map, as Grails 8 did.
      */
     private void writeReference(String key, String reference, Object o) {
+        if (ConvertersConfigurationHolder.isLegacyJson()) {
+            // a map, as Grails 8 wrote it, which a marshaller the application registers for maps writes
+            Map<String, Object> props = new HashMap<>();
+            props.put("class", o.getClass());
+            props.put(key, reference);
+            value(props);
+            return;
+        }
         writer.object();
         writer.key(key);
         writer.value(reference);
