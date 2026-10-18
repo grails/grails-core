@@ -702,6 +702,18 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(shelter) == '{"id":7,"residents":[["Cat","Tom"]]}'
     }
 
+    void "the instances of a to-many association written with a serializer of their own have the type ids the property asks for"() {
+        given: 'an association that names the type ids of its elements, of a class that names none'
+        def parrot = new Parrot(name: 'Polly')
+        parrot.id = 3
+        def aviary = new Aviary(birds: [parrot])
+        aviary.id = 1
+
+        expect: 'as Jackson writes them for the property of any bean'
+        mapper().writeValueAsString(new AviaryBean(birds: [parrot])) == '{"birds":[["Parrot","Polly"]]}'
+        mapper().writeValueAsString(aviary) == '{"id":1,"birds":[["Parrot","Polly"]]}'
+    }
+
     void "a DomainClassMarshaller that writes references itself writes the reference to an instance whose class has a serializer of its own"() {
         given:
         JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
@@ -1223,14 +1235,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1425,6 +1437,30 @@ class Animal {
 @Entity
 class Dog extends Animal {
     String name
+}
+
+@Entity
+class Creature {
+}
+
+@Entity
+class Parrot extends Creature {
+    String name
+
+    @JsonValue
+    String jsonValue() { name }
+}
+
+@Entity
+class Aviary {
+    static hasMany = [birds: Creature]
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+    List<Creature> birds
+}
+
+class AviaryBean {
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+    List<Creature> birds
 }
 
 @Entity

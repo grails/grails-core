@@ -29,6 +29,7 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 
 import org.grails.datastore.mapping.model.PersistentEntity;
@@ -302,15 +303,27 @@ final class DomainReferences {
 
         /**
          * The type ids of the instances of a to-many association that are written with a serializer of their own, as
-         * the type the association is declared with asks for them.
+         * the property asks for them, with its {@code @JsonTypeInfo}, or else the type its elements are declared with.
          */
         private TypeSerializer elementTypeSerializer(SerializationContext context) {
             if (!elementTypesFound) {
-                elementTypes = property != null && property.getType().getContentType() != null ?
-                        context.findTypeSerializer(property.getType().getContentType()) : null;
+                elementTypes = findElementTypeSerializer(context);
                 elementTypesFound = true;
             }
             return elementTypes;
+        }
+
+        private TypeSerializer findElementTypeSerializer(SerializationContext context) {
+            if (property == null || property.getType().getContentType() == null) {
+                return null;
+            }
+            // Jackson gives the type the property is written as the type serializer the property names for its elements
+            if (property instanceof BeanPropertyWriter writer && writer.getSerializationType() != null &&
+                    writer.getSerializationType().getContentType() != null &&
+                    writer.getSerializationType().getContentType().getTypeHandler() instanceof TypeSerializer named) {
+                return named;
+            }
+            return context.findTypeSerializer(property.getType().getContentType());
         }
 
         /** Whether associated instances are written in full: for every write, or for this one. */
