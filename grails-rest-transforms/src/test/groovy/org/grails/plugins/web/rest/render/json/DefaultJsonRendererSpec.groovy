@@ -40,6 +40,7 @@ import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.ser.std.StdSerializer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationFeature
+import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
@@ -289,7 +290,10 @@ class DefaultJsonRendererSpec extends Specification {
     }
 
     void 'a projection a serializer of its own bypasses on the Spring path is reported'() {
-        given: 'a mapper with a serializer of the projected type, which writes it without its properties'
+        given: 'an application started afresh, which has reported nothing'
+        ShutdownOperations.runOperations()
+
+        and: 'a mapper with a serializer of the projected type, which writes it without its properties'
         def mapper = JsonMapper.builder().addModule(new SimpleModule().addSerializer(ProjectionBody, new TitleOnlySerializer())).build()
         def renderer = grailsMapperRenderer(new JacksonJsonHttpMessageConverter(mapper))
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()

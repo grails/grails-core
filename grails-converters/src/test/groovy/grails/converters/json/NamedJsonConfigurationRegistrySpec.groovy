@@ -43,6 +43,7 @@ import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
 import grails.core.support.proxy.DefaultProxyHandler
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.web.converters.jackson.DomainClassJacksonModule
 import org.grails.web.converters.jackson.DomainClassRendering
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
@@ -344,8 +345,9 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         new JsonSlurper().parseText(output.toString()) == [name: 'main', credentials: [user: 'a', password: 'b']]
     }
 
-    void 'a projection a serializer of its own bypasses is reported'() {
-        given:
+    void 'a projection a serializer of its own bypasses is reported, once for each type'() {
+        given: 'an application started afresh, which has reported nothing'
+        ShutdownOperations.runOperations()
         def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
         registry.register('custom') { it.serializer(NamedJsonValue, new NamedJsonValueSerializer()) }
         def output = new StringWriter()
@@ -353,26 +355,31 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         when:
         String log = stderrWhile {
             registry.writeValue('custom', output, new NamedJsonValue(name: 'secret'), null, ['configured'])
+            registry.writeValue('custom', new StringWriter(), new NamedJsonValue(name: 'secret'), null, ['configured'])
         }
 
         then:
         output.toString() == '{"configured":"SECRET"}'
-        log.contains("JSON includes/excludes were not applied to [class ${NamedJsonValue.name}]")
+        log.count("JSON includes/excludes were not applied to [class ${NamedJsonValue.name}]") == 1
     }
 
     void 'the elements of an Iterable that is not a Collection are written, not consumed by the projection'() {
-        given: 'an iterable that can only be iterated once'
+        given: 'an iterable that can only be iterated once, in an application started afresh'
+        ShutdownOperations.runOperations()
         def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
         Iterator<NamedJsonCredentials> elements = [new NamedJsonCredentials(user: 'a', password: 'b')].iterator()
         Iterable<NamedJsonCredentials> once = { -> elements } as Iterable<NamedJsonCredentials>
         def output = new StringWriter()
 
         when:
-        String log = stderrWhile { registry.writeValue(null, output, once, null, ['password']) }
+        String log = stderrWhile {
+            registry.writeValue(null, output, once, null, ['password'])
+            registry.writeValue(null, new StringWriter(), once, null, ['password'])
+        }
 
         then:
         new JsonSlurper().parseText(output.toString()) == [[user: 'a', password: 'b']]
-        log.contains('were not applied to the elements of a')
+        log.count('were not applied to the elements of a') == 1
         log.contains('which is not a Collection')
     }
 

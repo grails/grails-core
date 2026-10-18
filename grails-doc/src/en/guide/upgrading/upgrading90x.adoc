@@ -349,7 +349,7 @@ projects only the objects of the class of the value written, so not the elements
 other types inside them are written in full. Properties are named by their bean property names, and a JSON name given by a Jackson
 annotation or naming strategy matches as well. A value with no properties to project, such as a map
 or a string, throws `IllegalArgumentException` before anything is written. A type that a Jackson
-serializer of its own writes is not filtered, and a warning names it, as does an `Iterable` that is not
+serializer of its own writes is not filtered, and a warning names it the first time, as one does an `Iterable` that is not
 a `Collection`, whose elements are not walked before writing in case it can be iterated only once. With
 `grails.web.rendering.json.spring: true`, `respond x, includes: [...]` without a configuration name
 applies projections the same way; otherwise it uses the legacy converter.

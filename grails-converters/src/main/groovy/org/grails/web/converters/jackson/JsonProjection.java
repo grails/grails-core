@@ -39,6 +39,8 @@ import tools.jackson.databind.ser.ValueSerializerModifier;
 
 import org.springframework.beans.BeanUtils;
 
+import org.grails.core.lifecycle.ShutdownOperations;
+
 /**
  * A per-write {@code includes}/{@code excludes} projection, as the {@code render} and {@code respond}
  * arguments request it.
@@ -56,6 +58,19 @@ public final class JsonProjection {
     public static final String ATTRIBUTE = JsonProjection.class.getName();
 
     private static final Logger LOG = LoggerFactory.getLogger(JsonProjection.class);
+
+    /** The types an unapplied projection has been reported for. */
+    private static final Set<Class<?>> REPORTED_TYPES = ConcurrentHashMap.newKeySet();
+
+    /** The classes of the iterables whose elements a projection has been reported not to apply to. */
+    private static final Set<Class<?>> REPORTED_ITERABLES = ConcurrentHashMap.newKeySet();
+
+    static {
+        ShutdownOperations.addOperation(() -> {
+            REPORTED_TYPES.clear();
+            REPORTED_ITERABLES.clear();
+        }, true);
+    }
 
     private final List<String> includes;
     private final List<String> excludes;
@@ -229,16 +244,20 @@ public final class JsonProjection {
 
     /**
      * Logs the types this projection was requested for but not applied to, after a write: a
-     * serializer of their own wrote them without going through their properties.
+     * serializer of their own wrote them without going through their properties. Each type, and
+     * each class of an {@code Iterable} whose elements were not projected, is reported once, until
+     * the application shuts down, as the other notices of the converters are, rather than by every
+     * response.
      */
     public void reportUnapplied() {
         Set<Class<?>> unapplied = new LinkedHashSet<>(types);
         unapplied.removeAll(applied);
+        unapplied.removeIf(type -> !REPORTED_TYPES.add(type));
         if (!unapplied.isEmpty()) {
             LOG.warn("JSON includes/excludes were not applied to {}: a serializer of their own writes them. " +
                     "Apply the projection in that serializer, or write a DTO.", unapplied);
         }
-        if (unwalkedIterable != null) {
+        if (unwalkedIterable != null && REPORTED_ITERABLES.add(unwalkedIterable)) {
             LOG.warn("JSON includes/excludes were not applied to the elements of a {}, which is not a Collection. " +
                     "Write a Collection or an array to project its elements.", unwalkedIterable.getName());
         }
