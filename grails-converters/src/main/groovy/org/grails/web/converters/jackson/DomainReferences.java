@@ -24,9 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
@@ -154,7 +154,7 @@ final class DomainReferences {
     /**
      * Whether Jackson writes the instances of a domain class with a serializer other than its bean serializer, inside
      * the serializers modules wrap it with. A class whose serializer Jackson cannot build, such as one that unwraps a
-     * property with the name of one of its own, has none: its instances are referenced, which needs none of their
+     * property with the name of one of its own, or one a module fails to build a serializer of a property of, has none: its instances are referenced, which needs none of their
      * properties, rather than failing the write of every instance that references one.
      */
     private boolean hasSerializerOfItsOwn(Class<?> type, SerializationContext context) {
@@ -163,7 +163,9 @@ final class DomainReferences {
             try {
                 return findsSerializerOfItsOwn(t, context);
             }
-            catch (InvalidDefinitionException e) {
+            catch (DatabindException e) {
+                // a definition Jackson rejects, or a mapping problem, such as a module failing to build a serializer of
+                // one of its properties
                 return false;
             }
         });

@@ -39,6 +39,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import spock.lang.Specification
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.BeanDescription
+import tools.jackson.databind.DatabindException
+import tools.jackson.databind.JavaType
 import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationConfig
@@ -791,6 +793,37 @@ class DomainClassJacksonModuleSpec extends Specification {
         new JSON(branch).toString() == '{"id":2,"name":"east","location":{"id":1}}'
     }
 
+    void "an associated instance of a domain class whose serializer fails to resolve is written as a reference too"() {
+        given: 'a module that fails to build the serializer of the enum of a property, which Jackson reports as a mapping problem'
+        def badge = new Badge(label: 'gold', colour: BadgeColour.GOLD)
+        badge.id = 2
+        def badged = new Badged(badge: badge)
+        badged.id = 1
+        def failing = new SimpleModule('failing-colours').setSerializerModifier(new ValueSerializerModifier() {
+            @Override
+            ValueSerializer<?> modifyEnumSerializer(SerializationConfig config, JavaType valueType,
+                                                    BeanDescription.Supplier beanDescription, ValueSerializer<?> serializer) {
+                if (valueType.rawClass == BadgeColour) {
+                    throw new IllegalArgumentException('no serializer for colours')
+                }
+                serializer
+            }
+        })
+        def mapper = JsonMapper.builder().addModule(new DomainClassJacksonModule(
+                ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())))
+                .addModule(failing).build()
+
+        when:
+        mapper.writeValueAsString(badge)
+
+        then: 'the class cannot be written'
+        DatabindException e = thrown()
+        !(e instanceof InvalidDefinitionException)
+
+        expect: 'a reference to an instance of it can'
+        mapper.writeValueAsString(badged) == '{"id":1,"badge":{"id":2}}'
+    }
+
     void "an association after a @JsonUnwrapped property is written with the rendering of the instance that has it"() {
         given: 'a DomainClassMarshaller that writes the ids with a prefix'
         JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
@@ -1190,14 +1223,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1620,6 +1653,21 @@ class Located {
 class Address {
     String name
     String city
+}
+
+@Entity
+class Badge {
+    String label
+    BadgeColour colour
+}
+
+enum BadgeColour {
+    GOLD
+}
+
+@Entity
+class Badged {
+    Badge badge
 }
 
 @Entity
