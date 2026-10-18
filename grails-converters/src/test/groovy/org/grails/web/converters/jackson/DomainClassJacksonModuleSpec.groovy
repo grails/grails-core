@@ -553,6 +553,51 @@ class DomainClassJacksonModuleSpec extends Specification {
         JsonMapper.builder().build().writeValueAsString(new ExtendedBean(name: 'a')) == '{"name":"a","extra":"value"}'
     }
 
+    void "the entries of a persistent property annotated @JsonAnyGetter are written in its place, whatever name a naming strategy gives it"() {
+        given:
+        def attributed = new Attributed(name: 'a', customAttributes: [colour: 'red', size: 'L'])
+        attributed.id = 1
+        def snakeCase = JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .addModule(new DomainClassJacksonModule(ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                        grailsApplication, new DefaultProxyHandler())))
+                .build()
+
+        expect: 'as Jackson writes those of a bean'
+        mapper().writeValueAsString(attributed) == '{"id":1,"name":"a","colour":"red","size":"L","note":"n"}'
+        snakeCase.writeValueAsString(attributed) == '{"id":1,"name":"a","colour":"red","size":"L","note":"n"}'
+        new JSON(attributed).toString() == '{"id":1,"name":"a","colour":"red","size":"L","note":"n"}'
+
+        and: 'none, when there are none'
+        mapper().writeValueAsString(new Attributed(name: 'b', note: 'n')) == '{"name":"b","note":"n"}'
+
+        when: 'the property is excluded'
+        def json = new JSON(attributed)
+        json.setExcludes(Attributed, ['customAttributes'])
+
+        then:
+        json.toString() == '{"id":1,"name":"a","note":"n"}'
+    }
+
+    void "the entries of a persistent property annotated @JsonAnyGetter are written in the views the property is written in"() {
+        given:
+        def attributed = new Attributed(name: 'a', customAttributes: [colour: 'red'])
+        attributed.id = 1
+        def viewed = new ViewedAttributes(name: 'b', attributes: [size: 'L'])
+        viewed.id = 2
+        def byDefault = JsonMapper.builder().enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .addModule(new DomainClassJacksonModule(ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                        grailsApplication, new DefaultProxyHandler())))
+                .build()
+
+        expect: 'in the views it names'
+        mapper().writerWithView(Everyone).writeValueAsString(attributed) == '{"colour":"red"}'
+        mapper().writerWithView(OutsideView).writeValueAsString(attributed) == '{}'
+
+        and: 'in every view, when it names none and the mapper writes such properties in every view'
+        byDefault.writerWithView(OutsideView).writeValueAsString(viewed) == '{"id":2,"size":"L"}'
+        mapper().writerWithView(OutsideView).writeValueAsString(viewed) == '{}'
+    }
+
     void "an associated instance whose class has a serializer of its own is written with it, rather than as a reference"() {
         given: 'associations to a class with a @JsonValue, to one with a @JsonSerialize serializer, to one with a ' +
                 '@JsonSerialize converter, and to one without'
@@ -1100,14 +1145,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1436,6 +1481,23 @@ class Extended {
     Map<String, Object> getExtras() {
         [extra: 'value']
     }
+}
+
+@Entity
+class Attributed {
+    String name
+    @JsonAnyGetter
+    @JsonView(Everyone)
+    Map<String, String> customAttributes
+    String note = 'n'
+}
+
+@Entity
+class ViewedAttributes {
+    @JsonView(Everyone)
+    String name
+    @JsonAnyGetter
+    Map<String, String> attributes
 }
 
 class ExtendedBean {

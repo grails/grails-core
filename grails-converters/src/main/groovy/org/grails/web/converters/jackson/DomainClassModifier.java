@@ -46,6 +46,7 @@ import tools.jackson.databind.ser.AnyGetterWriter;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.BeanSerializerBuilder;
 import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 
 import org.springframework.util.ClassUtils;
@@ -67,7 +68,8 @@ import org.grails.web.converters.Converter.CircularReferenceBehaviour;
  *
  * <p>The serializer is otherwise Jackson's, so what Jackson applies to a bean applies to the instance: the naming
  * strategy, {@code @JsonIgnore}, {@code @JsonInclude}, {@code @JsonView}, {@code @JsonFormat}, mixins, filters, type
- * ids and unwrapping. A property that is not persistent is not written.</p>
+ * ids and unwrapping. A property that is not persistent is not written; the entries of a persistent one annotated
+ * {@code @JsonAnyGetter} are written in its place.</p>
  *
  * @since 9.0
  */
@@ -105,8 +107,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
         // Jackson leaves out the properties a class names in @JsonIgnoreProperties by the names it writes them with;
         // they are left out here by the names the class gives them, so that a naming strategy writes none of them, such
         // as the tenant id GORM names for every domain class
-        JsonIgnoreProperties.Value ignorals = beanDescription.get().getPropertyIgnorals();
-        Set<String> ignored = ignorals != null ? ignorals.findIgnoredForSerialization() : Set.of();
+        Set<String> ignored = ignoredByClass(beanDescription.get());
         List<PersistentProperty> persistent = new ArrayList<>();
         for (PersistentProperty property : entity.getPersistentProperties()) {
             if (!property.equals(entity.getVersion()) && !property.equals(entity.getIdentity()) &&
@@ -132,8 +133,8 @@ final class DomainClassModifier extends ValueSerializerModifier {
         for (PersistentProperty property : persistent) {
             for (BeanPropertyWriter writer : properties) {
                 if (property.getName().equals(internalNames.getOrDefault(writer.getName(), writer.getName()))) {
-                    written.add(GatedPropertyWriter.gated(withReferences(writer, property), included(property.getName()),
-                            checked));
+                    written.add(GatedPropertyWriter.gated(DomainAnyGetterWriter.of(withReferences(writer, property)),
+                            included(property.getName()), checked));
                 }
             }
         }
@@ -281,34 +282,71 @@ final class DomainClassModifier extends ValueSerializerModifier {
     }
 
     /**
-     * Leaves out the writer of a {@code @JsonAnyGetter}, which Jackson adds once the properties are ordered, since only
-     * the persistent properties of a domain class are written.
+     * Leaves out the writer Jackson adds for a {@code @JsonAnyGetter} once the properties are ordered, since only the
+     * persistent properties of a domain class are written, and the entries of a persistent one are written in its place.
+     * Jackson puts its writer in the place of the writer of a property of the same name, which is put back.
      */
     @Override
     public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription.Supplier beanDescription,
             BeanSerializerBuilder builder) {
-        if (entity(beanDescription.getBeanClass()) == null) {
+        PersistentEntity entity = entity(beanDescription.getBeanClass());
+        if (entity == null) {
             return builder;
         }
         List<BeanPropertyWriter> properties = builder.getProperties();
         BeanPropertyWriter[] filtered = builder.getFilteredProperties();
         List<BeanPropertyWriter> kept = new ArrayList<>();
         List<BeanPropertyWriter> keptFiltered = new ArrayList<>();
+        boolean changed = false;
         for (int i = 0; i < properties.size(); i++) {
-            if (!(properties.get(i) instanceof AnyGetterWriter)) {
-                kept.add(properties.get(i));
-                if (filtered != null) {
-                    keptFiltered.add(filtered[i]);
+            BeanPropertyWriter writer = properties.get(i);
+            BeanPropertyWriter keptFilter = filtered != null ? filtered[i] : null;
+            if (writer instanceof AnyGetterWriter anyGetter) {
+                changed = true;
+                String property = replacedProperty(anyGetter, beanDescription.get(), entity);
+                if (property == null) {
+                    continue;
+                }
+                writer = GatedPropertyWriter.gated(DomainAnyGetterWriter.of(anyGetter), included(property),
+                        !rendering.renderingsPerWrite());
+                if (keptFilter != null) {
+                    // the writer of the views the property is written in
+                    keptFilter = keptFilter == anyGetter ? writer :
+                            FilteredBeanPropertyWriter.constructViewBased(writer, anyGetter.getViews());
                 }
             }
+            kept.add(writer);
+            keptFiltered.add(keptFilter);
         }
-        if (kept.size() < properties.size()) {
+        if (changed) {
             builder.setProperties(kept);
             if (filtered != null) {
                 builder.setFilteredProperties(keptFiltered.toArray(new BeanPropertyWriter[0]));
             }
         }
         return builder;
+    }
+
+    /**
+     * @return the persistent property whose writer the writer of a {@code @JsonAnyGetter} took the place of, which has
+     *         the same name, or {@code null} if it was added
+     */
+    private static String replacedProperty(AnyGetterWriter anyGetter, BeanDescription description, PersistentEntity entity) {
+        for (BeanPropertyDefinition definition : description.findProperties()) {
+            if (definition.getName().equals(anyGetter.getName())) {
+                PersistentProperty property = entity.getPropertyByName(definition.getInternalName());
+                // a property the class ignores had no writer to take the place of
+                return property != null && !ignoredByClass(description).contains(property.getName()) ?
+                        property.getName() : null;
+            }
+        }
+        return null;
+    }
+
+    /** The properties a class names in {@code @JsonIgnoreProperties}, which are left out by the names it gives them. */
+    private static Set<String> ignoredByClass(BeanDescription description) {
+        JsonIgnoreProperties.Value ignorals = description.getPropertyIgnorals();
+        return ignorals != null ? ignorals.findIgnoredForSerialization() : Set.of();
     }
 
     @Override
