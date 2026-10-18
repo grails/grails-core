@@ -16,30 +16,33 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.gsp.compiler.tags
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.gsp.compiler.tags;
 
-import org.grails.gsp.GroovyPage
-import org.grails.gsp.compiler.GroovyPageParser
-import org.grails.taglib.GrailsTagException
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.grails.gsp.GroovyPage;
+import org.grails.gsp.compiler.GroovyPageParser;
+import org.grails.taglib.GrailsTagException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author graemerocher
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class GroovyCollectTagTests {
 
-    private GroovyCollectTag tag = new GroovyCollectTag()
-    private StringWriter sw = new StringWriter()
+    private GroovyCollectTag tag = new GroovyCollectTag();
+    private StringWriter sw = new StringWriter();
 
     @BeforeEach
     protected void setUp() throws Exception {
-        Map context = new HashMap()
-        context.put(GroovyPage.OUT, new PrintWriter(sw))
-        GroovyPageParser parser = new GroovyPageParser('test', 'test', 'test', new ByteArrayInputStream(new byte[]{}), null)
-        context.put(GroovyPageParser, parser)
-        tag.init(context)
+        Map context = new HashMap();
+        context.put(GroovyPage.OUT, new PrintWriter(sw));
+        GroovyPageParser parser = new GroovyPageParser("test", "test", "test", new ByteArrayInputStream(new byte[]{}), null);
+        context.put(GroovyPageParser, parser);
+        tag.init(context);
     }
 
     /**
@@ -47,7 +50,7 @@ class GroovyCollectTagTests {
      */
     @Test
     void testIsKeepPrecedingWhiteSpace() {
-        Assertions.assertTrue(tag.isKeepPrecedingWhiteSpace())
+        Assertions.assertTrue(tag.isKeepPrecedingWhiteSpace());
     }
 
     /**
@@ -55,7 +58,7 @@ class GroovyCollectTagTests {
      */
     @Test
     void testIsAllowPrecedingContent() {
-        Assertions.assertTrue(tag.isAllowPrecedingContent())
+        Assertions.assertTrue(tag.isAllowPrecedingContent());
     }
 
     /**
@@ -64,15 +67,15 @@ class GroovyCollectTagTests {
     @SuppressWarnings(['unchecked', 'rawtypes'])
     @Test
     void testDoStartTag() {
-        Map attrs = new HashMap()
-        Assertions.assertThrows(GrailsTagException, () -> tag.doStartTag(), "can't create this tag with no [in] and [expr] attributes")
+        Map attrs = new HashMap();
+        Assertions.assertThrows(GrailsTagException, () -> tag.doStartTag(), "can't create this tag with no [in] and [expr] attributes");
 
-        attrs.put('"in"', 'myObj')
-        attrs.put('"expr"', ' ${ it.name }')
-        tag.setAttributes(attrs)
-        Assertions.assertFalse(tag.attributes.isEmpty())
-        tag.doStartTag()
+        attrs.put("\"in\"", "myObj");
+        attrs.put("\"expr\"", ' ${ it.name }');
+        tag.setAttributes(attrs);
+        Assertions.assertFalse(tag.attributes.isEmpty());
+        tag.doStartTag();
 
-        Assertions.assertEquals('for( ' + tag.getForeachRenamedIt() + " in evaluate('myObj.collect {it.name}', 1, it) { return myObj.collect {it.name} } ) {" + System.getProperty('line.separator') + 'changeItVariable(' + tag.getForeachRenamedIt() + ')' + System.getProperty('line.separator'), sw.toString())
+        Assertions.assertEquals("for( " + tag.getForeachRenamedIt() + " in evaluate('myObj.collect {it.name}', 1, it) { return myObj.collect {it.name} } ) {" + System.getProperty("line.separator") + "changeItVariable(" + tag.getForeachRenamedIt() + ")" + System.getProperty("line.separator"), sw.toString());
     }
 }

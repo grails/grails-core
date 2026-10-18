@@ -16,59 +16,62 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.grails.web.layout
+@SuppressWarnings('UnnecessarySemicolon')
+package org.apache.grails.web.layout;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import jakarta.servlet.http.HttpServletResponse
-import jakarta.servlet.http.HttpServletResponseWrapper
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
-import com.opensymphony.module.sitemesh.PageParser
-import com.opensymphony.module.sitemesh.PageParserSelector
-import com.opensymphony.sitemesh.Content
-import com.opensymphony.sitemesh.ContentProcessor
-import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext
+import com.opensymphony.module.sitemesh.PageParser;
+import com.opensymphony.module.sitemesh.PageParserSelector;
+import com.opensymphony.sitemesh.Content;
+import com.opensymphony.sitemesh.ContentProcessor;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
-import grails.web.mvc.GrailsResponseMutator
-import org.grails.buffer.StreamCharBuffer
-import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.util.WebUtils
+import grails.web.mvc.GrailsResponseMutator;
+import org.grails.buffer.StreamCharBuffer;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.util.WebUtils;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class GrailsContentBufferingResponse extends HttpServletResponseWrapper implements GrailsResponseMutator, StreamCharBuffer.LazyInitializingWriter {
 
-    private final GrailsPageResponseWrapper pageResponseWrapper
-    private final ContentProcessor contentProcessor
-    private final SiteMeshWebAppContext webAppContext
-    private boolean redirectCalled
+    private final GrailsPageResponseWrapper pageResponseWrapper;
+    private final ContentProcessor contentProcessor;
+    private final SiteMeshWebAppContext webAppContext;
+    private boolean redirectCalled;
 
     GrailsContentBufferingResponse(HttpServletResponse response, final ContentProcessor contentProcessor, final SiteMeshWebAppContext webAppContext) {
         super(new GrailsPageResponseWrapper(webAppContext.getRequest(), response, new PageParserSelector() {
             boolean shouldParsePage(String contentType) {
-                return contentProcessor.handles(contentType)
+                return contentProcessor.handles(contentType);
             }
 
             PageParser getPageParser(String contentType) {
                 // Migration: Not actually needed by PageResponseWrapper, so long as getPage() isn't called.
-                return null
+                return null;
             }
         }) {
             @Override
             void setContentType(String contentType) {
-                webAppContext.setContentType(contentType)
-                super.setContentType(contentType)
+                webAppContext.setContentType(contentType);
+                super.setContentType(contentType);
             }
-        })
-        this.contentProcessor = contentProcessor
-        this.webAppContext = webAppContext
-        pageResponseWrapper = (GrailsPageResponseWrapper) getResponse()
+        });
+        this.contentProcessor = contentProcessor;
+        this.webAppContext = webAppContext;
+        pageResponseWrapper = (GrailsPageResponseWrapper) getResponse();
         if (response.getContentType() != null) {
-            webAppContext.setContentType(response.getContentType())
+            webAppContext.setContentType(response.getContentType());
         }
     }
 
     HttpServletResponse getTargetResponse() {
-        return (HttpServletResponse) pageResponseWrapper.getResponse()
+        return (HttpServletResponse) pageResponseWrapper.getResponse();
     }
 
     /**
@@ -85,78 +88,76 @@ class GrailsContentBufferingResponse extends HttpServletResponseWrapper implemen
      */
     @Override
     boolean isCommitted() {
-        return true
+        return true;
     }
 
     boolean isUsingStream() {
-        return pageResponseWrapper.isUsingStream()
+        return pageResponseWrapper.isUsingStream();
     }
 
     boolean isActive() {
-        return pageResponseWrapper.isGrailsLayoutActive() || pageResponseWrapper.isGspGrailsLayoutActive()
+        return pageResponseWrapper.isGrailsLayoutActive() || pageResponseWrapper.isGspGrailsLayoutActive();
     }
 
     void deactivateGrailsLayout() {
-        pageResponseWrapper.deactivateGrailsLayout()
+        pageResponseWrapper.deactivateGrailsLayout();
     }
 
     Content getContent() throws IOException {
         if (!pageResponseWrapper.isGrailsLayoutActive()) {
-            return null
+            return null;
         }
 
-        GSPGrailsLayoutPage content = (GSPGrailsLayoutPage) webAppContext.getRequest().getAttribute(EmbeddedGrailsLayoutView.GSP_GRAILS_LAYOUT_PAGE)
+        GSPGrailsLayoutPage content = (GSPGrailsLayoutPage) webAppContext.getRequest().getAttribute(EmbeddedGrailsLayoutView.GSP_GRAILS_LAYOUT_PAGE);
         if (content != null && content.isUsed()) {
-            return content
+            return content;
         }
 
-        char[] data = pageResponseWrapper.getContents()
+        char[] data = pageResponseWrapper.getContents();
         if (data != null && webAppContext.getContentType() != null) {
-            return contentProcessor.build(data, webAppContext)
+            return contentProcessor.build(data, webAppContext);
         }
 
-        return null
+        return null;
     }
 
     @Override
     void sendError(int sc) throws IOException {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup()
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
 
         try {
             if (!redirectCalled && !isCommitted()) {
-                super.sendError(sc)
+                super.sendError(sc);
             }
-        }
-        finally {
+        } finally {
             if (webRequest != null) {
-                WebUtils.storeGrailsWebRequest(webRequest)
+                WebUtils.storeGrailsWebRequest(webRequest);
             }
         }
     }
 
     @Override
     void sendError(int sc, String msg) throws IOException {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup()
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         try {
             if (!redirectCalled && !isCommitted()) {
-                super.sendError(sc, msg)
+                super.sendError(sc, msg);
             }
-        }
-        finally {
+        } finally {
             if (webRequest != null) {
-                WebUtils.storeGrailsWebRequest(webRequest)
+                WebUtils.storeGrailsWebRequest(webRequest);
             }
         }
     }
 
     @Override
     void sendRedirect(String location) throws IOException {
-        this.redirectCalled = true
-        super.sendRedirect(location)
+        this.redirectCalled = true;
+        super.sendRedirect(location);
     }
 
     @Override
     void deactivateResponseMutator() {
-        deactivateGrailsLayout()
+        deactivateGrailsLayout();
     }
 }
