@@ -18,130 +18,121 @@
  */
 package grails.beans.util
 
+import groovy.transform.CompileStatic
 import spock.lang.Specification
 
 class LazyMetaPropertyMapSpec extends Specification {
 
-    void 'get reads a property value lazily via the metaclass'() {
+    void 'get reads bean properties lazily and supports CharSequence keys and subsets'() {
         given:
-        def bean = new LazyBean(name: 'Bob', age: 42)
+        def bean = new TestBean(name: 'Grails', count: 7)
         def map = new LazyMetaPropertyMap(bean)
 
         expect:
-        map.get('name') == 'Bob'
-        map.get('age') == 42
-        map.get('name') == bean.name
+        map.get('name') == 'Grails'
+        map.get(new StringBuilder('count')) == 7
+        map.get('missing') == null
+        map.get('constraints') == null
+        map.get(['name', 'count', 'missing', null]) == [name: 'Grails', count: 7]
+
+        when:
+        bean.name = 'changed'
+
+        then:
+        map.get('name') == 'changed'
+        map.getInstance().is(bean)
     }
 
-    void 'get accepts a GString-like CharSequence key'() {
+    void 'put returns the old value and updates the bean'() {
         given:
-        def bean = new LazyBean(name: 'Bob')
-        def map = new LazyMetaPropertyMap(bean)
-        String suffix = 'name'
-
-        expect:
-        map.get("$suffix") == 'Bob'
-    }
-
-    void 'get with a List of names returns a submap of the resolvable ones'() {
-        given:
-        def bean = new LazyBean(name: 'Bob', age: 42)
+        def bean = new TestBean(name: 'original', count: 1)
         def map = new LazyMetaPropertyMap(bean)
 
         when:
-        def result = map.get(['name', 'age', 'missingProperty'])
+        def oldName = map.put(new StringBuilder('name'), 'changed')
+        def oldCount = map.put('count', [count: 2])
+        map.putAll([name: 'final', count: 3])
 
         then:
-        result == [name: 'Bob', age: 42]
+        oldName == 'original'
+        oldCount == 1
+        bean.name == 'final'
+        bean.count == 3
+        map.get('name') == 'final'
+        map.put('missing', 'ignored') == null
+        map.put('id', 99L) == null
+        bean.id == 1L
     }
 
-    void 'put writes through to the wrapped instance and returns the previous value'() {
+    void 'keys and map views exclude static and configurational properties'() {
         given:
-        def bean = new LazyBean(name: 'Bob')
-        def map = new LazyMetaPropertyMap(bean)
-
-        when:
-        def previous = map.put('name', 'Alice')
-
-        then:
-        previous == 'Bob'
-        bean.name == 'Alice'
-    }
-
-    void 'containsKey is true for a real, non-configurational property and false otherwise'() {
-        given:
-        def bean = new LazyBean(name: 'Bob')
-        def map = new LazyMetaPropertyMap(bean)
+        def map = new LazyMetaPropertyMap(new TestBean(name: 'Grails', count: 7))
 
         expect:
         map.containsKey('name')
-        !map.containsKey('doesNotExist')
-        !map.containsKey('class')
+        map.containsKey(new StringBuilder('count'))
+        !map.containsKey('missing')
+        !map.containsKey('constraints')
+        map.keySet() == ['name', 'count'] as Set
+        map.size() == 2
+        !map.isEmpty()
+        map.values().toSet() == ['Grails', 7] as Set
+        map.containsValue('Grails')
+        !map.containsValue('missing')
+        map.entrySet().collectEntries { [it.key, it.value] } == [name: 'Grails', count: 7]
     }
 
-    void 'keySet excludes configurational and static properties'() {
+    void 'maps compare and hash using the wrapped bean'() {
         given:
-        def bean = new LazyBean(name: 'Bob', age: 42)
+        def bean = new TestBean()
         def map = new LazyMetaPropertyMap(bean)
 
         expect:
-        map.keySet().containsAll(['name', 'age'])
-        !map.keySet().contains('class')
-        !map.keySet().contains('properties')
+        mapsEqual(map, new LazyMetaPropertyMap(bean))
+        map.hashCode() == bean.hashCode()
+        !mapsEqual(map, new LazyMetaPropertyMap(new TestBean()))
+        !mapsEqual(map, bean)
+        !mapsEqual(map, null)
     }
 
-    void 'isEmpty always returns false'() {
-        expect:
-        !new LazyMetaPropertyMap(new LazyBean()).isEmpty()
+    void 'null beans and non string containsKey arguments are rejected'() {
+        when:
+        operation()
+
+        then:
+        thrown(IllegalArgumentException)
+
+        where:
+        operation << [
+            { new LazyMetaPropertyMap(null) },
+            { new LazyMetaPropertyMap(new TestBean()).containsKey(1) }
+        ]
     }
 
     void 'remove and clear are unsupported'() {
         given:
-        def map = new LazyMetaPropertyMap(new LazyBean())
+        def map = new LazyMetaPropertyMap(new TestBean(name: 'Grails'))
 
         when:
-        map.remove('name')
+        operation(map)
 
         then:
         thrown(UnsupportedOperationException)
+        map.get('name') == 'Grails'
 
-        when:
-        map.clear()
-
-        then:
-        thrown(UnsupportedOperationException)
+        where:
+        operation << [{ it.remove('name') }, { it.clear() }]
     }
 
-    void 'equals and hashCode compare by the wrapped instance'() {
-        // LazyMetaPropertyMap implements Map, so Groovy's own dynamic .equals()/== dispatch
-        // for a Map-typed receiver routes through Map-content comparison rather than reaching
-        // this class's equals(Object) override when two maps happen to have equal content
-        // (pre-existing Groovy behavior, unrelated to source language) - invoke the declared
-        // method via reflection to exercise the real wrapped-instance-identity comparison.
-        given:
-        def bean = new LazyBean(name: 'Bob')
-        def a = new LazyMetaPropertyMap(bean)
-        def b = new LazyMetaPropertyMap(bean)
-        def c = new LazyMetaPropertyMap(new LazyBean(name: 'Bob'))
-        def equalsMethod = LazyMetaPropertyMap.getMethod('equals', Object)
-
-        expect:
-        a.hashCode() == b.hashCode()
-        equalsMethod.invoke(a, b)
-        !equalsMethod.invoke(a, c)
-        !equalsMethod.invoke(a, 'not a map')
+    @CompileStatic
+    private static boolean mapsEqual(LazyMetaPropertyMap map, Object other) {
+        map.equals(other)
     }
 
-    void 'getInstance returns the wrapped object'() {
-        given:
-        def bean = new LazyBean(name: 'Bob')
-
-        expect:
-        new LazyMetaPropertyMap(bean).instance.is(bean)
+    static class TestBean {
+        String name
+        int count
+        Long id = 1L
+        static String constraints = 'configuration'
     }
-}
-
-class LazyBean {
-    String name
-    Integer age
 }
