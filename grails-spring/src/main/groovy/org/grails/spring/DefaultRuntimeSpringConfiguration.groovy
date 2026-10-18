@@ -18,6 +18,8 @@
  */
 package org.grails.spring;
 
+import groovy.transform.CompileStatic;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,6 +47,7 @@ import org.springframework.util.Assert;
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfiguration {
 
     private static final Log LOG = LogFactory.getLog(DefaultRuntimeSpringConfiguration);
