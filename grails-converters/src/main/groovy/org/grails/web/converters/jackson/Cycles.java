@@ -94,9 +94,10 @@ final class Cycles {
                 }
             }
             case PATH -> {
+                // the keys in the order the JSON converter writes them, as Grails 8 did
                 generator.writeStartObject();
-                generator.writeStringProperty("class", type);
                 generator.writeStringProperty("ref", "root" + enclosing.path());
+                generator.writeStringProperty("class", type);
                 generator.writeEndObject();
             }
             default -> {

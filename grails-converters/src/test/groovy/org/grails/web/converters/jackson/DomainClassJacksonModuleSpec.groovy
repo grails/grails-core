@@ -153,14 +153,13 @@ class DomainClassJacksonModuleSpec extends Specification {
         expect:
         mapper().writeValueAsString(first) == '{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":' + repeated + '}}'
 
-        and: 'so does the JSON converter, whose references order their keys as a map does'
-        new JsonSlurper().parseText(new JSON(first).toString()) ==
-                new JsonSlurper().parseText('{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":' + repeated + '}}')
+        and: 'so does the JSON converter, which orders the keys of a reference as Grails 8 did'
+        new JSON(first).toString() == '{"id":1,"name":"first","partner":{"id":2,"name":"second","partner":' + repeated + '}}'
 
         where:
         behaviour     || repeated
         'DEFAULT'     || '{"_ref":"..","class":"' + Partner.name + '"}'
-        'PATH'        || '{"class":"' + Partner.name + '","ref":"root"}'
+        'PATH'        || '{"ref":"root","class":"' + Partner.name + '"}'
         'INSERT_NULL' || 'null'
         'IGNORE'      || 'null'
     }
