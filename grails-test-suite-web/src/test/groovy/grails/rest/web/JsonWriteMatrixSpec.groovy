@@ -59,6 +59,7 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.persistence.Entity
+import org.grails.datastore.mapping.proxy.EntityProxy
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
 
@@ -349,7 +350,12 @@ class MatrixFixture {
             of('a domain format', { withId(new MatrixDatedBook(title: 'Grails', published: new Date(0))) },
                     [(MatrixDatedBook): [id: ['id'], title: ['title'], published: ['published']]]),
             of('a domain identity id', { withId(new MatrixIdentifiedBook(title: 'Grails')) },
-                    [(MatrixIdentifiedBook): [id: ['id'], title: ['title']]])
+                    [(MatrixIdentifiedBook): [id: ['id'], title: ['title']]]),
+            of('a domain class whose association is a proxy that is not loaded', {
+                withId(new MatrixBook(title: 'Grails', pages: 2, author: proxiedAuthor(), reviewers: []))
+            }, [(MatrixBook): [id: ['id'], title: ['title'], pages: ['pages'], author: ['author'], reviewers: ['reviewers']]]),
+            of('a proxy of a domain class that is not loaded', { proxiedAuthor() },
+                    [(MatrixAuthor): [id: ['id'], name: ['name']]])
     ]
 
     final String description
@@ -386,13 +392,27 @@ class MatrixFixture {
                 extras.converted as Closure<?>)
     }
 
+    /** A proxy, not loaded, of an author that is saved, so that each call gives an equal proxy of the same author. */
+    private static MatrixAuthor proxiedAuthor() {
+        MatrixAuthor author = MatrixAuthor.findByName('Proxied') ?: new MatrixAuthor(name: 'Proxied').save(flush: true, failOnError: true)
+        MatrixAuthor.withSession { it.clear() }
+        MatrixAuthor proxy = MatrixAuthor.load(author.id)
+        assert proxy instanceof EntityProxy && !proxy.initialized
+        proxy
+    }
+
+    /** The class of an instance, which for a proxy is the domain class it stands for. */
+    static Class<?> classOf(Object instance) {
+        instance instanceof EntityProxy ? instance.getClass().superclass : instance.getClass()
+    }
+
     private static Object withId(Object instance) {
         instance['id'] = 1L
         instance
     }
 
     static Set<Class<?>> classesOf(Object value) {
-        value instanceof Collection ? value*.getClass() as LinkedHashSet<Class<?>> : [value.getClass()] as LinkedHashSet<Class<?>>
+        value instanceof Collection ? value.collect { classOf(it) } as LinkedHashSet<Class<?>> : [classOf(value)] as LinkedHashSet<Class<?>>
     }
 
     @Override
@@ -447,7 +467,7 @@ class MatrixFixture {
                 converted.call(node)
             }
             if (projected) {
-                project(node, instance.getClass(), options)
+                project(node, classOf(instance), options)
             }
         }
         tree.toString()
