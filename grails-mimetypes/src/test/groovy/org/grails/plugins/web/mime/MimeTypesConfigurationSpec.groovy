@@ -184,15 +184,21 @@ class MimeTypesConfigurationSpec extends Specification {
             }
         }
 
-        when:
-        Map<String, MediaType> mappings = mediaTypeMappings([json: 'application/vnd.acme+json'], false, provider)
+        def known = []
 
-        then:
+        when:
+        Map<String, MediaType> mappings = mediaTypeMappings([json: 'application/vnd.acme+json'], false, known, provider)
+
+        then: "Grails knows the provider's type"
+        known*.name.contains('application/vnd.acme+xml')
+
+        and: 'Spring MVC is not given it'
         mappings.json == MediaType.parseMediaType('application/vnd.acme+json')
         mappings.xml != MediaType.parseMediaType('application/vnd.acme+xml')
     }
 
-    private static Map<String, MediaType> mediaTypeMappings(Map types, boolean mergeDefaults = false, MimeTypeProvider... providers) {
+    private static Map<String, MediaType> mediaTypeMappings(Map types, boolean mergeDefaults = false, List<MimeType> known = [],
+                                                            MimeTypeProvider... providers) {
         def application = new DefaultGrailsApplication()
         application.config['grails.mime.types'] = types
         application.config['grails.mime.mergeDefaults'] = mergeDefaults
@@ -205,6 +211,7 @@ class MimeTypesConfigurationSpec extends Specification {
         new AnnotatedBeanDefinitionReader(context).register(MvcConfiguration)
         context.refresh()
         try {
+            known.addAll(context.getBean('mimeTypes', MimeType[]))
             return context.getBean(ContentNegotiationManager).mediaTypeMappings
         }
         finally {
