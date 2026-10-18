@@ -133,7 +133,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         // a domain class instance is rendered as the converter's marshaller for it asks, with its includes and excludes
         domainClassRenderings = new ConcurrentHashMap<>();
         propertyFilters = new ConcurrentHashMap<>();
-        jsonMapperSupport = ConvertersConfigurationHolder.getJsonMapperSupport()
+        JsonMapperSupport configured = ConvertersConfigurationHolder.getJsonMapperSupport();
+        // The legacy converter's mapper writes only the JSON text, so neither attribute is read
+        jsonMapperSupport = ConvertersConfigurationHolder.isLegacyJson() ? configured : configured
                 .withAttribute(DomainClassJacksonModule.RENDERINGS, (Function<Object, DomainClassRendering>) this::domainClassRendering)
                 .withAttribute(ConverterJsonModule.PROPERTY_FILTERS, (Function<Object, Predicate<String>>) this::propertyFilter);
         jsonWriter = prettyPrint && ConvertersConfigurationHolder.isLegacyJson() ?
