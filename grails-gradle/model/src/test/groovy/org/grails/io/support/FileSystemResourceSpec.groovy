@@ -26,136 +26,112 @@ class FileSystemResourceSpec extends Specification {
     @TempDir
     File tempDir
 
-    void 'exists is true for a real file and false for a missing one'() {
+    void 'a resource constructed from a #kind reads writes and exposes file metadata'() {
         given:
-        File real = new File(tempDir, 'real.txt')
-        real.text = 'hello'
+        File file = new File(tempDir, 'message.txt')
+        file.text = 'initial content'
+        def resource = kind == 'File' ? new FileSystemResource(file) : new FileSystemResource(file.path)
 
         expect:
-        new FileSystemResource(real).exists()
-        !new FileSystemResource(new File(tempDir, 'missing.txt')).exists()
+        resource.exists()
+        resource.isReadable()
+        resource.isWritable()
+        resource.inputStream.withCloseable { it.getText('UTF-8') } == 'initial content'
+        resource.path == file.path.replace('\\', '/')
+        resource.file == file
+        resource.URL == file.toURI().toURL()
+        resource.URI == file.toURI()
+        resource.filename == 'message.txt'
+        resource.description == "file [${file.absolutePath}]"
+        resource.toString() == file.toString()
+        resource.contentLength() == file.length()
+        resource.lastModified() == file.lastModified()
+
+        when:
+        resource.outputStream.withCloseable { it.write('replacement'.getBytes('UTF-8')) }
+
+        then:
+        file.getText('UTF-8') == 'replacement'
+        resource.contentLength() == 11
+
+        where:
+        kind << ['File', 'String']
     }
 
-    void 'getInputStream reads the file contents'() {
+    void 'directories exist but are neither readable nor writable resources'() {
         given:
-        File real = new File(tempDir, 'real.txt')
-        real.text = 'hello world'
+        def directory = new FileSystemResource(tempDir)
 
         expect:
-        new FileSystemResource(real).getInputStream().text == 'hello world'
+        directory.exists()
+        !directory.isReadable()
+        !directory.isWritable()
     }
 
-    void 'equals is true for the same instance'() {
+    void 'a missing resource fails reads but can be created through its output stream'() {
         given:
-        FileSystemResource resource = new FileSystemResource(new File(tempDir, 'a.txt'))
+        def resource = new FileSystemResource(new File(tempDir, 'missing.txt'))
+
+        expect:
+        !resource.exists()
+        !resource.isReadable()
+        !resource.isWritable()
+
+        when:
+        resource.getInputStream()
+
+        then:
+        thrown(FileNotFoundException)
+
+        when:
+        resource.outputStream.withCloseable { it.write('created'.getBytes('UTF-8')) }
+
+        then:
+        resource.exists()
+        resource.inputStream.withCloseable { it.getText('UTF-8') } == 'created'
+    }
+
+    void 'relative resources distinguish file paths from directory paths ending in a slash'() {
+        given:
+        def file = new FileSystemResource(new File(tempDir, 'original.txt'))
+        def directory = new FileSystemResource(tempDir.path + '/')
+        def directoryWithoutSlash = new FileSystemResource(tempDir)
+
+        expect:
+        file.createRelative('sibling.txt').file == new File(tempDir, 'sibling.txt')
+        directory.createRelative('child.txt').file == new File(tempDir, 'child.txt')
+        directoryWithoutSlash.createRelative('sibling.txt').file == new File(tempDir.parentFile, 'sibling.txt')
+    }
+
+    void 'equality uses normalized paths'() {
+        given:
+        def resource = new FileSystemResource(new File(tempDir, 'message.txt'))
+        def equivalent = new FileSystemResource(tempDir.path + '/./message.txt')
 
         expect:
         resource == resource
+        resource == equivalent
+        resource.hashCode() == equivalent.hashCode()
+        resource != new FileSystemResource(new File(tempDir, 'other.txt'))
+        !resource.equals(null)
+        !resource.equals(resource.file)
     }
 
-    void 'equals is true for two resources with the same cleaned path'() {
-        given:
-        File file = new File(tempDir, 'a.txt')
-
-        expect:
-        new FileSystemResource(file) == new FileSystemResource(file)
-        new FileSystemResource(file).hashCode() == new FileSystemResource(file).hashCode()
-    }
-
-    void 'equals is false for resources with different paths'() {
-        expect:
-        new FileSystemResource(new File(tempDir, 'a.txt')) != new FileSystemResource(new File(tempDir, 'b.txt'))
-    }
-
-    void 'equals does not infinitely recurse for a distinct non-equal resource'() {
-        given:
-        FileSystemResource one = new FileSystemResource(new File(tempDir, 'a.txt'))
-        FileSystemResource two = new FileSystemResource(new File(tempDir, 'b.txt'))
-
+    void 'constructors reject null #kind arguments'() {
         when:
-        boolean result = one.equals(two)
+        if (kind == 'File') {
+            new FileSystemResource((File) null)
+        } else {
+            new FileSystemResource((String) null)
+        }
 
         then:
-        noExceptionThrown()
-        !result
+        def error = thrown(IllegalArgumentException)
+        error.message == message
+
+        where:
+        kind     | message
+        'File'   | 'File must not be null'
+        'String' | 'Path must not be null'
     }
-
-    void 'constructor rejects a null File'() {
-        when:
-        new FileSystemResource((File) null)
-
-        then:
-        thrown(IllegalArgumentException)
-    }
-
-    void 'constructor rejects a null path'() {
-        when:
-        new FileSystemResource((String) null)
-
-        then:
-        thrown(IllegalArgumentException)
-    }
-
-    void 'getFilename returns the file name'() {
-        expect:
-        new FileSystemResource(new File(tempDir, 'foo.txt')).getFilename() == 'foo.txt'
-    }
-
-    void 'createRelative resolves a sibling path'() {
-        given:
-        File base = new File(tempDir, 'dir/foo.txt')
-        FileSystemResource resource = new FileSystemResource(base)
-
-        when:
-        Resource relative = resource.createRelative('bar.txt')
-
-        then:
-        relative.getFilename() == 'bar.txt'
-    }
-
-    void 'readable is true for a file and false for a directory or a missing file'() {
-        given:
-        File file = File.createTempFile('fsr', '.txt')
-        file.deleteOnExit()
-
-        expect:
-        new FileSystemResource(file).readable
-        !new FileSystemResource(file.parentFile).readable
-        !new FileSystemResource(new File(file.parentFile, 'does-not-exist-' + System.nanoTime())).readable
-    }
-
-    void 'the resource exposes the underlying file as a URL, URI and File'() {
-        given:
-        File file = File.createTempFile('fsr', '.txt')
-        file.deleteOnExit()
-        file.text = 'abcd'
-        FileSystemResource resource = new FileSystemResource(file)
-
-        expect:
-        resource.URL == file.toURI().toURL()
-        resource.URI == file.toURI()
-        resource.file == file
-        resource.contentLength() == 4
-        resource.lastModified() == file.lastModified()
-        resource.description == "file [${file.absolutePath}]".toString()
-        resource.toString() == file.toString()
-        resource.hashCode() == new FileSystemResource(file).hashCode()
-        resource.path == GrailsResourceUtils.cleanPath(file.path)
-    }
-
-    void 'writable and output stream operate on the underlying file'() {
-        given:
-        File file = File.createTempFile('fsr', '.txt')
-        file.deleteOnExit()
-        FileSystemResource resource = new FileSystemResource(file)
-
-        when:
-        resource.outputStream.withCloseable { it.write('written'.bytes) }
-
-        then:
-        resource.writable
-        !new FileSystemResource(file.parentFile).writable
-        file.text == 'written'
-    }
-
 }
