@@ -16,106 +16,109 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.validation
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.validation;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 class TestClass {
-    private Object[] testArray
-    private BigDecimal testBigDecimal
-    private Collection testCollection
-    private String testString
-    private Date testDate
-    private Double testDouble
-    private String testEmail
-    private Float testFloat
-    private Integer testInteger
-    private Long testLong
-    private String testURL
+    private Object[] testArray;
+    private BigDecimal testBigDecimal;
+    private Collection testCollection;
+    private String testString;
+    private Date testDate;
+    private Double testDouble;
+    private String testEmail;
+    private Float testFloat;
+    private Integer testInteger;
+    private Long testLong;
+    private String testURL;
 
     Object[] getTestArray() {
-        return testArray
+        return testArray;
     }
 
     void setTestArray(Object[] testArray) {
-        this.testArray = testArray
+        this.testArray = testArray;
     }
 
     BigDecimal getTestBigDecimal() {
-        return testBigDecimal
+        return testBigDecimal;
     }
 
     void setTestBigDecimal(BigDecimal testBigDecimal) {
-        this.testBigDecimal = testBigDecimal
+        this.testBigDecimal = testBigDecimal;
     }
 
     Collection getTestCollection() {
-        return testCollection
+        return testCollection;
     }
 
     void setTestCollection(Collection testCollection) {
-        this.testCollection = testCollection
+        this.testCollection = testCollection;
     }
 
     Date getTestDate() {
-        return testDate
+        return testDate;
     }
 
     void setTestDate(Date testDate) {
-        this.testDate = testDate
+        this.testDate = testDate;
     }
 
     Double getTestDouble() {
-        return testDouble
+        return testDouble;
     }
 
     void setTestDouble(Double testDouble) {
-        this.testDouble = testDouble
+        this.testDouble = testDouble;
     }
 
     String getTestEmail() {
-        return testEmail
+        return testEmail;
     }
 
     void setTestEmail(String testEmail) {
-        this.testEmail = testEmail
+        this.testEmail = testEmail;
     }
 
     Float getTestFloat() {
-        return testFloat
+        return testFloat;
     }
 
     void setTestFloat(Float testFloat) {
-        this.testFloat = testFloat
+        this.testFloat = testFloat;
     }
 
     Integer getTestInteger() {
-        return testInteger
+        return testInteger;
     }
 
     void setTestInteger(Integer testInteger) {
-        this.testInteger = testInteger
+        this.testInteger = testInteger;
     }
 
     String getTestURL() {
-        return testURL
+        return testURL;
     }
 
     void setTestURL(String testURL) {
-        this.testURL = testURL
+        this.testURL = testURL;
     }
 
     String getTestString() {
-        return testString
+        return testString;
     }
 
     void setTestString(String testString) {
-        this.testString = testString
+        this.testString = testString;
     }
 
     Long getTestLong() {
-        return testLong
+        return testLong;
     }
 
     void setTestLong(Long testLong) {
-        this.testLong = testLong
+        this.testLong = testLong;
     }
 }

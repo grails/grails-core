@@ -16,18 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.datastore.gorm.support
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.gorm.support;
 
-import groovy.transform.CompileStatic
-import jakarta.persistence.FlushModeType
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
-import org.springframework.transaction.support.TransactionSynchronizationManager
+import groovy.transform.CompileStatic;
 
-import org.grails.datastore.mapping.core.Datastore
-import org.grails.datastore.mapping.core.DatastoreUtils
-import org.grails.datastore.mapping.core.Session
-import org.grails.datastore.mapping.transactions.SessionHolder
+import jakarta.persistence.FlushModeType;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import org.grails.datastore.mapping.core.Datastore;
+import org.grails.datastore.mapping.core.DatastoreUtils;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.transactions.SessionHolder;
 
 /**
  * Abstract implementation of the persistence context interceptor
@@ -35,84 +39,86 @@ import org.grails.datastore.mapping.transactions.SessionHolder
  * @since 1.0
  * @author Graeme Rocher
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 abstract class AbstractDatastorePersistenceContextInterceptor {
 
-    private static final Log LOG = LogFactory.getLog(AbstractDatastorePersistenceContextInterceptor)
-
-    protected Datastore datastore
+    private static final Log LOG = LogFactory.getLog(AbstractDatastorePersistenceContextInterceptor);
+    protected Datastore datastore;
 
     AbstractDatastorePersistenceContextInterceptor(Datastore datastore) {
-        this.datastore = datastore
+        this.datastore = datastore;
     }
 
     void init() {
-        final SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(datastore)
+
+        final SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(datastore);
         if (sessionHolder == null) {
-            LOG.debug('Opening single Datastore session in DatastorePersistenceContextInterceptor')
-            Session session = getSession()
-            session.setFlushMode(FlushModeType.AUTO)
+            LOG.debug('Opening single Datastore session in DatastorePersistenceContextInterceptor');
+            Session session = getSession();
+            session.setFlushMode(FlushModeType.AUTO);
             try {
-                DatastoreUtils.bindSession(session, this)
-            }
-            catch (IllegalStateException ignored) {
+                DatastoreUtils.bindSession(session, this);
+            } catch (IllegalStateException ignored) {
+                // ignore, already bound
             }
         }
     }
 
     protected Session getSession() {
-        return DatastoreUtils.getSession(datastore, true)
+        return DatastoreUtils.getSession(datastore, true);
     }
 
     void destroy() {
         // single session mode
-        final SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(datastore)
+        final SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(datastore);
         if (sessionHolder != null && this.is(sessionHolder.getCreator())) {
-            SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.unbindResource(datastore)
-            LOG.debug('Closing single Datastore session in DatastorePersistenceContextInterceptor')
+            SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.unbindResource(datastore);
+            LOG.debug('Closing single Datastore session in DatastorePersistenceContextInterceptor');
             try {
-                Session session = holder.getSession()
-                DatastoreUtils.closeSession(session)
+                Session session = holder.getSession();
+                DatastoreUtils.closeSession(session);
             }
             catch (RuntimeException ex) {
-                LOG.error('Unexpected exception on closing Datastore Session', ex)
+                LOG.error('Unexpected exception on closing Datastore Session', ex);
             }
         }
     }
 
     void disconnect() {
-        destroy()
+        destroy();
     }
 
     void reconnect() {
-        init()
+        init();
     }
 
     void flush() {
-        Session session = getSession()
+        Session session = getSession();
         if (session.hasTransaction()) {
-            session.flush()
+            session.flush();
         }
     }
 
     void clear() {
-        getSession().clear()
+        getSession().clear();
     }
 
     void setReadOnly() {
-        getSession().setFlushMode(FlushModeType.COMMIT)
+        getSession().setFlushMode(FlushModeType.COMMIT);
     }
 
     void setReadWrite() {
-        getSession().setFlushMode(FlushModeType.AUTO)
+        getSession().setFlushMode(FlushModeType.AUTO);
     }
 
     boolean isOpen() {
         try {
-            return DatastoreUtils.doGetSession(datastore, false).isConnected()
+            return DatastoreUtils.doGetSession(datastore, false).isConnected();
         }
         catch (IllegalStateException ignored) {
-            return false
+            return false;
         }
     }
 }

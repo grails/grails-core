@@ -16,136 +16,139 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.grails.web.layout
+@SuppressWarnings('UnnecessarySemicolon')
+package org.apache.grails.web.layout;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import jakarta.servlet.FilterConfig
-import jakarta.servlet.ServletContext
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
 
-import com.opensymphony.module.sitemesh.Config
-import com.opensymphony.module.sitemesh.Factory
-import com.opensymphony.module.sitemesh.factory.DefaultFactory
-import com.opensymphony.sitemesh.ContentProcessor
-import com.opensymphony.sitemesh.compatability.PageParser2ContentProcessor
-import io.micrometer.observation.ObservationRegistry
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Factory;
+import com.opensymphony.module.sitemesh.factory.DefaultFactory;
+import com.opensymphony.sitemesh.ContentProcessor;
+import com.opensymphony.sitemesh.compatability.PageParser2ContentProcessor;
+import io.micrometer.observation.ObservationRegistry;
 
-import org.springframework.beans.factory.DisposableBean
-import org.springframework.context.ApplicationListener
-import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.core.Ordered
-import org.springframework.web.servlet.View
-import org.springframework.web.servlet.ViewResolver
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.Ordered;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 
-import grails.core.GrailsApplication
-import grails.core.support.GrailsApplicationAware
+import grails.core.GrailsApplication;
+import grails.core.support.GrailsApplicationAware;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class GrailsLayoutViewResolver extends EmbeddedGrailsLayoutViewResolver implements GrailsApplicationAware, DisposableBean, Ordered, ApplicationListener<ContextRefreshedEvent> {
 
-    private static final String FACTORY_SERVLET_CONTEXT_ATTRIBUTE = 'grails.layout.factory'
-    private ContentProcessor contentProcessor
-    protected GrailsApplication grailsApplication
-    private boolean grailsLayoutConfigLoaded = false
-    private int order = Ordered.LOWEST_PRECEDENCE - 50
-    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP
+    private static final String FACTORY_SERVLET_CONTEXT_ATTRIBUTE = 'grails.layout.factory';
+    private ContentProcessor contentProcessor;
+    protected GrailsApplication grailsApplication;
+    private boolean grailsLayoutConfigLoaded = false;
+    private int order = Ordered.LOWEST_PRECEDENCE - 50;
+    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
     GrailsLayoutViewResolver() {
-        super()
+        super();
     }
 
     GrailsLayoutViewResolver(ViewResolver innerViewResolver, GroovyPageLayoutFinder groovyPageLayoutFinder) {
-        super(innerViewResolver, groovyPageLayoutFinder)
+        super(innerViewResolver, groovyPageLayoutFinder);
     }
 
     @Override
     protected View createLayoutView(View innerView) {
-        var layoutView = new GrailsLayoutView(groovyPageLayoutFinder, innerView, contentProcessor)
-        layoutView.setObservationRegistry(this.observationRegistry)
-        return layoutView
+        var layoutView = new GrailsLayoutView(groovyPageLayoutFinder, innerView, contentProcessor);
+        layoutView.setObservationRegistry(this.observationRegistry);
+        return layoutView;
     }
 
     void init() {
-        if (servletContext == null) return
+        if (servletContext == null) return;
 
-        Factory grailsLayoutFactory = (Factory) servletContext.getAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE)
+        Factory grailsLayoutFactory = (Factory) servletContext.getAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE);
         if (grailsLayoutFactory == null) {
-            grailsLayoutFactory = loadGrailsLayoutConfig()
+            grailsLayoutFactory = loadGrailsLayoutConfig();
         }
-        contentProcessor = new PageParser2ContentProcessor(grailsLayoutFactory)
+        contentProcessor = new PageParser2ContentProcessor(grailsLayoutFactory);
     }
 
     protected Factory loadGrailsLayoutConfig() {
         FilterConfig filterConfig = new FilterConfig() {
             private Map<String, String> customConfig =
                     Collections.singletonMap('configFile',
-                            'classpath:org/apache/grails/web/layout/grails-layout-default.xml')
+                            'classpath:org/apache/grails/web/layout/grails-layout-default.xml');
 
             @Override
             ServletContext getServletContext() {
-                return GrailsLayoutViewResolver.this.servletContext
+                return GrailsLayoutViewResolver.this.servletContext;
             }
 
             @Override
             Enumeration<String> getInitParameterNames() {
-                return Collections.enumeration(customConfig.keySet())
+                return Collections.enumeration(customConfig.keySet());
             }
 
             @Override
             String getInitParameter(String name) {
-                return customConfig.get(name)
+                return customConfig.get(name);
             }
 
             @Override
             String getFilterName() {
-                return null
+                return null;
             }
-        }
-        Config config = new Config(filterConfig)
+        };
+        Config config = new Config(filterConfig);
 
-        DefaultFactory grailsLayoutFactory = new DefaultFactory(config)
+        DefaultFactory grailsLayoutFactory = new DefaultFactory(config);
         if (servletContext != null) {
-            servletContext.setAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE, grailsLayoutFactory)
+            servletContext.setAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE, grailsLayoutFactory);
         }
-        grailsLayoutFactory.refresh()
-        FactoryHolder.setFactory(grailsLayoutFactory)
-        grailsLayoutConfigLoaded = true
-        return grailsLayoutFactory
+        grailsLayoutFactory.refresh();
+        FactoryHolder.setFactory(grailsLayoutFactory);
+        grailsLayoutConfigLoaded = true;
+        return grailsLayoutFactory;
     }
 
     @Override
     void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication
+        this.grailsApplication = grailsApplication;
     }
 
     @Override
     void destroy() throws Exception {
-        clearGrailsLayoutConfig()
+        clearGrailsLayoutConfig();
     }
 
     protected void clearGrailsLayoutConfig() {
-        if (servletContext == null) return
+        if (servletContext == null) return;
         if (grailsLayoutConfigLoaded) {
-            FactoryHolder.setFactory(null)
+            FactoryHolder.setFactory(null);
             if (servletContext != null) {
-                servletContext.removeAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE)
+                servletContext.removeAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE);
             }
-            grailsLayoutConfigLoaded = false
+            grailsLayoutConfigLoaded = false;
         }
     }
 
     int getOrder() {
-        return order
+        return order;
     }
 
     void setOrder(int order) {
-        this.order = order
+        this.order = order;
     }
 
     @Override
     void onApplicationEvent(ContextRefreshedEvent event) {
         this.observationRegistry = event.getApplicationContext()
-                .getBeanProvider(ObservationRegistry).getIfAvailable(() -> ObservationRegistry.NOOP)
-        init()
+                .getBeanProvider(ObservationRegistry).getIfAvailable(() -> ObservationRegistry.NOOP);
+        init();
     }
 }

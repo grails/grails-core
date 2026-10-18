@@ -16,16 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.taglib.discovery
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.taglib.discovery;
 
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
-import java.lang.reflect.Parameter
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.gsp.NotATag
-import grails.gsp.Tag
+import grails.gsp.NotATag;
+import grails.gsp.Tag;
 
 /**
  * A compiled method, seen through {@link TagMethodView} so that {@link TagDiscoveryRules} can classify
@@ -37,74 +38,76 @@ import grails.gsp.Tag
  * @since 8.0.0
  */
 @CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 final class ReflectedTagMethodView implements TagMethodView {
 
-    private final Method method
-    private final Parameter[] parameters
+    private final Method method;
+    private final Parameter[] parameters;
 
     ReflectedTagMethodView(Method method) {
-        this.method = method
-        this.parameters = method.getParameters()
+        this.method = method;
+        this.parameters = method.getParameters();
     }
 
     @Override
     String getName() {
-        return method.getName()
+        return method.getName();
     }
 
     @Override
     boolean isPublic() {
-        return Modifier.isPublic(method.getModifiers())
+        return Modifier.isPublic(method.getModifiers());
     }
 
     @Override
     boolean isStatic() {
-        return Modifier.isStatic(method.getModifiers())
+        return Modifier.isStatic(method.getModifiers());
     }
 
     @Override
     boolean isGenerated() {
-        return method.isBridge() || method.isSynthetic()
+        return method.isBridge() || method.isSynthetic();
     }
 
     @Override
     boolean hasTagAnnotation() {
-        return method.isAnnotationPresent(Tag)
+        return method.isAnnotationPresent(Tag);
     }
 
     @Override
     boolean hasNotATagAnnotation() {
-        return method.isAnnotationPresent(NotATag)
+        return method.isAnnotationPresent(NotATag);
     }
 
     @Override
     int getParameterCount() {
-        return parameters.length
+        return parameters.length;
     }
 
     @Override
     boolean isParameterMapAssignable(int index) {
-        return Map.isAssignableFrom(parameters[index].getType())
+        return Map.isAssignableFrom(parameters[index].getType());
     }
 
     @Override
     boolean isParameterClosureAssignable(int index) {
-        return Closure.isAssignableFrom(parameters[index].getType())
+        return Closure.isAssignableFrom(parameters[index].getType());
     }
 
     @Override
     String getParameterName(int index) {
-        return parameters[index].getName()
+        return parameters[index].getName();
     }
 
     @Override
     boolean isParameterNamePresent(int index) {
-        return parameters[index].isNamePresent()
+        return parameters[index].isNamePresent();
     }
 
     @Override
     boolean isParameterOptional(int index) {
         // Defaults have already been expanded into overloads by the time the class is compiled.
-        return false
+        return false;
     }
 }

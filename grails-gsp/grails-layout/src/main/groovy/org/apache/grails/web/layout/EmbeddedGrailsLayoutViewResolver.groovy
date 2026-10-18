@@ -16,36 +16,39 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.grails.web.layout
+@SuppressWarnings('UnnecessarySemicolon')
+package org.apache.grails.web.layout;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import jakarta.servlet.ServletContext
+import jakarta.servlet.ServletContext;
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.springframework.core.Ordered
-import org.springframework.web.context.ServletContextAware
-import org.springframework.web.servlet.SmartView
-import org.springframework.web.servlet.View
-import org.springframework.web.servlet.ViewResolver
+import org.springframework.core.Ordered;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.servlet.SmartView;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 
-import org.grails.web.servlet.view.LayoutViewResolver
+import org.grails.web.servlet.view.LayoutViewResolver;
 
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class EmbeddedGrailsLayoutViewResolver implements LayoutViewResolver, Ordered, ServletContextAware {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EmbeddedGrailsLayoutViewResolver)
+    private static final Logger LOG = LoggerFactory.getLogger(EmbeddedGrailsLayoutViewResolver);
 
-    protected ViewResolver innerViewResolver
-    protected GroovyPageLayoutFinder groovyPageLayoutFinder
-    private int order = Ordered.LOWEST_PRECEDENCE - 30
-    protected ServletContext servletContext
+    protected ViewResolver innerViewResolver;
+    protected GroovyPageLayoutFinder groovyPageLayoutFinder;
+    private int order = Ordered.LOWEST_PRECEDENCE - 30;
+    protected ServletContext servletContext;
 
     EmbeddedGrailsLayoutViewResolver(ViewResolver innerViewResolver, GroovyPageLayoutFinder groovyPageLayoutFinder) {
-        this.innerViewResolver = innerViewResolver
-        this.groovyPageLayoutFinder = groovyPageLayoutFinder
+        this.innerViewResolver = innerViewResolver;
+        this.groovyPageLayoutFinder = groovyPageLayoutFinder;
     }
 
     EmbeddedGrailsLayoutViewResolver() {
@@ -54,50 +57,48 @@ class EmbeddedGrailsLayoutViewResolver implements LayoutViewResolver, Ordered, S
     @Override
     View resolveViewName(String viewName, Locale locale) throws Exception {
         if (LOG.isDebugEnabled()) {
-            LOG.debug('Resolving view for name {} and locale {}', viewName, locale)
+            LOG.debug('Resolving view for name {} and locale {}', viewName, locale);
         }
-        View innerView = innerViewResolver.resolveViewName(viewName, locale)
+        View innerView = innerViewResolver.resolveViewName(viewName, locale);
         if (innerView == null) {
-            return null
-        }
-        else if (innerView instanceof SmartView && ((SmartView) innerView).isRedirectView()) {
-            return innerView
-        }
-        else {
+            return null;
+        } else if (innerView instanceof SmartView && ((SmartView) innerView).isRedirectView()) {
+            return innerView;
+        } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug('Creating layout view name {} and locale {}', viewName, locale)
+                LOG.debug('Creating layout view name {} and locale {}', viewName, locale);
             }
-            return createLayoutView(innerView)
+            return createLayoutView(innerView);
         }
     }
 
     protected View createLayoutView(View innerView) {
-        return new EmbeddedGrailsLayoutView(groovyPageLayoutFinder, innerView)
+        return new EmbeddedGrailsLayoutView(groovyPageLayoutFinder, innerView);
     }
 
     @Override
     ViewResolver getInnerViewResolver() {
-        return innerViewResolver
+        return innerViewResolver;
     }
 
     int getOrder() {
-        return order
+        return order;
     }
 
     void setOrder(int order) {
-        this.order = order
+        this.order = order;
     }
 
     @Override
     void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext
+        this.servletContext = servletContext;
     }
 
     void setInnerViewResolver(ViewResolver innerViewResolver) {
-        this.innerViewResolver = innerViewResolver
+        this.innerViewResolver = innerViewResolver;
     }
 
     void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
-        this.groovyPageLayoutFinder = groovyPageLayoutFinder
+        this.groovyPageLayoutFinder = groovyPageLayoutFinder;
     }
 }
