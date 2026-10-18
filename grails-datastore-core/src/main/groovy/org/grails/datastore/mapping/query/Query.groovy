@@ -323,7 +323,7 @@ abstract class Query implements Cloneable, Serializable {
      */
     Query eq(String property, Object value) {
         Object resolved = resolvePropertyValue(entity, property, value);
-        if (resolved == value) {
+        if (resolved.is(value)) {
             criteria.add(Restrictions.eq(property, value));
         }
         else {
