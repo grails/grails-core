@@ -474,6 +474,26 @@ class DefaultJsonRendererSpec extends Specification {
         !log.contains('set grails.web.rendering.json.spring=true')
     }
 
+    void 'empty includes are applied by the legacy converter in the place of an application converter, which writes none of the properties'() {
+        given:
+        def converter = Mock(HttpMessageConverter) {
+            canWrite(ProjectionBody, MediaType.APPLICATION_JSON) >> true
+            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON]
+        }
+        def renderer = new DefaultJsonRenderer<ProjectionBody>(ProjectionBody)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        renderer.render(new ProjectionBody(title: 'Included', hidden: true), new ServletRenderContext(webRequest, [includes: []]))
+
+        then:
+        0 * converter.write(_, _, _)
+        webRequest.response.contentAsString == '{}'
+    }
+
     void 'unknown named JSON configurations have the same error as render json, for #description'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)

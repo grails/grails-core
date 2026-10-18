@@ -87,6 +87,19 @@ class ControllerUnitTestMessageConvertersSpec extends Specification implements C
         response.contentAsString.startsWith('<XmlRendererBeanBody>')
         response.contentAsString.contains('<first_name>Ada</first_name>')
     }
+
+    void 'empty includes write none of the properties of a bean, as in Grails 8'() {
+        given:
+        response.format = 'xml'
+
+        when:
+        controller.respond(new XmlResponseBody(title: 'Grails', firstName: 'Ada'), includes: [])
+
+        then:
+        response.contentAsString.contains('xmlResponseBody')
+        !response.contentAsString.contains('Grails')
+        !response.contentAsString.contains('Ada')
+    }
 }
 
 @Artefact('Controller')

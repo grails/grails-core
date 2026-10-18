@@ -283,7 +283,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     private Predicate<String> createPropertyFilter(Class<?> type) {
         List<String> includes = getIncludes(type);
         List<String> excludes = getExcludes(type);
-        if ((includes == null || includes.isEmpty()) && (excludes == null || excludes.isEmpty())) {
+        // empty includes include none of the properties, as the legacy marshallers have them
+        if (includes == null && (excludes == null || excludes.isEmpty())) {
             return NO_FILTER;
         }
         IncludeExcludeSupport<String> support = new IncludeExcludeSupport<>();

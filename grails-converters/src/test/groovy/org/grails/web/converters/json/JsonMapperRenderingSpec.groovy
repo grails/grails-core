@@ -706,6 +706,15 @@ class JsonMapperRenderingSpec extends Specification {
         json.toString() == '{"name":"Fred","role":"ADMIN"}'
     }
 
+    void "empty includes of the converter write none of the properties of a bean, as in Grails 8"() {
+        given:
+        def json = new JSON(new Holder(name: 'Fred', role: Role.ADMIN))
+        json.setIncludes(Holder, [])
+
+        expect:
+        json.toString() == '{}'
+    }
+
     void "beans and map entries are rendered by the mapper"() {
         given:
         def bean = new Holder(name: 'Fred', created: new Date(1790305200000L), role: Role.ADMIN, unit: ChronoUnit.DAYS,

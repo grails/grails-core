@@ -75,13 +75,14 @@ public final class JsonProjection {
 
     /**
      * @param value the value to be written
-     * @param includes property names to include, or null for all
+     * @param includes property names to include, or null for all; an empty list includes none, as it does for the
+     *        legacy converter
      * @param excludes property names to exclude, or null for none
-     * @return the projection, or null if neither list names a property
+     * @return the projection, or null if there are no includes and the excludes name no property
      * @throws IllegalArgumentException if the value, or an element of it, has no properties to project
      */
     public static JsonProjection of(Object value, List<String> includes, List<String> excludes) {
-        boolean including = includes != null && !includes.isEmpty();
+        boolean including = includes != null;
         boolean excluding = excludes != null && !excludes.isEmpty();
         if (!including && !excluding) {
             return null;

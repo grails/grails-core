@@ -259,7 +259,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     private HttpMessageConverter<Object> findSpringConverter(Object object, RenderContext context) {
-        if (!useSpringXml || namedConfiguration || getEffectiveIncludes(context) || getEffectiveExcludes(context)) {
+        // the legacy converter applies includes, also empty ones, which include none of the properties, and excludes
+        if (!useSpringXml || namedConfiguration || getEffectiveIncludes(context) != null || getEffectiveExcludes(context)) {
             return null
         }
         List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()

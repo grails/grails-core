@@ -365,6 +365,32 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json == [title: 'Grails']
     }
 
+    void 'empty includes write none of the properties of a bean, as in Grails 8'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
+
+        when:
+        controller.respond(new JsonResponseBody(title: 'Grails', firstName: 'Ada'), includes: [])
+
+        then:
+        response.contentAsString == '{}'
+
+        when: 'with a named configuration'
+        response.reset()
+        response.format = 'json'
+        controller.respond(new JsonResponseBody(title: 'Grails', firstName: 'Ada'), includes: [], jsonConfiguration: 'plain')
+
+        then:
+        response.contentAsString == '{}'
+
+        when: 'render json:'
+        response.reset()
+        controller.render(json: new JsonResponseBody(title: 'Grails', firstName: 'Ada'), includes: [])
+
+        then:
+        response.contentAsString == '{}'
+    }
+
     void 'an application JsonRenderer bean follows the Spring JSON setting'() {
         when: 'the bean writes with the Grails mapper, so the snake case customizer applies'
         controller.respond(new JsonRendererBeanBody(firstName: 'Ada'))

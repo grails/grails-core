@@ -319,7 +319,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         boolean grailsMapper = grailsJsonMapperCustomizer != null &&
                 converter.getClass() == JacksonJsonHttpMessageConverter &&
                 !((JacksonJsonHttpMessageConverter) converter).getMappersForType(objectType)
-        if ((includes || excludes) && !grailsMapper) {
+        if ((includes != null || excludes) && !grailsMapper) {
             // Only the Grails mapper applies a projection; the legacy converter applies it otherwise.
             return 'includes and excludes need the Grails JSON mapper, which the application\'s message converter replaces'
         }
