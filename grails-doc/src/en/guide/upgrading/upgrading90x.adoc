@@ -210,7 +210,9 @@ before enabling it. Two legacy converter settings do not configure Jackson:
 `grails.converters.json.pretty.print` gives way to `spring.jackson.serialization.indent-output`,
 and `grails.converters.json.date` to Boot's `spring.jackson.*` date settings. Renderer beans an application declares, such as a `JsonRenderer` or an
 `XmlRenderer` for one of its types, follow the same settings, apply their own `includes` and
-`excludes`, and reach the same named configurations and message converters. On Spring's path, a `JsonRenderer` for a
+`excludes`, and reach the same named configurations and message converters. A `JsonCollectionRenderer` bean ignores the
+`excludes` `respond` is given on the legacy path, as in Grails 8, and applies them on Spring's path where it sets none of
+its own. On Spring's path, a `JsonRenderer` for a
 domain class writes it as `respond` writes any domain class instance, described below: its associated instances as
 references unless `grails.converters.json.default.deep` is set, and its version and class name as the
 `grails.converters.json.domain.*` settings select, which naming them in its `includes` does not change. The legacy
@@ -276,11 +278,15 @@ precedence over the default renderer.
 Jackson conversion uses UTF-8 for intermediate bytes; the response writer applies
 `grails.converters.encoding`, so non-UTF response encodings do not corrupt the intermediate JSON.
 
-A response `respond` writes with a Jackson mapper fails as Spring MVC's Jackson converters fail, whichever writes it:
-a type definition error, such as a property a bean unwraps with the name of one of its own, is an
+Where `respond` writes JSON through Spring MVC's converters, or with a named configuration, or writes a `ProblemDetail` as
+XML without `jackson-dataformat-xml`, a value it fails to write fails as Spring MVC's Jackson converters fail: a type
+definition error, such as a property a bean unwraps with the name of one of its own, is an
 `HttpMessageConversionException`, and any other failure, one of the response's writer included, an
-`HttpMessageNotWritableException`. So are those of a response written with a named configuration, and of a
-`ProblemDetail` written as XML without `jackson-dataformat-xml`.
+`HttpMessageNotWritableException`. Spring MVC's own exception resolver answers an `HttpMessageNotWritableException` before
+the Grails exception resolver sees it, as it does for any Spring MVC controller: with a 500 and a warning without the stack
+trace, and the error page finds the exception in the `jakarta.servlet.error.exception` request attribute rather than in
+the model the Grails exception resolver gives it. A type definition error reaches the Grails exception resolver as any
+other exception does. The legacy converter fails as it did in Grails 8.
 
 Controller unit tests use Boot's Jackson configuration and the same setting. Supply a mapper or
 `JsonMapperBuilderCustomizer` from a nested Spring `@Configuration` class, so Boot can see it before
@@ -684,7 +690,7 @@ features such as support for an application-specific input format.
 Both parsers report malformed bodies as binding errors, but Jackson rejects inputs that the legacy
 parser accepted, among them trailing content after a document, trailing commas, leading-zero numbers,
 unescaped tabs inside strings and trailing comments, and inputs beyond the limits of its
-`StreamReadConstraints`, such as the nesting depth and the lengths of numbers, strings, names and documents.
+`StreamReadConstraints`, such as the nesting depth and the lengths of numbers, strings and names.
 Review clients before enabling the new parser; configure intentional exceptions through
 `JsonMapperBuilderCustomizer`.
 
@@ -783,7 +789,7 @@ Spring handler continues to match `produces` against the `Accept` header exactly
 Boot application, and still answers `406 Not Acceptable` for a media type it cannot produce. The
 `spring.mvc.contentnegotiation.*` properties therefore continue to work.
 
-Grails reads the `Accept` header with Spring's `MediaType` parser. Ordinary headers resolve as before, but
+Grails reads the `Accept` header with Spring's `MediaType` parser. Most headers resolve as before, but
 media type names are now matched case-insensitively: `Accept: Application/JSON` resolves to `json`, where
 Grails 8 matched no configured type and resolved to `all`. A configured type with capitals in its name,
 such as `application/vnd.Acme+json`, matches whatever the case of the header. The same parser reads
@@ -797,6 +803,16 @@ action responds in XML. A `ProblemDetail` is answered as `application/problem+js
 other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
 sends as `application/problem+json` is now the `json` format, which `withFormat` selects and the JSON binding source
 binds.
+
+Grails 8 merged `text/xml` and `application/xml` into one `xml` type with the larger of their qualities, but kept the
+quality and the place of `application/xml`: `Accept: text/xml, application/xml;q=0.1, application/json;q=0.5` resolved to
+`json`. The merged type now has the larger quality, and the place of the one of the two the header lists first, which
+decides between types of equal quality, so that header resolves to `xml`.
+
+`grails.mime.disable.accept.header.userAgents` matched its first user agent with its case in Grails 8, and a user agent
+that was not a regular expression failed the first request, after which the setting was ignored. Every user agent is now
+matched ignoring case, a comma-separated string is read as a list, and one that is not a regular expression fails as
+Spring MVC is configured, naming the setting.
 
 The data-format extensions `json`, `xml`, `hal`, `atom`, `rss`, `csv` and `text` declared in
 `grails.mime.types`, or among the defaults where it declares none or `grails.mime.mergeDefaults` adds them, are
