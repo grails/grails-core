@@ -159,8 +159,9 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         final view = viewName && !(object instanceof Errors) ?
                 resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
         if (view) {
-            // if a view is provided, we use the HTML renderer to return an appropriate model to the view
-            RendererRegistry registry = resolveRendererRegistry()
+            // if a view is provided, we use the HTML renderer to return an appropriate model to the view; one an
+            // application registers for problems renders their HTML page rather than the view respond names
+            RendererRegistry registry = object instanceof ProblemDetail ? null : resolveRendererRegistry()
             Renderer htmlRenderer = registry?.findRenderer(MimeType.HTML, object)
             if (htmlRenderer == null) {
                 htmlRenderer = new DefaultHtmlRenderer(targetType)

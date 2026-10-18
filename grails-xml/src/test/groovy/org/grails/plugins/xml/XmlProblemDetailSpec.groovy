@@ -30,6 +30,9 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.servlet.ModelAndView
 
 import grails.artefact.Artefact
+import grails.rest.render.RenderContext
+import grails.rest.render.Renderer
+import grails.rest.render.RendererRegistry
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
 import org.grails.gsp.io.GroovyPageScriptSource
@@ -179,6 +182,36 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then: 'the view of the action does not render the problem'
         unnamed.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW) == null
         unnamed.currentResponse.contentType.startsWith('application/problem+xml')
+    }
+
+    void 'the XML view respond names renders a ProblemDetail, rather than the HTML renderer an application registers for problems'() {
+        given:
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'conflict', 'xml') >> Stub(GroovyPageScriptSource)
+        }
+        def page = Stub(Renderer) {
+            render(_, _) >> { Object problem, RenderContext context -> context.viewName = '/errors/problem' }
+        }
+        def registry = Stub(RendererRegistry) {
+            findRenderer(MimeType.HTML, _) >> page
+        }
+        def renderer = new DefaultXmlRenderer<Object>(Object, locator, registry)
+        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        def named = xmlRequest()
+
+        when:
+        renderer.render(problem, new ServletRenderContext(named, [view: 'conflict']) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+        })
+        ModelAndView modelAndView = named.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:
+        modelAndView.viewName == 'conflict'
+        modelAndView.model == [problemDetail: problem]
+        named.currentResponse.status == 409
     }
 
     private static GrailsWebRequest xmlRequest() {

@@ -166,8 +166,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         final view = viewName && !(object instanceof Errors) ?
                 groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
         if (view) {
-            // if a view is provided, we use the HTML renderer to return an appropriate model to the view
-            Renderer htmlRenderer = rendererRegistry?.findRenderer(MimeType.HTML, object)
+            // if a view is provided, we use the HTML renderer to return an appropriate model to the view; one an
+            // application registers for problems renders their HTML page rather than the view respond names
+            Renderer htmlRenderer = object instanceof ProblemDetail ? null : rendererRegistry?.findRenderer(MimeType.HTML, object)
             if (htmlRenderer == null) {
                 htmlRenderer = new DefaultHtmlRenderer(targetType)
                 htmlRenderer.encoding = encoding

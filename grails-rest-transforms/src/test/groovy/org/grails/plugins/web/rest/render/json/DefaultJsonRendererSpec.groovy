@@ -46,6 +46,8 @@ import org.springframework.web.servlet.ModelAndView
 import grails.converters.JSON
 import grails.core.DefaultGrailsApplication
 import grails.rest.render.RenderContext
+import grails.rest.render.Renderer
+import grails.rest.render.RendererRegistry
 import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.rest.render.json.JsonCollectionRenderer
 import grails.util.GrailsWebMockUtil
@@ -274,6 +276,33 @@ class DefaultJsonRendererSpec extends Specification {
         then: 'the view of the action does not render the problem'
         webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW) == null
         webRequest.response.contentAsString.contains('"status":409')
+    }
+
+    void 'the JSON view respond names renders a ProblemDetail, rather than the HTML renderer an application registers for problems'() {
+        given:
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'conflict', 'json') >> Stub(GroovyPageScriptSource)
+        }
+        def page = Stub(Renderer) {
+            render(_, _) >> { Object problem, RenderContext context -> context.viewName = '/errors/problem' }
+        }
+        def registry = Stub(RendererRegistry) {
+            findRenderer(grails.web.mime.MimeType.HTML, _) >> page
+        }
+        def renderer = new DefaultJsonRenderer<Object>(Object, locator, registry)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+        def problem = ProblemDetail.forStatus(409)
+
+        when:
+        renderer.render(problem, new ServletRenderContext(webRequest, [view: 'conflict']))
+        ModelAndView modelAndView = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:
+        modelAndView.viewName == 'conflict'
+        modelAndView.model == [problemDetail: problem]
+        webRequest.response.status == 409
     }
 
     void 'a named JSON configuration does not apply to a ProblemDetail the legacy converter writes'() {
