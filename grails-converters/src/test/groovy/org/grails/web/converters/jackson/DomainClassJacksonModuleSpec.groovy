@@ -528,6 +528,24 @@ class DomainClassJacksonModuleSpec extends Specification {
         thrown(InvalidDefinitionException)
     }
 
+    void "a property a domain class unwraps with the name of one of its own is rejected by the mapper, as for any bean, and written twice by the JSON converter"() {
+        given: 'a domain class with an embedded component it unwraps, which has a property named as one of its own'
+        def located = new Located(name: 'library', address: new Address(name: 'main', city: 'Paris'))
+        located.id = 1
+
+        when:
+        mapper().writeValueAsString(located)
+
+        then: "the names conflict, as Jackson reports it for any bean, since the mapper's rendering decides what may be written"
+        thrown(InvalidDefinitionException)
+
+        when: 'the JSON converter, whose renderings may write the class name and the version of each instance it writes'
+        String json = new JSON(located).toString()
+
+        then: 'it does not check the names, and writes both'
+        json == '{"id":1,"name":"library","city":"Paris","name":"main"}'
+    }
+
     void "a domain instance in a @JsonUnwrapped property is written into the enclosing object"() {
         given:
         def writer = new Writer(name: 'a')
@@ -899,14 +917,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered)
+                Identified, Ordered, Filtered, Located)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered)
+                Ordered, Filtered, Located)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1178,6 +1196,19 @@ class VersionedEnvelope {
     String version
     @JsonUnwrapped
     Writer writer
+}
+
+@Entity
+class Located {
+    static embedded = ['address']
+    String name
+    @JsonUnwrapped
+    Address address
+}
+
+class Address {
+    String name
+    String city
 }
 
 class Unwrapped {
