@@ -19,6 +19,8 @@
 @SuppressWarnings('UnnecessarySemicolon')
 package org.grails.core;
 
+import groovy.transform.CompileStatic;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -41,6 +43,7 @@ import org.grails.config.PropertySourcesConfig;
 
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, SmartApplicationListener {
 
     protected ClassLoader classLoader;
