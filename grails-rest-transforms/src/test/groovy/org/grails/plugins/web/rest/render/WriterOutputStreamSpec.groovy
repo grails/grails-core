@@ -115,7 +115,7 @@ class WriterOutputStreamSpec extends Specification {
         writer.toString() == 'body'
     }
 
-    void 'flushing the stream decodes what it holds into the writer, without flushing the writer, which would commit the response'() {
+    void 'flushing the stream leaves the writer unflushed, since flushing it would commit the response'() {
         given:
         def flushes = 0
         def writer = new StringWriter() {
@@ -132,6 +132,8 @@ class WriterOutputStreamSpec extends Specification {
 
         then:
         flushes == 0
+
+        and: 'what was written is in the writer, as each write decodes it'
         writer.toString() == 'body'
     }
 
