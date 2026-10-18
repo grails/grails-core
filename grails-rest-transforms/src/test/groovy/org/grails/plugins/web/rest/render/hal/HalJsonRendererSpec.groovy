@@ -18,6 +18,7 @@
  */
 package org.grails.plugins.web.rest.render.hal
 
+import tools.jackson.core.json.JsonReadFeature
 import tools.jackson.databind.json.JsonMapper
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
@@ -44,6 +45,8 @@ import org.grails.datastore.mapping.model.PropertyMapping
 import org.grails.plugins.web.mime.MimeTypesConfiguration
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.support.MockApplicationContext
+import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -94,6 +97,25 @@ class HalJsonRendererSpec extends Specification {
         def tree1 = objectMapper.readTree(json1)
         def tree2 = objectMapper.readTree(json2)
         tree1 == tree2
+    }
+
+    void 'a HAL body of the type of a renderer is parsed by the application HAL creator, as the application has it parse bodies'() {
+        given: 'the HAL creator of an application that parses bodies with a Jackson mapper reading comments'
+        def registry = new DefaultDataBindingSourceRegistry()
+        def renderer = new HalJsonRenderer(Product)
+        renderer.dataBindingSourceRegistry = registry
+        renderer.halJsonDataBindingSourceCreator = new HalJsonDataBindingSourceCreator(
+                jsonMapper: JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build(), useJackson: true)
+        renderer.initialize()
+        def request = new MockHttpServletRequest()
+        request.contentType = HalJsonRenderer.MIME_TYPE.name
+        request.content = '/* a comment */ {"name": "MacBook"}'.bytes
+
+        when:
+        def source = registry.createDataBindingSource(HalJsonRenderer.MIME_TYPE, Product, request)
+
+        then:
+        source.getPropertyValue('name') == 'MacBook'
     }
 
     @Issue('GRAILS-10372')

@@ -27,9 +27,12 @@ import jakarta.xml.bind.DatatypeConverter
 
 import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
+import grails.databinding.CollectionDataBindingSource
+import grails.databinding.DataBindingSource
 import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
@@ -38,6 +41,7 @@ import org.grails.datastore.mapping.model.MappingFactory
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
+import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 
@@ -87,12 +91,24 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         this.dateToStringConverter = converter
     }
 
+    /**
+     * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types, so
+     * that they are parsed as the application has bodies parsed, such as with Jackson by
+     * {@code grails.databinding.json.jackson}. Without one, a creator of the renderer's own parses them.
+     *
+     * @since 9.0
+     */
+    @Autowired(required = false)
+    @Qualifier('halJsonDataBindingSourceCreator')
+    HalJsonDataBindingSourceCreator halJsonDataBindingSourceCreator
+
     @PostConstruct
     void initialize() {
         if (dataBindingSourceRegistry != null) {
             final thisType = getTargetType()
             final thisMimeTypes = getMimeTypes()
-            final halDataBindingSourceCreator = new HalJsonDataBindingSourceCreator() {
+            final DataBindingSourceCreator parser = halJsonDataBindingSourceCreator ?: new HalJsonDataBindingSourceCreator()
+            final halDataBindingSourceCreator = new DataBindingSourceCreator() {
                 @Override
                 Class getTargetType() {
                     thisType
@@ -101,6 +117,17 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 @Override
                 MimeType[] getMimeTypes() {
                     thisMimeTypes
+                }
+
+                @Override
+                DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+                    parser.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+                }
+
+                @Override
+                CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType,
+                                                                              Object bindingSource) {
+                    parser.createCollectionDataBindingSource(mimeType, bindingTargetType, bindingSource)
                 }
             }
             dataBindingSourceRegistry.addDataBindingSourceCreator(halDataBindingSourceCreator)
