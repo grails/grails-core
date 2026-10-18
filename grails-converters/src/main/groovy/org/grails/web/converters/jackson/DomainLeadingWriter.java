@@ -132,6 +132,6 @@ final class DomainLeadingWriter extends VirtualBeanPropertyWriter {
 
     private boolean included(DomainClassRendering current, Object bean, SerializationContext context) {
         String property = kind == Kind.ID ? entity.getIdentity().getName() : kind.property;
-        return current.includes(bean, property) && JsonProjection.projects(context, bean, property, getName());
+        return current.includes(bean, property, getName()) && JsonProjection.projects(context, bean, property, getName());
     }
 }

@@ -164,6 +164,22 @@ class DomainClassJacksonModuleSpec extends Specification {
         'IGNORE'      || 'null'
     }
 
+    void "a rendering that decides by the names properties are written with is asked about the class name, the id and the version too"() {
+        given: 'a rendering that leaves out the class name and the version by the names they are written with'
+        def rendering = new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, true, false) {
+            @Override
+            boolean includes(Object object, String property, String written) {
+                !(written in ['class', 'version'])
+            }
+        }
+        def shelf = new Shelf(name: 'top')
+        shelf.id = 3
+        shelf.version = 5
+
+        expect:
+        mapper(rendering).writeValueAsString(shelf) == '{"id":3,"name":"top"}'
+    }
+
     void "a proxy is written as the instance it proxies, and a reference to one from its identifier, without loading it"() {
         given:
         def proxyHandler = new WriterProxyHandler()
