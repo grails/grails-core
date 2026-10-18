@@ -206,7 +206,9 @@ When this setting is active, `XMLHttpRequest`-style requests (those sending an `
 
 An accept header of '\*/\*' results in a value of `all` for the `format` property.
 
-An accept header that contains no registered content types also results in `all`. Media type names in the accept header and in `Content-Type` are matched case-insensitively, so `Application/JSON` results in `json`.
+An accept header that contains no registered content types also results in `all`. The problem types of RFC 9457,
+`application/problem+json` and `application/problem+xml`, result in `json` and `xml`, in the accept header and in
+`Content-Type`, unless `grails.mime.types` configures them. Media type names in the accept header and in `Content-Type` are matched case-insensitively, so `Application/JSON` results in `json`.
 
 
 

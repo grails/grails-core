@@ -33,9 +33,11 @@ import tools.jackson.databind.ser.Serializers;
 
 /**
  * A Jackson module that serializes domain class instances, and proxies of them, as {@code grails.converters.JSON}
- * renders them. A Grails application registers it with the application's {@code JsonMapper}, so that writing a domain
- * class instance with the mapper, including returning one from a Spring MVC controller, renders it as
- * {@code render ... as JSON} does.
+ * renders them when {@code grails.converters.json.legacy} is {@code false}, which writes them with this module, and
+ * applies the marshallers registered with it and its own rule for enums on top. Grails responses write with it, and a
+ * Grails application registers it with the application's {@code JsonMapper} when
+ * {@code grails.converters.json.domain.jackson.enabled} is set, so that returning a domain class instance from a Spring
+ * MVC controller writes it with the same serializer.
  *
  * <p>An instance is written by Jackson's bean serializer, which is shaped to the domain class: the class name, the id and
  * the version where they apply, then the persistent properties in the order the domain class declares them, with an

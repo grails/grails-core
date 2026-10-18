@@ -173,7 +173,7 @@
         {
             "name": "grails.converters.json.domain.jackson.enabled",
             "type": "java.lang.Boolean",
-            "description": "Whether domain classes are registered with the application's Jackson JsonMapper, so that it renders them as the JSON converter does, including when a Spring MVC controller returns one. When false, the JsonMapper renders domain classes as Jackson beans.",
+            "description": "Whether domain classes are registered with the application's Jackson JsonMapper, so that it renders them with the serializer the JSON converter renders them with when grails.converters.json.legacy is false, including when a Spring MVC controller returns one. When false, the JsonMapper renders domain classes as Jackson beans.",
             "defaultValue": false
         },
         {

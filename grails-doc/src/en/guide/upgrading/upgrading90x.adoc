@@ -153,7 +153,7 @@ published in its existing descriptor format; `grails-xml` concerns application H
 Each JSON and XML path keeps its Grails 8 output by default in Grails 9, and has a setting that opts into the
 Jackson-based one. A `ProblemDetail` is the exception: `respond` writes it as Spring MVC writes it, whatever the
 settings, with the exceptions section 10 lists. The smaller changes that apply whatever the settings, such as `Accept`
-headers matched whatever their case, are in sections 6, 12 and 13.
+headers matched whatever their case, are in sections 6, 8, 12 and 13.
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -208,7 +208,12 @@ before enabling it. Two legacy converter settings do not configure Jackson:
 `grails.converters.json.pretty.print` gives way to `spring.jackson.serialization.indent-output`,
 and `grails.converters.json.date` to Boot's `spring.jackson.*` date settings. Renderer beans an application declares, such as a `JsonRenderer` or an
 `XmlRenderer` for one of its types, follow the same settings, apply their own `includes` and
-`excludes`, and reach the same named configurations and message converters.
+`excludes`, and reach the same named configurations and message converters. On Spring's path, a `JsonRenderer` for a
+domain class writes it as `respond` writes any domain class instance, described below: its associated instances as
+references unless `grails.converters.json.default.deep` is set, and its version and class name as the
+`grails.converters.json.domain.*` settings select, which naming them in its `includes` does not change. The legacy
+converter writes the associated instances of such a renderer in full, and the version or the class name its `includes`
+names.
 
 [source,yaml]
 .application.yml
@@ -233,7 +238,9 @@ It renders domain classes with the same Jackson serializer as the `JsonMapper` i
 `grails.converters.json.legacy` set to `false` (see the section on domain classes below): the
 persistent properties and the id, associated instances as references of their id, or in full with
 `grails.converters.json.default.deep`, the version and class name with the `grails.converters.json.domain.*`
-settings, and what Jackson applies to a bean, such as `@JsonIgnore`, `@JsonInclude` and the naming strategy. Per-response
+settings, and what Jackson applies to a bean, such as `@JsonIgnore`, `@JsonInclude` and the naming strategy. The
+converter applies what section 6 lists on top of that serializer, which the mapper does not: the marshallers registered
+with `JSON.registerObjectMarshaller(...)`, and an enum written by its name. Per-response
 `includes` and `excludes` apply to them. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
 subclasses and per-type mapper registrations keep their configured behavior and precedence.
 
@@ -337,8 +344,9 @@ register the name again to replace a configuration rather than mutating a retain
 
 For direct serialization, inject the same registry and use
 `namedJsonConfigurationRegistry.writeValueAsString('catalog', book)` or
-`namedJsonConfigurationRegistry.writeValue('catalog', writer, book)`. These explicit operations replace the
-thread-local scope established by `JSON.use(...)`. Every registry has a `deep` configuration, which writes the
+`namedJsonConfigurationRegistry.writeValue('catalog', writer, book)`. `writeValue` leaves the writer open and
+unflushed, as a response's writer is the container's, so flush or close a writer of your own, such as a `FileWriter`,
+once it returns. These explicit operations replace the thread-local scope established by `JSON.use(...)`. Every registry has a `deep` configuration, which writes the
 associations of domain class instances in full, as `JSON.use('deep')` did, so `render json: book, jsonConfiguration: 'deep'`
 writes the associations as `JSON.use('deep') { render book as JSON }` does. The rest is written as the mapper writes it
 rather than as the converter does: marshallers registered with `JSON.registerObjectMarshaller(...)` do not apply, an enum
@@ -412,6 +420,10 @@ so that the JSON binds back to the enum.
 * Strings are escaped for an HTML `<script>` element: `</` is written as `<\u002f` (as `<\/` in a `GString` or a
 `StreamCharBuffer`, as in Grails 8), and U+2028 and U+2029 as `\u2028` and `\u2029`. The parsed values are the same as
 Spring Boot's.
+
+A bean whose `@JsonUnwrapped` property writes a name the bean writes too, such as an `id` of both, is written with both,
+where Spring Boot's mapper and `render json:` reject it: the converter's includes and excludes, and the class name and
+the version of a domain class instance, decide for each value it writes which properties it writes.
 
 With the setting `false`, the following values render differently than in Grails 8. With the setting left `true`, Grails 9
 renders them as Grails 8 did, apart from what Grails 8 failed to render or rendered as invalid JSON, such as a single
@@ -696,7 +708,9 @@ that accepts neither JSON nor XML, such as one asking only for HTML, is answered
 Spring MVC answers it, where Grails 8 rendered the action's view with a 200. A browser's `Accept` header lists
 `application/xml` after HTML, so where the action responds in XML, a browser is answered with `application/problem+xml`,
 as Spring MVC answers it when it has an XML converter, and where it responds in JSON only, with
-`application/problem+json`. A view renders a problem only when `respond` names it with the `view` argument, and the response
+`application/problem+json`. Where `grails.mime.disable.accept.header.userAgents` has Grails ignore a browser's `Accept`
+header, a browser is answered as a client that accepts anything is: in XML where the action's first format is XML, and
+otherwise in JSON. A view renders a problem only when `respond` names it with the `view` argument, and the response
 has the status it would have in JSON or XML. A renderer the application registers for `ProblemDetail`, or for a type problems share,
 such as `Serializable`, renders them in its format. Otherwise a `ProblemDetail` is written through Spring's message
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
@@ -706,8 +720,9 @@ logs a warning and the legacy converter writes it as a bean, with the same statu
 XML problems with `jackson-dataformat-xml`, and without it Grails writes them in the same format. XML is
 rendered by the `grails-xml` module, without which a client asking for XML is answered with
 `application/problem+json`.
-Rejected field values are excluded by default because they can contain passwords, tokens, or other
-sensitive request data. Applications that deliberately need those values can define their own factory
+Rejected field values are excluded from the problem by default because they can contain passwords, tokens, or other
+sensitive request data. Validation errors an action responds with in XML are not written as a problem, and keep their
+rejected values, as in Grails 8. Applications that deliberately need those values can define their own factory
 bean after reviewing that exposure risk. It replaces the default one whatever its name, both for `respond` and
 for a controller that declares a `validationProblemDetailFactory` property, and takes the `MessageSource` so that
 messages stay localized. A bean named `validationProblemDetailFactory` overrides the plugin's bean of that name, so it
@@ -746,17 +761,25 @@ such as `application/vnd.Acme+json`, matches whatever the case of the header. Th
 where Grails 8 gave `null`, and the JSON binding source now binds a body it used to ignore. A value Spring
 rejects, such as a quality value above 1, is still read as Grails 8 read it. The problem types of RFC 9457,
 `application/problem+json` and `application/problem+xml`, are the `json` and `xml` formats unless `grails.mime.types`
-configures them, where Grails 8 resolved them to `all`, so a client that asks for `application/problem+xml` is answered
-with it.
+configures them. In the `Accept` header, Grails 8 resolved them to `all`, and a client that asks for
+`application/problem+xml` is now answered with it where the action responds in XML. In `Content-Type`, Grails 8 gave
+`null`: a body a client sends as `application/problem+json` is now the `json` format, which `withFormat` selects and the
+JSON binding source binds.
 
 The data-format extensions `json`, `xml`, `hal`, `atom`, `rss`, `csv` and `text` declared in
-`grails.mime.types` are additionally registered with Spring as format aliases. Spring MVC negotiates
+`grails.mime.types`, or among the defaults where it declares none or `grails.mime.mergeDefaults` adds them, are
+additionally registered with Spring as format aliases. The MIME types a `MimeTypeProvider` bean adds are not, since
+Spring MVC asks for its formats while it starts. Spring MVC negotiates
 with them only when the application enables parameter negotiation with
 `spring.mvc.contentnegotiation.favor-parameter: true`. Spring Boot leaves it disabled, so after the
 upgrade `?format=json` still does not change what a Spring MVC endpoint returns. Browser formats such
 as `html` and `js` are not registered, preserving Spring's reflected-file-download protection.
 Where a format has several media types, an `application/*` one is preferred over a `text/*` one, and Boot's
 `spring.mvc.contentnegotiation.media-types.*` overrides these defaults. Invalid names are skipped.
+
+Grails keeps the MIME types and the `grails.mime.disable.accept.header.*` settings it resolves formats with in the
+application context, where Grails 8 kept them in static fields that every application in the JVM shared. A test that
+configures `grails.mime.types` or those settings no longer resets them between tests.
 
 ==== 13. Web Unit Tests Set Up More of the Web Layer
 

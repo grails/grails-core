@@ -82,4 +82,5 @@ JsonMapperBuilderCustomizer applicationJsonCustomizer() {
 
 `BookValueSerializer` is an application-provided Jackson `ValueSerializer<Book>`. With the Grails 9 defaults, `respond()`
 and `render ... as JSON` write JSON with the legacy converter, which the marshallers above customize and which does not
-use the serializer.
+use the serializer. `respond()` writes a `ProblemDetail`, and a value it is given a `jsonConfiguration` for, with the
+mapper whatever the settings, so the serializer applies to them.
