@@ -54,13 +54,12 @@ class CommandSpec extends Specification {
     }
 
     Process executeGradleCommand(String command) {
-        StringBuilder gradleCommand = new StringBuilder()
-        if (OperatingSystem.current.isWindows()) {
-            gradleCommand.append('cmd.exe /c gradlew')
-        } else {
-            gradleCommand.append('./gradlew')
-        }
-        gradleCommand.append(' --no-daemon -S ').append(command)
+        List<String> gradleCommand = OperatingSystem.current.isWindows()
+                ? ['cmd.exe', '/c', 'gradlew']
+                : ['./gradlew']
+        gradleCommand.addAll(['--no-daemon', '-S'])
+        gradleCommand.addAll(GeneratedBuild.arguments())
+        gradleCommand.addAll(command.split(' '))
         executeCommand(gradleCommand)
     }
 
@@ -119,8 +118,7 @@ class CommandSpec extends Specification {
         }
     }
 
-    private Process executeCommand(StringBuilder builder) {
-        String[] args = builder.toString().split(' ')
+    private Process executeCommand(List<String> args) {
         ProcessBuilder pb = new ProcessBuilder(args)
         pb.environment().put('JAVA_HOME', System.getenv('JAVA_HOME') ?: System.getProperty('java.home'))
         pb.environment().put('GRAILS_REPO_URL', System.getenv('GRAILS_REPO_URL') ?: null)

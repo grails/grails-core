@@ -800,7 +800,7 @@ class JSONArray implements JSONElement, List {
 
         JSONArray that = (JSONArray) obj
 
-        if (myArrayList != null ? !myArrayList.equals(that.myArrayList) : that.myArrayList != null) return false
+        if (myArrayList != null ? !myArrayList.equals(that.@myArrayList) : that.@myArrayList != null) return false
 
         return true
     }
