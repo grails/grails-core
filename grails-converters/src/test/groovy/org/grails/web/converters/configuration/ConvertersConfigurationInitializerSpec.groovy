@@ -21,6 +21,7 @@ package org.grails.web.converters.configuration
 import spock.lang.Specification
 
 import grails.core.DefaultGrailsApplication
+import org.grails.core.lifecycle.ShutdownOperations
 
 class ConvertersConfigurationInitializerSpec extends Specification {
 
@@ -49,6 +50,16 @@ class ConvertersConfigurationInitializerSpec extends Specification {
         warnings().size() == 1
         warnings()[0].contains('grails.converters.json.legacy is not set, so the JSON converter renders JSON as Grails 8 did.')
         ConvertersConfigurationHolder.isLegacyJson()
+    }
+
+    void "the warning is logged again once the application shuts down, as it does for a restart"() {
+        when:
+        initialize([:])
+        ShutdownOperations.runOperations()
+        initialize([:])
+
+        then:
+        warnings().size() == 2
     }
 
     void "no warning is logged when grails.converters.json.legacy is set to #legacy"() {

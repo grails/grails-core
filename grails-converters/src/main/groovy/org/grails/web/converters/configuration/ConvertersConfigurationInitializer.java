@@ -50,6 +50,7 @@ import grails.core.GrailsApplication;
 import grails.core.support.proxy.ProxyHandler;
 import org.apache.grails.converters.internal.json.SimpleTypeMarshaller;
 import org.grails.config.PropertySourcesConfig;
+import org.grails.core.lifecycle.ShutdownOperations;
 import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 import org.grails.web.converters.jackson.ConverterJsonModule;
 import org.grails.web.converters.jackson.DomainClassJacksonModule;
@@ -92,9 +93,14 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
 
     /**
      * Whether the notice that {@link #SETTING_CONVERTERS_JSON_LEGACY} is not set has been logged, so that it is logged
-     * once, however many times converters are initialized.
+     * once for each application, however many times converters are initialized; it is logged again after the application
+     * shuts down, as for a restart, as the other notices of the converters are.
      */
     static final AtomicBoolean LEGACY_JSON_DEFAULT_LOGGED = new AtomicBoolean();
+
+    static {
+        ShutdownOperations.addOperation(() -> LEGACY_JSON_DEFAULT_LOGGED.set(false), true);
+    }
 
     public static final String SETTING_CONVERTERS_ENCODING = "grails.converters.encoding";
     public static final String SETTING_CONVERTERS_CIRCULAR_REFERENCE_BEHAVIOUR = "grails.converters.default.circular.reference.behaviour";
