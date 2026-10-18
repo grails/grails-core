@@ -193,7 +193,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         String selectedConfiguration = context.arguments?.get('jsonConfiguration')?.toString()
         if (selectedConfiguration && (namedJsonRenderer == null || !namedJsonRenderer.contains(selectedConfiguration))) {
             // also for a problem, which Spring's message converters write whatever the configuration, so that a name
-            // that is wrong is found whatever respond writes
+            // that is wrong is found whatever value this renderer writes
             throw new IllegalArgumentException("Named JSON configuration [$selectedConfiguration] is not registered.")
         }
         if (selectedConfiguration && !(object instanceof ProblemDetail)) {

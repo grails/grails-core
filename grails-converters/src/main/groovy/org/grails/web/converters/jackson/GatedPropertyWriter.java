@@ -71,7 +71,8 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
      * @param writer a property writer, which may be gated already
      * @param gate a gate to add
      * @param checked whether Jackson checks the names an unwrapped property writes against the bean's other properties,
-     *        as it does for its own writers, which requires that the bean's writers are those that may be written
+     *        as it does for its own writers, which requires that the bean's writers are those that may be written. A
+     *        writer that is gated already is checked or not as this call says, whatever the call that gated it said
      * @return a writer that writes the property when its gates, and this one, include it
      */
     static BeanPropertyWriter gated(BeanPropertyWriter writer, Gate gate, boolean checked) {

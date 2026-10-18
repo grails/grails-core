@@ -56,7 +56,8 @@ class GrailsContentNegotiationStrategy {
     }
 
     /**
-     * @return the MIME types this strategy resolves against, as configured by grails.mime.types
+     * @return the MIME types this strategy resolves against: in an application, those of its {@code MimeUtility}, which
+     * {@code grails.mime.types}, or the defaults, and the {@code MimeTypeProvider} beans give
      */
     MimeType[] getConfiguredMimeTypes() {
         return mimeTypes

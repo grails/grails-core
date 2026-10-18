@@ -107,7 +107,9 @@ final class Cycles {
     /**
      * Whether the generator is about to write an element of an array that a collection or an array is written as, which
      * can be left out, rather than a property of a bean written as an array, whose position has to be kept: Jackson starts
-     * the array of a bean with the bean as its current value.
+     * the array of a bean with the bean as its current value, and that of a collection, an array, an iterator or a stream
+     * with the value itself. An array a serializer starts without a current value is taken for a collection's, and the
+     * array of a container of another type, such as a Scala collection, for a bean's.
      */
     private static boolean inElementArray(JsonGenerator generator) {
         TokenStreamContext context = generator.streamWriteContext();
