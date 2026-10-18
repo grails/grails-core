@@ -18,6 +18,7 @@
  */
 package grails.converters.json;
 
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -135,7 +136,7 @@ public final class NamedJsonConfigurationRegistry {
      * no properties to project, such as a map or a string, is rejected before anything is written. The writer is left
      * open and unflushed, as {@link #writeValue(String, Writer, Object)} leaves it.
      *
-     * @param name the registered configuration
+     * @param name the registered configuration, or null for the default one
      * @param output the response writer
      * @param value the value to write
      * @param includes property names to include, or null for all
@@ -156,20 +157,84 @@ public final class NamedJsonConfigurationRegistry {
     }
 
     private static void write(ObjectWriter writer, Writer output, Object value) throws IOException {
+        FailureRecordingWriter recording = new FailureRecordingWriter(output);
         try {
             writer.without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                     .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)
-                    .writeValue(output, value);
+                    .writeValue(recording, value);
         }
         catch (JacksonException e) {
-            // Jackson reports a failure of the writer as the unchecked cause of its own exception, and inside the
-            // failure of the value being written
-            for (Throwable cause = e.getCause(); cause != null; cause = cause.getCause()) {
-                if (cause instanceof IOException io) {
-                    throw io;
-                }
+            // Jackson reports a failure of the writer as the unchecked cause of its own exception, as it reports an
+            // I/O failure of the value being written, which keeps Jackson's exception and its path
+            if (recording.failure != null) {
+                throw recording.failure;
             }
             throw e;
+        }
+    }
+
+    /** A writer that remembers its own failure, which Jackson reports inside its own exception. */
+    private static final class FailureRecordingWriter extends FilterWriter {
+
+        private IOException failure;
+
+        FailureRecordingWriter(Writer output) {
+            super(output);
+        }
+
+        @Override
+        public void write(int c) throws IOException {
+            try {
+                super.write(c);
+            }
+            catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        @Override
+        public void write(char[] buffer, int offset, int length) throws IOException {
+            try {
+                super.write(buffer, offset, length);
+            }
+            catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        @Override
+        public void write(String text, int offset, int length) throws IOException {
+            try {
+                super.write(text, offset, length);
+            }
+            catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            try {
+                super.flush();
+            }
+            catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                super.close();
+            }
+            catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        private IOException record(IOException e) {
+            failure = e;
+            return e;
         }
     }
 }

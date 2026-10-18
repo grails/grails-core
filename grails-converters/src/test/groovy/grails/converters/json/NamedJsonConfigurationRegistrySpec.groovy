@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import tools.jackson.core.JacksonException
 import tools.jackson.core.JsonGenerator
+import tools.jackson.databind.DatabindException
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.ValueSerializer
 import tools.jackson.databind.cfg.ContextAttributes
@@ -186,6 +187,20 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
 
         where:
         characters << [60000, 6]
+    }
+
+    void 'an I/O failure of the value written is reported as Jackson reports it, with its path, rather than as a failure of the writer'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        def output = new StringWriter()
+
+        when:
+        registry.writeValue('deep', output, new NamedJsonUnreadable(name: 'Grails'))
+
+        then:
+        DatabindException e = thrown()
+        e.cause instanceof FileNotFoundException
+        e.path*.propertyName == ['content']
     }
 
     void 'a property a bean unwraps with the name of one of its own is rejected, as the JsonMapper rejects it'() {
@@ -438,6 +453,14 @@ class NamedJsonFailing {
 
     String getFailing() {
         throw new IllegalStateException('the value cannot be read')
+    }
+}
+
+class NamedJsonUnreadable {
+    String name
+
+    String getContent() throws IOException {
+        throw new FileNotFoundException('content.txt')
     }
 }
 
