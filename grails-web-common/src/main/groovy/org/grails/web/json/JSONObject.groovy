@@ -129,7 +129,7 @@ class JSONObject implements JSONElement, Map {
         for (; ;) {
             c = x.nextClean()
             switch (c) {
-                case 0:
+                case ((char) 0): // a Groovy switch matches a char against an int case by equals(), which is never true
                     throw x.syntaxError("A JSONObject text must end with '}'")
                 case '}':
                     return
@@ -1169,7 +1169,8 @@ class JSONObject implements JSONElement, Map {
 
         JSONObject that = (JSONObject) o
 
-        if (myHashMap != null ? !myHashMap.equals(that.myHashMap) : that.myHashMap != null) return false
+        // JSONObject is a Map, so that.myHashMap would be that.get('myHashMap'); read the field
+        if (myHashMap != null ? !myHashMap.equals(that.@myHashMap) : that.@myHashMap != null) return false
 
         return true
     }
