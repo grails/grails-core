@@ -52,7 +52,9 @@ import org.grails.web.converters.marshaller.DomainClassFetcher;
  * persistent property is written except those Jackson leaves out, such as a property annotated {@code @JsonIgnore} or
  * named by {@code @JsonIgnoreProperties}. GORM adds that annotation to every domain class, naming properties such as
  * {@code errors} and {@code tenantId}; the version is written when it is included regardless. Subclasses override the
- * methods to render differently.
+ * methods to render differently. A module reads {@link #isIncludeVersion()} and {@link #isIncludeClass()} of its own
+ * rendering once for each domain class, when it builds the class's serializer, unless it is created to take the
+ * rendering of each instance from the writes, with {@link DomainClassJacksonModule#RENDERINGS}.
  *
  * @since 9.0
  */

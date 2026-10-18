@@ -23,6 +23,7 @@ import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Function
 
 import groovy.json.JsonSlurper
 
@@ -42,6 +43,8 @@ import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
 import grails.core.support.proxy.DefaultProxyHandler
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.web.converters.jackson.DomainClassJacksonModule
+import org.grails.web.converters.jackson.DomainClassRendering
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import spock.lang.Specification
 
@@ -223,6 +226,20 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         expect: 'a property it unwraps without a conflict is written into it'
         registry.writeValueAsString(null, new NamedJsonPrefixedUnwrapping(id: 5, inner: new NamedJsonInner(id: 1, name: 'a'))) ==
                 '{"id":5,"inner_id":1,"inner_name":"a"}'
+    }
+
+    void 'a configuration cannot render domain class instances in ways of their own, which only the JSON converter does'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+
+        when:
+        registry.register('own') {
+            it.attribute(DomainClassJacksonModule.RENDERINGS, { Object instance -> null } as Function<Object, DomainClassRendering>)
+        }
+
+        then:
+        IllegalArgumentException e = thrown()
+        e.message.contains(DomainClassJacksonModule.RENDERINGS)
     }
 
     void 'unknown configurations fail clearly'() {

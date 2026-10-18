@@ -69,8 +69,23 @@ public final class NamedJsonConfiguration {
         return attribute(DomainClassJacksonModule.DEEP, Boolean.TRUE);
     }
 
+    /**
+     * Adds an attribute to the writes of this configuration, which serializers read from their context.
+     *
+     * @param name the name of the attribute
+     * @param value its value
+     * @return this configuration
+     * @throws IllegalArgumentException for {@link DomainClassJacksonModule#RENDERINGS}, which only the JSON converter's
+     *         writes can supply: the mapper of a named configuration decides whether it writes the class name and the
+     *         version of a domain class before any write supplies a rendering
+     */
     public NamedJsonConfiguration attribute(Object name, Object value) {
         assertMutable();
+        if (DomainClassJacksonModule.RENDERINGS.equals(name)) {
+            throw new IllegalArgumentException("[" + DomainClassJacksonModule.RENDERINGS + "] is the attribute of the " +
+                    "JSON converter's writes; a named JSON configuration renders domain class instances with the " +
+                    "grails.converters.json.domain settings, and a serializer or a projection of its own.");
+        }
         attributes.put(name, value);
         return this;
     }
