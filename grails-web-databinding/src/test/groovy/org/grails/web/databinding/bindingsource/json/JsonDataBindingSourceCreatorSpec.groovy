@@ -42,14 +42,13 @@ import org.springframework.core.env.MapPropertySource
 
 class JsonDataBindingSourceCreatorSpec extends Specification {
 
-    void 'JSON decimals bind as BigDecimal so fractional values keep their digits'() {
+    void 'JSON decimals bind as BigDecimal so fractional values keep their digits, with #parser'() {
         given: "a body carrying values that lose digits when read as a double"
         def json = '{"price": 1.15, "precise": 12345678901234567890.12345, "qty": 3}'
         def inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
 
         when:
-        def bindingSource = new JsonDataBindingSourceCreator()
-                .createDataBindingSource(MimeType.JSON, Object, inputStream)
+        def bindingSource = creator.createDataBindingSource(MimeType.JSON, Object, inputStream)
 
         then: "decimals arrive as BigDecimal, matching the digits the request sent"
         bindingSource['price'] instanceof BigDecimal
@@ -60,6 +59,11 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         and: "integral values are unaffected"
         bindingSource['qty'] instanceof Integer
         bindingSource['qty'] == 3
+
+        where:
+        parser              | creator
+        'the legacy parser' | new JsonDataBindingSourceCreator()
+        'Jackson'           | new JsonDataBindingSourceCreator(jsonMapper: JsonMapper.builder().build(), useJackson: true)
     }
 
     void 'with Jackson, #number binds as the legacy parser binds it'() {
@@ -80,16 +84,21 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
                    '12345678901234567890.12345']
     }
 
-    void 'JSON decimals inside a collection body also bind as BigDecimal'() {
+    void 'JSON decimals inside a collection body also bind as BigDecimal, with #parser'() {
         given:
         def inputStream = new ByteArrayInputStream('[{"price": 1.15}]'.getBytes(StandardCharsets.UTF_8))
 
         when:
-        def sources = new JsonDataBindingSourceCreator()
-                .createCollectionDataBindingSource(MimeType.JSON, Object, inputStream)
+        def sources = creator.createCollectionDataBindingSource(MimeType.JSON, Object, inputStream)
 
         then:
         sources.dataBindingSources.first()['price'] instanceof BigDecimal
+        sources.dataBindingSources.first()['price'] == 1.15G
+
+        where:
+        parser              | creator
+        'the legacy parser' | new JsonDataBindingSourceCreator()
+        'Jackson'           | new JsonDataBindingSourceCreator(jsonMapper: JsonMapper.builder().build(), useJackson: true)
     }
 
     void 'Test JSON parsing'() {

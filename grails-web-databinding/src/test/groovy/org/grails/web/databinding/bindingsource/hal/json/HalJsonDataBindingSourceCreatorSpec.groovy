@@ -21,12 +21,13 @@ package org.grails.web.databinding.bindingsource.hal.json
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 
 import spock.lang.Specification
+import tools.jackson.databind.json.JsonMapper
 
 import java.nio.charset.StandardCharsets
 
 class HalJsonDataBindingSourceCreatorSpec extends Specification {
 
-    void 'Test JSON parsing'() {
+    void 'Test JSON parsing with #parser'() {
         given:
         def json = '''
             {
@@ -39,7 +40,7 @@ class HalJsonDataBindingSourceCreatorSpec extends Specification {
 }
 '''
         def inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
-        def bindingSource = new HalJsonDataBindingSourceCreator().createBindingSource(inputStream, StandardCharsets.UTF_8.name())
+        def bindingSource = creator.createBindingSource(inputStream, StandardCharsets.UTF_8.name())
 
         when:
         def propertyNames = bindingSource.propertyNames
@@ -60,5 +61,10 @@ class HalJsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource['homeAddress']['city'] == "O'Fallon"
         bindingSource['workAddress']['state'] == 'California'
         bindingSource['workAddress']['city'] == 'San Mateo'
+
+        where:
+        parser              | creator
+        'the legacy parser' | new HalJsonDataBindingSourceCreator()
+        'Jackson'           | new HalJsonDataBindingSourceCreator(jsonMapper: JsonMapper.builder().build(), useJackson: true)
     }
 }

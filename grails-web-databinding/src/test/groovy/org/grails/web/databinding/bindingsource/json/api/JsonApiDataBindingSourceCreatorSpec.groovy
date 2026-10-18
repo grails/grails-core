@@ -22,6 +22,7 @@ import grails.databinding.DataBindingSource
 import org.grails.web.databinding.bindingsource.JsonApiDataBindingSourceCreator
 import spock.lang.Shared
 import spock.lang.Specification
+import tools.jackson.databind.json.JsonMapper
 
 import java.nio.charset.StandardCharsets
 
@@ -201,5 +202,14 @@ class JsonApiDataBindingSourceCreatorSpec extends Specification {
         then:
         source.containsProperty("data")
         source.getPropertyValue("id") == "foo"
+    }
+}
+/**
+ * The JSON API bodies bind alike when Jackson parses them, with {@code grails.databinding.json.jackson}.
+ */
+class JacksonJsonApiDataBindingSourceCreatorSpec extends JsonApiDataBindingSourceCreatorSpec {
+
+    void setupSpec() {
+        creator = new JsonApiDataBindingSourceCreator(jsonMapper: JsonMapper.builder().build(), useJackson: true)
     }
 }

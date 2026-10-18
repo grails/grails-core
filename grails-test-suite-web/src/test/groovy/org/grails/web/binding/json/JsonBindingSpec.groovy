@@ -135,6 +135,20 @@ class JsonBindingSpec extends Specification implements ControllerUnitTest<Bindin
         familyError?.defaultMessage?.contains 'Error occurred initializing command object [family]. groovy.json.JsonException'
     }
     
+    void 'without grails.databinding.json.jackson, a body with a trailing comma binds, as in Grails 8'() {
+        given:
+        request.contentType = JSON_CONTENT_TYPE
+        request.method = 'POST'
+        request.content = '{"name": "Douglas", "age": "42",}'.getBytes('UTF-8')
+
+        when:
+        def person = controller.createPerson().person
+
+        then:
+        !person.hasErrors()
+        person.name == 'Douglas'
+    }
+
     @Issue('GRAILS-11646')
     void 'should JSON encoding be handled'() {
         given:
@@ -145,6 +159,44 @@ class JsonBindingSpec extends Specification implements ControllerUnitTest<Bindin
         expect:
         request.JSON.toString() == '{"data":"Multibyte characters: äöåÄÖÅ"}'
     } 
+}
+
+class JacksonJsonBindingSpec extends Specification implements ControllerUnitTest<BindingController> {
+
+    Closure doWithConfig() {
+        { config -> config['grails.databinding.json.jackson'] = true }
+    }
+
+    void 'with grails.databinding.json.jackson, a request body binds as Jackson parses it, decimals as BigDecimal'() {
+        given:
+        request.contentType = JSON_CONTENT_TYPE
+        request.method = 'POST'
+        request.content = '{"lastName": "Brown", "mapData": {"price": 1.15}, "familyMembers": [{"name": "Jake", "age": "12"}]}'
+                .getBytes('UTF-8')
+
+        when:
+        def model = controller.createFamily()
+
+        then:
+        model.family.lastName == 'Brown'
+        model.family.mapData.price instanceof BigDecimal
+        model.family.mapData.price == 1.15G
+        model.family.familyMembers*.name == ['Jake']
+    }
+
+    void 'with grails.databinding.json.jackson, a body only the legacy parser accepts is an invalid request body'() {
+        given: 'a trailing comma, which JsonSlurper accepts and Jackson does not by default'
+        request.contentType = JSON_CONTENT_TYPE
+        request.method = 'POST'
+        request.content = '{"name": "Douglas", "age": "42",}'.getBytes('UTF-8')
+
+        when:
+        def person = controller.createPerson().person
+
+        then:
+        person.hasErrors()
+        person.errors.allErrors[0].code == 'invalidRequestBody'
+    }
 }
 
 @Artefact('Controller')
