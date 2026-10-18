@@ -41,6 +41,7 @@ import tools.jackson.databind.ser.std.StdSerializer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationFeature
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.web.converters.jackson.JacksonNamedJsonRenderer
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
@@ -50,6 +51,7 @@ import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
+import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.converters.JSON
 import grails.core.DefaultGrailsApplication
 import grails.rest.render.RenderContext
@@ -729,6 +731,48 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         webRequest.response.contentAsString == '{"title":"Included"}'
         !renderer.legacyFallbackReported.get()
+    }
+
+    void 'a write with a named configuration that fails is reported as Spring MVC reports it, for #description'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        registry.register('plain') { }
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.namedJsonRenderer = new JacksonNamedJsonRenderer(registry)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        Writer output = failingWriter ? brokenPipe() : null
+        def context = new ServletRenderContext(webRequest, [jsonConfiguration: 'plain']) {
+            @Override
+            Writer getWriter() { output ?: super.getWriter() }
+        }
+
+        when:
+        renderer.render(value, context)
+
+        then:
+        HttpMessageConversionException e = thrown()
+        e.class == type
+        e.message.startsWith(message)
+
+        where:
+        description               | value                                                   | failingWriter || type                            | message
+        'a writer that fails'     | new ProjectionBody(title: 'Grails')                     | true          || HttpMessageNotWritableException | 'Could not write JSON: Broken pipe'
+        'a type definition error' | new ClashingBody(id: 5, inner: new ClashingInner(id: 1)) | false         || HttpMessageConversionException  | 'Type definition error: '
+    }
+
+    private static Writer brokenPipe() {
+        new Writer() {
+            @Override
+            void write(char[] buffer, int offset, int length) throws IOException {
+                throw new IOException('Broken pipe')
+            }
+
+            @Override
+            void flush() { }
+
+            @Override
+            void close() { }
+        }
     }
 
     void 'respond selects a registered named JSON configuration'() {

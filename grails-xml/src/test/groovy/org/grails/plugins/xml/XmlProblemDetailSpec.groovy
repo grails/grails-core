@@ -18,6 +18,8 @@
  */
 package org.grails.plugins.xml
 
+import javax.xml.stream.XMLStreamException
+
 import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
@@ -166,6 +168,43 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         description               | value                                                           || type                            | message
         'a value that fails'      | new UnreadableXmlValue()                                        || HttpMessageNotWritableException | 'Could not write JSON: '
         'a type definition error' | new ClashingXmlValue(id: 1, inner: new ClashingXmlInner(id: 2)) || HttpMessageConversionException  | 'Type definition error: '
+    }
+
+    void 'without a converter for problems, a response writer that fails is reported as Spring reports it'() {
+        given:
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+        def failing = new Writer() {
+            @Override
+            void write(char[] buffer, int offset, int length) throws IOException {
+                throw new IOException('Broken pipe')
+            }
+
+            @Override
+            void flush() { }
+
+            @Override
+            void close() { }
+        }
+
+        when:
+        renderer.render(ProblemDetail.forStatus(HttpStatus.CONFLICT), new ServletRenderContext(webRequest) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+
+            @Override
+            Writer getWriter() {
+                failing
+            }
+        })
+
+        then:
+        HttpMessageNotWritableException e = thrown()
+        e.message.startsWith('Could not write JSON: ')
+        e.cause instanceof XMLStreamException
     }
 
     void 'without a converter for problems, the properties of a subclass of ProblemDetail are written as Spring writes them'() {
