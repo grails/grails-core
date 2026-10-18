@@ -577,6 +577,56 @@ class DomainClassJacksonModuleSpec extends Specification {
                 '{"id":1,"code":"X2","label":"label:x","summarized":{"summary":"summary of s"},"shelf":{"id":3}}'
     }
 
+    void "an associated instance written with a serializer of its own is written as Jackson writes the value of the property"() {
+        given: 'associations whose properties are annotated for the shape and the inclusion of what their classes write'
+        def rated = new Rated(rating: rating(5), ratings: [rating(6), rating(7)], code: new Code(code: ''))
+        rated.id = 1
+        def bean = new RatedBean(rating: rated.rating, ratings: rated.ratings, code: rated.code)
+
+        expect: 'as for the properties of any bean'
+        JsonMapper.builder().build().writeValueAsString(bean) == '{"rating":"5","ratings":["6","7"]}'
+        mapper().writeValueAsString(rated) == '{"id":1,"rating":"5","ratings":["6","7"]}'
+        new JSON(rated).toString() == mapper().writeValueAsString(rated)
+
+        when: 'what its serializer writes is not empty'
+        rated.code = new Code(code: 'X1')
+
+        then:
+        mapper().writeValueAsString(rated) == '{"id":1,"rating":"5","ratings":["6","7"],"code":"X1"}'
+    }
+
+    void "an associated instance written with a serializer of its own has the type id its declared type asks for, as a reference has none"() {
+        given:
+        def cat = new Cat(name: 'Tom')
+        cat.id = 4
+        def kennel = new Kennel(resident: cat)
+        kennel.id = 6
+        def shelter = new Shelter(residents: [cat])
+        shelter.id = 7
+
+        expect: 'as Jackson writes it for the property of any bean'
+        mapper().writeValueAsString(new Pet(animal: cat)) == '{"animal":["Cat","Tom"]}'
+        mapper().writeValueAsString(kennel) == '{"id":6,"resident":["Cat","Tom"]}'
+        mapper().writeValueAsString(shelter) == '{"id":7,"residents":[["Cat","Tom"]]}'
+    }
+
+    void "a DomainClassMarshaller that writes references itself writes the reference to an instance whose class has a serializer of its own"() {
+        given:
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
+            @Override
+            protected void asShortObject(Object refObj, JSON json, PersistentProperty idProperty, PersistentEntity referencedDomainClass) {
+                json.writer.value("${referencedDomainClass.javaClass.simpleName}:${refObj.id}".toString())
+            }
+        })
+        def code = new Code(code: '')
+        code.id = 2
+        def rated = new Rated(rating: rating(5), code: code)
+        rated.id = 1
+
+        expect: 'which is never empty'
+        new JSON(rated).toString() == '{"id":1,"rating":"Rating:5","ratings":null,"code":"Code:2"}'
+    }
+
     void "the instances of a to-many association whose class a module has a serializer for are written with it"() {
         given: 'a module with a serializer of writers, which take precedence over the bean serializer of the domain class'
         def mapper = JsonMapper.builder()
@@ -1029,6 +1079,12 @@ class DomainClassJacksonModuleSpec extends Specification {
         buffer.toString()
     }
 
+    private static Rating rating(int score) {
+        def rating = new Rating(score: score)
+        rating.id = score
+        rating
+    }
+
     private static Volume volume() {
         def first = new Writer(name: 'a')
         first.id = 1
@@ -1044,14 +1100,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1248,6 +1304,14 @@ class Dog extends Animal {
     String name
 }
 
+@Entity
+class Cat extends Animal {
+    String name
+
+    @JsonValue
+    String jsonValue() { name }
+}
+
 class Pet {
     Animal animal
 }
@@ -1304,6 +1368,34 @@ class Coded {
     Label label
     Summarized summarized
     Shelf shelf
+}
+
+@Entity
+class Rated {
+    static hasMany = [ratings: Rating]
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    Rating rating
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    List<Rating> ratings
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    Code code
+}
+
+class RatedBean {
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    Rating rating
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    List<Rating> ratings
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    Code code
+}
+
+@Entity
+class Rating {
+    Integer score
+
+    @JsonValue
+    Integer value() { score }
 }
 
 @Entity

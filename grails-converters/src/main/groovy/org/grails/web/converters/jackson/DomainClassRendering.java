@@ -283,8 +283,9 @@ public class DomainClassRendering {
     }
 
     /**
-     * Writes the reference to an associated domain class instance itself, in place of the
-     * {@code {"class": …, "id": …}} object the serializer writes.
+     * Writes the reference to an associated domain class instance itself, in place of what the serializer writes for it:
+     * the {@code {"class": …, "id": …}} object, or what the serializer of its class writes, for a class with a
+     * serializer of its own. A subclass that overrides it overrides {@link #writesReferences()} as well.
      *
      * @param reference an associated domain class instance
      * @param idProperty the id property of its domain class
@@ -292,6 +293,17 @@ public class DomainClassRendering {
      * @return whether the reference was written
      */
     public boolean writeReference(Object reference, PersistentProperty idProperty, PersistentEntity entity) {
+        return false;
+    }
+
+    /**
+     * Whether {@link #writeReference} writes the references to associated instances itself, which a subclass that
+     * overrides it says, so that an association left out when it is empty is left out by what is written for it.
+     *
+     * @return {@code false}, by default
+     * @since 9.0
+     */
+    public boolean writesReferences() {
         return false;
     }
 }

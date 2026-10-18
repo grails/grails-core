@@ -387,5 +387,10 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             json.getWriter().writeNested(() -> asShortObject(reference, json, idProperty, entity));
             return true;
         }
+
+        @Override
+        public boolean writesReferences() {
+            return overridesAsShortObject;
+        }
     }
 }
