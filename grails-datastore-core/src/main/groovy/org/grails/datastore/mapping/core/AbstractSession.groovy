@@ -395,7 +395,7 @@ abstract class AbstractSession<N> extends AbstractAttributeStoringSession implem
 
         Object entry = getCachedEntry(persister.getPersistentEntity(), id, false);
         Object instance2 = getCachedInstance(instance.getClass(), id);
-        return instance != instance2 || ((NativeEntryEntityPersister) persister).isDirty(instance, entry);
+        return !instance.is(instance2) || ((NativeEntryEntityPersister) persister).isDirty(instance, entry);
     }
 
     @Override

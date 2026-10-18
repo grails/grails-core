@@ -71,7 +71,7 @@ class PersistentList extends AbstractPersistentCollection implements List {
     Object set(int index, Object element) {
         initialize();
         Object replaced = list.set(index, element);
-        if (replaced != element) {
+        if (!replaced.is(element)) {
             markDirty();
         }
         return replaced;
