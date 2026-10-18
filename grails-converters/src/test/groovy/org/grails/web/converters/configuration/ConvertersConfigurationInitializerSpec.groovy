@@ -30,7 +30,8 @@ class ConvertersConfigurationInitializerSpec extends Specification {
     ByteArrayOutputStream captured = new ByteArrayOutputStream()
 
     void setup() {
-        ConvertersConfigurationInitializer.LEGACY_JSON_DEFAULT_LOGGED.set(false)
+        // as after an application shuts down, so that the notice may be logged again
+        ShutdownOperations.runOperations()
         // the test logger writes to System.err as it is when each line is logged
         err = System.err
         System.setErr(new PrintStream(captured, true))

@@ -43,6 +43,7 @@ import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.PropertyResolver;
 
 import grails.config.Config;
 import grails.converters.JSON;
@@ -88,16 +89,27 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     public static final String SETTING_CONVERTERS_JSON_LEGACY = "grails.converters.json.legacy";
 
     /**
-     * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9.
+     * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9, which a later release changes; read through
+     * {@link #isLegacyJson(PropertyResolver)}, so that code compiled against this release does not keep it.
      */
-    public static final boolean LEGACY_JSON_BY_DEFAULT = true;
+    private static final boolean LEGACY_JSON_BY_DEFAULT = true;
 
     /**
      * Whether the notice that {@link #SETTING_CONVERTERS_JSON_LEGACY} is not set has been logged, so that it is logged
      * once for each application, however many times converters are initialized; it is logged again after the application
      * shuts down, as for a restart, as the other notices of the converters are.
      */
-    static final AtomicBoolean LEGACY_JSON_DEFAULT_LOGGED = new AtomicBoolean();
+    private static final AtomicBoolean LEGACY_JSON_DEFAULT_LOGGED = new AtomicBoolean();
+
+    /**
+     * @param properties the application's configuration, or its environment
+     * @return whether the JSON converter renders values as Grails 8 did: what {@link #SETTING_CONVERTERS_JSON_LEGACY} is
+     *         set to, or the default of this release
+     * @since 9.0
+     */
+    public static boolean isLegacyJson(PropertyResolver properties) {
+        return properties.getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT);
+    }
 
     static {
         ShutdownOperations.addOperation(() -> LEGACY_JSON_DEFAULT_LOGGED.set(false), true);
@@ -124,7 +136,7 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing Converters Default Configurations...");
         }
-        boolean legacy = getGrailsConfig().getProperty(SETTING_CONVERTERS_JSON_LEGACY, Boolean.class, LEGACY_JSON_BY_DEFAULT);
+        boolean legacy = isLegacyJson(getGrailsConfig());
         ApplicationContext applicationContext = getApplicationContext();
         if (applicationContext != null) {
             ConvertersConfigurationHolder.setObservationRegistry(
