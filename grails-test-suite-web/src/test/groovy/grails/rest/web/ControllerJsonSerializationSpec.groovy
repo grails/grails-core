@@ -300,7 +300,9 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
     }
 
     void 'a problem respond names a view for, which a client asks for in a format no view renders, is written as problem JSON'() {
-        given:
+        given: 'the view in HTML and in JSON, and in no other format'
+        views['/jsonResponse/conflict.gsp'] = 'conflict'
+        views['/jsonResponse/conflict.json.gsp'] = '{"conflict":true}'
         request.requestURI = '/books'
         response.format = 'csv'
 
