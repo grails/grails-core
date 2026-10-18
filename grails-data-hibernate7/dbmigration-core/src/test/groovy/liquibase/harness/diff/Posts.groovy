@@ -1,77 +1,77 @@
-package liquibase.harness.diff
+package liquibase.harness.diff;
 
-import java.sql.Date
+import java.sql.Date;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 @CompileStatic
 class Posts {
 
-    int id
-    int authorId
-    String title
-    String description
-    String content
-    Date insertedDate
+    int id;
+    int authorId;
+    String title;
+    String description;
+    String content;
+    Date insertedDate;
 
-    Posts() {
+    public Posts() {
     }
 
-    Posts(int id, int authorId, String title, String description, String content, Date insertedDate) {
-        this.id = id
-        this.authorId = authorId
-        this.title = title
-        this.description = description
-        this.content = content
-        this.insertedDate = insertedDate
+    public Posts(int id, int authorId, String title, String description, String content, Date insertedDate) {
+        this.id = id;
+        this.authorId = authorId;
+        this.title = title;
+        this.description = description;
+        this.content = content;
+        this.insertedDate = insertedDate;
     }
 
-    int getId() {
-        return id
+    public int getId() {
+        return id;
     }
 
-    void setId(int id) {
-        this.id = id
+    public void setId(int id) {
+        this.id = id;
     }
 
-    int getAuthorId() {
-        return authorId
+    public int getAuthorId() {
+        return authorId;
     }
 
-    void setAuthorId(int authorId) {
-        this.authorId = authorId
+    public void setAuthorId(int authorId) {
+        this.authorId = authorId;
     }
 
-    String getTitle() {
-        return title
+    public String getTitle() {
+        return title;
     }
 
-    void setTitle(String title) {
-        this.title = title
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    String getDescription() {
-        return description
+    public String getDescription() {
+        return description;
     }
 
-    void setDescription(String description) {
-        this.description = description
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    String getContent() {
-        return content
+    public String getContent() {
+        return content;
     }
 
-    void setContent(String content) {
-        this.content = content
+    public void setContent(String content) {
+        this.content = content;
     }
 
-    Date getInsertedDate() {
-        return insertedDate
+    public Date getInsertedDate() {
+        return insertedDate;
     }
 
-    void setInsertedDate(Date insertedDate) {
-        this.insertedDate = insertedDate
+    public void setInsertedDate(Date insertedDate) {
+        this.insertedDate = insertedDate;
     }
 
 }
