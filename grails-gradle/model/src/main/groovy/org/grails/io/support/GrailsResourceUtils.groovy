@@ -850,7 +850,9 @@ class GrailsResourceUtils {
         for (Pattern COMPILER_ROOT_PATTERN in COMPILER_ROOT_PATTERNS) {
             Matcher m = COMPILER_ROOT_PATTERN.matcher(path)
             if (m.find()) {
-                return m.group(m.groupCount() - 1)
+                // the spring scripts pattern captures the relative path as its only group; the resource pattern
+                // captures the artefact directory before it and the extension after it
+                return m.group(m.groupCount() == 1 ? 1 : m.groupCount() - 1)
             }
         }
         return null
