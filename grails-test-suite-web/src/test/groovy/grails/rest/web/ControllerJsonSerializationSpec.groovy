@@ -41,6 +41,7 @@ import grails.testing.web.controllers.ControllerUnitTest
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.DatabindException
@@ -225,6 +226,41 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json.errors.first().message == 'Title is invalid'
         !response.json.errors.first().containsKey('rejectedValue')
         !response.json.containsKey('properties')
+    }
+
+    void 'validation errors are written as a problem whatever configuration respond names, which must be registered'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
+        def errors = new BeanPropertyBindingResult(new JsonResponseBody(title: 'private'), 'book')
+        errors.rejectValue('title', 'invalid', 'Title is invalid')
+
+        when:
+        controller.respond(errors, jsonConfiguration: 'plain')
+
+        then:
+        response.status == 422
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 422
+        response.json.errors.first().message == 'Title is invalid'
+
+        when: 'the errors of a value'
+        response.reset()
+        response.format = 'json'
+        controller.respond(new JsonValidatedBody(title: 'private', errors: errors), jsonConfiguration: 'plain')
+
+        then:
+        response.status == 422
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.errors.first().message == 'Title is invalid'
+
+        when: 'a configuration that is not registered'
+        response.reset()
+        response.format = 'json'
+        controller.respond(new JsonValidatedBody(title: 'private', errors: errors), jsonConfiguration: 'missing')
+
+        then:
+        IllegalArgumentException e = thrown()
+        e.message == 'Named JSON configuration [missing] is not registered.'
     }
 
     void 'respond of an explicit problem preserves its HTTP semantics'() {
@@ -690,6 +726,11 @@ class FailingJsonBody {
 class JsonResponseBody {
     String title
     String firstName
+}
+
+class JsonValidatedBody {
+    String title
+    Errors errors
 }
 
 @Entity

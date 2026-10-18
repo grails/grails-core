@@ -325,8 +325,8 @@ class BootStrap {
 ----
 
 Select the configuration per response with `respond`, or with the `json` render argument. `respond` writes a
-`ProblemDetail` as Spring MVC writes it whatever configuration it names, though a name that is not registered throws for
-it too:
+`ProblemDetail` as Spring MVC writes it, and validation errors as it writes them without a configuration, whatever
+configuration it names, though a name that is not registered throws for them too:
 
 [source,groovy]
 ----

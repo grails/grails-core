@@ -195,7 +195,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             // that is wrong is found whatever value this renderer writes
             throw new IllegalArgumentException("Named JSON configuration [$selectedConfiguration] is not registered.")
         }
-        if (selectedConfiguration && !(object instanceof ProblemDetail)) {
+        // validation errors are written as the problem they make, as a problem is
+        if (selectedConfiguration && !(object instanceof ProblemDetail || object instanceof Errors)) {
             namedJsonRenderer.render(selectedConfiguration, object, context.writer,
                     getEffectiveIncludes(context), getEffectiveExcludes(context))
             return

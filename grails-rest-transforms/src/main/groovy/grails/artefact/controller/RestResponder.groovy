@@ -186,7 +186,10 @@ trait RestResponder {
                     }
                     Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors, target)
                     if (errorsRenderer) {
-                        final context = new ServletRenderContext(webRequest, [model: args.model])
+                        // the configuration, which the errors are not written with, so that a name that is wrong is
+                        // found, as it is for the errors themselves
+                        final context = new ServletRenderContext(webRequest,
+                                [model: args.model, jsonConfiguration: args.jsonConfiguration])
                         if (args.view) {
                             context.viewName = args.view as String
                         }
