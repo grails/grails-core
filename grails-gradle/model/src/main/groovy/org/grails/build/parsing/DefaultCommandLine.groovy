@@ -18,6 +18,9 @@
  */
 package org.grails.build.parsing
 
+import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
+
 import grails.util.Environment
 
 /**
@@ -31,12 +34,13 @@ import grails.util.Environment
 // original DefaultCommandLine.java (76% with them, 45% without) and preserves
 // file history. The stacked groovyism-cleanup PR removes them and this suppression.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 class DefaultCommandLine implements CommandLine {
 
-    Properties systemProperties = new Properties();
-    LinkedHashMap<String, Object> undeclaredOptions = new LinkedHashMap<>();
-    LinkedHashMap<String, SpecifiedOption> declaredOptions = new LinkedHashMap<>();
-    List<String> remainingArgs = new ArrayList<>();
+    @PackageScope Properties systemProperties = new Properties();
+    @PackageScope LinkedHashMap<String, Object> undeclaredOptions = new LinkedHashMap<>();
+    @PackageScope LinkedHashMap<String, SpecifiedOption> declaredOptions = new LinkedHashMap<>();
+    @PackageScope List<String> remainingArgs = new ArrayList<>();
     private String environment;
     private String commandName;
     private String[] rawArguments;
