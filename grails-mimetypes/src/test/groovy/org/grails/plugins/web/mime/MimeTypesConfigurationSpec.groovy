@@ -143,8 +143,8 @@ class MimeTypesConfigurationSpec extends Specification {
         noExceptionThrown()
         context.getBean(GrailsMimeTypesWebMvcConfigurer).contentNegotiationStrategy instanceof GrailsContentNegotiationStrategy
 
-        and: 'the data formats are registered with Spring MVC'
-        context.getBean(ContentNegotiationManager).getMediaTypeMappings().get('json') == MediaType.APPLICATION_JSON
+        and: 'the data formats are registered with Spring MVC, a format Spring does not know among them'
+        context.getBean(ContentNegotiationManager).getMediaTypeMappings().get('hal') == MediaType.parseMediaType('application/hal+json')
 
         cleanup:
         context.close()

@@ -120,7 +120,7 @@ class GrailsContentNegotiationStrategySpec extends Specification {
 
         then: 'the application alias wins, while the aliases it does not set stay registered by Grails'
         manager.mediaTypeMappings['xml'] == APPLICATION_ALIAS
-        manager.mediaTypeMappings['json'] == MediaType.APPLICATION_JSON
+        manager.mediaTypeMappings['hal'] == MediaType.parseMediaType('application/hal+json')
 
         cleanup:
         context.close()

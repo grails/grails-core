@@ -97,9 +97,9 @@ class SpringSecurityContentNegotiationSpec extends Specification {
         context.register(SecurityWebConfiguration)
         context.refresh()
 
-        expect: "Spring resolves the Grails extension through its own alias mechanism"
+        expect: "Spring resolves the Grails extension through its own alias mechanism, for a format Spring does not know"
         context.getBean('mvcContentNegotiationManager', ContentNegotiationManager)
-                .getMediaTypeMappings()['json'] == MediaType.APPLICATION_JSON
+                .getMediaTypeMappings()['hal'] == MediaType.parseMediaType('application/hal+json')
 
         cleanup:
         context.close()
