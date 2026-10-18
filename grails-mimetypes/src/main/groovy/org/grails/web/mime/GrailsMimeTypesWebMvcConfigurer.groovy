@@ -32,7 +32,8 @@ import grails.web.mime.MimeType
 
 /**
  * Registers the configured Grails data formats with Spring MVC as format aliases, which Spring
- * uses only when parameter negotiation is enabled, and holds the strategy Grails' own format
+ * negotiates with only when parameter negotiation is enabled, and which count among the safe
+ * extensions of its reflected-file-download check, and holds the strategy Grails' own format
  * resolution uses.
  *
  * @since 9.0

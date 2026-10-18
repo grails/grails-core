@@ -119,8 +119,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
                 mimeTypes.add(SpringMediaTypeAdapter.toMimeType(mediaType))
             }
             catch (InvalidMediaTypeException ignored) {
-                // Preserve Grails' lenient handling of legacy headers such as a trailing semicolon,
-                // a valueless parameter, or an out-of-range/non-numeric quality value.
+                // Preserve Grails' lenient handling of what Spring rejects, such as a parameter with an empty value,
+                // an invalid character in a name, an unknown charset, or an out-of-range or non-numeric quality value
                 mimeTypes.add(new MimeType(candidate))
             }
         }

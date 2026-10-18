@@ -69,10 +69,11 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     public static final String SETTING_CONVERTERS_JSON_DATE = "grails.converters.json.date";
     public static final String SETTING_CONVERTERS_JSON_DEFAULT_DEEP = "grails.converters.json.default.deep";
     /**
-     * Whether domain classes are registered with the application's {@code JsonMapper}, so that it renders them as the
-     * JSON converter does, including when a Spring MVC controller returns one. Defaults to {@code false}, so that the
-     * application's {@code JsonMapper} renders domain classes as Jackson beans, as it did in Grails 8. The JSON converter
-     * renders domain classes with its own serializer either way.
+     * Whether domain classes are registered with the application's {@code JsonMapper}, so that it renders them with the
+     * serializer the JSON converter renders them with when {@link #SETTING_CONVERTERS_JSON_LEGACY} is {@code false},
+     * including when a Spring MVC controller returns one; the marshallers and the rule for enums the converter applies on
+     * top do not apply there. Defaults to {@code false}, so that the application's {@code JsonMapper} renders domain
+     * classes as Jackson beans, as it did in Grails 8. The JSON converter's rendering does not depend on it.
      *
      * @since 9.0
      */
@@ -110,8 +111,8 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     public static final String SETTING_CONVERTERS_JSON_CACHE_OBJECTS = "grails.converters.json.cacheObjectMarshallerSelectionByClass";
 
     /**
-     * @deprecated the XML converter is configured by the {@code grails-xml} module, as
-     * {@code XmlConvertersConfigurationInitializer.SETTING_CONVERTERS_XML_DEEP}
+     * @deprecated Scheduled for removal in Grails 11. The XML converter is configured by the {@code grails-xml} module,
+     * as {@code XmlConvertersConfigurationInitializer.SETTING_CONVERTERS_XML_DEEP}
      */
     @Deprecated(since = "9.0", forRemoval = true)
     public static final String SETTING_CONVERTERS_XML_DEEP = "grails.converters.xml.default.deep";

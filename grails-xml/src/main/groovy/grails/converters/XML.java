@@ -136,7 +136,8 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
     public void render(Writer out) throws ConverterException {
         if (LEGACY_RENDER_REPORTED.compareAndSet(false, true)) {
             log.warn("Legacy XML conversion is scheduled for removal in Grails 11. " +
-                    "XML leaves the web starter and grails-web-boot in Grails 10; migrate to JSON or an explicit Spring XML converter.");
+                    "XML leaves the web starter and grails-web-boot in Grails 10; migrate to JSON, or render DTOs with a Spring XML " +
+                    "converter or an application renderer.");
         }
         stream = new StreamingMarkupWriter(out, encoding);
         writer = config.isPrettyPrint() ? new PrettyPrintXMLStreamWriter(stream) : new XMLStreamWriter(stream);

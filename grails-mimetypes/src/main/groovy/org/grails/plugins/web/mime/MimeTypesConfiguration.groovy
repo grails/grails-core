@@ -139,8 +139,10 @@ class MimeTypesConfiguration {
      * constructor collects every {@code MimeTypeProvider}, among them the renderers. Spring MVC
      * creates its configurers while its infrastructure beans are created, and a renderer that
      * depends on one of those beans would otherwise close a cycle. For the same reason, the
-     * formats it registers with Spring MVC are those {@code grails.mime.types} declares, which
-     * Spring MVC's content negotiation manager needs as it is created.
+     * formats it registers with Spring MVC are those of the configuration: those
+     * {@code grails.mime.types} declares, or the defaults where it declares none or
+     * {@code grails.mime.mergeDefaults} adds them, which Spring MVC's content negotiation manager
+     * needs as it is created, and not those a {@code MimeTypeProvider} adds.
      */
     @Bean
     static GrailsMimeTypesWebMvcConfigurer grailsMimeTypesWebMvcConfigurer(
