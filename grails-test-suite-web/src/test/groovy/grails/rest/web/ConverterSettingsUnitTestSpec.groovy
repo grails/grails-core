@@ -132,6 +132,14 @@ class ConverterEncodingSettingUnitTestSpec extends Specification implements Cont
         response.contentType == 'application/json;charset=ISO-8859-1'
         response.contentAsByteArray == '{"name":"caf\u00e9"}'.getBytes('ISO-8859-1')
 
+        when: 'the content type is named'
+        response.reset()
+        controller.render(json: [name: 'caf\u00e9'], contentType: 'application/vnd.api+json')
+
+        then:
+        response.contentType == 'application/vnd.api+json;charset=ISO-8859-1'
+        response.contentAsByteArray == '{"name":"caf\u00e9"}'.getBytes('ISO-8859-1')
+
         when: 'the encoding is named'
         response.reset()
         controller.render(json: [name: 'caf\u00e9'], encoding: 'UTF-8')

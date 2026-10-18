@@ -290,8 +290,9 @@ trait ResponseRenderer extends WebAttributes {
         if (configurationName && !namedJsonRenderer.contains(configurationName)) {
             throw new IllegalArgumentException("Named JSON configuration [$configurationName] is not registered.")
         }
-        if (!applyContentType(response, argMap, value, false)) {
-            setContentType(response, MimeType.JSON.name, argMap.get(ARGUMENT_ENCODING)?.toString() ?: jsonEncoding(webRequest))
+        String encoding = jsonEncoding(webRequest)
+        if (!applyContentType(response, argMap, value, false, encoding)) {
+            setContentType(response, MimeType.JSON.name, argMap.get(ARGUMENT_ENCODING)?.toString() ?: encoding)
         }
         try {
             namedJsonRenderer.render(configurationName, value, response.writer,
@@ -585,9 +586,14 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private boolean applyContentType(HttpServletResponse response, Map argMap, Object renderArgument, boolean useDefault) {
+        applyContentType(response, argMap, renderArgument, useDefault, DEFAULT_ENCODING)
+    }
+
+    private boolean applyContentType(HttpServletResponse response, Map argMap, Object renderArgument, boolean useDefault,
+                                     String defaultEncoding) {
         boolean contentTypeIsDefault = true
         String contentType = resolveContentTypeBySourceType(renderArgument, useDefault ? TEXT_HTML : null)
-        String encoding = DEFAULT_ENCODING
+        String encoding = defaultEncoding
         if (argMap != null) {
             if (argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
                 contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString()
