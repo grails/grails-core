@@ -18,154 +18,124 @@
  */
 package org.grails.io.support
 
+import java.net.URLClassLoader
+
 import spock.lang.Specification
+import spock.lang.TempDir
 
 class ClassPathResourceSpec extends Specification {
 
-    void 'exists is true for a resource on the classpath'() {
-        expect:
-        new ClassPathResource('org/grails/io/support/Resource.class', ClassPathResourceSpec.classLoader).exists()
+    @TempDir
+    File tempDir
+
+    private URLClassLoader loader
+
+    void setup() {
+        File directory = new File(tempDir, 'fixtures')
+        assert directory.mkdirs()
+        new File(directory, 'message.txt').text = 'classpath content'
+        new File(directory, 'sibling.txt').text = 'sibling content'
+        loader = new URLClassLoader([tempDir.toURI().toURL()] as URL[], (ClassLoader) null)
     }
 
-    void 'exists is false for a missing resource'() {
-        expect:
-        !new ClassPathResource('does/not/Exist.class', ClassPathResourceSpec.classLoader).exists()
+    void cleanup() {
+        loader.close()
     }
 
-    void 'getInputStream throws FileNotFoundException for a missing resource'() {
-        when:
-        new ClassPathResource('does/not/Exist.class', ClassPathResourceSpec.classLoader).getInputStream()
-
-        then:
-        thrown(FileNotFoundException)
-    }
-
-    void 'equals is true for the same instance'() {
+    void 'class loader resources normalize paths and expose file metadata and content'() {
         given:
-        ClassPathResource resource = new ClassPathResource('foo.txt')
+        def resource = new ClassPathResource('/fixtures/unused/../message.txt', loader)
+        File file = new File(tempDir, 'fixtures/message.txt')
 
         expect:
-        resource == resource
-    }
-
-    void 'equals is true for two resources with the same path and no classloader/class'() {
-        expect:
-        new ClassPathResource('foo.txt') == new ClassPathResource('foo.txt')
-        new ClassPathResource('foo.txt').hashCode() == new ClassPathResource('foo.txt').hashCode()
-    }
-
-    void 'equals is true for two resources with the same path and same classloader'() {
-        given:
-        ClassLoader cl = ClassPathResourceSpec.classLoader
-
-        expect:
-        new ClassPathResource('foo.txt', cl) == new ClassPathResource('foo.txt', cl)
-    }
-
-    void 'equals is false for two resources with different paths'() {
-        expect:
-        new ClassPathResource('foo.txt') != new ClassPathResource('bar.txt')
-    }
-
-    void 'equals is false for two resources with the same path but different classloaders'() {
-        given:
-        ClassLoader other = new URLClassLoader(new URL[0], null)
-
-        expect:
-        new ClassPathResource('foo.txt', ClassPathResourceSpec.classLoader) != new ClassPathResource('foo.txt', other)
-    }
-
-    void 'equals is false when compared against an unrelated object'() {
-        expect:
-        !new ClassPathResource('foo.txt').equals('not a resource')
-    }
-
-    void 'getFilename returns the last path segment'() {
-        expect:
-        new ClassPathResource('org/grails/foo.txt').getFilename() == 'foo.txt'
-    }
-
-    void 'a leading slash is stripped from the path'() {
-        expect:
-        new ClassPathResource('/foo.txt').getPath() == 'foo.txt'
-    }
-
-    void 'createRelative resolves relative to the resource path'() {
-        given:
-        ClassPathResource resource = new ClassPathResource('org/grails/foo.txt')
-
-        when:
-        Resource relative = resource.createRelative('bar.txt')
-
-        then:
-        relative instanceof ClassPathResource
-        ((ClassPathResource) relative).getPath() == 'org/grails/bar.txt'
-    }
-
-    void 'a resource relative to a class resolves against the class package'() {
-        given:
-        ClassPathResource resource = new ClassPathResource('ClassPathResourceSpec.class', ClassPathResourceSpec)
-
-        expect:
+        resource.path == 'fixtures/message.txt'
+        resource.classLoader.is(loader)
         resource.exists()
-        resource.path == 'ClassPathResourceSpec.class'
-        resource.classLoader.is(ClassPathResourceSpec.classLoader)
-        resource.description == 'class path resource [org/grails/io/support/ClassPathResourceSpec.class]'
-        resource.inputStream.withCloseable { it.read() } != -1
-        resource.URL.toString().endsWith('org/grails/io/support/ClassPathResourceSpec.class')
-        resource.createRelative('UrlResourceSpec.class').exists()
+        resource.isReadable()
+        resource.inputStream.withCloseable { it.getText('UTF-8') } == 'classpath content'
+        resource.URL == file.toURI().toURL()
+        resource.URI == file.toURI()
+        resource.file == file
+        resource.contentLength() == file.length()
+        resource.lastModified() == file.lastModified()
+        resource.filename == 'message.txt'
+        resource.description == 'class path resource [fixtures/message.txt]'
     }
 
-    void 'a missing resource cannot be resolved to a URL'() {
+    void 'createRelative retains the class loader and resolves a sibling'() {
+        given:
+        def resource = new ClassPathResource('fixtures/message.txt', loader)
+
         when:
-        new ClassPathResource('missing.txt', ClassPathResourceSpec).URL
+        def sibling = resource.createRelative('nested/../sibling.txt')
 
         then:
-        FileNotFoundException e = thrown()
-        e.message.contains('cannot be resolved to URL because it does not exist')
+        sibling.path == 'fixtures/sibling.txt'
+        sibling.classLoader.is(loader)
+        sibling.exists()
+        sibling.inputStream.withCloseable { it.getText('UTF-8') } == 'sibling content'
     }
 
-    void 'a class relative missing resource does not exist and cannot be opened'() {
+    void 'class based resources resolve both package relative and absolute paths'() {
         given:
-        ClassPathResource resource = new ClassPathResource('missing.txt', ClassPathResourceSpec)
+        def relative = new ClassPathResource('ClassPathResourceSpec.class', ClassPathResourceSpec)
+        def absolute = new ClassPathResource('/org/grails/io/support/ClassPathResourceSpec.class', ClassPathResourceSpec)
+
+        expect:
+        relative.exists()
+        absolute.exists()
+        relative.URL == absolute.URL
+        relative.classLoader.is(ClassPathResourceSpec.classLoader)
+        relative.inputStream.withCloseable { it.read() } == 0xca
+        absolute.inputStream.withCloseable { it.read() } == 0xca
+        relative.description == 'class path resource [org/grails/io/support/ClassPathResourceSpec.class]'
+        relative.createRelative('ClassPathResource.class').exists()
+    }
+
+    void 'the default constructor uses the context class loader'() {
+        expect:
+        new ClassPathResource('org/grails/io/support/ClassPathResourceSpec.class').exists()
+    }
+
+    void 'missing #kind resources report absence and fail #operation'() {
+        given:
+        def resource = kind == 'loader' ? new ClassPathResource('missing.txt', loader) :
+                new ClassPathResource('missing.txt', ClassPathResourceSpec)
 
         expect:
         !resource.exists()
+        !resource.isReadable()
 
         when:
-        resource.inputStream
+        resource."$operation"()
 
         then:
-        thrown(FileNotFoundException)
+        def error = thrown(FileNotFoundException)
+        error.message.contains('does not exist')
+
+        where:
+        kind     | operation
+        'loader' | 'getInputStream'
+        'loader' | 'getURL'
+        'class'  | 'getInputStream'
+        'class'  | 'getURL'
     }
 
-    void 'a class path file resolves to a File and URI'() {
+    void 'equality includes the normalized path and the resource loading strategy'() {
         given:
-        ClassPathResource resource = new ClassPathResource('org/grails/io/support/ClassPathResourceSpec.class')
+        def resource = new ClassPathResource('fixtures/message.txt', loader)
+        def equivalent = new ClassPathResource('/fixtures/./message.txt', loader)
 
         expect:
-        resource.file.exists()
-        resource.URI == resource.file.toURI()
-        resource.contentLength() == resource.file.length()
-        resource.lastModified() == resource.file.lastModified()
-        resource.readable
+        resource == resource
+        resource == equivalent
+        resource.hashCode() == equivalent.hashCode()
+        resource != new ClassPathResource('fixtures/sibling.txt', loader)
+        resource != new ClassPathResource('fixtures/message.txt', ClassPathResourceSpec)
+        resource != new ClassPathResource('fixtures/message.txt', ClassPathResourceSpec.classLoader)
+        !resource.equals(null)
+        !resource.equals('fixtures/message.txt')
+        new ClassPathResource('ClassPathResourceSpec.class', ClassPathResourceSpec) ==
+                new ClassPathResource('./ClassPathResourceSpec.class', ClassPathResourceSpec)
     }
-
-    void 'the description of a class loader resource names only the path'() {
-        expect:
-        new ClassPathResource('a/b.txt').description == 'class path resource [a/b.txt]'
-    }
-
-    void 'resources with the same class and path are equal and share a hash code'() {
-        given:
-        ClassPathResource first = new ClassPathResource('a.txt', ClassPathResourceSpec)
-        ClassPathResource second = new ClassPathResource('a.txt', ClassPathResourceSpec)
-
-        expect:
-        first == second
-        first.hashCode() == second.hashCode()
-        first != new ClassPathResource('a.txt', UrlResourceSpec)
-        first != new ClassPathResource('a.txt')
-    }
-
 }
