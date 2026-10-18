@@ -19,6 +19,9 @@
 @SuppressWarnings('UnnecessarySemicolon')
 package org.grails.config;
 
+import groovy.transform.CompileStatic;
+import groovy.transform.stc.POJO;
+
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
 import org.grails.core.exceptions.GrailsConfigurationException;
@@ -33,6 +36,8 @@ import org.grails.core.exceptions.GrailsConfigurationException;
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
+@POJO
 class CompositeConfig implements Config {
 
     protected Deque<Config> configs = new ArrayDeque<>();
