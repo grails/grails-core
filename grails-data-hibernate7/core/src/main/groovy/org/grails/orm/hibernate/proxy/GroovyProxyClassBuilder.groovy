@@ -16,10 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.proxy;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
+import groovy.transform.CompileStatic;
 
 import net.bytebuddy.TypeCache;
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
@@ -46,12 +46,15 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
  *
  * @since 8.0.1
  */
-public final class GroovyProxyClassBuilder {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+final class GroovyProxyClassBuilder {
 
     private final ByteBuddyProxyHelper proxyHelper;
     private final ByteBuddyState byteBuddyState;
 
-    public GroovyProxyClassBuilder(ByteBuddyProxyHelper proxyHelper, ByteBuddyState byteBuddyState) {
+    GroovyProxyClassBuilder(ByteBuddyProxyHelper proxyHelper, ByteBuddyState byteBuddyState) {
         this.proxyHelper = proxyHelper;
         this.byteBuddyState = byteBuddyState;
     }
@@ -63,11 +66,11 @@ public final class GroovyProxyClassBuilder {
      * @return the proxy class, which implements {@link ProxyConfiguration} so an interceptor can be assigned
      * @throws HibernateException when the proxy class cannot be generated or cannot take an interceptor
      */
-    public Class<?> build(String entityName, Class<?> persistentClass, Class<?>[] interfaces) throws HibernateException {
+    Class<?> build(String entityName, Class<?> persistentClass, Class<?>[] interfaces) throws HibernateException {
         final Class<?> hibernateProxyClass = proxyHelper.buildProxy(persistentClass, interfaces);
-        final boolean groovyEntity = GroovyObject.class.isAssignableFrom(persistentClass);
+        final boolean groovyEntity = GroovyObject.isAssignableFrom(persistentClass);
         final Class<?> proxyClass = groovyEntity ? wrap(entityName, persistentClass, hibernateProxyClass) : hibernateProxyClass;
-        if (!ProxyConfiguration.class.isAssignableFrom(proxyClass)) {
+        if (!ProxyConfiguration.isAssignableFrom(proxyClass)) {
             throw new HibernateException("Generated proxy class for " + entityName +
                     " does not implement ProxyConfiguration, so no interceptor can be installed: " + proxyClass.getName());
         }
@@ -78,13 +81,18 @@ public final class GroovyProxyClassBuilder {
         try {
             return byteBuddyState.loadProxy(
                     persistentClass,
-                    new TypeCache.SimpleKey(hibernateProxyClass, GroovyProxyMetaClassDispatcher.class),
-                    byteBuddy -> byteBuddy
+                    new TypeCache.SimpleKey(hibernateProxyClass, GroovyProxyMetaClassDispatcher),
+                    { byteBuddy ->
+                        byteBuddy
                             .subclass(hibernateProxyClass, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
                             // declared again so Class#getInterfaces() still shows HibernateProxy on the wrapper
                             .implement(hibernateProxyClass.getInterfaces())
-                            .method(named("getMetaClass").and(returns(MetaClass.class)))
-                            .intercept(MethodDelegation.to(new GroovyProxyMetaClassDispatcher(persistentClass))));
+                            .method(named("getMetaClass").and(returns(MetaClass)))
+                            // only intercept(..) may bind: the dispatcher is a Groovy class, so it declares getMetaClass()
+                            // too, and ByteBuddy's name-equality resolver would pick that over intercept(..)
+                            .intercept(MethodDelegation.withDefaultConfiguration().filter(named("intercept"))
+                                    .to(new GroovyProxyMetaClassDispatcher(persistentClass)))
+                    });
         }
         catch (RuntimeException e) {
             throw new HibernateException("Unable to generate Groovy proxy for " + entityName, e);

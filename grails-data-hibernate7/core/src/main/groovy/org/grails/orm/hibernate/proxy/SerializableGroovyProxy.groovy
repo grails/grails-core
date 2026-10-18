@@ -16,13 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.proxy;
 
-import java.io.Serial;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.HibernateException;
 import org.hibernate.bytecode.spi.BytecodeProvider;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -51,7 +50,10 @@ import org.hibernate.type.CompositeType;
  *
  * @since 8.0.1
  */
-public final class SerializableGroovyProxy extends AbstractSerializableProxy {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+final class SerializableGroovyProxy extends AbstractSerializableProxy {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -69,7 +71,7 @@ public final class SerializableGroovyProxy extends AbstractSerializableProxy {
     private final CompositeType componentIdType;
     private final boolean lazyToString;
 
-    public SerializableGroovyProxy(
+    SerializableGroovyProxy(
             String entityName,
             Class<?> persistentClass,
             Class<?>[] interfaces,
@@ -124,9 +126,9 @@ public final class SerializableGroovyProxy extends AbstractSerializableProxy {
         if (sessionFactory == null) {
             return FALLBACK_BYTECODE_PROVIDER;
         }
-        final BytecodeProvider bytecodeProvider = sessionFactory.getServiceRegistry().getService(BytecodeProvider.class);
-        if (bytecodeProvider instanceof GrailsBytecodeProvider grailsBytecodeProvider) {
-            return grailsBytecodeProvider;
+        final BytecodeProvider bytecodeProvider = sessionFactory.getServiceRegistry().getService(BytecodeProvider);
+        if (bytecodeProvider instanceof GrailsBytecodeProvider) {
+            return (GrailsBytecodeProvider) bytecodeProvider;
         }
         return FALLBACK_BYTECODE_PROVIDER;
     }
