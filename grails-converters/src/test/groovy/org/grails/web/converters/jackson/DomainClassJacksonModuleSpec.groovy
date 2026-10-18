@@ -72,6 +72,7 @@ import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.EntityProxyHandler
 import grails.core.support.proxy.ProxyHandler
 import grails.persistence.Entity
+import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.hibernate.proxy.HibernateProxy
 import org.grails.datastore.mapping.model.MappingContext
@@ -216,7 +217,8 @@ class DomainClassJacksonModuleSpec extends Specification {
         and: 'in an association whose type writes a type id'
         deep.writeValueAsString(kennel) == '{"id":5,"resident":null}'
 
-        when: 'the response names the properties to write'
+        when: 'the response names the properties to write, in an application that has reported nothing yet'
+        ShutdownOperations.runOperations()
         String log = stderrWhile { registry.writeValue(null, projected, new WriterProxy(proxyId: 9), ['name'], null) }
 
         then: 'nothing is left to project'
@@ -587,6 +589,18 @@ class DomainClassJacksonModuleSpec extends Specification {
         json.toString() == '{"id":1,"name":"a","note":"n"}'
     }
 
+    void "a persistent property annotated @JsonAnyGetter is left out where the class ignores it, and written as a property where it is disabled"() {
+        given:
+        def ignored = new IgnoredAttributes(name: 'a', extras: [k: 'v'])
+        ignored.id = 1
+        def disabled = new DisabledAttributes(name: 'a', extras: [k: 'v'])
+        disabled.id = 2
+
+        expect:
+        mapper().writeValueAsString(ignored) == '{"id":1,"name":"a"}'
+        mapper().writeValueAsString(disabled) == '{"id":2,"name":"a","extras":{"k":"v"}}'
+    }
+
     void "a @JsonFilter filters the entries of a persistent property annotated @JsonAnyGetter one by one, as for a bean"() {
         given:
         def filtered = new FilteredAttributes(name: 'a', attributes: [colour: 'red', size: 'L'])
@@ -667,6 +681,12 @@ class DomainClassJacksonModuleSpec extends Specification {
 
         then:
         mapper().writeValueAsString(rated) == '{"id":1,"rating":"5","ratings":["6","7"],"code":"X1"}'
+
+        when: 'it is a proxy of an instance that no longer exists'
+        rated.code = new CodeProxy(target: null, proxyId: 3)
+
+        then:
+        mapper().writeValueAsString(rated) == '{"id":1,"rating":"5","ratings":["6","7"]}'
     }
 
     void "an associated instance written in full is left out where its property leaves out an empty value, as a reference is"() {
@@ -700,6 +720,11 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper().writeValueAsString(new Pet(animal: cat)) == '{"animal":["Cat","Tom"]}'
         mapper().writeValueAsString(kennel) == '{"id":6,"resident":["Cat","Tom"]}'
         mapper().writeValueAsString(shelter) == '{"id":7,"residents":[["Cat","Tom"]]}'
+        mapper().writeValueAsString(new Zoo(byName: [tom: cat]).tap { id = 8 }) == '{"id":8,"byName":{"tom":["Cat","Tom"]}}'
+
+        and: 'by the JSON converter'
+        new JSON(kennel).toString() == mapper().writeValueAsString(kennel)
+        new JSON(shelter).toString() == mapper().writeValueAsString(shelter)
     }
 
     void "the serializer an associated instance with a serializer of its own is written with is found once for each class and property"() {
@@ -832,6 +857,34 @@ class DomainClassJacksonModuleSpec extends Specification {
         mapper.writeValueAsString(branch) == '{"id":2,"name":"east","location":{"id":1}}'
         mapper.writeValueAsString(branch) == '{"id":2,"name":"east","location":{"id":1}}'
         new JSON(branch).toString() == '{"id":2,"name":"east","location":{"id":1}}'
+    }
+
+    void "Jackson is asked once for the serializer of an associated domain class it cannot build"() {
+        given: 'a module that counts the serializers built of the class'
+        def located = new Located(name: 'library', address: new Address(name: 'main', city: 'Paris'))
+        located.id = 1
+        def branch = new Branch(name: 'east', location: located)
+        branch.id = 2
+        def built = new java.util.concurrent.atomic.AtomicInteger()
+        def counting = new SimpleModule('counting-locations').setSerializerModifier(new ValueSerializerModifier() {
+            @Override
+            ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier beanDescription,
+                                                ValueSerializer<?> serializer) {
+                if (beanDescription.beanClass == Located) {
+                    built.incrementAndGet()
+                }
+                serializer
+            }
+        })
+        def mapper = JsonMapper.builder().addModule(new DomainClassJacksonModule(
+                ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())))
+                .addModule(counting).build()
+
+        when:
+        3.times { mapper.writeValueAsString(branch) }
+
+        then: 'though Jackson keeps no serializer it could not build'
+        built.get() == 1
     }
 
     void "an associated instance of a domain class whose serializer fails to resolve is written as a reference too"() {
@@ -1264,14 +1317,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1680,6 +1733,27 @@ class Attributed {
     @JsonView(Everyone)
     Map<String, String> customAttributes
     String note = 'n'
+}
+
+@Entity
+@JsonIgnoreProperties('extras')
+class IgnoredAttributes {
+    String name
+    @JsonAnyGetter
+    Map<String, String> extras
+}
+
+@Entity
+class DisabledAttributes {
+    String name
+    @JsonAnyGetter(enabled = false)
+    Map<String, String> extras
+}
+
+@Entity
+class Zoo {
+    static hasMany = [byName: Animal]
+    Map<String, Animal> byName
 }
 
 @Entity
