@@ -179,6 +179,22 @@ class NamedJsonRenderArgumentSpec extends Specification {
         webRequest.response.contentAsString == '{"title":"Grails"}'
     }
 
+    void 'render json: with an empty configuration name uses the default writer, as respond does'() {
+        given:
+        def renderer = Mock(NamedJsonRenderer)
+        def controller = new NamedJsonArgumentController(namedJsonRenderer: renderer)
+
+        when:
+        controller.render(json: [title: 'Grails'], jsonConfiguration: '')
+
+        then:
+        0 * renderer.contains(_)
+        1 * renderer.render(null, [title: 'Grails'], _, null, null) >> { arguments ->
+            arguments[2].write('{"title":"Grails"}')
+        }
+        webRequest.response.contentAsString == '{"title":"Grails"}'
+    }
+
     void 'render json: names an unregistered configuration'() {
         given:
         def renderer = Mock(NamedJsonRenderer)

@@ -283,7 +283,8 @@ trait ResponseRenderer extends WebAttributes {
     @Generated
     private void renderNamedJson(Map argMap, GrailsWebRequest webRequest, HttpServletResponse response) {
         Object value = argMap.get(ARGUMENT_JSON)
-        String configurationName = argMap.get(ARGUMENT_JSON_CONFIGURATION)?.toString()
+        // an empty name selects the default configuration, as it does for respond
+        String configurationName = argMap.get(ARGUMENT_JSON_CONFIGURATION)?.toString() ?: null
         if (namedJsonRenderer == null) {
             throw new IllegalStateException('No JSON renderer is available.')
         }
