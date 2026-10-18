@@ -386,6 +386,23 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         log.count("JSON includes/excludes were not applied to [class ${NamedJsonValue.name}]") == 1
     }
 
+    void 'a projection a serializer of its own bypasses is reported again after the application shuts down'() {
+        given:
+        ShutdownOperations.runOperations()
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        registry.register('custom') { it.serializer(NamedJsonValue, new NamedJsonValueSerializer()) }
+
+        when:
+        String log = stderrWhile {
+            registry.writeValue('custom', new StringWriter(), new NamedJsonValue(name: 'secret'), null, ['configured'])
+            ShutdownOperations.runOperations()
+            registry.writeValue('custom', new StringWriter(), new NamedJsonValue(name: 'secret'), null, ['configured'])
+        }
+
+        then:
+        log.count("JSON includes/excludes were not applied to [class ${NamedJsonValue.name}]") == 2
+    }
+
     void 'the elements of an Iterable that is not a Collection are written, not consumed by the projection'() {
         given: 'an iterable that can only be iterated once, in an application started afresh'
         ShutdownOperations.runOperations()
