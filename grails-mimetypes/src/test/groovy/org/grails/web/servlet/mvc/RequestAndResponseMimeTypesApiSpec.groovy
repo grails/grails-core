@@ -417,21 +417,29 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             'got json'      | 'application/xml, text/html, */*'  | 'MSIE 10.0'  | 'grails.mime.disable.accept.header.userAgents = ["MSIE \\\\d+"]'
             'got html'      | 'application/xml, text/html, */*'  | 'MSIE x'     | 'grails.mime.disable.accept.header.userAgents = ["MSIE \\\\d+"]'
             'got json'      | 'application/xml, text/html, */*'  | 'gecko'      | 'grails.mime.disable.accept.header.userAgents = "Trident,Gecko"'
+            'got json'      | 'application/xml, text/html, */*'  | 'trident'    | 'grails.mime.disable.accept.header.userAgents = ["(?-i)Gecko", "Trident"]'
+            'got html'      | 'application/xml, text/html, */*'  | 'gecko'      | 'grails.mime.disable.accept.header.userAgents = ["(?-i)Gecko", "Trident"]'
+            'got json'      | 'application/xml, text/html, */*'  | 'Moozilla'   | 'grails.mime.disable.accept.header.userAgents = ["(\\\\w)\\\\1"]'
+            'got html'      | 'application/xml, text/html, */*'  | 'Mozilla'    | 'grails.mime.disable.accept.header.userAgents = ["", "Trident"]'
+            'got html'      | 'application/xml, text/html, */*'  | 'Mozilla'    | 'grails.mime.disable.accept.header.userAgents = "Trident,,"'
 //            'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = null' // TODO: can no longer detect if something is set to null using new Config API, investigate..
     }
 
-    void "user agents the setting lists that are not one regular expression together are reported as the application starts"() {
-        given: 'an entry that quotes the rest of the pattern it is joined into'
+    void "a user agent the setting lists that quotes what follows it applies to itself alone"() {
+        given: 'an entry that would quote the rest of a pattern it were joined into'
             def config = getTestConfig()
             config.merge(new ConfigSlurper().parse('grails.mime.disable.accept.header.userAgents = ["\\\\QMozilla", "Trident"]'))
             application.setConfig(config)
+            final webRequest = boundMimeTypeRequest()
+            webRequest.currentRequest.addHeader('Accept', 'application/xml, text/html, */*')
+            webRequest.currentRequest.addHeader('User-Agent', 'Trident/7.0')
 
-        when:
+        expect: 'the configurer is created, and the other entry is found'
             MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(Stub(ObjectProvider), (GrailsApplication) application)
-
-        then:
-            IllegalArgumentException e = thrown()
-            e.message.startsWith('grails.mime.disable.accept.header.userAgents lists user agents that are not a regular expression together:')
+            webRequest.currentResponse.withFormat {
+                json { 'got json' }
+                html { 'got html' }
+            } == 'got json'
     }
 
     void "a user agent the setting lists that is not a regular expression is reported as the application starts"() {

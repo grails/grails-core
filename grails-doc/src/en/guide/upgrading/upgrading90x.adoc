@@ -825,8 +825,9 @@ decides between types of equal quality, so that header resolves to `xml`.
 
 `grails.mime.disable.accept.header.userAgents` matched its first user agent with its case in Grails 8, and a user agent
 that was not a regular expression failed the first request, after which the setting was ignored. Every user agent is now
-matched ignoring case, a comma-separated string is read as a list, and one that is not a regular expression fails as
-Spring MVC is configured, naming the setting.
+matched ignoring case, as a regular expression of its own, where Grails 8 joined them into one, in which the flags of
+one changed the others and a blank one matched every user agent; a blank one is now left out. A comma-separated string is
+read as a list, and one that is not a regular expression fails as Spring MVC is configured, naming the setting.
 
 The data-format extensions `json`, `xml`, `hal`, `atom`, `rss`, `csv` and `text` declared in
 `grails.mime.types`, or among the defaults where it declares none or `grails.mime.mergeDefaults` adds them, are

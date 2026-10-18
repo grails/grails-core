@@ -43,7 +43,7 @@ class GrailsContentNegotiationStrategy {
     private final MimeType[] mimeTypes
     private final boolean useAcceptHeader
     private final boolean useAcceptHeaderXhr
-    private final Pattern disableForUserAgents
+    private final List<Pattern> disableForUserAgents
 
     GrailsContentNegotiationStrategy(MimeType[] mimeTypes, Config config) {
         this.mimeTypes = mimeTypes
@@ -53,7 +53,7 @@ class GrailsContentNegotiationStrategy {
                 Boolean,
                 false
         )
-        this.disableForUserAgents = disabledUserAgentPattern(config)
+        this.disableForUserAgents = disabledUserAgentPatterns(config)
     }
 
     /**
@@ -89,46 +89,39 @@ class GrailsContentNegotiationStrategy {
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT)
         boolean xhr = request.getHeader('X-Requested-With') == 'XMLHttpRequest'
         boolean disabledForUserAgent = !(useAcceptHeaderXhr && xhr) &&
-                disableForUserAgents != null &&
                 userAgent != null &&
-                disableForUserAgents.matcher(userAgent).find()
+                disableForUserAgents.any { Pattern pattern -> pattern.matcher(userAgent).find() }
         return disabledForUserAgent ? null : request.getHeader(HttpHeaders.ACCEPT)
     }
 
     /**
      * @param config the application's configuration
-     * @return the pattern of the user agents whose {@code Accept} header is ignored: the regular expressions
-     * {@code grails.mime.disable.accept.header.userAgents} lists, as a list or a comma-separated string, any of which is
-     * found anywhere in the {@code User-Agent} header, ignoring case; a {@link Pattern} configured itself, as it is; or
-     * {@code null} if it lists none
-     * @throws IllegalArgumentException if it lists one that is not a regular expression, or ones that are not one
-     * together
+     * @return the patterns of the user agents whose {@code Accept} header is ignored, any of which is found anywhere in the
+     * {@code User-Agent} header: each regular expression {@code grails.mime.disable.accept.header.userAgents} lists, as a
+     * list or a comma-separated string, on its own and ignoring case, so that the flags and groups of one do not change
+     * another, a blank one left out; a {@link Pattern} configured itself, as it is; or none
+     * @throws IllegalArgumentException if it lists one that is not a regular expression
      */
-    static Pattern disabledUserAgentPattern(Config config) {
+    static List<Pattern> disabledUserAgentPatterns(Config config) {
         Object configured = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS, Object)
         if (configured instanceof Pattern) {
-            return (Pattern) configured
+            return [(Pattern) configured]
         }
         Collection userAgents = configured instanceof Collection ? (Collection) configured :
-                configured instanceof CharSequence ? configured.toString().split(',')*.trim().findAll() : null
-        if (!userAgents) {
-            return null
-        }
+                configured instanceof CharSequence ? configured.toString().split(',')*.trim() : []
+        List<Pattern> patterns = []
         for (Object userAgent in userAgents) {
+            if (userAgent == null || String.valueOf(userAgent).isBlank()) {
+                continue
+            }
             try {
-                Pattern.compile(String.valueOf(userAgent))
+                patterns << Pattern.compile(String.valueOf(userAgent), Pattern.CASE_INSENSITIVE)
             }
             catch (PatternSyntaxException e) {
                 throw new IllegalArgumentException("${Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS} lists " +
                         "[${userAgent}], which is not a regular expression: ${e.description}", e)
             }
         }
-        try {
-            return Pattern.compile("(?i)(${userAgents.join('|')})")
-        }
-        catch (PatternSyntaxException e) {
-            throw new IllegalArgumentException("${Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS} lists user agents " +
-                    "that are not a regular expression together: ${e.description}", e)
-        }
+        patterns
     }
 }
