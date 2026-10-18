@@ -16,95 +16,100 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.gsp.compiler
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.gsp.compiler;
 
-import org.grails.gsp.GroovyPage
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
+import org.grails.gsp.GroovyPage;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the GSP lexer (Scan class).
  *
  * @author a.shneyderman
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class ScanTests {
 
     @Test
     void testTagsCustomNamespace() {
-        String gsp = '<tbody>\n' +
-            '  <tt:form />\n' +
-            '</tbody>'
+        String gsp =
+            "<tbody>\n" +
+            "  <tt:form />\n" +
+            "</tbody>";
 
-        GroovyPageScanner s = new GroovyPageScanner(gsp)
-        int next
+        GroovyPageScanner s = new GroovyPageScanner(gsp);
+        int next;
         while ((next = s.nextToken()) != Tokens.EOF) {
             if (next == Tokens.GSTART_TAG ||
                 next == Tokens.GEND_TAG) {
-                Assertions.assertEquals('tt', s.getNamespace())
+                Assertions.assertEquals("tt", s.getNamespace());
             }
         }
     }
 
     @Test
     void testTagsDefaultNamespace() {
-        String gsp = '<tbody>\n' +
-            '  <g:form />\n' +
-            '</tbody>'
+        String gsp =
+            "<tbody>\n" +
+            "  <g:form />\n" +
+            "</tbody>";
 
-        GroovyPageScanner s = new GroovyPageScanner(gsp)
-        int next
+        GroovyPageScanner s = new GroovyPageScanner(gsp);
+        int next;
         while ((next = s.nextToken()) != Tokens.EOF) {
             if (next == Tokens.GSTART_TAG ||
                 next == Tokens.GEND_TAG) {
-                Assertions.assertEquals(GroovyPage.DEFAULT_NAMESPACE, s.getNamespace())
+                Assertions.assertEquals(GroovyPage.DEFAULT_NAMESPACE, s.getNamespace());
             }
         }
     }
 
     @Test
     void testExpressionIsTokenized() {
-        GroovyPageScanner s = new GroovyPageScanner('a ${foo} b')
-        Assertions.assertEquals(Tokens.HTML, s.nextToken())
-        Assertions.assertEquals('a ', s.getToken())
-        Assertions.assertEquals(Tokens.GEXPR, s.nextToken())
-        Assertions.assertEquals('foo', s.getToken())
-        Assertions.assertEquals(Tokens.HTML, s.nextToken())
-        Assertions.assertEquals(' b', s.getToken())
-        Assertions.assertEquals(Tokens.EOF, s.nextToken())
+        GroovyPageScanner s = new GroovyPageScanner('a ${foo} b');
+        Assertions.assertEquals(Tokens.HTML, s.nextToken());
+        Assertions.assertEquals("a ", s.getToken());
+        Assertions.assertEquals(Tokens.GEXPR, s.nextToken());
+        Assertions.assertEquals("foo", s.getToken());
+        Assertions.assertEquals(Tokens.HTML, s.nextToken());
+        Assertions.assertEquals(" b", s.getToken());
+        Assertions.assertEquals(Tokens.EOF, s.nextToken());
     }
 
     @Test
     void testEscapedExpressionStaysInHtml() {
-        String gsp = 'console.log(`Hello \\${name}`);'
-        GroovyPageScanner s = new GroovyPageScanner(gsp)
-        Assertions.assertEquals(Tokens.HTML, s.nextToken())
-        Assertions.assertEquals(gsp, s.getToken())
-        Assertions.assertEquals(Tokens.EOF, s.nextToken())
+        String gsp = 'console.log(`Hello \\${name}`);';
+        GroovyPageScanner s = new GroovyPageScanner(gsp);
+        Assertions.assertEquals(Tokens.HTML, s.nextToken());
+        Assertions.assertEquals(gsp, s.getToken());
+        Assertions.assertEquals(Tokens.EOF, s.nextToken());
     }
 
     @Test
     void testEscapedAndUnescapedExpressionsSideBySide() {
-        GroovyPageScanner s = new GroovyPageScanner('\\${literal}${expr}')
-        Assertions.assertEquals(Tokens.HTML, s.nextToken())
-        Assertions.assertEquals('\\${literal}', s.getToken())
-        Assertions.assertEquals(Tokens.GEXPR, s.nextToken())
-        Assertions.assertEquals('expr', s.getToken())
-        Assertions.assertEquals(Tokens.HTML, s.nextToken())
-        Assertions.assertEquals('', s.getToken())
-        Assertions.assertEquals(Tokens.EOF, s.nextToken())
+        GroovyPageScanner s = new GroovyPageScanner('\\${literal}${expr}');
+        Assertions.assertEquals(Tokens.HTML, s.nextToken());
+        Assertions.assertEquals('\\${literal}', s.getToken());
+        Assertions.assertEquals(Tokens.GEXPR, s.nextToken());
+        Assertions.assertEquals("expr", s.getToken());
+        Assertions.assertEquals(Tokens.HTML, s.nextToken());
+        Assertions.assertEquals("", s.getToken());
+        Assertions.assertEquals(Tokens.EOF, s.nextToken());
     }
 
     @Test
     void testMaxHtmlLength() {
-        String gsp = '0123456789ABCDEFGHIJK'
-        GroovyPageScanner scanner = new GroovyPageScanner(gsp)
-        scanner.setMaxHtmlLength(10)
-        Assertions.assertEquals(GroovyPageScanner.HTML, scanner.nextToken())
-        Assertions.assertEquals('0123456789', scanner.getToken())
-        Assertions.assertEquals(GroovyPageScanner.HTML, scanner.nextToken())
-        Assertions.assertEquals('ABCDEFGHIJ', scanner.getToken())
-        Assertions.assertEquals(GroovyPageScanner.HTML, scanner.nextToken())
-        Assertions.assertEquals('K', scanner.getToken())
-        Assertions.assertEquals(GroovyPageScanner.EOF, scanner.nextToken())
+        String gsp = "0123456789ABCDEFGHIJK";
+        GroovyPageScanner scanner = new GroovyPageScanner(gsp);
+        scanner.setMaxHtmlLength(10);
+        Assertions.assertEquals(GroovyPageScanner.HTML, scanner.nextToken());
+        Assertions.assertEquals("0123456789", scanner.getToken());
+        Assertions.assertEquals(GroovyPageScanner.HTML, scanner.nextToken());
+        Assertions.assertEquals("ABCDEFGHIJ", scanner.getToken());
+        Assertions.assertEquals(GroovyPageScanner.HTML, scanner.nextToken());
+        Assertions.assertEquals("K", scanner.getToken());
+        Assertions.assertEquals(GroovyPageScanner.EOF, scanner.nextToken());
     }
 }

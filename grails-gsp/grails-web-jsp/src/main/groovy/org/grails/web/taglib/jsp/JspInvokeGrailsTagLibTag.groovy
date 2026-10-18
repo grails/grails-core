@@ -16,33 +16,34 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.taglib.jsp
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.taglib.jsp;
 
-import java.beans.PropertyDescriptor
-import java.util.regex.Matcher
-import java.util.regex.Pattern
+import java.beans.PropertyDescriptor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import jakarta.servlet.jsp.JspException
-import jakarta.servlet.jsp.JspTagException
-import jakarta.servlet.jsp.JspWriter
-import jakarta.servlet.jsp.tagext.BodyContent
-import jakarta.servlet.jsp.tagext.BodyTagSupport
-import jakarta.servlet.jsp.tagext.DynamicAttributes
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspTagException;
+import jakarta.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.tagext.BodyContent;
+import jakarta.servlet.jsp.tagext.BodyTagSupport;
+import jakarta.servlet.jsp.tagext.DynamicAttributes;
 
-import org.springframework.beans.BeanWrapper
-import org.springframework.beans.BeanWrapperImpl
-import org.springframework.context.ApplicationContext
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.context.ApplicationContext;
 
-import grails.core.GrailsApplication
-import grails.core.gsp.GrailsTagLibClass
-import grails.util.Holders
-import org.grails.buffer.FastStringPrintWriter
-import org.grails.core.artefact.gsp.TagLibArtefactHandler
-import org.grails.gsp.GroovyPage
-import org.grails.taglib.GrailsTagException
+import grails.core.GrailsApplication;
+import grails.core.gsp.GrailsTagLibClass;
+import grails.util.Holders;
+import org.grails.buffer.FastStringPrintWriter;
+import org.grails.core.artefact.gsp.TagLibArtefactHandler;
+import org.grails.gsp.GroovyPage;
+import org.grails.taglib.GrailsTagException;
 
 /**
  * A tag that invokes a tag defined in a the Grails dynamic tag library. Authors of Grails tags
@@ -53,34 +54,36 @@ import org.grails.taglib.GrailsTagException
  * @since 16-Jan-2006
  * @deprecated
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @Deprecated
 @CompileStatic
 class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicAttributes {
 
-    private static final long serialVersionUID = 4688821761801666631L
-    private static final String ZERO_ARGUMENTS = 'zeroArgumentsFlag'
-    private static final String GROOVY_DEFAULT_ARGUMENT = 'it'
-    private static final String NAME_ATTRIBUTE = 'tagName'
-    private static final Pattern ATTRIBUTE_MAP = Pattern.compile('(\\s*(\\S+)\\s*:\\s*(\\S+?)(,|$){1}){1}')
+    private static final long serialVersionUID = 4688821761801666631L;
+    private static final String ZERO_ARGUMENTS = 'zeroArgumentsFlag';
+    private static final String GROOVY_DEFAULT_ARGUMENT = 'it';
+    private static final String NAME_ATTRIBUTE = 'tagName';
+    private static final Pattern ATTRIBUTE_MAP = Pattern.compile('(\\s*(\\S+)\\s*:\\s*(\\S+?)(,|$){1}){1}');
 
-    private String tagName
-    private int invocationCount
-    private List<Object> invocationArgs = new ArrayList<>()
-    private List<String> invocationBodyContent = new ArrayList<>()
-    private BeanWrapper bean
-    protected Map<String, Object> attributes = new HashMap<>()
-    private FastStringPrintWriter sw
-    private PrintWriter out
-    private JspWriter jspWriter
-    private GrailsApplication application
-    private ApplicationContext appContext
-    private static final String TAG_LIBS_ATTRIBUTE = 'org.codehaus.groovy.grails.TAG_LIBS'
-    private static final String OUT_PROPERTY = 'out'
-    private String tagContent
-    private boolean bodyInvokation
+    private String tagName;
+    private int invocationCount;
+    private List<Object> invocationArgs = new ArrayList<>();
+    private List<String> invocationBodyContent = new ArrayList<>();
+    private BeanWrapper bean;
+    protected Map<String, Object> attributes = new HashMap<>();
+    private FastStringPrintWriter sw;
+    private PrintWriter out;
+    private JspWriter jspWriter;
+    private GrailsApplication application;
+    private ApplicationContext appContext;
+    private static final String TAG_LIBS_ATTRIBUTE = 'org.codehaus.groovy.grails.TAG_LIBS';
+    private static final String OUT_PROPERTY = 'out';
+    private String tagContent;
+    private boolean bodyInvokation;
 
     JspInvokeGrailsTagLibTag() {
-        bean = new BeanWrapperImpl(this)
+        bean = new BeanWrapperImpl(this);
     }
 
     @Override
@@ -90,243 +93,243 @@ class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicAttribut
                     bean.isWritableProperty(pd.getName()) &&
                     bean.isReadableProperty(pd.getName())) {
 
-                String propertyValue = (String) bean.getPropertyValue(pd.getName())
+                String propertyValue = (String) bean.getPropertyValue(pd.getName());
 
                 if (propertyValue != null) {
-                    String trimmed = propertyValue.trim()
+                    String trimmed = propertyValue.trim();
                     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-                        trimmed = trimmed.substring(1, trimmed.length() - 1)
-                        Matcher m = ATTRIBUTE_MAP.matcher(trimmed)
-                        Map<String, Object> attributeMap = new HashMap<>()
+                        trimmed = trimmed.substring(1, trimmed.length() - 1);
+                        Matcher m = ATTRIBUTE_MAP.matcher(trimmed);
+                        Map<String, Object> attributeMap = new HashMap<>();
                         while (m.find()) {
-                            String attributeName = m.group(1)
-                            String attributeValue = m.group(2)
-                            attributeMap.put(attributeName, attributeValue)
+                            String attributeName = m.group(1);
+                            String attributeValue = m.group(2);
+                            attributeMap.put(attributeName, attributeValue);
                         }
-                        attributes.put(pd.getName(), attributeMap)
+                        attributes.put(pd.getName(), attributeMap);
                     }
                     else {
-                        attributes.put(pd.getName(), propertyValue)
+                        attributes.put(pd.getName(), propertyValue);
                     }
                 }
             }
         }
-        return doStartTagInternal()
+        return doStartTagInternal();
     }
 
     @SuppressWarnings(['unchecked', 'rawtypes'])
     private GroovyObject getTagLib(String name) {
         if (application == null) {
-            initPageState()
+            initPageState();
         }
 
-        Map tagLibs = (Map) pageContext.getAttribute(TAG_LIBS_ATTRIBUTE)
+        Map tagLibs = (Map) pageContext.getAttribute(TAG_LIBS_ATTRIBUTE);
         if (tagLibs == null) {
-            tagLibs = new HashMap()
-            pageContext.setAttribute(TAG_LIBS_ATTRIBUTE, tagLibs)
+            tagLibs = new HashMap();
+            pageContext.setAttribute(TAG_LIBS_ATTRIBUTE, tagLibs);
         }
         GrailsTagLibClass tagLibClass = (GrailsTagLibClass) application.getArtefactForFeature(
-                TagLibArtefactHandler.TYPE, GroovyPage.DEFAULT_NAMESPACE + ':' + name)
+                TagLibArtefactHandler.TYPE, GroovyPage.DEFAULT_NAMESPACE + ':' + name);
 
-        GroovyObject tagLib
+        GroovyObject tagLib;
         if (tagLibs.containsKey(tagLibClass.getFullName())) {
-            tagLib = (GroovyObject) tagLibs.get(tagLibClass.getFullName())
+            tagLib = (GroovyObject) tagLibs.get(tagLibClass.getFullName());
         }
         else {
-            tagLib = (GroovyObject) appContext.getBean(tagLibClass.getFullName())
-            tagLibs.put(tagLibClass.getFullName(), tagLib)
+            tagLib = (GroovyObject) appContext.getBean(tagLibClass.getFullName());
+            tagLibs.put(tagLibClass.getFullName(), tagLib);
         }
-        return tagLib
+        return tagLib;
     }
 
     private void initPageState() {
         if (application == null) {
-            application = Holders.getGrailsApplication()
-            appContext = application != null ? application.getMainContext() : null
+            application = Holders.getGrailsApplication();
+            appContext = application != null ? application.getMainContext() : null;
         }
     }
 
     @SuppressWarnings('rawtypes')
     protected int doStartTagInternal() {
-        GroovyObject tagLib = getTagLib(getTagName())
+        GroovyObject tagLib = getTagLib(getTagName());
         if (tagLib == null) {
-            throw new GrailsTagException("Tag [${getTagName()}] does not exist. No tag library found.")
+            throw new GrailsTagException("Tag [${getTagName()}] does not exist. No tag library found.");
         }
 
-        sw = FastStringPrintWriter.newInstance()
-        out = sw
-        tagLib.setProperty(OUT_PROPERTY, out)
-        Object tagLibProp
-        final Map tagLibProperties = DefaultGroovyMethods.getProperties(tagLib)
+        sw = FastStringPrintWriter.newInstance();
+        out = sw;
+        tagLib.setProperty(OUT_PROPERTY, out);
+        Object tagLibProp;
+        final Map tagLibProperties = DefaultGroovyMethods.getProperties(tagLib);
         if (tagLibProperties.containsKey(getTagName())) {
-            tagLibProp = tagLibProperties.get(getTagName())
+            tagLibProp = tagLibProperties.get(getTagName());
         }
         else {
             throw new GrailsTagException("Tag [${getTagName()}] does not exist in tag library [" +
-                    "${tagLib.getClass().getName()}]")
+                    "${tagLib.getClass().getName()}]");
         }
 
         if (!(tagLibProp instanceof Closure)) {
             throw new GrailsTagException("Tag [${getTagName()}] does not exist in tag library [" +
-                    "${tagLib.getClass().getName()}]")
+                    "${tagLib.getClass().getName()}]");
         }
 
         Closure body = new Closure(this) {
-            private static final long serialVersionUID = 1861498565854341886L
+            private static final long serialVersionUID = 1861498565854341886L;
 
             @SuppressWarnings('unused')
             Object doCall() {
-                return call()
+                return call();
             }
 
             @SuppressWarnings('unused')
             Object doCall(Object o) {
-                return call(new Object[]{ o })
+                return call(new Object[]{ o });
             }
 
             @SuppressWarnings('unused')
             Object doCall(Object[] args) {
-                return call(args)
+                return call(args);
             }
 
             @Override
             Object call(Object... args) {
-                JspInvokeGrailsTagLibTag.this.@invocationCount++
+                JspInvokeGrailsTagLibTag.this.@invocationCount++;
                 if (args.length > 0) {
-                    JspInvokeGrailsTagLibTag.this.invocationArgs.add(args[0])
+                    JspInvokeGrailsTagLibTag.this.invocationArgs.add(args[0]);
                 }
                 else {
-                    JspInvokeGrailsTagLibTag.this.invocationArgs.add(JspInvokeGrailsTagLibTag.ZERO_ARGUMENTS)
+                    JspInvokeGrailsTagLibTag.this.invocationArgs.add(JspInvokeGrailsTagLibTag.ZERO_ARGUMENTS);
                 }
-                JspInvokeGrailsTagLibTag.this.out.print("<jsp-body-gen${JspInvokeGrailsTagLibTag.this.invocationCount}>")
-                return ''
+                JspInvokeGrailsTagLibTag.this.out.print("<jsp-body-gen${JspInvokeGrailsTagLibTag.this.invocationCount}>");
+                return '';
             }
-        }
-        Closure tag = (Closure) tagLibProp
+        };
+        Closure tag = (Closure) tagLibProp;
         if (tag.getParameterTypes().length == 1) {
-            tag.call(attributes)
+            tag.call(attributes);
             if (body != null) {
-                body.call()
+                body.call();
             }
         }
         if (tag.getParameterTypes().length == 2) {
-            tag.call(new Object[] { attributes, body })
+            tag.call(new Object[] { attributes, body });
         }
 
-        Collections.reverse(invocationArgs)
-        setCurrentArgument()
-        return EVAL_BODY_BUFFERED
+        Collections.reverse(invocationArgs);
+        setCurrentArgument();
+        return EVAL_BODY_BUFFERED;
     }
 
     private void setCurrentArgument() {
         if (invocationCount == 0) {
-            return
+            return;
         }
 
-        Object arg = invocationArgs.get(invocationCount - 1)
+        Object arg = invocationArgs.get(invocationCount - 1);
         if (arg.equals(ZERO_ARGUMENTS)) {
-            pageContext.setAttribute(GROOVY_DEFAULT_ARGUMENT, null)
+            pageContext.setAttribute(GROOVY_DEFAULT_ARGUMENT, null);
         }
         else {
-            pageContext.setAttribute(GROOVY_DEFAULT_ARGUMENT, arg)
+            pageContext.setAttribute(GROOVY_DEFAULT_ARGUMENT, arg);
         }
     }
 
     @Override
     int doAfterBody() throws JspException {
 
-        BodyContent b = getBodyContent()
+        BodyContent b = getBodyContent();
         if (invocationCount > 0) {
             if (b != null) {
-                jspWriter = b.getEnclosingWriter()
-                invocationBodyContent.add(b.getString())
-                bodyInvokation = true
-                b.clearBody()
+                jspWriter = b.getEnclosingWriter();
+                invocationBodyContent.add(b.getString());
+                bodyInvokation = true;
+                b.clearBody();
             }
         }
 
-        invocationCount--
-        setCurrentArgument()
+        invocationCount--;
+        setCurrentArgument();
         if (invocationCount < 1) {
-            tagContent = sw.toString()
-            int i = 1
-            StringBuilder buf = new StringBuilder()
+            tagContent = sw.toString();
+            int i = 1;
+            StringBuilder buf = new StringBuilder();
             for (String body in invocationBodyContent) {
-                String replaceFlag = "<jsp-body-gen${i}>"
-                int j = tagContent.indexOf(replaceFlag)
+                String replaceFlag = "<jsp-body-gen${i}>";
+                int j = tagContent.indexOf(replaceFlag);
                 if (j > -1) {
                     buf.append(tagContent.substring(0, j))
                         .append(body)
-                        .append(tagContent.substring(j + replaceFlag.length(), tagContent.length()))
-                    tagContent = buf.toString()
+                        .append(tagContent.substring(j + replaceFlag.length(), tagContent.length()));
+                    tagContent = buf.toString();
                     if (tagContent != null) {
                         try {
-                            jspWriter.write(tagContent)
-                            out.close()
+                            jspWriter.write(tagContent);
+                            out.close();
                         }
                         catch (IOException e) {
-                            throw new JspTagException("I/O error writing tag contents [$tagContent] to response out")
+                            throw new JspTagException("I/O error writing tag contents [$tagContent] to response out");
                         }
                     }
-                    buf.delete(0, buf.length())
+                    buf.delete(0, buf.length());
                 }
             }
-            return SKIP_BODY
+            return SKIP_BODY;
         }
 
-        return EVAL_BODY_BUFFERED
+        return EVAL_BODY_BUFFERED;
     }
 
     @Override
     int doEndTag() throws JspException {
         if (!bodyInvokation) {
             if (tagContent == null) {
-                tagContent = sw.toString()
+                tagContent = sw.toString();
             }
 
             if (tagContent != null) {
                 try {
-                    jspWriter = pageContext.getOut()
-                    jspWriter.write(tagContent)
-                    out.close()
+                    jspWriter = pageContext.getOut();
+                    jspWriter.write(tagContent);
+                    out.close();
                 }
                 catch (IOException e) {
-                    throw new JspTagException("I/O error writing tag contents [$tagContent] to response out")
+                    throw new JspTagException("I/O error writing tag contents [$tagContent] to response out");
                 }
             }
         }
-        return SKIP_BODY
+        return SKIP_BODY;
     }
 
     String getTagName() {
-        return tagName
+        return tagName;
     }
 
     void setTagName(String tagName) {
-        this.tagName = tagName
+        this.tagName = tagName;
     }
 
     final void setDynamicAttribute(String uri, String localName, Object value) throws JspException {
         if (value instanceof String) {
-            String stringValue = (String) value
-            String trimmed = stringValue.trim()
+            String stringValue = (String) value;
+            String trimmed = stringValue.trim();
             if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-                trimmed = trimmed.substring(1, trimmed.length() - 1)
-                Matcher m = ATTRIBUTE_MAP.matcher(trimmed)
-                Map<String, Object> attributeMap = new HashMap<>()
+                trimmed = trimmed.substring(1, trimmed.length() - 1);
+                Matcher m = ATTRIBUTE_MAP.matcher(trimmed);
+                Map<String, Object> attributeMap = new HashMap<>();
                 while (m.find()) {
-                    String attributeName = m.group(1)
-                    String attributeValue = m.group(2)
-                    attributeMap.put(attributeName, attributeValue)
+                    String attributeName = m.group(1);
+                    String attributeValue = m.group(2);
+                    attributeMap.put(attributeName, attributeValue);
                 }
-                attributes.put(localName, attributeMap)
+                attributes.put(localName, attributeMap);
             }
             else {
-                attributes.put(localName, value)
+                attributes.put(localName, value);
             }
         }
         else {
-            attributes.put(localName, value)
+            attributes.put(localName, value);
         }
     }
 }

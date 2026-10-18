@@ -74,6 +74,7 @@ class GrailsSecurityHeadersFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(GrailsSecurityHeadersFilter)
 
     private static final String HTTPS = 'https'
+
     private static final String FORWARDED = 'Forwarded'
 
     private final GrailsSecurityHeadersProperties properties

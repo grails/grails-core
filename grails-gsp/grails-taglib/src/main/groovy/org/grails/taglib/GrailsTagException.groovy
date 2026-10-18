@@ -16,64 +16,67 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.taglib
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.taglib;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import org.grails.core.exceptions.GrailsException
-import org.grails.exceptions.reporting.SourceCodeAware
-import org.grails.io.support.GrailsResourceUtils
+import org.grails.core.exceptions.GrailsException;
+import org.grails.exceptions.reporting.SourceCodeAware;
+import org.grails.io.support.GrailsResourceUtils;
 
 /**
  * @author Graeme Rocher
  */
 @CompileStatic
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 class GrailsTagException extends GrailsException implements SourceCodeAware {
 
-    private static final long serialVersionUID = -2340187595590923592L
-    private String fileName
-    private int lineNumber
+    private static final long serialVersionUID = -2340187595590923592L;
+    private String fileName;
+    private int lineNumber;
 
     GrailsTagException(String message) {
-        super(message)
+        super(message);
     }
 
     GrailsTagException(String message, Throwable cause) {
-        super(message, cause)
+        super(message, cause);
     }
 
     GrailsTagException(Throwable cause) {
-        super(cause)
+        super(cause);
     }
 
     GrailsTagException(String message, String pageName, int lineNumber) {
-        this(message, null, pageName, lineNumber)
+        this(message, null, pageName, lineNumber);
     }
 
     GrailsTagException(String message, Throwable cause, String fileName, int lineNumber) {
-        super(message, cause)
-        String path = GrailsResourceUtils.getPathFromBaseDir(fileName)
-        this.fileName = path != null ? path : fileName
-        this.lineNumber = lineNumber
+        super(message, cause);
+        String path = GrailsResourceUtils.getPathFromBaseDir(fileName);
+        this.fileName = path != null ? path : fileName;
+        this.lineNumber = lineNumber;
     }
 
     String getFileName() {
-        return fileName
+        return fileName;
     }
 
     int getLineNumber() {
-        return lineNumber
+        return lineNumber;
     }
 
     @Override
     String getMessage() {
-        String fn = getFileName()
-        int ln = getLineNumber()
+        String fn = getFileName();
+        int ln = getLineNumber();
         if (fn != null && ln > 0) {
-            return "[$fn:$ln] " + super.getMessage()
+            return '[' + fn + ':' + ln + '] ' + super.getMessage();
         }
         else {
-            return super.getMessage()
+            return super.getMessage();
         }
     }
 }

@@ -16,33 +16,34 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.gsp.jsp
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.gsp.jsp;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import jakarta.el.ELContext
-import jakarta.servlet.GenericServlet
-import jakarta.servlet.Servlet
-import jakarta.servlet.ServletConfig
-import jakarta.servlet.ServletContext
-import jakarta.servlet.ServletException
-import jakarta.servlet.ServletRequest
-import jakarta.servlet.ServletResponse
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
-import jakarta.servlet.http.HttpSession
-import jakarta.servlet.jsp.JspApplicationContext
-import jakarta.servlet.jsp.JspContext
-import jakarta.servlet.jsp.JspFactory
-import jakarta.servlet.jsp.JspWriter
-import jakarta.servlet.jsp.PageContext
-import jakarta.servlet.jsp.tagext.BodyContent
+import jakarta.el.ELContext;
+import jakarta.servlet.GenericServlet;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.jsp.JspApplicationContext;
+import jakarta.servlet.jsp.JspContext;
+import jakarta.servlet.jsp.JspFactory;
+import jakarta.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.PageContext;
+import jakarta.servlet.jsp.tagext.BodyContent;
 
-import org.springframework.util.Assert
-import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestContextHolder;
 
-import org.grails.gsp.GroovyPage
-import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.gsp.GroovyPage;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * A JSP PageContext implementation for use with GSP.
@@ -50,121 +51,123 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
  * @author Graeme Rocher
  * @since 1.1
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class GroovyPagesPageContext extends PageContext {
 
     private static final Enumeration<String> EMPTY_ENUMERATION = new Enumeration<String>() {
         @Override
         boolean hasMoreElements() {
-            return false
+            return false;
         }
 
         @Override
         String nextElement() {
-            throw new NoSuchElementException()
+            throw new NoSuchElementException();
         }
-    }
-    private final ServletContext servletContext
-    private final Servlet servlet
-    private final HttpServletRequest request
-    private final HttpServletResponse response
-    private final ServletConfig servletConfig
-    private final Binding pageScope
-    private final GrailsWebRequest webRequest
-    private JspWriter jspOut
-    private final Deque<JspWriter> outStack = new ArrayDeque<>()
-    private final List<Object> tags = new ArrayList<>()
+    };
+    private final ServletContext servletContext;
+    private final Servlet servlet;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
+    private final ServletConfig servletConfig;
+    private final Binding pageScope;
+    private final GrailsWebRequest webRequest;
+    private JspWriter jspOut;
+    private final Deque<JspWriter> outStack = new ArrayDeque<>();
+    private final List<Object> tags = new ArrayList<>();
 
     GroovyPagesPageContext(Servlet pagesServlet, Binding pageScope) {
-        Assert.notNull(pagesServlet, 'GroovyPagesPageContext class requires a reference to the GSP servlet')
-        webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes()
+        Assert.notNull(pagesServlet, 'GroovyPagesPageContext class requires a reference to the GSP servlet');
+        webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
 
-        servletContext = webRequest.getServletContext()
-        request = webRequest.getRequest()
-        response = webRequest.getCurrentResponse()
-        servlet = pagesServlet
-        servletConfig = pagesServlet.getServletConfig()
-        this.pageScope = pageScope
-        var session = request.getSession(false)
+        servletContext = webRequest.getServletContext();
+        request = webRequest.getRequest();
+        response = webRequest.getCurrentResponse();
+        servlet = pagesServlet;
+        servletConfig = pagesServlet.getServletConfig();
+        this.pageScope = pageScope;
+        var session = request.getSession(false);
         // setup initial writer
-        pushWriter(new JspWriterDelegate(webRequest.getOut()))
+        pushWriter(new JspWriterDelegate(webRequest.getOut()));
         // Register page attributes as per JSP spec
-        setAttribute(REQUEST, request)
-        setAttribute(RESPONSE, response)
+        setAttribute(REQUEST, request);
+        setAttribute(RESPONSE, response);
         if (session != null) {
-            setAttribute(SESSION, session)
+            setAttribute(SESSION, session);
         }
-        setAttribute(PAGE, servlet)
-        setAttribute(CONFIG, servlet.getServletConfig())
-        setAttribute(PAGECONTEXT, this)
-        setAttribute(APPLICATION, servletContext)
+        setAttribute(PAGE, servlet);
+        setAttribute(CONFIG, servlet.getServletConfig());
+        setAttribute(PAGECONTEXT, this);
+        setAttribute(APPLICATION, servletContext);
     }
 
     void popWriter() {
-        outStack.pop()
-        jspOut = (JspWriter) outStack.peek()
-        setCurrentOut()
+        outStack.pop();
+        jspOut = (JspWriter) outStack.peek();
+        setCurrentOut();
     }
 
     void pushWriter(JspWriter out) {
-        outStack.push(out)
-        jspOut = out
-        setCurrentOut()
+        outStack.push(out);
+        jspOut = out;
+        setCurrentOut();
     }
 
     private void setCurrentOut() {
-        setAttribute(OUT, jspOut)
-        setAttribute(GroovyPage.OUT, jspOut)
-        webRequest.setOut(jspOut)
+        setAttribute(OUT, jspOut);
+        setAttribute(GroovyPage.OUT, jspOut);
+        webRequest.setOut(jspOut);
     }
 
     Object peekTopTag(Class<?> tagClass) {
         for (ListIterator<?> iter = tags.listIterator(tags.size()); iter.hasPrevious();) {
-            Object tag = iter.previous()
+            Object tag = iter.previous();
             if (tagClass.isInstance(tag)) {
-                return tag
+                return tag;
             }
         }
-        return null
+        return null;
     }
 
     void popTopTag() {
-        tags.remove(tags.size() - 1)
+        tags.remove(tags.size() - 1);
     }
 
     void pushTopTag(Object tag) {
-        tags.add(tag)
+        tags.add(tag);
     }
 
     @Override
     BodyContent pushBody() {
-        BodyContent bc = new BodyContentImpl(getOut(), true)
-        pushWriter(bc)
-        return bc
+        BodyContent bc = new BodyContentImpl(getOut(), true);
+        pushWriter(bc);
+        return bc;
     }
 
     @Override
     JspWriter popBody() {
-        popWriter()
-        return (JspWriter) getAttribute(OUT)
+        popWriter();
+        return (JspWriter) getAttribute(OUT);
     }
 
     GroovyPagesPageContext(Binding pageScope) {
         this(new GenericServlet() {
             @Override
             ServletConfig getServletConfig() {
-                return this
+                return this;
             }
 
             @Override
             void service(ServletRequest servletRequest, ServletResponse servletResponse) {
                 // do nothing;
             }
-        }, pageScope != null ? pageScope : new Binding())
+        }, pageScope != null ? pageScope : new Binding());
     }
 
     GroovyPagesPageContext() {
-        this(new Binding())
+        this(new Binding());
     }
 
     @Override
@@ -180,181 +183,181 @@ class GroovyPagesPageContext extends PageContext {
 
     @Override
     HttpSession getSession() {
-        return request.getSession(false)
+        return request.getSession(false);
     }
 
     @Override
     Object getPage() {
-        return servlet
+        return servlet;
     }
 
     @Override
     ServletRequest getRequest() {
-        return request
+        return request;
     }
 
     @Override
     ServletResponse getResponse() {
-        return response
+        return response;
     }
 
     @Override
     Exception getException() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     ServletConfig getServletConfig() {
-        return servletConfig
+        return servletConfig;
     }
 
     @Override
     ServletContext getServletContext() {
-        return servletContext
+        return servletContext;
     }
 
     @Override
     void forward(String url) throws ServletException, IOException {
-        request.getRequestDispatcher(url).forward(request, response)
+        request.getRequestDispatcher(url).forward(request, response);
     }
 
     @Override
     void include(String url) throws ServletException, IOException {
-        include(url, false)
+        include(url, false);
     }
 
     @Override
     void include(String url, boolean flush) throws ServletException, IOException {
-        request.getRequestDispatcher(url).include(request, response)
+        request.getRequestDispatcher(url).include(request, response);
     }
 
     @Override
     void handlePageException(Exception e) throws ServletException, IOException {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     void handlePageException(Throwable throwable) throws ServletException, IOException {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     void setAttribute(String name, Object value) {
-        Assert.notNull(name, 'Attribute name cannot be null')
-        pageScope.setVariable(name, value)
+        Assert.notNull(name, 'Attribute name cannot be null');
+        pageScope.setVariable(name, value);
     }
 
     @Override
     void setAttribute(String name, Object value, int scope) {
-        Assert.notNull(name, 'Attribute name cannot be null')
+        Assert.notNull(name, 'Attribute name cannot be null');
 
         switch (scope) {
             case PAGE_SCOPE:
-                setAttribute(name, value)
-                break
+                setAttribute(name, value);
+                break;
             case REQUEST_SCOPE:
-                request.setAttribute(name, value)
-                break
+                request.setAttribute(name, value);
+                break;
             case SESSION_SCOPE:
-                request.getSession(true).setAttribute(name, value)
-                break
+                request.getSession(true).setAttribute(name, value);
+                break;
             case APPLICATION_SCOPE:
-                servletContext.setAttribute(name, value)
-                break
+                servletContext.setAttribute(name, value);
+                break;
             default:
-                setAttribute(name, value)
+                setAttribute(name, value);
         }
     }
 
     @Override
     Object getAttribute(String name) {
-        Assert.notNull(name, 'Attribute name cannot be null')
+        Assert.notNull(name, 'Attribute name cannot be null');
 
         if (pageScope.getVariables().containsKey(name)) {
-            return pageScope.getVariable(name)
+            return pageScope.getVariable(name);
         }
 
-        return null
+        return null;
     }
 
     @Override
     Object getAttribute(String name, int scope) {
-        Assert.notNull(name, 'Attribute name cannot be null')
+        Assert.notNull(name, 'Attribute name cannot be null');
 
         switch (scope) {
-            case PAGE_SCOPE: return getAttribute(name)
-            case REQUEST_SCOPE: return request.getAttribute(name)
-            case SESSION_SCOPE: return request.getSession(true).getAttribute(name)
-            case APPLICATION_SCOPE: return servletContext.getAttribute(name)
-            default: return getAttribute(name)
+            case PAGE_SCOPE: return getAttribute(name);
+            case REQUEST_SCOPE: return request.getAttribute(name);
+            case SESSION_SCOPE: return request.getSession(true).getAttribute(name);
+            case APPLICATION_SCOPE: return servletContext.getAttribute(name);
+            default: return getAttribute(name);
         }
     }
 
     @Override
     Object findAttribute(String name) {
-        Assert.notNull(name, 'Attribute name cannot be null')
+        Assert.notNull(name, 'Attribute name cannot be null');
 
-        int scope = getAttributesScope(name)
+        int scope = getAttributesScope(name);
         if (scope > 0) {
-            return getAttribute(name, scope)
+            return getAttribute(name, scope);
         }
 
-        return null
+        return null;
     }
 
     @Override
     void removeAttribute(String name) {
-        Assert.notNull(name, 'Attribute name cannot be null')
-        pageScope.getVariables().remove(name)
+        Assert.notNull(name, 'Attribute name cannot be null');
+        pageScope.getVariables().remove(name);
     }
 
     @Override
     void removeAttribute(String name, int scope) {
-        Assert.notNull(name, 'Attribute name cannot be null')
+        Assert.notNull(name, 'Attribute name cannot be null');
 
         switch (scope) {
             case PAGE_SCOPE:
-                removeAttribute(name)
-                break
+                removeAttribute(name);
+                break;
             case REQUEST_SCOPE:
-                request.removeAttribute(name)
-                break
+                request.removeAttribute(name);
+                break;
             case SESSION_SCOPE:
-                HttpSession httpSession = request.getSession(false)
+                HttpSession httpSession = request.getSession(false);
                 if (httpSession != null) {
-                    httpSession.removeAttribute(name)
+                    httpSession.removeAttribute(name);
                 }
-                break
+                break;
             case APPLICATION_SCOPE:
-                servletContext.removeAttribute(name)
-                break
+                servletContext.removeAttribute(name);
+                break;
             default:
-                removeAttribute(name)
+                removeAttribute(name);
         }
     }
 
     @Override
     int getAttributesScope(String name) {
-        Assert.notNull(name, 'Attribute name cannot be null')
+        Assert.notNull(name, 'Attribute name cannot be null');
 
         if (pageScope.getVariables().containsKey(name)) {
-            return PAGE_SCOPE
+            return PAGE_SCOPE;
         }
 
         if (request.getAttribute(name) != null) {
-            return REQUEST_SCOPE
+            return REQUEST_SCOPE;
         }
 
-        HttpSession httpSession = request.getSession(false)
+        HttpSession httpSession = request.getSession(false);
         if (httpSession != null && httpSession.getAttribute(name) != null) {
-            return SESSION_SCOPE
+            return SESSION_SCOPE;
         }
 
         if (servletContext.getAttribute(name) != null) {
-            return APPLICATION_SCOPE
+            return APPLICATION_SCOPE;
         }
 
-        return 0
+        return 0;
     }
 
     @Override
@@ -362,44 +365,44 @@ class GroovyPagesPageContext extends PageContext {
     Enumeration<String> getAttributeNamesInScope(int scope) {
         switch (scope) {
             case PAGE_SCOPE:
-                final var i = ((Map<String, Object>) pageScope.getVariables()).keySet().iterator()
+                final var i = ((Map<String, Object>) pageScope.getVariables()).keySet().iterator();
                 return new Enumeration<String>() {
                     @Override
                     boolean hasMoreElements() {
-                        return i.hasNext()
+                        return i.hasNext();
                     }
 
                     @Override
                     String nextElement() {
-                        return i.next()
+                        return i.next();
                     }
-                }
+                };
             case REQUEST_SCOPE:
-                return request.getAttributeNames()
+                return request.getAttributeNames();
             case SESSION_SCOPE:
-                var httpSession = request.getSession(false)
+                var httpSession = request.getSession(false);
                 if (httpSession != null) {
-                    return httpSession.getAttributeNames()
+                    return httpSession.getAttributeNames();
                 }
                 else {
-                    return EMPTY_ENUMERATION
+                    return EMPTY_ENUMERATION;
                 }
             case APPLICATION_SCOPE:
-                return servletContext.getAttributeNames()
+                return servletContext.getAttributeNames();
         }
-        return EMPTY_ENUMERATION
+        return EMPTY_ENUMERATION;
     }
 
     @Override
     JspWriter getOut() {
-        Writer out = webRequest.getOut()
+        Writer out = webRequest.getOut();
         if (out instanceof JspWriter) {
-            return (JspWriter) out
+            return (JspWriter) out;
         }
 
-        out = new JspWriterDelegate(out)
-        webRequest.setOut(out)
-        return (JspWriter) out
+        out = new JspWriterDelegate(out);
+        webRequest.setOut(out);
+        return (JspWriter) out;
     }
 
     /*
@@ -428,24 +431,24 @@ class GroovyPagesPageContext extends PageContext {
 
     static {
         if (JspFactory.getDefaultFactory() == null) {
-            JspFactory.setDefaultFactory(new GroovyPagesJspFactory())
+            JspFactory.setDefaultFactory(new GroovyPagesJspFactory());
         }
     }
 
-    private ELContext elContext
+    private ELContext elContext;
 
     @Override
     ELContext getELContext() {
         if (elContext == null) {
-            JspApplicationContext jspContext = JspFactory.getDefaultFactory().getJspApplicationContext(getServletContext())
+            JspApplicationContext jspContext = JspFactory.getDefaultFactory().getJspApplicationContext(getServletContext());
             if (jspContext instanceof GroovyPagesJspApplicationContext) {
-                elContext = ((GroovyPagesJspApplicationContext) jspContext).createELContext(this)
-                elContext.putContext(JspContext, this)
+                elContext = ((GroovyPagesJspApplicationContext) jspContext).createELContext(this);
+                elContext.putContext(JspContext, this);
             }
             else {
-                throw new IllegalStateException('Unable to create ELContext for a JspApplicationContext. It must be an instance of [GroovyPagesJspApplicationContext] do not override JspFactory.setDefaultFactory()!')
+                throw new IllegalStateException('Unable to create ELContext for a JspApplicationContext. It must be an instance of [GroovyPagesJspApplicationContext] do not override JspFactory.setDefaultFactory()!');
             }
         }
-        return elContext
+        return elContext;
     }
 }
