@@ -19,6 +19,8 @@
 @SuppressWarnings('UnnecessarySemicolon')
 package org.grails.core.util;
 
+import groovy.transform.CompileStatic;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 class BeanCreationProfilingPostProcessor implements InstantiationAwareBeanPostProcessor, ApplicationListener<ContextRefreshedEvent> {
 
     private final StopWatch stopWatch = new StopWatch('Bean Creation StopWatch');
