@@ -863,6 +863,28 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(only).toString() == '{"children":null,"name":"only","parent":{"_ref":".","class":"' + Node.name + '"}}'
     }
 
+    void "with the #behaviour circular reference behaviour, a reference has its keys in the converter's order, whatever order the JsonMapper writes map entries in"() {
+        given: 'a mapper that sorts the entries of a map by key'
+        def context = new GenericApplicationContext()
+        context.registerBean(JsonMapper, { JsonMapper.builder().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).build() })
+        context.registerBean(ProxyHandler, { new DefaultProxyHandler() })
+        context.refresh()
+        initialize(['grails.converters.json.circular.reference.behaviour': behaviour], context)
+        def only = new Node(name: 'only')
+        only.parent = only
+
+        expect:
+        new JSON(only).toString() == '{"children":null,"name":"only","parent":' + reference + '}'
+
+        cleanup:
+        context.close()
+
+        where:
+        behaviour | reference
+        'PATH'    | '{"ref":"root","class":"' + Node.name + '"}'
+        'DEFAULT' | '{"_ref":".","class":"' + Node.name + '"}'
+    }
+
     void "with the PATH circular reference behaviour, a single value renders"() {
         given:
         initialize('grails.converters.json.circular.reference.behaviour': 'PATH')

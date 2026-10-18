@@ -26,7 +26,6 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -499,16 +498,13 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 final boolean isCollection = Collection.class.isAssignableFrom(o.getClass());
                 final boolean isMap = Map.class.isAssignableFrom(o.getClass());
                 if (!(isMap || isCollection)) {
-                    Map<String, Object> props = new HashMap<>();
-                    props.put("class", o.getClass());
                     StringBuilder ref = new StringBuilder();
                     int idx = referenceStack.indexOf(o);
                     for (int i = referenceStack.size() - 1; i > idx; i--) {
                         ref.append("../");
                     }
                     // "." where the object repeats the one the reference is written in, where Grails 8 failed
-                    props.put("_ref", ref.length() == 0 ? "." : ref.substring(0, ref.length() - 1));
-                    value(props);
+                    writeReference("_ref", ref.length() == 0 ? "." : ref.substring(0, ref.length() - 1), o);
                 }
                 else {
                     if (isMap) {
@@ -525,16 +521,26 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 value(null);
                 break;
             case PATH:
-                Map<String, Object> props = new HashMap<>();
-                props.put("class", o.getClass());
                 int idx = referenceStack.indexOf(o);
                 PathCapturingJSONWriterWrapper pcWriter = (PathCapturingJSONWriterWrapper) writer;
-                props.put("ref", String.format("root%s", pcWriter.getStackReference(idx)));
-                value(props);
+                writeReference("ref", String.format("root%s", pcWriter.getStackReference(idx)), o);
                 break;
             case IGNORE:
                 break;
         }
+    }
+
+    /**
+     * Writes a reference to an object reached again with its keys in the order Grails 8 wrote them, whatever order the
+     * mapper writes the entries of a map in.
+     */
+    private void writeReference(String key, String reference, Object o) {
+        writer.object();
+        writer.key(key);
+        writer.value(reference);
+        writer.key("class");
+        writer.value(o.getClass().getName());
+        writer.endObject();
     }
 
     /**
