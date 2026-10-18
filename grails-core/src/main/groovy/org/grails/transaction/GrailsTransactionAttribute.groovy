@@ -20,6 +20,8 @@
 @SuppressWarnings('UnnecessarySemicolon')
 package org.grails.transaction;
 
+import groovy.transform.CompileStatic;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,7 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 class GrailsTransactionAttribute extends RuleBasedTransactionAttribute {
 
     private static final Logger log = LoggerFactory.getLogger(GrailsTransactionAttribute);
