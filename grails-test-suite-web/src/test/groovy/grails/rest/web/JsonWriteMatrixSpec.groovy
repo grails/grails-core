@@ -47,7 +47,9 @@ import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.ValueSerializer
 import tools.jackson.databind.annotation.JsonNaming
 import tools.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.ObjectWriter
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.jsontype.TypeSerializer
 import tools.jackson.databind.node.ArrayNode
 import tools.jackson.databind.node.NullNode
@@ -79,6 +81,17 @@ abstract class JsonWriteMatrix extends Specification {
     static final String RENDER_NAMED = 'render json: with a named configuration'
     static final String CONVERTER = 'the JSON converter'
     static final String REGISTRY = 'the named configuration registry'
+    static final String RESPOND_VIEWED = 'respond with a configuration that has a view'
+    static final String RENDER_VIEWED = 'render json: with a configuration that has a view'
+    static final String REGISTRY_VIEWED = 'the registry with a configuration that has a view'
+    static final String RESPOND_SERIALIZED = 'respond with a configuration that has serializers'
+    static final String RENDER_SERIALIZED = 'render json: with a configuration that has serializers'
+    static final String REGISTRY_SERIALIZED = 'the registry with a configuration that has serializers'
+
+    static final List<String> REGISTRY_PATHS = [REGISTRY, REGISTRY_VIEWED, REGISTRY_SERIALIZED]
+
+    /** The classes the configuration with serializers has a serializer of its own for. */
+    static final List<Class<?>> SERIALIZED_CLASSES = [MatrixPlain, MatrixAuthor]
 
     static final String SINGLE = 'a value'
     static final String LISTED = 'a list of two'
@@ -119,7 +132,52 @@ abstract class JsonWriteMatrix extends Specification {
         NamedJsonConfigurationRegistry registry = applicationContext.getBean(NamedJsonConfigurationRegistry)
         if (!registry.contains('matrix')) {
             registry.register('matrix') { }
+            registry.register('matrixViewed') { it.view(MatrixPublicView) }
+            registry.register('matrixSerialized') {
+                it.serializer(MatrixPlain, new MatrixPlainSerializer())
+                it.serializer(MatrixAuthor, new MatrixAuthorSerializer())
+            }
         }
+    }
+
+    /**
+     * @return the named configuration the way of writing JSON names, or {@code null}
+     */
+    static String configurationOf(String path) {
+        switch (path) {
+            case [RESPOND_NAMED, RENDER_NAMED, REGISTRY]:
+                return 'matrix'
+            case [RESPOND_VIEWED, RENDER_VIEWED, REGISTRY_VIEWED]:
+                return 'matrixViewed'
+            case [RESPOND_SERIALIZED, RENDER_SERIALIZED, REGISTRY_SERIALIZED]:
+                return 'matrixSerialized'
+            default:
+                return null
+        }
+    }
+
+    /**
+     * @return what Spring Boot's mapper writes with what the configuration of the way of writing JSON adds to it
+     */
+    private ObjectWriter oracle(String path) {
+        JsonMapper mapper = applicationContext.getBean(JsonMapper)
+        switch (configurationOf(path)) {
+            case 'matrixViewed':
+                return mapper.writerWithView(MatrixPublicView)
+            case 'matrixSerialized':
+                return mapper.rebuild().addModule(new SimpleModule()
+                        .addSerializer(MatrixPlain, new MatrixPlainSerializer())
+                        .addSerializer(MatrixAuthor, new MatrixAuthorSerializer())).build().writer()
+            default:
+                return mapper.writer()
+        }
+    }
+
+    /**
+     * @return whether the configuration of the way of writing JSON has a serializer of its own for instances of a class
+     */
+    private static boolean serializedByConfiguration(String path, Class<?> type) {
+        configurationOf(path) == 'matrixSerialized' && SERIALIZED_CLASSES.any { it.isAssignableFrom(type) }
     }
 
     void '#fixture written as #container through #path is what Spring Boot writes, less what includes and excludes leave out'() {
@@ -134,6 +192,11 @@ abstract class JsonWriteMatrix extends Specification {
         expect:
         applicationContext.getBean(JsonMapper).writeValueAsString(MatrixBook.sample()) ==
                 '{"id":1,"title":"Grails","pages":2,"author":{"id":7},"reviewers":[{"id":7}]}'
+
+        and: 'a view leaves out what it does not name, and a serializer of an associated class writes it in its place'
+        oracle(REGISTRY_VIEWED).writeValueAsString(new MatrixViewed()) == '{"email":"ada@example.com"}'
+        oracle(REGISTRY_SERIALIZED).writeValueAsString(MatrixBook.sample()) ==
+                '{"id":1,"title":"Grails","pages":2,"author":"author:Ada","reviewers":["author:Ada"]}'
     }
 
     List<List<Object>> combinations() {
@@ -152,10 +215,11 @@ abstract class JsonWriteMatrix extends Specification {
         JsonMapper mapper = applicationContext.getBean(JsonMapper)
         List<String> found = []
         for (Map<String, Object> options : fixture.options(container)) {
-            if (path == REGISTRY && options) {
+            if (path in REGISTRY_PATHS && options) {
                 continue
             }
-            String expected = fixture.expected(mapper, container, options, projectsElements(path), writesWithConverter(path))
+            String expected = fixture.expected(oracle(path), mapper, container, options, projectsElements(path),
+                    writesWithConverter(path)) { Class<?> type -> serializedByConfiguration(path, type) }
             String written
             try {
                 written = mapper.readTree(write(path, fixture.value(container), options)).toString()
@@ -184,23 +248,19 @@ abstract class JsonWriteMatrix extends Specification {
             }
             return converter.toString()
         }
-        if (path == REGISTRY) {
-            return applicationContext.getBean(NamedJsonConfigurationRegistry).writeValueAsString('matrix', value)
+        String configuration = configurationOf(path)
+        if (path in REGISTRY_PATHS) {
+            return applicationContext.getBean(NamedJsonConfigurationRegistry).writeValueAsString(configuration, value)
         }
+        Map<String, Object> arguments = configuration ? options + [jsonConfiguration: configuration] : options
         response.reset()
         response.format = 'json'
         switch (path) {
-            case RESPOND:
-                controller.respond(value, options)
+            case [RESPOND, RESPOND_NAMED, RESPOND_VIEWED, RESPOND_SERIALIZED]:
+                controller.respond(value, arguments)
                 break
-            case RESPOND_NAMED:
-                controller.respond(value, options + [jsonConfiguration: 'matrix'])
-                break
-            case RENDER:
-                controller.render([json: value] + options)
-                break
-            case RENDER_NAMED:
-                controller.render([json: value, jsonConfiguration: 'matrix'] + options)
+            case [RENDER, RENDER_NAMED, RENDER_VIEWED, RENDER_SERIALIZED]:
+                controller.render([json: value] + arguments)
                 break
             default:
                 throw new IllegalArgumentException(path)
@@ -227,13 +287,15 @@ class JsonWriteMatrixSpec extends JsonWriteMatrix implements ControllerUnitTest<
     }
 
     List<String> paths() {
-        [RESPOND, RESPOND_NAMED, RENDER, RENDER_NAMED, CONVERTER, REGISTRY]
+        [RESPOND, RESPOND_NAMED, RENDER, RENDER_NAMED, CONVERTER, REGISTRY, RESPOND_VIEWED, RENDER_VIEWED, REGISTRY_VIEWED,
+         RESPOND_SERIALIZED, RENDER_SERIALIZED, REGISTRY_SERIALIZED]
     }
 }
 
 /**
  * With the JSON converter, not legacy, writing {@code respond}, which applies includes and excludes to the class of the
- * value only, so not to the elements of a list, as the respond reference documents.
+ * value only, so not to the elements of a list, as the respond reference documents, unless {@code respond} names a
+ * configuration, which the Grails mapper writes with.
  */
 class ConverterRespondJsonWriteMatrixSpec extends JsonWriteMatrix implements ControllerUnitTest<JsonMatrixController>, DataTest {
 
@@ -249,17 +311,17 @@ class ConverterRespondJsonWriteMatrixSpec extends JsonWriteMatrix implements Con
     }
 
     List<String> paths() {
-        [RESPOND]
+        [RESPOND, RESPOND_NAMED, RESPOND_VIEWED, RESPOND_SERIALIZED]
     }
 
     @Override
     boolean projectsElements(String path) {
-        false
+        path != RESPOND
     }
 
     @Override
     boolean writesWithConverter(String path) {
-        true
+        path == RESPOND
     }
 }
 
@@ -454,28 +516,37 @@ class MatrixFixture {
     }
 
     /**
+     * @param writer writes what the way of writing JSON is compared with
      * @param projectsElements whether includes and excludes apply to the elements of a list
      * @param byConverter whether the JSON converter writes it
+     * @param serializedByConfiguration whether the configuration has a serializer of its own for instances of a class,
+     *        which includes and excludes do not reach
      */
-    String expected(JsonMapper mapper, String container, Map<String, Object> options, boolean projectsElements,
-            boolean byConverter) {
+    String expected(ObjectWriter writer, JsonMapper reader, String container, Map<String, Object> options,
+            boolean projectsElements, boolean byConverter, Closure<Boolean> serializedByConfiguration) {
         Object value = value(container)
-        JsonNode tree = mapper.readTree(mapper.writeValueAsString(value))
+        JsonNode tree = reader.readTree(writer.writeValueAsString(value))
         boolean projected = options && (projectsElements || !(value instanceof List))
         instances(value, tree).each { Object instance, JsonNode node ->
             if (byConverter && converted != null && node instanceof ObjectNode) {
                 converted.call(node)
             }
-            if (projected) {
+            if (projected && !serializedByConfiguration.call(classOf(instance))) {
                 project(node, classOf(instance), options)
             }
         }
         tree.toString()
     }
 
-    /** The instances of the fixture in a value, each with the JSON it is written as. */
+    /**
+     * The instances of the fixture in a value, each with the JSON it is written as; none where it is not written, as the
+     * value of a property a view leaves out.
+     */
     private static Map<Object, JsonNode> instances(Object value, JsonNode tree) {
         Map<Object, JsonNode> found = new IdentityHashMap<>()
+        if (tree == null) {
+            return found
+        }
         if (value instanceof MatrixHolder) {
             found.putAll(instances(value.value, tree.get('value')))
         }
@@ -880,4 +951,20 @@ class MatrixDatedBook {
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator, property = '@id')
 class MatrixIdentifiedBook {
     String title
+}
+
+class MatrixPlainSerializer extends ValueSerializer<MatrixPlain> {
+    @Override
+    void serialize(MatrixPlain value, JsonGenerator generator, SerializationContext context) {
+        generator.writeStartObject()
+        generator.writeStringProperty('plain', value.name)
+        generator.writeEndObject()
+    }
+}
+
+class MatrixAuthorSerializer extends ValueSerializer<MatrixAuthor> {
+    @Override
+    void serialize(MatrixAuthor value, JsonGenerator generator, SerializationContext context) {
+        generator.writeString("author:${value.name}".toString())
+    }
 }
