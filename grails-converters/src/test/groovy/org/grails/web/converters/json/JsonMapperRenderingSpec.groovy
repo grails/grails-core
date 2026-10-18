@@ -885,6 +885,43 @@ class JsonMapperRenderingSpec extends Specification {
         'DEFAULT' | '{"_ref":".","class":"' + Node.name + '"}'
     }
 
+    void "with the DEFAULT circular reference behaviour, a reference steps up the JSON objects and arrays to the value the object is written as, for #description, as respond does"() {
+        given:
+        initialize('grails.converters.json.circular.reference.behaviour': 'DEFAULT')
+
+        expect:
+        new JSON(value).toString() == written
+
+        where:
+        description                                       | value              || written
+        'a bean that references itself through an Optional' | optionalCycle()  ||
+                '{"name":"a","next":{"_ref":".","class":"' + OptionalLink.name + '"}}'
+        'a bean with a wrapper type id that references itself' | wrappedCycle(false) ||
+                '{"WrappedLink":{"name":"a","next":{"_ref":"..","class":"' + WrappedLink.name + '"}}}'
+        'two beans with wrapper type ids'                 | wrappedCycle(true) ||
+                '{"WrappedLink":{"name":"a","next":{"WrappedLink":{"name":"b","next":{"_ref":"../../..","class":"' + WrappedLink.name + '"}}}}}'
+        'a bean with an array wrapper type id in a list'  | arrayWrappedCycle() ||
+                '{"items":[["WrappedItem",{"name":"i","owner":{"_ref":"../../..","class":"' + WrappedItemOwner.name + '"}}]],"name":"o"}'
+    }
+
+    private static OptionalLink optionalCycle() {
+        def link = new OptionalLink(name: 'a')
+        link.next = Optional.of(link)
+        link
+    }
+
+    private static WrappedLink wrappedCycle(boolean pair) {
+        def link = new WrappedLink(name: 'a')
+        link.next = pair ? new WrappedLink(name: 'b', next: link) : link
+        link
+    }
+
+    private static WrappedItemOwner arrayWrappedCycle() {
+        def owner = new WrappedItemOwner(name: 'o')
+        owner.items = [new WrappedItem(name: 'i', owner: owner)]
+        owner
+    }
+
     void "with the PATH circular reference behaviour, a single value renders"() {
         given:
         initialize('grails.converters.json.circular.reference.behaviour': 'PATH')
@@ -1286,4 +1323,26 @@ class RenamedBean {
     @JsonProperty('label')
     String name
     Integer count
+}
+
+class OptionalLink {
+    String name
+    Optional<OptionalLink> next
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
+class WrappedLink {
+    String name
+    WrappedLink next
+}
+
+class WrappedItemOwner {
+    String name
+    List<WrappedItem> items
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+class WrappedItem {
+    String name
+    WrappedItemOwner owner
 }

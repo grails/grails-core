@@ -20,6 +20,7 @@ package grails.rest.web
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import spock.lang.Specification
 import tools.jackson.databind.json.JsonMapper
 
@@ -289,6 +290,50 @@ class CycleFixture {
                     (CircularReferenceBehaviour.INSERT_NULL): '["r",null]',
                     (CircularReferenceBehaviour.IGNORE): '["r",null]',
                     (CircularReferenceBehaviour.PATH): '["r",' + path('root', CycleRow) + ']'
+            ], false),
+            new CycleFixture('a bean that references itself through an Optional', {
+                def node = new CycleOptionalNode(name: 'a')
+                node.next = Optional.of(node)
+                node
+            }, [
+                    (CircularReferenceBehaviour.DEFAULT): '{"name":"a","next":' + ref('.', CycleOptionalNode) + '}',
+                    (CircularReferenceBehaviour.EXCEPTION): null,
+                    (CircularReferenceBehaviour.INSERT_NULL): '{"name":"a","next":null}',
+                    (CircularReferenceBehaviour.IGNORE): '{"name":"a","next":null}',
+                    (CircularReferenceBehaviour.PATH): '{"name":"a","next":' + path('root', CycleOptionalNode) + '}'
+            ], false),
+            new CycleFixture('a bean with a wrapper type id that references itself', {
+                def node = new CycleWrappedNode(name: 'a')
+                node.next = node
+                node
+            }, [
+                    (CircularReferenceBehaviour.DEFAULT): '{"CycleWrappedNode":{"name":"a","next":' + ref('..', CycleWrappedNode) + '}}',
+                    (CircularReferenceBehaviour.EXCEPTION): null,
+                    (CircularReferenceBehaviour.INSERT_NULL): '{"CycleWrappedNode":{"name":"a","next":null}}',
+                    (CircularReferenceBehaviour.IGNORE): '{"CycleWrappedNode":{"name":"a","next":null}}',
+                    (CircularReferenceBehaviour.PATH): '{"CycleWrappedNode":{"name":"a","next":' + path('root', CycleWrappedNode) + '}}'
+            ], false),
+            new CycleFixture('two beans with wrapper type ids that reference each other', {
+                def node = new CycleWrappedNode(name: 'a')
+                node.next = new CycleWrappedNode(name: 'b', next: node)
+                node
+            }, [
+                    (CircularReferenceBehaviour.DEFAULT): '{"CycleWrappedNode":{"name":"a","next":{"CycleWrappedNode":{"name":"b","next":' + ref('../../..', CycleWrappedNode) + '}}}}',
+                    (CircularReferenceBehaviour.EXCEPTION): null,
+                    (CircularReferenceBehaviour.INSERT_NULL): '{"CycleWrappedNode":{"name":"a","next":{"CycleWrappedNode":{"name":"b","next":null}}}}',
+                    (CircularReferenceBehaviour.IGNORE): '{"CycleWrappedNode":{"name":"a","next":{"CycleWrappedNode":{"name":"b","next":null}}}}',
+                    (CircularReferenceBehaviour.PATH): '{"CycleWrappedNode":{"name":"a","next":{"CycleWrappedNode":{"name":"b","next":' + path('root', CycleWrappedNode) + '}}}}'
+            ], false),
+            new CycleFixture('a bean with an array wrapper type id in a list of the bean that holds it', {
+                def owner = new CycleArrayWrappedOwner(name: 'o')
+                owner.items = [new CycleArrayWrappedItem(name: 'i', owner: owner)]
+                owner
+            }, [
+                    (CircularReferenceBehaviour.DEFAULT): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":' + ref('../../..', CycleArrayWrappedOwner) + '}]],"name":"o"}',
+                    (CircularReferenceBehaviour.EXCEPTION): null,
+                    (CircularReferenceBehaviour.INSERT_NULL): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":null}]],"name":"o"}',
+                    (CircularReferenceBehaviour.IGNORE): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":null}]],"name":"o"}',
+                    (CircularReferenceBehaviour.PATH): '{"items":[["CycleArrayWrappedItem",{"name":"i","owner":' + path('root', CycleArrayWrappedOwner) + '}]],"name":"o"}'
             ], false)
     ]
 
@@ -356,4 +401,26 @@ class CycleKept {
 class CycleRow {
     String name
     CycleRow parent
+}
+
+class CycleOptionalNode {
+    String name
+    Optional<CycleOptionalNode> next
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
+class CycleWrappedNode {
+    String name
+    CycleWrappedNode next
+}
+
+class CycleArrayWrappedOwner {
+    String name
+    List<CycleArrayWrappedItem> items
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+class CycleArrayWrappedItem {
+    String name
+    CycleArrayWrappedOwner owner
 }

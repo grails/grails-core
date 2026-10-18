@@ -436,6 +436,17 @@ public class JSONWriter {
     }
 
     /**
+     * The number of JSON objects and arrays the next value is written in, which is how deep the outermost object or array
+     * of a value written now is less one, such as the type wrapper of a bean.
+     *
+     * @return the depth, or {@code -1} where the writer writes to no generator
+     * @since 9.0
+     */
+    public int nestingDepth() {
+        return generator != null ? generator.streamWriteContext().getNestingDepth() : -1;
+    }
+
+    /**
      * Records that the value about to be written stands for the nested value {@link #writeNested(Runnable)} writes, as the
      * instance a proxy proxies does, so that it is written as the {@code JsonMapper} writes it in the place of the proxy:
      * with what the property the nested value is the value of is annotated with. Nothing is recorded for any other value.

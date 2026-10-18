@@ -26,6 +26,8 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -89,6 +91,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     protected boolean prettyPrint;
     protected JSONWriter writer;
     protected Stack<Object> referenceStack;
+
+    /** How many JSON objects and arrays each object on the reference stack is written in, where the writer knows it. */
+    private Map<Object, Integer> referenceDepths = new IdentityHashMap<>();
     protected JsonMapperSupport jsonMapperSupport;
 
     private Map<Class<?>, DomainClassRendering> domainClassRenderings = new ConcurrentHashMap<>();
@@ -148,6 +153,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
             writer = new PathCapturingJSONWriterWrapper(writer);
         }
         referenceStack = new Stack<>();
+        referenceDepths = new IdentityHashMap<>();
     }
 
     private void finalizeRender(Writer out) {
@@ -242,11 +248,16 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 }
                 else {
                     referenceStack.push(o);
+                    int depth = jsonWriter != null ? jsonWriter.nestingDepth() : -1;
+                    if (depth >= 0) {
+                        referenceDepths.put(o, depth);
+                    }
                     if (marshaller == null) {
                         throw new ConverterException("Unconvertable Object of class: " + o.getClass().getName());
                     }
                     marshaller.marshalObject(o, this);
                     referenceStack.pop();
+                    referenceDepths.remove(o);
                 }
             }
         }
@@ -498,13 +509,15 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 final boolean isCollection = Collection.class.isAssignableFrom(o.getClass());
                 final boolean isMap = Map.class.isAssignableFrom(o.getClass());
                 if (!(isMap || isCollection)) {
-                    StringBuilder ref = new StringBuilder();
-                    int idx = referenceStack.indexOf(o);
-                    for (int i = referenceStack.size() - 1; i > idx; i--) {
-                        ref.append("../");
-                    }
+                    // One step up for each JSON object or array from the one the reference is written in to the value the
+                    // object is written as, its type wrapper included, as respond counts them; where the writer writes to no
+                    // generator, one for each object the converter is writing in between, as Grails 8 counted them
+                    Integer start = referenceDepths.get(o);
+                    int current = jsonWriter != null ? jsonWriter.nestingDepth() : -1;
+                    int levels = start != null && current >= 0 ? Math.max(0, current - start - 1) :
+                            referenceStack.size() - 1 - referenceStack.indexOf(o);
                     // "." where the object repeats the one the reference is written in, where Grails 8 failed
-                    writeReference("_ref", ref.length() == 0 ? "." : ref.substring(0, ref.length() - 1), o);
+                    writeReference("_ref", levels == 0 ? "." : String.join("/", Collections.nCopies(levels, "..")), o);
                 }
                 else {
                     if (isMap) {
