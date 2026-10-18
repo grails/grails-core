@@ -147,6 +147,9 @@ class MimeTypesConfiguration {
     @Bean
     static GrailsMimeTypesWebMvcConfigurer grailsMimeTypesWebMvcConfigurer(
             ObjectProvider<MimeUtility> mimeUtility, GrailsApplication grailsApplication) {
+        // A user agent that is not a regular expression is reported as the application starts, rather than by every
+        // request, which builds the strategy once it is first asked for
+        GrailsContentNegotiationStrategy.disabledUserAgentPattern(grailsApplication.config)
         // The MIME types request.format and response.format resolve against as well
         Supplier<GrailsContentNegotiationStrategy> strategy = () ->
                 new GrailsContentNegotiationStrategy(mimeUtility.getObject().knownMimeTypes as MimeType[], grailsApplication.config)

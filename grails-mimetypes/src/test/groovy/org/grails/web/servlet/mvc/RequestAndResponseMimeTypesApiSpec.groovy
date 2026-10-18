@@ -412,7 +412,34 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | ''
             'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = []'
             'got json'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = ["Trident"]'
+            'got json'      | 'application/xml, text/html, */*'  | 'trident'    | 'grails.mime.disable.accept.header.userAgents = ["Trident", "Gecko"]'
+            'got json'      | 'application/xml, text/html, */*'  | 'gecko'      | 'grails.mime.disable.accept.header.userAgents = ["Trident", "Gecko"]'
+            'got json'      | 'application/xml, text/html, */*'  | 'MSIE 10.0'  | 'grails.mime.disable.accept.header.userAgents = ["MSIE \\\\d+"]'
+            'got html'      | 'application/xml, text/html, */*'  | 'MSIE x'     | 'grails.mime.disable.accept.header.userAgents = ["MSIE \\\\d+"]'
 //            'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = null' // TODO: can no longer detect if something is set to null using new Config API, investigate..
+    }
+
+    void "a user agent the setting lists that is not a regular expression is reported as the application starts"() {
+        given:
+            def config = getTestConfig()
+            config.merge(new ConfigSlurper().parse('grails.mime.disable.accept.header.userAgents = ["Trident", "*bot*"]'))
+            application.setConfig(config)
+
+        when: 'the configurer an application has is created'
+            MimeTypesConfiguration.grailsMimeTypesWebMvcConfigurer(Stub(ObjectProvider), (GrailsApplication) application)
+
+        then:
+            IllegalArgumentException e = thrown()
+            e.message.startsWith('grails.mime.disable.accept.header.userAgents lists [*bot*], which is not a regular expression:')
+
+        when: 'a request is answered without the configurer'
+            final webRequest = boundMimeTypeRequest()
+            webRequest.currentRequest.addHeader('Accept', 'application/json')
+            webRequest.currentResponse.format
+
+        then:
+            e = thrown()
+            e.message.startsWith('grails.mime.disable.accept.header.userAgents lists [*bot*], which is not a regular expression:')
     }
 
     

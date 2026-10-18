@@ -183,7 +183,7 @@ Here `text/html` has the highest quality (`q=1.0` implicitly) and `application/x
 This is a change from Grails 7 and earlier, which ignored the `Accept` header for browser user agents by default. That behavior was a workaround for very old browsers (such as Firefox 2 and 3) that sent headers like `text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,...`, ranking XML above HTML. Modern browsers no longer do this, and ignoring the header prevented browser-issued `fetch`/`XMLHttpRequest` calls that ask for `application/json` from receiving JSON.
 ====
 
-If you need the legacy behavior — ignoring the `Accept` header for specific user agents — configure `grails.mime.disable.accept.header.userAgents` with the user-agent tokens to match (it is unset by default):
+If you need the legacy behavior — ignoring the `Accept` header for specific user agents — configure `grails.mime.disable.accept.header.userAgents` with the user agents to match (it is unset by default). Each is a regular expression, found anywhere in the `User-Agent` header, ignoring case; an application that lists one that is not a regular expression fails to start, naming it:
 
 [source,groovy]
 ----

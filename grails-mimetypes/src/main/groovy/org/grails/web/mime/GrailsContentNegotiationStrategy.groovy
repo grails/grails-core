@@ -19,6 +19,7 @@
 package org.grails.web.mime
 
 import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 import groovy.transform.CompileStatic
 
@@ -52,7 +53,7 @@ class GrailsContentNegotiationStrategy {
                 Boolean,
                 false
         )
-        this.disableForUserAgents = createDisabledUserAgentPattern(config)
+        this.disableForUserAgents = disabledUserAgentPattern(config)
     }
 
     /**
@@ -94,14 +95,29 @@ class GrailsContentNegotiationStrategy {
         return disabledForUserAgent ? null : request.getHeader(HttpHeaders.ACCEPT)
     }
 
-    private static Pattern createDisabledUserAgentPattern(Config config) {
+    /**
+     * @param config the application's configuration
+     * @return the pattern of the user agents whose {@code Accept} header is ignored: the regular expressions
+     * {@code grails.mime.disable.accept.header.userAgents} lists, any of which is found anywhere in the
+     * {@code User-Agent} header, ignoring case, or {@code null} if it lists none
+     * @throws IllegalArgumentException if it lists one that is not a regular expression
+     */
+    static Pattern disabledUserAgentPattern(Config config) {
         Object configured = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS, Object)
         if (configured instanceof Pattern) {
             return (Pattern) configured
         }
         if (configured instanceof Collection && configured) {
-            String userAgents = ((Collection) configured).join('(?i)|')
-            return Pattern.compile("(${userAgents})")
+            for (Object userAgent in (Collection) configured) {
+                try {
+                    Pattern.compile(String.valueOf(userAgent))
+                }
+                catch (PatternSyntaxException e) {
+                    throw new IllegalArgumentException("${Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS} lists " +
+                            "[${userAgent}], which is not a regular expression: ${e.description}", e)
+                }
+            }
+            return Pattern.compile("(?i)(${((Collection) configured).join('|')})")
         }
         return null
     }
