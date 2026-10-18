@@ -99,6 +99,19 @@ switch (testconfig) {
 		grails.web.url.converter = 'hyphenated'
 		break
 
+	case 'noAnonymous':
+		// chains without anonymousAuthenticationFilter: a request without credentials carries no
+		// Authentication, and the chain's exception translation filter must still answer it (#16632)
+		grails.plugin.springsecurity.securityConfigType = 'Annotation'
+		grails.plugin.springsecurity.useBasicAuth = true
+		grails.plugin.springsecurity.basic.realmName = 'Grails Spring Security Basic Test Realm'
+		grails.plugin.springsecurity.filterChain.chainMap = [
+			[pattern: '/secureclassannotated/**', filters: 'JOINED_FILTERS,-exceptionTranslationFilter,-anonymousAuthenticationFilter'],
+			[pattern: '/secureannotated/**',      filters: 'JOINED_FILTERS,-basicAuthenticationFilter,-basicExceptionTranslationFilter,-anonymousAuthenticationFilter'],
+			[pattern: '/**',                      filters: 'JOINED_FILTERS,-basicAuthenticationFilter,-basicExceptionTranslationFilter']
+		]
+		break
+
 	case 'requestmap':
 		grails.plugin.springsecurity.securityConfigType = 'Requestmap'
 		break
