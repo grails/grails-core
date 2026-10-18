@@ -16,10 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.xml
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.xml;
 
-import groovy.transform.CompileStatic
-import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter
+import groovy.transform.CompileStatic;
+import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter;
 
 /**
  * A XMLStreamWriter dedicated to create indented/pretty printed output.
@@ -27,91 +28,93 @@ import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class PrettyPrintXMLStreamWriter extends XMLStreamWriter {
 
-    public static final String DEFAULT_INDENT_STR = '  '
+    public static final String DEFAULT_INDENT_STR = '  ';
 
-    public static final String NEWLINE
+    public static final String NEWLINE;
 
     static {
-        String nl = System.getProperty('line.separator')
-        NEWLINE = nl != null ? nl : '\n'
+        String nl = System.getProperty('line.separator');
+        NEWLINE = nl != null ? nl : '\n';
     }
 
-    private final String indent
+    private final String indent;
 
-    private int level = 0
+    private int level = 0;
 
-    private boolean doIndent = false
+    private boolean doIndent = false;
 
     PrettyPrintXMLStreamWriter(StreamingMarkupWriter writer) {
-        this(writer, DEFAULT_INDENT_STR)
+        this(writer, DEFAULT_INDENT_STR);
     }
 
     PrettyPrintXMLStreamWriter(StreamingMarkupWriter writer, String indent) {
-        super(writer)
-        this.indent = indent
+        super(writer);
+        this.indent = indent;
     }
 
     private void newline() throws IOException {
-        writer.unescaped().write(NEWLINE)
+        writer.unescaped().write(NEWLINE);
     }
 
     private void indent() throws IOException {
-        Writer ue = writer.unescaped()
+        Writer ue = writer.unescaped();
         for (int i = 0; i < level; i++) {
-            ue.write(indent)
+            ue.write(indent);
         }
     }
 
     @Override
     protected void endStartTag() throws IOException {
-        super.endStartTag()
-        newline()
+        super.endStartTag();
+        newline();
         if (doIndent)
-            indent()
+            indent();
     }
 
     @Override
     protected void startTag() throws IOException {
-        indent()
-        super.startTag()
+        indent();
+        super.startTag();
     }
 
     @Override
     XMLStreamWriter startNode(String tag) throws IOException {
-        doIndent = false
-        super.startNode(tag)
-        level++
-        return this
+        doIndent = false;
+        super.startNode(tag);
+        level++;
+        return this;
     }
 
     @Override
     XMLStreamWriter end() throws IOException {
-        level--
+        level--;
         if (mode != Mode.TAG) {
-            indent()
+            indent();
         }
-        super.end()
-        newline()
+        super.end();
+        newline();
         // indent();
-        return this
+        return this;
     }
 
     @Override
     XMLStreamWriter characters(String data) throws IOException {
-        doIndent = true
-        super.characters(data)
-        newline()
-        return this
+        doIndent = true;
+        super.characters(data);
+        newline();
+        return this;
     }
 
     @Override
     XMLStreamWriter startDocument(String encoding, String version) throws IOException {
-        super.startDocument(encoding, version)
-        newline()
-        return this
+        super.startDocument(encoding, version);
+        newline();
+        return this;
     }
 
 }

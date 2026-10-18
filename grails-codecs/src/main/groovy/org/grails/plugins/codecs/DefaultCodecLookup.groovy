@@ -16,56 +16,59 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.plugins.codecs
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.plugins.codecs;
 
-import groovy.transform.CompileStatic
-import org.springframework.context.ApplicationContext
-import org.springframework.core.OrderComparator
+import groovy.transform.CompileStatic;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.OrderComparator;
 
-import grails.core.GrailsApplication
-import grails.core.GrailsClass
-import grails.core.support.GrailsApplicationAware
-import org.grails.commons.CodecArtefactHandler
-import org.grails.commons.GrailsCodecClass
-import org.grails.encoder.impl.BasicCodecLookup
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import grails.core.support.GrailsApplicationAware;
+import org.grails.commons.CodecArtefactHandler;
+import org.grails.commons.GrailsCodecClass;
+import org.grails.encoder.impl.BasicCodecLookup;
 
 /**
  * @author Lari Hotari
  * @since 2.3
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class DefaultCodecLookup extends BasicCodecLookup implements GrailsApplicationAware {
 
-    protected ApplicationContext applicationContext
-    protected GrailsApplication grailsApplication
+    protected ApplicationContext applicationContext;
+    protected GrailsApplication grailsApplication;
 
     DefaultCodecLookup(GrailsApplication grailsApplication) {
-        Objects.requireNonNull(grailsApplication)
-        this.grailsApplication = grailsApplication
-        this.applicationContext = grailsApplication.getMainContext()
+        Objects.requireNonNull(grailsApplication);
+        this.grailsApplication = grailsApplication;
+        this.applicationContext = grailsApplication.getMainContext();
     }
 
     DefaultCodecLookup() {
     }
 
     protected void registerCodecs() {
-        List<GrailsClass> codecs = Arrays.asList(grailsApplication.getArtefacts(CodecArtefactHandler.TYPE))
-        Collections.sort(codecs, OrderComparator.INSTANCE)
-        Collections.reverse(codecs)
+        List<GrailsClass> codecs = Arrays.asList(grailsApplication.getArtefacts(CodecArtefactHandler.TYPE));
+        Collections.sort(codecs, OrderComparator.INSTANCE);
+        Collections.reverse(codecs);
         for (GrailsClass grailsClass in codecs) {
-            registerCodec((GrailsCodecClass) grailsClass)
+            registerCodec((GrailsCodecClass) grailsClass);
         }
     }
 
     void registerCodec(GrailsCodecClass grailsClass) {
-        grailsClass.configureCodecMethods()
-        registerCodecFactory(grailsClass)
+        grailsClass.configureCodecMethods();
+        registerCodecFactory(grailsClass);
     }
 
     void setGrailsApplication(GrailsApplication grailsApplication) {
-        Objects.requireNonNull(grailsApplication)
-        this.grailsApplication = grailsApplication
-        this.applicationContext = grailsApplication.getMainContext()
+        Objects.requireNonNull(grailsApplication);
+        this.grailsApplication = grailsApplication;
+        this.applicationContext = grailsApplication.getMainContext();
     }
 
 }
