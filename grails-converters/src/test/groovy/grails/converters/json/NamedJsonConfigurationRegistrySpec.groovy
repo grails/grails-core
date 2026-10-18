@@ -184,12 +184,42 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         when: 'written while the value is, or once it is complete, where it fits in the buffer'
         registry.writeValue('deep', output, new NamedJsonValue(name: 'G' * characters))
 
-        then:
+        then: "with Jackson's exception suppressed"
         IOException e = thrown()
         e.message == 'broken pipe'
+        e.suppressed.every { it instanceof JacksonException }
+        e.suppressed.size() == 1
 
         where:
         characters << [60000, 6]
+    }
+
+    void 'a value that fails while the writer is broken is reported as Jackson reports it, with the failure of the writer suppressed'() {
+        given: 'a writer that fails when Jackson writes to it what it has buffered, once the value has failed'
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        def output = new Writer() {
+            @Override
+            void write(char[] buffer, int offset, int length) {
+                throw new IOException('broken pipe')
+            }
+
+            @Override
+            void flush() {
+            }
+
+            @Override
+            void close() {
+            }
+        }
+
+        when:
+        registry.writeValue('deep', output, new NamedJsonFailing(title: 'Grails'))
+
+        then:
+        DatabindException e = thrown()
+        e.cause instanceof IllegalStateException
+        e.path*.propertyName == ['failing']
+        e.suppressed*.cause*.message == ['broken pipe']
     }
 
     void 'an I/O failure of the value written is reported as Jackson reports it, with its path, rather than as a failure of the writer'() {

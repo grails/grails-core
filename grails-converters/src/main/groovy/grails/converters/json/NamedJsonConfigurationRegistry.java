@@ -165,15 +165,28 @@ public final class NamedJsonConfigurationRegistry {
         }
         catch (JacksonException e) {
             // Jackson reports a failure of the writer as the unchecked cause of its own exception, as it reports an
-            // I/O failure of the value being written, which keeps Jackson's exception and its path
-            if (recording.failure != null) {
-                throw recording.failure;
+            // I/O failure of the value being written, which keeps Jackson's exception and its path. The writer's failure
+            // is thrown where it caused Jackson's, with Jackson's suppressed; one that Jackson only met closing the
+            // generator after another failure is suppressed in that failure's exception, which is thrown
+            IOException failure = recording.failure;
+            if (failure != null && causes(failure, e)) {
+                failure.addSuppressed(e);
+                throw failure;
             }
             throw e;
         }
     }
 
-    /** A writer that remembers its own failure, which Jackson reports inside its own exception. */
+    private static boolean causes(Throwable failure, Throwable exception) {
+        for (Throwable cause = exception.getCause(); cause != null; cause = cause.getCause()) {
+            if (cause == failure) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** A writer that remembers its first failure, which Jackson reports inside its own exception. */
     private static final class FailureRecordingWriter extends FilterWriter {
 
         private IOException failure;
@@ -233,7 +246,9 @@ public final class NamedJsonConfigurationRegistry {
         }
 
         private IOException record(IOException e) {
-            failure = e;
+            if (failure == null) {
+                failure = e;
+            }
             return e;
         }
     }
