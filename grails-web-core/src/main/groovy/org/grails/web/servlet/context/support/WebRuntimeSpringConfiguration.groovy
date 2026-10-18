@@ -16,21 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.servlet.context.support
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.servlet.context.support;
 
-import jakarta.servlet.ServletContext
+import jakarta.servlet.ServletContext;
 
-import groovy.transform.CompileStatic
-import org.springframework.beans.factory.support.DefaultListableBeanFactory
-import org.springframework.context.ApplicationContext
-import org.springframework.context.support.GenericApplicationContext
-import org.springframework.util.Assert
-import org.springframework.web.context.ConfigurableWebApplicationContext
-import org.springframework.web.context.ServletContextAware
+import groovy.transform.CompileStatic;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.util.Assert;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.context.ServletContextAware;
 
-import grails.core.GrailsApplication
-import grails.web.servlet.context.GrailsWebApplicationContext
-import org.grails.spring.DefaultRuntimeSpringConfiguration
+import grails.core.GrailsApplication;
+import grails.web.servlet.context.GrailsWebApplicationContext;
+import org.grails.spring.DefaultRuntimeSpringConfiguration;
 
 /**
  * Subclasses DefaultRuntimeSpringConfiguration to provide construction of WebApplicationContext instances.
@@ -38,61 +39,63 @@ import org.grails.spring.DefaultRuntimeSpringConfiguration
  * @author Graeme Rocher
  * @since 1.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfiguration implements ServletContextAware {
 
-    private GrailsApplication grailsApplication
+    private GrailsApplication grailsApplication;
 
     WebRuntimeSpringConfiguration(ApplicationContext parent) {
-        super(parent)
+        super(parent);
     }
 
     WebRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader cl) {
-        super(parent, cl)
+        super(parent, cl);
     }
 
     WebRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader cl, GrailsApplication grailsApplication) {
-        super(parent, cl)
-        this.grailsApplication = grailsApplication
+        super(parent, cl);
+        this.grailsApplication = grailsApplication;
     }
 
     WebRuntimeSpringConfiguration(ApplicationContext parent, GrailsApplication grailsApplication) {
-        super(parent)
-        this.grailsApplication = grailsApplication
+        super(parent);
+        this.grailsApplication = grailsApplication;
     }
 
     @Override
     protected GenericApplicationContext createApplicationContext(ApplicationContext parentCtx) {
         if (parentCtx != null && beanFactory != null) {
             Assert.isInstanceOf(DefaultListableBeanFactory, beanFactory,
-                'ListableBeanFactory set must be a subclass of DefaultListableBeanFactory')
+                'ListableBeanFactory set must be a subclass of DefaultListableBeanFactory');
 
-            GrailsWebApplicationContext ctx = new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory, grailsApplication)
-            ctx.setParent(parentCtx)
-            return ctx
+            GrailsWebApplicationContext ctx = new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory, grailsApplication);
+            ctx.setParent(parentCtx);
+            return ctx;
         }
 
         if (beanFactory != null) {
             Assert.isInstanceOf(DefaultListableBeanFactory, beanFactory,
-                'ListableBeanFactory set must be a subclass of DefaultListableBeanFactory')
+                'ListableBeanFactory set must be a subclass of DefaultListableBeanFactory');
 
-            return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory, grailsApplication)
+            return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory, grailsApplication);
         }
 
         if (parentCtx != null) {
-            GrailsWebApplicationContext ctx = new GrailsWebApplicationContext(grailsApplication)
-            ctx.setParent(parentCtx)
-            return ctx
+            GrailsWebApplicationContext ctx = new GrailsWebApplicationContext(grailsApplication);
+            ctx.setParent(parentCtx);
+            return ctx;
         }
 
-        return new GrailsWebApplicationContext()
+        return new GrailsWebApplicationContext();
     }
 
     void setServletContext(ServletContext servletContext) {
-        initialiseApplicationContext()
+        initialiseApplicationContext();
 
         if (context instanceof ConfigurableWebApplicationContext) {
-            ((ConfigurableWebApplicationContext) context).setServletContext(servletContext)
+            ((ConfigurableWebApplicationContext) context).setServletContext(servletContext);
         }
     }
 

@@ -16,11 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.mapping
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.mapping;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.web.mapping.UrlMappingData
+import grails.web.mapping.UrlMappingData;
 
 /**
  * A mapping data for response codes (numbers)
@@ -28,50 +29,52 @@ import grails.web.mapping.UrlMappingData
  * @author mike
  * @since 1.0-RC1
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class ResponseCodeMappingData implements UrlMappingData {
 
-    private final int responseCode
-    private final String responseCodeAsString
+    private final int responseCode;
+    private final String responseCodeAsString;
 
     ResponseCodeMappingData(String responseCode) {
-        this.responseCode = Integer.parseInt(responseCode)
-        this.responseCodeAsString = responseCode
+        this.responseCode = Integer.parseInt(responseCode);
+        this.responseCodeAsString = responseCode;
     }
 
     String[] getTokens() {
-        return [responseCodeAsString] as String[]
+        return new String[] {responseCodeAsString};
     }
 
     String[] getLogicalUrls() {
-        return [responseCodeAsString] as String[]
+        return new String[] {responseCodeAsString};
     }
 
     String getUrlPattern() {
-        return responseCodeAsString
+        return responseCodeAsString;
     }
 
     boolean isOptional(int index) {
-        return false
+        return false;
     }
 
     @Override
     UrlMappingData createRelative(String path) {
-        throw new UnsupportedOperationException('You cannot create relative UrlMappings for response codes')
+        throw new UnsupportedOperationException("You cannot create relative UrlMappings for response codes");
     }
 
     @Override
     boolean hasOptionalExtension() {
-        return false
+        return false;
     }
 
     @Override
     boolean hasGreedyExtensionParam() {
-        return false
+        return false;
     }
 
     int getResponseCode() {
-        return responseCode
+        return responseCode;
     }
 
 }

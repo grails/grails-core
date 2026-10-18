@@ -16,20 +16,20 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.classgen.GeneratorContext
-import org.codehaus.groovy.control.CompilationFailedException
-import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
-import org.grails.cli.compiler.GroovyCompilerConfiguration
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
+import org.grails.cli.compiler.GroovyCompilerConfiguration;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring.
@@ -38,59 +38,61 @@ import org.grails.cli.compiler.GroovyCompilerConfiguration
  * @author Phillip Webb
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons and double-quoted strings kept to clear the 50% rename-similarity threshold against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class SpringBootCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
-        dependencies.ifAnyMissingClasses('org.springframework.boot.SpringApplication').add('spring-boot-starter')
+        dependencies.ifAnyMissingClasses("org.springframework.boot.SpringApplication").add("spring-boot-starter");
     }
 
     @Override
     void applyImports(ImportCustomizer imports) {
-        imports.addImports('jakarta.annotation.PostConstruct', 'jakarta.annotation.PreDestroy', 'groovy.util.logging.Log',
-                'org.springframework.stereotype.Controller', 'org.springframework.stereotype.Service',
-                'org.springframework.stereotype.Component', 'org.springframework.beans.factory.annotation.Autowired',
-                'org.springframework.beans.factory.annotation.Value', 'org.springframework.context.annotation.Import',
-                'org.springframework.context.annotation.ImportResource',
-                'org.springframework.context.annotation.Profile', 'org.springframework.context.annotation.Scope',
-                'org.springframework.context.annotation.Configuration',
-                'org.springframework.context.annotation.ComponentScan', 'org.springframework.context.annotation.Bean',
-                'org.springframework.context.ApplicationContext', 'org.springframework.context.MessageSource',
-                'org.springframework.core.annotation.Order', 'org.springframework.core.io.ResourceLoader',
-                'org.springframework.boot.ApplicationRunner', 'org.springframework.boot.ApplicationArguments',
-                'org.springframework.boot.CommandLineRunner',
-                'org.springframework.boot.context.properties.ConfigurationProperties',
-                'org.springframework.boot.context.properties.EnableConfigurationProperties',
-                'org.springframework.boot.autoconfigure.EnableAutoConfiguration',
-                'org.springframework.boot.autoconfigure.SpringBootApplication',
-                'org.springframework.boot.context.properties.ConfigurationProperties',
-                'org.springframework.boot.context.properties.EnableConfigurationProperties')
-        imports.addStarImports('org.springframework.stereotype', 'org.springframework.scheduling.annotation')
+        imports.addImports("jakarta.annotation.PostConstruct", "jakarta.annotation.PreDestroy", "groovy.util.logging.Log",
+                "org.springframework.stereotype.Controller", "org.springframework.stereotype.Service",
+                "org.springframework.stereotype.Component", "org.springframework.beans.factory.annotation.Autowired",
+                "org.springframework.beans.factory.annotation.Value", "org.springframework.context.annotation.Import",
+                "org.springframework.context.annotation.ImportResource",
+                "org.springframework.context.annotation.Profile", "org.springframework.context.annotation.Scope",
+                "org.springframework.context.annotation.Configuration",
+                "org.springframework.context.annotation.ComponentScan", "org.springframework.context.annotation.Bean",
+                "org.springframework.context.ApplicationContext", "org.springframework.context.MessageSource",
+                "org.springframework.core.annotation.Order", "org.springframework.core.io.ResourceLoader",
+                "org.springframework.boot.ApplicationRunner", "org.springframework.boot.ApplicationArguments",
+                "org.springframework.boot.CommandLineRunner",
+                "org.springframework.boot.context.properties.ConfigurationProperties",
+                "org.springframework.boot.context.properties.EnableConfigurationProperties",
+                "org.springframework.boot.autoconfigure.EnableAutoConfiguration",
+                "org.springframework.boot.autoconfigure.SpringBootApplication",
+                "org.springframework.boot.context.properties.ConfigurationProperties",
+                "org.springframework.boot.context.properties.EnableConfigurationProperties");
+        imports.addStarImports("org.springframework.stereotype", "org.springframework.scheduling.annotation");
     }
 
     @Override
     void applyToMainClass(GroovyClassLoader loader, GroovyCompilerConfiguration configuration,
             GeneratorContext generatorContext, SourceUnit source, ClassNode classNode)
             throws CompilationFailedException {
-        addEnableAutoConfigurationAnnotation(classNode)
+        addEnableAutoConfigurationAnnotation(classNode);
     }
 
     private void addEnableAutoConfigurationAnnotation(ClassNode classNode) {
         if (!hasEnableAutoConfigureAnnotation(classNode)) {
-            AnnotationNode annotationNode = new AnnotationNode(ClassHelper.make('EnableAutoConfiguration'))
-            classNode.addAnnotation(annotationNode)
+            AnnotationNode annotationNode = new AnnotationNode(ClassHelper.make("EnableAutoConfiguration"));
+            classNode.addAnnotation(annotationNode);
         }
     }
 
     private boolean hasEnableAutoConfigureAnnotation(ClassNode classNode) {
-        for (AnnotationNode node in classNode.getAnnotations()) {
-            String name = node.getClassNode().getNameWithoutPackage()
-            if ('EnableAutoConfiguration'.equals(name) || 'SpringBootApplication'.equals(name)) {
-                return true
+        for (AnnotationNode node : classNode.getAnnotations()) {
+            String name = node.getClassNode().getNameWithoutPackage();
+            if ("EnableAutoConfiguration".equals(name) || "SpringBootApplication".equals(name)) {
+                return true;
             }
         }
-        return false
+        return false;
     }
 
 }

@@ -16,28 +16,30 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.converters.marshaller.json
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.converters.marshaller.json;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.converters.JSON
-import org.grails.web.converters.exceptions.ConverterException
-import org.grails.web.converters.marshaller.ObjectMarshaller
+import grails.converters.JSON;
+import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class ByteArrayMarshaller implements ObjectMarshaller<JSON> {
 
     boolean supports(Object object) {
-        return object instanceof byte[]
+        return object instanceof byte[];
     }
 
     void marshalObject(Object object, JSON converter) throws ConverterException {
-        byte[] bytes = (byte[]) object
-        converter.convertAnother(String.format('%d Bytes', bytes.length))
+        byte[] bytes = (byte[]) object;
+        converter.convertAnother(String.format('%d Bytes', bytes.length));
     }
-
 }

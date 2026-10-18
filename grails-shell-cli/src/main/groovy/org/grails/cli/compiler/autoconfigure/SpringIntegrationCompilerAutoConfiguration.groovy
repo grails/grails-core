@@ -16,15 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring Integration.
@@ -33,33 +33,35 @@ import org.grails.cli.compiler.DependencyCustomizer
  * @author Artem Bilan
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons and double-quoted strings kept to clear the 50% rename-similarity threshold against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class SpringIntegrationCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableIntegration') ||
-                AstUtils.hasAtLeastOneAnnotation(classNode, 'MessageEndpoint')
+        return AstUtils.hasAtLeastOneAnnotation(classNode, "EnableIntegration") ||
+                AstUtils.hasAtLeastOneAnnotation(classNode, "MessageEndpoint");
     }
 
     @Override
     void applyDependencies(DependencyCustomizer dependencies) {
-        dependencies.ifAnyMissingClasses('org.springframework.integration.config.EnableIntegration')
-            .add('spring-boot-starter-integration')
+        dependencies.ifAnyMissingClasses("org.springframework.integration.config.EnableIntegration")
+            .add("spring-boot-starter-integration");
     }
 
     @Override
     void applyImports(ImportCustomizer imports) {
-        imports.addImports('org.springframework.messaging.Message', 'org.springframework.messaging.MessageChannel',
-                'org.springframework.messaging.PollableChannel', 'org.springframework.messaging.SubscribableChannel',
-                'org.springframework.messaging.MessageHeaders',
-                'org.springframework.integration.support.MessageBuilder',
-                'org.springframework.integration.channel.DirectChannel',
-                'org.springframework.integration.channel.QueueChannel',
-                'org.springframework.integration.channel.ExecutorChannel',
-                'org.springframework.integration.core.MessagingTemplate',
-                'org.springframework.integration.config.EnableIntegration')
-        imports.addStarImports('org.springframework.integration.annotation')
+        imports.addImports("org.springframework.messaging.Message", "org.springframework.messaging.MessageChannel",
+                "org.springframework.messaging.PollableChannel", "org.springframework.messaging.SubscribableChannel",
+                "org.springframework.messaging.MessageHeaders",
+                "org.springframework.integration.support.MessageBuilder",
+                "org.springframework.integration.channel.DirectChannel",
+                "org.springframework.integration.channel.QueueChannel",
+                "org.springframework.integration.channel.ExecutorChannel",
+                "org.springframework.integration.core.MessagingTemplate",
+                "org.springframework.integration.config.EnableIntegration");
+        imports.addStarImports("org.springframework.integration.annotation");
     }
 
 }
