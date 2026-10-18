@@ -155,8 +155,10 @@ that a Jackson module provides a serializer for, is written by that serializer, 
 of an association, which is otherwise written as a reference.
 
 The property values are rendered by the converter's marshallers. The application's `JsonMapper` itself renders domain
-classes as Jackson beans, as it does any class. To have it render them as the JSON converter does, including when a
-Spring MVC controller returns one or when you call `jsonMapper.writeValueAsString(book)`, set:
+classes as Jackson beans, as it does any class. To have it render them with the serializer the JSON converter renders
+them with, including when a Spring MVC controller returns one or when you call `jsonMapper.writeValueAsString(book)`,
+set the following. The mapper then writes the property values itself, so the converter's marshallers and its rule for
+enums do not apply to them:
 
 [source,yaml]
 ----
