@@ -587,7 +587,8 @@ and `setExcludes(List)` or by `respond`, apply where the value is a proxy, such 
 to the instance the proxy stands for, and for the rest of the render to the other instances of its class that have none
 of their own, as the projection of `respond` does. Grails 8 kept them for the class of the proxy, which it does not
 render, and so rendered every property. A marshaller that writes the instance a proxy stands for in its place calls
-`JSON.standIn(proxy, instance)` before it writes the instance, as the converter's own do.
+`standIn(proxy, instance)` on the `JSON` converter it is given before it writes the instance, as the converter's own
+marshallers do.
 
 JSON views, the XML converter and the HAL renderer are not changed.
 

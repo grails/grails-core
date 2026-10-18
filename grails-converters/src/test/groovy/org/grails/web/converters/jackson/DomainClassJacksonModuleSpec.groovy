@@ -306,6 +306,28 @@ class DomainClassJacksonModuleSpec extends Specification {
         json.toString() == '{"id":1}'
     }
 
+    void "the includes of a proxy apply where a DomainClassMarshaller unwraps it itself, with legacy #legacy"() {
+        given: 'a marshaller for the proxy class that a DomainClassMarshaller with a proxy handler of its own writes'
+        grailsApplication.config.setAt('grails.converters.json.legacy', legacy)
+        ConvertersConfigurationHolder.clear()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
+        def marshaller = new DomainClassMarshaller(false, new WriterProxyHandler(), grailsApplication)
+        JSON.registerObjectMarshaller(WriterProxy) { Object proxy, JSON converter -> marshaller.marshalObject(proxy, converter) }
+        def writer = new Writer(name: 'a')
+        writer.id = 1
+        def json = new JSON(new WriterProxy(target: writer, proxyId: 1))
+        json.setExcludes(['name'])
+
+        expect:
+        json.toString() == '{"id":1}'
+
+        cleanup:
+        grailsApplication.config.setAt('grails.converters.json.legacy', false)
+
+        where:
+        legacy << [false, true]
+    }
+
     void "a GORM proxy is unwrapped by itself when the application's proxy handler does not unwrap it, as on MongoDB"() {
         given: 'only Hibernate registers a proxy handler; other datastores leave the default one, which unwraps nothing'
         def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), false, false, false))

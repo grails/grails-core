@@ -144,8 +144,20 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             marshalObjectAsGrails8(value, json);
             return;
         }
-        Object object = proxyHandler.unwrapIfProxy(value);
+        Object object = unwrapped(value, json);
         JsonMapperValueMarshaller.write(object, json);
+    }
+
+    /**
+     * The instance a proxy stands for, which the converter is told it writes in the proxy's place, so that the includes and
+     * excludes it has for the class of the proxy apply to it, or the value itself.
+     */
+    private Object unwrapped(Object value, JSON json) {
+        Object unwrapped = proxyHandler.unwrapIfProxy(value);
+        if (unwrapped != value && unwrapped != null) {
+            json.standIn(value, unwrapped);
+        }
+        return unwrapped;
     }
 
     /**
@@ -165,7 +177,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void marshalObjectAsGrails8(Object value, JSON json) throws ConverterException {
         JSONWriter writer = json.getWriter();
-        value = proxyHandler.unwrapIfProxy(value);
+        value = unwrapped(value, json);
         Class<?> clazz = value.getClass();
 
         List<String> excludes = json.getExcludes(clazz);
