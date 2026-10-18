@@ -18,6 +18,7 @@
  */
 package org.grails.web.json;
 
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -30,11 +31,14 @@ import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.impl.PropertySerializerMap;
 import tools.jackson.databind.ser.std.DelegatingSerializer;
+import tools.jackson.databind.ser.std.StdContainerSerializer;
 import tools.jackson.databind.type.ArrayType;
 import tools.jackson.databind.type.CollectionLikeType;
 import tools.jackson.databind.type.CollectionType;
@@ -355,7 +359,146 @@ final class NestedValueSerializer extends DelegatingSerializer {
         }
 
         private static ValueSerializer<?> wrap(ValueSerializer<?> serializer) {
-            return serializer instanceof NestedValueSerializer ? serializer : new NestedValueSerializer(serializer);
+            return serializer instanceof NestedValueSerializer || serializer instanceof Container ? serializer :
+                    Container.of(new NestedValueSerializer(serializer));
+        }
+    }
+
+    /**
+     * The {@link NestedValueSerializer} of a collection, an array or a map, which Jackson takes for the container
+     * serializer it wraps: Jackson gives the serializer of a property's value the type serializer that the property's
+     * {@code @JsonTypeInfo} asks for the elements only when that serializer is a {@link StdContainerSerializer}, and the
+     * elements would otherwise be written without their type ids.
+     */
+    private static final class Container extends StdContainerSerializer<Object> {
+
+        private final NestedValueSerializer nested;
+
+        private final StdContainerSerializer<?> container;
+
+        private Container(NestedValueSerializer nested, StdContainerSerializer<?> container) {
+            super(container);
+            this.nested = nested;
+            this.container = container;
+        }
+
+        /**
+         * @return the serializer, as a {@code Container} if it is a {@link NestedValueSerializer} of a container serializer
+         */
+        static ValueSerializer<?> of(ValueSerializer<?> serializer) {
+            return serializer instanceof NestedValueSerializer nested &&
+                    nested._delegatee instanceof StdContainerSerializer<?> container ? new Container(nested, container) :
+                    serializer;
+        }
+
+        private ValueSerializer<?> rewrapped(ValueSerializer<?> serializer) {
+            return serializer == nested ? this : of(serializer);
+        }
+
+        @Override
+        protected StdContainerSerializer<?> _withValueTypeSerializer(TypeSerializer valueTypeSerializer) {
+            StdContainerSerializer<?> typed = container.withValueTypeSerializer(valueTypeSerializer);
+            return typed == container ? this :
+                    new Container((NestedValueSerializer) nested.replaceDelegatee(typed), typed);
+        }
+
+        @Override
+        public JavaType getContentType() {
+            return container.getContentType();
+        }
+
+        @Override
+        public ValueSerializer<?> getContentSerializer() {
+            return container.getContentSerializer();
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @Override
+        public boolean hasSingleElement(Object value) {
+            return ((StdContainerSerializer) container).hasSingleElement(value);
+        }
+
+        @Override
+        public boolean isEmpty(SerializationContext context, Object value) {
+            return nested.isEmpty(context, value);
+        }
+
+        @Override
+        public void serialize(Object value, JsonGenerator generator, SerializationContext context) {
+            nested.serialize(value, generator, context);
+        }
+
+        @Override
+        public void serializeWithType(Object value, JsonGenerator generator, SerializationContext context,
+                TypeSerializer typeSerializer) {
+            nested.serializeWithType(value, generator, context, typeSerializer);
+        }
+
+        @Override
+        public void resolve(SerializationContext context) {
+            nested.resolve(context);
+        }
+
+        @Override
+        public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
+            return rewrapped(nested.createContextual(context, property));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public ValueSerializer<Object> unwrappingSerializer(NameTransformer unwrapper) {
+            return (ValueSerializer<Object>) rewrapped(nested.unwrappingSerializer(unwrapper));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public ValueSerializer<Object> replaceDelegatee(ValueSerializer<?> delegatee) {
+            return (ValueSerializer<Object>) rewrapped(nested.replaceDelegatee(delegatee));
+        }
+
+        @Override
+        public ValueSerializer<?> withFilterId(Object filterId) {
+            return rewrapped(nested.withFilterId(filterId));
+        }
+
+        @Override
+        public ValueSerializer<?> withIgnoredProperties(Set<String> ignoredProperties) {
+            return rewrapped(nested.withIgnoredProperties(ignoredProperties));
+        }
+
+        @Override
+        public ValueSerializer<?> withFormatOverrides(SerializationConfig config, JsonFormat.Value formatOverrides) {
+            return rewrapped(nested.withFormatOverrides(config, formatOverrides));
+        }
+
+        @Override
+        public Class<?> handledType() {
+            return nested.handledType();
+        }
+
+        @Override
+        public boolean usesObjectId() {
+            return nested.usesObjectId();
+        }
+
+        @Override
+        public boolean isUnwrappingSerializer() {
+            return nested.isUnwrappingSerializer();
+        }
+
+        @Override
+        public ValueSerializer<?> getDelegatee() {
+            return nested.getDelegatee();
+        }
+
+        @Override
+        public Iterator<PropertyWriter> properties() {
+            return nested.properties();
+        }
+
+        @Override
+        public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type) {
+            nested.acceptJsonFormatVisitor(visitor, type);
         }
     }
 }

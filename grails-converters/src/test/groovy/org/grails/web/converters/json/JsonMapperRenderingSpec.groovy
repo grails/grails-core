@@ -42,6 +42,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
+import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
@@ -744,6 +745,18 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON(typed).toString() == '{"shape":["Circle","round"]}'
     }
 
+    void "a property's @JsonTypeInfo writes the type ids of the elements of the #description it holds, as the JsonMapper writes them"() {
+        expect:
+        jackson.writeValueAsString(holder) == written
+        new JSON(holder).toString() == written
+
+        where:
+        description  | holder                                                || written
+        'list'       | new TypedContents(list: [new Tile(side: 2)])           || '{"list":[{"kind":"tile","side":2}]}'
+        'array'      | new TypedContents(array: [new Tile(side: 2)] as Object[]) || '{"array":[{"kind":"tile","side":2}]}'
+        'map'        | new TypedContents(map: [a: new Tile(side: 2)])         || '{"map":{"a":{"kind":"tile","side":2}}}'
+    }
+
     void "beans and map entries are rendered by the mapper"() {
         given:
         def bean = new Holder(name: 'Fred', created: new Date(1790305200000L), role: Role.ADMIN, unit: ChronoUnit.DAYS,
@@ -1192,4 +1205,23 @@ class Circle extends TypedShape {
 
     @JsonValue
     String jsonValue() { name }
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+class TypedContents {
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = 'kind')
+    @JsonSubTypes([@JsonSubTypes.Type(value = Tile, name = 'tile')])
+    List<Object> list
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = 'kind')
+    @JsonSubTypes([@JsonSubTypes.Type(value = Tile, name = 'tile')])
+    Object[] array
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = 'kind')
+    @JsonSubTypes([@JsonSubTypes.Type(value = Tile, name = 'tile')])
+    Map<String, Object> map
+}
+
+class Tile {
+    Integer side
 }
