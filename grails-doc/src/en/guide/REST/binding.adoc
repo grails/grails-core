@@ -98,6 +98,9 @@ Data binding uses a link:{api}grails/databinding/DataBindingSource.html[DataBind
 link:{api}org/grails/databinding/bindingsource/DataBindingSourceCreator.html[DataBindingSourceCreator].
 The request's `contentType` selects the appropriate binding source. The following beans handle common
 content types; XML and HAL XML sources are contributed by `grails-xml`, not the core JSON infrastructure.
+JSON, HAL JSON and JSON API bodies are parsed by `JsonSlurper`, as in Grails 8, unless
+`grails.databinding.json.jackson` is `true`, which has the application's Jackson `JsonMapper` parse them, so that its
+`spring.jackson.json.read.*` features and Jackson modules apply; Jackson becomes the default in Grails 10.
 
 [format="csv", options="header"]
 |===

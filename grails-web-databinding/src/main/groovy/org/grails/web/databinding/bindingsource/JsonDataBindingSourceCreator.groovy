@@ -117,7 +117,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     /**
      * @return the mapper request bodies are parsed with when {@link #useJackson} is set: the one
      *         {@link #setJsonMapper} sets, or else the application's {@code JsonMapper}, found when a body is first
-     *         parsed, or a default {@code JsonMapper} where the application has none
+     *         parsed: its only or primary one, or else Spring Boot's {@code jacksonJsonMapper}; or a default
+     *         {@code JsonMapper} where the application has none of those, as when it has several and none is primary
      * @since 9.0
      */
     JsonMapper getJsonMapper() {

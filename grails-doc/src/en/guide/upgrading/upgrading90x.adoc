@@ -117,7 +117,8 @@ properties are no longer autowired; they are set only where an application sets 
 Without the module, a request for an XML format that nothing else renders is answered like a request for
 any unsupported format: `respond` sends a `406 Not Acceptable` error, or a `404` one for validation errors,
 which have no renderer, so that the application's error pages apply, and writes a `ProblemDetail` as
-`application/problem+json` (see section 10); an XML request body binds nothing and raises no error; and `request.XML`
+`application/problem+json` (see section 10); an XML request body is not read and raises no error, while the
+request parameters bind as they do for a request without a body; and `request.XML`
 fails with a `MissingPropertyException`. `encodeAsXML` and the `xml` codec still escape text, but an object
 other than text is escaped as its string rather than rendered as XML. An application that sees these after
 an upgrade needs the dependency above.
@@ -697,7 +698,9 @@ in Grails 8, an application `JsonSlurper` bean, for example one using `JsonParse
 the default parser on that path; once Jackson parsing is enabled, configure it through
 `JsonMapperBuilderCustomizer` instead.
 Set `grails.databinding.json.jackson: true` to parse binding bodies with Boot's configured Jackson
-`JsonMapper`. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
+`JsonMapper`: the application's only or primary `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
+application context has none of those, as when it has several and none is primary, a default `JsonMapper` parses them,
+as for the JSON converter. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
 Mapper features installed through `JsonMapperBuilderCustomizer` then apply consistently
 to request parsing as well as response rendering. This includes registered Jackson modules and parser
 features such as support for an application-specific input format.

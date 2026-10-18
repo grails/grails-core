@@ -154,7 +154,7 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         thrown InvalidRequestBodyException
     }
 
-    void 'uses an injected Boot JsonMapper for request parsing'() {
+    void 'uses the JsonMapper it is given for request parsing'() {
         given:
         def jsonMapper = JsonMapper.builder()
                 .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
@@ -276,6 +276,25 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         expect:
         context.getBean(JsonDataBindingSourceCreator)
                 .createDataBindingSource(MimeType.JSON, Object, new StringReader('{name: Grails}'))['name'] == 'Grails'
+
+        cleanup:
+        context.close()
+    }
+
+    void 'Jackson request parsing uses the application\'s only JsonMapper, whatever its name'() {
+        given:
+        def context = new AnnotationConfigApplicationContext()
+        context.environment.propertySources.addFirst(new MapPropertySource('test', ['grails.databinding.json.jackson': true]))
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean('applicationMapper', JsonMapper) {
+            JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build()
+        }
+        context.registerBean(JsonDataBindingSourceCreator)
+        context.refresh()
+
+        expect:
+        context.getBean(JsonDataBindingSourceCreator).createDataBindingSource(MimeType.JSON, Object,
+                new StringReader('{/* comment */"name":"Grails"}'))['name'] == 'Grails'
 
         cleanup:
         context.close()

@@ -164,14 +164,17 @@ class JsonBindingSpec extends Specification implements ControllerUnitTest<Bindin
 class JacksonJsonBindingSpec extends Specification implements ControllerUnitTest<BindingController> {
 
     Closure doWithConfig() {
-        { config -> config['grails.databinding.json.jackson'] = true }
+        { config ->
+            config['grails.databinding.json.jackson'] = true
+            config['spring.jackson.json.read.allow-java-comments'] = true
+        }
     }
 
-    void 'with grails.databinding.json.jackson, a request body binds as Jackson parses it, decimals as BigDecimal'() {
-        given:
+    void 'with grails.databinding.json.jackson, a request body binds as the application mapper parses it, with its spring.jackson read features, decimals as BigDecimal'() {
+        given: 'a comment, which the mapper accepts as spring.jackson configures it, and JsonSlurper does not'
         request.contentType = JSON_CONTENT_TYPE
         request.method = 'POST'
-        request.content = '{"lastName": "Brown", "mapData": {"price": 1.15}, "familyMembers": [{"name": "Jake", "age": "12"}]}'
+        request.content = '{/* a family */"lastName": "Brown", "mapData": {"price": 1.15}, "familyMembers": [{"name": "Jake", "age": "12"}]}'
                 .getBytes('UTF-8')
 
         when:
