@@ -18,119 +18,120 @@
  */
 package org.grails.io.support
 
+import java.net.MalformedURLException
+
 import spock.lang.Specification
+import spock.lang.TempDir
 
 class UrlResourceSpec extends Specification {
 
-    void 'equals is true for the same instance'() {
+    @TempDir
+    File tempDir
+
+    void 'a file resource constructed from a #kind exposes its content and metadata'() {
         given:
-        UrlResource resource = new UrlResource('file:///tmp/foo.txt')
+        File file = new File(tempDir, 'message.txt')
+        file.text = 'URL content'
+        URI uri = file.toURI()
+        def resource = kind == 'URI' ? new UrlResource(uri) :
+                kind == 'URL' ? new UrlResource(uri.toURL()) : new UrlResource(uri.toString())
 
         expect:
+        resource.exists()
+        resource.isReadable()
+        resource.inputStream.withCloseable { it.getText('UTF-8') } == 'URL content'
+        resource.URL == uri.toURL()
+        resource.URI == uri
+        resource.file == file
+        resource.filename == 'message.txt'
+        resource.contentLength() == file.length()
+        resource.lastModified() == file.lastModified()
+        resource.description == "URL [${uri.toURL()}]"
+        resource.toString() == resource.description
+
+        where:
+        kind << ['URL', 'URI', 'String']
+    }
+
+    void 'relative URLs resolve siblings even when the relative path starts with a slash'() {
+        given:
+        File original = new File(tempDir, 'original.txt')
+        File sibling = new File(tempDir, 'sibling.txt')
+        sibling.text = 'sibling content'
+        def resource = new UrlResource(original.toURI())
+
+        when:
+        def relative = resource.createRelative(path)
+
+        then:
+        relative.URL == sibling.toURI().toURL()
+        relative.inputStream.withCloseable { it.getText('UTF-8') } == 'sibling content'
+
+        where:
+        path << ['sibling.txt', '/sibling.txt', 'nested/../sibling.txt']
+    }
+
+    void 'missing file URLs report absence and fail stream access'() {
+        given:
+        def resource = new UrlResource(new File(tempDir, 'missing.txt').toURI())
+
+        expect:
+        !resource.exists()
+        !resource.isReadable()
+
+        when:
+        resource.getInputStream()
+
+        then:
+        thrown(FileNotFoundException)
+    }
+
+    void 'directories are not readable file resources'() {
+        given:
+        def resource = new UrlResource(tempDir.toURI())
+
+        expect:
+        resource.exists()
+        !resource.isReadable()
+    }
+
+    void 'a non-file URI is preserved but cannot be resolved to a file'() {
+        given:
+        URI uri = new URI('https://example.invalid/message.txt')
+        def resource = new UrlResource(uri)
+
+        expect:
+        resource.URI.is(uri)
+        resource.URL == uri.toURL()
+
+        when:
+        resource.getFile()
+
+        then:
+        thrown(FileNotFoundException)
+    }
+
+    void 'equality and hash codes use cleaned URLs rather than the original path'() {
+        given:
+        def resource = new UrlResource('file:/app/./message.txt')
+        def equivalent = new UrlResource('file:/app/message.txt')
+
+        expect:
+        resource.URL.toString() == 'file:/app/./message.txt'
         resource == resource
+        resource == equivalent
+        resource.hashCode() == equivalent.hashCode()
+        resource != new UrlResource('file:/app/other.txt')
+        !resource.equals(null)
+        !resource.equals(resource.URL)
     }
 
-    void 'equals is true for two resources with the same cleaned URL'() {
-        given:
-        UrlResource one = new UrlResource('file:///tmp/foo.txt')
-        UrlResource two = new UrlResource('file:///tmp/foo.txt')
-
-        expect:
-        one == two
-        one.hashCode() == two.hashCode()
-    }
-
-    void 'equals is false for resources with different URLs'() {
-        given:
-        UrlResource one = new UrlResource('file:///tmp/foo.txt')
-        UrlResource two = new UrlResource('file:///tmp/bar.txt')
-
-        expect:
-        one != two
-    }
-
-    void 'equals is false when compared against an unrelated object'() {
-        given:
-        UrlResource resource = new UrlResource('file:///tmp/foo.txt')
-
-        expect:
-        !resource.equals('not a resource')
-    }
-
-    void 'equals does not infinitely recurse for a distinct non-equal resource'() {
-        given:
-        UrlResource one = new UrlResource('file:///tmp/foo.txt')
-        UrlResource two = new UrlResource('file:///tmp/bar.txt')
-
+    void 'a malformed URL string is rejected'() {
         when:
-        boolean result = one.equals(two)
+        new UrlResource('not a URL')
 
         then:
-        noExceptionThrown()
-        !result
-    }
-
-    void 'getURL returns the original URL'() {
-        given:
-        UrlResource resource = new UrlResource('file:///tmp/foo.txt')
-
-        expect:
-        resource.getURL().toString() == 'file:/tmp/foo.txt'
-    }
-
-    void 'getFilename returns the last path segment'() {
-        given:
-        UrlResource resource = new UrlResource('file:///tmp/foo.txt')
-
-        expect:
-        resource.getFilename() == 'foo.txt'
-    }
-
-    void 'createRelative resolves a relative path against the base URL'() {
-        given:
-        UrlResource resource = new UrlResource('file:///tmp/dir/foo.txt')
-
-        when:
-        Resource relative = resource.createRelative('bar.txt')
-
-        then:
-        relative.getURL().toString() == 'file:/tmp/dir/bar.txt'
-    }
-
-    void 'getDescription includes the URL'() {
-        given:
-        UrlResource resource = new UrlResource('file:///tmp/foo.txt')
-
-        expect:
-        resource.getDescription() == 'URL [file:/tmp/foo.txt]'
-        resource.toString() == resource.getDescription()
-    }
-
-    void 'a resource can be created from a URI, a URL string or a URL'() {
-        given:
-        URI uri = new File('/tmp/x.txt').toURI()
-
-        expect:
-        new UrlResource(uri).URL == uri.toURL()
-        new UrlResource(uri).URI.is(uri) || new UrlResource(uri).URI == uri
-        new UrlResource(uri.toString()).URL == uri.toURL()
-        new UrlResource(uri) == new UrlResource(uri.toURL())
-    }
-
-    void 'getURI derives the URI from the file when none was given'() {
-        given:
-        File file = new File('/tmp/derived.txt')
-
-        expect:
-        new UrlResource(file.toURI().toURL()).URI == file.toURI()
-    }
-
-    void 'getFile resolves through the URI when the resource was created from one'() {
-        given:
-        File file = new File('/tmp/viauri.txt')
-
-        expect:
-        new UrlResource(file.toURI()).file == file
+        thrown(MalformedURLException)
     }
 
     void 'createRelative drops a leading slash and returns null for an unusable path'() {
@@ -141,28 +142,4 @@ class UrlResourceSpec extends Specification {
         base.createRelative('/c.txt').URL.toString() == 'http://example.com/a/c.txt'
         base.createRelative('foo:bar') == null
     }
-
-    void 'hashCode is consistent with equals'() {
-        expect:
-        new UrlResource('http://example.com/a/../b').hashCode() == new UrlResource('http://example.com/b').hashCode()
-    }
-
-    void 'getInputStream reads a file resource'() {
-        given:
-        File file = File.createTempFile('url-resource', '.txt')
-        file.deleteOnExit()
-        file.text = 'content'
-
-        expect:
-        new UrlResource(file.toURI().toURL()).inputStream.text == 'content'
-    }
-
-    void 'getInputStream fails for a resource that does not exist'() {
-        when:
-        new UrlResource(new File('/no/such/file.txt').toURI().toURL()).inputStream
-
-        then:
-        thrown(IOException)
-    }
-
 }
