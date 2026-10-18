@@ -250,6 +250,7 @@ REST:
   renderers:
     title: Customizing Response Rendering
     defaultRenderers: Customizing the Default Renderers
+    jacksonJson: Customizing JSON With Jackson
     customRenderers: Implementing a Custom Renderer
     gspRenderers: Using GSP to Customize Rendering
   hypermedia:

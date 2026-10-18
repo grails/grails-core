@@ -47,12 +47,27 @@ public final class NamedJsonConfiguration {
         this.module = new SimpleModule("grails-json-" + name, Version.unknownVersion(), new Object());
     }
 
+    /**
+     * Writes the instances of a type with a serializer, ahead of the serializers of the application's mapper.
+     *
+     * @param type the type
+     * @param serializer its serializer
+     * @param <T> the type
+     * @return this configuration
+     */
     public <T> NamedJsonConfiguration serializer(Class<T> type, ValueSerializer<? super T> serializer) {
         assertMutable();
         module.addSerializer(type, serializer);
         return this;
     }
 
+    /**
+     * Writes with a Jackson view: a property annotated {@code @JsonView} is written only in the views it names, and one
+     * that names none as the mapper's {@code MapperFeature.DEFAULT_VIEW_INCLUSION} decides.
+     *
+     * @param view the view
+     * @return this configuration
+     */
     public NamedJsonConfiguration view(Class<?> view) {
         assertMutable();
         this.serializationView = view;
