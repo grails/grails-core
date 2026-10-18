@@ -84,6 +84,21 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         '1.0' == mimes[0].quality
     }
 
+    void 'text/xml and application/xml are one xml type, as preferred as the more preferred of the two, for #header'() {
+        when:
+        MimeType[] mimes = getAcceptHeaderParser().parse(header)
+
+        then:
+        mimes*.name == names
+        mimes.find { it.name == 'application/xml' }.qualityAsNumber == xmlQuality
+
+        where:
+        header                                                          || names                                     | xmlQuality
+        'text/xml, application/xml;q=0.1, application/json;q=0.5'       || ['application/xml', 'application/json']   | 1.0
+        'text/xml;q=0.1, application/xml, application/json;q=0.5'       || ['application/xml', 'application/json']   | 1.0
+        'text/xml;q=0.2, application/xml;q=0.1, application/json;q=0.5' || ['application/json', 'application/xml']   | 0.2
+    }
+
     void 'a +xml type at least as preferred as application/xml, after it in the header, is promoted over it as in Grails 8'() {
         expect: 'atom takes the place of the xml before it, ahead of json, which is as preferred'
         getAcceptHeaderParser().parse('application/xml;q=0.9, application/json, application/atom+xml')*.extension ==
