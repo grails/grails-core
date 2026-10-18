@@ -17,203 +17,206 @@
  *  under the License.
  */
 
-package org.grails.web.util
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.util;
 
-import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertEquals;
 
-import grails.config.Config
-import grails.util.Metadata
+import grails.config.Config;
+import grails.util.Metadata;
 
-import grails.core.ArtefactHandler
-import grails.core.ArtefactInfo
-import org.grails.buffer.CodecPrintWriter
-import org.grails.buffer.GrailsPrintWriter
-import org.grails.buffer.StreamCharBuffer
-import org.grails.commons.DefaultGrailsCodecClass
-import grails.core.GrailsApplication
-import grails.core.GrailsClass
-import org.grails.commons.GrailsCodecClass
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.plugins.codecs.HTMLCodec
-import org.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.encoder.DefaultEncodingStateRegistry
-import org.grails.encoder.Encoder
-import org.grails.encoder.EncodingStateRegistry
-import org.grails.buffer.FastStringWriter
-import org.grails.taglib.encoder.OutputEncodingStack
-import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.junit.Test
-import org.springframework.context.ApplicationContext
-import org.springframework.core.io.Resource
-import org.springframework.web.context.request.RequestContextHolder
+import grails.core.ArtefactHandler;
+import grails.core.ArtefactInfo;
+import org.grails.buffer.CodecPrintWriter;
+import org.grails.buffer.GrailsPrintWriter;
+import org.grails.buffer.StreamCharBuffer;
+import org.grails.commons.DefaultGrailsCodecClass;
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import org.grails.commons.GrailsCodecClass;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.plugins.codecs.HTMLCodec;
+import org.grails.plugins.testing.GrailsMockHttpServletRequest;
+import org.grails.plugins.testing.GrailsMockHttpServletResponse;
+import org.grails.encoder.DefaultEncodingStateRegistry;
+import org.grails.encoder.Encoder;
+import org.grails.encoder.EncodingStateRegistry;
+import org.grails.buffer.FastStringWriter;
+import org.grails.taglib.encoder.OutputEncodingStack;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.web.context.request.RequestContextHolder;
 
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class CodecPrintWriterTest {
-    EncodingStateRegistry registry = new DefaultEncodingStateRegistry()
+    EncodingStateRegistry registry=new DefaultEncodingStateRegistry();
 
     private Encoder getEncoder(GrailsApplication grailsApplication, Class<?> codecClass) {
-        Encoder encoder = null
+        Encoder encoder=null;
         if (grailsApplication != null && codecClass != null) {
-            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact('Codec', codecClass.getName())
-            encoder = codecArtefact.getEncoder()
+            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
+            encoder = codecArtefact.getEncoder();
         }
-        return encoder
+        return encoder;
     }
 
     @Test
     void testPrintString() {
-        FastStringWriter stringwriter = new FastStringWriter()
-        CodecPrintWriter writer = new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry)
-        writer.print('&&')
-        writer.flush()
-        assertEquals('&amp;&amp;', stringwriter.getValue())
+        FastStringWriter stringwriter=new FastStringWriter();
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
+        writer.print("&&");
+        writer.flush();
+        assertEquals("&amp;&amp;", stringwriter.getValue());
     }
 
     @Test
     void testPrintStringWithClosure() {
-        FastStringWriter stringwriter = new FastStringWriter()
-        CodecPrintWriter writer = new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry)
-        writer.print('hello')
-        writer.flush()
-        assertEquals('-> hello <-', stringwriter.getValue())
+        FastStringWriter stringwriter=new FastStringWriter();
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
+        writer.print("hello");
+        writer.flush();
+        assertEquals("-> hello <-", stringwriter.getValue());
     }
 
     @Test
-    void testPrintStreamCharBuffer() {
-        FastStringWriter stringwriter = new FastStringWriter()
-        CodecPrintWriter writer = new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry)
-        StreamCharBuffer buf = new StreamCharBuffer()
-        buf.getWriter().write('&&')
-        writer.write(buf)
-        writer.flush()
-        assertEquals('&amp;&amp;', stringwriter.getValue())
+    void testPrintStreamCharBuffer() throws IOException {
+        FastStringWriter stringwriter=new FastStringWriter();
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
+        StreamCharBuffer buf=new StreamCharBuffer();
+        buf.getWriter().write("&&");
+        writer.write(buf);
+        writer.flush();
+        assertEquals("&amp;&amp;", stringwriter.getValue());
     }
 
     @Test
-    void testPrintStreamCharBufferWithClosure() {
-        FastStringWriter stringwriter = new FastStringWriter()
-        CodecPrintWriter writer = new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry)
-        StreamCharBuffer buf = new StreamCharBuffer()
-        buf.getWriter().write('hola')
-        writer.write(buf)
-        writer.flush()
-        assertEquals('-> hola <-', stringwriter.getValue())
+    void testPrintStreamCharBufferWithClosure() throws IOException {
+        FastStringWriter stringwriter=new FastStringWriter();
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
+        StreamCharBuffer buf=new StreamCharBuffer();
+        buf.getWriter().write("hola");
+        writer.write(buf);
+        writer.flush();
+        assertEquals("-> hola <-", stringwriter.getValue());
     }
 
     @Test
-    void testCodecAndNoCodecGRAILS8405() {
-        FastStringWriter target = new FastStringWriter()
+    void testCodecAndNoCodecGRAILS8405() throws IOException {
+        FastStringWriter target = new FastStringWriter();
 
-        GrailsWebRequest webRequest = bindMockHttpRequest()
+        GrailsWebRequest webRequest = bindMockHttpRequest();
 
         // Initialize out and codecOut as it is done in GroovyPage.initRun
-        OutputEncodingStack outputStack = OutputEncodingStack.currentStack(true, target, false, true)
-        GrailsPrintWriter out = outputStack.getOutWriter()
-        webRequest.setOut(out)
-        GrailsPrintWriter codecOut = new CodecPrintWriter(out, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry)
+        OutputEncodingStack outputStack = OutputEncodingStack.currentStack(true, target, false, true);
+        GrailsPrintWriter out = outputStack.getOutWriter();
+        webRequest.setOut(out);
+        GrailsPrintWriter codecOut = new CodecPrintWriter(out, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
 
         // print some output
-        codecOut.print('hola')
-        codecOut.flush()
-        out.print('1')
-        out.print('2')
-        out.print('3')
+        codecOut.print("hola");
+        codecOut.flush();
+        out.print("1");
+        out.print("2");
+        out.print("3");
 
         // similar as taglib call
-        FastStringWriter bufferWriter = new FastStringWriter()
-        GrailsPrintWriter out2 = new GrailsPrintWriter(bufferWriter)
-        outputStack.push(out2)
-        out.print('4')
-        codecOut.print('A')
-        codecOut.flush()
-        outputStack.pop()
+        FastStringWriter bufferWriter=new FastStringWriter();
+        GrailsPrintWriter out2=new GrailsPrintWriter(bufferWriter);
+        outputStack.push(out2);
+        out.print("4");
+        codecOut.print("A");
+        codecOut.flush();
+        outputStack.pop();
 
         // add output before appending "taglib output"
-        out.print('added')
-        codecOut.print('too')
-        codecOut.flush()
+        out.print("added");
+        codecOut.print("too");
+        codecOut.flush();
 
         // append "taglib output"
-        out.leftShift(bufferWriter.getBuffer())
+        out.leftShift(bufferWriter.getBuffer());
 
         // print some more output
-        codecOut.print('B')
-        codecOut.flush()
-        out.print('5')
-        codecOut.print('C')
-        codecOut.flush()
+        codecOut.print("B");
+        codecOut.flush();
+        out.print("5");
+        codecOut.print("C");
+        codecOut.flush();
 
         // clear thread local
-        RequestContextHolder.resetRequestAttributes()
+        RequestContextHolder.resetRequestAttributes();
 
-        assertEquals('-> hola <-123added-> too <-4-> A <--> B <-5-> C <-', target.getValue())
+        assertEquals("-> hola <-123added-> too <-4-> A <--> B <-5-> C <-", target.getValue());
 
-        codecOut.close()
+        codecOut.close();
     }
 
     private GrailsWebRequest bindMockHttpRequest() {
-        GrailsMockHttpServletRequest mockRequest = new GrailsMockHttpServletRequest()
-        GrailsMockHttpServletResponse mockResponse = new GrailsMockHttpServletResponse()
-        GrailsWebRequest webRequest = new GrailsWebRequest(mockRequest, mockResponse, mockRequest.getServletContext())
-        mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest)
-        RequestContextHolder.setRequestAttributes(webRequest)
-        return webRequest
+        GrailsMockHttpServletRequest mockRequest=new GrailsMockHttpServletRequest();
+        GrailsMockHttpServletResponse mockResponse=new GrailsMockHttpServletResponse();
+        GrailsWebRequest webRequest = new GrailsWebRequest(mockRequest, mockResponse, mockRequest.getServletContext());
+        mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+        RequestContextHolder.setRequestAttributes(webRequest);
+        return webRequest;
     }
 }
 
-@SuppressWarnings(['rawtypes', 'unchecked'])
+@SuppressWarnings(['rawtypes', 'unchecked', 'UnnecessarySemicolon'])
 class MockGrailsApplication implements GrailsApplication {
 
-    private Map<String, DefaultGrailsCodecClass> mockCodecArtefacts = new HashMap<String, DefaultGrailsCodecClass>()
+    private Map<String, DefaultGrailsCodecClass> mockCodecArtefacts = new HashMap<String, DefaultGrailsCodecClass>();
 
     MockGrailsApplication() {
-        DefaultGrailsCodecClass htmlCodec = new DefaultGrailsCodecClass(HTMLCodec.class)
-        htmlCodec.afterPropertiesSet()
-        mockCodecArtefacts.put(HTMLCodec.class.getName(), htmlCodec)
-        DefaultGrailsCodecClass codecWithClosureProperties = new DefaultGrailsCodecClass(CodecWithClosureProperties.class)
-        codecWithClosureProperties.afterPropertiesSet()
-        mockCodecArtefacts.put(CodecWithClosureProperties.class.getName(), codecWithClosureProperties)
+        DefaultGrailsCodecClass htmlCodec = new DefaultGrailsCodecClass(HTMLCodec.class);
+        htmlCodec.afterPropertiesSet();
+        mockCodecArtefacts.put(HTMLCodec.class.getName(), htmlCodec);
+        DefaultGrailsCodecClass codecWithClosureProperties = new DefaultGrailsCodecClass(CodecWithClosureProperties.class);
+        codecWithClosureProperties.afterPropertiesSet();
+        mockCodecArtefacts.put(CodecWithClosureProperties.class.getName(), codecWithClosureProperties);
     }
 
     GrailsClass getArtefact(String artefactType, String name) {
-        return mockCodecArtefacts.get(name)
+        return mockCodecArtefacts.get(name);
     }
 
     void setApplicationContext(ApplicationContext ctx) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Config getConfig() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Map getFlatConfig() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     ClassLoader getClassLoader() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Class[] getAllClasses() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Class[] getAllArtefacts() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     ApplicationContext getMainContext() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
     MappingContext getMappingContext() {
-        return null
+        return null;
     }
 
     void setMainContext(ApplicationContext context) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -222,110 +225,110 @@ class MockGrailsApplication implements GrailsApplication {
     }
 
     ApplicationContext getParentContext() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Class getClassForName(String className) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void refreshConstraints() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void refresh() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void rebuild() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Resource getResourceForClass(Class theClazz) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     boolean isArtefact(Class theClazz) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     boolean isArtefactOfType(String artefactType, Class theClazz) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     boolean isArtefactOfType(String artefactType, String className) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     ArtefactHandler getArtefactType(Class theClass) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     ArtefactInfo getArtefactInfo(String artefactType) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     GrailsClass[] getArtefacts(String artefactType) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     GrailsClass addArtefact(String artefactType, Class artefactClass) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     GrailsClass addArtefact(String artefactType, GrailsClass gc) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void registerArtefactHandler(ArtefactHandler handler) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     boolean hasArtefactHandler(String type) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     ArtefactHandler[] getArtefactHandlers() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void initialise() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     boolean isInitialised() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     Metadata getMetadata() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void addArtefact(Class artefact) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     boolean isWarDeployed() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void addOverridableArtefact(Class artefact) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     void configChanged() {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 
     ArtefactHandler getArtefactHandler(String type) {
-        throw new UnsupportedOperationException()
+        throw new UnsupportedOperationException();
     }
 }

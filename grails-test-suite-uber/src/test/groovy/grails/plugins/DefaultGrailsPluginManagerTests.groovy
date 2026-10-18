@@ -16,77 +16,80 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.plugins
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.plugins;
 
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
-import groovy.lang.GroovyClassLoader
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
+import groovy.lang.GroovyClassLoader;
 
-import org.apache.grails.core.plugins.DefaultPluginDiscovery
-import org.apache.grails.core.plugins.filters.IncludingPluginFilter
-import org.apache.grails.core.plugins.PluginDiscovery
-import org.junit.jupiter.api.Test
-import org.springframework.context.support.GenericApplicationContext
-import org.springframework.core.env.StandardEnvironment
+import org.apache.grails.core.plugins.DefaultPluginDiscovery;
+import org.apache.grails.core.plugins.filters.IncludingPluginFilter;
+import org.apache.grails.core.plugins.PluginDiscovery;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.env.StandardEnvironment;
 
-import static org.junit.jupiter.api.Assertions.assertEquals
-import static org.junit.jupiter.api.Assertions.assertNotNull
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class DefaultGrailsPluginManagerTests {
 
-    private Class<?> first
-    private Class<?> second
-    private Class<?> third
-    private Class<?> fourth
+    private Class<?> first;
+    private Class<?> second;
+    private Class<?> third;
+    private Class<?> fourth;
 
     @Test
     @SuppressWarnings('rawtypes')
     void testLoadPlugins() {
 
-        var gcl = new GroovyClassLoader()
+        var gcl = new GroovyClassLoader();
 
         first = gcl.parseClass('''class FirstGrailsPlugin {
 def version = 1.0
-}''')
+}''');
         second = gcl.parseClass('''class SecondGrailsPlugin {
 def version = 1.0
 def dependsOn = [first:version]
-}''')
+}''');
         third = gcl.parseClass('''import grails.util.GrailsUtil
 class ThirdGrailsPlugin {
 def version = GrailsUtil.getGrailsVersion()
 def dependsOn = [i18n:version]
-}''')
+}''');
         fourth = gcl.parseClass('''class FourthGrailsPlugin {
 def version = 1.0
 def dependsOn = [second:version, third:version]
-}''')
+}''');
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl)
-        var parent = new GenericApplicationContext()
-        parent.getDefaultListableBeanFactory().registerSingleton(GrailsApplication.APPLICATION_ID, app)
+        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
+        var parent = new GenericApplicationContext();
+        parent.getDefaultListableBeanFactory().registerSingleton(GrailsApplication.APPLICATION_ID, app);
 
-        var discovery = new DefaultPluginDiscovery([first, second, third, fourth] as Class[])
-        discovery.setPluginFilter(new IncludingPluginFilter('dataSource', 'first', 'third'))
-        discovery.init(new StandardEnvironment())
-        parent.getDefaultListableBeanFactory().registerSingleton(PluginDiscovery.BEAN_NAME, discovery)
-        var manager = new DefaultGrailsPluginManager(app, discovery)
-        manager.setParentApplicationContext(parent)
+        var discovery = new DefaultPluginDiscovery([first, second, third, fourth] as Class[]);
+        discovery.setPluginFilter(new IncludingPluginFilter("dataSource", "first", "third"));
+        discovery.init(new StandardEnvironment());
+        parent.getDefaultListableBeanFactory().registerSingleton(PluginDiscovery.BEAN_NAME, discovery);
+        var manager = new DefaultGrailsPluginManager(app, discovery);
+        manager.setParentApplicationContext(parent);
 
-        manager.loadPlugins()
+        manager.loadPlugins();
 
-        var plugins = manager.getAllPlugins()
-        var pluginList = Arrays.asList(plugins)
+        var plugins = manager.getAllPlugins();
+        var pluginList = Arrays.asList(plugins);
 
-        assertNotNull(manager.getGrailsPlugin('dataSource'))
-        assertNotNull(manager.getGrailsPlugin('first'))
-        assertNotNull(manager.getGrailsPlugin('third'))
+        assertNotNull(manager.getGrailsPlugin("dataSource"));
+        assertNotNull(manager.getGrailsPlugin("first"));
+        assertNotNull(manager.getGrailsPlugin("third"));
         //dataSource depends on core
-        assertNotNull(manager.getGrailsPlugin('core'))
+        assertNotNull(manager.getGrailsPlugin("core"));
         //third depends on i18n
-        assertNotNull(manager.getGrailsPlugin('third'))
+        assertNotNull(manager.getGrailsPlugin("third"));
 
-        assertEquals(5, pluginList.size(), 'Expected plugins not loaded. Expected ' + 5 + ' but got ' + pluginList)
+        assertEquals(5, pluginList.size(), "Expected plugins not loaded. Expected " + 5 + " but got " + pluginList);
     }
 
     /**
@@ -101,48 +104,48 @@ def dependsOn = [second:version, third:version]
     @Test
     @SuppressWarnings('rawtypes')
     void testDependenciesWithDelayedLoadingWithVersionRangeStrings() {
-        var gcl = new GroovyClassLoader()
+        var gcl = new GroovyClassLoader();
 
         // These are defined in a specific order so that the one with the range dependencies
         // is the first in the list, and its dependencies load after
         first = gcl.parseClass('''class FirstGrailsPlugin {
 def version = "0.4"
 def dependsOn = [second:'0.3 > *', third:'0.2 > *']
-}''')
+}''');
         second = gcl.parseClass('''class SecondGrailsPlugin {
 def version = "0.3"
 def dependsOn = [:]
-}''')
+}''');
         third = gcl.parseClass('''class ThirdGrailsPlugin {
 def version = "0.3-SNAPSHOT"
 def loadAfter = ['core', 'hibernate']
-}''')
+}''');
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl)
-        var parent = new GenericApplicationContext()
-        parent.getDefaultListableBeanFactory().registerSingleton(GrailsApplication.APPLICATION_ID, app)
+        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
+        var parent = new GenericApplicationContext();
+        parent.getDefaultListableBeanFactory().registerSingleton(GrailsApplication.APPLICATION_ID, app);
 
         // Set plugin filter on discovery before loading plugins
-        var discovery = new DefaultPluginDiscovery([first, second, third] as Class[])
-        discovery.setPluginFilter(new IncludingPluginFilter('dataSource', 'first', 'second', 'third'))
-        discovery.init(new StandardEnvironment())
-        parent.getDefaultListableBeanFactory().registerSingleton(PluginDiscovery.BEAN_NAME, discovery)
-        var manager = new DefaultGrailsPluginManager(app, discovery)
-        manager.setParentApplicationContext(parent)
+        var discovery = new DefaultPluginDiscovery([first, second, third] as Class[]);
+        discovery.setPluginFilter(new IncludingPluginFilter("dataSource", "first", "second", "third"));
+        discovery.init(new StandardEnvironment());
+        parent.getDefaultListableBeanFactory().registerSingleton(PluginDiscovery.BEAN_NAME, discovery);
+        var manager = new DefaultGrailsPluginManager(app, discovery);
+        manager.setParentApplicationContext(parent);
 
-        manager.loadPlugins()
+        manager.loadPlugins();
 
-        var plugins = manager.getAllPlugins()
-        var pluginList = Arrays.asList(plugins)
+        var plugins = manager.getAllPlugins();
+        var pluginList = Arrays.asList(plugins);
 
-        assertNotNull(manager.getGrailsPlugin('first'))
-        assertNotNull(manager.getGrailsPlugin('second'))
+        assertNotNull(manager.getGrailsPlugin("first"));
+        assertNotNull(manager.getGrailsPlugin("second"));
         //dataSource depends on core
-        assertNotNull(manager.getGrailsPlugin('core'))
+        assertNotNull(manager.getGrailsPlugin("core"));
         //third depends on i18n
-        assertNotNull(manager.getGrailsPlugin('third'))
+        assertNotNull(manager.getGrailsPlugin("third"));
 
-        assertEquals(5, pluginList.size(), 'Expected plugins not loaded. Expected ' + 5 + ' but got ' + pluginList)
+        assertEquals(5, pluginList.size(), "Expected plugins not loaded. Expected " + 5 + " but got " + pluginList);
     }
 
     @Test
@@ -158,48 +161,48 @@ def version = '1.0'
 }''', '''class FourthGrailsPlugin {
 def version = '1.0'
 def loadBefore = ['first', 'second']
-}''')
+}''');
 
-        var plugins = manager.getAllPlugins()
-        var pluginList = Arrays.asList(plugins)
+        var plugins = manager.getAllPlugins();
+        var pluginList = Arrays.asList(plugins);
 
-        assertNotNull(manager.getGrailsPlugin('first'))
-        assertNotNull(manager.getGrailsPlugin('second'))
-        assertNotNull(manager.getGrailsPlugin('third'))
-        assertNotNull(manager.getGrailsPlugin('fourth'))
+        assertNotNull(manager.getGrailsPlugin("first"));
+        assertNotNull(manager.getGrailsPlugin("second"));
+        assertNotNull(manager.getGrailsPlugin("third"));
+        assertNotNull(manager.getGrailsPlugin("fourth"));
 
-        List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>()
-        expectedOrder.add(manager.getGrailsPlugin('fourth'))
-        expectedOrder.add(manager.getGrailsPlugin('first'))
-        expectedOrder.add(manager.getGrailsPlugin('second'))
-        expectedOrder.add(manager.getGrailsPlugin('third'))
+        List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>();
+        expectedOrder.add(manager.getGrailsPlugin("fourth"));
+        expectedOrder.add(manager.getGrailsPlugin("first"));
+        expectedOrder.add(manager.getGrailsPlugin("second"));
+        expectedOrder.add(manager.getGrailsPlugin("third"));
 
-        assertEquals(expectedOrder, pluginList, 'Expected plugin order')
+        assertEquals(expectedOrder, pluginList, "Expected plugin order");
 
-        assertEquals(4, pluginList.size(), 'Expected plugins not loaded. Expected ' + 4 + ' but got ' + pluginList)
+        assertEquals(4, pluginList.size(), "Expected plugins not loaded. Expected " + 4 + " but got " + pluginList);
     }
 
     DefaultGrailsPluginManager loadPlugins(String firstClassString, String secondClassString, String thirdClassString, String fourthClassString) {
-        var gcl = new GroovyClassLoader()
+        var gcl = new GroovyClassLoader();
 
-        first = gcl.parseClass(firstClassString)
-        second = gcl.parseClass(secondClassString)
-        third = gcl.parseClass(thirdClassString)
-        fourth = gcl.parseClass(fourthClassString)
+        first = gcl.parseClass(firstClassString);
+        second = gcl.parseClass(secondClassString);
+        third = gcl.parseClass(thirdClassString);
+        fourth = gcl.parseClass(fourthClassString);
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl)
-        var parent = new GenericApplicationContext()
-        parent.getDefaultListableBeanFactory().registerSingleton(GrailsApplication.APPLICATION_ID, app)
+        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
+        var parent = new GenericApplicationContext();
+        parent.getDefaultListableBeanFactory().registerSingleton(GrailsApplication.APPLICATION_ID, app);
 
         // Set plugin filter on discovery before loading plugins
-        var discovery = new DefaultPluginDiscovery([first, second, third, fourth] as Class[])
-        discovery.setPluginFilter(new IncludingPluginFilter('first', 'second', 'third', 'fourth'))
-        discovery.init(new StandardEnvironment())
-        var manager = new DefaultGrailsPluginManager(app, discovery)
-        manager.setParentApplicationContext(parent)
+        var discovery = new DefaultPluginDiscovery([first, second, third, fourth] as Class[]);
+        discovery.setPluginFilter(new IncludingPluginFilter("first", "second", "third", "fourth"));
+        discovery.init(new StandardEnvironment());
+        var manager = new DefaultGrailsPluginManager(app, discovery);
+        manager.setParentApplicationContext(parent);
 
-        manager.loadPlugins()
-        return manager
+        manager.loadPlugins();
+        return manager;
     }
 
     @Test
@@ -216,17 +219,17 @@ def loadBefore = ['fourth']
 }''', '''class FourthGrailsPlugin {
 def version = '1.0'
 def loadBefore = ['first', 'second']
-}''')
+}''');
 
-        var plugins = manager.getAllPlugins()
-        var pluginList = Arrays.asList(plugins)
+        var plugins = manager.getAllPlugins();
+        var pluginList = Arrays.asList(plugins);
 
-        List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>()
-        expectedOrder.add(manager.getGrailsPlugin('third'))
-        expectedOrder.add(manager.getGrailsPlugin('fourth'))
-        expectedOrder.add(manager.getGrailsPlugin('second'))
-        expectedOrder.add(manager.getGrailsPlugin('first'))
+        List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>();
+        expectedOrder.add(manager.getGrailsPlugin("third"));
+        expectedOrder.add(manager.getGrailsPlugin("fourth"));
+        expectedOrder.add(manager.getGrailsPlugin("second"));
+        expectedOrder.add(manager.getGrailsPlugin("first"));
 
-        assertEquals(expectedOrder, pluginList, 'Expected plugin order')
+        assertEquals(expectedOrder, pluginList, "Expected plugin order");
     }
 }

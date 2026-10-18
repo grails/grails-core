@@ -16,68 +16,70 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.servlet
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.servlet;
 
-import grails.util.GrailsWebMockUtil
-import grails.web.mvc.FlashScope
-import groovy.lang.GroovySystem
-import groovy.lang.MetaClass
-import org.junit.jupiter.api.Test
+import grails.util.GrailsWebMockUtil;
+import grails.web.mvc.FlashScope;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals
-import static org.junit.jupiter.api.Assertions.assertFalse
-import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Graeme Rocher
  */
-@SuppressWarnings(['unchecked', 'rawtypes'])
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['unchecked', 'rawtypes', 'UnnecessarySemicolon', 'UnnecessaryGString'])
 class GrailsFlashScopeTests {
 
-    private static final String ERRORS_PROPERTY = 'errors'
+    private static final String ERRORS_PROPERTY = "errors";
 
     @Test
     void testPutNull() {
-        GrailsWebMockUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest();
 
-        FlashScope fs = new GrailsFlashScope()
-        fs.put('test', null)
+        FlashScope fs = new GrailsFlashScope();
+        fs.put("test",null);
     }
 
     @Test
     void testNextState() {
 
-        GrailsWebMockUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest();
 
-        FlashScope fs = new GrailsFlashScope()
-        fs.put('test', 'value')
-        fs.put('fred', 'flintstone')
-        fs.getNow().put('barney', 'rubble')
+        FlashScope fs = new GrailsFlashScope();
+        fs.put("test","value");
+        fs.put("fred","flintstone");
+        fs.getNow().put("barney", "rubble");
 
-        assertFalse(fs.isEmpty())
-        assertEquals('flintstone', fs.get('fred'))
-        assertEquals('rubble', fs.get('barney'))
-        assertEquals(3, fs.size())
-        assertTrue(fs.containsKey('test'))
-        assertTrue(fs.containsKey('barney'))
-        assertTrue(fs.containsValue('value'))
-        assertFalse(fs.containsKey('wilma'))
+        assertFalse(fs.isEmpty());
+        assertEquals("flintstone",fs.get("fred"));
+        assertEquals("rubble",fs.get("barney"));
+        assertEquals(3, fs.size());
+        assertTrue(fs.containsKey("test"));
+        assertTrue(fs.containsKey("barney"));
+        assertTrue(fs.containsValue("value"));
+        assertFalse(fs.containsKey("wilma"));
 
         // the state immediately following this one the map should still contain the previous entries
-        fs.next()
+        fs.next();
 
-        assertFalse(fs.isEmpty())
-        assertEquals('flintstone', fs.get('fred'))
-        assertEquals(2, fs.size())
-        assertTrue(fs.containsKey('test'))
-        assertTrue(fs.containsValue('value'))
-        assertFalse(fs.containsKey('wilma'))
+        assertFalse(fs.isEmpty());
+        assertEquals("flintstone",fs.get("fred"));
+        assertEquals(2, fs.size());
+        assertTrue(fs.containsKey("test"));
+        assertTrue(fs.containsValue("value"));
+        assertFalse(fs.containsKey("wilma"));
 
         // the next state it should be empty
-        fs.next()
+        fs.next();
 
-        assertTrue(fs.isEmpty())
-        assertEquals(0, fs.size())
+        assertTrue(fs.isEmpty());
+        assertEquals(0,fs.size());
     }
 
     /**
@@ -86,76 +88,76 @@ class GrailsFlashScopeTests {
     @Test
     void testPutMap() {
 
-        GrailsWebMockUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest();
 
         //set up a map with ERRORS_PROPERTY
-        Map map = new HashMap()
-        StringWithError value = new StringWithError('flinstone')
-        map.put('fred', value)
-        map.put('barney', 'rabble')
-        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass())
-        mc.setProperty(value, ERRORS_PROPERTY, new Object())
+        Map map = new HashMap();
+        StringWithError value = new StringWithError("flinstone");
+        map.put("fred",value);
+        map.put("barney","rabble");
+        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
+        mc.setProperty(value, ERRORS_PROPERTY, new Object());
 
         //put the map to scope
-        FlashScope fs = new GrailsFlashScope()
-        fs.put('test', 'value')
-        fs.put('flinstones', map)
+        FlashScope fs = new GrailsFlashScope();
+        fs.put("test", "value");
+        fs.put("flinstones", map);
 
-        assertFalse(fs.isEmpty())
-        assertEquals(2, fs.size())
-        assertEquals(map, fs.get('flinstones'))
-        assertEquals('value', fs.get('test'))
+        assertFalse(fs.isEmpty());
+        assertEquals(2, fs.size());
+        assertEquals(map,fs.get("flinstones"));
+        assertEquals("value", fs.get("test"));
 
         // the state immediately following this one the map should still contain the previous entries
-        fs.next()
+        fs.next();
 
-        assertFalse(fs.isEmpty())
-        assertEquals(2, fs.size())
-        assertEquals(map, fs.get('flinstones'))
-        assertEquals('value', fs.get('test'))
+        assertFalse(fs.isEmpty());
+        assertEquals(2, fs.size());
+        assertEquals(map,fs.get("flinstones"));
+        assertEquals("value", fs.get("test"));
 
         // the next state it should be empty
-        fs.next()
+        fs.next();
 
-        assertTrue(fs.isEmpty())
-        assertEquals(0, fs.size())
+        assertTrue(fs.isEmpty());
+        assertEquals(0,fs.size());
     }
 
     private class StringWithError {
-        private String value
-        private Object errors
+        private String value;
+        private Object errors;
 
         StringWithError(String value) {
-            this.value = value
+            this.value = value;
         }
 
         @SuppressWarnings('unused')
         Object getErrors() {
-            return errors
+            return errors;
         }
 
         @SuppressWarnings('unused')
         void setErrors(Object errors) {
-            this.errors = errors
+            this.errors = errors;
         }
 
         @Override
         boolean equals(Object obj) {
             if (value == null) {
-                return (obj == null)
+                return (obj == null);
             }
 
-            return value.equals(obj)
+            return value.equals(obj);
         }
 
         @Override
         int hashCode() {
-            return value.hashCode()
+            return value.hashCode();
         }
 
         @Override
         String toString() {
-            return value
+            return value;
         }
     }
 }

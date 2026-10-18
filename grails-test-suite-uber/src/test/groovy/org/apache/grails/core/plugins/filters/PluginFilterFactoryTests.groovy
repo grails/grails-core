@@ -16,71 +16,74 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.apache.grails.core.plugins.filters
+@SuppressWarnings('UnnecessarySemicolon')
+package org.apache.grails.core.plugins.filters;
 
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Test;
 
-import org.springframework.mock.env.MockEnvironment
+import org.springframework.mock.env.MockEnvironment;
 
-import grails.config.Settings
+import grails.config.Settings;
 
-import static org.junit.jupiter.api.Assertions.assertEquals
-import static org.junit.jupiter.api.Assertions.assertInstanceOf
-import static org.junit.jupiter.api.Assertions.assertTrue
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class PluginFilterFactoryTests {
 
     MockEnvironment createEnvironment(String includes, String excludes) {
-        var env = new MockEnvironment()
-        if (includes != null) {
-            env.setProperty(Settings.PLUGIN_INCLUDES, includes)
+        var env = new MockEnvironment();
+        if(includes != null) {
+            env.setProperty(Settings.PLUGIN_INCLUDES, includes);
         }
-        if (excludes != null) {
-            env.setProperty(Settings.PLUGIN_EXCLUDES, excludes)
+        if(excludes != null) {
+            env.setProperty(Settings.PLUGIN_EXCLUDES, excludes);
         }
-        return env
+        return env;
     }
 
     @Test
     void testIncludeFilterOne() {
-        var fb = new PluginFilterRetriever()
-        var bean = fb.getPluginFilter(createEnvironment('one', null))
-        assertInstanceOf(IncludingPluginFilter, bean)
+        var fb = new PluginFilterRetriever();
+        var bean = fb.getPluginFilter(createEnvironment("one", null));
+        assertInstanceOf(IncludingPluginFilter, bean);
 
-        var filter = (IncludingPluginFilter) bean
-        var suppliedNames = filter.getSuppliedNames()
-        assertEquals(1, suppliedNames.size())
-        assertTrue(suppliedNames.contains('one'))
+        var filter = (IncludingPluginFilter)bean;
+        var suppliedNames = filter.getSuppliedNames();
+        assertEquals(1, suppliedNames.size());
+        assertTrue(suppliedNames.contains("one"));
     }
 
     @Test
     void testIncludeFilter() {
-        var fb = new PluginFilterRetriever()
-        var bean = fb.getPluginFilter(createEnvironment('one, two', ' three , four '))
-        assertInstanceOf(IncludingPluginFilter, bean)
+        var fb = new PluginFilterRetriever();
+        var bean = fb.getPluginFilter(createEnvironment("one, two", " three , four "));
+        assertInstanceOf(IncludingPluginFilter, bean);
 
-        var filter = (IncludingPluginFilter) bean
-        var suppliedNames = filter.getSuppliedNames()
-        assertEquals(2, suppliedNames.size())
-        assertTrue(suppliedNames.contains('two'))
+        var filter = (IncludingPluginFilter)bean;
+        var suppliedNames = filter.getSuppliedNames();
+        assertEquals(2, suppliedNames.size());
+        assertTrue(suppliedNames.contains("two"));
     }
 
     @Test
     void testExcludeFilter() {
-        var fb = new PluginFilterRetriever()
-        var bean = fb.getPluginFilter(createEnvironment(null, ' three , four '))
-        assertInstanceOf(ExcludingPluginFilter, bean)
+        var fb = new PluginFilterRetriever();
+        var bean = fb.getPluginFilter(createEnvironment(null, " three , four "));
+        assertInstanceOf(ExcludingPluginFilter, bean);
 
-        var filter = (ExcludingPluginFilter) bean
-        var suppliedNames = filter.getSuppliedNames()
-        assertEquals(2, suppliedNames.size())
-        assertTrue(suppliedNames.contains('four'))
+        var filter = (ExcludingPluginFilter)bean;
+        var suppliedNames = filter.getSuppliedNames();
+        assertEquals(2, suppliedNames.size());
+        assertTrue(suppliedNames.contains("four"));
     }
 
     @Test
     void testDefaultFilter() {
-        var fb = new PluginFilterRetriever()
-        var bean = fb.getPluginFilter(createEnvironment(null, null))
-        assertInstanceOf(NoOpPluginFilter, bean)
+        var fb = new PluginFilterRetriever();
+        var bean = fb.getPluginFilter(createEnvironment(null, null));
+        assertInstanceOf(NoOpPluginFilter, bean);
     }
 }

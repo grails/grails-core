@@ -16,99 +16,102 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package grails.util
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.util;
 
-import groovy.test.GroovyTestCase
-import groovy.util.ObjectGraphBuilder
+import groovy.test.GroovyTestCase;
+import groovy.util.ObjectGraphBuilder;
 
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class DomainBuilderTests extends GroovyTestCase {
 
-    private DomainBuilder builder
-    private ObjectGraphBuilder.ChildPropertySetter childPropertySetter
-    private Employer employer
+    private DomainBuilder builder;
+    private ObjectGraphBuilder.ChildPropertySetter childPropertySetter;
+    private Employer employer;
 
     @Override
-    protected void setUp() {
-        builder = new DomainBuilder()
-        childPropertySetter = builder.getChildPropertySetter()
+    protected void setUp() throws Exception {
+        builder = new DomainBuilder();
+        childPropertySetter = builder.getChildPropertySetter();
 
-        employer = new Employer()
-        employer.setName('Spacely Space Sprockets')
+        employer = new Employer();
+        employer.setName("Spacely Space Sprockets");
     }
 
     @SuppressWarnings('rawtypes')
-    void testChildIsCollection() {
-        Employee one = new Employee()
-        one.setName('Cosmo')
+    void testChildIsCollection() throws Exception {
+        Employee one = new Employee();
+        one.setName("Cosmo");
 
-        Employee two = new Employee()
-        two.setName('George')
+        Employee two = new Employee();
+        two.setName("George");
 
-        childPropertySetter.setChild(employer, one, null, 'employees')
-        childPropertySetter.setChild(employer, two, null, 'employees')
+        childPropertySetter.setChild(employer, one, null, "employees");
+        childPropertySetter.setChild(employer, two, null, "employees");
 
-        List employees = employer.getEmployees()
+        List employees = employer.getEmployees();
 
-        assertNull(employer.getAddress())
-        assertEquals(2, employees.size())
+        assertNull(employer.getAddress());
+        assertEquals(2, employees.size());
 
-        assertEquals(one.getName(), ((Employee) employees.get(0)).getName())
-        assertEquals(two.getName(), ((Employee) employees.get(1)).getName())
+        assertEquals(one.getName(), ((Employee)employees.get(0)).getName());
+        assertEquals(two.getName(), ((Employee)employees.get(1)).getName());
     }
 
-    void testChildIsNotCollection() {
-        Address address = new Address()
-        address.setStreet('Park Pl.')
+    void testChildIsNotCollection() throws Exception {
+        Address address = new Address();
+        address.setStreet("Park Pl.");
 
-        childPropertySetter.setChild(employer, address, null, 'address')
+        childPropertySetter.setChild(employer, address, null, "address");
 
-        Address a = employer.getAddress()
+        Address a = employer.getAddress();
 
-        assertEquals(address.getStreet(), a.getStreet())
+        assertEquals(address.getStreet(), a.getStreet());
 
-        assertEquals(0, employer.getEmployees().size())
+        assertEquals(0, employer.getEmployees().size());
     }
 
     @SuppressWarnings(['unchecked', 'rawtypes'])
     static class Employer {
-        private String name = null
-        private Address address = null
-        private List employees = new ArrayList()
+        private String name = null;
+        private Address address = null;
+        private List employees = new ArrayList();
 
         void addToEmployees(Employee employee) {
-            employees.add(employee)
+            employees.add(employee);
         }
 
         List getEmployees() {
-            return employees
+            return employees;
         }
 
         void setAddress(Address a) {
-            address = a
+            address = a;
         }
 
         Address getAddress() {
-            return address
+            return address;
         }
 
         void setName(String n) {
-            name = n
+            name = n;
         }
 
         String getName() {
-            return name
+            return name;
         }
     }
 
     static class Employee {
-        private String name
-        void setName(String n) { name = n }
-        String getName() { return name }
+        private String name;
+        void setName(String n) { name = n; }
+        String getName() { return name; }
     }
 
     static class Address {
-        private String street
-        void setStreet(String s) { street = s }
-        String getStreet() { return street }
+        private String street;
+        void setStreet(String s) { street = s; }
+        String getStreet() { return street; }
     }
 }
