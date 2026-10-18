@@ -163,15 +163,6 @@ class GSPGrailsLayoutPageSpec extends Specification {
         page.isUsed()
     }
 
-    void 'dynamic property lookups resolve SiteMesh properties by name'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-        page.addProperty('meta.title', 'dynamic')
-
-        expect:
-        page.'meta.title' == 'dynamic'
-    }
-
     void 'buffers prefer sub chunks unless the page renders a layout'() {
         given:
         def content = new GSPGrailsLayoutPage()

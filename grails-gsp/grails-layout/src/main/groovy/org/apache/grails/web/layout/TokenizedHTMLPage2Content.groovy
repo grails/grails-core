@@ -19,10 +19,14 @@
 package org.apache.grails.web.layout
 
 import groovy.transform.CompileStatic
+import groovy.transform.stc.POJO
 
 import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 import com.opensymphony.sitemesh.Content
 
+// SiteMesh declares String getProperty(String); as a GroovyObject that method would become the property-access hook and
+// content.propertyKeys would look up a SiteMesh property instead of calling the getter, so stay a plain Java object
+@POJO
 @CompileStatic
 final class TokenizedHTMLPage2Content implements Content {
 
