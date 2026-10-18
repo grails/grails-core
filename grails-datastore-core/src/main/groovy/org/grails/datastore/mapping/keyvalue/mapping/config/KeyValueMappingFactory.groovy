@@ -12,14 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.datastore.mapping.keyvalue.mapping.config
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.datastore.mapping.keyvalue.mapping.config;
 
-import java.beans.PropertyDescriptor
+import java.beans.PropertyDescriptor;
 
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.model.MappingFactory
-import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.model.PersistentProperty
+import groovy.transform.CompileStatic;
+
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.model.MappingFactory;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
 
 /**
  * @author Graeme Rocher
@@ -27,6 +30,7 @@ import org.grails.datastore.mapping.model.PersistentProperty
  */
 // TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
 class KeyValueMappingFactory extends MappingFactory<Family, KeyValue> {
 
     protected String keyspace;
