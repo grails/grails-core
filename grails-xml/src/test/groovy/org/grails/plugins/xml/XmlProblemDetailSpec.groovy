@@ -24,6 +24,7 @@ import groovy.xml.XmlSlurper
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -88,6 +89,20 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then:
         response.status == 409
         response.contentType.startsWith('application/problem+xml')
+    }
+
+    void 'a problem the XML converter fails to write part-way leaves the response uncommitted, so that the error page applies'() {
+        given: 'a problem with an extension member that cannot be read, which Spring MVC writes once it has begun the problem'
+        response.format = 'xml'
+        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        problem.setProperty('unreadable', new UnreadableXmlMember())
+
+        when:
+        controller.respond(problem)
+
+        then:
+        thrown(HttpMessageNotWritableException)
+        !response.committed
     }
 
     void 'a status respond is given decides the status of the response, and the problem keeps its own'() {
@@ -289,6 +304,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
 @Artefact('Controller')
 class ProblemXmlController { }
+
+class UnreadableXmlMember {
+    String getValue() {
+        throw new IllegalStateException('the value cannot be read')
+    }
+}
 
 class OutOfStock extends ProblemDetail {
     BigDecimal balance
