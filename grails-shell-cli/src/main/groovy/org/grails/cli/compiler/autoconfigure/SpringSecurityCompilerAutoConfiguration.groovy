@@ -16,15 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.cli.compiler.autoconfigure
+package org.grails.cli.compiler.autoconfigure;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.control.customizers.ImportCustomizer
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
-import org.grails.cli.compiler.AstUtils
-import org.grails.cli.compiler.CompilerAutoConfiguration
-import org.grails.cli.compiler.DependencyCustomizer
+import org.grails.cli.compiler.AstUtils;
+import org.grails.cli.compiler.CompilerAutoConfiguration;
+import org.grails.cli.compiler.DependencyCustomizer;
 
 /**
  * {@link CompilerAutoConfiguration} for Spring Security.
@@ -32,12 +32,14 @@ import org.grails.cli.compiler.DependencyCustomizer
  * @author Dave Syer
  * @since 1.0.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class SpringSecurityCompilerAutoConfiguration extends CompilerAutoConfiguration {
 
     @Override
     boolean matches(ClassNode classNode) {
-        return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableWebSecurity', 'EnableGlobalMethodSecurity')
+        return AstUtils.hasAtLeastOneAnnotation(classNode, 'EnableWebSecurity', 'EnableGlobalMethodSecurity');
     }
 
     @Override
@@ -45,7 +47,7 @@ class SpringSecurityCompilerAutoConfiguration extends CompilerAutoConfiguration 
         dependencies
             .ifAnyMissingClasses(
                     'org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity')
-            .add('spring-boot-starter-security')
+            .add('spring-boot-starter-security');
     }
 
     @Override
@@ -56,7 +58,7 @@ class SpringSecurityCompilerAutoConfiguration extends CompilerAutoConfiguration 
                     'org.springframework.security.core.authority.AuthorityUtils')
             .addStarImports('org.springframework.security.config.annotation.web.configuration',
                     'org.springframework.security.authentication', 'org.springframework.security.config.annotation.web',
-                    'org.springframework.security.config.annotation.web.builders')
+                    'org.springframework.security.config.annotation.web.builders');
     }
 
 }

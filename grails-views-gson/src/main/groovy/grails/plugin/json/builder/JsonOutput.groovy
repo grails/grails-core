@@ -17,12 +17,13 @@
  *  under the License.
  */
 
-package grails.plugin.json.builder
+@SuppressWarnings('UnnecessarySemicolon')
+package grails.plugin.json.builder;
 
-import groovy.json.JsonException
-import groovy.transform.CompileStatic
+import groovy.json.JsonException;
+import groovy.transform.CompileStatic;
 
-import org.grails.buffer.FastStringWriter
+import org.grails.buffer.FastStringWriter;
 
 /**
  * Class responsible for the actual String serialization of the possible values of a JSON structure.
@@ -30,59 +31,61 @@ import org.grails.buffer.FastStringWriter
  *
  * @since 1.8.0
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 class JsonOutput extends groovy.json.JsonOutput {
 
-    public static final char OPEN_BRACE = '{'
-    public static final char OPEN_BRACKET = '['
-    public static final char CLOSE_BRACKET = ']'
-    public static final char CLOSE_BRACE = '}'
-    public static final char COLON = ':'
-    public static final char COMMA = ','
+    public static final char OPEN_BRACE = '{';
+    public static final char OPEN_BRACKET = '[';
+    public static final char CLOSE_BRACKET = ']';
+    public static final char CLOSE_BRACE = '}';
+    public static final char COLON = ':';
+    public static final char COMMA = ',';
 
-    public static final String NULL_VALUE = 'null'
+    public static final String NULL_VALUE = "null";
 
     /**
      * Represents unescaped JSON
      */
     static abstract class JsonWritable implements Writable, CharSequence {
 
-        protected boolean inline = false
-        protected boolean first = true
+        protected boolean inline = false;
+        protected boolean first = true;
 
         void setInline(boolean inline) {
-            this.inline = inline
+            this.inline = inline;
         }
 
         void setFirst(boolean first) {
-            this.first = first
+            this.first = first;
         }
 
         @Override
         String toString() {
-            FastStringWriter out = new FastStringWriter()
+            FastStringWriter out = new FastStringWriter();
             try {
-                writeTo(out)
+                writeTo(out);
             }
             catch (IOException e) {
-                throw new JsonException('Error writing JSON writable: ' + e.getMessage(), e)
+                throw new JsonException("Error writing JSON writable: " + e.getMessage(), e);
             }
-            return out.toString()
+            return out.toString();
         }
 
         @Override
         int length() {
-            return toString().length()
+            return toString().length();
         }
 
         @Override
         char charAt(int index) {
-            return toString().charAt(index)
+            return toString().charAt(index);
         }
 
         @Override
         CharSequence subSequence(int start, int end) {
-            return toString().subSequence(start, end)
+            return toString().subSequence(start, end);
         }
 
     }

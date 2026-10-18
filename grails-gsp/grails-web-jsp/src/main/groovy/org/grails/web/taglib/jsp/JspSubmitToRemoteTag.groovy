@@ -16,187 +16,190 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.taglib.jsp
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.taglib.jsp;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 /**
  * @author Graeme Rocher
  * @since 28-Feb-2006
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class JspSubmitToRemoteTag extends JspInvokeGrailsTagLibTag {
 
-    private static final long serialVersionUID = -5463152702299747113L
+    private static final long serialVersionUID = -5463152702299747113L;
 
-    private static final String TAG_NAME = 'submitToRemote'
+    private static final String TAG_NAME = 'submitToRemote';
 
-    private String name
-    private String value
-    private String controller
-    private String action
-    private String id
-    private String update
-    private String before
-    private String after
-    private String method
-    private String asynchronous
-    private String url
-    private String params
-    private String onSuccess
-    private String onFailure
-    private String onComplete
-    private String onLoading
-    private String onLoaded
-    private String onInteractive
+    private String name;
+    private String value;
+    private String controller;
+    private String action;
+    private String id;
+    private String update;
+    private String before;
+    private String after;
+    private String method;
+    private String asynchronous;
+    private String url;
+    private String params;
+    private String onSuccess;
+    private String onFailure;
+    private String onComplete;
+    private String onLoading;
+    private String onLoaded;
+    private String onInteractive;
 
     JspSubmitToRemoteTag() {
-        setTagName(TAG_NAME)
+        setTagName(TAG_NAME);
     }
 
     String getParams() {
-        return params
+        return params;
     }
 
     void setParams(String params) {
-        this.params = params
+        this.params = params;
     }
 
     String getOnSuccess() {
-        return onSuccess
+        return onSuccess;
     }
 
     void setOnSuccess(String onSuccess) {
-        this.onSuccess = onSuccess
+        this.onSuccess = onSuccess;
     }
 
     String getOnFailure() {
-        return onFailure
+        return onFailure;
     }
 
     void setOnFailure(String onFailure) {
-        this.onFailure = onFailure
+        this.onFailure = onFailure;
     }
 
     String getOnComplete() {
-        return onComplete
+        return onComplete;
     }
 
     void setOnComplete(String onComplete) {
-        this.onComplete = onComplete
+        this.onComplete = onComplete;
     }
 
     String getOnLoading() {
-        return onLoading
+        return onLoading;
     }
 
     void setOnLoading(String onLoading) {
-        this.onLoading = onLoading
+        this.onLoading = onLoading;
     }
 
     String getOnLoaded() {
-        return onLoaded
+        return onLoaded;
     }
 
     void setOnLoaded(String onLoaded) {
-        this.onLoaded = onLoaded
+        this.onLoaded = onLoaded;
     }
 
     String getOnInteractive() {
-        return onInteractive
+        return onInteractive;
     }
 
     void setOnInteractive(String onInteractive) {
-        this.onInteractive = onInteractive
+        this.onInteractive = onInteractive;
     }
 
     String getUrl() {
-        return url
+        return url;
     }
 
     void setUrl(String url) {
-        this.url = url
+        this.url = url;
     }
 
     String getName() {
-        return name
+        return name;
     }
 
     void setName(String name) {
-        this.name = name
+        this.name = name;
     }
 
     String getValue() {
-        return value
+        return value;
     }
 
     void setValue(String value) {
-        this.value = value
+        this.value = value;
     }
 
     String getController() {
-        return controller
+        return controller;
     }
 
     void setController(String controller) {
-        this.controller = controller
+        this.controller = controller;
     }
 
     String getAction() {
-        return action
+        return action;
     }
 
     void setAction(String action) {
-        this.action = action
+        this.action = action;
     }
 
     @Override
     String getId() {
-        return id
+        return id;
     }
 
     @Override
     void setId(String id) {
-        this.id = id
+        this.id = id;
     }
 
     String getUpdate() {
-        return update
+        return update;
     }
 
     void setUpdate(String update) {
-        this.update = update
+        this.update = update;
     }
 
     String getBefore() {
-        return before
+        return before;
     }
 
     void setBefore(String before) {
-        this.before = before
+        this.before = before;
     }
 
     String getAfter() {
-        return after
+        return after;
     }
 
     void setAfter(String after) {
-        this.after = after
+        this.after = after;
     }
 
     String getMethod() {
-        return method
+        return method;
     }
 
     void setMethod(String method) {
-        this.method = method
+        this.method = method;
     }
 
     String getAsynchronous() {
-        return asynchronous
+        return asynchronous;
     }
 
     void setAsynchronous(String asynchronous) {
-        this.asynchronous = asynchronous
+        this.asynchronous = asynchronous;
     }
 }

@@ -16,13 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 
-package org.grails.datastore.gorm.proxy
+package org.grails.datastore.gorm.proxy;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
-import grails.core.support.proxy.EntityProxyHandler
-import org.grails.datastore.mapping.proxy.ProxyHandler
+import grails.core.support.proxy.EntityProxyHandler;
+import org.grails.datastore.mapping.proxy.ProxyHandler;
 
 /**
  * Adapts the core Grails proxy handler interface to the GORM one
@@ -30,48 +31,50 @@ import org.grails.datastore.mapping.proxy.ProxyHandler
  * @author Graeme Rocher
  * @since 5.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class ProxyHandlerAdapter implements EntityProxyHandler {
 
-    final ProxyHandler delegate
+    final ProxyHandler delegate;
 
     ProxyHandlerAdapter(ProxyHandler delegate) {
-        this.delegate = delegate
+        this.delegate = delegate;
     }
 
     @Override
     Object getProxyIdentifier(Object o) {
-        return delegate.getIdentifier(o)
+        return delegate.getIdentifier(o);
     }
 
     @Override
     Class<?> getProxiedClass(Object o) {
-        return delegate.getProxiedClass(o)
+        return delegate.getProxiedClass(o);
     }
 
     @Override
     boolean isProxy(Object o) {
-        return delegate.isProxy(o)
+        return delegate.isProxy(o);
     }
 
     @Override
     Object unwrapIfProxy(Object instance) {
-        return delegate.unwrap(instance)
+        return delegate.unwrap(instance);
     }
 
     @Override
     boolean isInitialized(Object o) {
-        return delegate.isInitialized(o)
+        return delegate.isInitialized(o);
     }
 
     @Override
     void initialize(Object o) {
-        delegate.initialize(o)
+        delegate.initialize(o);
     }
 
     @Override
     boolean isInitialized(Object obj, String associationName) {
-        return delegate.isInitialized(obj, associationName)
+        return delegate.isInitialized(obj, associationName);
     }
 
 }

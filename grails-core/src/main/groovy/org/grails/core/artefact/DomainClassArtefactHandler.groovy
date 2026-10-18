@@ -16,26 +16,27 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.core.artefact
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.core.artefact;
 
-import java.lang.annotation.Annotation
+import java.lang.annotation.Annotation;
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.InnerClassNode
-import org.springframework.core.Ordered
+import groovy.transform.CompileStatic;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.InnerClassNode;
+import org.springframework.core.Ordered;
 
-import grails.artefact.Artefact
-import grails.core.ArtefactHandlerAdapter
-import grails.core.GrailsApplication
-import grails.core.GrailsClass
-import grails.core.GrailsDomainClass
-import grails.core.support.GrailsApplicationAware
-import org.grails.compiler.injection.GrailsASTUtils
-import org.grails.core.DefaultGrailsDomainClass
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
+import grails.artefact.Artefact;
+import grails.core.ArtefactHandlerAdapter;
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import grails.core.GrailsDomainClass;
+import grails.core.support.GrailsApplicationAware;
+import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.Resource;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.
@@ -43,17 +44,19 @@ import org.grails.io.support.Resource
  * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
 
-    public static final String TYPE = 'Domain'
-    public static final String PLUGIN_NAME = 'domainClass'
-    private static final String ENTITY_ANN_NAME = 'Entity'
-    private static final String GRAILS_PACKAGE_PREFIX = 'grails.'
-    private static final String JAKARTA_PERSISTENCE = 'jakarta.persistence'
+    public static final String TYPE = 'Domain';
+    public static final String PLUGIN_NAME = 'domainClass';
+    private static final String ENTITY_ANN_NAME = 'Entity';
+    private static final String GRAILS_PACKAGE_PREFIX = 'grails.';
+    private static final String JAKARTA_PERSISTENCE = 'jakarta.persistence';
 
-    DomainClassArtefactHandler() {
-        super(TYPE, GrailsDomainClass, DefaultGrailsDomainClass, null, true)
+    public DomainClassArtefactHandler() {
+        super(TYPE, GrailsDomainClass, DefaultGrailsDomainClass, null, true);
     }
 
     void setGrailsApplication(GrailsApplication grailsApplication) {
@@ -62,105 +65,105 @@ class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements Grail
 
     @Override
     String getPluginName() {
-        return PLUGIN_NAME
+        return PLUGIN_NAME;
     }
 
     @Override
     @SuppressWarnings('rawtypes')
     GrailsClass newArtefactClass(Class artefactClass) {
-        return new DefaultGrailsDomainClass(artefactClass)
+        return new DefaultGrailsDomainClass(artefactClass);
     }
 
     @SuppressWarnings('rawtypes')
     GrailsClass newArtefactClass(Class artefactClass, MappingContext mappingContext) {
-        return new DefaultGrailsDomainClass(artefactClass, mappingContext)
+        return new DefaultGrailsDomainClass(artefactClass, mappingContext);
     }
 
     @Override
     protected boolean isArtefactResource(Resource resource) throws IOException {
-        return super.isArtefactResource(resource) && GrailsResourceUtils.isDomainClass(resource.getURL())
+        return super.isArtefactResource(resource) && GrailsResourceUtils.isDomainClass(resource.getURL());
     }
 
     @Override
     protected boolean isValidArtefactClassNode(ClassNode classNode, int modifiers) {
-        return !classNode.isEnum() && !(classNode instanceof InnerClassNode)
+        return !classNode.isEnum() && !(classNode instanceof InnerClassNode);
     }
 
     @Override
     boolean isArtefact(ClassNode classNode) {
-        if (classNode == null) return false
-        if (!isValidArtefactClassNode(classNode, classNode.getModifiers())) return false
+        if (classNode == null) return false;
+        if (!isValidArtefactClassNode(classNode, classNode.getModifiers())) return false;
 
-        URL url = GrailsASTUtils.getSourceUrl(classNode)
+        URL url = GrailsASTUtils.getSourceUrl(classNode);
         if (url != null) {
-            return GrailsResourceUtils.isDomainClass(url)
+            return GrailsResourceUtils.isDomainClass(url);
         }
         else {
-            return super.isArtefact(classNode)
+            return super.isArtefact(classNode);
         }
     }
 
     @Override
     @SuppressWarnings('rawtypes')
     boolean isArtefactClass(Class clazz) {
-        return isDomainClass(clazz)
+        return isDomainClass(clazz);
     }
 
     static boolean isDomainClass(Class<?> clazz, boolean allowProxyClass) {
-        boolean retval = isDomainClass(clazz)
+        boolean retval = isDomainClass(clazz);
         if (!retval && allowProxyClass && clazz != null && clazz.getSimpleName().contains('\$')) {
-            retval = isDomainClass(clazz.getSuperclass())
+            retval = isDomainClass(clazz.getSuperclass());
         }
-        return retval
+        return retval;
     }
 
     static boolean isDomainClass(Class<?> clazz) {
-        return clazz != null && doIsDomainClassCheck(clazz)
+        return clazz != null && doIsDomainClassCheck(clazz);
 
     }
 
     private static boolean doIsDomainClassCheck(Class<?> clazz) {
         // it's not a closure
         if (Closure.isAssignableFrom(clazz)) {
-            return false
+            return false;
         }
 
-        if (clazz.isEnum()) return false
-        Artefact artefactAnn = null
+        if (clazz.isEnum()) return false;
+        Artefact artefactAnn = null;
         try {
-            artefactAnn = clazz.getAnnotation(Artefact)
+            artefactAnn = clazz.getAnnotation(Artefact);
         } catch (ArrayStoreException ignored) {
             // happens if a reference to a class that no longer exists is there
         }
 
         if (artefactAnn != null && artefactAnn.value().equals(DomainClassArtefactHandler.TYPE)) {
-            return true
+            return true;
         }
 
-        Annotation[] annotations = null
+        Annotation[] annotations = null;
         try {
-            annotations = clazz.getAnnotations()
+            annotations = clazz.getAnnotations();
         } catch (ArrayStoreException ignored) {
             // happens if a reference to a class that no longer exists is there
         }
 
         if (annotations != null) {
-            for (Annotation annotation in annotations) {
-                Class<? extends Annotation> annType = annotation.annotationType()
-                String annName = annType.getSimpleName()
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annType = annotation.annotationType();
+                String annName = annType.getSimpleName();
 
-                String pkgName = annType.getPackage().getName()
+                String pkgName = annType.getPackage().getName();
                 if (ENTITY_ANN_NAME.equals(annName) && pkgName.startsWith(GRAILS_PACKAGE_PREFIX) || pkgName.startsWith(JAKARTA_PERSISTENCE)) {
-                    return true
+                    return true;
                 }
             }
         }
-        return false
+        return false;
     }
 
     @Override
     int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
 }

@@ -16,20 +16,21 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.plugins.codecs
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.plugins.codecs;
 
-import groovy.transform.CompileStatic
-import org.springframework.beans.factory.InitializingBean
+import groovy.transform.CompileStatic;
+import org.springframework.beans.factory.InitializingBean;
 
-import grails.core.GrailsApplication
-import grails.core.support.GrailsApplicationAware
-import org.grails.encoder.CodecFactory
-import org.grails.encoder.CodecIdentifier
-import org.grails.encoder.Decoder
-import org.grails.encoder.Encoder
-import org.grails.encoder.impl.HTML4Decoder
-import org.grails.encoder.impl.HTML4Encoder
-import org.grails.encoder.impl.HTMLEncoder
+import grails.core.GrailsApplication;
+import grails.core.support.GrailsApplicationAware;
+import org.grails.encoder.CodecFactory;
+import org.grails.encoder.CodecIdentifier;
+import org.grails.encoder.Decoder;
+import org.grails.encoder.Encoder;
+import org.grails.encoder.impl.HTML4Decoder;
+import org.grails.encoder.impl.HTML4Encoder;
+import org.grails.encoder.impl.HTMLEncoder;
 
 /**
  * Encodes and decodes strings to and from HTML.
@@ -38,59 +39,61 @@ import org.grails.encoder.impl.HTMLEncoder
  * @author Lari Hotari
  * @since 1.1
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 final class HTMLCodec implements CodecFactory, GrailsApplicationAware, InitializingBean {
 
-    public static final String CONFIG_PROPERTY_GSP_HTMLCODEC = 'grails.views.gsp.htmlcodec'
-    static final String CODEC_NAME = 'HTML'
-    private GrailsApplication grailsApplication
-    private Encoder encoder
-    static final Encoder xml_encoder = new HTMLEncoder()
+    public static final String CONFIG_PROPERTY_GSP_HTMLCODEC = "grails.views.gsp.htmlcodec";
+    static final String CODEC_NAME = "HTML";
+    private GrailsApplication grailsApplication;
+    private Encoder encoder;
+    static final Encoder xml_encoder = new HTMLEncoder();
     static final Encoder html4_encoder = new HTML4Encoder() {
         @Override
         CodecIdentifier getCodecIdentifier() {
-            return HTMLEncoder.HTML_CODEC_IDENTIFIER
+            return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
-    }
+    };
     static final Decoder decoder = new HTML4Decoder() {
         @Override
         CodecIdentifier getCodecIdentifier() {
-            return HTMLEncoder.HTML_CODEC_IDENTIFIER
+            return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
-    }
+    };
 
     HTMLCodec() {
-        setUseLegacyEncoder(false)
+        setUseLegacyEncoder(false);
     }
 
     Encoder getEncoder() {
-        return encoder
+        return encoder;
     }
 
     Decoder getDecoder() {
-        return decoder
+        return decoder;
     }
 
     void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication
+        this.grailsApplication = grailsApplication;
     }
 
     void afterPropertiesSet() {
         if (grailsApplication == null || grailsApplication.getConfig() == null) {
-            return
+            return;
         }
 
-        String htmlCodecSetting = grailsApplication.getConfig().getProperty(CONFIG_PROPERTY_GSP_HTMLCODEC)
+        String htmlCodecSetting = grailsApplication.getConfig().getProperty(CONFIG_PROPERTY_GSP_HTMLCODEC);
         if (htmlCodecSetting == null) {
-            return
+            return;
         }
 
-        String htmlCodecSettingStr = htmlCodecSetting.toLowerCase(Locale.ROOT)
-        setUseLegacyEncoder('html4' == htmlCodecSettingStr || 'html' == htmlCodecSettingStr)
+        String htmlCodecSettingStr = htmlCodecSetting.toLowerCase(Locale.ROOT);
+        setUseLegacyEncoder("html4".equals(htmlCodecSettingStr) || "html".equals(htmlCodecSettingStr));
     }
 
     void setUseLegacyEncoder(boolean useLegacyEncoder) {
-        encoder = useLegacyEncoder ? html4_encoder : xml_encoder
+        encoder = useLegacyEncoder ? html4_encoder : xml_encoder;
     }
 
 }

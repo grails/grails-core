@@ -16,17 +16,20 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.core.util
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.core.util;
 
-import groovy.transform.CompileStatic
-import org.jspecify.annotations.NonNull
-import org.jspecify.annotations.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.springframework.beans.BeansException
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor
-import org.springframework.context.ApplicationListener
-import org.springframework.context.event.ContextRefreshedEvent
+import groovy.transform.CompileStatic;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Adds timings of bean creation times logged to the "org.grails.startup" group
@@ -34,29 +37,31 @@ import org.springframework.context.event.ContextRefreshedEvent
  * @author Graeme Rocher
  * @since 3.0.12
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
 @CompileStatic
 class BeanCreationProfilingPostProcessor implements InstantiationAwareBeanPostProcessor, ApplicationListener<ContextRefreshedEvent> {
 
-    private final StopWatch stopWatch = new StopWatch('Bean Creation StopWatch')
-    private static final Logger LOG = LoggerFactory.getLogger('org.grails.startup')
+    private final StopWatch stopWatch = new StopWatch('Bean Creation StopWatch');
+    private static final Logger LOG = LoggerFactory.getLogger('org.grails.startup');
 
     @Override
     Object postProcessBeforeInstantiation(@Nullable Class<?> beanClass, @Nullable String beanName) throws BeansException {
-        stopWatch.start('Create Bean: ' + beanName)
-        return null
+        stopWatch.start('Create Bean: ' + beanName);
+        return null;
     }
 
     @Override
     Object postProcessAfterInitialization(@Nullable Object bean, @Nullable String beanName) throws BeansException {
-        stopWatch.stop()
-        return bean
+        stopWatch.stop();
+        return bean;
     }
 
     @Override
     void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-        stopWatch.complete()
+        stopWatch.complete();
         if (LOG.isDebugEnabled()) {
-            LOG.debug(stopWatch.prettyPrint())
+            LOG.debug(stopWatch.prettyPrint());
         }
     }
 
