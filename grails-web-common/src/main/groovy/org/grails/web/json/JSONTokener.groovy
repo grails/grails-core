@@ -123,7 +123,7 @@ class JSONTokener {
     String next(int n) throws JSONException {
         int i = this.myIndex
         int j = i + n
-        if (j >= this.mySource.length()) {
+        if (j > this.mySource.length()) {
             throw syntaxError('Substring bounds error')
         }
         this.myIndex += n
