@@ -166,6 +166,7 @@ trait RestResponder {
         // application/problem+json
         boolean problem = value instanceof ProblemDetail
 
+        MimeType matched = null
         for (MimeType mimeType in mimeTypes) {
             if (mimeType == MimeType.ALL && formats) {
                 final allMimeTypes = MimeType.getConfiguredMimeTypes()
@@ -220,7 +221,15 @@ trait RestResponder {
                 }
             }
 
-            if (renderer) break
+            if (renderer) {
+                matched = mimeType
+                break
+            }
+        }
+        if (matched != null) {
+            // The response is in the format the renderer was found for, which may not be the client's first: a client
+            // that lists one the action does not respond in ahead of it is answered in the next it does
+            webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, matched)
         }
         if (renderer == null && problem) {
             renderer = registry.findRenderer(MimeType.JSON, value)

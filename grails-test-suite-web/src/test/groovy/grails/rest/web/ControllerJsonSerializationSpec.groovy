@@ -538,6 +538,40 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
     }
 }
 
+class ControllerAcceptOrderSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    Closure doWithConfig() {
+        { config -> config['grails.web.rendering.json.spring'] = true }
+    }
+
+    @Configuration
+    static class NamingConfiguration {
+
+        @Bean
+        JsonNamingCustomizer jsonNamingCustomizer() {
+            new JsonNamingCustomizer()
+        }
+    }
+
+    void 'a client that lists a type the action does not respond in ahead of JSON gets JSON, written by Spring MVC, #description'() {
+        given:
+        applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
+        request.addHeader('Accept', 'application/xml, application/json')
+
+        when:
+        controller.respond(new JsonResponseBody(title: 'Grails', firstName: 'Ada'), [formats: ['json']] + arguments)
+
+        then: 'labelled JSON, and written by the Grails mapper, so with the naming strategy of the application'
+        response.contentType.startsWith('application/json')
+        response.json == [title: 'Grails', first_name: 'Ada']
+
+        where:
+        description                     | arguments
+        'without a configuration'       | [:]
+        'with a named configuration'    | [jsonConfiguration: 'plain']
+    }
+}
+
 class ControllerJsonMapperOverrideSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
 
     Closure doWithConfig() {

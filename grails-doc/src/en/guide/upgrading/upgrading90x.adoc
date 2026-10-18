@@ -827,6 +827,11 @@ quality and the place of `application/xml`: `Accept: text/xml, application/xml;q
 `json`. The merged type now has the larger quality, and the place of the one of the two the header lists first, which
 decides between types of equal quality, so that header resolves to `xml`.
 
+`respond` answers a client that lists a format the action does not respond in ahead of one it does in the one it does,
+and labels the response with it: `Accept: application/xml, application/json` to an action that responds only in JSON
+is answered with `application/json`. Grails 8 labelled such a response with the client's first format, here
+`application/xml`, and `respond`'s Spring JSON path then wrote it with the legacy converter.
+
 `grails.mime.disable.accept.header.userAgents` matched its first user agent with its case in Grails 8, and a user agent
 that was not a regular expression failed the first request, after which the setting was ignored. Every user agent is now
 matched ignoring case, as a regular expression of its own, where Grails 8 joined them into one, in which the flags of
