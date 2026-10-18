@@ -16,11 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.web.json
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.web.json;
 
-import groovy.transform.CompileStatic
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import groovy.transform.CompileStatic;
 
 /**
  * TODO Proof of concept
@@ -28,207 +30,280 @@ import org.slf4j.LoggerFactory
  *
  * @author Siegfried Puchbauer
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString', 'UnnecessaryPublicModifier'])
 @CompileStatic
-class PathCapturingJSONWriterWrapper extends JSONWriter {
+public class PathCapturingJSONWriterWrapper extends JSONWriter {
 
-    private final Logger log = LoggerFactory.getLogger(getClass())
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final boolean debugCurrentStack = true
-    private JSONWriter delegate
-    private Stack<PathElement> pathStack = new Stack<>()
+    private final boolean debugCurrentStack = true;
+    private JSONWriter delegate;
+    private Stack<PathElement> pathStack = new Stack<>();
 
-    PathCapturingJSONWriterWrapper(JSONWriter delegate) {
-        super(null)
-        this.delegate = delegate
+    public PathCapturingJSONWriterWrapper(JSONWriter delegate) {
+        super(null);
+        this.delegate = delegate;
     }
 
     @Override
-    JSONWriter append(String s) {
+    public JSONWriter append(String s) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > append({})', delegate.mode.name(), s)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > append({})", delegate.mode.name(), s);
         }
-        delegate.append(s)
-        return this
+        delegate.append(s);
+        return this;
     }
 
     @Override
-    void comma() {
+    protected JSONWriter append(Writable writableValue) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('comma()')
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > append({})", delegate.mode.name(), writableValue);
         }
-        delegate.comma()
+        delegate.append(writableValue);
+        return this;
     }
 
     @Override
-    JSONWriter array() {
-        if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > array()', delegate.mode.name())
-        }
-        pathStack.push(new IndexElement(-1))
-        delegate.array()
-        return this
+    public void flush() {
+        delegate.flush();
     }
 
     @Override
-    JSONWriter end(Mode m, char c) {
-        if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > end({}, {})', delegate.mode.name(), m, c)
+    public void writeNested(Runnable writeValue) {
+        Stack<PathElement> outerPath = pathStack;
+        pathStack = new Stack<>();
+        pathStack.addAll(outerPath);
+        pathStack.push(new NestedElement(delegate.nestedPath()));
+        try {
+            delegate.writeNested(writeValue);
         }
-        delegate.end(m, c)
-        return this
+        finally {
+            pathStack = outerPath;
+        }
     }
 
     @Override
-    JSONWriter endArray() {
+    public void comma() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > endArray()', delegate.mode.name())
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("comma()");
         }
-        pathStack.pop()
-        delegate.endArray()
+        delegate.comma();
+    }
+
+    @Override
+    public JSONWriter array() {
+        if (log.isDebugEnabled()) {
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > array()", delegate.mode.name());
+        }
+        pathStack.push(new IndexElement(-1));
+        delegate.array();
+        return this;
+    }
+
+    @Override
+    public JSONWriter end(Mode m, char c) {
+        if (log.isDebugEnabled()) {
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > end({}, {})", delegate.mode.name(), m, c);
+        }
+        delegate.end(m, c);
+        return this;
+    }
+
+    @Override
+    public JSONWriter endArray() {
+        if (log.isDebugEnabled()) {
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > endArray()", delegate.mode.name());
+        }
+        pathStack.pop();
+        delegate.endArray();
         if (delegate.mode == Mode.KEY) {
-            pathStack.pop()
+            pathStack.pop();
         }
-        return this
+        return this;
     }
 
     @Override
-    JSONWriter endObject() {
+    public JSONWriter endObject() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > endObject()', delegate.mode.name())
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > endObject()", delegate.mode.name());
         }
-        delegate.endObject()
+        delegate.endObject();
         if (delegate.mode != Mode.ARRAY && pathStack.size() > 0) {
-            pathStack.pop()
+            pathStack.pop();
         }
-        return this
+        return this;
     }
 
     @Override
-    JSONWriter key(String s) {
+    public JSONWriter key(String s) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > key({})', delegate.mode.name(), s)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > key({})", delegate.mode.name(), s);
         }
-        pathStack.push(new PropertyElement(s))
-        delegate.key(s)
-        return this
+        pathStack.push(new PropertyElement(s));
+        delegate.key(s);
+        return this;
     }
 
     @Override
-    JSONWriter object() {
+    public JSONWriter object() {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > object()', delegate.mode.name())
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > object()", delegate.mode.name());
         }
         if (delegate.mode == Mode.ARRAY) {
-            pushNextIndex()
+            pushNextIndex();
         }
-        delegate.object()
-        return this
+        delegate.object();
+        return this;
     }
 
     @Override
-    void pop(Mode c) {
+    public void pop(Mode c) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > pop({})', delegate.mode.name(), c)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > pop({})", delegate.mode.name(), c);
         }
-        delegate.pop(c)
+        delegate.pop(c);
     }
 
     @Override
-    void push(Mode c) {
+    public void push(Mode c) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > push({})', delegate.mode.name(), c)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > push({})", delegate.mode.name(), c);
         }
-        delegate.push(c)
+        delegate.push(c);
     }
 
     private void pushNextIndex() {
-        int x = nextIndex()
-        pathStack.pop()
-        pathStack.push(new IndexElement(x))
+        int x = nextIndex();
+        pathStack.pop();
+        pathStack.push(new IndexElement(x));
     }
 
     private int nextIndex() {
-        int x = ((IndexElement) pathStack.peek()).index + 1
+        int x = ((IndexElement) pathStack.peek()).index + 1;
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > Next index: {}', delegate.mode.name(), x)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > Next index: {}", delegate.mode.name(), x);
         }
-        return x
+        return x;
     }
 
     @Override
-    JSONWriter value(boolean b) {
+    public JSONWriter value(boolean b) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > value(boolean {})', delegate.mode.name(), b)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > value(boolean {})", delegate.mode.name(), b);
         }
         if (delegate.mode == Mode.ARRAY) {
-            pushNextIndex()
+            pushNextIndex();
         }
-        else {
-            pathStack.pop()
+        else if (!pathStack.isEmpty()) {
+            pathStack.pop();
         }
-        delegate.value(b)
-        return this
+        delegate.value(b);
+        return this;
     }
 
     @Override
-    JSONWriter value(double d) {
+    public JSONWriter value(double d) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > value(double {})', delegate.mode.name(), d)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > value(double {})", delegate.mode.name(), d);
         }
         if (delegate.mode == Mode.ARRAY) {
-            pushNextIndex()
+            pushNextIndex();
         }
-        else {
-            pathStack.pop()
+        else if (!pathStack.isEmpty()) {
+            pathStack.pop();
         }
-        delegate.value(d)
-        return this
+        delegate.value(d);
+        return this;
     }
 
     @Override
-    JSONWriter value(long l) {
+    public JSONWriter value(long l) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > value(long {})', delegate.mode.name(), l)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > value(long {})", delegate.mode.name(), l);
         }
         if (delegate.mode == Mode.ARRAY) {
-            pushNextIndex()
+            pushNextIndex();
         }
-        else {
-            pathStack.pop()
+        else if (!pathStack.isEmpty()) {
+            pathStack.pop();
         }
-        delegate.value(l)
-        return this
+        delegate.value(l);
+        return this;
     }
 
     @Override
-    JSONWriter value(Object o) {
+    public JSONWriter value(Number number) {
         if (log.isDebugEnabled()) {
-            if (debugCurrentStack) log.debug('{} > >> {}', delegate.mode.name(), getCurrentStrackReference())
-            log.debug('{} > value(Object {})', delegate.mode.name(), o)
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > value(Number {})", delegate.mode.name(), number);
+        }
+        if (delegate.mode == Mode.ARRAY) {
+            pushNextIndex();
+        }
+        else if (!pathStack.isEmpty()) {
+            pathStack.pop();
+        }
+        delegate.value(number);
+        return this;
+    }
+
+    @Override
+    public JSONWriter valueNull() {
+        if (log.isDebugEnabled()) {
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > valueNull()", delegate.mode.name());
+        }
+        if (delegate.mode == Mode.ARRAY) {
+            pushNextIndex();
+        }
+        else if (!pathStack.isEmpty()) {
+            pathStack.pop();
+        }
+        delegate.valueNull();
+        return this;
+    }
+
+    @Override
+    public JSONWriter value(Object o) {
+        if (log.isDebugEnabled()) {
+            if (debugCurrentStack) log.debug("{} > >> {}", delegate.mode.name(), getCurrentStackReference());
+            log.debug("{} > value(Object {})", delegate.mode.name(), o);
         }
 
         if (delegate.mode == Mode.ARRAY) {
-            pushNextIndex()
+            pushNextIndex();
+            delegate.value(o);
+        }
+        else if (o instanceof JsonMapperValue) {
+            // the key stays on the path while the values nested in the value are written
+            delegate.value(o);
+            if (!pathStack.isEmpty()) {
+                pathStack.pop();
+            }
         }
         else {
-            pathStack.pop()
+            if (!pathStack.isEmpty()) {
+                pathStack.pop();
+            }
+            delegate.value(o);
         }
-        delegate.value(o)
-        return this
+        return this;
     }
 
     private class PathElement {
@@ -236,46 +311,66 @@ class PathCapturingJSONWriterWrapper extends JSONWriter {
     }
 
     private class PropertyElement extends PathElement {
-        private String property
+        private String property;
 
         private PropertyElement(String property) {
-            this.property = property
+            this.property = property;
         }
 
         @Override
-        String toString() {
-            return '.' + property
+        public String toString() {
+            return "." + property;
+        }
+    }
+
+    private class NestedElement extends PathElement {
+        private final String path;
+
+        private NestedElement(String path) {
+            this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            return path;
         }
     }
 
     private class IndexElement extends PathElement {
-        private int index
+        private int index;
 
         private IndexElement(int index) {
-            this.index = index
+            this.index = index;
         }
 
         @Override
-        String toString() {
-            return '[' + index + ']'
+        public String toString() {
+            return "[" + index + "]";
         }
     }
 
-    String getStackReference(int depth) {
-        StringBuilder out = new StringBuilder()
+    public String getStackReference(int depth) {
+        StringBuilder out = new StringBuilder();
         for (int i = 0; i < depth; i++) {
-            PathElement el = pathStack.get(i)
-            out.append(el.toString())
+            PathElement el = pathStack.get(i);
+            out.append(el.toString());
         }
-        return out.toString()
+        return out.toString();
     }
 
-    String getCurrentStrackReference() {
-        StringBuilder out = new StringBuilder()
-        for (PathElement el in pathStack) {
-            out.append(el.toString())
+    public String getCurrentStackReference() {
+        StringBuilder out = new StringBuilder();
+        for (PathElement el : pathStack) {
+            out.append(el.toString());
         }
-        return out.toString()
+        return out.toString();
     }
 
+    /**
+     * @deprecated the name is misspelled, use {@link #getCurrentStackReference()}
+     */
+    @Deprecated
+    public String getCurrentStrackReference() {
+        return getCurrentStackReference();
+    }
 }
