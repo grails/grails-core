@@ -65,6 +65,7 @@ import grails.web.controllers.ControllerMethod
 import grails.core.DefaultGrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.ProxyHandler
+import org.grails.buffer.StreamCharBuffer
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
@@ -112,6 +113,30 @@ class JsonMapperRenderingSpec extends Specification {
         expect: 'keys, values, and values the mapper writes, such as a @JsonValue'
         new JSON(['</b>': '</script>', lines: 'x\u2028y\u2029z', html: new Html('<i>a</i>')]).toString() ==
                 '{"<\\u002fb>":"<\\u002fscript>","lines":"x\\u2028y\\u2029z","html":"<i>a<\\u002fi>"}'
+    }
+
+    void "a GString and a StreamCharBuffer are escaped as a String is, wherever they are written, with #description"() {
+        given:
+        initialize(config, mapper ? applicationContext {
+            it.registerBean(JsonMapper, {
+                def builder = JsonMapper.builder()
+                new GrailsJsonMapperCustomizer().customize(builder)
+                builder.build()
+            })
+        } : null)
+        def buffer = new StreamCharBuffer()
+        buffer.writer.write('</b>')
+
+        expect: "by Grails' JSON encoder, as in Grails 8"
+        new JSON("</a>${1}").toString() == '"<\\u002fa>1"'
+        new JSON([gstring: "</a>${1}", buffer: buffer, list: ["</c>${2}"]]).toString() ==
+                '{"gstring":"<\\u002fa>1","buffer":"<\\u002fb>","list":["<\\u002fc>2"]}'
+
+        where:
+        description                                                            | config                                  | mapper
+        "the application's mapper, to which Grails adds a GString serializer" | [:]                                     | true
+        'the default mapper'                                                   | [:]                                     | false
+        'the legacy converter'                                                 | ['grails.converters.json.legacy': true] | false
     }
 
     void "pretty printed JSON is indented by the JsonMapper's default pretty printer"() {

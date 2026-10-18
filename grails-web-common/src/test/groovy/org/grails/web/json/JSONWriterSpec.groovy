@@ -126,7 +126,7 @@ class JSONWriterSpec extends Specification {
         when:
         writer.array().value("</a>${1} ").value(buffer).value('</c> ').endArray()
 
-        then: 'by the Grails JavaScript encoder, as JSONWriter quoted them in Grails 8, and a String by the generator'
+        then: "as JSONWriter quotes them without the JSON encoder of grails-converters, which writes </ as <\\u002f, and a String by the generator"
         out.toString() == '["<\\/a>1\\u2028","<\\/b>\\u2028","<\\u002fc>\\u2028"]'
     }
 

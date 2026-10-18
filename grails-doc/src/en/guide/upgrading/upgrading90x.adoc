@@ -417,9 +417,8 @@ With the setting `false`, two things deliberately differ from Spring Boot, as th
 
 * Enums, including one with a `@JsonValue`, render by `name()`, where Jackson 3 writes `toString()` or the `@JsonValue`,
 so that the JSON binds back to the enum.
-* Strings are escaped for an HTML `<script>` element: `</` is written as `<\u002f` (as `<\/` in a `GString` or a
-`StreamCharBuffer`, as in Grails 8), and U+2028 and U+2029 as `\u2028` and `\u2029`. The parsed values are the same as
-Spring Boot's.
+* Strings, including a `GString` or a `StreamCharBuffer`, are escaped for an HTML `<script>` element: `</` is written
+as `<\u002f`, and U+2028 and U+2029 as `\u2028` and `\u2029`. The parsed values are the same as Spring Boot's.
 
 A bean whose `@JsonUnwrapped` property writes a name the bean writes too, such as an `id` of both, is written with both,
 where Spring Boot's mapper and `render json:` reject it: the converter's includes and excludes, and the class name and
