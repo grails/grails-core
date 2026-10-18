@@ -39,30 +39,21 @@ on:
         description: 'Previous released version without the v prefix, used in the compare URL'
         required: true
         type: string
-      announce_revision:
-        description: 'ATR revision number being announced (the voted-on revision)'
-        required: true
-        type: string
       announce_email_to:
         description: 'Must be announce@apache.org. Do not rerun this workflow for other lists.'
         required: true
         type: string
         default: announce@apache.org
-      announce_path_suffix:
-        description: 'Compatibility-only action input. Vote start selects the Alpha publication path.'
-        required: false
-        type: string
-        default: ''
       announce_body:
         description: 'Optional fully-rendered announcement body. Leave empty to render .github/vote_templates/announce.txt'
         required: false
         type: string
         default: ''
       atr_host:
-        description: 'ATR host (Alpha default is release-test.apache.org)'
+        description: 'ATR host'
         required: true
         type: string
-        default: release-test.apache.org
+        default: releases.apache.org
 permissions: { }
 env:
   PROJECT_DESC: >
@@ -81,10 +72,9 @@ jobs:
       id-token: write # required for GitHub OIDC → ATR
       contents: read
     steps:
-      - name: "📝 Establish tag, recipient, and compatibility path suffix"
+      - name: "📝 Establish tag and recipient"
         env:
           ANNOUNCE_EMAIL_TO_INPUT: ${{ inputs.announce_email_to }}
-          PATH_SUFFIX_INPUT: ${{ inputs.announce_path_suffix }}
         run: |
           set -euo pipefail
           if [ "${ANNOUNCE_EMAIL_TO_INPUT}" != "announce@apache.org" ]; then
@@ -93,13 +83,8 @@ jobs:
           fi
           echo "TAG=v${VERSION}" >> "$GITHUB_ENV"
           echo "ANNOUNCE_EMAIL_TO=${ANNOUNCE_EMAIL_TO_INPUT}" >> "$GITHUB_ENV"
-          if [ -n "${PATH_SUFFIX_INPUT}" ]; then
-            echo "ANNOUNCE_PATH_SUFFIX=${PATH_SUFFIX_INPUT}" >> "$GITHUB_ENV"
-          else
-            echo "ANNOUNCE_PATH_SUFFIX=core/${VERSION}" >> "$GITHUB_ENV"
-          fi
       - name: "📥 Checkout repository"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           ref: v${{ inputs.version }}
           persist-credentials: false
@@ -134,19 +119,13 @@ jobs:
             echo "${delimiter}"
           } >> "$GITHUB_OUTPUT"
       - name: "📢 Announce release on ATR"
-        # Keep announce-path-suffix for the pinned action contract only. The current
-        # Alpha announce endpoint ignores it; the vote-start suffix selected the path.
-        # Pin to a full SHA; apache/tooling-actions does not publish tags.
-        # SHA is apache/tooling-actions@e8594ee9cc5ef5fbb48c367a9ab87042c0ccbbc5 (2026-08-24)
-        uses: apache/tooling-actions/release-on-atr@e8594ee9cc5ef5fbb48c367a9ab87042c0ccbbc5
+        uses: apache/tooling-actions/release-on-atr@dcba9f4ed2956f7a30113c3067e766eeda37d891 # main @ 2026-10-08
         with:
           version: ${{ inputs.version }}
           atr-host: ${{ inputs.atr_host }}
           announce: 'true'
-          announce-revision: ${{ inputs.announce_revision }}
           announce-email-to: ${{ env.ANNOUNCE_EMAIL_TO }}
           announce-body: ${{ steps.body.outputs.value }}
-          announce-path-suffix: ${{ env.ANNOUNCE_PATH_SUFFIX }}
       - name: "📧 Remaining announcement lists"
         run: |
           echo "::group::Manual follow-up announcements"

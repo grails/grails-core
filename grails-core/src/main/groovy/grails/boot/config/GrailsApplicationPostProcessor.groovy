@@ -43,11 +43,9 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.core.convert.converter.Converter
 import org.springframework.core.convert.support.ConfigurableConversionService
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
-import org.springframework.core.io.Resource
 
 import grails.boot.GrailsApp
 import grails.config.Settings
@@ -61,7 +59,6 @@ import grails.plugins.GrailsPluginManager
 import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
-import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
@@ -214,24 +211,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if (environment instanceof ConfigurableEnvironment) {
             if (environment instanceof AbstractEnvironment) {
                 conversionService = environment.getConversionService()
-                conversionService.addConverter(new Converter<String, Resource>() {
-                    @Override
-                    Resource convert(String source) {
-                        return applicationContext.getResource(source)
-                    }
-                })
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
-                    @Override
-                    String convert(NavigableMap.NullSafeNavigator source) {
-                        return null
-                    }
-                })
-                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
-                    @Override
-                    Object convert(NavigableMap.NullSafeNavigator source) {
-                        return null
-                    }
-                })
+                GrailsConversionServiceConverters.register(conversionService, applicationContext)
             }
             def propertySources = environment.getPropertySources()
             def config = new PropertySourcesConfig(propertySources)
@@ -250,7 +230,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         def application = grailsApplication
         Holders.setGrailsApplication(application)
 
-        if (!earlyPluginRegistrationRan) {
+        if (!pluginBeanRegistrationDone) {
             // first register plugin beans; when the early phase ran they were
             // already drained into the registry ahead of auto-configuration
             pluginManager.doRuntimeConfiguration(springConfig)
@@ -298,7 +278,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
         springConfig.registerBeansWithRegistry(registry)
 
-        if (!earlyPluginRegistrationRan) {
+        if (!pluginBeanRegistrationDone) {
             // the early phase applies plugin registrars itself; on the fallback path (contexts not
             // booted through GrailsApp) apply them here so a plugin's beanRegistrar() behaves the same
             applyPluginBeanRegistrars(registry)
@@ -316,12 +296,22 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     /**
+     * Whether the plugins' {@code doWithSpring} and {@code beanRegistrar} beans are already in the
+     * registry, so {@link #postProcessBeanDefinitionRegistry} leaves them out: true once the early
+     * phase has run. A subclass that registers them itself, ahead of the configuration classes as the
+     * early phase does, says so here.
+     */
+    protected boolean isPluginBeanRegistrationDone() {
+        earlyPluginRegistrationRan
+    }
+
+    /**
      * Applies each enabled plugin's {@link BeanRegistrar} on the fallback path where the early
      * plugin registration phase did not run, mirroring that phase so a plugin's {@code beanRegistrar()}
      * is honoured in every context rather than only those booted through {@code GrailsApp}. Runs after
      * the DSL flush so registrar beans win name conflicts with the deprecated {@code doWithSpring} DSL.
      */
-    private void applyPluginBeanRegistrars(BeanDefinitionRegistry registry) {
+    protected void applyPluginBeanRegistrars(BeanDefinitionRegistry registry) {
         String[] activeProfiles = applicationContext.environment.activeProfiles
         for (GrailsPlugin plugin in pluginManager.allPlugins) {
             if (!plugin.supportsCurrentScopeAndEnvironment() || !plugin.isEnabled(activeProfiles)) {

@@ -45,10 +45,9 @@ jobs:
     # Keep the release environment restricted to trusted refs.
     runs-on: ubuntu-24.04
     steps:
-      - name: "📥 Checkout repository"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: "📥 Checkout the workflow ref"
+        uses: actions/checkout@v7.0.1
         with:
-          ref: v${{ inputs.version }}
           persist-credentials: false
       - name: "📝 Establish staging description"
         env:

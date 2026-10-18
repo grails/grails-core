@@ -63,10 +63,10 @@ on:
         type: boolean
         default: false
       atr_host:
-        description: 'ATR host (Alpha default is release-test.apache.org)'
+        description: 'ATR host'
         required: true
         type: string
-        default: release-test.apache.org
+        default: releases.apache.org
 permissions: { }
 jobs:
   record:
@@ -78,9 +78,7 @@ jobs:
       contents: read
     steps:
       - name: "📦 Record distribution on ATR"
-        # Pin to a full SHA; apache/tooling-actions does not publish tags.
-        # SHA is apache/tooling-actions@e8594ee9cc5ef5fbb48c367a9ab87042c0ccbbc5 (2026-08-24)
-        uses: apache/tooling-actions/record-atr-distribution@e8594ee9cc5ef5fbb48c367a9ab87042c0ccbbc5
+        uses: apache/tooling-actions/record-atr-distribution@dcba9f4ed2956f7a30113c3067e766eeda37d891 # main @ 2026-10-08
         with:
           version: ${{ inputs.version }}
           atr-host: ${{ inputs.atr_host }}

@@ -46,10 +46,10 @@ on:
         type: string
         default: grails
       atr_host:
-        description: 'ATR host (Alpha default is release-test.apache.org)'
+        description: 'ATR host'
         required: true
         type: string
-        default: release-test.apache.org
+        default: releases.apache.org
       ssh_port:
         description: 'ATR rsync SSH port'
         required: true
@@ -70,6 +70,14 @@ jobs:
     steps:
       - name: "📝 Establish tag"
         run: echo "TAG=v${VERSION}" >> "$GITHUB_ENV"
+      - name: "📥 Checkout the release tag"
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: v${{ inputs.version }}
+          persist-credentials: false
+      - name: "📝 Record the release tag commit"
+        id: source_commit
+        run: echo "value=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: "📥 Download GitHub Release distributions"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -99,19 +107,21 @@ jobs:
             "${DIST_NAME}-${VERSION}-bin.zip.asc" \
             "${DIST_NAME}-wrapper-${VERSION}-bin.zip" \
             "${DIST_NAME}-wrapper-${VERSION}-bin.zip.sha512" \
-            "${DIST_NAME}-wrapper-${VERSION}-bin.zip.asc"
+            "${DIST_NAME}-wrapper-${VERSION}-bin.zip.asc" \
+            "${DIST_NAME}-${VERSION}-docs.zip" \
+            "${DIST_NAME}-${VERSION}-docs.zip.sha512" \
+            "${DIST_NAME}-${VERSION}-docs.zip.asc"
           echo "Downloaded the following files:"
           find atr-dist -type f -print | sort
       - name: "📤 Upload to ATR"
-        # Pin to a full SHA; apache/tooling-actions does not publish tags.
-        # SHA is apache/tooling-actions@e8594ee9cc5ef5fbb48c367a9ab87042c0ccbbc5 (2026-08-24)
-        uses: apache/tooling-actions/upload-to-atr@e8594ee9cc5ef5fbb48c367a9ab87042c0ccbbc5
+        uses: apache/tooling-actions/upload-to-atr@dcba9f4ed2956f7a30113c3067e766eeda37d891 # main @ 2026-10-08
         with:
           project: ${{ inputs.project }}
           version: ${{ env.VERSION }}
           src: atr-dist
           atr-host: ${{ inputs.atr_host }}
           ssh-port: ${{ inputs.ssh_port }}
+          source-commit: ${{ steps.source_commit.outputs.value }}
       - name: "📧 Next step — start the ATR vote"
         env:
           ATR_HOST: ${{ inputs.atr_host }}
@@ -122,9 +132,9 @@ jobs:
           echo "Start the vote from the ATR UI or the ATR client, then wait at least 72 hours:"
           echo "  https://${ATR_HOST}/"
           echo "  atr vote start ${ATR_PROJECT} ${VERSION} <REVISION> -m \"<ASF_UID>@apache.org\""
-          echo "When starting the vote, set the download path suffix to core/${VERSION}"
-          echo "(or core/{{VERSION}} if the UI uses that token). During Alpha, a committer moves"
-          echo "the exact version tree from dist/atr to dist/release after the successful announce."
+          echo "The Grails download path suffix is a project setting: core/{{VERSION}}."
+          echo "When starting the vote, select automatic publication to the SVN distribution area."
+          echo "Beta ATR then commits the voted files to dist/release/grails/core/${VERSION}."
           echo "Discard any dist/dev [VOTE] email from the main Release workflow; ATR starts the sole vote."
           echo "After the vote passes, run workflow 'Release - ATR Resolve Vote (experimental)'."
           echo "::endgroup::"
