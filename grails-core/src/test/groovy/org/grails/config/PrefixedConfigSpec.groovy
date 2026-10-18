@@ -18,57 +18,120 @@
  */
 package org.grails.config
 
-import grails.config.Config
-import org.springframework.core.env.MapPropertySource
-import org.springframework.core.env.MutablePropertySources
+import groovy.transform.CompileStatic
 import spock.lang.Specification
 
 class PrefixedConfigSpec extends Specification {
 
-    private PropertySourcesConfig configOf(Map values) {
-        def propertySources = new MutablePropertySources()
-        propertySources.addLast(new MapPropertySource('test', values))
-        new PropertySourcesConfig(propertySources)
-    }
-
-    void 'getProperty prefixes the key before delegating'() {
+    void 'relative keys omit the prefix when reading the delegate'() {
         given:
-        def delegate = configOf(['grails.foo.bar': 'baz'])
-        def prefixed = new PrefixedConfig('grails.foo', delegate)
+        def delegate = new PropertySourcesConfig([
+            'app.service.host': 'localhost',
+            'app.service.port': 8080,
+            host: 'outside'
+        ])
+        def config = new PrefixedConfig('app.service', delegate)
 
         expect:
-        prefixed.getProperty('bar', String) == 'baz'
-        prefixed.getProperty('bar') == 'baz'
-        prefixed.getProperty('missing', String, 'default') == 'default'
+        config.getAt('host') == 'localhost'
+        config.get('port') == 8080
+        config.getProperty('host') == 'localhost'
+        config.getProperty('host', 'default') == 'localhost'
+        config.getProperty('port', Integer) == 8080
+        config.getProperty('port', Integer, 80) == 8080
+        config.getRequiredProperty('host') == 'localhost'
+        config.getRequiredProperty('port', Integer) == 8080
+        config.containsKey('host')
+        config.containsProperty('port')
+        config.navigate('host') == 'localhost'
+        config.size() == delegate.size()
+        config.isEmpty() == delegate.isEmpty()
+        config.values() == delegate.values()
+        config.containsValue('localhost')
+        !config.containsValue('absent')
     }
 
-    void 'containsProperty and get delegate with the prefixed key'() {
+    void 'missing prefixed keys return null or the supplied default'() {
         given:
-        def delegate = configOf(['grails.foo.bar': 'baz'])
-        def prefixed = new PrefixedConfig('grails.foo', delegate)
+        def config = new PrefixedConfig('app.service', new PropertySourcesConfig([host: 'outside']))
 
         expect:
-        prefixed.containsProperty('bar')
-        !prefixed.containsProperty('missing')
-        prefixed.get('bar') == 'baz'
+        config.getAt('host') == null
+        config.getProperty('host') == null
+        config.getProperty('host', 'default') == 'default'
+        config.getProperty('port', Integer) == null
+        config.getProperty('port', Integer, 80) == 80
+        !config.containsKey('host')
+        !config.containsProperty('port')
+        config.navigate('missing') == null
     }
 
-    void 'getRequiredProperty throws when the prefixed key cannot be resolved'() {
+    void 'navigation prepends every token of a dotted prefix'() {
         given:
-        def delegate = configOf(['grails.foo.bar': 'baz'])
-        def prefixed = new PrefixedConfig('grails.foo', delegate)
+        def delegate = new PropertySourcesConfig([app: [service: [connection: [timeout: 30]]]])
+        def config = new PrefixedConfig('app.service', delegate)
+
+        expect:
+        config.navigate('connection', 'timeout') == 30
+        config.getProperty('connection.timeout', Integer) == 30
+    }
+
+    void 'missing required properties propagate delegate exceptions'() {
+        given:
+        def config = new PrefixedConfig('app', new PropertySourcesConfig())
 
         when:
-        prefixed.getRequiredProperty('missing')
+        operation(config)
 
         then:
         thrown(IllegalStateException)
 
+        where:
+        operation << [
+            { it.getRequiredProperty('missing') },
+            { it.getRequiredProperty('missing', Integer) }
+        ]
+    }
+
+    void 'equality and hash codes depend on the prefix and delegate'() {
+        given:
+        def delegate = new PropertySourcesConfig([name: 'Grails'])
+        def config = new PrefixedConfig('app', delegate)
+        def equivalent = new PrefixedConfig('app', delegate)
+
+        expect:
+        configsEqual(config, config)
+        configsEqual(config, equivalent)
+        config.hashCode() == equivalent.hashCode()
+        !configsEqual(config, null)
+        !configsEqual(config, delegate)
+        !configsEqual(config, new PrefixedConfig('other', delegate))
+        !configsEqual(config, new PrefixedConfig('app', new PropertySourcesConfig([name: 'other'])))
+    }
+
+    void 'modification and placeholder resolution are unsupported'() {
+        given:
+        def delegate = new PropertySourcesConfig(['app.name': 'original'])
+        def config = new PrefixedConfig('app', delegate)
+
         when:
-        String value = prefixed.getRequiredProperty('bar')
+        operation(config)
 
         then:
-        value == 'baz'
+        thrown(UnsupportedOperationException)
+        delegate.getProperty('app.name') == 'original'
+
+        where:
+        operation << [
+            { it.merge([name: 'changed']) },
+            { it.setAt('name', 'changed') },
+            { it.put('name', 'changed') },
+            { it.remove('name') },
+            { it.putAll([name: 'changed']) },
+            { it.clear() },
+            { it.resolvePlaceholders('${name}') },
+            { it.resolveRequiredPlaceholders('${name}') }
+        ]
     }
 
     void 'keySet strips and re-adds the prefix consistently'() {
@@ -83,7 +146,7 @@ class PrefixedConfigSpec extends Specification {
 
     void 'entrySet remaps each entry key with the prefix and preserves the value'() {
         given:
-        def delegate = configOf(['bar': 'baz'])
+        def delegate = new PropertySourcesConfig(['bar': 'baz'])
         def prefixed = new PrefixedConfig('grails', delegate)
 
         when:
@@ -95,83 +158,8 @@ class PrefixedConfigSpec extends Specification {
         entries.first().value == 'baz'
     }
 
-    void 'equals(Object) reflects its own identity/prefix/delegate logic when invoked directly, bypassing Groovy Map-equality interception'() {
-        // PrefixedConfig implements java.util.Map (via Config), so Groovy's own == / .equals()
-        // dispatch for a Map-typed receiver routes through Groovy's Map-content comparison
-        // machinery rather than reaching this class's equals(Object) override - this is true
-        // for ANY Map-implementing Config, pre-existing behavior unrelated to source language.
-        // Invoking the declared method via reflection bypasses that interception and exercises
-        // the real override directly.
-        given:
-        def delegate1 = configOf(['bar': 'baz'])
-        def a = new PrefixedConfig('grails', delegate1)
-        def b = new PrefixedConfig('grails', delegate1)
-        def c = new PrefixedConfig('other', delegate1)
-        def equalsMethod = PrefixedConfig.class.getMethod('equals', Object)
-
-        expect:
-        equalsMethod.invoke(a, a)
-        equalsMethod.invoke(a, b)
-        !equalsMethod.invoke(a, c)
-        !(equalsMethod.invoke(a, [null] as Object[]) as Boolean)
-        !equalsMethod.invoke(a, 'not a config')
-    }
-
-    void 'mutating methods are unsupported since a prefixed config cannot be modified'() {
-        given:
-        def prefixed = new PrefixedConfig('grails', configOf([:]))
-
-        when:
-        prefixed.put('a', '1')
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        prefixed.remove('a')
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        prefixed.putAll([a: '1'])
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        prefixed.clear()
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        prefixed.merge([a: '1'])
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        prefixed.setAt('a', '1')
-
-        then:
-        thrown(UnsupportedOperationException)
-    }
-
-    void 'resolvePlaceholders and resolveRequiredPlaceholders are unsupported'() {
-        given:
-        def prefixed = new PrefixedConfig('grails', configOf([:]))
-
-        when:
-        prefixed.resolvePlaceholders('${a}')
-
-        then:
-        thrown(UnsupportedOperationException)
-
-        when:
-        prefixed.resolveRequiredPlaceholders('${a}')
-
-        then:
-        thrown(UnsupportedOperationException)
+    @CompileStatic
+    private static boolean configsEqual(PrefixedConfig config, Object other) {
+        config.equals(other)
     }
 }

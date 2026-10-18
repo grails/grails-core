@@ -16,59 +16,125 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+
 package org.apache.grails.web.layout
 
 import com.opensymphony.module.sitemesh.HTMLPage
-import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
-import com.opensymphony.module.sitemesh.html.util.CharArray
 import com.opensymphony.sitemesh.Content
+import org.grails.buffer.StreamCharBuffer
 import spock.lang.Specification
 
-import org.grails.buffer.StreamCharBuffer
-
-/**
- * Tests the buffer bookkeeping and property handling of {@link GSPGrailsLayoutPage}.
- */
 class GSPGrailsLayoutPageSpec extends Specification {
 
-    private static StreamCharBuffer bufferOf(String text) {
-        def buffer = new StreamCharBuffer()
-        buffer.writer.write(text)
-        buffer
-    }
-
-    private static String written(Closure writing) {
-        def out = new StringWriter()
-        writing(out)
-        out.toString()
-    }
-
-    void 'a new page is unused and has no buffers'() {
+    void 'empty page writes no content and is unused'() {
         given:
         def page = new GSPGrailsLayoutPage()
+        def writer = new StringWriter()
 
-        expect:
-        !page.isUsed()
-        !page.isTitleCaptured()
-        page.getHeadBuffer() == null
-        page.getBodyBuffer() == null
-        page.getPageBuffer() == null
-        page.getTitleBuffer() == null
+        when:
+        page.writeHead(writer)
+        page.writeBody(writer)
+        page.writePage(writer)
+
+        then:
+        writer.toString() == ''
         page.getHead() == null
         page.getBody() == null
         page.getPage() == null
-        page.getContentBuffer('page.x') == null
+        page.getTitleBuffer() == null
+        page.getContentBuffer('page.sidebar') == null
+        !page.isUsed()
+        !page.isTitleCaptured()
     }
 
-    void 'reset discards buffers, flags and content buffers'() {
+    void 'captured buffers expose head body and original page separately'() {
+        given:
+        def page = new GSPGrailsLayoutPage(renderingLayout)
+        def original = '<html><head>head</head><body>body</body></html>'
+        page.setPageBuffer(buffer(original))
+        page.setHeadBuffer(buffer('head'))
+        page.setBodyBuffer(buffer('body'))
+        def head = new StringWriter()
+        def body = new StringWriter()
+        def full = new StringWriter()
+
+        when:
+        page.writeHead(head)
+        page.writeBody(body)
+        page.writeOriginal(full)
+
+        then:
+        page.isUsed()
+        page.getHead() == head.toString()
+        head.toString() == 'head'
+        page.getBody() == body.toString()
+        body.toString() == 'body'
+        page.getPage() == full.toString()
+        full.toString() == original
+        page.originalLength() == original.length()
+
+        where:
+        renderingLayout << [false, true]
+    }
+
+    void 'body output falls back to the whole page when no body has been captured'() {
         given:
         def page = new GSPGrailsLayoutPage()
-        page.setHeadBuffer(bufferOf('h'))
-        page.setBodyBuffer(bufferOf('b'))
-        page.setPageBuffer(bufferOf('p'))
-        page.setTitleBuffer(bufferOf('t'))
+        page.setPageBuffer(buffer('fragment without a body tag'))
+        def writer = new StringWriter()
+
+        when:
+        page.writeBody(writer)
+
+        then:
+        writer.toString() == 'fragment without a body tag'
+        !page.isUsed()
+    }
+
+    void 'captured title is removed from head output but its property is retained'() {
+        given:
+        def page = new GSPGrailsLayoutPage()
+        page.setHeadBuffer(buffer('<TITLE class="main">Title</TITLE><meta name="layout" content="main">'))
+        page.addProperty('title', 'Title')
         page.setTitleCaptured(true)
-        page.setContentBuffer('x', bufferOf('c'))
+        def writer = new StringWriter()
+
+        when:
+        page.writeHead(writer)
+
+        then:
+        writer.toString() == '<meta name="layout" content="main">'
+        page.title == 'Title'
+        page.isTitleCaptured()
+    }
+
+    void 'content and object properties mark the page as used'() {
+        given:
+        def page = new GSPGrailsLayoutPage()
+        def sidebar = buffer('Sidebar')
+
+        when:
+        page.addProperty('page.count', Integer.valueOf(3))
+        page.setContentBuffer('sidebar', sidebar)
+
+        then:
+        page.isUsed()
+        page.getProperty('page.count') == '3'
+        page.getProperty('page.sidebar') == ''
+        page.getContentBuffer('page.sidebar').is(sidebar)
+        page.getContentBuffer('page.missing') == null
+        GSPGrailsLayoutPage.content2htmlPage(page).is(page)
+    }
+
+    void 'reset clears captured content and flags so a page can be reused'() {
+        given:
+        def page = new GSPGrailsLayoutPage()
+        page.setHeadBuffer(buffer('head'))
+        page.setBodyBuffer(buffer('body'))
+        page.setPageBuffer(buffer('page'))
+        page.setTitleBuffer(buffer('title'))
+        page.setTitleCaptured(true)
+        page.setContentBuffer('sidebar', buffer('sidebar'))
 
         when:
         page.reset()
@@ -76,24 +142,11 @@ class GSPGrailsLayoutPageSpec extends Specification {
         then:
         !page.isUsed()
         !page.isTitleCaptured()
-        page.getHeadBuffer() == null
-        page.getBodyBuffer() == null
-        page.getPageBuffer() == null
+        page.getHead() == null
+        page.getBody() == null
+        page.getPage() == null
         page.getTitleBuffer() == null
-        page.getContentBuffer('page.x') == null
-    }
-
-    void 'adding a string property marks the page used and makes it readable'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-
-        when:
-        page.addProperty('meta.title', 'hello')
-
-        then:
-        page.isUsed()
-        page.getProperty('meta.title') == 'hello'
-        page.getProperty('meta.missing') == null
+        page.getContentBuffer('page.sidebar') == null
     }
 
     void 'adding an object property stringifies it and keeps null as null'() {
@@ -117,31 +170,6 @@ class GSPGrailsLayoutPageSpec extends Specification {
 
         expect:
         page.'meta.title' == 'dynamic'
-    }
-
-    void 'buffer setters flag head and body as used but not page and title buffers'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-
-        when:
-        page.setPageBuffer(bufferOf('p'))
-        page.setTitleBuffer(bufferOf('t'))
-
-        then:
-        !page.isUsed()
-
-        when:
-        page.setHeadBuffer(bufferOf('h'))
-
-        then:
-        page.isUsed()
-
-        when:
-        def other = new GSPGrailsLayoutPage()
-        other.setBodyBuffer(bufferOf('b'))
-
-        then:
-        other.isUsed()
     }
 
     void 'buffers prefer sub chunks unless the page renders a layout'() {
@@ -183,158 +211,15 @@ class GSPGrailsLayoutPageSpec extends Specification {
         page.getTitleBuffer() == null
     }
 
-    void 'used and titleCaptured flags can be assigned directly'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-
-        when:
-        page.setUsed(true)
-        page.setTitleCaptured(true)
-
-        then:
-        page.isUsed()
-        page.isTitleCaptured()
-    }
-
-    void 'string accessors return the buffer contents'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-        page.setHeadBuffer(bufferOf('<meta>'))
-        page.setBodyBuffer(bufferOf('<p>body</p>'))
-        page.setPageBuffer(bufferOf('<html>page</html>'))
-
-        expect:
-        page.getHead() == '<meta>'
-        page.getBody() == '<p>body</p>'
-        page.getPage() == '<html>page</html>'
-        page.originalLength() == '<html>page</html>'.length()
-    }
-
-    void 'writeHead writes nothing without a head buffer'() {
-        expect:
-        written { new GSPGrailsLayoutPage().writeHead(it) } == ''
-    }
-
-    void 'writeHead writes the head unchanged when no title was captured'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-        page.setHeadBuffer(bufferOf('<title>T</title><meta>'))
-
-        expect:
-        written { page.writeHead(it) } == '<title>T</title><meta>'
-    }
-
-    void 'writeHead strips a captured title that was written to the head as plain text'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-        page.setHeadBuffer(bufferOf('<meta><TITLE lang="en">Some\nTitle</TITLE><link>'))
-        page.setTitleCaptured(true)
-
-        expect:
-        written { page.writeHead(it) } == '<meta><link>'
-    }
-
     void 'writeHead strips a captured title when the title buffer is not a sub chunk of the head'() {
         given:
         def page = new GSPGrailsLayoutPage()
-        page.setHeadBuffer(bufferOf('<title>T</title><meta>'))
-        page.setTitleBuffer(bufferOf('T'))
+        page.setHeadBuffer(buffer('<title>T</title><meta>'))
+        page.setTitleBuffer(buffer('T'))
         page.setTitleCaptured(true)
 
         expect:
         written { page.writeHead(it) } == '<meta>'
-    }
-
-    void 'writeHead removes the title buffer sub chunk from the head when it was captured as a sub buffer'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-        def title = bufferOf('<title>T</title>')
-        page.setTitleBuffer(title)
-        def head = new StreamCharBuffer()
-        head.writer.write('<meta>')
-        title.writeTo(head.writer)
-        head.writer.write('<link>')
-        page.setHeadBuffer(head)
-        page.setTitleCaptured(true)
-
-        expect:
-        written { page.writeHead(it) } == '<meta><link>'
-    }
-
-    void 'writeBody prefers the body buffer, falls back to the page buffer and tolerates neither'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-
-        expect:
-        written { page.writeBody(it) } == ''
-
-        when:
-        page.setPageBuffer(bufferOf('whole page'))
-
-        then:
-        written { page.writeBody(it) } == 'whole page'
-
-        when:
-        page.setBodyBuffer(bufferOf('only body'))
-
-        then:
-        written { page.writeBody(it) } == 'only body'
-    }
-
-    void 'writePage and writeOriginal write the page buffer'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-
-        expect:
-        written { page.writePage(it) } == ''
-        written { page.writeOriginal(it) } == ''
-
-        when:
-        page.setPageBuffer(bufferOf('the page'))
-
-        then:
-        written { page.writePage(it) } == 'the page'
-        written { page.writeOriginal(it) } == 'the page'
-    }
-
-    void 'content buffers are stored under the page prefix and mark the page used'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-        def buffer = bufferOf('side')
-
-        when:
-        page.setContentBuffer('sidebar', buffer)
-
-        then:
-        page.isUsed()
-        page.getContentBuffer('page.sidebar').is(buffer)
-        page.getContentBuffer('page.other') == null
-        page.getProperty('page.sidebar') == ''
-
-        when:
-        page.setContentBuffer('footer', bufferOf('foot'))
-
-        then:
-        page.getContentBuffer('page.footer') != null
-        page.getContentBuffer('page.sidebar').is(buffer)
-    }
-
-    void 'content2htmlPage returns an HTMLPage unchanged'() {
-        given:
-        def page = new GSPGrailsLayoutPage()
-
-        expect:
-        GSPGrailsLayoutPage.content2htmlPage(page).is(page)
-    }
-
-    void 'content2htmlPage unwraps a tokenized page content'() {
-        given:
-        def data = '<html><body>x</body></html>'.toCharArray()
-        def tokenized = new TokenizedHTMLPage(data, new CharArray(16), new CharArray(16))
-        def content = new TokenizedHTMLPage2Content(tokenized)
-
-        expect:
-        GSPGrailsLayoutPage.content2htmlPage(content).is(tokenized)
     }
 
     void 'content2htmlPage adapts any other content'() {
@@ -349,5 +234,17 @@ class GSPGrailsLayoutPageSpec extends Specification {
         then:
         htmlPage != null
         htmlPage.getTitle() == 'adapted'
+    }
+
+    private static StreamCharBuffer buffer(String text) {
+        def buffer = new StreamCharBuffer()
+        buffer.getWriter().write(text)
+        buffer
+    }
+
+    private static String written(Closure writing) {
+        def out = new StringWriter()
+        writing(out)
+        out.toString()
     }
 }

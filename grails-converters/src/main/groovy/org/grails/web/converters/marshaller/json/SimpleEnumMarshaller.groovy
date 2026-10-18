@@ -37,8 +37,23 @@ import org.grails.web.converters.marshaller.ObjectMarshaller
 @CompileStatic
 class SimpleEnumMarshaller implements ObjectMarshaller<JSON> {
 
+    private final boolean constantsWithBodies
+
+    SimpleEnumMarshaller() {
+        this(false)
+    }
+
+    /**
+     * @param constantsWithBodies whether to marshal an enum constant with a body as well, whose class is an anonymous
+     *        subclass of its enum; without, as in Grails 8, such a constant is left to the bean marshallers
+     * @since 9.0
+     */
+    SimpleEnumMarshaller(boolean constantsWithBodies) {
+        this.constantsWithBodies = constantsWithBodies
+    }
+
     boolean supports(Object object) {
-        return object.getClass().isEnum()
+        return constantsWithBodies ? object instanceof Enum : object.getClass().isEnum()
     }
 
     void marshalObject(Object en, JSON json) throws ConverterException {
