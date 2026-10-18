@@ -64,7 +64,8 @@ final class CircularReferenceModule extends JacksonModule {
             public ValueSerializer<?> modifySerializer(SerializationConfig config, BeanDescription.Supplier beanDescription,
                     ValueSerializer<?> serializer) {
                 ValueSerializer<?> tracked = CycleTracking.around(serializer, (value, enclosing, generator, context) ->
-                        Cycles.write(value, enclosing, generator, behaviour.get()));
+                        Cycles.write(value, enclosing, generator, behaviour.get()),
+                        () -> behaviour.get() == CircularReferenceBehaviour.PATH);
                 return tracked != null ? tracked : serializer;
             }
         });

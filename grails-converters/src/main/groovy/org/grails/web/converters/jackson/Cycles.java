@@ -46,7 +46,7 @@ final class Cycles {
 
     /**
      * Where an object being written started: the nesting depth of its JSON object, and its path from the root in the
-     * form the converter's {@code PATH} behaviour writes.
+     * form the converter's {@code PATH} behaviour writes, where that behaviour may write it, or else {@code null}.
      */
     record Frame(int depth, String path) {
     }
@@ -64,9 +64,15 @@ final class Cycles {
     /**
      * Where the object about to be written will be: a level below the context it is written into, at the position
      * the context is about to move to.
+     *
+     * @param generator the generator
+     * @param withPath whether the path is kept, which only the {@code PATH} behaviour writes
      */
-    static Frame upcoming(JsonGenerator generator) {
+    static Frame upcoming(JsonGenerator generator, boolean withPath) {
         TokenStreamContext current = generator.streamWriteContext();
+        if (!withPath) {
+            return new Frame(current.getNestingDepth() + 1, null);
+        }
         StringBuilder path = new StringBuilder();
         for (TokenStreamContext context = current; context != null && !context.inRoot(); context = context.getParent()) {
             int index = context == current ? context.getEntryCount() : context.getCurrentIndex();

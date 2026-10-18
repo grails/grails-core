@@ -58,6 +58,7 @@ import org.grails.datastore.mapping.model.types.ManyToOne;
 import org.grails.datastore.mapping.model.types.OneToOne;
 import org.grails.datastore.mapping.reflect.NameUtils;
 import org.grails.datastore.mapping.reflect.ReflectionUtils;
+import org.grails.web.converters.Converter.CircularReferenceBehaviour;
 
 /**
  * Makes the bean serializer of a domain class write what {@code grails.converters.JSON} writes for an instance: the
@@ -318,8 +319,14 @@ final class DomainClassModifier extends ValueSerializerModifier {
         if (!current.isDomainClass(type) || DomainClassRendering.isProxyClass(type)) {
             return serializer;
         }
-        ValueSerializer<?> tracked = CycleTracking.around(serializer, this::onCycle);
+        ValueSerializer<?> tracked = CycleTracking.around(serializer, this::onCycle, this::writesPaths);
         return tracked != null ? tracked : serializer;
+    }
+
+    /** Whether an instance reached again may be written as its path: by the behaviour of a write, or of the module. */
+    private boolean writesPaths() {
+        return rendering.renderingsPerWrite() ||
+                rendering.get().getCircularReferenceBehaviour() == CircularReferenceBehaviour.PATH;
     }
 
     /** An instance reached again while it is being written is a reference to it, or what the behaviour selects. */

@@ -21,6 +21,7 @@ package org.grails.web.converters.jackson;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.core.JsonGenerator;
@@ -54,6 +55,8 @@ final class CycleTracking extends ValueSerializer<Object> {
 
     private final OnCycle onCycle;
 
+    private final BooleanSupplier paths;
+
     /**
      * Tracks the bean serializer a serializer wraps, if any.
      *
@@ -67,28 +70,30 @@ final class CycleTracking extends ValueSerializer<Object> {
      *
      * @param serializer a serializer, which may wrap a bean serializer
      * @param onCycle what to write for a value reached again
+     * @param paths whether a value reached again may be written as its path, so that the path of each value is kept
      * @return the serializer, with its bean serializer tracked, or {@code null} if it wraps none, or one that writes
      *         object ids
      */
-    static ValueSerializer<?> around(ValueSerializer<?> serializer, OnCycle onCycle) {
+    static ValueSerializer<?> around(ValueSerializer<?> serializer, OnCycle onCycle, BooleanSupplier paths) {
         if (serializer instanceof CycleTracking tracking) {
-            return around(tracking.delegate, onCycle);
+            return around(tracking.delegate, onCycle, paths);
         }
         if (serializer instanceof BeanSerializerBase) {
-            return serializer.usesObjectId() ? null : new CycleTracking(serializer, onCycle);
+            return serializer.usesObjectId() ? null : new CycleTracking(serializer, onCycle, paths);
         }
         ValueSerializer<?> delegatee = serializer.getDelegatee();
         if (delegatee == null || delegatee == serializer) {
             return null;
         }
-        ValueSerializer<?> tracked = around(delegatee, onCycle);
+        ValueSerializer<?> tracked = around(delegatee, onCycle, paths);
         return tracked != null ? serializer.replaceDelegatee(tracked) : null;
     }
 
     @SuppressWarnings("unchecked")
-    CycleTracking(ValueSerializer<?> delegate, OnCycle onCycle) {
+    CycleTracking(ValueSerializer<?> delegate, OnCycle onCycle, BooleanSupplier paths) {
         this.delegate = (ValueSerializer<Object>) delegate;
         this.onCycle = onCycle;
+        this.paths = paths;
     }
 
     @Override
@@ -99,7 +104,7 @@ final class CycleTracking extends ValueSerializer<Object> {
             onCycle.write(value, enclosing, gen, ctxt);
             return;
         }
-        instances.put(value, Cycles.upcoming(gen));
+        instances.put(value, Cycles.upcoming(gen, paths.getAsBoolean()));
         try {
             delegate.serialize(value, gen, ctxt);
         }
@@ -116,7 +121,7 @@ final class CycleTracking extends ValueSerializer<Object> {
             onCycle.write(value, enclosing, gen, ctxt);
             return;
         }
-        instances.put(value, Cycles.upcoming(gen));
+        instances.put(value, Cycles.upcoming(gen, paths.getAsBoolean()));
         try {
             delegate.serializeWithType(value, gen, ctxt, typeSer);
         }
@@ -137,7 +142,7 @@ final class CycleTracking extends ValueSerializer<Object> {
             return this;
         }
         // a property annotated @JsonIdentityInfo makes the serializer write object ids
-        return contextual.usesObjectId() ? contextual : new CycleTracking(contextual, onCycle);
+        return contextual.usesObjectId() ? contextual : new CycleTracking(contextual, onCycle, paths);
     }
 
     @Override
@@ -164,7 +169,7 @@ final class CycleTracking extends ValueSerializer<Object> {
     /** The bean serializer Jackson asks for, such as one that leaves out properties, tracked as this one is. */
     @SuppressWarnings("unchecked")
     private ValueSerializer<Object> tracking(ValueSerializer<?> serializer) {
-        return serializer == delegate ? this : new CycleTracking(serializer, onCycle);
+        return serializer == delegate ? this : new CycleTracking(serializer, onCycle, paths);
     }
 
     @Override
