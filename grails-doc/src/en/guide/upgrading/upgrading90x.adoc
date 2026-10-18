@@ -137,7 +137,8 @@ dependencies {
 
 Grails 9 defaults this setting to `false`: adding the Jackson XML dependency alone does not bypass
 registered XML marshallers. Enabling it explicitly selects Spring for ordinary beans, even when a
-legacy marshaller is registered. Domain objects, collections, maps, validation errors and projections
+legacy marshaller is registered. `null`, domain objects, collections, arrays, maps, validation errors, values
+`respond` is given `includes` or `excludes` for, and the values of a renderer with a legacy `namedConfiguration`
 continue to use the Grails XML converter; migrate these to DTOs or explicit application renderers
 before legacy XML conversion is removed in Grails 11.
 
@@ -168,7 +169,8 @@ headers matched whatever their case, are in sections 6, 8, 12 and 13.
 | `true` in Grails 10
 
 | `grails.converters.json.legacy`
-| `grails.converters.JSON`: `render ... as JSON`, `JSON.parse` and `request.JSON`
+| `grails.converters.JSON`: `render ... as JSON`, `JSON.parse`, `request.JSON`, and `respond` while
+`grails.web.rendering.json.spring` is `false`
 | `true`
 | `false` in a later release
 
@@ -230,7 +232,10 @@ response type and negotiated JSON media type and advertises a JSON media type fo
 (`application/json`, `text/json`, or a `+json` subtype). Generic `*/*` string and byte-array converters
 are skipped, so strings remain JSON strings and byte arrays use Jackson's base64 JSON representation.
 The same media-family rule applies to XML conversion; a generic text converter cannot strip the XML
-string element.
+string element. Where that converter is Spring's `JacksonJsonHttpMessageConverter`, the Grails mapper writes the value
+after what the converter writes ahead of it, such as the prefix its `setPrefixJson(true)` or `setJsonPrefix(...)` adds
+against JSON hijacking. A response `respond` writes with a named configuration, `render json:` and
+`grails.converters.JSON` are written without the converter, and so without its prefix.
 
 `grails-converters` depends on Spring Boot's `spring-boot-jackson` module, so Boot's `JsonMapper`, configured by the
 `spring.jackson.*` properties, is in every application context that has the converters. An application with
@@ -676,11 +681,12 @@ Mapper features installed through `JsonMapperBuilderCustomizer` then apply consi
 to request parsing as well as response rendering. This includes registered Jackson modules and parser
 features such as support for an application-specific input format.
 
-Both parsers report malformed bodies as binding errors, but Jackson rejects additional inputs that
-the legacy parser accepted: trailing content after a document, trailing commas, leading-zero numbers,
-unescaped tabs inside strings, trailing comments, nesting beyond its configured depth limit, and
-integers beyond its configured number-length limit. Review clients before enabling the new parser;
-configure intentional exceptions through `JsonMapperBuilderCustomizer`.
+Both parsers report malformed bodies as binding errors, but Jackson rejects inputs that the legacy
+parser accepted, among them trailing content after a document, trailing commas, leading-zero numbers,
+unescaped tabs inside strings and trailing comments, and inputs beyond the limits of its
+`StreamReadConstraints`, such as the nesting depth and the lengths of numbers, strings, names and documents.
+Review clients before enabling the new parser; configure intentional exceptions through
+`JsonMapperBuilderCustomizer`.
 
 With Jackson enabled, ordinary untyped JSON numbers keep the types the previous parser produced. Values with a fractional part are read
 as `BigDecimal` rather than `Double`, so binding a request value such as `1.15` to a `BigDecimal` property
