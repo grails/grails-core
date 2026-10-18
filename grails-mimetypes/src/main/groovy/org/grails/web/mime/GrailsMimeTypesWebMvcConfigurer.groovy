@@ -57,16 +57,9 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
      * @param strategySupplier builds the strategy on first use. Spring MVC collects its configurers
      * while its own infrastructure beans are created, so a configurer that needed the MIME types
      * when it was created would pull in every bean that supplies them, and fail on a cycle.
-     */
-    GrailsMimeTypesWebMvcConfigurer(Supplier<GrailsContentNegotiationStrategy> strategySupplier) {
-        this.strategySupplier = strategySupplier
-        this.dataFormatMimeTypes = () -> getContentNegotiationStrategy().configuredMimeTypes
-    }
-
-    /**
-     * @param strategySupplier builds the strategy on first use, as for {@link #GrailsMimeTypesWebMvcConfigurer(Supplier)}
      * @param dataFormatMimeTypes the MIME types whose data formats are registered with Spring MVC, which it asks for
-     * while its content negotiation manager is created, so that they need not be those of the strategy
+     * while its content negotiation manager is created, so that they are not those of the strategy, whose MIME types
+     * can come from beans that need that manager
      */
     GrailsMimeTypesWebMvcConfigurer(Supplier<GrailsContentNegotiationStrategy> strategySupplier,
             Supplier<MimeType[]> dataFormatMimeTypes) {
@@ -76,7 +69,7 @@ class GrailsMimeTypesWebMvcConfigurer implements WebMvcConfigurer {
 
     /**
      * Exposes the configured strategy to Grails' own format resolution. It is built on first use,
-     * here rather than as a bean of its own, for the reason the supplier constructor gives.
+     * here rather than as a bean of its own, for the reason given for the constructor's strategy supplier.
      */
     GrailsContentNegotiationStrategy getContentNegotiationStrategy() {
         GrailsContentNegotiationStrategy strategy = contentNegotiationStrategy
