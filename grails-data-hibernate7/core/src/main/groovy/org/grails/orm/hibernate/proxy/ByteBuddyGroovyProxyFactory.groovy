@@ -16,51 +16,54 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.proxy
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.proxy;
 
-import groovy.transform.CompileStatic
-import org.hibernate.HibernateException
-import org.hibernate.engine.spi.SharedSessionContractImplementor
-import org.hibernate.internal.util.ReflectHelper
-import org.hibernate.proxy.HibernateProxy
-import org.hibernate.proxy.ProxyConfiguration
-import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyFactory
-import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyHelper
-import org.hibernate.type.CompositeType
+import groovy.transform.CompileStatic;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.internal.util.ReflectHelper;
+import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.ProxyConfiguration;
+import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyFactory;
+import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyHelper;
+import org.hibernate.type.CompositeType;
 
-import java.lang.reflect.Method
+import java.lang.reflect.Method;
 
-import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_CLASS_ARRAY
+import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_CLASS_ARRAY;
 
 /**
  * A ProxyFactory implementation for ByteBuddy that uses {@link ByteBuddyGroovyInterceptor}.
  *
  * @since 8.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
 
-    private static final long serialVersionUID = 1L
+    private static final long serialVersionUID = 1L;
 
-    private final transient ByteBuddyProxyHelper byteBuddyProxyHelper
-    private Class<?> persistentClass
-    private String entityName
-    private Class<?>[] interfaces
-    private transient Method getIdentifierMethod
-    private transient Method setIdentifierMethod
-    private transient CompositeType componentIdType
-    private boolean overridesEquals
-    private Class<?> proxyClass
-    private final boolean lazyToString
+    private final transient ByteBuddyProxyHelper byteBuddyProxyHelper;
+    private Class<?> persistentClass;
+    private String entityName;
+    private Class<?>[] interfaces;
+    private transient Method getIdentifierMethod;
+    private transient Method setIdentifierMethod;
+    private transient CompositeType componentIdType;
+    private boolean overridesEquals;
+    private Class<?> proxyClass;
+    private final boolean lazyToString;
 
     ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper) {
-        this(byteBuddyProxyHelper, false)
+        this(byteBuddyProxyHelper, false);
     }
 
     ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, boolean lazyToString) {
-        super(byteBuddyProxyHelper)
-        this.byteBuddyProxyHelper = byteBuddyProxyHelper
-        this.lazyToString = lazyToString
+        super(byteBuddyProxyHelper);
+        this.byteBuddyProxyHelper = byteBuddyProxyHelper;
+        this.lazyToString = lazyToString;
     }
 
     @Override
@@ -72,16 +75,16 @@ class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
             Method setIdentifierMethod,
             CompositeType componentIdType)
             throws HibernateException {
-        this.entityName = entityName
-        this.persistentClass = persistentClass
-        this.interfaces = interfaces == null ? EMPTY_CLASS_ARRAY : interfaces.toArray(EMPTY_CLASS_ARRAY)
-        this.getIdentifierMethod = getIdentifierMethod
-        this.setIdentifierMethod = setIdentifierMethod
-        this.componentIdType = componentIdType
-        this.overridesEquals = ReflectHelper.overridesEquals(persistentClass)
+        this.entityName = entityName;
+        this.persistentClass = persistentClass;
+        this.interfaces = interfaces == null ? EMPTY_CLASS_ARRAY : interfaces.toArray(EMPTY_CLASS_ARRAY);
+        this.getIdentifierMethod = getIdentifierMethod;
+        this.setIdentifierMethod = setIdentifierMethod;
+        this.componentIdType = componentIdType;
+        this.overridesEquals = ReflectHelper.overridesEquals(persistentClass);
 
         // Build the proxy class using the helper
-        this.proxyClass = byteBuddyProxyHelper.buildProxy(persistentClass, this.interfaces)
+        this.proxyClass = byteBuddyProxyHelper.buildProxy(persistentClass, this.interfaces);
 
         // DO NOT call super.postInstantiate(entityName, ...)
         // because it will try to initialize the standard Hibernate ProxyFactory fields
@@ -101,22 +104,22 @@ class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
                     componentIdType,
                     session,
                     overridesEquals,
-                    lazyToString)
+                    lazyToString);
 
             // 1. Create the instance
             final HibernateProxy hibernateProxy =
-                    (HibernateProxy) proxyClass.getDeclaredConstructor().newInstance()
+                    (HibernateProxy) proxyClass.getDeclaredConstructor().newInstance();
 
             // 2. Cast to ProxyConfiguration to set the custom interceptor
             // Hibernate 7 proxies implement ProxyConfiguration
             if (hibernateProxy instanceof ProxyConfiguration) {
-                ((ProxyConfiguration) hibernateProxy).$$_hibernate_set_interceptor(interceptor)
+                ((ProxyConfiguration) hibernateProxy).$$_hibernate_set_interceptor(interceptor);
             }
 
-            return hibernateProxy
+            return hibernateProxy;
         }
         catch (Exception e) {
-            throw new HibernateException("Unable to generate proxy for ${entityName}", e)
+            throw new HibernateException("Unable to generate proxy for ${entityName}", e);
         }
     }
 

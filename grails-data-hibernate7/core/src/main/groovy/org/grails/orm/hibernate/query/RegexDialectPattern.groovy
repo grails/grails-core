@@ -16,33 +16,36 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.query
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.query;
 
-import groovy.transform.CompileStatic
-import org.hibernate.dialect.Dialect
-import org.hibernate.dialect.H2Dialect
-import org.hibernate.dialect.MariaDBDialect
-import org.hibernate.dialect.MySQLDialect
-import org.hibernate.dialect.OracleDialect
-import org.hibernate.dialect.PostgreSQLDialect
+import groovy.transform.CompileStatic;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.H2Dialect;
+import org.hibernate.dialect.MariaDBDialect;
+import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.dialect.OracleDialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
 enum RegexDialectPattern {
 
-    MYSQL(MySQLDialect, '?1 RLIKE ?2'),
-    MARIADB(MariaDBDialect, '?1 REGEXP ?2'),
-    POSTGRES(PostgreSQLDialect, '?1 ~ ?2'),
-    ORACLE(OracleDialect, 'REGEXP_LIKE(?1, ?2)'),
-    H2(H2Dialect, 'REGEXP_LIKE(?1, ?2)'),
+    MYSQL(MySQLDialect, "?1 RLIKE ?2"),
+    MARIADB(MariaDBDialect, "?1 REGEXP ?2"),
+    POSTGRES(PostgreSQLDialect, "?1 ~ ?2"),
+    ORACLE(OracleDialect, "REGEXP_LIKE(?1, ?2)"),
+    H2(H2Dialect, "REGEXP_LIKE(?1, ?2)"),
     // Default fallback
-    DEFAULT(Dialect, '?1 LIKE ?2')
+    DEFAULT(Dialect, "?1 LIKE ?2");
 
-    private final Class<? extends Dialect> dialectClass
-    private final String sqlPattern
+    private final Class<? extends Dialect> dialectClass;
+    private final String sqlPattern;
 
     RegexDialectPattern(Class<? extends Dialect> dialectClass, String sqlPattern) {
-        this.dialectClass = dialectClass
-        this.sqlPattern = sqlPattern
+        this.dialectClass = dialectClass;
+        this.sqlPattern = sqlPattern;
     }
 
     /**
@@ -52,14 +55,14 @@ enum RegexDialectPattern {
     static String findPatternForDialect(Dialect runtimeDialect) {
         for (RegexDialectPattern p : values()) {
             if (p != DEFAULT && p.dialectClass.isInstance(runtimeDialect)) {
-                return p.sqlPattern
+                return p.sqlPattern;
             }
         }
-        return DEFAULT.sqlPattern
+        return DEFAULT.sqlPattern;
     }
 
     String getSqlPattern() {
-        return sqlPattern
+        return sqlPattern;
     }
 
 }

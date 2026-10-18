@@ -13,67 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.orm.hibernate.query
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.query;
 
-import groovy.transform.CompileStatic
-import jakarta.persistence.criteria.Expression
+import groovy.transform.CompileStatic;
+import jakarta.persistence.criteria.Expression;
 
 /**
  * Registry for user-defined and auto-generated aliases in a JPA query.
  *
  * @since 8.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
 @CompileStatic
 class AliasRegistry {
 
-    private final Map<String, HibernateAlias> definitions = [:]
-    private final Map<String, Expression<?>> realizedExpressions = [:]
-    private final AliasRegistry parent
+    private final Map<String, HibernateAlias> definitions = [:];
+    private final Map<String, Expression<?>> realizedExpressions = [:];
+    private final AliasRegistry parent;
 
     AliasRegistry() {
-        this.parent = null
+        this.parent = null;
     }
 
     AliasRegistry(AliasRegistry parent) {
-        this.parent = parent
+        this.parent = parent;
     }
 
     void define(String alias, HibernateAlias definition) {
-        definitions.put(alias, definition)
+        definitions.put(alias, definition);
     }
 
     void realize(String alias, Expression<?> expression) {
-        realizedExpressions.put(alias, expression)
+        realizedExpressions.put(alias, expression);
     }
 
     boolean isDefined(String alias) {
         if (definitions.containsKey(alias) || realizedExpressions.containsKey(alias)) {
-            return true
+            return true;
         }
         if (parent != null) {
-            return parent.isDefined(alias)
+            return parent.isDefined(alias);
         }
-        return false
+        return false;
     }
 
     HibernateAlias getDefinition(String alias) {
-        HibernateAlias definition = definitions.get(alias)
+        HibernateAlias definition = definitions.get(alias);
         if (definition == null && parent != null) {
-            return parent.getDefinition(alias)
+            return parent.getDefinition(alias);
         }
-        return definition
+        return definition;
     }
 
     Expression<?> getRealized(String alias) {
-        Expression<?> expr = realizedExpressions.get(alias)
+        Expression<?> expr = realizedExpressions.get(alias);
         if (expr == null && parent != null) {
-            return parent.getRealized(alias)
+            return parent.getRealized(alias);
         }
-        return expr
+        return expr;
     }
 
     boolean hasRealized(String alias) {
-        return realizedExpressions.containsKey(alias) || (parent != null && parent.hasRealized(alias))
+        return realizedExpressions.containsKey(alias) || (parent != null && parent.hasRealized(alias));
     }
 
 }
