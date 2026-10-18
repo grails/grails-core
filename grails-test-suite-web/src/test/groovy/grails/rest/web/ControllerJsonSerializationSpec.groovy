@@ -115,6 +115,18 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.json == [book: [id: book.id]]
     }
 
+    void 'an object a serializer writes with writePOJO is found when it repeats one the response is writing'() {
+        given: 'an owner whose holder is written by a serializer that writes the owner back with writePOJO'
+        def owner = new PojoCycleOwner(name: 'first')
+        owner.holder = new PojoCycleHolder(owner: owner)
+
+        when:
+        controller.respond(owner)
+
+        then: 'the owner is written once, and referenced where it repeats, as render json: writes it'
+        response.json == [holder: [owner: [_ref: '..', class: PojoCycleOwner.name]], name: 'first']
+    }
+
     void 'a named JSON write that fails part-way leaves the response uncommitted, so that the error page applies'() {
         given:
         applicationContext.getBean(NamedJsonConfigurationRegistry).register('plain') { }
@@ -601,6 +613,26 @@ class PojoWritingSerializer extends ValueSerializer<PojoWritingBody> {
         generator.writeStartObject()
         generator.writeName('book')
         generator.writePOJO(value.book)
+        generator.writeEndObject()
+    }
+}
+
+class PojoCycleOwner {
+    String name
+    PojoCycleHolder holder
+}
+
+@JsonSerialize(using = PojoCycleHolderSerializer)
+class PojoCycleHolder {
+    PojoCycleOwner owner
+}
+
+class PojoCycleHolderSerializer extends ValueSerializer<PojoCycleHolder> {
+    @Override
+    void serialize(PojoCycleHolder value, JsonGenerator generator, SerializationContext context) {
+        generator.writeStartObject()
+        generator.writeName('owner')
+        generator.writePOJO(value.owner)
         generator.writeEndObject()
     }
 }

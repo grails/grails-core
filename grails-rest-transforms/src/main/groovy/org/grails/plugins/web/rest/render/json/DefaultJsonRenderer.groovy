@@ -346,8 +346,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     /**
      * Writes a value as Spring MVC's converter writes it, with the isolated Grails mapper: the converter's prefix is
      * application configuration, and the mapper, which is derived from the converter's, writes the wrapper of a root
-     * value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value itself. The writer is
-     * left unflushed, so that a value that fails part-way leaves the response uncommitted.
+     * value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value itself. One write
+     * writes the whole value, so that an object a serializer writes with {@code writePOJO} is found when it repeats one
+     * being written. The writer is left unflushed, so that a value that fails part-way leaves the response uncommitted.
      */
     private static void writeWithGrailsMapper(Object value, JsonMapper mapper, JsonProjection projection, String prefix,
                                               Writer output) {
@@ -356,9 +357,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         if (projection != null) {
             writer = writer.withAttribute(JsonProjection.ATTRIBUTE, projection)
         }
-        try (JsonGenerator generator = writer.createGenerator(output)) {
-            generator.writeRaw(prefix)
-            writer.writeValue(generator, value)
+        try {
+            output.write(prefix)
+            writer.writeValue(output, value)
         }
         catch (InvalidDefinitionException e) {
             throw new HttpMessageConversionException("Type definition error: ${e.type}", e)
