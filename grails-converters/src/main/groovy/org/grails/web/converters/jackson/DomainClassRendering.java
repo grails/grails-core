@@ -156,6 +156,17 @@ public class DomainClassRendering {
     }
 
     /**
+     * @param object a domain class instance
+     * @param property the name of one of its properties, or {@code class} or {@code version}
+     * @param written the name the property is written with, which a naming strategy or {@code @JsonProperty} may give it
+     * @return whether the property is written: by default, as {@link #includes(Object, String)} decides by its name
+     * @since 9.0
+     */
+    public boolean includes(Object object, String property, String written) {
+        return includes(object, property);
+    }
+
+    /**
      * @param type a type
      * @return whether the type is a domain class, or a proxy class of one; another subclass of a domain class is not
      */

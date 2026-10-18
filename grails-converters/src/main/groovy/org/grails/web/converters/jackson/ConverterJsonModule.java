@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import tools.jackson.core.JsonGenerator;
@@ -53,7 +53,7 @@ import grails.web.controllers.ControllerMethod;
  * The rules {@code grails.converters.JSON} adds to the mapper it writes with: an enum is written by its name, so that it
  * binds back, validation errors are written without the values that were rejected, a bean leaves out the properties of the methods annotated {@code @PersistenceMethod} and
  * {@code @ControllerMethod}, and the converter's includes and excludes for the class of a bean decide which of its
- * properties are written.
+ * properties are written, naming each by the name the class gives it or by the name it is written with.
  *
  * @since 9.0
  */
@@ -71,8 +71,8 @@ public final class ConverterJsonModule extends JacksonModule {
 
     /**
      * A writer attribute for a writer that includes only some of the properties of the beans it writes. Its value is a
-     * {@code Function<Object, Predicate<String>>} that gives, for a bean, whether a property is written by its name, or
-     * {@code null} for all of them.
+     * {@code Function<Object, BiPredicate<String, String>>} that gives, for a bean, whether a property is written by the
+     * name the class gives it and the name it is written with, or {@code null} for all of them.
      */
     public static final String PROPERTY_FILTERS = ConverterJsonModule.class.getName() + ".propertyFilters";
 
@@ -135,15 +135,15 @@ public final class ConverterJsonModule extends JacksonModule {
     }
 
     /**
-     * The converter's includes and excludes for the class of the bean being written, which name its properties as the
-     * class does.
+     * The converter's includes and excludes for the class of the bean being written, which name a property by the name
+     * the class gives it or by the name it is written with.
      */
     @SuppressWarnings("unchecked")
     private static GatedPropertyWriter.Gate included(String property) {
         return (bean, context, writer) -> {
             if (context.getAttribute(PROPERTY_FILTERS) instanceof Function<?, ?> filters) {
-                Predicate<String> filter = ((Function<Object, Predicate<String>>) filters).apply(bean);
-                return filter == null || filter.test(property);
+                BiPredicate<String, String> filter = ((Function<Object, BiPredicate<String, String>>) filters).apply(bean);
+                return filter == null || filter.test(property, writer.getName());
             }
             return true;
         };

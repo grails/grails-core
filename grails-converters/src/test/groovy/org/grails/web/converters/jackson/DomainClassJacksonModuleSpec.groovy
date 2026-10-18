@@ -1089,6 +1089,35 @@ class DomainClassJacksonModuleSpec extends Specification {
         new JSON(titled).toString() == '{"id":1,"bookTitle":"G","shelf":{"id":3},"subtitle":"s"}'
     }
 
+    void "the includes and excludes of the JSON converter name a property of a domain class by its name or by the name it is written with, here #names"() {
+        given:
+        def instance = type == Titled ? new Titled(bookTitle: 'G', subTitle: 's') : new RenamedId(name: 'n')
+        instance.id = 1
+        def json = new JSON(instance)
+        if (includes != null) {
+            json.setIncludes(type, includes)
+        }
+        if (excludes != null) {
+            json.setExcludes(type, excludes)
+        }
+
+        expect:
+        json.toString() == written
+
+        where:
+        type      | includes                 | excludes     || written
+        Titled    | ['subTitle']             | null         || '{"subtitle":"s"}'
+        Titled    | ['subtitle']             | null         || '{"subtitle":"s"}'
+        Titled    | ['id', 'subtitle']       | ['subTitle'] || '{"id":1}'
+        Titled    | null                     | ['subTitle'] || '{"id":1,"bookTitle":"G","shelf":null}'
+        Titled    | null                     | ['subtitle'] || '{"id":1,"bookTitle":"G","shelf":null}'
+        RenamedId | ['identifier']           | null         || '{"identifier":1}'
+        RenamedId | ['id']                   | null         || '{"identifier":1}'
+        RenamedId | null                     | ['identifier'] || '{"name":"n"}'
+
+        names = "${type.simpleName} with includes ${includes} and excludes ${excludes}"
+    }
+
     void "the properties are written in the converter's order, whether or not the mapper sorts properties"() {
         given: 'Jackson 3 sorts the properties of beans alphabetically by default'
         def unsorted = JsonMapper.builder()
@@ -1317,14 +1346,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo)
+                Identified, Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo, RenamedId)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo)
+                Ordered, Filtered, Located, Filed, TenantScoped, Positioned, Extended, Coded, Branch, Summarized, Rated, Rating, Cat, Attributed, ViewedAttributes, FilteredAttributes, Badge, Badged, Creature, Parrot, Aviary, Counted, Tally, IgnoredAttributes, DisabledAttributes, Zoo, RenamedId)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1894,6 +1923,13 @@ class Annotated {
     String hidden
     @JsonFormat(pattern = 'yyyy', timezone = 'UTC')
     Date born
+}
+
+@Entity
+class RenamedId {
+    @JsonProperty('identifier')
+    Long id
+    String name
 }
 
 @Entity

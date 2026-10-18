@@ -435,8 +435,9 @@ What Jackson applies to a bean applies to a bean the converter renders, where Gr
 `@JsonIgnore`, `@JsonInclude`, `@JsonView`, `@JsonFormat`, `@JsonPropertyOrder`, mix-ins and the mapper's naming strategy and
 inclusion. Properties come in the order Jackson gives them, where Grails 8 wrote the bean properties alphabetically and then
 the public fields, and a bean with no properties is written as an empty object. The converter's includes and excludes for a
-class, `setIncludes` and `setExcludes`, still decide which properties of a bean are written, and a method annotated
-`@PersistenceMethod` or `@ControllerMethod` is still not a property. Subclasses of `GroovyBeanMarshaller` and
+class, `setIncludes` and `setExcludes`, still decide which properties of a bean are written, and match a property by its
+bean property name or by the JSON name a Jackson annotation or naming strategy gives it, as those of `respond` and
+`render json:` do. A method annotated `@PersistenceMethod` or `@ControllerMethod` is still not a property. Subclasses of `GroovyBeanMarshaller` and
 `GenericJavaBeanMarshaller` that you register still render the types they are registered for as they did.
 
 With the setting `false`, two things deliberately differ from Spring Boot, as they do in Grails 8:
@@ -613,7 +614,7 @@ differences:
 * What Jackson applies to a bean applies to the instance, where the converter ignored it in Grails 8: a property annotated
 with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, is not rendered, nor is one that a class-level
 `@JsonIgnoreProperties` names; property names follow `@JsonProperty`, `@JsonNaming` and the mapper's naming strategy
-(`spring.jackson.property-naming-strategy`); `@JsonInclude` and `spring.jackson.default-property-inclusion` decide whether a
+(`spring.jackson.property-naming-strategy`), and the converter's includes and excludes match either name; `@JsonInclude` and `spring.jackson.default-property-inclusion` decide whether a
 null or empty property is written; `@JsonView`, `@JsonFormat`, a `@JsonSerialize` serializer on a property, mix-ins, filters
 and `@JsonPropertyOrder` apply; a domain class with `@JsonTypeInfo` is written with its type id, and an instance in a
 `@JsonUnwrapped` property is written into the enclosing object. As with Jackson's own unwrapping, an instance with a type

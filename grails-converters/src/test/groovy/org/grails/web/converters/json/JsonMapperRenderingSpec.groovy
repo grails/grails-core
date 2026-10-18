@@ -708,6 +708,30 @@ class JsonMapperRenderingSpec extends Specification {
         json.toString() == '{"name":"Fred","role":"ADMIN"}'
     }
 
+    void "the includes and excludes of the converter name a property by its name or by the name the JsonMapper writes, here #names"() {
+        given:
+        def json = new JSON(new RenamedBean(name: 'Ada', count: 2))
+        if (includes != null) {
+            json.setIncludes(RenamedBean, includes)
+        }
+        if (excludes != null) {
+            json.setExcludes(RenamedBean, excludes)
+        }
+
+        expect:
+        json.toString() == written
+
+        where:
+        includes          | excludes  || written
+        ['name']          | null      || '{"label":"Ada"}'
+        ['label']         | null      || '{"label":"Ada"}'
+        ['label']         | ['name']  || '{}'
+        null              | ['name']  || '{"count":2}'
+        null              | ['label'] || '{"count":2}'
+
+        names = "includes ${includes} and excludes ${excludes}"
+    }
+
     void "empty includes of the converter write none of the properties of a bean, as in Grails 8"() {
         given:
         def json = new JSON(new Holder(name: 'Fred', role: Role.ADMIN))
@@ -1224,4 +1248,10 @@ class TypedContents {
 
 class Tile {
     Integer side
+}
+
+class RenamedBean {
+    @JsonProperty('label')
+    String name
+    Integer count
 }

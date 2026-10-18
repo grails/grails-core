@@ -377,6 +377,14 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             return includeExcludeSupport.shouldInclude(includes, excludes, property) && shouldInclude(object, property);
         }
 
+        /** The converter's includes and excludes name a property by its name or by the name it is written with. */
+        @Override
+        public boolean includes(Object object, String property, String written) {
+            return (excludes == null || !excludes.contains(property) && !excludes.contains(written)) &&
+                    (includes == null || includes.contains(property) || includes.contains(written)) &&
+                    shouldInclude(object, property);
+        }
+
         @Override
         public Object propertyValue(Object object, PersistentProperty property) {
             return extractValue(object, property);

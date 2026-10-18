@@ -162,7 +162,7 @@ final class DomainClassModifier extends ValueSerializerModifier {
 
     /** The rendering of the write, and its projection, for a property of the instance being written. */
     private GatedPropertyWriter.Gate included(String property) {
-        return (bean, context, writer) -> rendering.of(context, bean).includes(bean, property) &&
+        return (bean, context, writer) -> rendering.of(context, bean).includes(bean, property, writer.getName()) &&
                 JsonProjection.projects(context, bean, property, writer.getName());
     }
 
