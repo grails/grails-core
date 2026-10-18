@@ -546,6 +546,24 @@ class DomainClassJacksonModuleSpec extends Specification {
         json == '{"id":1,"name":"library","city":"Paris","name":"main"}'
     }
 
+    void "an association after a @JsonUnwrapped property is written with the rendering of the instance that has it"() {
+        given: 'a DomainClassMarshaller that writes the ids with a prefix'
+        JSON.registerObjectMarshaller(new DomainClassMarshaller(false, grailsApplication) {
+            @Override
+            protected Object extractValue(Object domainObject, PersistentProperty property) {
+                def value = super.extractValue(domainObject, property)
+                property.name == 'id' ? "id-${value}".toString() : value
+            }
+        })
+        def shelf = new Shelf(name: 'top')
+        shelf.id = 3
+        def filed = new Filed(title: 'Grails', label: new FileLabel(code: 'g1'), shelf: shelf)
+        filed.id = 1
+
+        expect: 'the reference after the unwrapped label, as the reference of an instance without one'
+        new JSON(filed).toString() == '{"id":"id-1","title":"Grails","code":"g1","shelf":{"id":"id-3"}}'
+    }
+
     void "a domain instance in a @JsonUnwrapped property is written into the enclosing object"() {
         given:
         def writer = new Writer(name: 'a')
@@ -921,14 +939,14 @@ class DomainClassJacksonModuleSpec extends Specification {
     private GrailsApplication domainApplication() {
         def grailsApplication = new DefaultGrailsApplication(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code,
                 Titled, Kebab, Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library,
-                Identified, Ordered, Filtered, Located)
+                Identified, Ordered, Filtered, Located, Filed)
         // the JSON converter renders through the JsonMapper, and so with the serializer
         grailsApplication.config.setAt('grails.converters.json.legacy', false)
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext('json')
         mappingContext.addPersistentEntities(Volume, Shelf, Writer, Partner, Label, Member, Animal, Dog, Code, Titled, Kebab,
                 Kennel, Shelter, Pair, Annotated, ViewedId, ViewedClass, GormVersioned, StringId, HiddenId, PublicId, Library, Identified,
-                Ordered, Filtered, Located)
+                Ordered, Filtered, Located, Filed)
         grailsApplication.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
         })
@@ -1213,6 +1231,19 @@ class Located {
 class Address {
     String name
     String city
+}
+
+@Entity
+class Filed {
+    static embedded = ['label']
+    String title
+    @JsonUnwrapped
+    FileLabel label
+    Shelf shelf
+}
+
+class FileLabel {
+    String code
 }
 
 class Unwrapped {

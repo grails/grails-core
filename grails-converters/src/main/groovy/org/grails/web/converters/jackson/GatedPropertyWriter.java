@@ -133,7 +133,19 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
     public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
         if (gate.includes(bean, context, this)) {
             delegate.serializeAsProperty(bean, generator, context);
+            if (delegate.isUnwrapping()) {
+                restoreCurrentValue(bean, generator);
+            }
         }
+    }
+
+    /**
+     * Jackson makes the value of an unwrapped property the current value of the object it writes it into, and leaves it
+     * there; the bean is made the current value again, so that the properties written after it are written as those
+     * of the bean, such as a reference with the bean's rendering.
+     */
+    private static void restoreCurrentValue(Object bean, JsonGenerator generator) {
+        generator.assignCurrentValue(bean);
     }
 
     @Override
@@ -214,6 +226,7 @@ final class GatedPropertyWriter extends BeanPropertyWriter {
                 throws Exception {
             if (gate.includes(bean, context, this)) {
                 delegate.serializeAsProperty(bean, generator, context);
+                restoreCurrentValue(bean, generator);
             }
         }
 
