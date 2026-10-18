@@ -245,7 +245,7 @@ final class AutoConfigurationImportsWriter {
             }
         }
         File directory = targetDirectory
-        while (directory && !(directory.name == 'build' || directory.name == 'target')) {
+        while (directory != null && !(directory.name == 'build' || directory.name == 'target')) {
             directory = directory.parentFile
         }
         return directory?.parentFile
