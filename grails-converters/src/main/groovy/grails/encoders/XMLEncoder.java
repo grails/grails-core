@@ -45,6 +45,7 @@ public class XMLEncoder extends BasicXMLEncoder {
     }
 
     private static Constructor<?> converter() {
+        // found by name, since grails-xml depends on this module; grails-xml registers both for an ahead-of-time image
         ClassLoader classLoader = XMLEncoder.class.getClassLoader();
         if (!ClassUtils.isPresent(XML_CONVERTER, classLoader)) {
             return null;
