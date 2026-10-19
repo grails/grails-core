@@ -964,11 +964,15 @@ content type as a request to an application does, and again when its content typ
 gave no format, and `text/xml` is read as `application/xml`.
 
 The traits still do not load the controllers, URL mappings or i18n plugins themselves. A URL mappings holder, link
-generator or locale resolver a spec declares itself, in `doWithSpring`, `beanRegistrar()` or a nested `@Configuration`
-class, is now kept, where the traits replaced it with their own. The URL mappings holder and link generator of the URL
-mappings plugin, which a spec that includes the `controllers` or `urlMappings` plugin loads, are still replaced, as in
-Grails 8, so that links follow the application's `UrlMappings` and absolute links start with `grails.serverURL`, or
-`http://localhost:8080` without it. The locale resolver of the i18n plugin's auto-configuration, which every web unit test
+generator or locale resolver a spec declares itself, in `doWithSpring`, `beanRegistrar()` or a `@Bean` method of a nested
+`@Configuration` class, under its name or with its name as an alias, is now kept, where the traits replaced it with their
+own; a bean of a class that configuration class imports is replaced, as in Grails 8. The URL mappings holder and link
+generator of the URL mappings plugin, which a spec that includes the `controllers` or `urlMappings` plugin loads, are
+still replaced, as in Grails 8, so that links follow the application's `UrlMappings` and absolute links start with
+`grails.serverURL`, or `http://localhost:8080` without it. Such a spec declares its URL mappings holder in `doWithSpring`
+or `beanRegistrar()`, since the plugin's holder takes the place of one a configuration class declares, as the bean of an
+included plugin takes the place of a configuration class's bean of the same name. A `UrlMappingsUnitTest` replaces the
+holder for each feature with one for the URL mappings it tests, as in Grails 8. The locale resolver of the i18n plugin's auto-configuration, which every web unit test
 has, is kept: a test resolves locales with the resolver `grails.i18n.localeResolver` configures, as the application does,
 where the traits replaced it with a session resolver. A spec that relies on changing the locale of a request where the
 application configures a fixed or accept-header resolver sets `grails.i18n.localeResolver` to `session` in its

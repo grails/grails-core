@@ -138,7 +138,9 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
 
             // A URL mappings holder and link generator the spec declares are kept; the URL mappings plugin's, which a spec
             // including the controllers or urlMappings plugin loads, are replaced, as in Grails 8, so that links follow the
-            // application's UrlMappings and absolute links start with grails.serverURL or http://localhost:8080
+            // application's UrlMappings and absolute links start with grails.serverURL or http://localhost:8080. The
+            // plugin's holder takes the place of one the spec's configuration classes declare, so such a spec declares its
+            // holder in doWithSpring or beanRegistrar()
             if (!GrailsApplicationBuilder.isDeclaredByTest(beanFactory, 'grailsUrlMappingsHolder')) {
                 grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean)
             }
