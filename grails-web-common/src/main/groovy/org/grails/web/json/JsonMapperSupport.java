@@ -74,9 +74,10 @@ import tools.jackson.databind.util.TokenBuffer;
 public final class JsonMapperSupport {
 
     /**
-     * A default {@code JsonMapper}, for JSON written outside an application that provides one, such as in a unit test,
-     * and by the converter as Grails 8 wrote it, which escapes control characters as Grails 8 escaped them and writes
-     * values nested as deep as Grails 8 wrote them, which Jackson otherwise limits.
+     * The {@code JsonMapper} of JSON written as Grails 8 wrote it, by the converter with
+     * {@code grails.converters.json.legacy} and by a {@code JSONWriter} created without a mapper, which escapes control
+     * characters as Grails 8 escaped them and writes values nested as deep as Grails 8 wrote them, which Jackson otherwise
+     * limits.
      */
     public static final JsonMapperSupport DEFAULT = new JsonMapperSupport(JsonMapper.builder(JsonFactory.builder()
             .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
