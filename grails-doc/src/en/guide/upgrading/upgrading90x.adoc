@@ -432,7 +432,10 @@ and the types of any Jackson module registered with the application. Those value
 and `spring.jackson.*` properties apply to them. A number, string or boolean is written by the mapper's serializer for
 its type where a Jackson module registered with the application gives the type one, such as `ToStringSerializer` for
 `Long`, whether the converter renders it on its own, inside a collection or map, or for a marshaller's `property`,
-`convertAnother` or `build` call; otherwise it is written as Jackson writes it. For example, `spring.jackson.time-zone` writes `Date` and `Calendar`
+`convertAnother` or `build` call; otherwise it is written as Jackson writes it. With the setting `false`,
+`spring.jackson.serialization.wrap-root-value` also wraps the value the converter renders in an object named after its
+class, or its `@JsonRootName`, as Spring Boot wraps the body of a response; with the setting `true` the value is not
+wrapped, as in Grails 8. For example, `spring.jackson.time-zone` writes `Date` and `Calendar`
 values in that time zone, and converts `OffsetDateTime` and `ZonedDateTime` values to it. The mapper is the
 application's only or primary `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`, as for `respond` and data
 binding; where the application context has none of those, as in a unit test other than a web test, whose traits

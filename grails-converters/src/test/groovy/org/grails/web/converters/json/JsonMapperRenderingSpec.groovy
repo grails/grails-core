@@ -358,6 +358,41 @@ class JsonMapperRenderingSpec extends Specification {
         context.close()
     }
 
+    void "a #description is wrapped in an object named after its class where the mapper wraps root values, as the mapper wraps it"() {
+        given:
+        def mapper = JsonMapper.builder().enable(SerializationFeature.WRAP_ROOT_VALUE).build()
+        def context = applicationContext { it.registerBean(JsonMapper, { mapper }) }
+        initialize([:], context)
+
+        expect:
+        new JSON(value).toString() == mapper.writeValueAsString(value)
+        new JSON(value).toString().startsWith("{\"${rootName}\":")
+
+        cleanup:
+        context.close()
+
+        where:
+        description | value                                  || rootName
+        'bean'      | new NamedMapperBean(firstName: 'Ada')  || 'NamedMapperBean'
+        'map'       | [a: 1]                                 || 'LinkedHashMap'
+        'list'      | [1, 2]                                 || 'ArrayList'
+        'string'    | 'x'                                    || 'String'
+    }
+
+    void "with legacy, the value is not wrapped where the application's mapper wraps root values, as in Grails 8"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, { JsonMapper.builder().enable(SerializationFeature.WRAP_ROOT_VALUE).build() })
+        }
+        initialize(['grails.converters.json.legacy': true], context)
+
+        expect:
+        new JSON([a: 1]).toString() == '{"a":1}'
+
+        cleanup:
+        context.close()
+    }
+
     void "an enum with a @JsonValue renders by name, as every enum, so that it binds back"() {
         expect:
         new JSON([status: Status.ACTIVE]).toString() == '{"status":"ACTIVE"}'

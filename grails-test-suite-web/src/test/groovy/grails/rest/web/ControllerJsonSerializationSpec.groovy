@@ -33,6 +33,7 @@ import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
+import grails.converters.JSON
 import grails.converters.json.NamedJsonConfigurationRegistry
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
@@ -782,6 +783,33 @@ class ControllerProblemConverterSpec extends Specification implements Controller
         then:
         response.status == 409
         response.contentAsString == written.bodyAsString
+    }
+}
+
+class ControllerWrapRootValueSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    Closure doWithConfig() {
+        { config ->
+            config['grails.web.rendering.json.spring'] = true
+            config['grails.converters.json.legacy'] = false
+            config['spring.jackson.serialization.wrap-root-value'] = true
+        }
+    }
+
+    void 'the converter wraps the value it renders as respond wraps it, where the mapper wraps root values'() {
+        given:
+        def body = new JsonResponseBody(title: 'Grails', firstName: 'Ada')
+        response.format = 'json'
+        controller.respond(body)
+        def responded = response.contentAsString
+        response.reset()
+
+        when:
+        controller.render(body as JSON)
+
+        then:
+        responded.startsWith('{"JsonResponseBody":')
+        response.contentAsString == responded
     }
 }
 

@@ -189,7 +189,23 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      */
     public void render(Writer out) throws ConverterException {
         prepareRender(out);
-        value(target);
+        String rootName = target == null || ConvertersConfigurationHolder.isLegacyJson() ? null :
+                jsonMapperSupport.rootName(config.getProxyHandler().unwrapIfProxy(target).getClass());
+        if (rootName != null) {
+            // as the mapper wraps a value it writes on its own, as Spring Boot wraps the body of a response
+            try {
+                writer.object();
+                writer.key(rootName);
+                value(target);
+                writer.endObject();
+            }
+            catch (JSONException e) {
+                throw new ConverterException(e);
+            }
+        }
+        else {
+            value(target);
+        }
         finalizeRender(out);
     }
 

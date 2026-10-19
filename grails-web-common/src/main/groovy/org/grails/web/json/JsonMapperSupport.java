@@ -291,6 +291,22 @@ public final class JsonMapperSupport {
     }
 
     /**
+     * The name of the object the mapper wraps a value it writes on its own in, as Spring Boot's
+     * {@code spring.jackson.serialization.wrap-root-value} has it wrap the body of a response: the value's
+     * {@code @JsonRootName}, or the simple name of its class.
+     *
+     * @param type the class of the value
+     * @return the name, or {@code null} where the mapper does not wrap root values
+     * @since 9.0
+     */
+    public String rootName(Class<?> type) {
+        if (!mapper.serializationConfig().isEnabled(SerializationFeature.WRAP_ROOT_VALUE)) {
+            return null;
+        }
+        return serializationContext(mapper).findRootName(type).getSimpleName();
+    }
+
+    /**
      * Writes a value with the mapper, as a value inside the JSON document the generator is writing. Inside a value
      * written with {@link #writeValue(JsonGenerator, Object, Predicate)}, the value takes part in that nested write: it
      * is offered to the nested value writer first, as any value nested in that value is.
