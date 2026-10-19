@@ -92,9 +92,10 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     }
 
     /**
-     * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types, so
-     * that they are parsed as the application has bodies parsed, such as with Jackson by
-     * {@code grails.databinding.json.jackson}. Without one, a creator of the renderer's own parses them.
+     * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types where
+     * it parses with Jackson, as {@code grails.databinding.json.jackson} sets. Otherwise a creator of the renderer's own
+     * parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper} bean the application
+     * defines.
      *
      * @since 9.0
      */
@@ -107,7 +108,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         if (dataBindingSourceRegistry != null) {
             final thisType = getTargetType()
             final thisMimeTypes = getMimeTypes()
-            final DataBindingSourceCreator parser = halJsonDataBindingSourceCreator ?: new HalJsonDataBindingSourceCreator()
+            final DataBindingSourceCreator parser = halJsonDataBindingSourceCreator?.useJackson ?
+                    halJsonDataBindingSourceCreator : new HalJsonDataBindingSourceCreator()
             final halDataBindingSourceCreator = new DataBindingSourceCreator() {
                 @Override
                 Class getTargetType() {

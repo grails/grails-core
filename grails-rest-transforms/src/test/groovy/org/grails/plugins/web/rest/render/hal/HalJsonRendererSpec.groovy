@@ -18,6 +18,8 @@
  */
 package org.grails.plugins.web.rest.render.hal
 
+import groovy.json.JsonParserType
+import groovy.json.JsonSlurper
 import tools.jackson.core.json.JsonReadFeature
 import tools.jackson.databind.json.JsonMapper
 import grails.config.Config
@@ -47,6 +49,7 @@ import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.support.MockApplicationContext
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -116,6 +119,25 @@ class HalJsonRendererSpec extends Specification {
 
         then:
         source.getPropertyValue('name') == 'MacBook'
+    }
+
+    void 'a HAL body of the type of a renderer is parsed by a default JsonSlurper, as in Grails 8, where the application HAL creator does not parse with Jackson'() {
+        given: 'an application HAL creator whose JsonSlurper bean accepts keys without quotes'
+        def registry = new DefaultDataBindingSourceRegistry()
+        def renderer = new HalJsonRenderer(Product)
+        renderer.dataBindingSourceRegistry = registry
+        renderer.halJsonDataBindingSourceCreator = new HalJsonDataBindingSourceCreator(
+                jsonSlurper: new JsonSlurper(type: JsonParserType.LAX), useJackson: false)
+        renderer.initialize()
+        def request = new MockHttpServletRequest()
+        request.contentType = HalJsonRenderer.MIME_TYPE.name
+        request.content = '{name: "MacBook"}'.bytes
+
+        when:
+        registry.createDataBindingSource(HalJsonRenderer.MIME_TYPE, Product, request)
+
+        then: 'the default parser rejects it'
+        thrown(InvalidRequestBodyException)
     }
 
     @Issue('GRAILS-10372')

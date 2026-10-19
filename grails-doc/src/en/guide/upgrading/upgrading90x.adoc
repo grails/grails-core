@@ -695,10 +695,13 @@ setting, as the section on writing JSON with Spring Boot's `JsonMapper` describe
 
 Grails 9 retains `JsonSlurper` request binding by default and logs a startup deprecation notice. As
 in Grails 8, an application `JsonSlurper` bean, for example one using `JsonParserType.LAX`, replaces
-the default parser on that path; once Jackson parsing is enabled, configure it through
+the default parser on that path, except for the bodies of a type a `HalJsonRenderer` bean renders, which a default
+`JsonSlurper` parses, as in Grails 8; once Jackson parsing is enabled, configure it through
 `JsonMapperBuilderCustomizer` instead.
 Set `grails.databinding.json.jackson: true` to parse binding bodies with Boot's configured Jackson
-`JsonMapper`: the application's only or primary `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
+`JsonMapper`, JSON, HAL JSON and JSON API bodies alike, the bodies of a type a `HalJsonRenderer` bean renders
+included, which Grails 8 always parsed with a default `JsonSlurper`. The mapper is the application's only or primary
+`JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
 application context has none of those, as when it has several and none is primary, a default `JsonMapper` parses them,
 as for the JSON converter. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
 Mapper features installed through `JsonMapperBuilderCustomizer` then apply consistently
