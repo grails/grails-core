@@ -36,4 +36,14 @@ class XmlConvertersExtensionSpec extends Specification {
         expect:
         request.XML.title.text() == 'The Stand'
     }
+
+    void "request['XML'] is the parsed body too, not a request attribute"() {
+        given:
+        def request = new MockHttpServletRequest()
+        request.contentType = 'application/xml'
+        request.content = '<book><title>The Stand</title></book>'.getBytes('UTF-8')
+
+        expect:
+        request['XML'].title.text() == 'The Stand'
+    }
 }
