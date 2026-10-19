@@ -162,6 +162,9 @@ class RestResponderNegotiationSpec extends Specification {
         }
         asked.extension == 'xml'
         webRequest.response.status == 406
+
+        and: 'the response is in no type once it was asked, as it is answered in none'
+        webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE) == null
     }
 
     void 'a renderer that can render the value renders it'() {
