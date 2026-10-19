@@ -50,6 +50,8 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
 import tools.jackson.core.JsonGenerator
+import tools.jackson.core.StreamWriteConstraints
+import tools.jackson.core.json.JsonFactory
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.cfg.ContextAttributes
@@ -261,6 +263,60 @@ class JsonMapperRenderingSpec extends Specification {
 
         expect:
         new JSON([echo: new Echo()]).toString() == '{"echo":"app"}'
+
+        cleanup:
+        context.close()
+    }
+
+    void "a value nested deeper than the thread's stack lets the converter write fails with a ConverterException, with legacy #legacy"() {
+        given: 'a mapper without a nesting limit, which the converter writes with where legacy is false, so that only the stack limits the depth'
+        def context = applicationContext {
+            it.registerBean(JsonMapper, {
+                JsonMapper.builder(JsonFactory.builder()
+                        .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+                        .build()).build()
+            })
+        }
+        initialize(['grails.converters.json.legacy': legacy], context)
+
+        when: 'deeper than any thread stack holds'
+        new JSON(nested(100_000)).render(new StringWriter())
+
+        then:
+        ConverterException e = thrown()
+        e.cause instanceof StackOverflowError
+
+        cleanup:
+        context.close()
+
+        where:
+        legacy << [false, true]
+    }
+
+    void "a value nested deeper than the mapper's limit fails with a ConverterException, as the mapper fails to write it"() {
+        given: 'a mapper limited to 10 levels, as spring.jackson.factory.constraints.write.max-nesting-depth sets it'
+        def context = applicationContext {
+            it.registerBean(JsonMapper, {
+                JsonMapper.builder(JsonFactory.builder()
+                        .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(10).build())
+                        .build()).build()
+            })
+        }
+        initialize([:], context)
+
+        expect: 'ten objects deep'
+        new JSON(nested(9)).toString() == '{"child":' * 9 + '{}' + '}' * 9
+
+        when: 'eleven'
+        new JSON(nested(10)).render(new StringWriter())
+
+        then:
+        ConverterException e = thrown()
+        Throwable cause = e
+        while (cause.cause) {
+            cause = cause.cause
+        }
+        cause.message.startsWith('Document nesting depth (11) exceeds the maximum allowed (10')
 
         cleanup:
         context.close()
@@ -1135,6 +1191,17 @@ class JsonMapperRenderingSpec extends Specification {
         })
         grailsApplication.setMappingContext(mappingContext)
         new ConvertersConfigurationInitializer(grailsApplication: grailsApplication, applicationContext: applicationContext).initialize()
+    }
+
+    private static Map nested(int levels) {
+        Map root = [:]
+        Map current = root
+        levels.times {
+            Map child = [:]
+            current.child = child
+            current = child
+        }
+        root
     }
 
     private static GenericApplicationContext moduleContext() {

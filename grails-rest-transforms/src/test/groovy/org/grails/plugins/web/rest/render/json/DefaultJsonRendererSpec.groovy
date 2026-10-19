@@ -21,6 +21,8 @@ package org.grails.plugins.web.rest.render.json
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicBoolean
 
+import groovy.json.JsonSlurper
+
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.http.HttpStatus
@@ -70,7 +72,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.grails.web.converters.exceptions.ConverterException
+import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller
 
 import spock.lang.Specification
 
@@ -921,22 +923,19 @@ class DefaultJsonRendererSpec extends Specification {
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        // as the converters plugin registers it
+        JSON.registerObjectMarshaller(new ValidationErrorsMarshaller())
 
         when:
-        try {
-            renderer.render(errors, new ServletRenderContext(webRequest))
-        }
-        catch (ConverterException ignored) {
-            // The legacy fallback needs the errors marshaller, which this slice does not
-            // configure. The content type has already been restored by the time it runs.
-        }
+        renderer.render(errors, new ServletRenderContext(webRequest))
 
         then:
         1 * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> false
         0 * converter.write(_, _, _)
 
-        and: "the legacy converter path reports ordinary JSON, not problem JSON"
+        and: "the legacy converter path writes the errors as ordinary JSON, not problem JSON"
         webRequest.response.contentType == 'application/json;charset=UTF-8'
+        new JsonSlurper().parseText(webRequest.response.contentAsString) == [errors: [[object: 'book', message: 'Book is invalid']]]
     }
 
     void 'a projection reaches the named configuration rather than being dropped'() {

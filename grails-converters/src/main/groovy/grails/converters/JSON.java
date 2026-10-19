@@ -187,29 +187,39 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * Directs the JSON Writer to the given Writer
      *
      * @param out the Writer
-     * @throws org.grails.web.converters.exceptions.ConverterException
+     * @throws org.grails.web.converters.exceptions.ConverterException where the value cannot be written, also where it is
+     *         nested deeper than the thread's stack lets the converter write it
      *
      */
     public void render(Writer out) throws ConverterException {
         prepareRender(out);
-        Object root = target == null || ConvertersConfigurationHolder.isLegacyJson() ? null :
-                config.getProxyHandler().unwrapIfProxy(target);
-        String rootName = root == null ? null : jsonMapperSupport.rootName(root.getClass());
-        rootWrapped = rootName != null;
-        if (rootWrapped) {
-            // as the mapper wraps a value it writes on its own, as Spring Boot wraps the body of a response
-            try {
-                writer.object();
-                writer.key(rootName);
-                value(target);
-                writer.endObject();
+        try {
+            Object root = target == null || ConvertersConfigurationHolder.isLegacyJson() ? null :
+                    config.getProxyHandler().unwrapIfProxy(target);
+            String rootName = root == null ? null : jsonMapperSupport.rootName(root.getClass());
+            rootWrapped = rootName != null;
+            if (rootWrapped) {
+                // as the mapper wraps a value it writes on its own, as Spring Boot wraps the body of a response
+                try {
+                    writer.object();
+                    writer.key(rootName);
+                    value(target);
+                    writer.endObject();
+                }
+                catch (JSONException e) {
+                    throw new ConverterException(e);
+                }
             }
-            catch (JSONException e) {
-                throw new ConverterException(e);
+            else {
+                value(target);
             }
         }
-        else {
-            value(target);
+        catch (StackOverflowError e) {
+            // caught once the stack has unwound: a value nested deeper than the thread's stack lets the converter write
+            // it, such as an object graph without end, fails as a value the converter cannot write does, as Jackson
+            // reports a bean it overflows the stack writing
+            throw new ConverterException("The value is nested deeper than the thread's stack lets the converter write it, " +
+                    "or is an object graph without end", e);
         }
         finalizeRender(out);
     }

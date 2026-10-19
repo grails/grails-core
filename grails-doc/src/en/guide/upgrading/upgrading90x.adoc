@@ -569,6 +569,18 @@ value or `NaN`, which renders as it does with the setting `false`:
 | `"\u001b"`
 | `"\u001B"`, as the mapper writes it
 
+| A value nested deeper than the mapper's limit, 500 objects and arrays by default
+| the JSON
+| a `ConverterException`, as the mapper fails to write it; `spring.jackson.factory.constraints.write.max-nesting-depth`,
+or a `JsonFactoryBuilderCustomizer`, sets the limit
+
+| A value nested deeper than the thread's stack lets the converter write
+| the JSON, unless it was deeper than Grails 8's writer could write, which needed less of the stack for each level: a
+`StackOverflowError`
+| a `ConverterException`. The converter writes each object or array through the mapper and back, so it needs more of
+the stack for each level: on the default thread stack of the JVM on Linux x64, 1 MB, a value a few hundred levels deep can
+exceed it before the mapper's limit. A larger thread stack (`-Xss`) writes deeper values
+
 | Pretty printed JSON (`grails.converters.json.pretty.print`, `JSON#toString(true)`)
 | `"a": 1`, with every array element on its own line, or, from `toString(true)`, indented by three spaces
 | `"a" : 1`, the layout of the mapper's default pretty printer
@@ -654,7 +666,10 @@ render, or rendered as invalid JSON, such as a single value, `NaN`, or a to-many
 other than one entry, renders as it does with the setting `false`. A reference that the `PATH` circular reference
 behaviour writes after a number also has the right path, as described above, where Grails 8 wrote a wrong one, the
 `DEFAULT` behaviour writes a reference of `.` for an object that refers to itself, where Grails 8 failed, and the
-includes and excludes given for a proxy apply to the instance it stands for, where Grails 8 ignored them. A later
+includes and excludes given for a proxy apply to the instance it stands for, where Grails 8 ignored them. Whatever the
+setting, a value nested deeper than the thread's stack lets the converter write, such as an object graph that never ends,
+fails with a `ConverterException`, where Grails 8 threw a `StackOverflowError`, or a `ConverterException` where the stack
+overflowed in a getter of a bean it wrote. A later
 release makes `false` the default; setting `grails.converters.json.legacy` to `true` explicitly keeps the Grails 8
 rendering, and turns off the warning that Grails logs while it is not set. With
 `grails.converters.json.domain.jackson.enabled` set to `true` as well, the JSON converter still renders as Grails 8 did,
