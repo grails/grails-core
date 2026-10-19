@@ -36,6 +36,7 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.PrettyPrinter;
 import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.core.io.CharacterEscapes;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.SerializationContext;
@@ -71,9 +72,11 @@ import tools.jackson.databind.util.TokenBuffer;
 public final class JsonMapperSupport {
 
     /**
-     * A default {@code JsonMapper}, for JSON written outside an application that provides one, such as in a unit test.
+     * A default {@code JsonMapper}, for JSON written outside an application that provides one, such as in a unit test,
+     * and by the converter as Grails 8 wrote it, which escapes control characters as Grails 8 escaped them.
      */
-    public static final JsonMapperSupport DEFAULT = new JsonMapperSupport(JsonMapper.builder().build());
+    public static final JsonMapperSupport DEFAULT = new JsonMapperSupport(JsonMapper.builder().build(),
+            LegacyCharacterEscapes.INSTANCE);
 
     private final JsonMapper mapper;
 
@@ -85,15 +88,23 @@ public final class JsonMapperSupport {
 
     private final ClassValue<Boolean> writesObjectIds;
 
+    // the escapes the generators write with, or null for the mapper's
+    private final CharacterEscapes characterEscapes;
+
     /**
      * @param mapper the mapper to write JSON with
      */
     public JsonMapperSupport(JsonMapper mapper) {
+        this(mapper, null);
+    }
+
+    private JsonMapperSupport(JsonMapper mapper, CharacterEscapes characterEscapes) {
         this.mapper = Objects.requireNonNull(mapper, "mapper cannot be null");
         this.writingMapper = mapper.rebuild().addModule(NestedValueSerializer.module()).build();
         this.attributes = Map.of();
         this.rendersValue = rendersValue();
         this.writesObjectIds = writesObjectIds();
+        this.characterEscapes = characterEscapes;
     }
 
     private ClassValue<Boolean> writesObjectIds() {
@@ -151,6 +162,7 @@ public final class JsonMapperSupport {
         this.attributes = attributes;
         this.rendersValue = base.rendersValue;
         this.writesObjectIds = base.writesObjectIds;
+        this.characterEscapes = base.characterEscapes;
     }
 
     /**
@@ -187,7 +199,7 @@ public final class JsonMapperSupport {
                 writingMapper.writer().without(SerializationFeature.INDENT_OUTPUT))
                 .without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                 .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM);
-        return writer.createGenerator(new HtmlSafeJsonWriter(out));
+        return withEscapes(writer).createGenerator(new HtmlSafeJsonWriter(out));
     }
 
     /**
@@ -202,7 +214,11 @@ public final class JsonMapperSupport {
         ObjectWriter writer = withAttributes(writingMapper.writer().with(prettyPrinter))
                 .without(StreamWriteFeature.AUTO_CLOSE_TARGET)
                 .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM);
-        return writer.createGenerator(new HtmlSafeJsonWriter(out));
+        return withEscapes(writer).createGenerator(new HtmlSafeJsonWriter(out));
+    }
+
+    private ObjectWriter withEscapes(ObjectWriter writer) {
+        return characterEscapes == null ? writer : writer.with(characterEscapes);
     }
 
     /** The writer with this support's attributes added to those the mapper gives every write, which they leave in place. */

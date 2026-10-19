@@ -46,6 +46,17 @@ class JSONWriterApiSpec extends Specification {
         output.toString() == '{"items":[{"name":"Grails"},[true,false,2.5,4000000000,1.25,null,null,null,{"nested":true},[1,2]]],"empty":{}}'
     }
 
+    void "control characters without a short escape are escaped as Grails 8 escaped them, in keys and values"() {
+        given:
+        def output = new StringWriter()
+
+        when:
+        new JSONWriter(output).object().key('k\u001F').value('a\u001Bb\u000Bc\u000E').endObject()
+
+        then: 'in lower-case hexadecimal, but the vertical tab'
+        output.toString() == '{"k\\u001f":"a\\u001bb\\u000Bc\\u000e"}'
+    }
+
     void "object values quote strings string builders and ordinary objects"() {
         given:
         def output = new StringWriter()

@@ -222,7 +222,8 @@ class Grails8JsonRenderingSpec extends Specification {
 
     private static List<Object> other() {
         [
-                'say "hi"', 'a\\b', 'a/b', 'tab\tnew\nline\u0001', 'caf\u00e9 \u4e2d', 'x\u0085y', '</script>', 'x\u2028y', 42,
+                'say "hi"', 'a\\b', 'a/b', 'tab\tnew\nline\u0001', 'esc\u001Bso\u000Eus\u001Fvt\u000B', [('k\u001F'): 1],
+                'caf\u00e9 \u4e2d', 'x\u0085y', '</script>', 'x\u2028y', 42,
                 9007199254740993L, 1.0d, 2.50d, 1.0e20d, 1.5f, new BigDecimal('1.10'), new BigDecimal('1E+3'),
                 new BigInteger('123456789012345678901234567890'), true, 'c' as char,
                 [1, 2, 3] as byte[], [1, 2] as int[], UUID.fromString('123e4567-e89b-12d3-a456-426614174000'),
@@ -319,6 +320,8 @@ class Grails8JsonRenderingSpec extends Specification {
             '{"value":"a\\\\b"}',
             '{"value":"a/b"}',
             '{"value":"tab\\tnew\\nline\\u0001"}',
+            '{"value":"esc\\u001bso\\u000eus\\u001fvt\\u000B"}',
+            '{"value":{"k\\u001f":1}}',
             '{"value":"caf\u00e9 \u4e2d"}',
             '{"value":"x\u0085y"}',
             '{"value":"<\\u002fscript>"}',

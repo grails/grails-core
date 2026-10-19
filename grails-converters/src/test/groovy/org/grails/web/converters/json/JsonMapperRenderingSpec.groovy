@@ -1007,7 +1007,7 @@ class JsonMapperRenderingSpec extends Specification {
 
     private static List<Object> otherValues() {
         [
-                'say "hi"', 'a\\b', 'a/b', 'tab\tnew\nline\u0001', 'café 中', 'x\u0085y', 42,
+                'say "hi"', 'a\\b', 'a/b', 'tab\tnew\nline\u0001', 'esc\u001Bso\u000Eus\u001Fvt\u000B', 'café 中', 'x\u0085y', 42,
                 9007199254740993L, 1.0d, 2.50d, 1.0e20d, 1.5f, new BigDecimal('1.10'), new BigDecimal('1E+3'),
                 new BigInteger('123456789012345678901234567890'), Double.NaN, true, 'c' as char,
                 [1, 2, 3] as byte[], [1, 2] as int[], UUID.fromString('123e4567-e89b-12d3-a456-426614174000'),

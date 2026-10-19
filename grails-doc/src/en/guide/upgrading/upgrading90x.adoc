@@ -558,6 +558,10 @@ value or `NaN`, which renders as it does with the setting `false`:
 | `NaN`, which is not valid JSON
 | `"NaN"`
 
+| A control character with no short escape, such as U+001B
+| `"\u001b"`
+| `"\u001B"`, as the mapper writes it
+
 | Pretty printed JSON (`grails.converters.json.pretty.print`, `JSON#toString(true)`)
 | `"a": 1`, with every array element on its own line, or, from `toString(true)`, indented by three spaces
 | `"a" : 1`, the layout of the mapper's default pretty printer
@@ -591,7 +595,10 @@ after different defaults.
 Whatever the setting, `org.grails.web.json.JSONWriter`, which the converter and its marshallers write to, now writes
 through a Jackson `JsonGenerator`, and `new JSONWriter(writer)` writes with a default `JsonMapper`:
 
-* It keeps its public methods, rejects the same misplaced calls, and writes the same JSON text. It also accepts a single
+* It keeps its public methods, rejects the same misplaced calls, and writes the same JSON text, apart from a `NaN` or
+infinite `double`, which it writes as a string (`"NaN"`) where Grails 8 wrote `NaN`, which is not JSON. A `JSONWriter`
+given the application's `JsonMapper`, as the converter is with `grails.converters.json.legacy` set to `false`, writes as
+that mapper does, such as `\u001B` for the escape character where Grails 8 wrote `\u001b`. It also accepts a single
 value outside any object or array, where it threw a `JSONException`.
 * The generator buffers the text. It reaches the `Writer` as the buffer fills, once the JSON text is complete, and when
 `flush()` is called, rather than as each value is written. The `Writer` itself is not flushed or closed.
