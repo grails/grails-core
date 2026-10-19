@@ -32,8 +32,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import org.springframework.web.servlet.View
-import org.springframework.web.servlet.view.InternalResourceView
 
 import grails.artefact.Controller
 import grails.artefact.controller.support.ResponseRenderer
@@ -48,8 +46,8 @@ import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SelectiveRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 
 /**
@@ -266,10 +264,12 @@ trait RestResponder {
             return
         }
         if (renderer != null && problem && args.view && renderer instanceof DefaultHtmlRenderer &&
+                !(renderer instanceof SelectiveRenderer) &&
                 renderer.is(registry.findRenderer(matched, new Object())) &&
-                !resolvesView(webRequest, args.view.toString(), matched)) {
-            // The HTML page respond names for a problem, which does not exist, does not render it: the problem is written
-            // as in a format nothing renders it in, so that a browser is answered as Spring MVC answers it
+                !hasPage(this, webRequest, args.view.toString(), matched)) {
+            // The page respond names for a problem, which the application does not have, does not render it: the problem
+            // is written as in a format nothing renders it in, so that a browser is answered as Spring MVC answers it. A
+            // renderer that renders with views of its own, such as that of markup views, has said whether it renders it
             renderer = null
         }
         if (renderer == null && problem) {
@@ -320,22 +320,17 @@ trait RestResponder {
     }
 
     /**
-     * Whether the view resolvers that render the response find a view of the name, looked up in the type of the response,
-     * as when they render it; one resolved to a servlet resource, such as a JSP, exists where the resource does. Without
-     * view resolvers to ask, a view is taken to exist.
+     * Whether the application has a GSP of the name for the response, found as the GSP view resolver finds the view it
+     * renders: for the type of the response, in the controller's namespace, among its views and those of the plugin that
+     * provides it. A JSON or markup view, or a JSP, is no page, and an application without GSPs has none.
      */
-    private static boolean resolvesView(GrailsWebRequest webRequest, String viewName, MimeType mimeType) {
-        ApplicationContext applicationContext = webRequest.applicationContext
-        if (applicationContext == null || !applicationContext.containsBean(CompositeViewResolver.BEAN_NAME)) {
-            return true
+    private static boolean hasPage(Object controller, GrailsWebRequest webRequest, String viewName, MimeType mimeType) {
+        GrailsConventionGroovyPageLocator locator =
+                webRequest.applicationContext?.getBeanProvider(GrailsConventionGroovyPageLocator)?.getIfAvailable()
+        if (locator == null) {
+            return false
         }
-        CompositeViewResolver resolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
-        return inResponseType(webRequest.currentRequest, mimeType) {
-            View view = resolver.resolveView(viewName, webRequest.locale)
-            view instanceof InternalResourceView ?
-                    webRequest.servletContext.getResource(((InternalResourceView) view).url) != null :
-                    view != null
-        }
+        return inResponseType(webRequest.currentRequest, mimeType) { locator.findView(controller, viewName) != null }
     }
 
     /** Answers a question about the response as if it were in the given type, which is restored afterwards. */

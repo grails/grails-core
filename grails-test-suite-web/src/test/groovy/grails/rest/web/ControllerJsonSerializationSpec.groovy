@@ -28,6 +28,11 @@ import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomize
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.servlet.View
+import org.springframework.web.servlet.ViewResolver
+import org.springframework.web.servlet.view.AbstractView
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
@@ -837,6 +842,50 @@ class WrappedCycleNode {
     String name
     WrappedCycleNode parent
     List<WrappedCycleNode> children
+}
+
+class ControllerProblemNonGspViewSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
+
+    @Configuration
+    static class ViewConfiguration {
+
+        @Bean
+        ViewResolver otherViewResolver() {
+            new ViewResolver() {
+                @Override
+                View resolveViewName(String viewName, Locale locale) {
+                    viewName == 'conflict' ? new StubView(contentType: 'application/json') :
+                            viewName == 'missingPage' ? new StubView() : null
+                }
+            }
+        }
+    }
+
+    void 'a problem respond names a view for, which a client asks for in HTML, is written as problem JSON where #description'() {
+        given:
+        request.requestURI = '/books'
+        response.format = 'html'
+
+        when:
+        controller.respond(ProblemDetail.forStatus(409), view: viewName)
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+
+        where:
+        description                                                   | viewName
+        'the view of the name is a JSON or markup view, not a GSP'    | 'conflict'
+        'the view of the name is another kind of view, such as a JSP' | 'missingPage'
+    }
+}
+
+class StubView extends AbstractView {
+
+    @Override
+    protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) {
+    }
 }
 
 class ControllerProblemPageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {

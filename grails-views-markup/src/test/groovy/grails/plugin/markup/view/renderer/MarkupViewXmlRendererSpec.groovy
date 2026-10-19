@@ -23,7 +23,10 @@ import jakarta.servlet.http.HttpServletResponse
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.context.support.StaticApplicationContext
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.View
@@ -43,6 +46,7 @@ import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Specification
 
@@ -113,6 +117,60 @@ class MarkupViewXmlRendererSpec extends Specification {
         description                          | accept
         'for a client that lists XML first'  | 'application/xml, application/json'
         'for a client that accepts any type' | null
+    }
+
+    void 'respond renders a problem with the markup view respond names in the controller namespace'() {
+        given: 'an application whose views include no GSP of the name'
+        new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication()).initialize()
+        def registry = new DefaultRendererRegistry()
+        registry.initialize()
+        def resolver = resolving(['/admin/book/conflict': new XmlView()], [:])
+        resolver.rendererRegistry = registry
+        resolver.initialize()
+        def problem = ProblemDetail.forStatus(409)
+        def webRequest = xmlClientRequest()
+        webRequest.controllerNamespace = 'admin'
+
+        when:
+        new XmlFirstController(rendererRegistry: registry).respond(problem, view: 'conflict')
+
+        then:
+        webRequest.response.status == 409
+        webRequest.response.contentType.startsWith('application/xml')
+        ((ModelAndView) webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)).view instanceof XmlView
+    }
+
+    void 'respond writes a problem with the XML renderer markup views fall back to, where the view respond names does not exist'() {
+        given: "a renderer standing for grails-xml's, which the markup view renderer falls back to"
+        new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication()).initialize()
+        def registry = new DefaultRendererRegistry()
+        registry.initialize()
+        def standIn = new ProblemXmlStandIn()
+        registry.addDefaultRenderer(standIn)
+        def resolver = resolving([:], [:])
+        resolver.rendererRegistry = registry
+        resolver.initialize()
+        def problem = ProblemDetail.forStatus(409)
+        def webRequest = xmlClientRequest()
+
+        when:
+        new XmlFirstController(rendererRegistry: registry).respond(problem, view: 'conflict')
+
+        then:
+        standIn.rendered == [problem]
+        webRequest.response.status == 409
+        webRequest.response.contentType.startsWith('application/problem+xml')
+    }
+
+    private static GrailsWebRequest xmlClientRequest() {
+        def context = new StaticApplicationContext()
+        context.refresh()
+        def request = new MockHttpServletRequest()
+        request.addHeader('Accept', 'application/xml')
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(context, request, new MockHttpServletResponse())
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'update'
+        webRequest
     }
 
     private static MarkupViewResolver resolving(Map<String, View> views, Map<Class, View> templates) {
@@ -209,6 +267,28 @@ class MarkupBody {
 
 class XmlFirstController implements Controller, RestResponder {
     static responseFormats = ['xml', 'json']
+}
+
+class ProblemXmlStandIn implements Renderer<Object> {
+
+    List<Object> rendered = []
+
+    @Override
+    Class<Object> getTargetType() {
+        Object
+    }
+
+    @Override
+    MimeType[] getMimeTypes() {
+        [MimeType.XML] as MimeType[]
+    }
+
+    @Override
+    void render(Object object, RenderContext context) {
+        rendered << object
+        context.setContentType('application/problem+xml')
+        context.writer.write('<problem/>')
+    }
 }
 
 class XmlView extends AbstractUrlBasedView {
