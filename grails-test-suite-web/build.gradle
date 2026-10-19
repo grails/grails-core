@@ -43,6 +43,8 @@ dependencies {
     testImplementation project(':grails-xml')
     testImplementation 'org.apache.groovy:groovy'
     testImplementation 'tools.jackson.core:jackson-databind'
+    // the converter customizers a controller unit test applies, as Spring MVC does
+    testImplementation 'org.springframework.boot:spring-boot-http-converter'
     testImplementation project(':grails-testing-support-web'), {
         // This is a local project dependency
         exclude group: 'org.apache.grails', module: 'grails-testing-support-core'
