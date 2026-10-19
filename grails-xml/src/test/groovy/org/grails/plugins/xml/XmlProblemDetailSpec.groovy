@@ -372,6 +372,52 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         e.cause instanceof XMLStreamException
     }
 
+    void 'without a converter for problems, a response writer that fails while a raw value is written is reported as Spring reports it'() {
+        given:
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        problem.setProperty('markup', new RawMarkup(fragment: '<b>bold</b>'))
+        def failing = new Writer() {
+            @Override
+            void write(char[] buffer, int offset, int length) throws IOException {
+                if (new String(buffer, offset, length).contains('<b>')) {
+                    throw new IOException('Broken pipe')
+                }
+            }
+
+            @Override
+            void write(String text) throws IOException {
+                write(text.toCharArray(), 0, text.length())
+            }
+
+            @Override
+            void flush() { }
+
+            @Override
+            void close() { }
+        }
+
+        when:
+        renderer.render(problem, new ServletRenderContext(webRequest) {
+            @Override
+            MimeType getAcceptMimeType() {
+                MimeType.XML
+            }
+
+            @Override
+            Writer getWriter() {
+                failing
+            }
+        })
+
+        then:
+        HttpMessageNotWritableException e = thrown()
+        e.message == 'Could not write JSON: Broken pipe'
+        e.cause instanceof IOException
+    }
+
     void 'without a converter for problems, the properties of a subclass of ProblemDetail are written as Spring writes them'() {
         given:
         def problem = { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { instance = URI.create('/books/1') } }

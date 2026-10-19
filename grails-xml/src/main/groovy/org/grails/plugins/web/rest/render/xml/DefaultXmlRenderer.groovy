@@ -208,8 +208,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         try {
             ProblemXml.write(problem, context.writer, problemMapper(converters))
         }
-        catch (JacksonException | XMLStreamException e) {
-            // as Spring's converter reports it
+        catch (JacksonException | XMLStreamException | IOException e) {
+            // as Spring's converter reports it, also a failure of the response's writer while it writes a raw value
             throw JacksonWriteFailures.reported(e)
         }
     }
