@@ -162,9 +162,12 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         if (applicationCreator != null && (creatorType == null || creatorType.isAssignableFrom(type))) {
             return applicationCreator
         }
-        return applicationContext != null ?
-                applicationContext.autowireCapableBeanFactory.createBean(HalJsonDataBindingSourceCreator) :
-                new HalJsonDataBindingSourceCreator(useJackson: true)
+        // injected as a bean is, so that it finds the application's mapper, and set to parse with Jackson, as this
+        // renderer is, also where the renderer itself was set to
+        HalJsonDataBindingSourceCreator creator = new HalJsonDataBindingSourceCreator()
+        applicationContext?.autowireCapableBeanFactory?.autowireBean(creator)
+        creator.useJackson = true
+        return creator
     }
 
     @Override
