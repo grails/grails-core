@@ -56,6 +56,28 @@ class JacksonDefaultJsonCreatorSpec extends Specification implements GrailsUnitT
     }
 }
 
+/**
+ * The registry the plugin defines is given its JSON default by the plugin itself, so that it does not depend on Spring
+ * injecting the registry's own setting, which code generated ahead of time for the interface the bean is declared as
+ * does not see.
+ */
+class JacksonPluginDefaultJsonCreatorSpec extends Specification implements GrailsUnitTest {
+
+    Closure doWithConfig() {
+        { config -> config['grails.databinding.json.jackson'] = true }
+    }
+
+    void 'with Jackson parsing, the plugin sets the default JSON creator of its registry to one that parses with Jackson'() {
+        when:
+        def creator = ((DefaultDataBindingSourceRegistry) applicationContext.getBean(DataBindingSourceRegistry))
+                .defaultJsonDataBindingSourceCreator
+
+        then:
+        creator instanceof JsonDataBindingSourceCreator
+        ((JsonDataBindingSourceCreator) creator).useJackson
+    }
+}
+
 class JacksonApplicationMapperJsonCreatorSpec extends Specification implements GrailsUnitTest {
 
     Closure doWithConfig() {
