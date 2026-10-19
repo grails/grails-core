@@ -44,8 +44,15 @@ Boot's converter customizers, which add the test's `HttpMessageConverter` beans,
 `jackson-dataformat-xml`, for example, installs the Jackson XML converter in unit tests as it does at
 runtime. They build Spring MVC's content negotiation manager, which decides the type `respond` writes a
 `ProblemDetail` in, the same way: from the formats of those converters, then `spring.mvc.contentnegotiation.*`,
-which the test's `application.yml` or `doWithConfig` sets, and the test's `WebMvcConfigurer` beans, in the
-order Spring MVC applies them. A test that declares a bean named `mvcContentNegotiationManager` negotiates
-with it instead. Declare converter customizations and mapper beans as `@Bean` methods on a nested Spring
+which the test's `application.yml` or `doWithConfig` sets and a `WebMvcConfigurer` bean the traits add applies, as
+Spring Boot's auto-configuration applies them with one, and the test's `WebMvcConfigurer` beans, in the
+order Spring MVC applies them. The `format` parameter that `favor-parameter` reads is one the test adds to the request
+with `request.addParameter`, as a query parameter is added, not `params.format`, which stands for the format a URL
+mapping gives and which Spring MVC does not read either. A test that declares a bean named
+`mvcContentNegotiationManager` negotiates with it instead, as a test for an application that declares `@EnableWebMvc`,
+which turns those properties off with Spring Boot's Spring MVC auto-configuration, declares the manager the application
+configures. Declare converter customizations and mapper beans as `@Bean` methods on a nested Spring
 `@Configuration` class; the deprecated `doWithSpring` callback and `beanRegistrar()` run too late for a
-mapper bean to make Boot's auto-configuration back off.
+mapper bean to make Boot's auto-configuration back off. In any unit test, the bean of a `@Bean` method such a class
+declares or inherits, from a superclass or as a default method of an interface, replaces the stand-in the test's
+context registers under its name, such as the `StaticMessageSource` named `messageSource`.
