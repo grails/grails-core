@@ -25,7 +25,8 @@ import jakarta.servlet.http.HttpServletRequest
 import grails.converters.XML
 
 /**
- * XML-specific request extensions contributed by the optional XML module.
+ * XML-specific request extensions contributed by the optional XML module. Code compiled with {@code @CompileStatic}
+ * calls these methods directly, so their signatures are kept from release to release.
  *
  * @since 9.0
  */

@@ -45,7 +45,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-jackson'
     api 'tools.jackson.core:jackson-databind' // grails.converters.JSON writes through Spring Boot's JsonMapper
 
-    // api needed downstream: ConvertersExtension is a Groovy extension module with HttpServletRequest
+    // api needed downstream: ConvertersModuleExtension is a Groovy extension module with HttpServletRequest
     // in its signatures, and the Groovy compiler loads it from any compile classpath it is on
     compileOnlyApi 'jakarta.servlet:jakarta.servlet-api'
 

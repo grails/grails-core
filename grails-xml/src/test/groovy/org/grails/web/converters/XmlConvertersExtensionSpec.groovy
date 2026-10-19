@@ -18,6 +18,10 @@
  */
 package org.grails.web.converters
 
+import groovy.transform.CompileStatic
+
+import jakarta.servlet.http.HttpServletRequest
+
 import org.springframework.mock.web.MockHttpServletRequest
 import spock.lang.Specification
 
@@ -45,5 +49,55 @@ class XmlConvertersExtensionSpec extends Specification {
 
         expect:
         request['XML'].title.text() == 'The Stand'
+    }
+
+    void 'request.XML parses the XML body in a class compiled with @CompileStatic'() {
+        given:
+        def reader = new GroovyClassLoader(getClass().classLoader).parseClass('''
+            import groovy.transform.CompileStatic
+            import jakarta.servlet.http.HttpServletRequest
+
+            @CompileStatic
+            class StaticXmlReader {
+                static Object read(HttpServletRequest request) {
+                    request.XML
+                }
+            }
+        ''')
+
+        expect:
+        reader.read(xmlRequest()).title.text() == 'The Stand'
+    }
+
+    void 'a library compiled against Grails 8 reads request.XML and request.JSON without being recompiled'() {
+        given:
+        def json = new MockHttpServletRequest()
+        json.contentType = 'application/json'
+        json.content = '{"title":"The Stand"}'.getBytes('UTF-8')
+
+        expect:
+        Grails8CompiledXmlReader.xml(xmlRequest()).title.text() == 'The Stand'
+        Grails8CompiledXmlReader.json(json).title == 'The Stand'
+    }
+
+    private static MockHttpServletRequest xmlRequest() {
+        def request = new MockHttpServletRequest()
+        request.contentType = 'application/xml'
+        request.content = '<book><title>The Stand</title></book>'.getBytes('UTF-8')
+        request
+    }
+}
+
+/** Calls the methods Grails 8's static compiler called for request.XML and request.JSON. */
+@CompileStatic
+@SuppressWarnings('deprecation')
+class Grails8CompiledXmlReader {
+
+    static Object xml(HttpServletRequest request) {
+        ConvertersExtension.getXML(request)
+    }
+
+    static Object json(HttpServletRequest request) {
+        ConvertersExtension.getJSON(request)
     }
 }

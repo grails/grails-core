@@ -128,6 +128,12 @@ that reads it does not compile. `encodeAsXML` and the `xml` codec still escape t
 other than text is escaped as its string rather than rendered as XML. An application that sees these after
 an upgrade needs the dependency above.
 
+A library compiled against Grails 8 that reads `request.XML` or `request.JSON` in statically compiled code keeps working
+without being recompiled; `request.XML` still needs this module at run time. Code compiled against Grails 9 reads
+`request.XML` from this module, so a plugin that reads it in a class compiled with `@CompileStatic` or
+`@GrailsCompileStatic` needs the module to compile, and declares it as an `implementation` dependency so that
+applications using the plugin have it.
+
 Set `grails.web.rendering.xml.spring: true` to write ordinary bean responses with Spring Framework's `JacksonXmlHttpMessageConverter`,
 backed by the Spring Boot-managed Jackson XML mapper. As in a plain Spring Boot application, that
 converter is registered only when Jackson's XML dataformat is on the classpath, so applications that
