@@ -192,6 +192,23 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'with a quality value above 1'                  | 'application/problem+xml;q=2'                                                                | [:]                || 409
         'for a status respond is given'                 | 'application/json;q=2'                                                                       | [status: 400]      || 400
         'for a view respond names that does not exist' | 'text/html;q=2, application/json'                                                            | [view: 'conflict'] || 409
+        'for a view respond names in a format no renderer writes' | 'text/csv;q=2'                                                                | [view: 'conflict'] || 409
+    }
+
+    void 'the page respond names for a problem renders it for a client whose Accept header Spring MVC cannot read'() {
+        given: 'the HTML page of the name, and a header Grails reads as Grails 8 read it'
+        views['/problemXml/conflict.gsp'] = '<p>${problemDetail.detail}</p>'
+        request.addHeader('Accept', 'text/html;q=2')
+        request.addHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)')
+
+        when:
+        controller.respond(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'taken'), view: 'conflict',
+                formats: ['html', 'xml', 'json'])
+
+        then:
+        response.status == 409
+        view == 'conflict'
+        model.problemDetail.detail == 'taken'
     }
 
     void 'a problem whose status is not an error status is answered with 406 for a client whose Accept header Spring MVC cannot read'() {
