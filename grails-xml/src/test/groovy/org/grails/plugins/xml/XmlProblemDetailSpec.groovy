@@ -601,6 +601,41 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         maps << [500, 100_000]
     }
 
+    void "without a converter for problems, a #type array nested deeper than the JSON converter's mapper writes fails as Spring's JSON converter fails to write it"() {
+        given: 'an array the 501st level deep, and one the 500th'
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
+        def tooDeep = { -> extended('member', nestedMaps(499).tap { Map maps -> innermost(maps).values = array }) }
+        def deepest = { -> extended('member', nestedMaps(498).tap { Map maps -> innermost(maps).values = array }) }
+
+        when: "Spring's JSON converter writes it"
+        json.write(tooDeep(), MediaType.APPLICATION_PROBLEM_JSON, new MockHttpOutputMessage())
+
+        then:
+        HttpMessageNotWritableException spring = thrown()
+
+        when: 'the problem XML Grails writes'
+        renderProblem(renderer, tooDeep())
+
+        then:
+        HttpMessageNotWritableException e = thrown()
+        e.message == spring.message
+
+        when: 'one level less deep'
+        renderProblem(renderer, deepest())
+
+        then:
+        notThrown(Exception)
+
+        where:
+        type     | array
+        'int'    | [1, 2] as int[]
+        'long'   | [1L, 2L] as long[]
+        'double' | [1.5d, 2.5d] as double[]
+        'String' | ['a', 'b'] as String[]
+    }
+
     void "without a converter for problems, the write limit of the JSON converter's mapper decides how deep a problem is written"() {
         given: 'a mapper that writes ten levels'
         def mapper = JsonMapper.builder(JsonFactory.builder()
@@ -885,6 +920,14 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
             current = inner
         }
         root
+    }
+
+    private static Map innermost(Map maps) {
+        Map current = maps
+        while (current.inner != null) {
+            current = (Map) current.inner
+        }
+        current
     }
 
     private static ProblemDetail extended(String name, Object value) {
