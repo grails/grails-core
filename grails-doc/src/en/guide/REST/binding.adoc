@@ -123,7 +123,8 @@ you like but you should take care not to conflict with one of the bean names abo
 A creator whose `getTargetType()` returns a class other than `Object` handles only the bodies bound to that class.
 Replacing `jsonDataBindingSourceCreator` with one leaves the JSON bodies bound to other types to Grails' default parser,
 which `grails.databinding.json.jackson` selects: `JsonSlurper` by default, as in Grails 8, or the application's Jackson
-`JsonMapper`. The HAL JSON bodies of a type a `HalJsonRenderer` bean renders are parsed by a default `JsonSlurper`, as in
+`JsonMapper`. Likewise, replacing `xmlDataBindingSourceCreator` with one leaves the XML bodies bound to other types to
+Grails' default XML parser, as in Grails 8. The HAL JSON bodies of a type a `HalJsonRenderer` bean renders are parsed by a default `JsonSlurper`, as in
 Grails 8, or, with `grails.databinding.json.jackson: true`, by the `halJsonDataBindingSourceCreator` bean, the
 application's own where it replaces it, as the HAL JSON bodies of other types are.
 

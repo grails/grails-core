@@ -27,6 +27,7 @@ import org.springframework.aot.hint.TypeReference;
 
 import grails.converters.XML;
 import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer;
+import org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator;
 
 /**
  * Registers the XML converter that {@code encodeAsXML} creates by name, and the initializer of its configurations.
@@ -36,7 +37,7 @@ import org.grails.web.converters.configuration.XmlConvertersConfigurationInitial
  * its constructor that takes the object. An ahead-of-time image keeps neither unless something asks for them, and
  * without them {@code encodeAsXML} escapes an object as its string, as it does without this module. The converters'
  * initializer, when code initializes the converters itself, creates the initializer of the XML converter by name the
- * same way.</p>
+ * same way, and the data binding registry its default XML binding source creator.</p>
  *
  * @since 9.0
  */
@@ -47,6 +48,8 @@ public class XmlRuntimeHints implements RuntimeHintsRegistrar {
         hints.reflection().registerType(XML.class,
                 type -> type.withConstructor(List.of(TypeReference.of(Object.class)), ExecutableMode.INVOKE));
         hints.reflection().registerType(XmlConvertersConfigurationInitializer.class,
+                type -> type.withConstructor(List.of(), ExecutableMode.INVOKE));
+        hints.reflection().registerType(XmlDataBindingSourceCreator.class,
                 type -> type.withConstructor(List.of(), ExecutableMode.INVOKE));
     }
 }

@@ -33,6 +33,19 @@ import spock.lang.Unroll
  */
 class XmlDataBindingSourceCreatorSpec extends Specification {
 
+    void 'the binding source registry parses the XML bodies of #type.name a type no creator handles, as Grails 8 did'() {
+        given: 'a registry without the XML creator bean, as where an application replaces it with one for a class'
+        def registry = new DefaultDataBindingSourceRegistry()
+        registry.initialize()
+
+        expect:
+        registry.createDataBindingSource(type, XmlBindingTarget, new StringReader('<book><title>The Stand</title></book>'))
+                .getPropertyValue('title') == 'The Stand'
+
+        where:
+        type << [MimeType.XML, MimeType.TEXT_XML]
+    }
+
     void 'an xml request body binds its elements'() {
         given:
         def creator = new XmlDataBindingSourceCreator()
@@ -75,4 +88,8 @@ class XmlDataBindingSourceCreatorSpec extends Specification {
         e.cause instanceof SAXParseException
         e.cause.message.contains('DOCTYPE is disallowed')
     }
+}
+
+class XmlBindingTarget {
+    String title
 }

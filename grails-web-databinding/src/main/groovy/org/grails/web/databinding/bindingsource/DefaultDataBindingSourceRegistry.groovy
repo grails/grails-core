@@ -23,7 +23,9 @@ import groovy.transform.CompileStatic
 
 import jakarta.annotation.PostConstruct
 
+import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.util.ClassUtils
 
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
@@ -33,6 +35,12 @@ import org.grails.web.util.ClassAndMimeTypeRegistry
 
 @CompileStatic
 class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry {
+
+    /**
+     * The XML binding source creator of the {@code grails-xml} module, found by name since that module depends on this
+     * one, or {@code null} without it; {@code grails-xml} registers it for an ahead-of-time image.
+     */
+    private static final Class<? extends DataBindingSourceCreator> XML_CREATOR = xmlCreator()
 
     @Autowired(required = false)
     void setDataBindingSourceCreators(DataBindingSourceCreator[] dataBindingSourceCreators) {
@@ -53,6 +61,19 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
     void initialize() {
         registerDefault(MimeType.JSON, defaultJsonDataBindingSourceCreator ?: new JsonDataBindingSourceCreator())
         registerDefault(MimeType.TEXT_JSON, defaultJsonDataBindingSourceCreator ?: new JsonDataBindingSourceCreator())
+        if (XML_CREATOR != null) {
+            // the XML bodies of a type no creator bean handles, as Grails 8 parsed them
+            registerDefault(MimeType.XML, BeanUtils.instantiateClass(XML_CREATOR))
+            registerDefault(MimeType.TEXT_XML, BeanUtils.instantiateClass(XML_CREATOR))
+        }
+    }
+
+    @SuppressWarnings('unchecked')
+    private static Class<? extends DataBindingSourceCreator> xmlCreator() {
+        String name = 'org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator'
+        ClassLoader classLoader = DefaultDataBindingSourceRegistry.classLoader
+        ClassUtils.isPresent(name, classLoader) ?
+                (Class<? extends DataBindingSourceCreator>) ClassUtils.resolveClassName(name, classLoader) : null
     }
 
     protected DataBindingSourceCreator getDataBindingSourceCreator(MimeType mimeType, Class targetType, Object bindingSource) {
