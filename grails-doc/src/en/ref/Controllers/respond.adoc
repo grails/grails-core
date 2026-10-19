@@ -41,6 +41,11 @@ respond Book.get(1), formats: ['xml', 'json']
 
 The respond method uses link:{guidePath}theWebLayer.html#contentNegotiation[Content Negotiation] to respond with the most appropriate content type. See the documentation on  link:{guidePath}REST.html[REST support] for more information.
 
+`respond` answers in the first type the client accepts, in the order of its `Accept` header, that is one of the formats
+and that a renderer renders the value in, and a client that accepts any type in the first of the formats a renderer
+renders it in. When there is none, it sends `406 Not Acceptable`, or `404` for validation errors when the client
+accepts one of the formats.
+
 If a view is picked for rendering then a model will automatically be calculated to pass to the view.
 
 The following table summarizes this convention:

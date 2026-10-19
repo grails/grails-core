@@ -18,20 +18,31 @@
  */
 package grails.plugin.markup.view.renderer
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.View
+import org.springframework.web.servlet.view.AbstractUrlBasedView
 
+import grails.artefact.Controller
+import grails.artefact.controller.RestResponder
+import grails.core.DefaultGrailsApplication
 import grails.plugin.markup.view.MarkupViewConfiguration
 import grails.plugin.markup.view.mvc.MarkupViewResolver
 import grails.rest.render.RenderContext
+import grails.rest.render.Renderer
 import grails.util.GrailsWebMockUtil
 import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.SpringMessageConverters
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.util.GrailsApplicationAttributes
 import spock.lang.Specification
 
@@ -44,6 +55,86 @@ class MarkupViewXmlRendererSpec extends Specification {
 
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
+        ConvertersConfigurationHolder.clear()
+    }
+
+    void 'without an XML renderer, the renderer says it renders only what a view renders'() {
+        given:
+        def renderer = new MarkupViewXmlRenderer(Object, resolving(views, templates), null, null, null)
+
+        expect:
+        renderer.canRender(value, context(arguments)) == renders
+
+        where:
+        value                           | arguments           | views                         | templates                        || renders
+        new MarkupBody(title: 'Grails') | [view: '/missing']  | [:]                           | [:]                              || false
+        new MarkupBody(title: 'Grails') | [view: '/book']     | ['/book': new XmlView()]      | [:]                              || true
+        new MarkupBody(title: 'Grails') | [:]                 | ['/book/show': new XmlView()] | [:]                              || true
+        new MarkupBody(title: 'Grails') | [:]                 | [:]                           | [(MarkupBody): new XmlView()]    || true
+        ProblemDetail.forStatus(409)    | [:]                 | ['/book/show': new XmlView()] | [(ProblemDetail): new XmlView()] || false
+        ProblemDetail.forStatus(409)    | [view: '/missing']  | [:]                           | [:]                              || false
+        ProblemDetail.forStatus(409)    | [view: '/conflict'] | ['/conflict': new XmlView()]  | [:]                              || true
+    }
+
+    void 'with an XML renderer to fall back to, the renderer renders any value'() {
+        given:
+        def renderer = new MarkupViewXmlRenderer(Object, resolving([:], [:]), null, null, Stub(Renderer))
+
+        expect:
+        renderer.canRender(new MarkupBody(title: 'Grails'), context([view: '/missing']))
+        renderer.canRender(ProblemDetail.forStatus(409), context([:]))
+    }
+
+    void "respond answers in the action's next format, #description, when no markup view renders the value as XML"() {
+        given:
+        new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication()).initialize()
+        def registry = new DefaultRendererRegistry()
+        registry.initialize()
+        def resolver = new MarkupViewResolver(new MarkupViewConfiguration())
+        resolver.rendererRegistry = registry
+        resolver.initialize()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+        if (accept) {
+            webRequest.currentRequest.addHeader('Accept', accept)
+        }
+
+        when:
+        new XmlFirstController(rendererRegistry: registry).respond([title: 'Grails'])
+
+        then:
+        registry.findRenderer(MimeType.XML, [:]) instanceof MarkupViewXmlRenderer
+        webRequest.response.status == 200
+        webRequest.response.contentType.startsWith('application/json')
+        webRequest.response.contentAsString == '{"title":"Grails"}'
+
+        where:
+        description                          | accept
+        'for a client that lists XML first'  | 'application/xml, application/json'
+        'for a client that accepts any type' | null
+    }
+
+    private static MarkupViewResolver resolving(Map<String, View> views, Map<Class, View> templates) {
+        new MarkupViewResolver(new MarkupViewConfiguration()) {
+            @Override
+            View resolveView(String viewName, HttpServletRequest request, HttpServletResponse response) {
+                views[viewName]
+            }
+
+            @Override
+            View resolveView(Class type, HttpServletRequest request, HttpServletResponse response) {
+                templates[type]
+            }
+        }
+    }
+
+    private static ServletRenderContext context(Map<String, Object> arguments) {
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+        webRequest.request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, new ModelAndView())
+        new ServletRenderContext(webRequest, arguments)
     }
 
     void 'without a view or an XML renderer, an object is not acceptable as XML'() {
@@ -114,4 +205,15 @@ class MarkupViewXmlRendererSpec extends Specification {
 
 class MarkupBody {
     String title
+}
+
+class XmlFirstController implements Controller, RestResponder {
+    static responseFormats = ['xml', 'json']
+}
+
+class XmlView extends AbstractUrlBasedView {
+
+    @Override
+    protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) {
+    }
 }

@@ -114,10 +114,14 @@ projections. Its XML renderers, and an application's `XmlRenderer` beans, find t
 registry in the application context when they write a response, so their `groovyPageLocator` and `rendererRegistry`
 properties are no longer autowired; they are set only where an application sets them.
 
-Without the module, a request for an XML format that nothing else renders is answered like a request for
-any unsupported format: `respond` sends a `406 Not Acceptable` error, or a `404` one for validation errors,
-which have no renderer, so that the application's error pages apply, and writes a `ProblemDetail` as
-`application/problem+json` (see section 10); an XML request body is not read and raises no error, while the
+Without the module, nothing renders XML except what the application provides, such as markup views, and `respond`
+treats XML as any format nothing renders (see section 12): it answers in the next type the client accepts that the
+action responds in, and a client that accepts any type, by sending `*/*` or no `Accept` header, or a browser, in the
+first format the action lists that it can render the value in, so an action that lists `['xml', 'json']` answers those
+clients in JSON. A markup view renders XML for an action that has one; for an action without one, the client's next
+type is tried. Where no type the client accepts can be rendered, `respond` sends a `406 Not Acceptable` error, or a
+`404` one for validation errors, so that the application's error pages apply, and writes a `ProblemDetail` as
+`application/problem+json` (see section 10). An XML request body is not read and raises no error, while the
 request parameters bind as they do for a request without a body; and `request.XML` throws an
 `IllegalStateException` that names the module, while a class compiled with `@CompileStatic` or `@GrailsCompileStatic`
 that reads it does not compile. `encodeAsXML` and the `xml` codec still escape text, but an object
@@ -835,6 +839,12 @@ decides between types of equal quality, so that header resolves to `xml`.
 and labels the response with it: `Accept: application/xml, application/json` to an action that responds only in JSON
 is answered with `application/json`. Grails 8 labelled such a response with the client's first format, here
 `application/xml`, and `respond`'s Spring JSON path then wrote it with the legacy converter.
+
+A client that accepts any type is answered in the first format the action lists that a renderer renders the value in,
+where Grails 8 answered in the first format listed and sent `406`, or `404` for validation errors, when nothing rendered
+it. Validation errors that no renderer writes in the client's first format the action responds in are answered in its
+next, where Grails 8 sent `404`. A renderer that renders some values only, such as that of markup views without
+`grails-xml`, which renders only with a view, is passed over for a value it cannot render.
 
 `grails.mime.disable.accept.header.userAgents` matched its first user agent with its case in Grails 8, and a user agent
 that was not a regular expression failed the first request, after which the setting was ignored. Every user agent is now

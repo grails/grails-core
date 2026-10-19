@@ -41,6 +41,7 @@ import grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
+import org.grails.plugins.web.rest.render.SelectiveRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.util.GrailsApplicationAttributes
@@ -165,78 +166,93 @@ trait RestResponder {
         // respond names, and a client that accepts no format a renderer writes it in is answered with
         // application/problem+json
         boolean problem = value instanceof ProblemDetail
+        final context = new ServletRenderContext(webRequest, args)
 
-        MimeType matched = null
-        for (MimeType mimeType in mimeTypes) {
-            if (mimeType == MimeType.ALL && formats) {
-                final allMimeTypes = MimeType.getConfiguredMimeTypes()
-                final firstFormat = formats[0]
-                mimeType = allMimeTypes.find { MimeType mt -> mt.extension == firstFormat }
-                if (mimeType) {
-                    webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
-                }
+        Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
+        boolean hasErrors = errors && errors.hasErrors()
+        def target = null
+        ServletRenderContext errorsContext = null
+        boolean errorsFormatListed = false
+        if (hasErrors) {
+            target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
+            if (proxyHandler != null && target != null) {
+                target = proxyHandler.unwrapIfProxy(target)
             }
+            // the configuration, which the errors are not written with, so that a name that is wrong is found, as it is
+            // for the errors themselves
+            errorsContext = new ServletRenderContext(webRequest, [model: args.model, jsonConfiguration: args.jsonConfiguration])
+        }
 
-            if (mimeType && formats.contains(mimeType.extension)) {
-                Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
-
-                if (errors && errors.hasErrors()) {
-                    def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
-                    if (proxyHandler != null && target != null) {
-                        target = proxyHandler.unwrapIfProxy(target)
-                    }
+        // The response is in the first type the client accepts, in its order, that the action responds in and a renderer
+        // renders the value in; a client that accepts any type is answered in the first of the action's formats that is
+        MimeType matched = null
+        negotiation:
+        for (MimeType accepted in mimeTypes) {
+            List<MimeType> candidates = [accepted]
+            if (accepted == MimeType.ALL && formats) {
+                final allMimeTypes = MimeType.getConfiguredMimeTypes()
+                candidates = formats.collect { String format -> allMimeTypes.find { MimeType mt -> mt.extension == format } }
+                        .findAll { MimeType mt -> mt != null }
+            }
+            for (MimeType mimeType in candidates) {
+                if (!formats.contains(mimeType.extension)) {
+                    continue
+                }
+                if (hasErrors) {
+                    errorsFormatListed = true
                     Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors, target)
-                    if (errorsRenderer) {
-                        // the configuration, which the errors are not written with, so that a name that is wrong is
-                        // found, as it is for the errors themselves
-                        final context = new ServletRenderContext(webRequest,
-                                [model: args.model, jsonConfiguration: args.jsonConfiguration])
-                        if (args.view) {
-                            context.viewName = args.view as String
-                        }
-                        if (statusCode != null) {
-                            setStatus(context, statusCode)
-                        }
-                        errorsRenderer.render(errors, context)
-                        if (context.wasWrittenTo() && !response.isCommitted()) {
-                            response.flushBuffer()
-                        }
-                        return
+                    if (!rendersValue(errorsRenderer, errors, errorsContext)) {
+                        continue
                     }
-
-                    return callRender([status: statusCode ?: 404 ])
+                    webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
+                    if (args.view) {
+                        errorsContext.viewName = args.view as String
+                    }
+                    if (statusCode != null) {
+                        setStatus(errorsContext, statusCode)
+                    }
+                    errorsRenderer.render(errors, errorsContext)
+                    if (errorsContext.wasWrittenTo() && !response.isCommitted()) {
+                        response.flushBuffer()
+                    }
+                    return
                 }
 
+                Renderer candidate
                 final valueType = value.getClass()
                 if (registry.isContainerType(valueType)) {
-                    renderer = registry.findContainerRenderer(mimeType, valueType, value)
-                    if (renderer == null) {
-                        renderer = registry.findRenderer(mimeType, value)
+                    candidate = registry.findContainerRenderer(mimeType, valueType, value)
+                    if (candidate == null) {
+                        candidate = registry.findRenderer(mimeType, value)
                     }
                 } else {
-                    renderer = registry.findRenderer(mimeType, value)
+                    candidate = registry.findRenderer(mimeType, value)
                 }
-                if (problem && !args.view && rendersActionView(renderer, mimeType)) {
-                    renderer = null
+                if (problem && !args.view && rendersActionView(candidate, mimeType)) {
+                    continue
                 }
-            }
-
-            if (renderer) {
-                matched = mimeType
-                break
+                if (rendersValue(candidate, value, context)) {
+                    renderer = candidate
+                    matched = mimeType
+                    break negotiation
+                }
             }
         }
-        if (matched != null) {
-            // The response is in the format the renderer was found for, which may not be the client's first: a client
-            // that lists one the action does not respond in ahead of it is answered in the next it does
-            webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, matched)
+        if (hasErrors) {
+            // Validation errors that no renderer writes in a format the action responds in are not found, as in Grails 8,
+            // and a client that accepts none of its formats is not acceptable
+            callRender([status: statusCode ?: (errorsFormatListed ? HttpStatus.NOT_FOUND.value() : HttpStatus.NOT_ACCEPTABLE.value())])
+            return
         }
         if (renderer == null && problem) {
             renderer = registry.findRenderer(MimeType.JSON, value)
         }
-
-        if (renderer) {
-            final context = new ServletRenderContext(webRequest, args)
+        if (renderer != null) {
+            // The response is in the format the renderer was found for, which may not be the client's first: a client
+            // that lists one the action does not respond in ahead of it is answered in the next it does
+            if (matched != null) {
+                webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, matched)
+            }
             if (statusCode != null) {
                 setStatus(context, statusCode)
             }
@@ -252,6 +268,14 @@ trait RestResponder {
             return
         }
         callRender([status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
+    }
+
+    /**
+     * Whether a renderer renders a value: one that renders some values only, such as that of markup views without a
+     * renderer of XML, says so, as a Spring message converter says whether it writes a value.
+     */
+    private static boolean rendersValue(Renderer renderer, Object value, ServletRenderContext context) {
+        renderer != null && (!(renderer instanceof SelectiveRenderer) || ((SelectiveRenderer) renderer).canRender(value, context))
     }
 
     /**

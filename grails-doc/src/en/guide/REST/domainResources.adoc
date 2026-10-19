@@ -51,7 +51,7 @@ def init = {
 ----
 
 And then requesting the URL http://localhost:8080/books/1 with a client that sends no `Accept` header, or `*/*`, such
-as `curl`, which will render the response in the first of the resource's formats, JSON, like:
+as `curl`, which will render the response in the first of the resource's formats it can be rendered in, JSON, like:
 
 [source,json]
 ----
