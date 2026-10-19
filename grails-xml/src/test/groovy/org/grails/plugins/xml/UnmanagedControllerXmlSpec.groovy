@@ -69,6 +69,21 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
         response.contentType.startsWith('application/xml')
         response.xml.title.text() == 'Grails'
     }
+
+    void "the XML view of an action renders where the application has a second registry"() {
+        given: 'a view of the action in XML'
+        views['/unmanagedXml/show.xml.gsp'] = '<book><title>${unmanagedXmlBody.title}</title></book>'
+        webRequest.actionName = 'show'
+        request.addHeader('Accept', 'application/xml')
+
+        when:
+        controller.respond(new UnmanagedXmlBody(title: 'Grails'))
+
+        then: 'the view renders the value, with the model the HTML renderer of the registry gives it'
+        response.status == 200
+        view == 'show'
+        model.unmanagedXmlBody.title == 'Grails'
+    }
 }
 
 @Artefact('Controller')

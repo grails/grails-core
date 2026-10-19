@@ -30,6 +30,7 @@ import tools.jackson.databind.ObjectMapper
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpHeaders
@@ -85,6 +86,11 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     ObjectProvider<RendererRegistry> rendererRegistryProvider
 
+    // the registry an autowired controller is given, where the application has several
+    @Autowired(required = false)
+    @Qualifier('rendererRegistry')
+    private ObjectProvider<RendererRegistry> namedRendererRegistryProvider
+
     /**
      * Resolved when a response is written rather than when this renderer is built, so that
      * obtaining the converters cannot force MVC initialization during bean creation.
@@ -116,7 +122,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             return rendererRegistry
         }
         if (resolvedRendererRegistry == null) {
-            resolvedRendererRegistry = rendererRegistryProvider?.getIfAvailable()
+            // the application's only or primary registry, or else the one respond writes with
+            resolvedRendererRegistry = rendererRegistryProvider?.getIfUnique() ?: namedRendererRegistryProvider?.getIfAvailable()
         }
         return resolvedRendererRegistry
     }

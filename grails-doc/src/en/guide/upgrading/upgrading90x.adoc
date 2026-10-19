@@ -118,8 +118,9 @@ The module preserves the established Grails XML APIs and compatibility marshalli
 payloads, collections, maps, validation errors, named converter configurations, and include/exclude
 projections. With the `DEFAULT` circular reference behaviour, an object that refers to itself is written with the
 attribute `ref="."`, where Grails 8 failed with a `ConverterException`. Its XML renderers, and an application's `XmlRenderer` beans, find the view locator and the renderer
-registry in the application context when they write a response, so their `groovyPageLocator` and `rendererRegistry`
-properties are no longer autowired; they are set only where an application sets them.
+registry in the application context when they write a response, the registry `respond` uses where the application has
+several, so their `groovyPageLocator` and `rendererRegistry` properties are no longer autowired; they are set only where an
+application sets them.
 
 Without the module, nothing renders XML except what the application provides, such as markup views, and `respond`
 treats XML as any format nothing renders (see section 12): it answers in the next type the client accepts that the
