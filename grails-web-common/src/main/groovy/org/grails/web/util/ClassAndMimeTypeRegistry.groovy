@@ -93,7 +93,8 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
                 currentClass = currentClass.getSuperclass()
             }
 
-            final interfaces = GrailsClassUtils.getAllInterfaces(object)
+            // of the class, which the object may be itself
+            final interfaces = GrailsClassUtils.getAllInterfacesForClass(clazz)
             for (i in interfaces) {
                 registeredObject = findRegisteredObjectForType(i, mimeType)
                 if (registeredObject) break

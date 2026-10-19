@@ -42,6 +42,21 @@ class DefaultDataBindingSourceRegistrySpec extends Specification {
         requested << ['application/vnd.Acme+json', 'application/vnd.acme+json']
     }
 
+    void 'a creator registered for an interface handles the bodies bound to a class that implements it'() {
+        given: 'a creator for a type no creator for Object handles'
+        def shapes = new MimeType('application/vnd.shape+json', 'shape')
+        def registry = new DefaultDataBindingSourceRegistry()
+        registry.initialize()
+        registry.addDataBindingSourceCreator(Stub(DataBindingSourceCreator) {
+            getTargetType() >> Shape
+            getMimeTypes() >> ([shapes] as MimeType[])
+            createDataBindingSource(_, _, _) >> new SimpleMapDataBindingSource([name: 'shape'])
+        })
+
+        expect:
+        registry.createDataBindingSource(shapes, Circle, [:]).getPropertyValue('name') == 'shape'
+    }
+
     void 'a creator registered for a version of a media type is found for #requested, by its name in any case'() {
         given: 'a creator for one version of a type'
         def registry = new DefaultDataBindingSourceRegistry()
@@ -58,4 +73,10 @@ class DefaultDataBindingSourceRegistrySpec extends Specification {
         where:
         requested << ['application/vnd.Acme+json;v=2', 'application/vnd.acme+json;v=2']
     }
+}
+
+interface Shape {
+}
+
+class Circle implements Shape {
 }
