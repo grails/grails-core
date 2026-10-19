@@ -482,7 +482,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         def other = new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build()) {
             @Override
             boolean canWrite(Class<?> clazz, MediaType mediaType) {
-                clazz != ProblemDetail && super.canWrite(clazz, mediaType)
+                !ProblemDetail.isAssignableFrom(clazz) && super.canWrite(clazz, mediaType)
             }
         }
         def renderer = new DefaultXmlRenderer<Object>(Object)
@@ -493,6 +493,23 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         then: 'its properties are named as the converter that writes problems names them'
         written[3]*.getAt(0).containsAll(['balance', 'product'])
+    }
+
+    void "without a converter for problems, the problem is written with the mapper the JSON converter has for problems"() {
+        given: "Spring's JSON converter, with a mapper of its own for problems, which names properties otherwise"
+        def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
+        json.registerMappersForType(ProblemDetail) { Map<MediaType, JsonMapper> mappers ->
+            mappers.put(MediaType.APPLICATION_PROBLEM_JSON,
+                    JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())
+        }
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [json] }
+
+        when:
+        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)
+
+        then: 'its properties are named as that mapper names them, as in application/problem+json'
+        written[3]*.getAt(0).containsAll(['Balance', 'Product'])
     }
 
     void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {

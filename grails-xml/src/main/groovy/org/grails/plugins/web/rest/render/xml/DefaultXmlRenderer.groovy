@@ -41,6 +41,7 @@ import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.json.ProblemDetailJacksonMixin
+import org.springframework.util.ClassUtils
 import org.springframework.validation.Errors
 
 import grails.converters.XML
@@ -213,7 +214,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             return
         }
         try {
-            ProblemXml.write(problem, context.writer, problemMapper(converters))
+            ProblemXml.write(problem, context.writer, problemMapper(converters, problem.getClass()))
         }
         catch (JacksonException | XMLStreamException | IOException e) {
             // as Spring's converter reports it, also a failure of the response's writer while it writes a raw value
@@ -222,16 +223,17 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * The mapper of the JSON converter Spring MVC writes {@code application/problem+json} with, with Spring's mix-in for
-     * problems, derived once for the mapper it derives from.
+     * The mapper the JSON converter Spring MVC writes the problem as {@code application/problem+json} with uses for it,
+     * with Spring's mix-in for problems, derived once for the mapper it derives from.
      */
     @CompileDynamic
-    private ObjectMapper problemMapper(List<HttpMessageConverter<?>> converters) {
+    private ObjectMapper problemMapper(List<HttpMessageConverter<?>> converters, Class<?> problemType) {
         def json = (JacksonJsonHttpMessageConverter) converters.find {
-            it instanceof JacksonJsonHttpMessageConverter && it.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON)
+            it instanceof JacksonJsonHttpMessageConverter && it.canWrite(problemType, MediaType.APPLICATION_PROBLEM_JSON)
         }
-        // without one, a default mapper, with Jackson's limits, which the legacy writer's has not
-        ObjectMapper source = json?.mapper ?: DEFAULT_PROBLEM_MAPPER
+        // the one the converter has for the type of the problem, or else its own; without one, a default mapper, with
+        // Jackson's limits, which the legacy writer's has not
+        ObjectMapper source = json != null ? (mapperForType(json, problemType) ?: json.mapper) : DEFAULT_PROBLEM_MAPPER
         Tuple2<ObjectMapper, ObjectMapper> derived = problemMapper
         if (derived == null || !derived.v1.is(source)) {
             derived = new Tuple2<ObjectMapper, ObjectMapper>(source,
@@ -239,6 +241,28 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             problemMapper = derived
         }
         derived.v2
+    }
+
+    /**
+     * The mapper a JSON converter has for a type the problem is of and {@code application/problem+json}, as the converter
+     * selects it, looked for from the problem's class to its superclasses and interfaces.
+     */
+    private static ObjectMapper mapperForType(JacksonJsonHttpMessageConverter json, Class<?> problemType) {
+        List<Class<?>> types = []
+        for (Class<?> type = problemType; type != null; type = type.superclass) {
+            types << type
+        }
+        types.addAll(ClassUtils.getAllInterfacesForClassAsSet(problemType))
+        for (Class<?> type : types) {
+            Map<MediaType, ? extends ObjectMapper> mappers = json.getMappersForType(type)
+            Map.Entry<MediaType, ? extends ObjectMapper> match = mappers?.find { Map.Entry<MediaType, ? extends ObjectMapper> entry ->
+                entry.key.includes(MediaType.APPLICATION_PROBLEM_JSON)
+            }
+            if (match != null) {
+                return match.value
+            }
+        }
+        null
     }
 
     /**
