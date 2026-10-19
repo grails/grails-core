@@ -464,7 +464,7 @@ class GrailsApplicationBuilder {
 
     /**
      * The bean definitions the test's configuration classes declared, a {@code group(...)} nested in
-     * one included, read off the {@code @Bean} method each came from.
+     * one included, read off the {@code @Bean} method each came from, which the class may inherit.
      */
     protected static Map<String, BeanDefinition> beanDefinitionsDeclaredBy(Collection<Class<?>> configurationClasses,
                                                                          BeanDefinitionRegistry registry) {
@@ -479,7 +479,13 @@ class GrailsApplicationBuilder {
                 continue
             }
             String declaringClass = ((AnnotatedBeanDefinition) definition).factoryMethodMetadata?.declaringClassName
-            if (declaringClass && owners.any { String owner -> declaringClass == owner || declaringClass.startsWith(owner + '$') }) {
+            // the class of the configuration bean whose method creates it, which declares the method or inherits it
+            String factoryName = definition.factoryBeanName
+            String factoryClass = factoryName && registry.containsBeanDefinition(factoryName) ?
+                    registry.getBeanDefinition(factoryName).beanClassName : null
+            if ([declaringClass, factoryClass].any { String type ->
+                type && owners.any { String owner -> type == owner || type.startsWith(owner + '$') }
+            }) {
                 declared[name] = definition
             }
         }

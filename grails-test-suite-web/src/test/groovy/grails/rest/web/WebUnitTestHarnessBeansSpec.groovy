@@ -110,6 +110,22 @@ class WebUnitTestDeclaredLinkGeneratorSpec extends Specification implements Cont
     }
 }
 
+class WebUnitTestInheritedLinkGeneratorSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    Set<String> getIncludePlugins() {
+        ['controllers'] as Set<String>
+    }
+
+    @Configuration
+    static class LinkGeneratorConfiguration extends SharedLinkGeneratorBeans {
+    }
+
+    void 'a link generator the configuration class of the spec inherits is kept where it includes the URL mappings plugin'() {
+        expect:
+        controller.createLink(controller: 'book', action: 'show', id: 1, absolute: true) == 'https://shared.example/book/show/1'
+    }
+}
+
 class WebUnitTestRegisteredUrlMappingsHolderSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
 
     Set<String> getIncludePlugins() {
@@ -189,5 +205,13 @@ class OwnUrlMappingsHolder extends DefaultUrlMappingsHolder {
 
     OwnUrlMappingsHolder() {
         super([])
+    }
+}
+
+abstract class SharedLinkGeneratorBeans {
+
+    @Bean
+    LinkGenerator grailsLinkGenerator() {
+        new DefaultLinkGenerator('https://shared.example')
     }
 }
