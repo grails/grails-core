@@ -49,6 +49,7 @@ import org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.gsp.io.GroovyPageScriptSource
 
+import org.springframework.http.converter.HttpMessageConverter
 import spock.lang.Specification
 
 class XmlGrailsPluginSpec extends Specification {
@@ -77,8 +78,10 @@ class XmlGrailsPluginSpec extends Specification {
             getBeanDefinition('grailsXmlRenderer').beanClassName == XmlFallbackRenderer.name
             getBeanDefinition('grailsXmlErrorsRenderer').beanClassName == XmlErrorsRenderer.name
             containsBeanDefinition('errorsXmlMarshallerRegisterer')
-            !containsBeanDefinition('grailsJacksonXmlHttpMessageConverter')
         }
+
+        and: 'no message converter of its own, so that Spring Boot\'s XML converter is the one Spring MVC writes with'
+        beanFactory.getBeanNamesForType(HttpMessageConverter, true, false).length == 0
     }
 
     void "an application's renderer beans, whatever their names, do not replace the plugin's"() {

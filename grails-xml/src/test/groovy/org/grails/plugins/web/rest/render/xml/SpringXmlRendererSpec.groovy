@@ -231,13 +231,15 @@ class SpringXmlRendererSpec extends Specification {
         }
         def response = new MockHttpServletResponse()
         def request = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
+        request.controllerName = 'greeting'
+        request.actionName = 'save'
         def errors = new BeanPropertyBindingResult(new XmlGreeting(message: 'x'), 'greeting')
         errors.rejectValue('message', 'invalid', 'Message is invalid')
 
-        when:
+        when: 'the action has a name, by which the renderer would look its view up'
         renderer.render(errors, new FixedMimeServletRenderContext(request, MimeType.XML))
 
-        then:
+        then: 'no view is looked up for validation errors'
         0 * locator._
         response.status == 422
         new XmlSlurper().parseText(response.contentAsString).error.size() == 1
