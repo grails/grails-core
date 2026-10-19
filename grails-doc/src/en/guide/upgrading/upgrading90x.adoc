@@ -775,8 +775,9 @@ parses, where it handles that type, and the JSON bodies of a type no creator bea
 `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
 application context has none of those, as when it has several and none is primary, a default `JsonMapper` parses them,
 as for the JSON converter. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
-The mapper's parser features and limits then apply to request bodies, those a `JsonMapperBuilderCustomizer` or
-`spring.jackson.json.read.*` sets included, such as support for an application-specific input format. The mapper reads a
+The mapper's parser features and limits then apply to request bodies: the features a `JsonMapperBuilderCustomizer` or
+`spring.jackson.json.read.*` sets, such as support for an application-specific input format, and the limits
+`spring.jackson.factory.constraints.read.*` or a `JsonFactoryBuilderCustomizer` sets. The mapper reads a
 body as plain JSON values, maps, lists, strings, numbers and booleans, which Grails' data binder then binds by their
 names, as it binds what `JsonSlurper` reads, so the mapper's naming strategy and date format, the deserializers of a
 module for other types, and Jackson annotations on command objects and domain classes do not apply to binding, and
