@@ -72,7 +72,7 @@ final class ProblemXml {
         Map<?, ?> converted = ProblemBeans.marking(mapper).convertValue(problem, Map)
         converted.each { Object name, Object value ->
             String member = name.toString()
-            if (member != ProblemBeans.MARKER) {
+            if (!ProblemBeans.isMarker(member)) {
                 // Spring's converter writes the members of RFC 9457 and the extension members in its namespace, and the
                 // properties of a subclass, as those of any bean, in none
                 boolean property = !(MEMBERS.contains(member) || extensions.contains(member))
@@ -121,10 +121,10 @@ final class ProblemXml {
             if (value instanceof Map) {
                 Map<?, ?> members = (Map<?, ?>) value
                 // the properties of a bean are in no namespace, and the entries of a map in that of the map
-                boolean bean = members.containsKey(ProblemBeans.MARKER)
+                boolean bean = members.keySet().any { Object key -> ProblemBeans.isMarker(key) }
                 String inner = bean ? '' : namespace
                 members.each { Object key, Object member ->
-                    if (key != ProblemBeans.MARKER) {
+                    if (!ProblemBeans.isMarker(key)) {
                         element(xml, writer, key.toString(), member, inner, namespace, plainDecimals, bean)
                     }
                 }

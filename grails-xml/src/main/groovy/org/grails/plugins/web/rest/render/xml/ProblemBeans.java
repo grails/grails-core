@@ -56,8 +56,11 @@ import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
  */
 final class ProblemBeans {
 
-    /** The key of the marker, which no property of a bean has. */
-    static final String MARKER = ProblemBeans.class.getName() + "#bean";
+    /**
+     * The start of the key of the marker, which no property of a bean has. The key names the class of the bean too, so that
+     * the marker of a bean another unwraps without a prefix differs from the marker of the other, as Jackson requires.
+     */
+    static final String MARKER = ProblemBeans.class.getName() + "#bean:";
 
     /**
      * The first element of the array a bean is written as, where its format asks for one, so that the array is not taken
@@ -68,6 +71,14 @@ final class ProblemBeans {
     private static final Map<ObjectMapper, ObjectMapper> MARKING = Collections.synchronizedMap(new WeakHashMap<>());
 
     private ProblemBeans() {
+    }
+
+    /**
+     * @param key a key of a converted map
+     * @return whether it is the key of the marker of a bean
+     */
+    static boolean isMarker(Object key) {
+        return key instanceof String && ((String) key).startsWith(MARKER);
     }
 
     /**
@@ -95,11 +106,16 @@ final class ProblemBeans {
         @Override
         public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 List<BeanPropertyWriter> properties) {
+            if (properties.isEmpty()) {
+                // a bean without properties is an empty value, which Jackson leaves out where the inclusion says so
+                return properties;
+            }
             BeanDescription description = beanDescription.get();
             JavaType type = config.getTypeFactory().constructType(Boolean.class);
+            String name = MARKER + description.getBeanClass().getName();
             BeanPropertyDefinition definition = SimpleBeanPropertyDefinition.construct(config,
-                    new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), MARKER, type),
-                    PropertyName.construct(MARKER));
+                    new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), name, type),
+                    PropertyName.construct(name));
             List<BeanPropertyWriter> marked = new ArrayList<>(properties.size() + 1);
             marked.add(new MarkerWriter(definition, description, type));
             marked.addAll(properties);

@@ -31,6 +31,7 @@ import groovy.xml.XmlSlurper
 
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonUnwrapped
@@ -280,7 +281,9 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'a bean with a list',
                 'an infinite double',
                 'a bean with a property whose class is written as an array',
-                'a bean with a list of beans'
+                'a bean with a list of beans',
+                'a bean that unwraps a bean without a prefix',
+                'a bean with an empty bean its property leaves out'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -290,7 +293,9 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new ListBean(tags: ['a', 'b'])) },
                 { -> extended('ratio', Double.POSITIVE_INFINITY) },
                 { -> extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2))) },
-                { -> extended('member', new BeanListOwner(items: [new PrefixedInner(code: 'a'), new PrefixedInner(code: 'b')])) }
+                { -> extended('member', new BeanListOwner(items: [new PrefixedInner(code: 'a'), new PrefixedInner(code: 'b')])) },
+                { -> extended('member', new PlainPrice(label: 'a', money: new PlainMoney(amount: 12.5G, currency: 'EUR'))) },
+                { -> extended('member', new EmptyOwner(name: 'a', empty: new NoProperties())) }
         ]
     }
 
@@ -630,4 +635,24 @@ class BeanListOwner {
 class FilteredBean {
     String name
     String hidden
+}
+
+class PlainPrice {
+    String label
+    @JsonUnwrapped
+    PlainMoney money
+}
+
+class PlainMoney {
+    BigDecimal amount
+    String currency
+}
+
+class EmptyOwner {
+    String name
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    NoProperties empty
+}
+
+class NoProperties {
 }
