@@ -97,7 +97,7 @@ these requests where its converters include the
 XML one, which Spring Boot lists after the JSON one and which needs `jackson-dataformat-xml`. Without that library
 Spring MVC has no XML converter and answers a client asking for a problem in XML with `application/problem+json`;
 `respond` still answers it with `application/problem+xml`, which Grails writes itself in the format of Spring's
-converter, with the members the mapper Spring's JSON converter writes the problem with writes for it, Spring Boot's unless the
+converter, with the members that Spring's JSON converter writes for the problem with its mapper, Spring Boot's unless the
 converter has one of its own for the problem's type, as in `application/problem+json`, so that a
 default serialization view of that mapper leaves out the members in no view, those of RFC 9457 and the extension members
 among them, where Spring's XML converter writes them with Spring Boot's `XmlMapper`. It fails, as Spring's converters
