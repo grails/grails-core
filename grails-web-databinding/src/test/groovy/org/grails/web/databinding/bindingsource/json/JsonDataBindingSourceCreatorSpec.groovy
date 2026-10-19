@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets
 import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 
 import tools.jackson.core.json.JsonReadFeature
+import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.json.JsonMapper
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
@@ -298,6 +299,19 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         description                 | settings                                  || logged
         'it is left to its default' | [:]                                       || true
         'it opts into Jackson'      | ['grails.databinding.json.jackson': true] || false
+    }
+
+    void "Jackson request parsing reads a body as it is where the application's mapper unwraps root values, with #creator.class.simpleName"() {
+        given: 'a mapper that unwraps the root value of a type it reads, as spring.jackson.deserialization.unwrap-root-value sets'
+        creator.jsonMapper = JsonMapper.builder().enable(DeserializationFeature.UNWRAP_ROOT_VALUE).build()
+
+        expect: 'the body has no root value of the type the creator reads it as'
+        creator.createDataBindingSource(MimeType.JSON, Object, new StringReader('{"name":"Grails"}'))['name'] == 'Grails'
+        creator.createCollectionDataBindingSource(MimeType.JSON, Object, new StringReader('[{"name":"Grails"}]'))
+                .dataBindingSources*.getPropertyValue('name') == ['Grails']
+
+        where:
+        creator << [new JsonDataBindingSourceCreator(useJackson: true), new HalJsonDataBindingSourceCreator(useJackson: true)]
     }
 
     void 'the JsonSlurper of the legacy path is deprecated for removal in Grails 11'() {

@@ -144,12 +144,14 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     /**
      * Reads untyped JSON values. Decimals are read as {@link BigDecimal} so that binding a
      * fractional value to a BigDecimal property keeps the digits the request sent; reading them
-     * as doubles first would round them before the binder ever saw them.
+     * as doubles first would round them before the binder ever saw them. A body is read as it is, without a root value,
+     * which the mapper would otherwise expect for {@code Object} where it unwraps root values.
      *
      * @since 9.0
      */
     protected ObjectReader untypedReader() {
-        return getJsonMapper().reader().forType(Object).with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+        return getJsonMapper().reader().forType(Object).withoutRootName()
+                .with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
     }
 
     @Override

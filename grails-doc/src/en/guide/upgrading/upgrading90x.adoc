@@ -778,7 +778,8 @@ The mapper's parser features and limits then apply to request bodies, those a `J
 `spring.jackson.json.read.*` sets included, such as support for an application-specific input format. The mapper reads a
 body as plain JSON values, maps, lists, strings, numbers and booleans, which Grails' data binder then binds by their
 names, as it binds what `JsonSlurper` reads, so the mapper's naming strategy and date format, the deserializers of a
-module for other types, and Jackson annotations on command objects and domain classes do not apply to binding.
+module for other types, and Jackson annotations on command objects and domain classes do not apply to binding, and
+`spring.jackson.deserialization.unwrap-root-value` does not expect a root value around a body.
 
 Both parsers report a malformed body bound to an object as a binding error, and one bound to a collection with
 `bindData` as a `DataBindingSourceCreationException`, as in Grails 8, but Jackson rejects inputs that the legacy
