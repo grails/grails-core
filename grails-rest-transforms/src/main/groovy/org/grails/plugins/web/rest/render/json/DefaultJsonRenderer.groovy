@@ -206,7 +206,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * Subclasses should override to customize JSON response rendering
+     * Subclasses should override to customize JSON response rendering. A problem is written as Spring MVC writes it,
+     * whatever the renderer's own settings, unless a subclass renders it itself.
      *
      * @param object
      * @param context

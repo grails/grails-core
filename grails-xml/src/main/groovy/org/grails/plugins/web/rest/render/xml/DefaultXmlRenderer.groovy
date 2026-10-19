@@ -170,8 +170,6 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
                 htmlRenderer = DefaultHtmlRenderer.forFormatView(targetType, registry, encoding)
             }
             htmlRenderer.render((Object) object, context)
-        } else if (object instanceof ProblemDetail) {
-            renderProblem((ProblemDetail) object, context)
         } else {
             if (object instanceof Errors) {
                 context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -232,12 +230,17 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * Subclasses should override to customize XML response rendering
+     * Subclasses should override to customize XML response rendering. A problem is written as Spring MVC writes it,
+     * whatever the renderer's own settings, unless a subclass renders it itself.
      *
      * @param object
      * @param context
      */
     protected void renderXml(Object object, RenderContext context) {
+        if (object instanceof ProblemDetail) {
+            renderProblem((ProblemDetail) object, context)
+            return
+        }
         HttpMessageConverter<Object> springConverter = findSpringConverter(object, context)
         if (springConverter != null) {
             renderWithSpringConverter(springConverter, object,
