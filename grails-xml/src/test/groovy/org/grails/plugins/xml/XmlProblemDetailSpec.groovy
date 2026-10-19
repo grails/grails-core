@@ -32,6 +32,7 @@ import groovy.xml.XmlSlurper
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
@@ -319,7 +320,11 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'a bean written as an array a property names the properties of',
                 'a bean whose only output is an any-getter',
                 'a bean that unwraps two beans of one class with properties it names',
-                'a bean with an untyped list and an untyped value'
+                'a bean with an untyped list and an untyped value',
+                'a bean that unwraps two beans of one class with properties it ignores',
+                'a bean that unwraps two beans of one class with one prefix and properties it ignores',
+                'beans an unwrapped list property names the properties of',
+                'beans an unwrapped list property ignores properties of'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -339,7 +344,11 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new IncludingArrayOwner(point: new ArrayClassPoint(x: 1, y: 2))) },
                 { -> extended('member', new AnyGetterOnly()) },
                 { -> extended('member', new TwiceUnwrappingOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
-                { -> extended('member', new UntypedPayload(tags: ['a', 'b'], tag: 'c')) }
+                { -> extended('member', new UntypedPayload(tags: ['a', 'b'], tag: 'c')) },
+                { -> extended('member', new TwiceIgnoringOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
+                { -> extended('member', new TwicePrefixingOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
+                { -> extended('member', new UnwrappedIncludingListOwner(beans: [new ListBean(tags: ['a']), new ListBean(tags: ['b', 'c'])])) },
+                { -> extended('member', new UnwrappedIgnoringListOwner(beans: [new LabelledListBean(label: 'x', tags: ['a']), new LabelledListBean(label: 'y', tags: ['b', 'c'])])) }
         ]
     }
 
@@ -804,6 +813,38 @@ class TwiceUnwrappingOwner {
     @JsonUnwrapped
     @JsonIncludeProperties(['b'])
     UnwrappedPair second
+}
+
+class TwiceIgnoringOwner {
+    @JsonUnwrapped
+    @JsonIgnoreProperties(['b'])
+    UnwrappedPair first
+
+    @JsonUnwrapped
+    @JsonIgnoreProperties(['a'])
+    UnwrappedPair second
+}
+
+class TwicePrefixingOwner {
+    @JsonUnwrapped(prefix = 'p_')
+    @JsonIgnoreProperties(['b'])
+    UnwrappedPair first
+
+    @JsonUnwrapped(prefix = 'p_')
+    @JsonIgnoreProperties(['a'])
+    UnwrappedPair second
+}
+
+class UnwrappedIncludingListOwner {
+    @JsonUnwrapped
+    @JsonIncludeProperties(['tags'])
+    List<ListBean> beans
+}
+
+class UnwrappedIgnoringListOwner {
+    @JsonUnwrapped
+    @JsonIgnoreProperties(['label'])
+    List<LabelledListBean> beans
 }
 
 class UntypedPayload {

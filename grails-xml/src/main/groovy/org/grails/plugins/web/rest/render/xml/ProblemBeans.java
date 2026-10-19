@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.AnnotationIntrospector;
@@ -132,7 +133,8 @@ final class ProblemBeans {
 
     /**
      * The introspector of a mapper, except that the names a property includes, with {@code @JsonIncludeProperties}, of
-     * the bean it holds include the marker of that bean, whatever its class.
+     * the bean it holds include the marker of that bean, whatever its class, and that a property that unwraps a bean
+     * leaves out the bean's marker.
      */
     private static final class MarkerIncluding extends AnnotationIntrospectorPair {
 
@@ -145,15 +147,58 @@ final class ProblemBeans {
         @Override
         public JsonIncludeProperties.Value findPropertyInclusionByName(MapperConfig<?> config, Annotated annotated) {
             JsonIncludeProperties.Value inclusion = _primary.findPropertyInclusionByName(config, annotated);
-            if (inclusion == null || inclusion.getIncluded() == null) {
-                return inclusion;
-            }
-            if (annotated instanceof AnnotatedMember member && _primary.findUnwrappingNameTransformer(config, member) != null) {
-                // the properties of a bean a property unwraps are written into the bean that holds it, which has its own
-                // marker, so that the bean's own would conflict with that of another bean of its class unwrapped there
+            if (inclusion == null || inclusion.getIncluded() == null || unwrapsBean(config, annotated)) {
                 return inclusion;
             }
             return new MarkerInclusion(inclusion);
+        }
+
+        // the properties of a bean a property unwraps are written into the bean that holds it, which has its own marker,
+        // so that the bean's own would conflict with that of another bean of its class unwrapped there
+        @Override
+        public JsonIgnoreProperties.Value findPropertyIgnoralByName(MapperConfig<?> config, Annotated annotated) {
+            JsonIgnoreProperties.Value ignoral = _primary.findPropertyIgnoralByName(config, annotated);
+            return unwrapsBean(config, annotated) ? new MarkerIgnoral(ignoral == null ? JsonIgnoreProperties.Value.empty() : ignoral) :
+                    ignoral;
+        }
+
+        /**
+         * Whether the property unwraps the bean it holds: one declared as a container, a reference, such as an
+         * {@code Optional}, or {@code Object} may hold a value Jackson writes as it is, whose elements take the inclusions
+         * and ignorals of the property, and keep their markers.
+         */
+        private boolean unwrapsBean(MapperConfig<?> config, Annotated annotated) {
+            if (!(annotated instanceof AnnotatedMember member) || _primary.findUnwrappingNameTransformer(config, member) == null) {
+                return false;
+            }
+            JavaType type = member.getType();
+            return !type.isContainerType() && !type.isReferenceType() && !type.isJavaLangObject();
+        }
+    }
+
+    private static final class MarkerIgnoral extends JsonIgnoreProperties.Value {
+
+        private static final long serialVersionUID = 1L;
+
+        MarkerIgnoral(JsonIgnoreProperties.Value ignoral) {
+            // ignored for serialization alone, as this mapper only writes
+            super(new MarkersIgnored(ignoral.findIgnoredForSerialization()), ignoral.getIgnoreUnknown(), false,
+                    ignoral.getAllowSetters(), ignoral.getMerge());
+        }
+    }
+
+    /** Names that ignore the marker of every bean as well. */
+    private static final class MarkersIgnored extends HashSet<String> {
+
+        private static final long serialVersionUID = 1L;
+
+        MarkersIgnored(Set<String> names) {
+            super(names);
+        }
+
+        @Override
+        public boolean contains(Object name) {
+            return isMarker(name) || super.contains(name);
         }
     }
 
