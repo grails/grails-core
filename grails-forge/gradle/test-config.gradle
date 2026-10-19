@@ -28,6 +28,9 @@ dependencies {
 // of the included builds when Forge tests will actually run.
 boolean forgeTestsEnabled = !['skipTests', 'skipForgeTests'].any { project.hasProperty(it) }
 boolean cacheTests = !doNotCacheTests
+// -PgrailsIndy=false reaches the included grails-core build, so the framework it publishes for the
+// generated applications is then compiled with classic call sites.
+boolean classicFramework = project.hasProperty('grailsIndy') && !Boolean.parseBoolean(project.property('grailsIndy').toString())
 
 tasks.withType(Test).configureEach { Test testTask ->
     if (forgeTestsEnabled) {
@@ -40,6 +43,13 @@ tasks.withType(Test).configureEach { Test testTask ->
                     gradle.includedBuild('grails-gradle').task(':publishAllPublicationsToTestCaseMavenRepoRepository')
             )
             testTask.environment('GRAILS_REPO_URL', uri(rootProject.layout.projectDirectory.dir('../build/local-maven')))
+            if (classicFramework) {
+                // Groovy 6 loads a classic-compiled class only with groovy-callsite. The specs pass this
+                // init script to every generated build (GeneratedBuild in the CLI module's test fixtures
+                // reads the property) so the application declares the module itself.
+                testTask.systemProperty('forge.generatedBuild.initScript',
+                        rootProject.layout.projectDirectory.file('gradle/classic-framework.init.gradle').asFile.absolutePath)
+            }
         }
     }
 
