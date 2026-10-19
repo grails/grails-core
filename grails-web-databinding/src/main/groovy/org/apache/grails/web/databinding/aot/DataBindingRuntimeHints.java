@@ -24,11 +24,12 @@ import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator;
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator;
 
 /**
- * Registers the data binding API a request is bound through, and the JSON binding source creator that parses with
- * Jackson the JSON bodies no creator bean handles, which is created, injected and initialized by its class.
+ * Registers the data binding API a request is bound through, and the JSON and HAL binding source creators that are
+ * created, injected and initialized by their class to parse bodies with Jackson.
  *
  * <p>Binding is reached only by a request that carries a body or parameters to bind, so a
  * read-only walk of an application never records it and the absence shows up the first time
@@ -67,6 +68,11 @@ public class DataBindingRuntimeHints implements RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.ACCESS_DECLARED_FIELDS,
                 MemberCategory.INVOKE_DECLARED_METHODS,
+                MemberCategory.INVOKE_PUBLIC_METHODS);
+        // the HAL creator a HAL renderer creates by its class where the application's is for another class; the
+        // members Spring injects are those of the JSON creator, registered above
+        hints.reflection().registerType(HalJsonDataBindingSourceCreator.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_METHODS);
     }
 }

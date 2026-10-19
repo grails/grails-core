@@ -25,6 +25,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader
 import spock.lang.Specification
 
 import grails.databinding.DataBindingSource
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
 
 class DataBindingRuntimeHintsSpec extends Specification {
@@ -55,6 +56,17 @@ class DataBindingRuntimeHintsSpec extends Specification {
             RuntimeHintsPredicates.reflection().onFieldAccess(JsonDataBindingSourceCreator, field).test(hints)
         }
         RuntimeHintsPredicates.reflection().onMethodInvocation(JsonDataBindingSourceCreator, 'initialize').test(hints)
+    }
+
+    void 'the constructor the HAL binding source creator is created with by its class, for a HAL renderer, is registered'() {
+        given:
+        def hints = new RuntimeHints()
+
+        when:
+        new DataBindingRuntimeHints().registerHints(hints, getClass().classLoader)
+
+        then:
+        RuntimeHintsPredicates.reflection().onConstructorInvocation(HalJsonDataBindingSourceCreator.getConstructor()).test(hints)
     }
 
     void 'is registered for ahead-of-time processing'() {
