@@ -128,6 +128,60 @@ class WebUnitTestRegisteredUrlMappingsHolderSpec extends Specification implement
     }
 }
 
+class WebUnitTestDefinedUrlMappingsHolderSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    Set<String> getIncludePlugins() {
+        ['controllers'] as Set<String>
+    }
+
+    Closure doWithSpring() {
+        { ->
+            grailsUrlMappingsHolder(OwnUrlMappingsHolder)
+        }
+    }
+
+    void 'a URL mappings holder the spec defines is kept where it includes the URL mappings plugin'() {
+        expect:
+        applicationContext.getBean('grailsUrlMappingsHolder') instanceof OwnUrlMappingsHolder
+    }
+}
+
+class WebUnitTestAliasedLinkGeneratorSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    Set<String> getIncludePlugins() {
+        ['controllers'] as Set<String>
+    }
+
+    @Configuration
+    static class LinkGeneratorConfiguration {
+
+        @Bean(['ownLinkGenerator', 'grailsLinkGenerator'])
+        LinkGenerator ownLinkGenerator() {
+            new DefaultLinkGenerator('https://own.example')
+        }
+    }
+
+    void 'a link generator the spec declares under another name, with an alias of the name of the link generator, is kept'() {
+        expect:
+        controller.createLink(controller: 'book', action: 'show', id: 1, absolute: true) == 'https://own.example/book/show/1'
+    }
+}
+
+class WebUnitTestAliasedUrlMappingsHolderSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    BeanRegistrar beanRegistrar() {
+        return { BeanRegistry registry, Environment environment ->
+            registry.registerBean('ownUrlMappingsHolder', OwnUrlMappingsHolder)
+            registry.registerAlias('ownUrlMappingsHolder', 'grailsUrlMappingsHolder')
+        } as BeanRegistrar
+    }
+
+    void 'a URL mappings holder the spec registers under another name, with an alias of the name of the holder, is kept'() {
+        expect:
+        applicationContext.getBean('grailsUrlMappingsHolder') instanceof OwnUrlMappingsHolder
+    }
+}
+
 @Artefact('Controller')
 class HarnessBeansController { }
 

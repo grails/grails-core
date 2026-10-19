@@ -51,6 +51,7 @@ import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.Ordered
+import org.springframework.core.SimpleAliasRegistry
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.MapPropertySource
 import org.springframework.util.ClassUtils
@@ -382,11 +383,13 @@ class GrailsApplicationBuilder {
 
     /**
      * @param beanFactory the bean factory of a test's application context
-     * @param name the name of a bean
+     * @param name the name of a bean, or an alias of it
      * @return whether the test declares the bean of the name itself
      */
     static boolean isDeclaredByTest(ConfigurableListableBeanFactory beanFactory, String name) {
-        beanFactory.containsBeanDefinition(name) && beanFactory.getBeanDefinition(name).getAttribute(DECLARED_BY_TEST) == Boolean.TRUE
+        String beanName = beanFactory instanceof SimpleAliasRegistry ? ((SimpleAliasRegistry) beanFactory).canonicalName(name) : name
+        beanFactory.containsBeanDefinition(beanName) &&
+                beanFactory.getBeanDefinition(beanName).getAttribute(DECLARED_BY_TEST) == Boolean.TRUE
     }
 
     /** Runs a registration of the test's own beans, marking each definition it adds or replaces. */
