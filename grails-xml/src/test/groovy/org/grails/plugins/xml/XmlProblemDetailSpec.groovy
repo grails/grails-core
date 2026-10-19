@@ -757,12 +757,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         notThrown(Exception)
     }
 
-    void "without a converter for problems, a problem with a character XML cannot hold fails as Spring's XML converter fails to write it"() {
+    void "without a converter for problems, a problem with #description fails as Spring's XML converter fails to write it"() {
         given:
         def renderer = new DefaultXmlRenderer<Object>(Object)
         renderer.springHttpMessageConvertersSupplier = { [] }
         def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
-        def problem = { -> ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'a\u0001b') }
+        def problem = { -> ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail) }
 
         when: "Spring's XML converter writes it"
         ((HttpMessageConverter<Object>) xml).write(problem(), MediaType.APPLICATION_PROBLEM_XML, new MockHttpOutputMessage())
@@ -773,11 +773,43 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         when: 'the problem XML Grails writes'
         renderProblem(renderer, problem())
 
-        then: "it fails as Spring's converter fails, rather than writing XML that is not well-formed"
+        then: "it fails as Spring's converter fails, rather than writing XML that is not well-formed or a ? in its place"
         HttpMessageNotWritableException e = thrown()
-        def invalid = 'Could not write JSON: Invalid white space character (0x1) in text to output (in xml 1.1, could output as a character entity)'
-        spring.message.startsWith(invalid)
-        e.message == invalid
+        e.message == "Could not write JSON: ${invalid}".toString()
+        spring.message.startsWith(e.message)
+
+        where:
+        description                              | detail          || invalid
+        'a control character'                    | 'a\u0001b'      || 'Invalid white space character (0x1) in text to output (in xml 1.1, could output as a character entity)'
+        'a null character'                       | 'a\u0000b'      || 'Invalid null character in text to output'
+        'a null character and half a pair'       | 'a\uD800\u0000' || 'Invalid null character in text to output'
+        'the first half of a surrogate pair'     | 'a\uD800b'      || 'Broken surrogate pair: first char 0xd800, second 0x62; illegal combination'
+        'the first half of a pair at its end'    | 'a\uD800'       || 'Broken surrogate pair: first char 0xd800, second 0x3c; illegal combination'
+        'two first halves of a surrogate pair'   | 'a\uD800\uD800' || 'Broken surrogate pair: first char 0xd800, second 0xd800; illegal combination'
+        'the second half of a surrogate pair'    | 'a\uDC00\uD800' || 'Unmatched second part of surrogate pair (0xdc00)'
+    }
+
+    void "without a converter for problems, a problem with #description is written as Spring's XML converter writes it"() {
+        given:
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
+        def problem = { -> ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail) }
+        def spring = new MockHttpOutputMessage()
+        ((HttpMessageConverter<Object>) xml).write(problem(), MediaType.APPLICATION_PROBLEM_XML, spring)
+
+        when:
+        def fallback = renderProblem(renderer, problem())
+
+        then: 'a carriage return, which a parser would read as a line feed, and a noncharacter as character references'
+        spring.bodyAsString.contains(written)
+        fallback.contentAsString == spring.bodyAsString
+
+        where:
+        description             | detail             || written
+        'a carriage return'     | 'a\r\nb'           || 'a&#xd;\nb'
+        'U+FFFE and U+FFFF'     | 'a￾b￿c'  || 'a&#xfffe;b&#xffff;c'
+        'a pair of surrogates'  | 'a😀b'   || 'a😀b'
     }
 
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {

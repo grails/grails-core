@@ -175,7 +175,7 @@ final class ProblemXml {
                 writer.write(String.valueOf(((RawValue) value).rawValue()))
             }
             else {
-                xml.writeCharacters(checked(text(value, plainDecimals)))
+                characters(xml, text(value, plainDecimals))
             }
             xml.writeEndElement()
         }
@@ -353,21 +353,54 @@ final class ProblemXml {
     }
 
     /**
-     * The text, where XML 1.0 can hold its characters, which the JDK's writer does not check; otherwise it fails as the
-     * writer of Spring's XML converter fails.
+     * Writes the text as the writer of Spring's XML converter writes it, where the JDK's writer writes it otherwise: a
+     * carriage return, which an XML parser would read as a line feed, and U+FFFE and U+FFFF as character references.
      */
-    private static String checked(String text) {
+    private static void characters(XMLStreamWriter xml, String text) {
+        checked(text)
+        int start = 0
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i)
+            if (c == (char) 0xD || c == (char) 0xFFFE || c == (char) 0xFFFF) {
+                xml.writeCharacters(text.substring(start, i))
+                xml.writeEntityRef("#x${Integer.toHexString((int) c)}")
+                start = i + 1
+            }
+        }
+        xml.writeCharacters(text.substring(start))
+    }
+
+    /**
+     * Fails, as the writer of Spring's XML converter fails, where XML 1.0 cannot hold a character of the text, which the
+     * JDK's writer does not check, and then where it has half of a surrogate pair, which the JDK's writer writes as
+     * {@code ?}.
+     */
+    private static void checked(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i)
+            if (c == (char) 0) {
+                throw new XMLStreamException('Invalid null character in text to output')
+            }
             if (c < (char) 0x20 && c != (char) 0x9 && c != (char) 0xA && c != (char) 0xD) {
                 throw new XMLStreamException("Invalid white space character (0x${Integer.toHexString((int) c)}) in text to " +
                         'output (in xml 1.1, could output as a character entity)')
             }
-            if (c == (char) 0xFFFE || c == (char) 0xFFFF) {
-                throw new XMLStreamException("Invalid character (0x${Integer.toHexString((int) c)}) in text to output")
+        }
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i)
+            if (Character.isHighSurrogate(c)) {
+                // it fails on the character written after it, which is the < of the end tag where the text ends with it
+                char next = i + 1 < text.length() ? text.charAt(i + 1) : (char) '<'
+                if (!Character.isLowSurrogate(next)) {
+                    throw new XMLStreamException("Broken surrogate pair: first char 0x${Integer.toHexString((int) c)}, " +
+                            "second 0x${Integer.toHexString((int) next)}; illegal combination")
+                }
+                i++
+            }
+            else if (Character.isLowSurrogate(c)) {
+                throw new XMLStreamException("Unmatched second part of surrogate pair (0x${Integer.toHexString((int) c)})")
             }
         }
-        text
     }
 
     /**
