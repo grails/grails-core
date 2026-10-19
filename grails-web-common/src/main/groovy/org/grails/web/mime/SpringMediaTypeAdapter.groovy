@@ -66,10 +66,9 @@ final class SpringMediaTypeAdapter {
             return null
         }
 
-        return new MimeType(
-                "${mediaType.type}/${mediaType.subtype}".toString(),
-                extension,
-                new LinkedHashMap<String, String>(mediaType.parameters)
-        )
+        // Parameter names are case-insensitive, as Spring reads them; Grails reads q and v by their lower-case names
+        Map<String, String> parameters = new LinkedHashMap<>()
+        mediaType.parameters.each { String name, String value -> parameters.put(name.toLowerCase(Locale.ROOT), value) }
+        return new MimeType("${mediaType.type}/${mediaType.subtype}".toString(), extension, parameters)
     }
 }

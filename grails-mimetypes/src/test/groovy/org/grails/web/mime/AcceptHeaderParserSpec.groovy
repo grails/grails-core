@@ -234,6 +234,16 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         parser.parse('application/problem+xml')*.extension == ['xml']
     }
 
+    void "the quality is read whatever the case of its name, #description, as RFC 9110 and Spring read it"() {
+        expect:
+        getAcceptHeaderParser().parse(header)*.extension == ['json', 'html']
+
+        where:
+        description                     | header
+        'as Spring parses the header'   | 'text/html;Q=0.1, application/json'
+        'as Grails parses what it does' | 'text/html;charset=no-such-charset;Q=0.1, application/json'
+    }
+
     void "a lenient quality value is still recognised when a space precedes the parameter"() {
         when: "Spring rejects the header, so the lenient path parses it"
         MimeType[] mimeTypes = getAcceptHeaderParser().parse('application/json;q=1.5, text/html ; q=2.0')

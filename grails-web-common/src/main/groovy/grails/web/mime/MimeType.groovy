@@ -71,7 +71,8 @@ class MimeType {
             paramsList.each { String it ->
                 def i = it.indexOf('=')
                 if (i > 0) {
-                    parameters[it.substring(0, i).trim()] = it.substring(i + 1).trim()
+                    // a parameter name is case-insensitive, and q and v are read by their lower-case names
+                    parameters[it.substring(0, i).trim().toLowerCase(Locale.ROOT)] = it.substring(i + 1).trim()
                 }
             }
 
