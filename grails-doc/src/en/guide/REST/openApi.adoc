@@ -563,7 +563,17 @@ described once as the `ValidationErrors` schema, or as `grails.validation.Valida
 the class Grails renders them from, where the document already describes something else as
 `ValidationErrors`, such as a class of the application a Spring MVC endpoint returns. The
 converters render them, in JSON as an object
-listing them and in XML as an `errors` element holding an `error` element for each. Where a JSON
+listing them and in XML as an `errors` element holding an `error` element for each. With
+`grails.web.rendering.json.spring` set to `true`, `respond` writes them as an RFC 9457 problem, with which it answers a
+client asking for any JSON type as `application/problem+json`: that is described under the `ValidationProblem` schema,
+with the `type`, `title`, `status`, `detail` and `instance` of the problem and an `errors` array holding the `object`,
+`field`, `codes` and `message` of each error, and its `rejectedValue` where the application's
+`ValidationProblemDetailFactory` includes it. With `grails.converters.json.legacy` set to `false` and
+`grails.web.rendering.json.spring` left `false`, the JSON converter writes them as an object listing the `object`,
+`field`, `codes` and `message` of each, without the rejected value, described under the `JsonValidationErrors` schema.
+Either is named with the prefix `grails.validation.` where the document already describes something else by its name.
+The XML keeps the `ValidationErrors` schema whatever the settings, `grails.web.rendering.xml.spring` included, since the
+Grails XML converter keeps rendering it. Where a JSON
 view renders them, as the errors view of an application generated with JSON views does, they are
 described in JSON as that view renders them: one error with its message, path and link, or several
 embedded with their total. The status is the one the view sets, which is `422` for the errors view
@@ -606,10 +616,11 @@ holding one for each. The `xml` object cannot describe a map, which Grails rende
 elements keyed by an attribute, and the document describes the XML Grails renders by default, not
 that of `grails.converters.xml.default.deep`. The
 JSON shapes are likewise those of the Grails JSON converter as Grails 8 rendered them. The opt-ins of the
-xref:upgrading#upgrading90x[upgrade guide], `grails.web.rendering.json.spring`,
-`grails.converters.json.legacy: false` and `grails.web.rendering.xml.spring`, have Jackson or Spring's converters
-write by their own rules, and the document does not follow them: a Jackson naming strategy, inclusion or annotation on
-a bean or a domain class, or an element name that Spring's XML converter chooses, is not described.
+xref:upgrading#upgrading90x[upgrade guide], `grails.web.rendering.json.spring` and
+`grails.converters.json.legacy: false`, keep them for a domain class, which a serializer shaped as that converter
+rendered it writes, and change the validation errors, which are described as they write them;
+`grails.web.rendering.xml.spring` leaves domain classes, listings and validation errors to the Grails XML converter.
+What Jackson applies besides under those settings is listed under Limitations below.
 
 `RestfulController` answers its own `save` and `update` with a `Location` header naming the
 resource, which the `201` and `200` responses describe, and its `patch` too, which `update` serves.
@@ -849,7 +860,11 @@ listing. Its other actions are described as any controller's are.
   describes the resource in any scope.
 * A resource is described as Grails renders a domain class or an object by default. A JSON view,
   other than the errors view, or a custom renderer that renders another shape is described with
-  `@ApiResponse`.
+  `@ApiResponse`. With `grails.web.rendering.json.spring`, `grails.converters.json.legacy: false` or
+  `grails.web.rendering.xml.spring`, Jackson writes a bean by its own rules, and with the first two a domain class with
+  what the application gives Jackson, so that a `@JsonProperty` rename, a naming strategy or Jackson's own naming, such
+  as `isbn` for `ISBN`, can name a property in a response otherwise than data binding binds it; the property is
+  described by the name it is bound by, and `@Schema(name)` describes it by the other.
 * A date is described as a `date-time`. Grails binds it with the formats
   `grails.databinding.dateFormats` lists, which by default read the offset or `Z` of a time only
   when it has three digits of milliseconds, such as `2024-05-01T10:00:00.000+02:00`, or an offset

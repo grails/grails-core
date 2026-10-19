@@ -97,6 +97,23 @@ class OpenApiSettings {
     boolean includeVersion = false
 
     /**
+     * Whether {@code respond} writes JSON with Spring MVC's message converters, which it does where
+     * {@code grails.web.rendering.json.spring} is set, and so writes validation errors as an
+     * {@code application/problem+json} problem.
+     *
+     * @since 9.0
+     */
+    boolean springJson = false
+
+    /**
+     * Whether the JSON converter renders as Grails 8 did, which it does unless {@code grails.converters.json.legacy}
+     * is {@code false}: then it writes validation errors with their codes and without the rejected value.
+     *
+     * @since 9.0
+     */
+    boolean legacyJson = true
+
+    /**
      * What the default document selects.
      */
     OpenApiSelection defaultSelection = new OpenApiSelection()
@@ -131,6 +148,8 @@ class OpenApiSettings {
 
         settings.includeVersion = environment.getProperty('grails.converters.json.domain.include.version', Boolean,
                 environment.getProperty('grails.converters.domain.include.version', Boolean, false))
+        settings.springJson = environment.getProperty('grails.web.rendering.json.spring', Boolean, false)
+        settings.legacyJson = environment.getProperty('grails.converters.json.legacy', Boolean, true)
 
         String version = environment.getProperty('springdoc.api-docs.version')
         if (version?.toLowerCase(Locale.ENGLISH)?.contains('3_0')) {
