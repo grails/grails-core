@@ -72,6 +72,8 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     AsyncContext asyncContext
     private ServletInputStream cachedInputStream
     private boolean formBodyParsed
+    /** Whether the test set the request format, which a content type set after it does not change. */
+    private boolean formatSet
 
     GrailsMockHttpServletRequest() {
         super()
@@ -89,13 +91,18 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      */
     void setFormat(String format) {
         setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
+        formatSet = true
     }
 
     @Override
     void setContentType(String newContentType) {
         super.setContentType(newContentType)
-        // Resolved from the new content type when they are next asked for, as an application resolves them
+        // Resolved from the new content type when they are next asked for, as an application resolves them, unless the
+        // test set the format itself
         removeAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
+        if (!formatSet) {
+            removeAttribute(GrailsApplicationAttributes.CONTENT_FORMAT)
+        }
     }
 
     /**
