@@ -22,9 +22,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 import grails.artefact.Artefact
+import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
+import grails.web.mime.MimeType
 import grails.testing.web.controllers.ControllerUnitTest
-import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import spock.lang.Specification
 
 class UnmanagedControllerXmlSpec extends Specification implements ControllerUnitTest<UnmanagedXmlController> {
@@ -51,12 +52,12 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
 
         @Bean
         RendererRegistry otherRendererRegistry() {
-            new DefaultRendererRegistry()
+            new RenderingNothingRegistry()
         }
     }
 
     void 'a controller Spring did not create responds with the registry of the application where it has another too'() {
-        given: 'a controller created with new, and a second registry, neither of them primary'
+        given: 'a controller created with new, and a second registry, which renders nothing, neither of them primary'
         def controller = new UnmanagedXmlController()
         request.addHeader('Accept', 'application/xml')
 
@@ -72,6 +73,36 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
 
 @Artefact('Controller')
 class UnmanagedXmlController { }
+
+class RenderingNothingRegistry implements RendererRegistry {
+
+    @Override
+    <T> void addRenderer(Renderer<T> renderer) {
+    }
+
+    @Override
+    void addDefaultRenderer(Renderer<Object> renderer) {
+    }
+
+    @Override
+    void addContainerRenderer(Class objectType, Renderer renderer) {
+    }
+
+    @Override
+    <T> Renderer<T> findRenderer(MimeType contentType, T object) {
+        null
+    }
+
+    @Override
+    <C, T> Renderer<C> findContainerRenderer(MimeType contentType, Class<C> containerType, T object) {
+        null
+    }
+
+    @Override
+    boolean isContainerType(Class<?> aClass) {
+        false
+    }
+}
 
 class UnmanagedXmlBody {
     String title
