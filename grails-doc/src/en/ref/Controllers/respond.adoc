@@ -107,7 +107,7 @@ cannot read, with a quality value above 1, as in `application/json;q=2`, or more
 `favor-parameter` is `true`, one whose `format` parameter names a format Spring MVC does not know, such as `html`, which
 Grails does not register with it, is answered as Spring MVC answers it where
 `respond` writes the problem as without a view: with no `view` argument, where the HTML page it names does not exist, or
-where no renderer writes the problem in the format Grails reads from the header. It is answered with the status alone,
+where no renderer writes the problem in the format Grails reads from the request. It is answered with the status alone,
 without a body or a `Content-Type`, or with `406 Not Acceptable` where that status is not a 4xx or 5xx one. Otherwise, as
 for any other value, `respond` reads such a request as Grails 8 did, and writes the problem in the format it reads, which
 the view of the name of that format renders if there is one. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
