@@ -1021,9 +1021,13 @@ its spec, so a spec sets them in `doWithConfig` rather than in a feature.
 Web test traits such as `ControllerUnitTest` and `TagLibUnitTest` now always include the
 `restResponder` plugin, even when a spec overrides `getIncludePlugins()`. They also provide JSON
 conversion beans with Boot's Jackson configuration, build Spring MVC's message converters from the
-test classpath, and add the `grails-xml` beans when that module is on the test classpath, without
+test classpath, register Spring MVC's content negotiation manager, the `mvcContentNegotiationManager` bean, unless the
+spec declares a bean of that name, and add the `grails-xml` beans when that module is on the test classpath, without
 loading the XML plugin's dependency graph. A spec that overrides `getIncludePlugins()` or asserts on
-the beans in its application context sees these additions. A controller a test creates with `new`, which Spring does not
+the beans in its application context sees these additions. The manager is built as Spring MVC builds it, from
+`spring.mvc.contentnegotiation.*`, which a spec sets in `application.yml` or `doWithConfig`, and the spec's
+`WebMvcConfigurer` beans, so `respond` writes a `ProblemDetail` in a unit test in the type it writes it in for the
+application (see section 10). A controller a test creates with `new`, which Spring does not
 autowire, responds with the application's renderer registry, its JSON and markup views and the renderers of the
 application and of `grails-xml` included, where Grails 8 gave it a registry of the default renderers alone. A test request resolves its format and MIME types from its
 content type as a request to an application does, and again when its content type changes, apart from a format the test set, directly or by setting `request.json` or

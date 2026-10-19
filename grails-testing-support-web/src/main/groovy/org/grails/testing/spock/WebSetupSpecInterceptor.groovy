@@ -19,6 +19,8 @@
 
 package org.grails.testing.spock
 
+import java.util.function.Supplier
+
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -27,12 +29,17 @@ import org.spockframework.runtime.extension.IMethodInvocation
 import tools.jackson.databind.json.JsonMapper
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+import org.springframework.beans.factory.support.BeanDefinitionRegistry
+import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverters
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.util.ClassUtils
+import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
@@ -66,6 +73,10 @@ import org.grails.web.util.GrailsApplicationAttributes
 
 @CompileStatic
 class WebSetupSpecInterceptor implements IMethodInterceptor {
+
+    private static final String MVC_CONTENT_NEGOTIATION_MANAGER = 'mvcContentNegotiationManager'
+
+    private static final String CONTENT_NEGOTIATION_PROPERTIES = WebSetupSpecInterceptor.name + '.contentNegotiationProperties'
 
     private static final String SERVER_CONVERTERS_CUSTOMIZER =
             'org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer'
@@ -105,13 +116,72 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
         return converters
     }
 
+    /**
+     * Registers Spring MVC's content negotiation manager, which {@code respond} decides the type of a problem with, built
+     * as Spring MVC builds it: from the formats of the message converters, then {@code spring.mvc.contentnegotiation.*}
+     * and the test's {@link WebMvcConfigurer} beans, in the order Spring MVC applies them; unless the test declares a bean
+     * of its name.
+     */
+    protected void registerContentNegotiationManager(GrailsWebUnitTest test, List<HttpMessageConverter<?>> converters) {
+        ConfigurableApplicationContext context = (ConfigurableApplicationContext) test.applicationContext
+        if (context.containsBean(MVC_CONTENT_NEGOTIATION_MANAGER)) {
+            return
+        }
+        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context.beanFactory
+        registry.registerBeanDefinition(CONTENT_NEGOTIATION_PROPERTIES, new RootBeanDefinition(ContentNegotiationPropertiesConfigurer,
+                { -> new ContentNegotiationPropertiesConfigurer(context.environment) } as Supplier<ContentNegotiationPropertiesConfigurer>))
+        registry.registerBeanDefinition(MVC_CONTENT_NEGOTIATION_MANAGER, new RootBeanDefinition(ContentNegotiationManager, { ->
+            List<WebMvcConfigurer> configurers = context.getBeanProvider(WebMvcConfigurer).orderedStream().toList()
+            new UnitTestWebMvcConfiguration(converters, configurers).mvcContentNegotiationManager()
+        } as Supplier<ContentNegotiationManager>))
+    }
+
+    /** Spring MVC's configuration, as far as content negotiation, with the converters and configurers of the test. */
+    private static class UnitTestWebMvcConfiguration extends WebMvcConfigurationSupport {
+
+        private final List<HttpMessageConverter<?>> converters
+
+        private final List<WebMvcConfigurer> configurers
+
+        UnitTestWebMvcConfiguration(List<HttpMessageConverter<?>> converters, List<WebMvcConfigurer> configurers) {
+            this.converters = converters
+            this.configurers = configurers
+        }
+
+        @Override
+        protected HttpMessageConverters createMessageConverters() {
+            List<HttpMessageConverter<?>> listed = converters
+            return new HttpMessageConverters() {
+
+                @Override
+                boolean isEmpty() {
+                    listed.isEmpty()
+                }
+
+                @Override
+                Iterator<HttpMessageConverter<?>> iterator() {
+                    listed.iterator()
+                }
+            }
+        }
+
+        @Override
+        protected void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+            for (WebMvcConfigurer webMvcConfigurer : configurers) {
+                webMvcConfigurer.configureContentNegotiation(configurer)
+            }
+        }
+    }
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void setup(GrailsWebUnitTest test) {
 
         GrailsApplication grailsApplication = test.grailsApplication
         Map<String, String> groovyPages = test.views
 
-        test.applicationContext.getBean(SpringMessageConverters).setConverters(messageConverters(test))
+        List<HttpMessageConverter<?>> converters = messageConverters(test)
+        test.applicationContext.getBean(SpringMessageConverters).setConverters(converters)
+        registerContentNegotiationManager(test, converters)
 
         def config = grailsApplication.config
         ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) test.applicationContext).beanFactory
