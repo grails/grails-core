@@ -203,9 +203,11 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         MediaType problemXml = MediaType.APPLICATION_PROBLEM_XML
         context.setContentType(GrailsWebUtil.getContentType(problemXml.toString(), encoding))
         List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()
+        // asked about the class of the problem, as Spring MVC asks
+        Class<?> problemType = problem.getClass()
         HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) converters.find {
-            HttpMessageConverter<?> candidate -> candidate.canWrite(ProblemDetail, problemXml) &&
-                    candidate.getSupportedMediaTypes(ProblemDetail).any { MediaType supported ->
+            HttpMessageConverter<?> candidate -> candidate.canWrite(problemType, problemXml) &&
+                    candidate.getSupportedMediaTypes(problemType).any { MediaType supported ->
                         supported.subtype == 'xml' || supported.subtype.endsWith('+xml')
                     }
         }
@@ -214,7 +216,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             return
         }
         try {
-            ProblemXml.write(problem, context.writer, problemMapper(converters, problem.getClass()))
+            ProblemXml.write(problem, context.writer, problemMapper(converters, problemType))
         }
         catch (JacksonException | XMLStreamException | IOException e) {
             // as Spring's converter reports it, also a failure of the response's writer while it writes a raw value

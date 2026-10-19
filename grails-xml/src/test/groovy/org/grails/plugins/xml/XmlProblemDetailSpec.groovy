@@ -54,6 +54,9 @@ import com.fasterxml.jackson.annotation.JsonView
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
+import org.springframework.http.HttpInputMessage
+import org.springframework.http.HttpOutputMessage
+import org.springframework.http.converter.AbstractHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotWritableException
@@ -506,6 +509,19 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         then: 'its properties are named as the converter that writes problems names them'
         written[3]*.getAt(0).containsAll(['balance', 'product'])
+    }
+
+    void 'a problem of a class an XML converter writes is written by it, as Spring MVC asks the converters about its class'() {
+        given: 'a converter that writes the subclass only, as a JAXB converter writes an annotated class'
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [new OutOfStockXmlConverter()] }
+
+        when:
+        def response = renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails'))
+
+        then:
+        response.status == 409
+        response.contentAsString == '<outOfStock/>'
     }
 
     void "without a converter for problems, the problem is written with the mapper the JSON converter has for problems"() {
@@ -1010,6 +1026,28 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
 @Artefact('Controller')
 class ProblemXmlController { }
+
+class OutOfStockXmlConverter extends AbstractHttpMessageConverter<Object> {
+
+    OutOfStockXmlConverter() {
+        super(MediaType.APPLICATION_PROBLEM_XML)
+    }
+
+    @Override
+    protected boolean supports(Class<?> type) {
+        OutOfStock.isAssignableFrom(type)
+    }
+
+    @Override
+    protected Object readInternal(Class<? extends Object> type, HttpInputMessage message) {
+        throw new UnsupportedOperationException()
+    }
+
+    @Override
+    protected void writeInternal(Object value, HttpOutputMessage message) {
+        message.body.write('<outOfStock/>'.getBytes('UTF-8'))
+    }
+}
 
 class UnreadableXmlMember {
     String getValue() {
