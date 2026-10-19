@@ -138,6 +138,17 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         'text/xml, application/atom+xml'                                        || ['xml', 'atom']
     }
 
+    void 'a problem type listed ahead of another type counts as its format, for #header'() {
+        expect:
+        getAcceptHeaderParser().parse(header)[0].extension == format
+
+        where:
+        header                                                       || format
+        'application/problem+json, application/hal+json'             || 'json'
+        'application/problem+xml, application/json'                  || 'xml'
+        'text/xml, application/atom+xml, application/problem+xml'    || 'atom'
+    }
+
     void 'a bare * with parameters, which Java clients send, is not a match, as in Grails 8'() {
         expect:
         getAcceptHeaderParser().parse('text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2')*.name == ['text/html', '*/*']

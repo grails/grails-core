@@ -935,7 +935,10 @@ as Spring reads them, so `text/html;Q=0.1` has the quality 0.1, where Grails 8 r
 or a `MimeTypeProvider` bean, such as a renderer or binding source creator, provides a type of that name. They are read
 as `application/json` and `application/xml` where those are configured, whatever order `grails.mime.types` lists the types
 of the format in, and as the first type of the format otherwise, so `Accept: application/problem+xml, application/atom+xml`
-resolves to `atom`, as in Grails 8, which ignored the problem type. In the `Accept` header, Grails 8 resolved them to `all`, so an action answered with its first format;
+resolves to `atom`, as in Grails 8, which ignored the problem type. Listed ahead of another type, a problem type now counts
+as its format: `Accept: application/problem+json, application/hal+json` resolves to `json`,
+`application/problem+xml, application/json` to `xml`, and `text/xml, application/atom+xml, application/problem+xml` to
+`atom`, where Grails 8 resolved them to `hal`, `json` and `xml`. In the `Accept` header, Grails 8 resolved them to `all`, so an action answered with its first format;
 `Accept: application/problem+json` now selects the `json` format, and `application/problem+xml` the `xml` format where the
 action responds in XML. A client that sends only a problem type is therefore answered as one that asks for that format:
 `respond` sends `406 Not Acceptable` for an action that does not respond in it, where Grails 8 answered in the action's
