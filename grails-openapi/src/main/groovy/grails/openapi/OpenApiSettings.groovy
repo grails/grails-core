@@ -26,6 +26,8 @@ import org.springframework.core.env.EnumerablePropertySource
 import org.springframework.core.env.Environment
 import org.springframework.core.env.PropertySource
 
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+
 /**
  * How the OpenAPI document is generated, read from the {@code grails.openapi} configuration.
  *
@@ -149,7 +151,8 @@ class OpenApiSettings {
         settings.includeVersion = environment.getProperty('grails.converters.json.domain.include.version', Boolean,
                 environment.getProperty('grails.converters.domain.include.version', Boolean, false))
         settings.springJson = environment.getProperty('grails.web.rendering.json.spring', Boolean, false)
-        settings.legacyJson = environment.getProperty('grails.converters.json.legacy', Boolean, true)
+        // with the default of the converter of this release, as the converter reads it
+        settings.legacyJson = ConvertersConfigurationInitializer.isLegacyJson(environment)
 
         String version = environment.getProperty('springdoc.api-docs.version')
         if (version?.toLowerCase(Locale.ENGLISH)?.contains('3_0')) {

@@ -162,13 +162,14 @@ class ValidationErrorsContent {
     private static Schema<?> problemErrors() {
         Schema<?> problem = new ObjectSchema()
                 .description('The validation errors of a request that could not be bound, as an RFC 9457 problem')
-                .addProperty('type', new StringSchema().format('uri-reference').description('The problem type, about:blank'))
+                .addProperty('type', new StringSchema().format('uri-reference')
+                        .description('The problem type, which is left out where it is about:blank'))
                 .addProperty('title', new StringSchema().description('A summary of the problem, Validation failed'))
                 .addProperty('status', new IntegerSchema().description('The status of the response'))
                 .addProperty('detail', new StringSchema().description('How many errors the request has'))
                 .addProperty('instance', new StringSchema().format('uri-reference').description('The path the request was made to'))
                 .addProperty('errors', new ArraySchema().items(mapperError(true)))
-        problem.setRequired(['type', 'title', 'status', 'detail', 'errors'])
+        problem.setRequired(['title', 'status', 'detail', 'errors'])
         problem
     }
 

@@ -24,7 +24,15 @@ import io.swagger.v3.oas.models.media.Content
 import io.swagger.v3.oas.models.media.IntegerSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 
+import groovy.json.JsonSlurper
+
+import org.springframework.http.MediaType
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.mock.http.MockHttpOutputMessage
+import org.springframework.validation.BeanPropertyBindingResult
+
 import grails.artefact.Artefact
+import grails.rest.render.errors.ValidationProblemDetailFactory
 import grails.gorm.annotation.Entity
 import grails.plugin.json.view.JsonViewConfiguration
 import grails.plugin.json.view.mvc.JsonViewResolver
@@ -190,12 +198,33 @@ class ErrorsViewSpec extends Specification {
         errors(openApi, '/kettles').keySet() == ['application/problem+json', 'text/xml'] as Set
         errors(openApi, '/kettles')['application/problem+json'].schema.$ref == PROBLEM
         problem.properties.keySet() == ['type', 'title', 'status', 'detail', 'instance', 'errors'] as Set
-        problem.required as Set == ['type', 'title', 'status', 'detail', 'errors'] as Set
+        problem.required as Set == ['title', 'status', 'detail', 'errors'] as Set
         problem.properties.errors.items.properties.keySet() == ['object', 'field', 'rejectedValue', 'codes', 'message'] as Set
 
         and: 'the converters keep rendering the XML'
         errors(openApi, '/kettles')['text/xml'].schema.$ref == ERRORS
         openApi.components.schemas['ValidationErrors'].properties.errors.items.properties.containsKey('rejected-value')
+    }
+
+    void 'the problem schema describes the problem respond writes for validation errors, as Spring writes it'() {
+        given: 'validation errors as respond writes them, with the instance it gives them'
+        def errors = new BeanPropertyBindingResult(new Kettle(name: ''), 'kettle')
+        errors.rejectValue('name', 'blank', 'Name cannot be blank')
+        def problem = new ValidationProblemDetailFactory().create(errors)
+        problem.instance = URI.create('/kettles')
+        def written = new MockHttpOutputMessage()
+        new JacksonJsonHttpMessageConverter().write(problem, MediaType.APPLICATION_PROBLEM_JSON, written)
+        Map json = (Map) new JsonSlurper().parseText(written.bodyAsString)
+
+        when:
+        def schema = document('grails.web.rendering.json.spring': true).components.schemas['ValidationProblem']
+        def error = schema.properties.errors.items
+
+        then: 'every member written is described, and every one required is written'
+        schema.properties.keySet().containsAll(json.keySet())
+        json.keySet().containsAll(schema.required)
+        error.properties.keySet().containsAll(((Map) json.errors[0]).keySet())
+        ((Map) json.errors[0]).keySet().containsAll(error.required)
     }
 
     void 'describes the 422 of a controller responding only in JSON as the problem with grails.web.rendering.json.spring'() {

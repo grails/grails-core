@@ -587,7 +587,9 @@ an application is generated with. So:
   the converters render them, in JSON and XML.
 * An application rendering its errors another way declares `ValidationErrors` in the base document,
   which then describes them in every media type, or describes an action's errors with
-  `@ApiResponse`.
+  `@ApiResponse`. That schema describes them under the controller's own media types, also with
+  `grails.web.rendering.json.spring`, under which `respond` writes them as `application/problem+json`
+  unless the application renders them otherwise.
 
 A response and a request body are described in the media types of the formats the controller
 declares in `responseFormats`, for the action or for every action, and in `application/json` where
