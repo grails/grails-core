@@ -77,6 +77,18 @@ class ErrorsJsonViewRendererSpec extends Specification {
         false      || 'application/json'
     }
 
+    void 'without an errors template, validation errors are written in the encoding of the registry, as without JSON views'() {
+        given:
+        def renderer = errorsRenderer(false, ['/object/_object'], 'ISO-8859-1')
+        def webRequest = bookRequest()
+
+        when:
+        renderer.render(invalid(), new ServletRenderContext(webRequest))
+
+        then:
+        webRequest.response.contentType == 'application/json;charset=ISO-8859-1'
+    }
+
     void 'an errors template renders validation errors, the controller one ahead of #{other}'() {
         given:
         def renderer = errorsRenderer(true, templates)
@@ -94,9 +106,9 @@ class ErrorsJsonViewRendererSpec extends Specification {
         'the errors one'   | ['/object/_object', '/errors/_errors', '/book/_errors']          || '/book/_errors'
     }
 
-    private static ErrorsJsonViewRenderer errorsRenderer(boolean springJson, List<String> templates) {
+    private static ErrorsJsonViewRenderer errorsRenderer(boolean springJson, List<String> templates, String encoding = 'UTF-8') {
         TemplatesResolver.TEMPLATES.set(templates)
-        def registry = new DefaultRendererRegistry(useSpringJson: springJson)
+        def registry = new DefaultRendererRegistry(useSpringJson: springJson, encoding: encoding)
         registry.springMessageConverters = new SpringMessageConverters()
         registry.springMessageConverters.setConverters([new JacksonJsonHttpMessageConverter()])
         registry.initialize()
