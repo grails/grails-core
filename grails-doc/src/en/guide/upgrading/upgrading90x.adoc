@@ -970,7 +970,9 @@ Grails keeps the MIME types and the `grails.mime.use.accept.header` and `grails.
 it resolves formats with in the application context, where Grails 8 kept them in static fields that every application in
 the JVM shared. A test that configures `grails.mime.types` or those settings no longer resets them between tests: remove
 test code that cleared or set those static fields, such as resetting the MIME types a response cached, since the fields
-no longer exist. The settings are read once for each application context, which a unit test keeps for all the features of
+no longer exist, nor does `HttpServletResponseExtension.loadMimeTypeConfig`, which set them. The `createMimeTypeAndAddToList`
+method of `DefaultAcceptHeaderParser` takes the requested `MimeType`, where it took its name and parameters, so a subclass
+that overrode the Grails 8 method no longer overrides it. The settings are read once for each application context, which a unit test keeps for all the features of
 its spec, so a spec sets them in `doWithConfig` rather than in a feature.
 
 ==== 13. Web Unit Tests Set Up More of the Web Layer
