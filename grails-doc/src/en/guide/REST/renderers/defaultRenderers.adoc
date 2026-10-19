@@ -116,8 +116,9 @@ such as the properties of its type, are rendered as any other value is, so objec
 object marshaller registered for the type itself takes precedence over the serializer.
 
 Setting `grails.converters.json.date` to `javascript` renders `java.util.Date` values as JavaScript `new Date(...)`
-constructors instead. With `grails.converters.json.legacy` left `true`, the default in Grails 9, the converter renders
-JSON as Grails 8 did; the upgrade guide lists the differences.
+expressions instead, which are not JSON and which only Grails' own parser reads back. It requires
+`grails.converters.json.legacy` left `true`, the default in Grails 9, with which the converter renders JSON as Grails 8
+did; the upgrade guide lists the differences. With `legacy` set to `false`, an application that sets it fails to start.
 
 With `legacy` left `true`, `JSON.parse` and `request.JSON` parse with Grails' own parser, which also accepts JSON that
 strict parsers reject, such as single-quoted strings and comments. With `legacy` set to `false`, the application's

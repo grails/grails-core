@@ -440,7 +440,11 @@ comments, unquoted names and values, uppercase literals, trailing commas and `ne
 enable the matching Jackson read features, for example `spring.jackson.json.read.allow-java-comments`,
 `spring.jackson.json.read.allow-single-quotes`, `spring.jackson.json.read.allow-unquoted-property-names` or
 `spring.jackson.json.read.allow-trailing-comma`; `new Date(...)` and the other forms Jackson has no feature for are no longer
-accepted. Text after the value, such as a second JSON document, is rejected as well, unless
+accepted. `grails.converters.json.date: javascript`, which writes `Date` values as JavaScript `new Date(...)` expressions,
+therefore needs the setting `true`, whose parser reads them back: those expressions are not JSON, so with the setting
+`false` neither `JSON.parse`, `request.JSON` nor a controller unit test's `response.json` could read what the converter
+writes, and an application that sets both fails to start with a message that names them. Remove
+`grails.converters.json.date` to write dates as the mapper writes them, as the `spring.jackson.*` date settings configure. Text after the value, such as a second JSON document, is rejected as well, unless
 `spring.jackson.deserialization.fail-on-trailing-tokens` is set to `false`. What comes back does not change: the same `JSONObject` and `JSONArray` containers, which implement `Map` and `List`,
 with the same number types (`Integer`, `Long`, `BigInteger`, `Double` or `BigDecimal`, depending on the number). With the
 setting `true`, the default in Grails 9, both parse with Grails' own parser as before, except that a number beyond the

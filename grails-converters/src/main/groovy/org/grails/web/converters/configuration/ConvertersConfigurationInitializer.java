@@ -168,6 +168,13 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
             LOG.debug("Initializing Converters Default Configurations...");
         }
         boolean legacy = isLegacyJson(getGrailsConfig());
+        if (!legacy && "javascript".equals(jsonDateSetting(getGrailsConfig()))) {
+            throw new IllegalStateException(SETTING_CONVERTERS_JSON_DATE + ": javascript writes dates as JavaScript new Date(...) " +
+                    "expressions, which are not JSON: with " + SETTING_CONVERTERS_JSON_LEGACY + ": false, JSON.parse and " +
+                    "request.JSON parse with the application's JsonMapper, which cannot read them back. Set " +
+                    SETTING_CONVERTERS_JSON_LEGACY + " to true to keep them, or remove " + SETTING_CONVERTERS_JSON_DATE +
+                    " to write dates as the JsonMapper writes them.");
+        }
         ApplicationContext applicationContext = getApplicationContext();
         if (applicationContext != null) {
             ConvertersConfigurationHolder.setObservationRegistry(
@@ -275,12 +282,6 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     }
 
     private void addJsonMarshallers(List<ObjectMarshaller<JSON>> marshallers, Config grailsConfig, ProxyHandler proxyHandler) {
-        if ("javascript".equals(grailsConfig.getProperty(SETTING_CONVERTERS_JSON_DATE, String.class, "default", Arrays.asList("javascript", "default")))) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Using Javascript JSON Date Marshaller.");
-            }
-            marshallers.add(new org.grails.web.converters.marshaller.json.JavascriptDateMarshaller());
-        }
         // domain classes, and proxies of them, are claimed first: the application's JsonMapper may have a serializer for
         // them, and they are rendered with the converter's includes, excludes and deep setting
         marshallers.add(new org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller<>());
@@ -288,6 +289,13 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         // everything else is written by the application's JsonMapper, as Spring Boot writes it: dates and times, the other
         // single values it has a serializer for, collections, maps, arrays, records, enums and beans
         marshallers.add(new org.grails.web.converters.marshaller.json.JsonMapperValueMarshaller());
+    }
+
+    /**
+     * @return how the JSON converter writes dates: {@code javascript} or {@code default}
+     */
+    private static String jsonDateSetting(Config grailsConfig) {
+        return grailsConfig.getProperty(SETTING_CONVERTERS_JSON_DATE, String.class, "default", Arrays.asList("javascript", "default"));
     }
 
     /**
@@ -301,7 +309,7 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         marshallers.add(new org.grails.web.converters.marshaller.json.MapMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.json.SimpleEnumMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller<>());
-        if ("javascript".equals(grailsConfig.getProperty(SETTING_CONVERTERS_JSON_DATE, String.class, "default", Arrays.asList("javascript", "default")))) {
+        if ("javascript".equals(jsonDateSetting(grailsConfig))) {
             marshallers.add(new org.grails.web.converters.marshaller.json.JavascriptDateMarshaller());
         }
         else {

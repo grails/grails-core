@@ -829,13 +829,13 @@ class JsonMapperRenderingSpec extends Specification {
         thrown(ConverterException)
     }
 
-    void "with grails.converters.json.date set to javascript, Date values render as JavaScript dates"() {
-        given:
+    void "grails.converters.json.date set to javascript fails, since the JsonMapper cannot parse the JavaScript dates back"() {
+        when:
         initialize('grails.converters.json.date': 'javascript')
 
-        expect:
-        new JSON([date: new Date(0L), time: new Time(0L), month: Month.MAY]).toString() ==
-                '{"date":new Date(0),"time":new Date(0),"month":5}'
+        then:
+        IllegalStateException e = thrown()
+        e.message.startsWith('grails.converters.json.date: javascript writes dates as JavaScript new Date(...) expressions')
     }
 
     void "the JSON builder writes through the JsonMapper"() {
