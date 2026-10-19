@@ -100,20 +100,39 @@ class ProblemDetailResponse {
      * @return {@code true} where the problem is written as {@code application/problem+xml}
      */
     static boolean negotiatesXml(HttpServletRequest request) {
-        List<MediaType> accepted
-        try {
-            accepted = MediaType.parseMediaTypes(Collections.list(request.getHeaders(HttpHeaders.ACCEPT)))
-            // Spring's order: quality, then specificity
-            MimeTypeUtils.sortBySpecificity(accepted)
-        }
-        catch (InvalidMediaTypeException | InvalidMimeTypeException ignored) {
-            // a header Spring cannot read, or one with more types than it sorts: the problem is written in JSON
+        List<MediaType> accepted = acceptedTypes(request)
+        if (accepted == null) {
             return false
         }
         MediaType preferred = accepted.find { MediaType type ->
             type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON) || type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_XML)
         }
         preferred != null && !preferred.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+    }
+
+    /**
+     * Whether Spring MVC reads the {@code Accept} header of the request: one with a type it cannot parse, such as a
+     * quality value above 1, or with more than the 50 types {@code MimeTypeUtils} sorts, it does not, and then writes no
+     * problem.
+     *
+     * @param request the request
+     * @return {@code true} where Spring MVC reads the header
+     */
+    static boolean readsAcceptHeader(HttpServletRequest request) {
+        acceptedTypes(request) != null
+    }
+
+    /** The types the request accepts, as Spring MVC reads and orders them, or {@code null} where it cannot read them. */
+    private static List<MediaType> acceptedTypes(HttpServletRequest request) {
+        try {
+            List<MediaType> accepted = MediaType.parseMediaTypes(Collections.list(request.getHeaders(HttpHeaders.ACCEPT)))
+            // Spring's order: quality, then specificity
+            MimeTypeUtils.sortBySpecificity(accepted)
+            return accepted
+        }
+        catch (InvalidMediaTypeException | InvalidMimeTypeException ignored) {
+            return null
+        }
     }
 
     private static void prepare(ProblemDetail problem, RenderContext context, int status) {

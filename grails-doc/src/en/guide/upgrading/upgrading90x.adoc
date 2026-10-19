@@ -844,7 +844,10 @@ When `respond` receives a `ProblemDetail`, it sets the HTTP status from the prob
 problem as Spring MVC writes it with Spring Boot's message converters, an XML converter among them: as
 `application/problem+xml` for a client whose
 `Accept` header asks for it, where the action responds in XML, and as `application/problem+json` for any other client,
-whatever `grails.mime` says and whatever format the request names. Unless `respond` names a view for the problem, a
+whatever `grails.mime` says and whatever format the request names. A client whose `Accept` header Spring MVC cannot
+read, such as one with a quality value above 1 or one that lists more than 50 media types, is answered with the status
+alone, without a body or a `Content-Type`, as Spring MVC answers it, or with `406 Not Acceptable` where that status is not
+an error status. Unless `respond` names a view for the problem, a
 client that asks for `application/xml` or `text/xml` is answered with `application/problem+json`, as Spring MVC answers
 it, where Grails 8 wrote the problem as a bean with a 200; so is a browser, and a client that accepts neither JSON nor
 XML, such as one asking only for HTML, where Grails 8 rendered the action's view with a 200. A view renders a problem
@@ -919,7 +922,8 @@ where Grails 8 gave `null`, and the JSON binding source now binds a body it used
 configured type matches is read with its type in lower case, so a JSON API body sent as `application/VND.API+json` binds
 as one sent as `application/vnd.api+json` does, where Grails 8 ignored it. A `MimeType` equals one whose name differs only
 in case, so a renderer or binding source creator registered for a type with capitals is found for it in any case. A value Spring
-rejects, such as a quality value above 1, is still read as Grails 8 read it. Parameter names are read ignoring case,
+rejects, such as a quality value above 1, is still read as Grails 8 read it, except where `respond` writes a
+`ProblemDetail`, which is answered as Spring MVC answers such a client (see section 10). Parameter names are read ignoring case,
 as Spring reads them, so `text/html;Q=0.1` has the quality 0.1, where Grails 8 read only a lower-case `q`. The problem types of RFC 9457,
 `application/problem+json` and `application/problem+xml`, are the `json` and `xml` formats unless `grails.mime.types`,
 or a `MimeTypeProvider` bean, such as a renderer or binding source creator, provides a type of that name. In the `Accept` header, Grails 8 resolved them to `all`, so an action answered with its first format;

@@ -391,6 +391,24 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         new groovy.xml.XmlSlurper().parseText(response.contentAsString).detail.text() == 'taken'
     }
 
+    void 'a client whose Accept header Spring MVC cannot read is answered with the status alone for #description, and as in Grails 8 for any other value'() {
+        given: 'a quality value above 1'
+        response.format = null
+        request.addHeader('Accept', 'application/json;q=2')
+
+        when:
+        controller.respond(value, formats: ['json'])
+
+        then:
+        response.status == status
+        response.contentAsString == body
+
+        where:
+        description | value                                                                                      || status | body
+        'a problem' | org.springframework.http.ProblemDetail.forStatus(org.springframework.http.HttpStatus.CONFLICT) || 409    | ''
+        'a map'     | [title: 'Grails']                                                                          || 200    | '{"title":"Grails"}'
+    }
+
     void 'a client that accepts only #accept is answered as one that asks for #format'() {
         given: 'the Accept header, rather than the format this spec sets up, decides'
         response.format = null

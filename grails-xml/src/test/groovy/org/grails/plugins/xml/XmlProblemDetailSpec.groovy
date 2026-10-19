@@ -167,16 +167,40 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'application/problem+json;q=0.5, application/problem+xml' || 'application/problem+xml'
     }
 
-    void 'a client whose Accept header lists more types than Spring sorts is answered with application/problem+json'() {
-        given: 'more than the 50 types MimeTypeUtils.sortBySpecificity accepts'
-        request.addHeader('Accept', (1..51).collect { "application/x-type-${it}" }.join(', ') + ', application/problem+xml')
+    void 'a client whose Accept header Spring MVC cannot read, #description, is answered with the status alone, as Spring MVC answers it'() {
+        given:
+        request.addHeader('Accept', accept)
+        request.addHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)')
 
         when:
-        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json'])
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), arguments + [formats: ['html', 'xml', 'json']])
+
+        then: 'without a body or a content type, and without the error page'
+        response.status == status
+        response.contentType == null
+        response.contentAsString == ''
+        response.errorMessage == null
+        !response.committed
+        view == null
+
+        where:
+        description                                    | accept                                                                                       | arguments          || status
+        'with more types than Spring sorts'             | (1..51).collect { "application/x-type-${it}" }.join(', ') + ', application/problem+xml' | [:]                || 409
+        'with a quality value above 1'                  | 'application/problem+xml;q=2'                                                                | [:]                || 409
+        'for a status respond is given'                 | 'application/json;q=2'                                                                       | [status: 400]      || 400
+        'for a view respond names that does not exist' | 'text/html;q=2, application/json'                                                            | [view: 'conflict'] || 409
+    }
+
+    void 'a problem whose status is not an error status is answered with 406 for a client whose Accept header Spring MVC cannot read'() {
+        given:
+        request.addHeader('Accept', 'application/json;q=2')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), status: 200, formats: ['xml', 'json'])
 
         then:
-        response.status == 409
-        response.contentType.startsWith('application/problem+json')
+        response.status == 406
+        response.contentAsString == ''
     }
 
     void 'a request that names the XML format is answered with application/problem+json, as Spring MVC does not consult the format'() {

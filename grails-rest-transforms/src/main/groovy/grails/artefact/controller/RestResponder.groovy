@@ -188,6 +188,13 @@ trait RestResponder {
         // the application does not have, is negotiated again and written as without a view
         MimeType problemFormat = args.view ? null : negotiatedProblemFormat
         final context = new ServletRenderContext(webRequest, args)
+        // a client whose Accept header Spring MVC cannot read is answered as Spring MVC answers it, where respond writes a
+        // problem as without a view
+        boolean unreadable = problem && !ProblemDetailResponse.readsAcceptHeader(webRequest.currentRequest)
+        if (unreadable && !args.view) {
+            respondWithoutProblem((ProblemDetail) value, context)
+            return
+        }
 
         Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
         boolean hasErrors = errors && errors.hasErrors()
@@ -277,6 +284,10 @@ trait RestResponder {
                 // is negotiated again as without a view, so that a browser is answered as Spring MVC answers it, or by a
                 // renderer the application registers for problems. A renderer that renders with views of its own, such as
                 // that of markup views, has said whether it renders it
+                if (unreadable) {
+                    respondWithoutProblem((ProblemDetail) value, context)
+                    return
+                }
                 renderer = null
                 matched = null
                 problemFormat = negotiatedProblemFormat
@@ -284,6 +295,10 @@ trait RestResponder {
             }
         }
         if (renderer == null && problem) {
+            if (unreadable) {
+                respondWithoutProblem((ProblemDetail) value, context)
+                return
+            }
             // The format negotiated for the problem, or JSON where nothing renders it in that, whose view respond names
             // renders the problem, as for a client that asks for that format
             matched = negotiatedProblemFormat
@@ -312,6 +327,22 @@ trait RestResponder {
             return
         }
         callRender([status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
+    }
+
+    /**
+     * Answers with a problem as Spring MVC answers a client whose {@code Accept} header it cannot read: with the status
+     * alone, without a body or a content type, or with {@code 406 Not Acceptable} where that status is not an error
+     * status.
+     */
+    private void respondWithoutProblem(ProblemDetail problem, ServletRenderContext context) {
+        ProblemDetailResponse.prepare(problem, context)
+        int series = context.webRequest.currentResponse.status.intdiv(100)
+        if (series == 4 || series == 5) {
+            context.webRequest.renderView = false
+        }
+        else {
+            callRender([status: HttpStatus.NOT_ACCEPTABLE.value()])
+        }
     }
 
     /**
