@@ -64,7 +64,7 @@ class JacksonApplicationMapperJsonCreatorSpec extends Specification implements G
     Closure doWithSpring() {
         { ->
             jsonDataBindingSourceCreator(OneClassJsonCreator)
-            applicationJsonMapper(JsonMapper, JsonMapper.builder().enable(JsonReadFeature.ALLOW_TRAILING_COMMA))
+            applicationJsonMapper(JsonMapper, JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS))
         }
     }
 
@@ -72,9 +72,9 @@ class JacksonApplicationMapperJsonCreatorSpec extends Specification implements G
         given: 'the replacement creator is in effect'
         assert applicationContext.getBean('jsonDataBindingSourceCreator') instanceof OneClassJsonCreator
 
-        expect: 'the mapper allows a trailing comma'
+        expect: 'the mapper allows a comment, which neither a default JsonMapper nor JsonSlurper accepts'
         applicationContext.getBean(DataBindingSourceRegistry)
-                .createDataBindingSource(MimeType.JSON, OtherBinding, new StringReader('{"name":"Grails",}'))
+                .createDataBindingSource(MimeType.JSON, OtherBinding, new StringReader('/* a comment */ {"name":"Grails"}'))
                 .getPropertyValue('name') == 'Grails'
     }
 }
