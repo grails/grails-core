@@ -58,9 +58,21 @@ public class TargetTypeMarshaller implements ObjectMarshaller<JSON>, DomainClass
         return targetType.isAssignableFrom(object.getClass());
     }
 
+    /**
+     * Marshals the instance with the other marshaller, reporting any failure as a {@link ConverterException}, as the
+     * converter reports the failure of a registered closure.
+     */
     @Override
     public void marshalObject(Object object, JSON converter) throws ConverterException {
-        marshaller.marshalObject(object, converter);
+        try {
+            marshaller.marshalObject(object, converter);
+        }
+        catch (ConverterException e) {
+            throw e;
+        }
+        catch (RuntimeException e) {
+            throw new ConverterException(e);
+        }
     }
 
     /**

@@ -31,6 +31,7 @@ import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.exceptions.ConverterException
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
@@ -201,11 +202,30 @@ class JsonRendererSpec extends Specification {
         false  | ['class', 'version', 'title'] || '{"class":"org.grails.plugins.web.rest.render.json.Record","version":2,"title":"Things We Lost"}'
     }
 
+    void "a JsonRenderer of a domain class reports a failure to read it as a converter failure, with legacy #legacy"() {
+        given:
+        def app = domainApplication(legacy)
+        def renderer = new JsonRenderer(Unreadable)
+        renderer.grailsApplication = app
+        renderer.registerCustomConverter()
+
+        when:
+        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render(new Unreadable(), new ServletRenderContext(webRequest))
+
+        then:
+        ConverterException e = thrown()
+        e.cause != null
+
+        where:
+        legacy << [true, false]
+    }
+
     private DefaultGrailsApplication domainApplication(boolean legacy) {
-        def app = new DefaultGrailsApplication(Record, Band)
+        def app = new DefaultGrailsApplication(Record, Band, Unreadable)
         app.config.setAt('grails.converters.json.legacy', legacy)
         def context = new KeyValueMappingContext("jsonrenderer")
-        context.addPersistentEntities(Record, Band)
+        context.addPersistentEntities(Record, Band, Unreadable)
         app.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> {
                 context
@@ -228,6 +248,15 @@ class Record {
 @Entity
 class Band {
     String name
+}
+
+@Entity
+class Unreadable {
+    String title
+
+    String getTitle() {
+        throw new IllegalStateException('unreadable')
+    }
 }
 
 class Album {
