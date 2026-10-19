@@ -603,7 +603,7 @@ identifier as the `id` attribute, a collection of values as an element holding o
 class of each, such as `<lines><string>a</string></lines>`, and a listing as a `list` element
 holding one for each. The `xml` object cannot describe a map, which Grails renders as `entry`
 elements keyed by an attribute, and the document describes the XML Grails renders by default, not
-that of `grails.converters.xml.default.deep` or `grails.converters.xml.domain.include.class`. The
+that of `grails.converters.xml.default.deep`. The
 JSON shapes are likewise those of the Grails JSON converter as Grails 8 rendered them. The opt-ins of the
 xref:upgrading#upgrading90x[upgrade guide], `grails.web.rendering.json.spring`,
 `grails.converters.json.legacy: false` and `grails.web.rendering.xml.spring`, have Jackson or Spring's converters

@@ -197,7 +197,7 @@
         {
             "name": "grails.converters.domain.include.class",
             "type": "java.lang.Boolean",
-            "description": "Whether to include the class name when rendering domain objects, for the converters whose grails.converters.json.domain.include.class or grails.converters.xml.domain.include.class is not set.",
+            "description": "Whether to include the class name when rendering domain objects, for the converters whose grails.converters.json.domain.include.class or grails.converters.xml.domain.include.class is not set. The XML converter writes it only in its deep named configuration, XML.use('deep'), as Grails 8 did.",
             "defaultValue": false
         },
         {
@@ -209,7 +209,7 @@
         {
             "name": "grails.converters.xml.domain.include.class",
             "type": "java.lang.Boolean",
-            "description": "Whether to include the class attribute when marshalling domain objects to XML.",
+            "description": "Whether to include the class attribute when marshalling domain objects to XML in the XML converter's deep named configuration, XML.use('deep'); its default rendering, with or without grails.converters.xml.default.deep, writes no class attribute, as in Grails 8. Defaults to grails.converters.domain.include.class.",
             "defaultValue": false
         },
         {

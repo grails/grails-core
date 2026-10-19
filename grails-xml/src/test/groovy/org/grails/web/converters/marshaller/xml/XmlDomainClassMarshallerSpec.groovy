@@ -36,8 +36,12 @@ class XmlDomainClassMarshallerSpec extends Specification {
     }
 
     void initXml(boolean domainClassname) {
+        initXml(['grails.converters.xml.domain.include.class': domainClassname])
+    }
+
+    void initXml(Map<String, Object> settings) {
         def grailsApplication = new DefaultGrailsApplication(Author, Book)
-        grailsApplication.config.setAt("grails.converters.xml.domain.include.class", domainClassname)
+        settings.each { String key, Object value -> grailsApplication.config.setAt(key, value) }
         grailsApplication.initialise()
         def mappingContext = new KeyValueMappingContext("json")
         mappingContext.addPersistentEntities(Book, Author)
@@ -104,6 +108,53 @@ class XmlDomainClassMarshallerSpec extends Specification {
         authors                                                      | expectedXml
         [new Author(id: 1, name: 'a'), new Author(id: 2, name: 'b')] | '<?xml version="1.0" encoding="UTF-8"?><book id="1" class="org.grails.web.converters.marshaller.xml.Book"><authorsSet><author id="1" class="org.grails.web.converters.marshaller.xml.Author"><name>a</name></author><author id="2" class="org.grails.web.converters.marshaller.xml.Author"><name>b</name></author></authorsSet><authorsMap><entry key="a" id="1" class="org.grails.web.converters.marshaller.xml.Author"><name>a</name></entry><entry key="b" id="2" class="org.grails.web.converters.marshaller.xml.Author"><name>b</name></entry></authorsMap></book>'
 
+    }
+
+    @Unroll
+    void "the class name is written only by the deep named configuration, as Grails 8 wrote it, with #settings"() {
+        given:
+        initXml(settings)
+        def author = new Author(name: 'a')
+        author.id = 2
+        def book = new Book(authorsSet: [author], authorsMap: [:])
+        book.id = 1
+
+        when:
+        String rendered = (book as XML).toString()
+        String deep = null
+        XML.use('deep') {
+            deep = (book as XML).toString()
+        }
+
+        then: 'the default rendering, shallow or deep, has no class attribute'
+        !rendered.contains('class=')
+        rendered.contains(defaultAuthor)
+
+        and: 'XML.use(\'deep\') writes it on the instance and its associations'
+        deep.contains('<book id="1" class="org.grails.web.converters.marshaller.xml.Book">')
+        deep.contains('<author id="2" class="org.grails.web.converters.marshaller.xml.Author"><name>a</name></author>')
+
+        where:
+        settings                                                                                  | defaultAuthor
+        ['grails.converters.xml.domain.include.class': true]                                      | '<author id="2" />'
+        ['grails.converters.domain.include.class': true]                                          | '<author id="2" />'
+        ['grails.converters.domain.include.class': true, 'grails.converters.xml.default.deep': true] | '<author id="2"><name>a</name></author>'
+    }
+
+    void "the XML setting wins over the shared one for the deep named configuration"() {
+        given:
+        initXml(['grails.converters.domain.include.class': true, 'grails.converters.xml.domain.include.class': false])
+        def book = new Book(authorsSet: [], authorsMap: [:])
+        book.id = 1
+
+        when:
+        String deep = null
+        XML.use('deep') {
+            deep = (book as XML).toString()
+        }
+
+        then:
+        deep.contains('<book id="1">')
     }
 }
 
