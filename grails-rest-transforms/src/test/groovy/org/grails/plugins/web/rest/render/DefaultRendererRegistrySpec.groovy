@@ -92,6 +92,47 @@ class DefaultRendererRegistrySpec extends Specification {
         registry.findRenderer(MimeType.XML, 42).is(fallback)
     }
 
+    void 'a fallback renderer bean for a type the registry renders itself replaces the registry default, as a container one does'() {
+        given:
+        def fallback = Stub(Renderer, additionalInterfaces: [FallbackRenderer]) {
+            getTargetType() >> Object
+            getMimeTypes() >> ([MimeType.JSON, MimeType.ALL] as MimeType[])
+        }
+        def registry = new DefaultRendererRegistry()
+
+        when: 'Spring injects the renderer beans before the registry initializes'
+        registry.setRenderers([fallback] as Renderer[])
+        registry.initialize()
+
+        then:
+        registry.findRenderer(MimeType.JSON, 42).is(fallback)
+        registry.findRenderer(MimeType.ALL, 42).is(fallback)
+
+        and: 'the registry defaults for the other types stay'
+        registry.findRenderer(MimeType.TEXT_JSON, 42) instanceof DefaultJsonRenderer
+    }
+
+    void 'a renderer added as a default once the registry is initialized replaces the fallback renderer bean'() {
+        given:
+        def fallback = Stub(Renderer, additionalInterfaces: [FallbackRenderer]) {
+            getTargetType() >> Object
+            getMimeTypes() >> ([MimeType.XML] as MimeType[])
+        }
+        def later = Stub(Renderer) {
+            getTargetType() >> Object
+            getMimeTypes() >> ([MimeType.XML] as MimeType[])
+        }
+        def registry = new DefaultRendererRegistry()
+        registry.setRenderers([fallback] as Renderer[])
+        registry.initialize()
+
+        when:
+        registry.addDefaultRenderer(later)
+
+        then:
+        registry.findRenderer(MimeType.XML, 42).is(later)
+    }
+
     void 'a fallback container renderer added for several component types before the registry initializes answers for each'() {
         given:
         def fallback = Stub(Renderer, additionalInterfaces: [FallbackRenderer]) {
