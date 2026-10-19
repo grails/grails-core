@@ -793,6 +793,7 @@ class ControllerWrapRootValueSpec extends Specification implements ControllerUni
             config['grails.web.rendering.json.spring'] = true
             config['grails.converters.json.legacy'] = false
             config['spring.jackson.serialization.wrap-root-value'] = true
+            config['grails.converters.json.circular.reference.behaviour'] = 'PATH'
         }
     }
 
@@ -811,6 +812,31 @@ class ControllerWrapRootValueSpec extends Specification implements ControllerUni
         responded.startsWith('{"JsonResponseBody":')
         response.contentAsString == responded
     }
+
+    void 'the converter writes the path of a value a wrapped root value repeats as respond writes it'() {
+        given:
+        def parent = new WrappedCycleNode(name: 'parent')
+        def child = new WrappedCycleNode(name: 'child', parent: parent)
+        child.children = [child]
+        parent.children = [child]
+        response.format = 'json'
+        controller.respond(parent)
+        def responded = response.contentAsString
+        response.reset()
+
+        when:
+        controller.render(parent as JSON)
+
+        then:
+        responded.contains('"ref":"root.WrappedCycleNode"')
+        response.contentAsString == responded
+    }
+}
+
+class WrappedCycleNode {
+    String name
+    WrappedCycleNode parent
+    List<WrappedCycleNode> children
 }
 
 class ControllerProblemPageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {

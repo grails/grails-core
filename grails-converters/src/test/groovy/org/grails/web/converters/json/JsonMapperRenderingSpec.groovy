@@ -379,6 +379,44 @@ class JsonMapperRenderingSpec extends Specification {
         'string'    | 'x'                                    || 'String'
     }
 
+    void "with the PATH circular reference behaviour, a reference in a wrapped root value has the path of the value it repeats"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, { JsonMapper.builder().enable(SerializationFeature.WRAP_ROOT_VALUE).build() })
+        }
+        initialize(['grails.converters.json.circular.reference.behaviour': 'PATH'], context)
+        def parent = new Node(name: 'parent')
+        def child = new Node(name: 'child', parent: parent)
+        child.children = [child]
+        parent.children = [child]
+
+        when:
+        def json = JSON.parse(new JSON(parent).toString()).Node
+
+        then: 'below the object the root value is wrapped in'
+        json.children[0].parent == [ref: 'root.Node', class: Node.name]
+        json.children[0].children[0] == [ref: 'root.Node.children[0]', class: Node.name]
+
+        cleanup:
+        context.close()
+    }
+
+    void "a root value whose proxy handler gives null is written as null, whether or not the mapper wraps root values"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, { JsonMapper.builder().enable(SerializationFeature.WRAP_ROOT_VALUE).build() })
+            it.registerBean(ProxyHandler, { [unwrapIfProxy: { Object o -> null }, isProxy: { Object o -> true },
+                                              isInitialized: { Object o -> false }] as ProxyHandler })
+        }
+        initialize([:], context)
+
+        expect:
+        new JSON(new Node(name: 'unloaded')).toString() == 'null'
+
+        cleanup:
+        context.close()
+    }
+
     void "with legacy, the value is not wrapped where the application's mapper wraps root values, as in Grails 8"() {
         given:
         def context = applicationContext {

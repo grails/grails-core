@@ -97,6 +97,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     /** How many JSON objects and arrays each object on the reference stack is written in, where the writer knows it. */
     private Map<Object, Integer> referenceDepths = new IdentityHashMap<>();
 
+    /** Whether this render wraps the root value in an object, whose key is part of the path of every value in it. */
+    private boolean rootWrapped;
+
     /** For each class written in the place of a proxy in this render, the class of the proxy, whose includes apply to it. */
     private Map<Class<?>, Class<?>> projectedAs = new ConcurrentHashMap<>();
 
@@ -189,9 +192,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      */
     public void render(Writer out) throws ConverterException {
         prepareRender(out);
-        String rootName = target == null || ConvertersConfigurationHolder.isLegacyJson() ? null :
-                jsonMapperSupport.rootName(config.getProxyHandler().unwrapIfProxy(target).getClass());
-        if (rootName != null) {
+        Object root = target == null || ConvertersConfigurationHolder.isLegacyJson() ? null :
+                config.getProxyHandler().unwrapIfProxy(target);
+        String rootName = root == null ? null : jsonMapperSupport.rootName(root.getClass());
+        rootWrapped = rootName != null;
+        if (rootWrapped) {
             // as the mapper wraps a value it writes on its own, as Spring Boot wraps the body of a response
             try {
                 writer.object();
@@ -626,7 +631,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
             case PATH:
                 int idx = referenceIndex(o);
                 PathCapturingJSONWriterWrapper pcWriter = (PathCapturingJSONWriterWrapper) writer;
-                writeReference("ref", String.format("root%s", pcWriter.getStackReference(idx)), o);
+                // a wrapped root value is a step further from the root of the JSON text
+                writeReference("ref", String.format("root%s", pcWriter.getStackReference(rootWrapped ? idx + 1 : idx)), o);
                 break;
             case IGNORE:
                 break;
