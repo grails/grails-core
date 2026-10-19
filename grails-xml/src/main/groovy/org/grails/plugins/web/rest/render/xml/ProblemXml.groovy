@@ -24,7 +24,9 @@ import javax.xml.stream.XMLStreamWriter
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
+import tools.jackson.core.StreamWriteFeature
 import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.util.RawValue
 
 import org.springframework.http.ProblemDetail
 
@@ -32,8 +34,9 @@ import org.springframework.http.ProblemDetail
  * Writes a problem in the XML format of RFC 9457, as Spring's Jackson XML converter writes it, for an application without
  * {@code jackson-dataformat-xml}: a {@code problem} element in the {@code urn:ietf:rfc:7807} namespace, with the members
  * of the problem, those of a subclass included, and its extension members, as a mapper with Spring's mix-in for problems
- * converts them. A list is written as an element for each of its values, and a {@code null} as an {@code xsi:nil}
- * element.
+ * converts them, the properties of a bean in no namespace and the entries of a map in that of the map, as Spring's
+ * converter writes them. A list is written as an element for each of its values, and a {@code null} as an
+ * {@code xsi:nil} element.
  *
  * @since 9.0
  */
@@ -65,46 +68,77 @@ final class ProblemXml {
         xml.writeStartElement('problem')
         xml.writeDefaultNamespace(NAMESPACE)
         Set<String> extensions = problem.properties?.keySet() ?: Collections.<String> emptySet()
-        mapper.convertValue(problem, Map).each { Object name, Object value ->
+        boolean plainDecimals = mapper.isEnabled(StreamWriteFeature.WRITE_BIGDECIMAL_AS_PLAIN)
+        Map<?, ?> converted = ProblemBeans.marking(mapper).convertValue(problem, Map)
+        converted.each { Object name, Object value ->
             String member = name.toString()
-            // Spring's converter writes the members of RFC 9457 and the extension members in its namespace, and the
-            // properties of a subclass in none
-            element(xml, member, value, MEMBERS.contains(member) || extensions.contains(member) ? null : '')
+            if (member != ProblemBeans.MARKER) {
+                // Spring's converter writes the members of RFC 9457 and the extension members in its namespace, and the
+                // properties of a subclass, as those of any bean, in none
+                element(xml, writer, member, value,
+                        MEMBERS.contains(member) || extensions.contains(member) ? NAMESPACE : '', NAMESPACE, plainDecimals)
+            }
         }
         xml.writeEndElement()
         xml.flush()
     }
 
     /**
-     * @param namespace the namespace of the element, which it declares, or {@code null} for that of the element it is in
+     * @param namespace the namespace of the element
+     * @param enclosing the namespace of the element it is in, which it declares its own where they differ
      */
-    private static void element(XMLStreamWriter xml, String name, Object value, String namespace) {
+    private static void element(XMLStreamWriter xml, Writer writer, String name, Object value, String namespace,
+            String enclosing, boolean plainDecimals) {
         if (value instanceof List) {
             for (Object listed : (List) value) {
-                element(xml, name, listed, namespace)
+                element(xml, writer, name, listed, namespace, enclosing, plainDecimals)
             }
         }
         else if (value == null) {
             xml.writeEmptyElement(name)
-            declare(xml, namespace)
+            declare(xml, namespace, enclosing)
             xml.writeNamespace('xsi', XSI)
             xml.writeAttribute('xsi', XSI, 'nil', 'true')
         }
         else {
             xml.writeStartElement(name)
-            declare(xml, namespace)
+            declare(xml, namespace, enclosing)
             if (value instanceof Map) {
-                ((Map<?, ?>) value).each { Object key, Object member -> element(xml, key.toString(), member, null) }
+                Map<?, ?> members = (Map<?, ?>) value
+                // the properties of a bean are in no namespace, and the entries of a map in that of the map
+                String inner = members.containsKey(ProblemBeans.MARKER) ? '' : namespace
+                members.each { Object key, Object member ->
+                    if (key != ProblemBeans.MARKER) {
+                        element(xml, writer, key.toString(), member, inner, namespace, plainDecimals)
+                    }
+                }
+            }
+            else if (value instanceof RawValue) {
+                // written as it is, as Jackson writes a raw value: the start tag is closed, then the text follows it
+                xml.writeCharacters('')
+                xml.flush()
+                writer.write(String.valueOf(((RawValue) value).rawValue()))
             }
             else {
-                xml.writeCharacters(value.toString())
+                xml.writeCharacters(text(value, plainDecimals))
             }
             xml.writeEndElement()
         }
     }
 
-    private static void declare(XMLStreamWriter xml, String namespace) {
-        if (namespace != null) {
+    /** The text of a value, as Jackson writes it: binary data in Base64, and a decimal as the mapper's features say. */
+    private static String text(Object value, boolean plainDecimals) {
+        if (value instanceof byte[]) {
+            return Base64.encoder.encodeToString((byte[]) value)
+        }
+        if (value instanceof BigDecimal && plainDecimals) {
+            return ((BigDecimal) value).toPlainString()
+        }
+        value.toString()
+    }
+
+    private static void declare(XMLStreamWriter xml, String namespace, String enclosing) {
+        if (namespace != enclosing) {
             xml.writeDefaultNamespace(namespace)
         }
     }

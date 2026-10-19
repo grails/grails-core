@@ -18,6 +18,7 @@
  */
 package org.grails.plugins.xml
 
+import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
 import groovy.namespace.QName
@@ -132,6 +133,8 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
             written.setProperty('retryAt', new Date(0))
             written.setProperty('none', null)
             written.setProperty('empty', [])
+            written.setProperty('checksum', [1, 2, 3] as byte[])
+            written.setProperty('markup', new RawMarkup(fragment: '<b>bold</b>'))
             written
         }
         response.format = 'xml'
@@ -397,4 +400,9 @@ class ClashingXmlValue {
 
 class ClashingXmlInner {
     Integer id
+}
+
+class RawMarkup {
+    @JsonRawValue
+    String fragment
 }
