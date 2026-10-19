@@ -98,8 +98,9 @@ among them, where Spring's XML converter writes them with Spring Boot's `XmlMapp
 `respond` names it with the `view` argument: `respond` then picks the format as for any value, the view of that format
 renders the problem with the status it would have in JSON or XML, and in a format with no such view, such as HTML where
 the application has no GSP of the name, the problem is written in that format where it is JSON or XML, and otherwise as
-it is written without a view, as `application/problem+xml` or `application/problem+json`, where the view of the name of
-that format, such as `conflict.json.gsp` or `conflict.gson`, renders it if there is one. In HTML the view of the name is a GSP,
+it is written without a view: as `application/problem+xml` or `application/problem+json`, which the view of the name of
+that format, such as `conflict.json.gsp` or `conflict.gson`, renders if there is one, or by a renderer the application
+registers for problems in a type the client accepts. In HTML the view of the name is a GSP,
 such as `conflict.gsp` or `conflict.html.gsp`, looked up as for any view an action renders, in the controller's namespace
 and in the plugin that provides the controller as well: a JSON or markup view of the name, or a JSP, does not render a
 problem as HTML. The action's view and the templates

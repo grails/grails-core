@@ -184,7 +184,8 @@ trait RestResponder {
         MimeType negotiatedProblemFormat = problem ?
                 (formats.contains('xml') && ProblemDetailResponse.negotiatesXml(webRequest.currentRequest) ? MimeType.XML : MimeType.JSON) :
                 null
-        // with a view, respond picks the format as for any value, and a problem no view renders is written as without one
+        // with a view, respond picks the format as for any value; a problem the HTML page it names does not render, which
+        // the application does not have, is negotiated again and written as without a view
         MimeType problemFormat = args.view ? null : negotiatedProblemFormat
         final context = new ServletRenderContext(webRequest, args)
 
@@ -206,73 +207,81 @@ trait RestResponder {
         // The response is in the first type the client accepts, in its order, that the action responds in and a renderer
         // renders the value in; a client that accepts any type is answered in the first of the action's formats that is
         MimeType matched = null
-        negotiation:
-        for (MimeType accepted in mimeTypes) {
-            List<MimeType> candidates = [accepted]
-            if (accepted == MimeType.ALL && formats) {
-                final allMimeTypes = MimeType.getConfiguredMimeTypes()
-                candidates = formats.collect { String format -> allMimeTypes.find { MimeType mt -> mt.extension == format } }
-                        .findAll { MimeType mt -> mt != null }
-            }
-            for (MimeType mimeType in candidates) {
-                if (!formats.contains(mimeType.extension)) {
-                    continue
+        boolean negotiating = true
+        while (negotiating) {
+            negotiating = false
+            negotiation:
+            for (MimeType accepted in mimeTypes) {
+                List<MimeType> candidates = [accepted]
+                if (accepted == MimeType.ALL && formats) {
+                    final allMimeTypes = MimeType.getConfiguredMimeTypes()
+                    candidates = formats.collect { String format -> allMimeTypes.find { MimeType mt -> mt.extension == format } }
+                            .findAll { MimeType mt -> mt != null }
                 }
-                if (hasErrors) {
-                    errorsFormatListed = true
-                    Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors, target)
-                    if (!rendersValue(errorsRenderer, errors, errorsContext, mimeType)) {
+                for (MimeType mimeType in candidates) {
+                    if (!formats.contains(mimeType.extension)) {
                         continue
                     }
-                    webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
-                    if (args.view) {
-                        errorsContext.viewName = args.view as String
+                    if (hasErrors) {
+                        errorsFormatListed = true
+                        Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors, target)
+                        if (!rendersValue(errorsRenderer, errors, errorsContext, mimeType)) {
+                            continue
+                        }
+                        webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
+                        if (args.view) {
+                            errorsContext.viewName = args.view as String
+                        }
+                        if (statusCode != null) {
+                            setStatus(errorsContext, statusCode)
+                        }
+                        errorsRenderer.render(errors, errorsContext)
+                        if (errorsContext.wasWrittenTo() && !response.isCommitted()) {
+                            response.flushBuffer()
+                        }
+                        return
                     }
-                    if (statusCode != null) {
-                        setStatus(errorsContext, statusCode)
-                    }
-                    errorsRenderer.render(errors, errorsContext)
-                    if (errorsContext.wasWrittenTo() && !response.isCommitted()) {
-                        response.flushBuffer()
-                    }
-                    return
-                }
 
-                Renderer candidate
-                final valueType = value.getClass()
-                if (registry.isContainerType(valueType)) {
-                    candidate = registry.findContainerRenderer(mimeType, valueType, value)
-                    if (candidate == null) {
+                    Renderer candidate
+                    final valueType = value.getClass()
+                    if (registry.isContainerType(valueType)) {
+                        candidate = registry.findContainerRenderer(mimeType, valueType, value)
+                        if (candidate == null) {
+                            candidate = registry.findRenderer(mimeType, value)
+                        }
+                    } else {
                         candidate = registry.findRenderer(mimeType, value)
                     }
-                } else {
-                    candidate = registry.findRenderer(mimeType, value)
-                }
-                if (problemFormat != null && mimeType.extension != problemFormat.extension && candidate != null &&
-                        candidate.is(registry.findRenderer(mimeType, new Object()))) {
-                    continue
-                }
-                if (rendersValue(candidate, value, context, mimeType)) {
-                    renderer = candidate
-                    matched = mimeType
-                    break negotiation
+                    if (problemFormat != null && mimeType.extension != problemFormat.extension && candidate != null &&
+                            candidate.is(registry.findRenderer(mimeType, new Object()))) {
+                        continue
+                    }
+                    if (rendersValue(candidate, value, context, mimeType)) {
+                        renderer = candidate
+                        matched = mimeType
+                        break negotiation
+                    }
                 }
             }
-        }
-        if (hasErrors) {
-            // Validation errors that no renderer writes in a format the action responds in are not found, as in Grails 8,
-            // and a client that accepts none of its formats is not acceptable
-            callRender([status: statusCode ?: (errorsFormatListed ? HttpStatus.NOT_FOUND.value() : HttpStatus.NOT_ACCEPTABLE.value())])
-            return
-        }
-        if (renderer != null && problem && args.view && renderer instanceof DefaultHtmlRenderer &&
-                !(renderer instanceof SelectiveRenderer) &&
-                renderer.is(registry.findRenderer(matched, new Object())) &&
-                !hasPage(this, webRequest, args.view.toString(), matched)) {
-            // The page respond names for a problem, which the application does not have, does not render it: the problem
-            // is written as in a format nothing renders it in, so that a browser is answered as Spring MVC answers it. A
-            // renderer that renders with views of its own, such as that of markup views, has said whether it renders it
-            renderer = null
+            if (hasErrors) {
+                // Validation errors that no renderer writes in a format the action responds in are not found, as in Grails 8,
+                // and a client that accepts none of its formats is not acceptable
+                callRender([status: statusCode ?: (errorsFormatListed ? HttpStatus.NOT_FOUND.value() : HttpStatus.NOT_ACCEPTABLE.value())])
+                return
+            }
+            if (renderer != null && problem && problemFormat == null && args.view && renderer instanceof DefaultHtmlRenderer &&
+                    !(renderer instanceof SelectiveRenderer) &&
+                    renderer.is(registry.findRenderer(matched, new Object())) &&
+                    !hasPage(this, webRequest, args.view.toString(), matched)) {
+                // The page respond names for a problem, which the application does not have, does not render it: the problem
+                // is negotiated again as without a view, so that a browser is answered as Spring MVC answers it, or by a
+                // renderer the application registers for problems. A renderer that renders with views of its own, such as
+                // that of markup views, has said whether it renders it
+                renderer = null
+                matched = null
+                problemFormat = negotiatedProblemFormat
+                negotiating = true
+            }
         }
         if (renderer == null && problem) {
             // The format negotiated for the problem, or JSON where nothing renders it in that, whose view respond names

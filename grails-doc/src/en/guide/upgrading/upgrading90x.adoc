@@ -853,8 +853,9 @@ that asks for `application/xml` is answered in XML where the action responds in 
 would have in JSON or XML; where
 the format `respond` picks has no view of the name, the problem is
 written in that format where it is JSON or XML, and otherwise as it is written without a view, as
-`application/problem+json` for a browser where the application has no GSP of the name, and the view of the name of that
-format renders it then if there is one. In HTML that
+`application/problem+json` for a browser where the application has no GSP of the name, or by a renderer the application
+registers for problems in a type the browser accepts, and the view of the name of that format renders it then if there
+is one. In HTML that
 view is a GSP: a JSON or markup view of the name, or a JSP, does not render a problem as HTML. A renderer the
 application registers for `ProblemDetail`, or for a type other than `Object` that problems share, such as `Serializable`,
 renders them in its format, while one registered for `Object` stands in for the default renderer of its format, and

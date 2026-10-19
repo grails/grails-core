@@ -226,6 +226,31 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         response.contentAsString == '<conflict/>'
     }
 
+    void "a problem a browser is answered with by an XML renderer the application registers for problems is written so where respond names a view no page renders, #arguments"() {
+        given: 'a browser, which accepts XML after HTML'
+        def page = Stub(Renderer) {
+            getTargetType() >> ProblemDetail
+            getMimeTypes() >> ([MimeType.XML, MimeType.TEXT_XML] as MimeType[])
+            render(_, _) >> { Object problem, RenderContext context -> context.writer.write('<conflict/>') }
+        }
+        def registry = new DefaultRendererRegistry()
+        registry.initialize()
+        registry.addRenderer(page)
+        controller.rendererRegistry = registry
+        request.addHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+        request.addHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), arguments + [formats: ['html', 'xml', 'json']])
+
+        then: 'as without a view'
+        response.status == 409
+        response.contentAsString == '<conflict/>'
+
+        where:
+        arguments << [[:], [view: 'conflict']]
+    }
+
     void 'a client that asks for application/problem+xml is answered with it, as Spring MVC answers it with an XML converter'() {
         given:
         request.addHeader('Accept', 'application/problem+xml')
