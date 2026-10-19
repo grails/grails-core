@@ -227,11 +227,11 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     }
 
     /**
-     * The mapper the JSON converter renders with: the application's own, with the modules of the converter, as Grails
-     * responses derive theirs.
+     * The mapper the JSON converter renders with: the application's own, or a default one with Jackson's limits, which
+     * the legacy writer's has not, with the modules of the converter, as Grails responses derive theirs.
      */
     private JsonMapper withDomainClasses(JsonMapper mapper) {
-        JsonMapper source = mapper != null ? mapper : JsonMapperSupport.DEFAULT.getMapper();
+        JsonMapper source = mapper != null ? mapper : JsonMapper.builder().build();
         return GrailsJsonMapperCustomizer.withGrailsModules(source,
                 // the converter writes each instance with its own rendering
                 new DomainClassJacksonModule(() -> jsonDomainClassRendering(getGrailsApplication(), getProxyHandler()), true),

@@ -293,6 +293,33 @@ class JsonMapperRenderingSpec extends Specification {
         legacy << [false, true]
     }
 
+    void "without an application JsonMapper, a value nested deeper than Jackson's default limit fails as the mapper fails to write it"() {
+        given: 'no mapper in the application context, as in a unit test other than a web test'
+        initialize()
+        Throwable failure = null
+        // a stack deep enough that only the limit stops the write
+        def thread = new Thread(null, {
+            try {
+                new JSON(nested(600)).render(new StringWriter())
+            }
+            catch (Throwable e) {
+                failure = e
+            }
+        } as Runnable, 'deep', 64L * 1024 * 1024)
+
+        when:
+        thread.start()
+        thread.join()
+
+        then: 'as the default mapper of Jackson fails, 500 objects and arrays deep'
+        failure instanceof ConverterException
+        Throwable cause = failure
+        while (cause.cause) {
+            cause = cause.cause
+        }
+        cause.message.startsWith('Document nesting depth (501) exceeds the maximum allowed (500')
+    }
+
     void "a value nested deeper than the mapper's limit fails with a ConverterException, as the mapper fails to write it"() {
         given: 'a mapper limited to 10 levels, as spring.jackson.factory.constraints.write.max-nesting-depth sets it'
         def context = applicationContext {
