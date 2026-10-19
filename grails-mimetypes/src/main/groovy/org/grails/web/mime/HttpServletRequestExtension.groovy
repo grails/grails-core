@@ -73,6 +73,17 @@ class HttpServletRequestExtension {
      * @param request The request
      * @return A list of configured mime types
      */
+    /**
+     * The type a request's {@code Content-Type} names where no configured type matches it, with its type and subtype in
+     * lower case, as Spring reads them, so that it equals the type of a binding source creator whatever case the client
+     * sends.
+     */
+    private static MimeType requestedMimeType(String header) {
+        MimeType mimeType = new MimeType(header)
+        mimeType.name = mimeType.name?.toLowerCase(Locale.ROOT)
+        mimeType
+    }
+
     static MimeType[] getMimeTypes(HttpServletRequest request) {
         MimeType[] result = (MimeType[]) request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
         if (!result) {
@@ -91,7 +102,7 @@ class HttpServletRequestExtension {
             def parser = new DefaultAcceptHeaderParser(mimeTypes)
             String header = request.contentType
             if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
-            result = parser.parse(header, header ? new MimeType(header) : MimeType.HTML)
+            result = parser.parse(header, header ? requestedMimeType(header) : MimeType.HTML)
 
             request.setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, result)
         }

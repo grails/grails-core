@@ -196,6 +196,17 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             header << ['application/vnd.Acme+json', 'application/vnd.acme+json']
     }
 
+    void "a Content-Type no configured media type matches is the request's type in lower case, as Spring reads it"() {
+        when:
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            request.contentType = 'application/VND.API+json;charset=UTF-8'
+
+        then: 'it equals the JSON API type a binding source creator is registered for'
+            request.mimeTypes[0] == MimeType.JSON_API
+            request.mimeTypes[0].parameters.charset == 'UTF-8'
+    }
+
     void "a bare * in the Accept header matches no configured media type"() {
         when:
             final webRequest = boundMimeTypeRequest()
