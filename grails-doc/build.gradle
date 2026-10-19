@@ -84,7 +84,8 @@ combinedGroovydoc.configure { Groovydoc gdoc ->
                 List possibleSources = [it.sourceSets.main]
 
                 def testFixturesSource = it.sourceSets.findByName('testFixtures')
-                if (testFixturesSource) {
+                // published test fixtures are test support for applications and plugins; a project's internal ones are not API
+                if (testFixturesSource && !it.findProperty('internalTestFixtures')) {
                     possibleSources.add(testFixturesSource)
                 }
 

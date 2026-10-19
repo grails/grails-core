@@ -86,3 +86,13 @@ apply {
     from rootProject.layout.projectDirectory.file('gradle/docs-config.gradle')
     from rootProject.layout.projectDirectory.file('gradle/test-config.gradle')
 }
+
+// The test fixtures are beans the specs of this module and of grails-xml share, not test support for applications or
+// plugins, so they are neither published nor in the API docs
+ext.internalTestFixtures = true
+components.java.withVariantsFromConfiguration(configurations.testFixturesApiElements) { ConfigurationVariantDetails details ->
+    details.skip()
+}
+components.java.withVariantsFromConfiguration(configurations.testFixturesRuntimeElements) { ConfigurationVariantDetails details ->
+    details.skip()
+}
