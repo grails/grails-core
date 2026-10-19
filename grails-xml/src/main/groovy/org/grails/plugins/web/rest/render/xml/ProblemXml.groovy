@@ -19,6 +19,7 @@
 package org.grails.plugins.web.rest.render.xml
 
 import javax.xml.stream.XMLOutputFactory
+import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamWriter
 
 import groovy.transform.CompileStatic
@@ -174,7 +175,7 @@ final class ProblemXml {
                 writer.write(String.valueOf(((RawValue) value).rawValue()))
             }
             else {
-                xml.writeCharacters(text(value, plainDecimals))
+                xml.writeCharacters(checked(text(value, plainDecimals)))
             }
             xml.writeEndElement()
         }
@@ -349,6 +350,24 @@ final class ProblemXml {
         boolean isBean() {
             entries.any { Map.Entry<String, Object> entry -> ProblemBeans.isMarker(entry.key) }
         }
+    }
+
+    /**
+     * The text, where XML 1.0 can hold its characters, which the JDK's writer does not check; otherwise it fails as the
+     * writer of Spring's XML converter fails.
+     */
+    private static String checked(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i)
+            if (c < (char) 0x20 && c != (char) 0x9 && c != (char) 0xA && c != (char) 0xD) {
+                throw new XMLStreamException("Invalid white space character (0x${Integer.toHexString((int) c)}) in text to " +
+                        'output (in xml 1.1, could output as a character entity)')
+            }
+            if (c == (char) 0xFFFE || c == (char) 0xFFFF) {
+                throw new XMLStreamException("Invalid character (0x${Integer.toHexString((int) c)}) in text to output")
+            }
+        }
+        text
     }
 
     /**

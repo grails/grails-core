@@ -741,6 +741,29 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         notThrown(Exception)
     }
 
+    void "without a converter for problems, a problem with a character XML cannot hold fails as Spring's XML converter fails to write it"() {
+        given:
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
+        def problem = { -> ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'a\u0001b') }
+
+        when: "Spring's XML converter writes it"
+        ((HttpMessageConverter<Object>) xml).write(problem(), MediaType.APPLICATION_PROBLEM_XML, new MockHttpOutputMessage())
+
+        then:
+        HttpMessageNotWritableException spring = thrown()
+
+        when: 'the problem XML Grails writes'
+        renderProblem(renderer, problem())
+
+        then: "it fails as Spring's converter fails, rather than writing XML that is not well-formed"
+        HttpMessageNotWritableException e = thrown()
+        def invalid = 'Could not write JSON: Invalid white space character (0x1) in text to output (in xml 1.1, could output as a character entity)'
+        spring.message.startsWith(invalid)
+        e.message == invalid
+    }
+
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
         given:
         def renderer = new DefaultXmlRenderer<Object>(Object)
