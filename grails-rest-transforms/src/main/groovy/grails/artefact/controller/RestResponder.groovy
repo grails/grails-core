@@ -181,9 +181,11 @@ trait RestResponder {
         // jackson-dataformat-xml, where Spring MVC would answer in JSON, the XML renderer writes the XML itself. A format's
         // renderer of any object writes it only in that format, and the HTML renderer only with the view respond names
         boolean problem = value instanceof ProblemDetail
-        MimeType problemFormat = problem && !args.view ?
+        MimeType negotiatedProblemFormat = problem ?
                 (formats.contains('xml') && ProblemDetailResponse.negotiatesXml(webRequest.currentRequest) ? MimeType.XML : MimeType.JSON) :
                 null
+        // with a view, respond picks the format as for any value, and a problem no view renders is written as without one
+        MimeType problemFormat = args.view ? null : negotiatedProblemFormat
         final context = new ServletRenderContext(webRequest, args)
 
         Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
@@ -274,8 +276,8 @@ trait RestResponder {
         }
         if (renderer == null && problem) {
             // The format negotiated for the problem, or JSON where nothing renders it in that, whose view respond names
-            // renders the problem, as for a client that asks for JSON
-            matched = problemFormat ?: MimeType.JSON
+            // renders the problem, as for a client that asks for that format
+            matched = negotiatedProblemFormat
             renderer = registry.findRenderer(matched, value)
             if (matched != MimeType.JSON && !rendersValue(renderer, value, context, matched)) {
                 matched = MimeType.JSON

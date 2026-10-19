@@ -120,6 +120,18 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         response.json.status == 409
     }
 
+    void 'a client asking for a problem in XML is answered with application/problem+xml where respond names a view for the problem that does not exist'() {
+        given:
+        request.addHeader('Accept', 'text/html, application/problem+xml;q=0.9')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), view: 'conflict', formats: ['html', 'xml'])
+
+        then: 'as without a view'
+        response.status == 409
+        response.contentType.startsWith('application/problem+xml')
+    }
+
     void "a client that asks for #accept is answered with #type, as Spring MVC answers it with Spring Boot's converters"() {
         given:
         request.addHeader('Accept', accept)
