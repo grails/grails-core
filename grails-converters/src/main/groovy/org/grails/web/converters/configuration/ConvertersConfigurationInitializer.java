@@ -62,7 +62,6 @@ import org.grails.web.converters.jackson.DomainClassRendering;
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 import org.grails.web.json.JsonDateFormat;
-import org.grails.web.json.JsonMapperSupport;
 
 /**
  * @author Siegfried Puchbauer
