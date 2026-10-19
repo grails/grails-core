@@ -150,6 +150,7 @@ class HalJsonRendererSpec extends Specification {
         renderer.dataBindingSourceRegistry = registry
         renderer.useJackson = true
         renderer.halJsonDataBindingSourceCreator = Stub(DataBindingSourceCreator) {
+            getTargetType() >> Object
             createDataBindingSource(_, _, _) >> new SimpleMapDataBindingSource([name: 'from the application creator'])
         }
         renderer.initialize()

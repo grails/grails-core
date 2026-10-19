@@ -29,6 +29,7 @@ import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationContext
 import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
@@ -94,9 +95,10 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     /**
      * Whether the HAL JSON bodies of this renderer's type are parsed by the application's
-     * {@code halJsonDataBindingSourceCreator} bean, as {@code grails.databinding.json.jackson} sets; otherwise a creator of
-     * the renderer's own parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper} bean
-     * the application defines.
+     * {@code halJsonDataBindingSourceCreator} bean, as {@code grails.databinding.json.jackson} sets, where that creator
+     * parses the bodies of this type, and otherwise with the application's Jackson mapper; without the setting a creator
+     * of the renderer's own parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper}
+     * bean the application defines.
      *
      * @since 9.0
      */
@@ -105,7 +107,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     /**
      * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types where
-     * {@link #useJackson} is set, whatever creator the application defines under that name.
+     * {@link #useJackson} is set, whatever creator the application defines under that name, unless it is one for another
+     * class only.
      *
      * @since 9.0
      */
@@ -113,13 +116,15 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     @Qualifier('halJsonDataBindingSourceCreator')
     DataBindingSourceCreator halJsonDataBindingSourceCreator
 
+    @Autowired(required = false)
+    private ApplicationContext applicationContext
+
     @PostConstruct
     void initialize() {
         if (dataBindingSourceRegistry != null) {
             final thisType = getTargetType()
             final thisMimeTypes = getMimeTypes()
-            final DataBindingSourceCreator parser = useJackson && halJsonDataBindingSourceCreator != null ?
-                    halJsonDataBindingSourceCreator : new HalJsonDataBindingSourceCreator()
+            final DataBindingSourceCreator parser = useJackson ? jacksonParser(thisType) : new HalJsonDataBindingSourceCreator()
             final halDataBindingSourceCreator = new DataBindingSourceCreator() {
                 @Override
                 Class getTargetType() {
@@ -144,6 +149,22 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             }
             dataBindingSourceRegistry.addDataBindingSourceCreator(halDataBindingSourceCreator)
         }
+    }
+
+    /**
+     * The application's HAL creator where it parses the bodies of the type, and otherwise, as for a creator the application
+     * defines for another class only, a HAL creator the application's context creates, which parses with the
+     * application's Jackson mapper.
+     */
+    private DataBindingSourceCreator jacksonParser(Class type) {
+        DataBindingSourceCreator applicationCreator = halJsonDataBindingSourceCreator
+        Class creatorType = applicationCreator?.targetType
+        if (applicationCreator != null && (creatorType == null || creatorType.isAssignableFrom(type))) {
+            return applicationCreator
+        }
+        return applicationContext != null ?
+                applicationContext.autowireCapableBeanFactory.createBean(HalJsonDataBindingSourceCreator) :
+                new HalJsonDataBindingSourceCreator(useJackson: true)
     }
 
     @Override

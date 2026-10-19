@@ -126,7 +126,8 @@ which `grails.databinding.json.jackson` selects: `JsonSlurper` by default, as in
 `JsonMapper`. Likewise, replacing `xmlDataBindingSourceCreator` with one leaves the XML bodies bound to other types to
 Grails' default XML parser, as in Grails 8. The HAL JSON bodies of a type a `HalJsonRenderer` bean renders are parsed by a default `JsonSlurper`, as in
 Grails 8, or, with `grails.databinding.json.jackson: true`, by the `halJsonDataBindingSourceCreator` bean, the
-application's own where it replaces it, as the HAL JSON bodies of other types are.
+application's own where it replaces it, as the HAL JSON bodies of other types are, unless the application's creator
+handles another class only, where they are parsed with the application's Jackson `JsonMapper`.
 
 The `DataBindingSourceCreator` interface defines just 2 methods:
 

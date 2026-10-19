@@ -18,6 +18,9 @@
  */
 package org.grails.plugins.web.rest.render.hal
 
+import tools.jackson.core.json.JsonReadFeature
+import tools.jackson.databind.json.JsonMapper
+
 import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.MapPropertySource
@@ -71,6 +74,50 @@ class HalJsonRendererBindingSettingSpec extends Specification {
         'true'  || 'from the application creator'
         'false' || 'MacBook'
     }
+}
+
+class HalJsonRendererOneClassCreatorSpec extends Specification {
+
+    void "with Jackson parsing, a HAL body of the renderer's type is parsed with the application's mapper, where the application's HAL creator is for another class"() {
+        given: "a HAL renderer bean, an application HAL creator for one other class, and the application's mapper"
+        def context = new GenericApplicationContext()
+        context.environment.propertySources.addFirst(new MapPropertySource('test', ['grails.databinding.json.jackson': 'true']))
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(context)
+        context.registerBean(DataBindingSourceRegistry, { new DefaultDataBindingSourceRegistry() })
+        def linkGenerator = Stub(LinkGenerator)
+        context.registerBean(LinkGenerator, { linkGenerator })
+        context.registerBean('grailsDomainClassMappingContext', MappingContext, { new KeyValueMappingContext('hal') })
+        def rendererRegistry = Stub(RendererRegistry)
+        context.registerBean(RendererRegistry, { rendererRegistry })
+        context.registerBean(JsonMapper, { JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build() })
+        context.registerBean('halJsonDataBindingSourceCreator', DataBindingSourceCreator, { new OneClassHalCreator() })
+        context.registerBean('productRenderer', HalJsonRenderer, Product)
+        context.refresh()
+        def request = new MockHttpServletRequest()
+        request.contentType = HalJsonRenderer.MIME_TYPE.name
+        request.content = '/* a comment */ {"name": "MacBook"}'.bytes
+
+        when:
+        def source = context.getBean(DataBindingSourceRegistry).createDataBindingSource(HalJsonRenderer.MIME_TYPE, Product, request)
+
+        then: 'not by the creator for the other class'
+        source.getPropertyValue('name') == 'MacBook'
+
+        cleanup:
+        context.close()
+    }
+}
+
+class OneClassHalCreator extends ApplicationHalCreator {
+
+    @Override
+    Class getTargetType() {
+        OtherHalType
+    }
+}
+
+class OtherHalType {
+    String name
 }
 
 class ApplicationHalCreator implements DataBindingSourceCreator {
