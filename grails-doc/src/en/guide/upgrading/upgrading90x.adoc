@@ -785,8 +785,9 @@ Both parsers report a malformed body bound to an object as a binding error, and 
 parser accepted, among them trailing content after a document, trailing commas, leading-zero numbers,
 unescaped tabs inside strings and trailing comments, and inputs beyond the limits of its
 `StreamReadConstraints`, such as the nesting depth and the lengths of numbers, strings and names.
-Review clients before enabling the new parser; configure intentional exceptions through
-`JsonMapperBuilderCustomizer`.
+Review clients before enabling the new parser; configure intentional exceptions to the parser features through
+`spring.jackson.json.read.*` or a `JsonMapperBuilderCustomizer`, and to the limits through
+`spring.jackson.factory.constraints.read.*` or a `JsonFactoryBuilderCustomizer`.
 
 With Jackson enabled, ordinary untyped JSON numbers keep the types the previous parser produced. Values with a fractional part are read
 as `BigDecimal` rather than `Double`, so binding a request value such as `1.15` to a `BigDecimal` property
