@@ -203,6 +203,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             request.contentType = 'application/VND.API+json;charset=UTF-8'
 
         then: 'it equals the JSON API type a binding source creator is registered for'
+            request.mimeTypes[0].name == 'application/vnd.api+json'
             request.mimeTypes[0] == MimeType.JSON_API
             request.mimeTypes[0].parameters.charset == 'UTF-8'
     }

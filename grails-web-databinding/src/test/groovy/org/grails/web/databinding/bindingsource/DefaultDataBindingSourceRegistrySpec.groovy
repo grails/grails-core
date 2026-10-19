@@ -41,4 +41,21 @@ class DefaultDataBindingSourceRegistrySpec extends Specification {
         where:
         requested << ['application/vnd.Acme+json', 'application/vnd.acme+json']
     }
+
+    void 'a creator registered for a version of a media type is found for #requested, by its name in any case'() {
+        given: 'a creator for one version of a type'
+        def registry = new DefaultDataBindingSourceRegistry()
+        registry.initialize()
+        registry.addDataBindingSourceCreator(Stub(DataBindingSourceCreator) {
+            getTargetType() >> Object
+            getMimeTypes() >> ([new MimeType('application/vnd.Acme+json;v=1')] as MimeType[])
+            createDataBindingSource(_, _, _) >> new SimpleMapDataBindingSource([name: 'acme'])
+        })
+
+        expect: 'a request for another version finds it by name, as no creator is registered for that version'
+        registry.createDataBindingSource(new MimeType(requested), Object, [:]).getPropertyValue('name') == 'acme'
+
+        where:
+        requested << ['application/vnd.Acme+json;v=2', 'application/vnd.acme+json;v=2']
+    }
 }
