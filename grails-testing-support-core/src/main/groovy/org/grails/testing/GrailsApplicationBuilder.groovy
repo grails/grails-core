@@ -475,10 +475,11 @@ class GrailsApplicationBuilder {
         Set<String> owners = configurationClasses*.name as Set<String>
         for (String name : registry.beanDefinitionNames) {
             BeanDefinition definition = registry.getBeanDefinition(name)
-            if (!(definition instanceof AnnotatedBeanDefinition)) {
+            // the bean of a @Bean method, not a class such as a @Component nested in a configuration class
+            if (!(definition instanceof AnnotatedBeanDefinition) || ((AnnotatedBeanDefinition) definition).factoryMethodMetadata == null) {
                 continue
             }
-            String declaringClass = ((AnnotatedBeanDefinition) definition).factoryMethodMetadata?.declaringClassName
+            String declaringClass = ((AnnotatedBeanDefinition) definition).factoryMethodMetadata.declaringClassName
             // the class of the configuration bean whose method creates it, which declares the method or inherits it, or,
             // for a static method, the configuration class itself
             String factoryName = definition.factoryBeanName

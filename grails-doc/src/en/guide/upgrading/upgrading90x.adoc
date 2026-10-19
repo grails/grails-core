@@ -1032,9 +1032,12 @@ content type as a request to an application does, and again when its content typ
 gave no format, and `text/xml` is read as `application/xml`.
 
 The traits still do not load the controllers, URL mappings or i18n plugins themselves. A URL mappings holder or link
-generator a spec declares itself, in `doWithSpring`, `beanRegistrar()` or a `@Bean` method of a nested `@Configuration`
-class, under its name or with its name as an alias, is now kept, where the traits replaced it with their own; one of a
-class that configuration class imports is replaced, as in Grails 8. A locale resolver the test's context has is kept,
+generator a spec declares itself, in `doWithSpring`, `beanRegistrar()` or a `@Bean` method a nested `@Configuration`
+class declares or inherits, from a superclass or an interface, under its name or with its name as an alias, is now kept,
+where the traits replaced it with their own; one of a class that configuration class imports is replaced, as in Grails 8.
+In every unit test, web or not, the bean of a `@Bean` method such a class inherits also replaces the stand-in the test's
+context registers under its name, such as the `StaticMessageSource` named `messageSource`, as the bean of one it declares
+does, where Grails 8 replaced it with the stand-in. A locale resolver the test's context has is kept,
 whatever declares it, where the traits replaced it with a session resolver. The URL mappings holder and link
 generator of the URL mappings plugin, which a spec that includes the `controllers` or `urlMappings` plugin loads, are
 still replaced, as in Grails 8, so that links follow the application's `UrlMappings` and absolute links start with

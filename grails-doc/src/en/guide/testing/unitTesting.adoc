@@ -27,7 +27,7 @@ beans and Boot's Jackson configuration, and contribute XML beans when `grails-xm
 This does not automatically load the controllers, URL mappings or i18n plugins. Web tests resolve
 locales with the resolver `grails.i18n.localeResolver` configures, as the application does, or with
 any other locale resolver the test's context has, and a URL mappings holder or link generator the test
-declares in `doWithSpring`, `beanRegistrar()` or a `@Bean` method of a nested `@Configuration` class,
+declares in `doWithSpring`, `beanRegistrar()` or a `@Bean` method a nested `@Configuration` class declares or inherits,
 under its name or with its name as an alias, replaces the one the traits provide; one of a class that
 configuration class imports does not. The traits replace the URL mappings holder and link generator of the URL mappings
 plugin, which a test including the `controllers` or `urlMappings` plugin loads, with their own, which
