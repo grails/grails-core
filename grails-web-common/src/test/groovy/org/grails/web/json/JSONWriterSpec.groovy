@@ -132,6 +132,19 @@ class JSONWriterSpec extends Specification {
         out.toString() == '[' * 600 + ']' * 600
     }
 
+    void 'a Writable is written as the text it writes, whatever its toString() gives'() {
+        given:
+        def out = new StringWriter()
+        Writable writable = { Writer w -> w << 'written</' } as Writable
+
+        when:
+        new JSONWriter(out).array().value(writable).endArray()
+
+        then:
+        writable.toString() != 'written</'
+        out.toString() == '["written<\\u002f"]'
+    }
+
     void "a GString and a StreamCharBuffer are escaped as a String is, for an HTML script element"() {
         given:
         def buffer = new StreamCharBuffer()
