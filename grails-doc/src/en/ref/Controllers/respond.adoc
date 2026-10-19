@@ -93,7 +93,9 @@ Spring MVC has no XML converter and answers a client asking for a problem in XML
 `respond` still answers it with `application/problem+xml`, which Grails writes itself in the format of Spring's
 converter, with the members Spring Boot's JSON mapper writes for the problem, as in `application/problem+json`, so that a
 default serialization view of that mapper leaves out the members in no view, those of RFC 9457 and the extension members
-among them, where Spring's XML converter writes them with Spring Boot's `XmlMapper`. XML is written by the `grails-xml` module, without which every client is answered with
+among them, where Spring's XML converter writes them with Spring Boot's `XmlMapper`. It fails, as Spring's converters
+fail, where the problem is nested deeper than that JSON mapper writes: 500 levels, unless
+`spring.jackson.factory.constraints.write.max-nesting-depth` says otherwise. XML is written by the `grails-xml` module, without which every client is answered with
 `application/problem+json`. A client whose `Accept` header Spring MVC cannot read, such as one with a quality value above
 1, as in `application/json;q=2`, or one that lists more than 50 media types, is answered as Spring MVC answers it: with
 the status alone, without a body or a `Content-Type`, or with `406 Not Acceptable` where that status is not a 4xx or 5xx

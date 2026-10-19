@@ -24,12 +24,18 @@ import javax.xml.stream.XMLStreamWriter
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
+import tools.jackson.core.JsonGenerator
 import tools.jackson.core.JsonParser
 import tools.jackson.core.JsonToken
+import tools.jackson.core.StreamWriteConstraints
 import tools.jackson.core.StreamWriteFeature
+import tools.jackson.core.util.JsonGeneratorDelegate
+import tools.jackson.databind.JacksonSerializable
 import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.exc.MismatchedInputException
+import tools.jackson.databind.jsontype.TypeSerializer
 import tools.jackson.databind.util.RawValue
 import tools.jackson.databind.util.TokenBuffer
 
@@ -40,7 +46,8 @@ import org.springframework.http.ProblemDetail
  * {@code jackson-dataformat-xml}: a {@code problem} element in the {@code urn:ietf:rfc:7807} namespace, with the members
  * of the problem, those of a subclass included, and its extension members, as a mapper with Spring's mix-in for problems
  * writes them, every member it writes included, also one whose name it writes twice, the properties of a bean in no
- * namespace and the entries of a map in that of the map, as Spring's converter writes them. A list is written as an element for each of its values, wrapped in an element of its name where
+ * namespace and the entries of a map in that of the map, as Spring's converter writes them. It fails, as Spring's
+ * converters fail, for a problem nested deeper than the mapper's {@code StreamWriteConstraints} allow. A list is written as an element for each of its values, wrapped in an element of its name where
  * it is the property of a bean, and a {@code null} as an {@code xsi:nil} element.
  *
  * @since 9.0
@@ -76,7 +83,7 @@ final class ProblemXml {
         // the tokens the mapper writes, read back without its read features, with every member it writes, one whose name
         // it writes twice included, as Spring's converters write them
         TokenBuffer buffer = ProblemBeans.marking(mapper).writer().without(SerializationFeature.WRAP_ROOT_VALUE)
-                .writeValueIntoBuffer(problem)
+                .writeValueIntoBuffer(new NestingLimited(problem, mapper.tokenStreamFactory().streamWriteConstraints()))
         Object converted
         JsonParser parser = buffer.asParser()
         try {
@@ -203,6 +210,85 @@ final class ProblemXml {
                 return parser.getEmbeddedObject()
             default:
                 return null
+        }
+    }
+
+    /**
+     * A problem written as it is, but for failing where it is nested deeper than the mapper writes, as the mapper's
+     * generator fails, which a buffer of tokens does not check.
+     */
+    private static final class NestingLimited implements JacksonSerializable {
+
+        private final ProblemDetail problem
+
+        private final StreamWriteConstraints constraints
+
+        NestingLimited(ProblemDetail problem, StreamWriteConstraints constraints) {
+            this.problem = problem
+            this.constraints = constraints
+        }
+
+        @Override
+        void serialize(JsonGenerator generator, SerializationContext context) {
+            context.writeValue(new NestingLimitedGenerator(generator, constraints), problem)
+        }
+
+        @Override
+        void serializeWithType(JsonGenerator generator, SerializationContext context, TypeSerializer typeSerializer) {
+            serialize(generator, context)
+        }
+    }
+
+    /** A generator that fails as the mapper's generator does where what it writes is nested deeper than it writes. */
+    private static final class NestingLimitedGenerator extends JsonGeneratorDelegate {
+
+        private final StreamWriteConstraints constraints
+
+        NestingLimitedGenerator(JsonGenerator generator, StreamWriteConstraints constraints) {
+            // values written as they are, such as by writePOJO, are written through this generator too
+            super(generator, false)
+            this.constraints = constraints
+        }
+
+        @Override
+        JsonGenerator writeStartObject() {
+            super.writeStartObject()
+            validated()
+        }
+
+        @Override
+        JsonGenerator writeStartObject(Object forValue) {
+            super.writeStartObject(forValue)
+            validated()
+        }
+
+        @Override
+        JsonGenerator writeStartObject(Object forValue, int size) {
+            super.writeStartObject(forValue, size)
+            validated()
+        }
+
+        @Override
+        JsonGenerator writeStartArray() {
+            super.writeStartArray()
+            validated()
+        }
+
+        @Override
+        JsonGenerator writeStartArray(Object forValue) {
+            super.writeStartArray(forValue)
+            validated()
+        }
+
+        @Override
+        JsonGenerator writeStartArray(Object forValue, int size) {
+            super.writeStartArray(forValue, size)
+            validated()
+        }
+
+        private JsonGenerator validated() {
+            constraints.validateNestingDepth(streamWriteContext().nestingDepth)
+            this
         }
     }
 

@@ -27,6 +27,7 @@ import groovy.transform.CompileStatic
 
 import tools.jackson.core.JacksonException
 import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,7 +56,6 @@ import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
-import org.grails.web.json.JsonMapperSupport
 
 /**
  * Default renderer for XML responses
@@ -105,6 +105,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     private volatile RendererRegistry resolvedRendererRegistry
 
     private volatile Tuple2<ObjectMapper, ObjectMapper> problemMapper
+
+    private static final ObjectMapper DEFAULT_PROBLEM_MAPPER = JsonMapper.builder().build()
 
     private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
         if (groovyPageLocator != null) {
@@ -191,7 +193,9 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      * written by the mapper of Spring's JSON converter with Spring's mix-in for problems, as Spring's own XML
      * converter writes them: without the Grails serializers of the problem written in JSON, so that validation errors
      * or a value that leads back to itself are written as Jackson writes any bean, and a domain class instance too,
-     * unless {@code grails.converters.json.domain.jackson.enabled} gives the application's mapper the domain serializer.
+     * unless {@code grails.converters.json.domain.jackson.enabled} gives the application's mapper the domain serializer,
+     * and fails, as Spring's converters fail, for a problem nested deeper than that mapper's
+     * {@code StreamWriteConstraints} allow.
      */
     private void renderProblem(ProblemDetail problem, RenderContext context) {
         ProblemDetailResponse.prepare(problem, context)
@@ -226,7 +230,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         def json = (JacksonJsonHttpMessageConverter) converters.find {
             it instanceof JacksonJsonHttpMessageConverter && it.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON)
         }
-        ObjectMapper source = json?.mapper ?: JsonMapperSupport.DEFAULT.mapper
+        // without one, a default mapper, with Jackson's limits, which the legacy writer's has not
+        ObjectMapper source = json?.mapper ?: DEFAULT_PROBLEM_MAPPER
         Tuple2<ObjectMapper, ObjectMapper> derived = problemMapper
         if (derived == null || !derived.v1.is(source)) {
             derived = new Tuple2<ObjectMapper, ObjectMapper>(source,

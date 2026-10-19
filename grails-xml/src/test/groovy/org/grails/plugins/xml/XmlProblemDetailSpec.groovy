@@ -21,6 +21,9 @@ package org.grails.plugins.xml
 import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
+import tools.jackson.core.StreamWriteConstraints
+import tools.jackson.core.exc.StreamConstraintsException
+import tools.jackson.core.json.JsonFactory
 import tools.jackson.databind.BeanDescription
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.MapperFeature
@@ -546,6 +549,69 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         written[3].find { it[0] == 'ratio' }[3] == '1.0E20'
     }
 
+    void "without a converter for problems, a problem nested deeper than the JSON converter's mapper writes fails as Spring's converters fail to write it, #maps maps deep"() {
+        given:
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+        def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
+        def depth = 'Could not write JSON: Document nesting depth (501) exceeds the maximum allowed (500, '
+
+        when: "Spring's XML converter writes it"
+        ((HttpMessageConverter<Object>) xml).write(extended('member', nestedMaps(maps)), MediaType.APPLICATION_PROBLEM_XML,
+                new MockHttpOutputMessage())
+
+        then: 'it fails at the same depth'
+        HttpMessageNotWritableException springXml = thrown()
+        springXml.message.startsWith(depth)
+
+        when: "Spring's JSON converter, with a default mapper, writes it"
+        new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
+                .write(extended('member', nestedMaps(maps)), MediaType.APPLICATION_PROBLEM_JSON, new MockHttpOutputMessage())
+
+        then:
+        HttpMessageNotWritableException springJson = thrown()
+
+        when: 'the problem XML Grails writes, without a JSON converter'
+        renderProblem(renderer, extended('member', nestedMaps(maps)))
+
+        then: 'it fails as the JSON converter fails, without a stack overflow'
+        HttpMessageNotWritableException e = thrown()
+        e.message == springJson.message
+        e.message.startsWith(depth)
+        e.cause instanceof StreamConstraintsException
+
+        where:
+        maps << [500, 100_000]
+    }
+
+    void "without a converter for problems, the write limit of the JSON converter's mapper decides how deep a problem is written"() {
+        given: 'a mapper that writes ten levels'
+        def mapper = JsonMapper.builder(JsonFactory.builder()
+                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(10).build()).build()).build()
+        def json = new JacksonJsonHttpMessageConverter(mapper)
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [json] }
+
+        when: "Spring's JSON converter writes a problem eleven levels deep"
+        json.write(extended('member', nestedMaps(10)), MediaType.APPLICATION_PROBLEM_JSON, new MockHttpOutputMessage())
+
+        then:
+        HttpMessageNotWritableException spring = thrown()
+
+        when: 'the problem XML Grails writes'
+        renderProblem(renderer, extended('member', nestedMaps(10)))
+
+        then:
+        HttpMessageNotWritableException e = thrown()
+        e.message == spring.message
+
+        when: 'ten levels deep'
+        renderProblem(renderer, extended('member', nestedMaps(9)))
+
+        then:
+        notThrown(Exception)
+    }
+
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
         given:
         def renderer = new DefaultXmlRenderer<Object>(Object)
@@ -790,6 +856,18 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         applicationContext.getBean(SpringMessageConverters).converters.find { HttpMessageConverter converter ->
             converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_XML)
         } instanceof JacksonXmlHttpMessageConverter
+    }
+
+    /** Maps the number deep, each in the {@code inner} entry of the one before it. */
+    private static Map nestedMaps(int maps) {
+        Map root = [:]
+        Map current = root
+        (maps - 1).times {
+            Map inner = [:]
+            current.inner = inner
+            current = inner
+        }
+        root
     }
 
     private static ProblemDetail extended(String name, Object value) {
