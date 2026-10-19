@@ -109,6 +109,22 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         problem.detail.text() == 'The title is taken'
     }
 
+    void 'a client that asks for a problem in XML from an action that does not respond in XML is answered with application/problem+json, #formats'() {
+        given:
+        request.addHeader('Accept', 'application/problem+xml')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: formats)
+
+        then:
+        response.status == 409
+        response.contentType.startsWith('application/problem+json')
+        response.json.status == 409
+
+        where:
+        formats << [['json'], ['json', 'html'], ['html']]
+    }
+
     void "a browser, whose Accept header lists XML, is answered with application/problem+json, as Spring MVC answers it with Spring Boot's converters"() {
         given:
         request.addHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8')
