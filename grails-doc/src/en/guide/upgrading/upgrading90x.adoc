@@ -785,9 +785,13 @@ Each message is resolved through the application's `MessageSource` for the curre
 `messages.properties` entries and Spring Boot's `spring.messages.*` settings apply to validation
 responses as they do elsewhere.
 
-With JSON views, a `grails-app/views/errors/_errors.gson` template renders validation errors instead, as in
-Grails 8. Applications generated with the JSON views feature or the REST API profile have one; delete it to
-answer with the problem, or respond with `validationProblemDetailFactory.create(errors)`, which no view renders.
+With JSON views, an errors template, `grails-app/views/errors/_errors.gson` or one in the controller's view directory,
+renders validation errors instead, as in Grails 8. Applications generated with the JSON views feature or the REST API
+profile have one; delete it to answer with the problem, or respond with `validationProblemDetailFactory.create(errors)`,
+which no view renders. Without an errors template, Grails 8 rendered validation errors with
+`grails-app/views/object/_object.gson`, which those applications also have, writing `null` with a 200; they are now
+written as without JSON views, with a 422: as the problem where `grails.web.rendering.json.spring` is `true`, and as
+Grails 8 wrote them without JSON views otherwise.
 
 Applications can also inject the factory when they need to create or customize the problem explicitly.
 When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem and fills in an absent
