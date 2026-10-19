@@ -37,6 +37,14 @@
             "description": "JSON & Converters"
         },
         {
+            "name": "grails.converters.default",
+            "description": "JSON & Converters"
+        },
+        {
+            "name": "grails.converters.domain",
+            "description": "JSON & Converters"
+        },
+        {
             "name": "grails.converters.xml",
             "description": "JSON & Converters"
         },
