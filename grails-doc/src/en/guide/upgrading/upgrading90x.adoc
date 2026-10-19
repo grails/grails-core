@@ -126,7 +126,8 @@ clients in JSON. A markup view renders XML for an action that has one; for an ac
 type is tried. Where no type the client accepts can be rendered, `respond` sends a `406 Not Acceptable` error, or a
 `404` one for validation errors, so that the application's error pages apply, and writes a `ProblemDetail` as
 `application/problem+json` (see section 10). An XML request body is not read and raises no error, while the
-request parameters bind as they do for a request without a body; and `request.XML` throws an
+request parameters bind as they do for a request without a body, except that binding it to a collection with `bindData`
+fails, as for any body of a type nothing binds; and `request.XML` throws an
 `IllegalStateException` that names the module, while a class compiled with `@CompileStatic` or `@GrailsCompileStatic`
 that reads it does not compile. `encodeAsXML` and the `xml` codec still escape text, but an object
 other than text is escaped as its string rather than rendered as XML. An application that sees these after
@@ -720,11 +721,14 @@ included, which Grails 8 always parsed with a default `JsonSlurper`. The mapper 
 `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
 application context has none of those, as when it has several and none is primary, a default `JsonMapper` parses them,
 as for the JSON converter. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
-Mapper features installed through `JsonMapperBuilderCustomizer` then apply consistently
-to request parsing as well as response rendering. This includes registered Jackson modules and parser
-features such as support for an application-specific input format.
+The mapper's parser features and limits then apply to request bodies, those a `JsonMapperBuilderCustomizer` or
+`spring.jackson.json.read.*` sets included, such as support for an application-specific input format. The mapper reads a
+body as plain JSON values, maps, lists, strings, numbers and booleans, which Grails' data binder then binds by their
+names, as it binds what `JsonSlurper` reads, so the mapper's naming strategy and date format, the deserializers of a
+module for other types, and Jackson annotations on command objects and domain classes do not apply to binding.
 
-Both parsers report malformed bodies as binding errors, but Jackson rejects inputs that the legacy
+Both parsers report a malformed body bound to an object as a binding error, and one bound to a collection with
+`bindData` as a `DataBindingSourceCreationException`, as in Grails 8, but Jackson rejects inputs that the legacy
 parser accepted, among them trailing content after a document, trailing commas, leading-zero numbers,
 unescaped tabs inside strings and trailing comments, and inputs beyond the limits of its
 `StreamReadConstraints`, such as the nesting depth and the lengths of numbers, strings and names.

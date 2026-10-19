@@ -313,6 +313,6 @@ There is also support for JSON, so you can submit the following with correct dat
     }, {
         "title": "The Definitive Guide to Grails 2",
         "isbn": "1111-343455-1112"
-    }],
+    }]
 }
 ----

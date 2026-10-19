@@ -100,7 +100,9 @@ The request's `contentType` selects the appropriate binding source. The followin
 content types; XML and HAL XML sources are contributed by `grails-xml`, not the core JSON infrastructure.
 JSON, HAL JSON and JSON API bodies are parsed by `JsonSlurper`, as in Grails 8, unless
 `grails.databinding.json.jackson` is `true`, which has the application's Jackson `JsonMapper` parse them, so that its
-`spring.jackson.json.read.*` features and Jackson modules apply; Jackson becomes the default in Grails 10.
+parser features, such as `spring.jackson.json.read.*`, apply; Jackson becomes the default in Grails 10. The mapper reads
+plain JSON values, which the data binder binds by their names, so its naming strategy, date format and annotations do not
+apply to binding.
 
 [format="csv", options="header"]
 |===
