@@ -97,10 +97,12 @@ among them, where Spring's XML converter writes them with Spring Boot's `XmlMapp
 fail, where the problem is nested deeper than that JSON mapper writes: 500 levels, unless
 `spring.jackson.factory.constraints.write.max-nesting-depth` says otherwise. XML is written by the `grails-xml` module, without which every client is answered with
 `application/problem+json`. A client whose `Accept` header Spring MVC cannot read, such as one with a quality value above
-1, as in `application/json;q=2`, or one that lists more than 50 media types, is answered as Spring MVC answers it: with
-the status alone, without a body or a `Content-Type`, or with `406 Not Acceptable` where that status is not a 4xx or 5xx
-one, unless a view `respond` names renders the problem; `respond` reads such a header for any other value as Grails 8
-did. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
+1, as in `application/json;q=2`, or one that lists more than 50 media types, is answered as Spring MVC answers it where
+`respond` writes the problem as without a view: with no `view` argument, where the HTML page it names does not exist, or
+where no renderer writes the problem in the format Grails reads from the header. It is answered with the status alone,
+without a body or a `Content-Type`, or with `406 Not Acceptable` where that status is not a 4xx or 5xx one. Otherwise, as
+for any other value, `respond` reads such a header as Grails 8 did, and writes the problem in the format it reads, which
+the view of the name of that format renders if there is one. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
 `respond` names it with the `view` argument: `respond` then picks the format as for any value, the view of that format
 renders the problem with the status it would have in JSON or XML, and in a format with no such view, such as HTML where
 the application has no GSP of the name, the problem is written in that format where it is JSON or XML, and otherwise as
