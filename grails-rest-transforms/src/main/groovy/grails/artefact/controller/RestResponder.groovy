@@ -43,7 +43,6 @@ import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SelectiveRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
-import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.util.GrailsApplicationAttributes
 
 /**
@@ -162,10 +161,13 @@ trait RestResponder {
         }
 
         Renderer renderer = null
-        // A problem is written in JSON or XML, as Spring MVC writes it: the HTML renderer renders one only with the view
-        // respond names, and a client that accepts no format a renderer writes it in is answered with
-        // application/problem+json
+        // A problem is written as Spring MVC writes it with Spring Boot's converters: in XML for a client that asks for a
+        // problem in XML, where the action responds in XML, and in JSON for any other. A format's renderer of any object
+        // writes it only in that format, and the HTML renderer only with the view respond names
         boolean problem = value instanceof ProblemDetail
+        MimeType problemFormat = problem && !args.view ?
+                (formats.contains('xml') && ProblemDetailResponse.negotiatesXml(webRequest.currentRequest) ? MimeType.XML : MimeType.JSON) :
+                null
         final context = new ServletRenderContext(webRequest, args)
 
         Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
@@ -228,7 +230,8 @@ trait RestResponder {
                 } else {
                     candidate = registry.findRenderer(mimeType, value)
                 }
-                if (problem && !args.view && rendersActionView(candidate, mimeType)) {
+                if (problemFormat != null && mimeType.extension != problemFormat.extension && candidate != null &&
+                        candidate.is(registry.findRenderer(mimeType, new Object()))) {
                     continue
                 }
                 if (rendersValue(candidate, value, context)) {
@@ -245,9 +248,14 @@ trait RestResponder {
             return
         }
         if (renderer == null && problem) {
-            // The view respond names for the problem is then the JSON one, as for a client that asks for JSON
-            renderer = registry.findRenderer(MimeType.JSON, value)
-            matched = MimeType.JSON
+            // The format negotiated for the problem, or JSON where nothing renders it in that, whose view respond names
+            // renders the problem, as for a client that asks for JSON
+            matched = problemFormat ?: MimeType.JSON
+            renderer = registry.findRenderer(matched, value)
+            if (matched != MimeType.JSON && !rendersValue(renderer, value, context)) {
+                matched = MimeType.JSON
+                renderer = registry.findRenderer(matched, value)
+            }
         }
         if (renderer != null) {
             // The response is in the format the renderer was found for, which may not be the client's first: a client
@@ -276,14 +284,6 @@ trait RestResponder {
      */
     private static boolean rendersValue(Renderer renderer, Object value, ServletRenderContext context) {
         renderer != null && (!(renderer instanceof SelectiveRenderer) || ((SelectiveRenderer) renderer).canRender(value, context))
-    }
-
-    /**
-     * Whether a renderer is Grails' HTML renderer of any object, which renders the action's view, rather than one an
-     * application registers for problems, or for a type they share, such as {@link Serializable}.
-     */
-    private boolean rendersActionView(Renderer renderer, MimeType mimeType) {
-        renderer instanceof DefaultHtmlRenderer && renderer.targetType == Object && !(mimeType.extension in ['json', 'xml'])
     }
 
     /** Any status code, as a {@code ResponseEntity} takes it, also one {@link HttpStatus} has no constant for. */

@@ -762,17 +762,15 @@ Grails 8. Applications generated with the JSON views feature or the REST API pro
 answer with the problem, or respond with `validationProblemDetailFactory.create(errors)`, which no view renders.
 
 Applications can also inject the factory when they need to create or customize the problem explicitly.
-When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem, selects
-`application/problem+json`, or `application/problem+xml` for an XML response, and fills in an absent
+When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem and fills in an absent
 `instance` with the current resource path. A `status` argument decides the status instead, as the status of a
-`ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client
-that accepts neither JSON nor XML, such as one asking only for HTML, is answered with `application/problem+json`, as
-Spring MVC answers it, where Grails 8 rendered the action's view with a 200. A browser's `Accept` header lists
-`application/xml` after HTML, so where the action responds in XML, a browser is answered with `application/problem+xml`,
-as Spring MVC answers it when it has an XML converter, and where it responds in JSON only, with
-`application/problem+json`. Where `grails.mime.disable.accept.header.userAgents` has Grails ignore a browser's `Accept`
-header, a browser is answered as a client that accepts anything is: in XML where the action's first format is XML, and
-otherwise in JSON. A view renders a problem only when `respond` names it with the `view` argument, and the response
+`ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. It writes the
+problem as Spring MVC writes it with Spring Boot's message converters: as `application/problem+xml` for a client whose
+`Accept` header asks for it, where the action responds in XML, and as `application/problem+json` for any other client,
+whatever `grails.mime` says and whatever format the request names. A client that asks for `application/xml` or
+`text/xml` is answered with `application/problem+json`, as Spring MVC answers it, where Grails 8 wrote the problem as a
+bean with a 200; so is a browser, and a client that accepts neither JSON nor XML, such as one asking only for HTML, where
+Grails 8 rendered the action's view with a 200. A view renders a problem only when `respond` names it with the `view` argument, and the response
 has the status it would have in JSON or XML. A renderer the application registers for `ProblemDetail`, or for a type problems share,
 such as `Serializable`, renders them in its format. Otherwise a `ProblemDetail` is written through Spring's message
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
@@ -780,7 +778,7 @@ to, so the example above answers with `application/problem+json` in Grails 9 as 
 application with Spring MVC always has the JSON converter; where none can write the problem, Grails
 logs a warning and the legacy converter writes it as a bean, with the same status. Spring writes
 XML problems with `jackson-dataformat-xml`, and without it Grails writes them in the same format. XML is
-rendered by the `grails-xml` module, without which a client asking for XML is answered with
+rendered by the `grails-xml` module, without which a client asking for `application/problem+xml` is answered with
 `application/problem+json`.
 Rejected field values are excluded from the problem by default because they can contain passwords, tokens, or other
 sensitive request data. Validation errors an action responds with in XML are not written as a problem, and keep their
@@ -825,8 +823,8 @@ rejects, such as a quality value above 1, is still read as Grails 8 read it. The
 `application/problem+json` and `application/problem+xml`, are the `json` and `xml` formats unless `grails.mime.types`
 configures them. In the `Accept` header, Grails 8 resolved them to `all`, so an action answered with its first format;
 `Accept: application/problem+json` now selects the `json` format, and `application/problem+xml` the `xml` format where the
-action responds in XML. A `ProblemDetail` is answered as `application/problem+json` or `application/problem+xml`, and any
-other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
+action responds in XML. `respond` writes a `ProblemDetail` as Spring MVC does, whatever format this selects (see
+section 10), and any other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
 sends as `application/problem+json` is now the `json` format, which `withFormat` selects and the JSON binding source
 binds.
 

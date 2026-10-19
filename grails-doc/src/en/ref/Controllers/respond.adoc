@@ -74,22 +74,21 @@ Supported `arguments`:
 * `includes`, `excludes` - For a JSON or XML response, the properties to include or leave out. JSON written through Spring applies them to the instances of the value's class, or of its elements' classes for a collection or array, which must be domain class instances or beans: a value without properties, such as a map or a string, throws `IllegalArgumentException`, also for an empty `includes` list, which includes none of the properties. The legacy JSON converter and XML apply them to the instances of the value's class only, so not to the elements of a collection, unless a `JsonCollectionRenderer` or `XmlCollectionRenderer` bean renders it. They do not apply to a `ProblemDetail`, nor to the problem `respond` makes of validation errors, which are written as Spring MVC writes them
 * `jsonConfiguration` - For a JSON response, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with, such as `deep`, which Grails registers to write the associations of domain class instances in full. The default JSON renderers, and `JsonRenderer` and `JsonCollectionRenderer` beans, write the value with it; the HAL and Vnd.Error renderers, a view, and a renderer the application implements itself do not use it. A `ProblemDetail` and validation errors are written as they are without one, a problem as Spring MVC writes it. Wherever one of the renderers that use it writes the response, a name that is not registered throws `IllegalArgumentException`, also for a problem and for validation errors
 
-A Spring `ProblemDetail` is written as `application/problem+json`, or as `application/problem+xml` for an XML response,
-through Spring's message converters, with the status the problem carries, and an absent `instance` is set to the current
-resource path. A `status` argument decides the status of the response, as the status of a `ResponseEntity` does in
-Spring MVC: a problem that carries another keeps its own, and a warning is logged. A client that accepts no format a
-renderer writes the problem in, such as one asking only for HTML or CSV, is answered as a client asking for JSON is,
-with `application/problem+json`, as Spring MVC answers it. A
-browser's `Accept` header lists `application/xml` after HTML, so where the action responds in XML, a browser is answered
-with `application/problem+xml`, as Spring MVC answers it when it has an XML converter, and so is a client that asks for
-`application/problem+xml`; where it responds in JSON only, as the controllers of the `rest-api` profile do, it is
-answered with `application/problem+json`. XML is rendered by the `grails-xml` module, without which a client
-asking for XML is answered with `application/problem+json` as well. Spring writes XML problems with
-`jackson-dataformat-xml`; without it, Grails writes them in the same format. A view, whether a GSP, a JSON view or a
-markup view, renders a problem only when `respond` names it with the `view` argument, and the response has the status it
-would have in JSON or XML; the action's view and the templates found by convention do not render problems. The view is
-that of the format the problem is written in, so a client answered in JSON because it accepts no format a renderer
-writes the problem in gets the JSON view of the name, such as `conflict.json.gsp` or `conflict.gson`, where one exists. A renderer the application
+A Spring `ProblemDetail` is written through Spring's message converters, as Spring MVC writes it, with the status the
+problem carries, and an absent `instance` is set to the current resource path. A `status` argument decides the status of
+the response, as the status of a `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a
+warning is logged. It is written as `application/problem+xml` for a client whose `Accept` header asks for it, such as
+`application/problem+xml`, where the action responds in XML, and as `application/problem+json` for any other client, as
+Spring MVC answers them with Spring Boot's message converters: also a client that asks for `application/xml` or
+`text/xml`, a browser, one that accepts anything, and one asking only for HTML or CSV. Neither the `grails.mime` settings
+nor a `format` parameter or file extension change this. XML is written by the `grails-xml` module, without which every
+client is answered with `application/problem+json`. Spring writes XML problems with `jackson-dataformat-xml`; without it,
+Grails writes them in the same format. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
+`respond` names it with the `view` argument: `respond` then picks the format as for any value, the view of that format
+renders the problem with the status it would have in JSON or XML, and in a format with no such view the problem is
+written in that format where it is JSON or XML, and as `application/problem+json` otherwise, where the JSON view of the
+name, such as `conflict.json.gsp` or `conflict.gson`, renders it if there is one. The action's view and the templates
+found by convention do not render problems. A renderer the application
 registers for `ProblemDetail`, or for a type problems share, such as `Serializable`, renders them in its format, as a
 registered renderer renders any type it is registered for:
 

@@ -53,9 +53,14 @@ import spock.lang.Specification
 
 class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<ProblemXmlController> {
 
-    void 'a ProblemDetail responded to an XML request is application/problem+xml, with the status it carries'() {
+    Closure doWithConfig() {{ config ->
+        // a user agent whose Accept header Grails ignores, which no other request sends
+        config.grails.mime.disable.accept.header.userAgents = ['LegacyBrowser']
+    }}
+
+    void 'a ProblemDetail responded to a client that asks for it in XML is application/problem+xml, with the status it carries'() {
         given:
-        response.format = 'xml'
+        request.addHeader('Accept', 'application/problem+xml')
 
         when:
         controller.respond(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken'))
@@ -71,18 +76,89 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         problem.detail.text() == 'The title is taken'
     }
 
-    void 'a browser, whose Accept header lists XML, is answered with application/problem+xml, as Spring MVC answers it with an XML converter'() {
+    void "a browser, whose Accept header lists XML, is answered with application/problem+json, as Spring MVC answers it with Spring Boot's converters"() {
         given:
         request.addHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8')
         request.addHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json', 'html'])
+
+        then:
+        response.status == 409
+        response.contentType.startsWith('application/problem+json')
+        response.json.status == 409
+    }
+
+    void "a client that asks for #accept is answered with #type, as Spring MVC answers it with Spring Boot's converters"() {
+        given:
+        request.addHeader('Accept', accept)
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json'])
+
+        then:
+        response.status == 409
+        response.contentType.startsWith(type)
+
+        where:
+        accept                                                    || type
+        'application/xml'                                         || 'application/problem+json'
+        'text/xml'                                                || 'application/problem+json'
+        'application/xml, application/json'                       || 'application/problem+json'
+        '*/*'                                                     || 'application/problem+json'
+        'application/problem+xml;q=0.5, application/problem+json' || 'application/problem+json'
+        'application/problem+xml'                                 || 'application/problem+xml'
+        'application/*+xml'                                       || 'application/problem+xml'
+        'application/json, application/problem+xml'               || 'application/problem+xml'
+        'application/problem+json;q=0.5, application/problem+xml' || 'application/problem+xml'
+    }
+
+    void 'a request that names the XML format is answered with application/problem+json, as Spring MVC does not consult the format'() {
+        given:
+        response.format = 'xml'
 
         when:
         controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT))
 
         then:
         response.status == 409
-        response.contentType.startsWith('application/problem+xml')
-        new XmlSlurper().parseText(response.contentAsString).status.text() == '409'
+        response.contentType.startsWith('application/problem+json')
+    }
+
+    void 'a browser whose Accept header is ignored, for an action that lists XML first, is answered with application/problem+json'() {
+        given:
+        request.addHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+        request.addHeader('User-Agent', 'LegacyBrowser/1.0')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json'])
+
+        then:
+        response.status == 409
+        response.contentType.startsWith('application/problem+json')
+        response.mimeTypesFormatAware == [MimeType.ALL] as MimeType[]
+    }
+
+    void 'an XML renderer the application registers for problems renders them for a client that asks for XML'() {
+        given:
+        def page = Stub(Renderer) {
+            getTargetType() >> ProblemDetail
+            getMimeTypes() >> ([MimeType.XML, MimeType.TEXT_XML] as MimeType[])
+            render(_, _) >> { Object problem, RenderContext context -> context.writer.write('<conflict/>') }
+        }
+        def registry = new DefaultRendererRegistry()
+        registry.initialize()
+        registry.addRenderer(page)
+        controller.rendererRegistry = registry
+        request.addHeader('Accept', 'application/xml')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json'])
+
+        then:
+        response.status == 409
+        response.contentAsString == '<conflict/>'
     }
 
     void 'a client that asks for application/problem+xml is answered with it, as Spring MVC answers it with an XML converter'() {
@@ -99,7 +175,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
     void 'a problem the XML converter fails to write part-way leaves the response uncommitted, so that the error page applies'() {
         given: 'a problem with an extension member that cannot be read, which Spring MVC writes once it has begun the problem'
-        response.format = 'xml'
+        request.addHeader('Accept', 'application/problem+xml')
         def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
         problem.setProperty('unreadable', new UnreadableXmlMember())
 
@@ -113,7 +189,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
     void 'a status respond is given decides the status of the response, and the problem keeps its own'() {
         given:
-        response.format = 'xml'
+        request.addHeader('Accept', 'application/problem+xml')
 
         when:
         controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), status: 400)
@@ -137,7 +213,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
             written.setProperty('markup', new RawMarkup(fragment: '<b>bold</b>'))
             written
         }
-        response.format = 'xml'
+        request.addHeader('Accept', 'application/problem+xml')
         controller.respond(problem())
         def spring = response.contentAsString
         def renderer = new DefaultXmlRenderer<Object>(Object)
@@ -213,7 +289,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
     void 'without a converter for problems, the properties of a subclass of ProblemDetail are written as Spring writes them'() {
         given:
         def problem = { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { instance = URI.create('/books/1') } }
-        response.format = 'xml'
+        request.addHeader('Accept', 'application/problem+xml')
         controller.respond(problem())
         def spring = response.contentAsString
         def renderer = new DefaultXmlRenderer<Object>(Object)

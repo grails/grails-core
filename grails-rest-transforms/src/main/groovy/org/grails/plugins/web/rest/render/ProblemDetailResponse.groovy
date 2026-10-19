@@ -23,9 +23,13 @@ import groovy.util.logging.Slf4j
 
 import jakarta.servlet.http.HttpServletRequest
 
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
+import org.springframework.http.InvalidMediaTypeException
+import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
+import org.springframework.util.MimeTypeUtils
 
 import grails.rest.render.RenderContext
 
@@ -80,6 +84,32 @@ class ProblemDetailResponse {
      */
     static void prepareBuilt(ProblemDetail problem, RenderContext context) {
         prepare(problem, context, problem.status)
+    }
+
+    /**
+     * Whether Spring MVC writes a problem for the request in XML, with Spring Boot's message converters, which list
+     * JSON's ahead of XML's: only for a client whose {@code Accept} header asks for a problem in XML, such as one that
+     * asks for {@code application/problem+xml} or {@code application/*+xml}, ahead of one in JSON. A client that asks
+     * for {@code application/xml}, a browser, and one that accepts any type are answered in JSON, and the format a
+     * request names is not consulted, as Spring MVC does not consult it.
+     *
+     * @param request the request
+     * @return {@code true} where the problem is written as {@code application/problem+xml}
+     */
+    static boolean negotiatesXml(HttpServletRequest request) {
+        List<MediaType> accepted
+        try {
+            accepted = MediaType.parseMediaTypes(Collections.list(request.getHeaders(HttpHeaders.ACCEPT)))
+        }
+        catch (InvalidMediaTypeException ignored) {
+            return false
+        }
+        // Spring's order: quality, then specificity
+        MimeTypeUtils.sortBySpecificity(accepted)
+        MediaType preferred = accepted.find { MediaType type ->
+            type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON) || type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_XML)
+        }
+        preferred != null && !preferred.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
     }
 
     private static void prepare(ProblemDetail problem, RenderContext context, int status) {

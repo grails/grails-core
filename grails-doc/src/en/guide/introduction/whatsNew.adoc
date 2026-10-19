@@ -106,7 +106,7 @@ render json: book, jsonConfiguration: 'deep', excludes: ['isbn']
 ----
 
 `respond` writes a Spring `ProblemDetail` as Spring MVC writes it, as `application/problem+json`, or
-`application/problem+xml` for an XML client, with the status the problem carries unless `respond` is given one, as a
+`application/problem+xml` for a client that asks for it, with the status the problem carries unless `respond` is given one, as a
 `ResponseEntity` is in Spring MVC. `ValidationProblemDetailFactory`
 creates one for validation errors.
 
