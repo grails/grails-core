@@ -63,10 +63,10 @@ public final class ConverterJsonModule extends JacksonModule {
 
     /**
      * @param messageSource supplies the message source that resolves the messages of validation errors, or
-     *        {@code null} for their default messages
+     *        {@code null}, as is the message source it supplies, for their default messages
      */
     public ConverterJsonModule(Supplier<MessageSource> messageSource) {
-        this.messageSource = messageSource;
+        this.messageSource = messageSource != null ? messageSource : () -> null;
     }
 
     /**
