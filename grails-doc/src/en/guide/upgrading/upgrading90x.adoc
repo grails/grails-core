@@ -964,8 +964,8 @@ to `all`, so an action answered with its first format;
 action responds in XML. A client that sends only a problem type is therefore answered as one that asks for that format:
 `respond` sends `406 Not Acceptable` for an action that does not respond in it, where Grails 8 answered in the action's
 first format, and `withFormat` runs no block where it has neither one for that format nor a `*` one, where Grails 8 ran
-its first block. `respond` writes a `ProblemDetail` as Spring MVC does, whatever format this selects (see
-section 10), and any other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
+its first block. `respond` writes a `ProblemDetail` in the type section 10 describes, whatever format this selects,
+in XML only where the action responds in XML, and any other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
 sends as `application/problem+json` is now the `json` format, which `withFormat` selects and the JSON binding source
 binds, and one sent as `application/problem+xml` the `xml` format, which the XML binding source of `grails-xml` binds.
 
