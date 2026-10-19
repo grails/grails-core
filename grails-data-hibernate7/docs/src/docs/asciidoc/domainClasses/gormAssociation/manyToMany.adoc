@@ -55,6 +55,19 @@ class User {
 ----
 <1> Without this line, `user.addToFollowing(other); user.save()` writes nothing, and both `following` and `followers` read back empty.
 
+Adding `belongsTo` to an existing mapping of this kind changes the columns of both join tables. They hold no rows, because nothing was stored without it, so drop them and let GORM recreate them, or add a migration. `dbCreate: 'update'` does not remove the old columns, and the first save then fails.
+
+With `belongsTo`, each of the two properties writes its own join table, so use `addToFollowing` and `removeFromFollowing`, which update both sides. Assigning `user.following = [other] as Set` stores the row for `following` only. Before deleting a `User`, remove it from both sides:
+
+[source,groovy]
+----
+user.following.toList().each { user.removeFromFollowing(it) }
+user.followers.toList().each { it.removeFromFollowing(user) }
+user.delete()
+----
+
+A many-to-many with a `Map` on either side needs no `belongsTo`, because a `Map` side always writes its join table, so GORM logs no warning for it.
+
 === Saving a Many-to-Many
 
 Always save from the owning side (the side that does **not** have `belongsTo`):

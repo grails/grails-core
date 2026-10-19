@@ -53,7 +53,7 @@ class ManyToManyWithoutOwnerWarningSpec extends Specification {
         !output.contains(WARNING)
     }
 
-    void 'a self-referencing many-to-many logs no warning'() {
+    void 'a unidirectional self-referencing one-to-many logs no warning'() {
         when:
         var output = stderrWhile {
             new HibernateDatastore(WarnSelfReferencing).close()
@@ -64,15 +64,32 @@ class ManyToManyWithoutOwnerWarningSpec extends Specification {
     }
 
     void 'a circular many-to-many with no belongsTo logs one warning, because nothing is stored'() {
+        given:
+        var output = null
+        HibernateDatastore datastore = null
+
         when:
-        var output = stderrWhile {
-            new HibernateDatastore(WarnCircular).close()
+        output = stderrWhile {
+            datastore = new HibernateDatastore(WarnCircular)
+        }
+        WarnCircular.withNewTransaction {
+            WarnCircular followed = new WarnCircular(name: 'followed').save(failOnError: true)
+            WarnCircular follower = new WarnCircular(name: 'follower').save(failOnError: true)
+            follower.addToFollowing(followed)
+            follower.save(failOnError: true)
         }
 
         then:
         output.readLines().count { it.contains(WARNING) } == 1
         output.contains('[grails.gorm.tests.WarnCircular.followers] and [grails.gorm.tests.WarnCircular.following]')
         output.contains('for example in WarnCircular: static belongsTo = WarnCircular')
+        WarnCircular.withNewSession {
+            WarnCircular.findByName('follower').following.isEmpty() &&
+                    WarnCircular.findByName('followed').followers.isEmpty()
+        }
+
+        cleanup:
+        datastore?.close()
     }
 
     void 'a circular many-to-many with belongsTo logs no warning and stores the relationship'() {
