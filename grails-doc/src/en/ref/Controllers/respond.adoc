@@ -98,8 +98,10 @@ the application has no view of the name, the problem is written in that format w
 `application/problem+json` otherwise, where the JSON view of the
 name, such as `conflict.json.gsp` or `conflict.gson`, renders it if there is one. The action's view and the templates
 found by convention do not render problems. A renderer the application
-registers for `ProblemDetail`, or for a type problems share, such as `Serializable`, renders them in its format, as a
-registered renderer renders any type it is registered for; a `JsonRenderer` or `XmlRenderer` bean registered for
+registers for `ProblemDetail`, or for a type other than `Object` that problems share, such as `Serializable`, renders
+them in its format, as a registered renderer renders any type it is registered for, while one registered for `Object`
+stands in for the default renderer of its format, and renders a problem only where `respond` writes it in that format; a
+`JsonRenderer` or `XmlRenderer` bean registered for
 problems writes them as Spring MVC writes them, whatever its `includes` and `excludes`:
 
 [source,groovy]

@@ -613,9 +613,10 @@ methods. A subclass that overrides those to change the output, or writes to the 
 public methods instead.
 * `PrettyPrintJSONWriter` still indents as Grails 8 did, and is deprecated. Use `new JSONWriter(writer, true)`, which
 indents with Jackson's default pretty printer and writes with a default `JsonMapper`, as `new JSONWriter(writer)` does. To
-indent the JSON the converter writes, set its `prettyPrint` property, as `toString(true)` does, or
-`grails.converters.json.pretty.print`: it indents as Grails 8 did with `grails.converters.json.legacy` left `true`, and
-with the application's `JsonMapper` with it set to `false`.
+indent the JSON the converter writes, set its `prettyPrint` property or `grails.converters.json.pretty.print`: it
+indents as Grails 8 did with `grails.converters.json.legacy` left `true`, and with the application's `JsonMapper` with it
+set to `false`. With the setting left `true`, `toString(true)` indents as Grails 8's did, by three spaces, which differs
+from the layout of the property; with it set to `false` it indents as the property does.
 
 The JavaCC JSON parser in `org.grails.web.json.parser` (`JSONParser`), which Grails does not use, is deprecated. Use
 `JSON.parse` or `new JSONObject(String)`.
@@ -817,14 +818,19 @@ When `respond` receives a `ProblemDetail`, it sets the HTTP status from the prob
 problem as Spring MVC writes it with Spring Boot's message converters, an XML converter among them: as
 `application/problem+xml` for a client whose
 `Accept` header asks for it, where the action responds in XML, and as `application/problem+json` for any other client,
-whatever `grails.mime` says and whatever format the request names. A client that asks for `application/xml` or
-`text/xml` is answered with `application/problem+json`, as Spring MVC answers it, where Grails 8 wrote the problem as a
-bean with a 200; so is a browser, and a client that accepts neither JSON nor XML, such as one asking only for HTML, where
-Grails 8 rendered the action's view with a 200. A view renders a problem only when `respond` names it with the `view` argument, and the response
-has the status it would have in JSON or XML; where the format `respond` picks has no view of the name, the problem is
+whatever `grails.mime` says and whatever format the request names. Unless `respond` names a view for the problem, a
+client that asks for `application/xml` or `text/xml` is answered with `application/problem+json`, as Spring MVC answers
+it, where Grails 8 wrote the problem as a bean with a 200; so is a browser, and a client that accepts neither JSON nor
+XML, such as one asking only for HTML, where Grails 8 rendered the action's view with a 200. A view renders a problem
+only when `respond` names it with the `view` argument: `respond` then picks the format as for any value, so that a client
+that asks for `application/xml` is answered in XML where the action responds in XML, and the response has the status it
+would have in JSON or XML; where
+the format `respond` picks has no view of the name, the problem is
 written in that format where it is JSON or XML, and as `application/problem+json` otherwise, such as for a browser
-without an HTML view of the name, and the JSON view of the name renders it then if there is one. A renderer the application registers for `ProblemDetail`, or for a type problems share,
-such as `Serializable`, renders them in its format; a `JsonRenderer` or `XmlRenderer` bean registered for problems writes
+without an HTML view of the name, and the JSON view of the name renders it then if there is one. A renderer the
+application registers for `ProblemDetail`, or for a type other than `Object` that problems share, such as `Serializable`,
+renders them in its format, while one registered for `Object` stands in for the default renderer of its format, and
+renders a problem only where `respond` writes it in that format; a `JsonRenderer` or `XmlRenderer` bean registered for problems writes
 them as Spring MVC writes them, whatever its `includes` and `excludes`. Otherwise a `ProblemDetail` is written through Spring's message
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
 to, so the example above answers with `application/problem+json` in Grails 9 as well. A web
