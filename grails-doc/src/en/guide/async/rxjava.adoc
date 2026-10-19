@@ -45,7 +45,7 @@ See <<events,Events>>.
 
 ==== RxJava Data Services
 
-With `grails-datamapping-rx` on the classpath, a GORM data service can declare methods that return `io.reactivex.rxjava3.core.Observable` or `io.reactivex.rxjava3.core.Single`. GORM implements the method as it does any other data service method and runs the blocking query on RxJava's IO scheduler, so the caller receives the result reactively without the datastore itself being non-blocking:
+With `grails-datamapping-rx` on the classpath, a GORM data service can declare methods that return `io.reactivex.rxjava3.core.Observable` or `io.reactivex.rxjava3.core.Single`. GORM implements the method as it does any other data service method: the blocking query runs when the result is subscribed to, on the subscribing thread, and the result is delivered on RxJava's IO scheduler, so the caller consumes it reactively without the datastore itself being non-blocking:
 
 [source,groovy]
 .build.gradle
@@ -64,15 +64,36 @@ interface BookService {
 
     Single<Book> findOne(String title)
 
+    Observable<Book> findAllByTitle(String title)
+
     Observable<Book> findAllByAuthor(String author)
 }
 ----
 
-A `Single` that finds nothing signals a `java.util.NoSuchElementException`, since an RxJava 3 `Single` cannot complete without a value; an `Observable` that finds nothing completes without emitting. The `grails.gorm.rx.services.RxSchedule` annotation selects a different scheduler for a method. See the RxJava Support section of the GORM for link:{hibernate7Guide}index.html#dataServicesRxJava[Hibernate 7] or link:{hibernate5Guide}index.html#dataServicesRxJava[Hibernate 5] guide.
+A `Single` that finds nothing signals a `java.util.NoSuchElementException`, since an RxJava 3 `Single` cannot complete without a value; an `Observable` that finds nothing completes without emitting. The `grails.gorm.rx.services.RxSchedule` annotation selects the scheduler a method delivers its result on. Neither it nor the default moves the query itself off the subscribing thread, so subscribe from a task, as <<asyncRequests,Asynchronous Request Handling>> describes, to keep a blocking query off a request thread. See the RxJava Support section of the GORM for link:{hibernate7Guide}index.html#dataServicesRxJava[Hibernate 7] or link:{hibernate5Guide}index.html#dataServicesRxJava[Hibernate 5] guide.
 
 ==== RxJava Results from Controllers
 
-A controller action produces its response asynchronously by returning a `Promise`, as <<asyncRequests,Asynchronous Request Handling>> describes. To respond with the result of an `Observable` or `Single`, subscribe inside the task so the request thread is released while the operation runs:
+An RxJava 3 `Flowable` is a Reactive Streams `Publisher`, so an action can return one and Grails streams every item it emits to the client as a server-sent event, with no plugin and with the container thread released while the stream produces. See <<asyncStreaming,Streaming Responses>>:
+
+[source,groovy]
+----
+import io.reactivex.rxjava3.core.BackpressureStrategy
+
+class BookController {
+
+    BookService bookService
+
+    def feed(String author) {
+        bookService.findAllByAuthor(author)
+                .toFlowable(BackpressureStrategy.BUFFER)
+    }
+}
+----
+
+`Observable` and `Single` are not `Publisher` instances, so returning one directly does not stream; convert it with `toFlowable(..)` as above.
+
+To respond with a single result instead of streaming it, return a `Promise` and subscribe inside the task, as <<asyncRequests,Asynchronous Request Handling>> describes, so the request thread is released while the query runs. Use `firstElement().blockingGet()`, which returns `null` when nothing is found, so that a missing title answers 404 rather than failing the request with the `NoSuchElementException` that a `Single` signals:
 
 [source,groovy]
 ----
@@ -84,10 +105,10 @@ class BookController {
 
     def show(String title) {
         task {
-            respond bookService.findOne(title).blockingGet()
+            respond bookService.findAllByTitle(title).firstElement().blockingGet()
         }
     }
 }
 ----
 
-NOTE: Earlier versions of Grails offered the `rxjava` plugin (`org.grails.plugins:rxjava`), which let an action return an RxJava 1 `Observable` directly and added Server-Sent Events support. The plugin targets Grails 3 and RxJava 1 and has no release for Grails 7 or later, so it cannot be used with this version of Grails.
+NOTE: Earlier versions of Grails offered the `rxjava` plugin (`org.grails.plugins:rxjava`) and, for RxJava 2, `org.grails.plugins:rxjava2`, which let an action return an RxJava `Observable` directly and added Server-Sent Events support. Both target Grails 3 and neither has a release for Grails 7 or later, so they cannot be used with this version of Grails. Grails now streams a `Publisher` itself, as above.

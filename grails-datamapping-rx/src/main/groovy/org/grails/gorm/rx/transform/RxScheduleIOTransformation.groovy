@@ -52,7 +52,9 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.callX
 import static org.codehaus.groovy.ast.tools.GeneralUtils.returnS
 
 /**
- * A transformation that will convert a blocking GORM operation into an Observable that runs on the RxJava {@link io.reactivex.rxjava3.schedulers.Schedulers#io()} scheduler
+ * A transformation that will convert a blocking GORM operation into an Observable that delivers its result on the RxJava {@link io.reactivex.rxjava3.schedulers.Schedulers#io()} scheduler.
+ *
+ * <p>The operation itself runs when the Observable is subscribed to, on the subscribing thread.
  *
  * @see {@link io.reactivex.rxjava3.schedulers.Schedulers#io()}
  *

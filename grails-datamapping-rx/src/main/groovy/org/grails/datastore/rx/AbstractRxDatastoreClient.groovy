@@ -301,12 +301,12 @@ abstract class AbstractRxDatastoreClient<T> implements RxDatastoreClient<T>, RxD
 
     @Override
     final <T1> Observable<T1> insert(T1 instance, Map<String, Object> arguments) {
-        insertAll((Iterable<T1>)Collections.singletonList(instance), arguments).map { List<Serializable> identifiers ->
+        insertAll((Iterable<T1>)Collections.singletonList(instance), arguments).flatMap { List<Serializable> identifiers ->
             if (!identifiers.isEmpty()) {
-                return instance
+                return Observable.just(instance)
             }
             else {
-                return null
+                return Observable.<T1>empty()
             }
         }
     }

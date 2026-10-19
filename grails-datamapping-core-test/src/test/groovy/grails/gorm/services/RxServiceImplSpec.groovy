@@ -45,6 +45,28 @@ class RxServiceImplSpec extends Specification {
         bookService.findByTitleLike("The%").blockingFirst().title == "The Stand"
     }
 
+    void "a Single service method signals NoSuchElementException when nothing matches"() {
+        given:
+        new Book(title: "The Stand").save(flush:true)
+        BookService bookService = datastore.getService(BookService)
+
+        when:"an RxJava 3 Single cannot complete without a value"
+        bookService.findOne("Missing").blockingGet()
+
+        then:
+        thrown(NoSuchElementException)
+    }
+
+    void "an Observable service method completes empty when nothing matches"() {
+        given:
+        new Book(title: "The Stand").save(flush:true)
+        BookService bookService = datastore.getService(BookService)
+
+        expect:
+        bookService.find("Missing").toList().blockingGet() == []
+        bookService.find("Missing").firstElement().blockingGet() == null
+    }
+
     void "test delete method"() {
         given:
         new Book(title: "The Stand").save(flush:true)

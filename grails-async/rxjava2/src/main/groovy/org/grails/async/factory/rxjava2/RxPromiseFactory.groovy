@@ -20,6 +20,7 @@
 package org.grails.async.factory.rxjava2
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 import groovy.transform.AutoFinal
 import groovy.transform.CompileStatic
@@ -53,9 +54,13 @@ class RxPromiseFactory extends AbstractPromiseFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(RxPromiseFactory)
 
+    private static final AtomicBoolean DEPRECATION_LOGGED = new AtomicBoolean()
+
     RxPromiseFactory() {
-        LOG.warn('The RxJava 2 promise factory (grails-async-rxjava2) is deprecated and will be removed in a future ' +
-                'release of Grails. Replace it with grails-async-rxjava3.')
+        if (DEPRECATION_LOGGED.compareAndSet(false, true)) {
+            LOG.warn('The RxJava 2 promise factory (grails-async-rxjava2) is deprecated and will be removed in a future ' +
+                    'release of Grails. Replace it with grails-async-rxjava3.')
+        }
     }
 
     @Override

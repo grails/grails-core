@@ -129,6 +129,22 @@ class RxPersistentSetSpec extends Specification {
         subscriptions == 1
     }
 
+    void "the lazy collection is an ObservableSource that RxJava 3 operators compose with"() {
+        given:
+        Association association = createAssociation()
+        TestChild child = new TestChild()
+        RxDatastoreClientImplementor client = Stub(RxDatastoreClientImplementor) {
+            createQuery(_, _) >> Stub(Query, additionalInterfaces: [RxQuery]) {
+                findAll() >> Observable.just(child)
+            }
+        }
+        RxPersistentSet<TestChild> set = new RxPersistentSet<>(client, association, 5L, new QueryState())
+
+        expect: 'no blocking initialization is needed to compose it'
+        Observable.wrap(set).toList().blockingGet() == [child]
+        Observable.empty().concatWith(set).toList().blockingGet() == [child]
+    }
+
     void "initialize throws a BlockingOperationException when the client does not allow blocking operations"() {
         given:
         Association association = createAssociation()

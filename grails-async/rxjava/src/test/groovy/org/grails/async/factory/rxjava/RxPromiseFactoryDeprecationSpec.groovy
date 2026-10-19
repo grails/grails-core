@@ -18,6 +18,9 @@
  */
 package org.grails.async.factory.rxjava
 
+import java.lang.reflect.Field
+import java.util.concurrent.atomic.AtomicBoolean
+
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
@@ -34,6 +37,7 @@ class RxPromiseFactoryDeprecationSpec extends Specification {
     ListAppender<ILoggingEvent> appender = new ListAppender<>()
 
     void setup() {
+        resetDeprecationWarning()
         appender.start()
         factoryLogger.addAppender(appender)
     }
@@ -64,8 +68,26 @@ class RxPromiseFactoryDeprecationSpec extends Specification {
             appender.list[0].formattedMessage.contains('grails-async-rxjava3')
     }
 
+    void 'the RxJava 1 promise factory warns once per JVM however many are created'() {
+        when: 'several factories are created'
+            3.times { new RxPromiseFactory() }
+
+        then: 'only the first one logs the deprecation warning'
+            appender.list.size() == 1
+    }
+
     void 'the service-loaded promise factory is the deprecated RxJava 1 factory'() {
         expect: 'the factory registered through META-INF/services is still used'
             Promises.promiseFactory instanceof RxPromiseFactory
+    }
+
+    /**
+     * The deprecation warning is logged once per JVM, so reset the latch before each feature.
+     * Other specs in this module construct the same class in the same fork.
+     */
+    private static void resetDeprecationWarning() {
+        Field field = RxPromiseFactory.getDeclaredField('DEPRECATION_LOGGED')
+        field.accessible = true
+        ((AtomicBoolean) field.get(null)).set(false)
     }
 }

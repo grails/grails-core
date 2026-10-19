@@ -59,23 +59,18 @@ public class IdQueryObservableProxyMethodHandler extends AbstractObservableProxy
         queryResult = queryResult.switchMap(new Function<Object, ObservableSource<?>>() {
             @Override
             public ObservableSource<?> apply(Object id) {
+                // RxJava 3 never emits null, so the id is always present here; a query with no
+                // result completes without calling this function at all
                 if (type.isInstance(id)) {
                     return Observable.just(id);
                 }
-                else if (id != null) {
-                    Serializable key = (Serializable) id;
-                    proxyKey = key;
-                    Object loadedEntity = queryState.getLoadedEntity(type, key);
-                    if (loadedEntity != null) {
-                        return Observable.just(loadedEntity);
-                    }
-                    else {
-                        return ((RxDatastoreClientImplementor) client).get(type, key, queryState);
-                    }
+                Serializable key = (Serializable) id;
+                proxyKey = key;
+                Object loadedEntity = queryState.getLoadedEntity(type, key);
+                if (loadedEntity != null) {
+                    return Observable.just(loadedEntity);
                 }
-                else {
-                    return Observable.empty();
-                }
+                return ((RxDatastoreClientImplementor) client).get(type, key, queryState);
             }
         });
         return queryResult.map(new Function<Object, Object>() {

@@ -372,6 +372,33 @@ class DetachedCriteriaSpec extends Specification {
         completed
     }
 
+    void "the criteria is an ObservableSource that Observable.wrap composes with"() {
+        given:
+        DetachedCriteria<Volume> criteria = newCriteria()
+        Volume volume = new Volume(title: 'A')
+
+        when:
+        List<String> titles = Observable.wrap(criteria).map { Volume v -> v.title }.toList().blockingGet()
+
+        then:
+        1 * query.findAll([:]) >> Observable.just(volume)
+        titles == ['A']
+    }
+
+    void "the criteria is an ObservableSource that concatWith composes with"() {
+        given:
+        DetachedCriteria<Volume> criteria = newCriteria()
+        Volume first = new Volume(title: 'A')
+        Volume second = new Volume(title: 'B')
+
+        when:
+        List<Volume> results = Observable.just(first).concatWith(criteria).toList().blockingGet()
+
+        then:
+        1 * query.findAll([:]) >> Observable.just(second)
+        results == [first, second]
+    }
+
     void "prepareQuery applies the default max only when it has been set via max(int)"() {
         given:
         DetachedCriteria<Volume> criteria = newCriteria().max(5)

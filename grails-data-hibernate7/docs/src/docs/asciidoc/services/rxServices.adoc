@@ -51,11 +51,11 @@ interface BookService {
 }
 ----
 
-For regular GORM entities, GORM will by default execute the persistence operation using RxJava's https://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/schedulers/Schedulers.html#io--[IO Scheduler].
+For regular GORM entities, the blocking persistence operation runs when the result is subscribed to, on the subscribing thread, and the result is delivered by default on RxJava's https://reactivex.io/RxJava/3.x/javadoc/io/reactivex/rxjava3/schedulers/Schedulers.html#io--[IO Scheduler]. Subscribe from a separate task to keep a blocking operation off a request thread.
 
 NOTE: For RxGORM entities where the underlying database supports non-blocking access the database driver will schedule the operation accordingly.
 
-You can run the operation on a different scheduler using the `RxSchedule` annotation:
+You can deliver the result on a different scheduler using the `RxSchedule` annotation:
 
 [source,groovy]
 ----

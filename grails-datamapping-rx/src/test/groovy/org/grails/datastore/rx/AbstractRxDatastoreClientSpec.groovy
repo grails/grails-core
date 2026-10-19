@@ -481,6 +481,33 @@ class AbstractRxDatastoreClientSpec extends Specification {
         client.persist(instance).blockingSingle().is(instance)
     }
 
+    void "persist(instance) completes empty when the datastore reports no identifier for the instance"() {
+        given:
+        TestEntity instance = new TestEntity()
+        client.forcedIdentifiers = []
+
+        expect: 'RxJava 3 cannot emit null, so the observable completes without emitting'
+        client.persist(instance).isEmpty().blockingGet()
+    }
+
+    void "insert(instance) completes empty when the datastore reports no identifier for the instance"() {
+        given:
+        TestEntity instance = new TestEntity()
+        client.forcedIdentifiers = []
+
+        expect: 'RxJava 3 cannot emit null, so the observable completes without emitting'
+        client.insert(instance, [:]).isEmpty().blockingGet()
+    }
+
+    void "insert(instance) emits the instance when the datastore reports an identifier for it"() {
+        given:
+        TestEntity instance = new TestEntity()
+        client.forcedIdentifiers = ['assigned']
+
+        expect:
+        client.insert(instance, [:]).blockingSingle().is(instance)
+    }
+
     void "insert(instance) forces an insert even when the instance already has an identifier"() {
         given:
         TestEntity instance = new TestEntity(id: 'already-assigned')
@@ -1033,6 +1060,8 @@ class RecordingRxDatastoreClient<T> extends AbstractRxDatastoreClient<T> {
     Closure<Observable<Number>> batchDeleteHandler = { BatchOperation op -> Observable.just((Number) 0) }
     Closure<Serializable> identifierGenerator = { entity, instance, reflector -> UUID.randomUUID().toString() }
     Closure<Query> queryFactory = { entity, queryState, arguments -> null }
+    /** When set, persistAll and insertAll resolve to it, as a datastore that assigns its own identifiers does. */
+    List<Serializable> forcedIdentifiers = null
     boolean allowBlockingOperations = true
     boolean closed = false
 
@@ -1049,6 +1078,16 @@ class RecordingRxDatastoreClient<T> extends AbstractRxDatastoreClient<T> {
     Observable<Number> batchWrite(BatchOperation operation) {
         batchWriteOperations << operation
         batchWriteHandler.call(operation)
+    }
+
+    @Override
+    Observable<List<Serializable>> persistAll(Iterable instances, Map<String, Object> arguments) {
+        forcedIdentifiers != null ? Observable.just(forcedIdentifiers) : super.persistAll(instances, arguments)
+    }
+
+    @Override
+    Observable<List<Serializable>> insertAll(Iterable instances, Map<String, Object> arguments) {
+        forcedIdentifiers != null ? Observable.just(forcedIdentifiers) : super.insertAll(instances, arguments)
     }
 
     @Override

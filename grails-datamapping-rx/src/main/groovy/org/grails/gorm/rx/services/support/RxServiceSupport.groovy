@@ -28,7 +28,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.concurrent.Callable
 
 /**
- * Helper class for creating observables that run of the IO scheduler for blocking GORM operations
+ * Helper class for creating observables over blocking GORM operations.
+ *
+ * <p>The callable is invoked when the result is subscribed to, on the subscribing thread, and its
+ * result is delivered on the given {@link Scheduler} (the IO scheduler by default). The scheduler
+ * does not move the blocking call itself off the subscribing thread.
  *
  * @since 6.1
  */
@@ -36,9 +40,9 @@ import java.util.concurrent.Callable
 class RxServiceSupport {
 
     /**
-     * Create an observable from the given callable
+     * Create an observable from the given callable, delivering its result on the IO scheduler
      *
-     * @param callable The callable
+     * @param callable The callable, invoked on the subscribing thread
      * @return The {@link Observable}
      */
     static <T> Observable<T> create(Callable<T> callable) {
@@ -47,9 +51,10 @@ class RxServiceSupport {
     }
 
     /**
-     * Create an observable from the given callable on the given Scheduler
+     * Create an observable from the given callable, delivering its result on the given Scheduler
      *
-     * @param callable The callable
+     * @param scheduler The scheduler the result is delivered on
+     * @param callable The callable, invoked on the subscribing thread
      * @return The {@link Observable}
      */
     static <T> Observable<T> create(Scheduler scheduler, Callable<T> callable) {
@@ -69,10 +74,10 @@ class RxServiceSupport {
     }
 
     /**
-     * Create an observable from the given callable
+     * Create a single from the given callable, delivering its result on the IO scheduler
      *
-     * @param callable The callable
-     * @return The {@link Observable}
+     * @param callable The callable, invoked on the subscribing thread
+     * @return The {@link Single}
      */
     static <T> Single<T> createSingle(Callable<T> callable) {
         Scheduler scheduler = Schedulers.io()
@@ -80,10 +85,11 @@ class RxServiceSupport {
     }
 
     /**
-     * Create an observable from the given callable on the given scheduler
+     * Create a single from the given callable, delivering its result on the given scheduler
      *
-     * @param callable The callable
-     * @return The {@link Observable}
+     * @param scheduler The scheduler the result is delivered on
+     * @param callable The callable, invoked on the subscribing thread
+     * @return The {@link Single}
      */
     static <T> Single<T> createSingle(Scheduler scheduler, Callable<T> callable) {
         Single<T> single = Single.defer {

@@ -84,6 +84,38 @@ class RxJavassistProxyFactorySpec extends Specification {
         ((ProxyObject) proxy).getHandler() instanceof IdQueryObservableProxyMethodHandler
     }
 
+    void "a created proxy is an ObservableSource that RxJava 3 operators compose with"() {
+        given:
+        Widget widget = new Widget(name: 'loaded')
+        RxDatastoreClientImplementor client = Stub(RxDatastoreClientImplementor)
+        client.get(Widget, 42L, _ as QueryState) >> Observable.just(widget)
+
+        when:
+        Widget proxy = factory.createProxy(client, new QueryState(), Widget, 42L)
+        List<String> names = Observable.wrap((ObservableProxy) proxy)
+                .map { Widget w -> w.name }
+                .toList()
+                .blockingGet()
+
+        then:
+        names == ['loaded']
+    }
+
+    void "a created proxy composes with concatWith as an ObservableSource"() {
+        given:
+        Widget widget = new Widget(name: 'loaded')
+        Widget other = new Widget(name: 'other')
+        RxDatastoreClientImplementor client = Stub(RxDatastoreClientImplementor)
+        client.get(Widget, 42L, _ as QueryState) >> Observable.just(widget)
+
+        when:
+        Widget proxy = factory.createProxy(client, new QueryState(), Widget, 42L)
+        List<Widget> results = Observable.just(other).concatWith((ObservableProxy) proxy).toList().blockingGet()
+
+        then:
+        results == [other, widget]
+    }
+
     void "isProxy returns true only for ObservableProxy instances"() {
         expect:
         factory.isProxy(Stub(ObservableProxy))

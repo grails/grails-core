@@ -18,6 +18,9 @@
  */
 package org.grails.events.rxjava
 
+import java.lang.reflect.Field
+import java.util.concurrent.atomic.AtomicBoolean
+
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
@@ -35,6 +38,7 @@ class RxEventBusDeprecationSpec extends Specification {
     ListAppender<ILoggingEvent> appender = new ListAppender<>()
 
     void setup() {
+        resetDeprecationWarning()
         appender.start()
         busLogger.addAppender(appender)
     }
@@ -70,6 +74,14 @@ class RxEventBusDeprecationSpec extends Specification {
             appender.list[0].formattedMessage.contains('grails-events-rxjava3')
     }
 
+    void 'the RxJava 1 event bus warns once per JVM however many are created'() {
+        when: 'several event buses are created, as an application context each would'
+            3.times { new RxEventBus(Schedulers.immediate()) }
+
+        then: 'only the first one logs the deprecation warning'
+            appender.list.size() == 1
+    }
+
     void 'the service-loaded event bus is the deprecated RxJava 1 bus and warns once'() {
         when: 'an event bus is built through the registered service'
             EventBus eventBus = new EventBusBuilder().build()
@@ -78,5 +90,15 @@ class RxEventBusDeprecationSpec extends Specification {
             eventBus instanceof RxEventBus
             appender.list.size() == 1
             appender.list[0].level == Level.WARN
+    }
+
+    /**
+     * The deprecation warning is logged once per JVM, so reset the latch before each feature.
+     * Other specs in this module construct the same class in the same fork.
+     */
+    private static void resetDeprecationWarning() {
+        Field field = RxEventBus.getDeclaredField('DEPRECATION_LOGGED')
+        field.accessible = true
+        ((AtomicBoolean) field.get(null)).set(false)
     }
 }
