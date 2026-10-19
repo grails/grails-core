@@ -21,10 +21,15 @@ package org.grails.plugins.xml
 import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
+import tools.jackson.databind.ser.std.SimpleFilterProvider
+
 import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
 
+import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
@@ -36,6 +41,7 @@ import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotWritableException
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -286,6 +292,21 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2))) },
                 { -> extended('member', new BeanListOwner(items: [new PrefixedInner(code: 'a'), new PrefixedInner(code: 'b')])) }
         ]
+    }
+
+    void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {
+        given: "Spring's JSON converter, whose mapper has the application's filter"
+        def mapper = JsonMapper.builder()
+                .filterProvider(new SimpleFilterProvider().addFilter('onlyName', SimpleBeanPropertyFilter.filterOutAllExcept('name')))
+                .build()
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(mapper)] }
+
+        when:
+        def written = renderProblem(renderer, extended('member', new FilteredBean(name: 'a', hidden: 'b'))).contentAsString
+
+        then:
+        tree(written)[3].find { it[0] == 'member' } == ['member', 'urn:ietf:rfc:7807', null, [['name', '', null, 'a']]]
     }
 
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
@@ -603,4 +624,10 @@ class ArrayClassPoint {
 
 class BeanListOwner {
     List<PrefixedInner> items
+}
+
+@JsonFilter('onlyName')
+class FilteredBean {
+    String name
+    String hidden
 }
