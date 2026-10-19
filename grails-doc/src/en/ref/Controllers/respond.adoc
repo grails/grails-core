@@ -87,18 +87,18 @@ warning is logged. It is written as `application/problem+xml` for a client whose
 XML, such as `application/problem+xml` or `application/*+xml`, where the action responds in XML, and as
 `application/problem+json` for any other client: also a client that asks for `application/xml` or `text/xml`, a browser,
 one that accepts anything, and one asking only for HTML or CSV. Neither the `grails.mime` settings nor a `format`
-parameter or file extension change this. A client whose `Accept` header Spring MVC cannot read, such as one with a
-quality value above 1, as in `application/json;q=2`, or one that lists more than 50 media types, is answered as Spring
-MVC answers it: with the status alone, without a body or a `Content-Type`, or with `406 Not Acceptable` where that status
-is not a 4xx or 5xx one, unless a view `respond` names renders the problem; `respond` reads such a header for any other
-value as Grails 8 did. That is how Spring MVC answers these clients where its converters include the
+parameter or file extension change this. That is how Spring MVC answers these clients where its converters include the
 XML one, which Spring Boot lists after the JSON one and which needs `jackson-dataformat-xml`. Without that library
 Spring MVC has no XML converter and answers a client asking for a problem in XML with `application/problem+json`;
 `respond` still answers it with `application/problem+xml`, which Grails writes itself in the format of Spring's
 converter, with the members Spring Boot's JSON mapper writes for the problem, as in `application/problem+json`, so that a
 default serialization view of that mapper leaves out the members in no view, those of RFC 9457 and the extension members
 among them, where Spring's XML converter writes them with Spring Boot's `XmlMapper`. XML is written by the `grails-xml` module, without which every client is answered with
-`application/problem+json`. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
+`application/problem+json`. A client whose `Accept` header Spring MVC cannot read, such as one with a quality value above
+1, as in `application/json;q=2`, or one that lists more than 50 media types, is answered as Spring MVC answers it: with
+the status alone, without a body or a `Content-Type`, or with `406 Not Acceptable` where that status is not a 4xx or 5xx
+one, unless a view `respond` names renders the problem; `respond` reads such a header for any other value as Grails 8
+did. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
 `respond` names it with the `view` argument: `respond` then picks the format as for any value, the view of that format
 renders the problem with the status it would have in JSON or XML, and in a format with no such view, such as HTML where
 the application has no GSP of the name, the problem is written in that format where it is JSON or XML, and otherwise as
