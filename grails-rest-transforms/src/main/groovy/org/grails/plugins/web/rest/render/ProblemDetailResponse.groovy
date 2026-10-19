@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.http.InvalidMediaTypeException
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
+import org.springframework.util.InvalidMimeTypeException
 import org.springframework.util.MimeTypeUtils
 
 import grails.rest.render.RenderContext
@@ -100,12 +101,13 @@ class ProblemDetailResponse {
         List<MediaType> accepted
         try {
             accepted = MediaType.parseMediaTypes(Collections.list(request.getHeaders(HttpHeaders.ACCEPT)))
+            // Spring's order: quality, then specificity
+            MimeTypeUtils.sortBySpecificity(accepted)
         }
-        catch (InvalidMediaTypeException ignored) {
+        catch (InvalidMediaTypeException | InvalidMimeTypeException ignored) {
+            // a header Spring cannot read, or one with more types than it sorts: the problem is written in JSON
             return false
         }
-        // Spring's order: quality, then specificity
-        MimeTypeUtils.sortBySpecificity(accepted)
         MediaType preferred = accepted.find { MediaType type ->
             type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON) || type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_XML)
         }

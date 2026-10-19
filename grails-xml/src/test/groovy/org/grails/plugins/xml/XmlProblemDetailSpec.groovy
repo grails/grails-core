@@ -118,6 +118,18 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'application/problem+json;q=0.5, application/problem+xml' || 'application/problem+xml'
     }
 
+    void 'a client whose Accept header lists more types than Spring sorts is answered with application/problem+json'() {
+        given: 'more than the 50 types MimeTypeUtils.sortBySpecificity accepts'
+        request.addHeader('Accept', (1..51).collect { "application/x-type-${it}" }.join(', ') + ', application/problem+xml')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json'])
+
+        then:
+        response.status == 409
+        response.contentType.startsWith('application/problem+json')
+    }
+
     void 'a request that names the XML format is answered with application/problem+json, as Spring MVC does not consult the format'() {
         given:
         response.format = 'xml'
