@@ -56,10 +56,13 @@ import tools.jackson.databind.ser.std.ToEmptyObjectSerializer;
 import tools.jackson.databind.util.TokenBuffer;
 
 /**
- * The Jackson {@link JsonMapper} that {@code grails.converters.JSON} writes through: Spring Boot's auto-configured
- * mapper in an application, so that {@code spring.jackson.*} settings apply, or a default mapper otherwise.
+ * The Jackson {@link JsonMapper} that {@code grails.converters.JSON} writes through. With
+ * {@code grails.converters.json.legacy}, the default, it is {@link #DEFAULT}, which writes the JSON token stream as
+ * Grails 8 wrote it, while the converter's marshallers write every value, whatever the {@code spring.jackson.*}
+ * settings say. With the setting {@code false} it is a copy of the application's mapper with the converter's modules,
+ * so that {@code spring.jackson.*} settings apply, or of a default mapper where the application has none.
  *
- * <p>The mapper writes the JSON token stream, and the values the converter hands it: every value that it has a dedicated
+ * <p>Without the legacy setting, the mapper writes the JSON token stream, and the values the converter hands it: every value that it has a dedicated
  * serializer for, such as dates and times, {@code Month}, {@code UUID}, {@code Locale}, {@code byte[]}, types with a
  * {@code @JsonValue} and the types that Jackson modules registered with the application serialize, and, rendering as
  * Spring Boot does, beans, records, collections, maps, arrays and {@code Optional} values, whose nested values the
