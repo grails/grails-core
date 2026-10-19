@@ -958,7 +958,8 @@ loading the XML plugin's dependency graph. A spec that overrides `getIncludePlug
 the beans in its application context sees these additions. A controller a test creates with `new`, which Spring does not
 autowire, responds with the application's renderer registry, its JSON and markup views and the renderers of the
 application and of `grails-xml` included, where Grails 8 gave it a registry of the default renderers alone. A test request resolves its format and MIME types from its
-content type as a request to an application does, and again when its content type changes:
+content type as a request to an application does, and again when its content type changes, apart from a format the test set, directly or by setting `request.json` or
+`request.xml`, which it keeps:
 `application/json;charset=UTF-8` is the `json` format, where Grails 8 matched only a configured type's exact name and
 gave no format, and `text/xml` is read as `application/xml`.
 
