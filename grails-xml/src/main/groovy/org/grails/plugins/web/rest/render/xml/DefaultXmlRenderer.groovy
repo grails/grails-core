@@ -41,7 +41,6 @@ import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.json.ProblemDetailJacksonMixin
-import org.springframework.util.ClassUtils
 import org.springframework.validation.Errors
 
 import grails.converters.XML
@@ -243,25 +242,14 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * The mapper a JSON converter has for a type the problem is of and {@code application/problem+json}, as the converter
-     * selects it, looked for from the problem's class to its superclasses and interfaces.
+     * The mapper a JSON converter has of its own for the problem and {@code application/problem+json}: that of the type
+     * registered first that the problem is an instance of, as the converter selects it.
      */
     private static ObjectMapper mapperForType(JacksonJsonHttpMessageConverter json, Class<?> problemType) {
-        List<Class<?>> types = []
-        for (Class<?> type = problemType; type != null; type = type.superclass) {
-            types << type
-        }
-        types.addAll(ClassUtils.getAllInterfacesForClassAsSet(problemType))
-        for (Class<?> type : types) {
-            Map<MediaType, ? extends ObjectMapper> mappers = json.getMappersForType(type)
-            Map.Entry<MediaType, ? extends ObjectMapper> match = mappers?.find { Map.Entry<MediaType, ? extends ObjectMapper> entry ->
-                entry.key.includes(MediaType.APPLICATION_PROBLEM_JSON)
-            }
-            if (match != null) {
-                return match.value
-            }
-        }
-        null
+        Map<MediaType, ? extends ObjectMapper> mappers = json.getMappersForType(problemType)
+        mappers?.find { Map.Entry<MediaType, ? extends ObjectMapper> entry ->
+            entry.key.includes(MediaType.APPLICATION_PROBLEM_JSON)
+        }?.value
     }
 
     /**
