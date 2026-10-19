@@ -40,7 +40,7 @@ class DataBindingRuntimeHintsSpec extends Specification {
         RuntimeHintsPredicates.reflection().onType(DataBindingSource).test(hints)
     }
 
-    void 'the constructor the JSON binding source creator is created with by its class, to parse with Jackson, is registered'() {
+    void 'what Spring creates the JSON binding source creator by its class with, to parse with Jackson, is registered'() {
         given:
         def hints = new RuntimeHints()
 
@@ -49,6 +49,12 @@ class DataBindingRuntimeHintsSpec extends Specification {
 
         then:
         RuntimeHintsPredicates.reflection().onConstructorInvocation(JsonDataBindingSourceCreator.getConstructor()).test(hints)
+
+        and: 'the fields Spring injects and the method it initializes it with, which it finds by reflection'
+        ['jsonMapperProvider', 'applicationContext', 'useJackson', 'jsonSlurper'].every { String field ->
+            RuntimeHintsPredicates.reflection().onFieldAccess(JsonDataBindingSourceCreator, field).test(hints)
+        }
+        RuntimeHintsPredicates.reflection().onMethodInvocation(JsonDataBindingSourceCreator, 'initialize').test(hints)
     }
 
     void 'is registered for ahead-of-time processing'() {
