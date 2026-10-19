@@ -807,7 +807,9 @@ whatever `grails.mime` says and whatever format the request names. A client that
 `text/xml` is answered with `application/problem+json`, as Spring MVC answers it, where Grails 8 wrote the problem as a
 bean with a 200; so is a browser, and a client that accepts neither JSON nor XML, such as one asking only for HTML, where
 Grails 8 rendered the action's view with a 200. A view renders a problem only when `respond` names it with the `view` argument, and the response
-has the status it would have in JSON or XML. A renderer the application registers for `ProblemDetail`, or for a type problems share,
+has the status it would have in JSON or XML; where the format `respond` picks has no view of the name, the problem is
+written in that format where it is JSON or XML, and as `application/problem+json` otherwise, such as for a browser
+without an HTML view of the name, and the JSON view of the name renders it then if there is one. A renderer the application registers for `ProblemDetail`, or for a type problems share,
 such as `Serializable`, renders them in its format; a `JsonRenderer` or `XmlRenderer` bean registered for problems writes
 them as Spring MVC writes them, whatever its `includes` and `excludes`. Otherwise a `ProblemDetail` is written through Spring's message
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set

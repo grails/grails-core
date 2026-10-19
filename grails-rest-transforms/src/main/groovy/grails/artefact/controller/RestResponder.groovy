@@ -23,13 +23,17 @@ import groovy.transform.CompileStatic
 import groovy.transform.Generated
 import groovy.transform.TypeCheckingMode
 
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.springframework.web.servlet.View
+import org.springframework.web.servlet.view.InternalResourceView
 
 import grails.artefact.Controller
 import grails.artefact.controller.support.ResponseRenderer
@@ -43,6 +47,9 @@ import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.SelectiveRenderer
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 
 /**
@@ -253,6 +260,13 @@ trait RestResponder {
             callRender([status: statusCode ?: (errorsFormatListed ? HttpStatus.NOT_FOUND.value() : HttpStatus.NOT_ACCEPTABLE.value())])
             return
         }
+        if (renderer != null && problem && args.view && renderer instanceof DefaultHtmlRenderer &&
+                renderer.is(registry.findRenderer(matched, new Object())) &&
+                !resolvesView(webRequest, args.view.toString(), matched)) {
+            // The HTML page respond names for a problem, which does not exist, does not render it: the problem is written
+            // as in a format nothing renders it in, so that a browser is answered as Spring MVC answers it
+            renderer = null
+        }
         if (renderer == null && problem) {
             // The format negotiated for the problem, or JSON where nothing renders it in that, whose view respond names
             // renders the problem, as for a client that asks for JSON
@@ -295,12 +309,36 @@ trait RestResponder {
         if (!(renderer instanceof SelectiveRenderer)) {
             return true
         }
-        // asked in the type it would render in, which the view it looks up depends on, as it is rendered
-        def request = context.webRequest.currentRequest
+        // asked in the type it would render in, which the view it looks up depends on
+        SelectiveRenderer selective = (SelectiveRenderer) renderer
+        return inResponseType(context.webRequest.currentRequest, mimeType) { selective.canRender(value, context) }
+    }
+
+    /**
+     * Whether the view resolvers that render the response find a view of the name, looked up in the type of the response,
+     * as when they render it; one resolved to a servlet resource, such as a JSP, exists where the resource does. Without
+     * view resolvers to ask, a view is taken to exist.
+     */
+    private static boolean resolvesView(GrailsWebRequest webRequest, String viewName, MimeType mimeType) {
+        ApplicationContext applicationContext = webRequest.applicationContext
+        if (applicationContext == null || !applicationContext.containsBean(CompositeViewResolver.BEAN_NAME)) {
+            return true
+        }
+        CompositeViewResolver resolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
+        return inResponseType(webRequest.currentRequest, mimeType) {
+            View view = resolver.resolveView(viewName, webRequest.locale)
+            view instanceof InternalResourceView ?
+                    webRequest.servletContext.getResource(((InternalResourceView) view).url) != null :
+                    view != null
+        }
+    }
+
+    /** Answers a question about the response as if it were in the given type, which is restored afterwards. */
+    private static boolean inResponseType(HttpServletRequest request, MimeType mimeType, Closure<Boolean> question) {
         Object previous = request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
         request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
         try {
-            return ((SelectiveRenderer) renderer).canRender(value, context)
+            return question.call()
         }
         finally {
             if (previous == null) {

@@ -462,6 +462,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
     void 'a problem is rendered as HTML with the view respond names, with the status it carries'() {
         given:
+        views['/jsonResponse/conflict.gsp'] = 'conflict'
         response.format = 'html'
         def problem = org.springframework.http.ProblemDetail.forStatus(409)
 
@@ -472,6 +473,52 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         response.status == 409
         view == 'conflict'
         model.problemDetail.is(problem)
+    }
+
+    void 'a problem respond names a view for, which a client asks for in HTML, is written as problem JSON without an HTML view'() {
+        given:
+        request.requestURI = '/books'
+        response.format = 'html'
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatus(409), view: 'conflict')
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
+    }
+
+    void 'a problem respond names a view for, which a client asks for in HTML, is rendered by the JSON view of the name without an HTML view'() {
+        given: 'the view in JSON only'
+        views['/jsonResponse/conflict.json.gsp'] = '{"conflict":true}'
+        request.requestURI = '/books'
+        response.format = 'html'
+        def problem = org.springframework.http.ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem, view: 'conflict')
+
+        then: 'as for a client that asks for JSON'
+        response.status == 409
+        response.contentType == 'application/json;charset=UTF-8'
+        view == 'conflict'
+        model.problemDetail.is(problem)
+    }
+
+    void 'a problem respond names a view for, which a client that accepts anything asks for, is written as problem JSON without a view of the name'() {
+        given:
+        request.requestURI = '/books'
+        response.format = null
+        request.addHeader('Accept', '*/*')
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatus(409), view: 'conflict')
+
+        then:
+        response.status == 409
+        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.json.status == 409
     }
 
     void 'render and respond share named configurations in ControllerUnitTest'() {
