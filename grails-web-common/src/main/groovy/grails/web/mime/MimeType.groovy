@@ -117,7 +117,8 @@ class MimeType {
 
         MimeType mimeType = (MimeType) o
 
-        if (name != mimeType.name) {
+        // a media type name is case-insensitive
+        if (name == null ? mimeType.name != null : !name.equalsIgnoreCase(mimeType.name)) {
             return false
         }
 
@@ -129,7 +130,7 @@ class MimeType {
     }
 
     int hashCode() {
-        def result = name.hashCode()
+        def result = name == null ? 0 : name.toLowerCase(Locale.ROOT).hashCode()
         result = 31 * result + (version != null ? version.hashCode() : 0)
         return result
     }

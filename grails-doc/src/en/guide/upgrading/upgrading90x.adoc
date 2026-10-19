@@ -857,7 +857,8 @@ such as `application/vnd.Acme+json`, matches whatever the case of the header. Th
 `Content-Type`, so `request.format` is case-insensitive too: `Content-Type: Application/JSON` gives `json`
 where Grails 8 gave `null`, and the JSON binding source now binds a body it used to ignore. A `Content-Type` that no
 configured type matches is read with its type in lower case, so a JSON API body sent as `application/VND.API+json` binds
-as one sent as `application/vnd.api+json` does, where Grails 8 ignored it. A value Spring
+as one sent as `application/vnd.api+json` does, where Grails 8 ignored it. A `MimeType` equals one whose name differs only
+in case, so a renderer or binding source creator registered for a type with capitals is found for it in any case. A value Spring
 rejects, such as a quality value above 1, is still read as Grails 8 read it. Parameter names are read ignoring case,
 as Spring reads them, so `text/html;Q=0.1` has the quality 0.1, where Grails 8 read only a lower-case `q`. The problem types of RFC 9457,
 `application/problem+json` and `application/problem+xml`, are the `json` and `xml` formats unless `grails.mime.types`

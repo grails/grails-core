@@ -130,7 +130,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
                 findObject = (R) objectList.find {
                     MimeTypeProvider r = (MimeTypeProvider)it
                     r.mimeTypes.any { MimeType mt ->
-                        mt.name == mimeType.name
+                        mt.name.equalsIgnoreCase(mimeType.name)
                     }
                 }
             }
