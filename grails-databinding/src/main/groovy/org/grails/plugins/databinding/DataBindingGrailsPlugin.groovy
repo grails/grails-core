@@ -114,8 +114,8 @@ class DataBindingGrailsPlugin extends Plugin {
             new DefaultDataBindingSourceRegistry().tap {
                 dataBindingSourceCreators = creators
                 if (jackson) {
-                    // the JSON bodies of a type no creator bean handles are parsed as the jsonDataBindingSourceCreator bean
-                    // parses them, with the application's mapper
+                    // the JSON bodies of a type no creator bean handles are parsed with the application's mapper, as the
+                    // JSON creator Grails defines parses them, whatever creator the application defines in its place
                     defaultJsonDataBindingSourceCreator = beanFactory.createBean(JsonDataBindingSourceCreator)
                 }
                 // read again when Spring initializes the bean this returns

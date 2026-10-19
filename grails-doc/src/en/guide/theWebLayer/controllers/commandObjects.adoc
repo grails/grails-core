@@ -216,7 +216,7 @@ class Widget {
 
 [source,bash]
 ----
-$ curl -H "Content-Type: application/json" -d '{"name":"Some Widget","42"}'[size] localhost:8080/demo/createWidget
+$ curl -H "Content-Type: application/json" -d '{"name":"Some Widget","size":"42"}' localhost:8080/demo/createWidget
  Name: Some Widget, Size: 42
 
 $ curl -H "Content-Type: application/xml" -d '<widget><name>Some Other Widget</name><size>2112</size></widget>' localhost:8080/bodybind/demo/createWidget

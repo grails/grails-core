@@ -51,7 +51,8 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
 
     /**
      * The creator for the JSON bodies of a type no registered creator handles; where none is set, a
-     * {@link JsonDataBindingSourceCreator} that parses with a default {@code JsonSlurper}, as in Grails 8.
+     * {@link JsonDataBindingSourceCreator} that parses with a default {@code JsonSlurper}, as in Grails 8. It is read
+     * when the registry is initialized, so it is set before then.
      *
      * @since 9.0
      */
