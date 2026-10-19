@@ -183,7 +183,7 @@ Here `text/html` has the highest quality (`q=1.0` implicitly) and `application/x
 This is a change from Grails 7 and earlier, which ignored the `Accept` header for browser user agents by default. That behavior was a workaround for very old browsers (such as Firefox 2 and 3) that sent headers like `text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,...`, ranking XML above HTML. Modern browsers no longer do this, and ignoring the header prevented browser-issued `fetch`/`XMLHttpRequest` calls that ask for `application/json` from receiving JSON.
 ====
 
-If you need the legacy behavior — ignoring the `Accept` header for specific user agents — configure `grails.mime.disable.accept.header.userAgents` with the user agents to match, as a list or a comma-separated string (it is unset by default). Each is a regular expression of its own, found anywhere in the `User-Agent` header, ignoring case; a blank one is left out. An application that lists one that is not a regular expression fails, naming the setting, as Spring MVC is configured: as it starts, unless its beans are created lazily:
+If you need the legacy behavior — ignoring the `Accept` header for specific user agents — configure `grails.mime.disable.accept.header.userAgents` with the user agents to match, as a list or a comma-separated string (it is unset by default). Each is a regular expression of its own, found anywhere in the `User-Agent` header, ignoring case, except that a `java.util.regex.Pattern` given in `application.groovy` is used as it is; a blank one is left out. An application that lists one that is not a regular expression fails, naming the setting, as Spring MVC is configured: as it starts, unless its beans are created lazily:
 
 [source,groovy]
 ----
@@ -210,7 +210,7 @@ An accept header that contains no registered content types also results in `all`
 `application/problem+json` and `application/problem+xml`, result in `json` and `xml`, in the accept header and in
 `Content-Type`, unless `grails.mime.types` configures them, so a client that accepts only a problem type is answered as
 one that asks for that format: an action that does not respond in it answers `406 Not Acceptable`, and `withFormat`
-runs no block where it has none for that format. Media type names in the accept header and in `Content-Type` are matched case-insensitively, so `Application/JSON` results in `json`.
+runs its `*` block where it has none for that format, and no block where it has neither. Media type names in the accept header and in `Content-Type` are matched case-insensitively, so `Application/JSON` results in `json`.
 
 
 

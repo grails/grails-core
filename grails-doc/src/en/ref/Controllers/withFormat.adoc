@@ -70,7 +70,7 @@ withFormat {
 
 Here we invoke three methods called `html`, `js` and `xml` that use mime type names configured in `grails-app/conf/application.yml` (See link:{guidePath}theWebLayer.html#contentNegotiation[Content Negotiation] for more information). The call to `html` accepts a model (a Map) which is passed on to the view. Grails searches for a view called `grails-app/views/book/list.html.gsp` and if that is not found fallback to `grails-app/views/book/list.gsp`.
 
-Note that the order of the types in the block is significant only if the request format is "all", when the first type handler in the block is executed ("html" in the short example above). Otherwise the type of the `Accept` header with the highest "q" rating that the block handles is used, and of those with the same rating the one the header lists first. For example if the request has "text/html" and then "application/xml" with a "q" rating of 1.0, then this code:
+The types of the `Accept` header are ordered by their "q" rating, and those with the same rating by their place in the header, except that a more specific XML type, such as `application/atom+xml`, goes ahead of `application/xml` of the same rating. The first of them is the request format. Where the block handles it, its handler is executed; otherwise the next types are tried in that order, and the first the block handles is used. Where the request format is "all", or the header reaches `*/*` before a type the block handles, the block's `*` handler is executed, or its first handler where it has none ("html" in the short example above), so the order of the types in the block is significant then. For example if the request has "text/html" and then "application/xml" with a "q" rating of 1.0, then this code:
 
 [source,groovy]
 ----
