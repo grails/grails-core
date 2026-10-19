@@ -70,7 +70,8 @@ public class TargetTypeMarshaller implements ObjectMarshaller<JSON>, DomainClass
         catch (ConverterException e) {
             throw e;
         }
-        catch (RuntimeException e) {
+        catch (Exception e) {
+            // also a checked exception, which a Groovy marshaller may throw without declaring it
             throw new ConverterException(e);
         }
     }
