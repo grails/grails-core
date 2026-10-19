@@ -105,7 +105,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
     private volatile RendererRegistry resolvedRendererRegistry
 
-    private volatile Tuple2<ObjectMapper, ObjectMapper> problemMapper
+    // the mappers derived for problems, for each mapper they derive from, the converter's own and those it has for types
+    private final Map<ObjectMapper, ObjectMapper> problemMappers = Collections.synchronizedMap(new WeakHashMap<ObjectMapper, ObjectMapper>())
 
     private static final ObjectMapper DEFAULT_PROBLEM_MAPPER = JsonMapper.builder().build()
 
@@ -236,13 +237,9 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         // the one the converter has for the type of the problem, or else its own; without one, a default mapper, with
         // Jackson's limits, which the legacy writer's has not
         ObjectMapper source = json != null ? (mapperForType(json, problemType) ?: json.mapper) : DEFAULT_PROBLEM_MAPPER
-        Tuple2<ObjectMapper, ObjectMapper> derived = problemMapper
-        if (derived == null || !derived.v1.is(source)) {
-            derived = new Tuple2<ObjectMapper, ObjectMapper>(source,
-                    source.rebuild().addMixIn(ProblemDetail, ProblemDetailJacksonMixin).build())
-            problemMapper = derived
+        problemMappers.computeIfAbsent(source) { ObjectMapper mapper ->
+            mapper.rebuild().addMixIn(ProblemDetail, ProblemDetailJacksonMixin).build()
         }
-        derived.v2
     }
 
     /**
