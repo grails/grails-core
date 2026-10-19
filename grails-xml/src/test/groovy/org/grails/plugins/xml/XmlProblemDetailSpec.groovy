@@ -28,9 +28,12 @@ import groovy.xml.XmlSlurper
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConversionException
+import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotWritableException
+import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -45,6 +48,7 @@ import grails.web.mime.MimeType
 import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -222,7 +226,10 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         when:
         def fallback = renderProblem(renderer, problem())
 
-        then:
+        then: "the reference is what Spring MVC's XML converter writes"
+        writesProblemsWithJackson()
+
+        and:
         fallback.status == 409
         fallback.contentType.startsWith('application/problem+xml')
         tree(fallback.contentAsString) == tree(spring)
@@ -299,6 +306,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         def fallback = renderProblem(renderer, problem())
 
         then:
+        writesProblemsWithJackson()
         new XmlSlurper().parseText(spring).balance.text() == '12.5'
         tree(fallback.contentAsString) == tree(spring)
     }
@@ -400,6 +408,13 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         then:
         xml.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW).model == [problemDetailInstance: problem]
+    }
+
+    /** Whether the first converter that writes problems in XML is Spring's Jackson XML converter, as in Spring MVC. */
+    private boolean writesProblemsWithJackson() {
+        applicationContext.getBean(SpringMessageConverters).converters.find { HttpMessageConverter converter ->
+            converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_XML)
+        } instanceof JacksonXmlHttpMessageConverter
     }
 
     private static GrailsWebRequest xmlRequest() {
