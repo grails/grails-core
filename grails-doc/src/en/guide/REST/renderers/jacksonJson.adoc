@@ -18,8 +18,9 @@ under the License.
 ////
 
 `render json:` writes JSON with a Grails mapper derived from Spring Boot's configured `JsonMapper`, and so does
-`respond` when `grails.web.rendering.json.spring` is `true`, for a `ProblemDetail`, and for a response it is given a
-`jsonConfiguration` for. The Grails mapper keeps the application's Jackson settings, such as the `spring.jackson.*`
+`respond` when `grails.web.rendering.json.spring` is `true`, and for a response it is given a `jsonConfiguration` for. A
+`ProblemDetail` is written by Spring's message converter with Spring Boot's mapper itself, as a Spring MVC controller
+writes it. The Grails mapper keeps the application's Jackson settings, such as the `spring.jackson.*`
 properties, and writes domain class instances as `grails.converters.JSON` writes them with `grails.converters.json.legacy`
 set to `false`, so customize it as you customize the mapper of any Spring Boot application.
 

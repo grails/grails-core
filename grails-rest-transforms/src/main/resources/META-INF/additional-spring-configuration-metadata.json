@@ -1,4 +1,10 @@
 {
+    "groups": [
+        {
+            "name": "grails.web.rendering",
+            "description": "JSON & Converters"
+        }
+    ],
     "properties": [
         {
             "name": "grails.web.rendering.json.spring",
