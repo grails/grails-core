@@ -21,8 +21,13 @@ package org.grails.plugins.xml
 import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
+import tools.jackson.databind.BeanDescription
 import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.SerializationConfig
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.module.SimpleModule
+import tools.jackson.databind.ser.BeanPropertyWriter
+import tools.jackson.databind.ser.ValueSerializerModifier
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
 
@@ -401,6 +406,26 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         then:
         tree(written)[3].find { it[0] == 'member' } == ['member', 'urn:ietf:rfc:7807', null, [['name', '', null, 'a']]]
+    }
+
+    void "without a converter for problems, a bean written as an array is not a list, where a module of the JSON converter's mapper orders the properties"() {
+        given: "Spring's JSON converter, whose mapper has a module that orders the properties of each bean by their names, last first"
+        def ordering = new SimpleModule('descending').setSerializerModifier(new ValueSerializerModifier() {
+            @Override
+            List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier description,
+                    List<BeanPropertyWriter> properties) {
+                properties.sort(false) { BeanPropertyWriter a, BeanPropertyWriter b -> b.name <=> a.name }
+            }
+        })
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(JsonMapper.builder().addModule(ordering).build())] }
+
+        when:
+        def written = renderProblem(renderer, extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2)))).contentAsString
+
+        then: 'its values are elements of its name, unwrapped, as without the module'
+        tree(written)[3].find { it[0] == 'member' } ==
+                ['member', 'urn:ietf:rfc:7807', null, [['point', '', null, '2'], ['point', '', null, '1'], ['name', '', null, 'a']]]
     }
 
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {

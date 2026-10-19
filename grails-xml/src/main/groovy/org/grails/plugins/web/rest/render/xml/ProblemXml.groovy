@@ -91,9 +91,15 @@ final class ProblemXml {
             String enclosing, boolean plainDecimals, boolean property) {
         if (value instanceof List) {
             List<?> listed = (List<?>) value
-            // a bean written as an array is not a collection
-            boolean array = !listed.isEmpty() && listed[0] == ProblemBeans.ARRAY_MARKER
-            List<?> values = array ? listed.subList(1, listed.size()) : listed
+            // a bean written as an array is not a collection; its marker is first, unless a serializer modifier of another
+            // module of the mapper, which runs after the one that adds it, orders the properties of the bean
+            int marker = listed.indexOf(ProblemBeans.ARRAY_MARKER)
+            boolean array = marker >= 0
+            List<?> values = listed
+            if (array) {
+                values = new ArrayList<Object>(listed)
+                values.removeAt(marker)
+            }
             if (property && !array) {
                 // a collection a bean property holds is wrapped in an element of its name, as Jackson's XML mapper wraps it
                 xml.writeStartElement(name)

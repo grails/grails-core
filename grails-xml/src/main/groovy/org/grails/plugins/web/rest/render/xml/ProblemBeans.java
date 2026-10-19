@@ -72,8 +72,9 @@ final class ProblemBeans {
     static final String MARKER = ProblemBeans.class.getName() + "#bean:";
 
     /**
-     * The first element of the array a bean is written as, where its format asks for one, so that the array is not taken
-     * for a collection, which a property of a bean wraps.
+     * An element of the array a bean is written as, where its format asks for one, so that the array is not taken for a
+     * collection, which a property of a bean wraps: the first, unless a serializer modifier of another module of the
+     * mapper orders the properties of the bean.
      */
     static final String ARRAY_MARKER = ProblemBeans.class.getName() + "#array";
 
