@@ -142,6 +142,20 @@ class Grails8JsonRenderingSpec extends Specification {
         new JSON([value: 'esc\u001B']).toString() == '{"value":"esc\\u001b"}'
     }
 
+    void "a value nested deeper than Jackson limits a mapper to renders as Grails 8 rendered it"() {
+        given:
+        Map root = [:]
+        Map current = root
+        600.times {
+            Map child = [:]
+            current.child = child
+            current = child
+        }
+
+        expect:
+        new JSON(root).toString() == '{"child":' * 600 + '{}' + '}' * 600
+    }
+
     void "domain class instances render as Grails 8 rendered them"() {
         expect: 'associations, embedded values, proxies, includes and excludes, deep, the version and the class name'
         Grails8DomainRendering.renderAll(LEGACY) == GRAILS_8_DOMAIN

@@ -119,6 +119,19 @@ class JSONWriterSpec extends Specification {
         out.toString() == '{"list":[{"a":1}]}'
     }
 
+    void 'a writer with the default mapper writes values nested deeper than Jackson limits a mapper to, as Grails 8 did'() {
+        given:
+        def out = new StringWriter()
+        def writer = new JSONWriter(out)
+
+        when:
+        600.times { writer.array() }
+        600.times { writer.endArray() }
+
+        then:
+        out.toString() == '[' * 600 + ']' * 600
+    }
+
     void "a GString and a StreamCharBuffer are escaped as a String is, for an HTML script element"() {
         given:
         def buffer = new StreamCharBuffer()

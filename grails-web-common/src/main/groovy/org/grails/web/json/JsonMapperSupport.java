@@ -35,8 +35,10 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.PrettyPrinter;
+import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.StreamWriteFeature;
 import tools.jackson.core.io.CharacterEscapes;
+import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.SerializationContext;
@@ -73,10 +75,12 @@ public final class JsonMapperSupport {
 
     /**
      * A default {@code JsonMapper}, for JSON written outside an application that provides one, such as in a unit test,
-     * and by the converter as Grails 8 wrote it, which escapes control characters as Grails 8 escaped them.
+     * and by the converter as Grails 8 wrote it, which escapes control characters as Grails 8 escaped them and writes
+     * values nested as deep as Grails 8 wrote them, which Jackson otherwise limits.
      */
-    public static final JsonMapperSupport DEFAULT = new JsonMapperSupport(JsonMapper.builder().build(),
-            LegacyCharacterEscapes.INSTANCE);
+    public static final JsonMapperSupport DEFAULT = new JsonMapperSupport(JsonMapper.builder(JsonFactory.builder()
+            .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(Integer.MAX_VALUE).build())
+            .build()).build(), LegacyCharacterEscapes.INSTANCE);
 
     private final JsonMapper mapper;
 

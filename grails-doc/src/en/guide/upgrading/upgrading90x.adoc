@@ -607,7 +607,10 @@ given the application's `JsonMapper`, as the converter is with `grails.converter
 every string as that mapper does, a `GString`, a `StreamCharBuffer` or the text of any other value as a `String`, such as
 `\u001B` for the escape character where Grails 8 wrote `\u001b`; a `JSONObject` or `JSONArray` it is given is written as
 the JSON text it writes itself, as in Grails 8. Wherever a `JSONWriter` writes, `</` is written as `<\u002f`, as the
-converter always wrote it, also where `grails-converters` is not on the classpath, where Grails 8 wrote `<\/`. It also accepts a single
+converter always wrote it, also where `grails-converters` is not on the classpath, where Grails 8 wrote `<\/`. Without
+`grails-converters`, where Grails 8 quoted values with `JSONObject` rather than with the converter's encoder, it also
+wrote a collection or map given to `value` as a JSON array or object, U+2028 and U+2029 unescaped and the vertical tab as
+`\u000b`; such a value is now written as its `toString()`, and the characters as the converter writes them. It also accepts a single
 value outside any object or array, where it threw a `JSONException`.
 * The generator buffers the text. It reaches the `Writer` as the buffer fills, once the JSON text is complete, and when
 `flush()` is called, rather than as each value is written. The `Writer` itself is not flushed or closed.
