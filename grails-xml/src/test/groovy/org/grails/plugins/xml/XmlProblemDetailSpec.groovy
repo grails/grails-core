@@ -195,6 +195,19 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'for a view respond names in a format no renderer writes' | 'text/csv;q=2'                                                                | [view: 'conflict'] || 409
     }
 
+    void 'a problem respond names a view for is written in the format Grails reads from an Accept header Spring MVC cannot read'() {
+        given: 'a header Grails reads as JSON, as Grails 8 read it, and no JSON view of the name'
+        request.addHeader('Accept', 'application/json;q=2')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), view: 'conflict', formats: ['html', 'xml', 'json'])
+
+        then: 'as without a view, for a client whose header Spring MVC reads'
+        response.status == 409
+        response.contentType.startsWith('application/problem+json')
+        response.json.status == 409
+    }
+
     void 'the page respond names for a problem renders it for a client whose Accept header Spring MVC cannot read'() {
         given: 'the HTML page of the name, and a header Grails reads as Grails 8 read it'
         views['/problemXml/conflict.gsp'] = '<p>${problemDetail.detail}</p>'
