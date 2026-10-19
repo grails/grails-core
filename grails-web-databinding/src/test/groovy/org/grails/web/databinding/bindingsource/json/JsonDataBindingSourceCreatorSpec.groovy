@@ -259,6 +259,30 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         !output.contains(LEGACY_PARSING_NOTICE)
     }
 
+    void 'an application context logs the legacy parsing notice as it starts the creator bean, unless #description'() {
+        given: 'a new application'
+        ShutdownOperations.runOperations()
+        def context = new AnnotationConfigApplicationContext()
+        context.environment.propertySources.addFirst(new MapPropertySource('test', settings))
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean(JsonDataBindingSourceCreator)
+
+        when:
+        String output = stderrWhile { context.refresh() }
+
+        then:
+        output.contains(LEGACY_PARSING_NOTICE) == logged
+
+        cleanup:
+        context.close()
+        ShutdownOperations.runOperations()
+
+        where:
+        description                 | settings                                  || logged
+        'it is left to its default' | [:]                                       || true
+        'it opts into Jackson'      | ['grails.databinding.json.jackson': true] || false
+    }
+
     void 'the JsonSlurper of the legacy path is deprecated for removal in Grails 11'() {
         expect:
         JsonDataBindingSourceCreator.getDeclaredField('jsonSlurper').getAnnotation(Deprecated).forRemoval()
