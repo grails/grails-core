@@ -184,8 +184,9 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
             // application's Jackson settings do not change the text
             ConvertersConfigurationHolder.setJsonMapper(legacy ? null : withDomainClasses(applicationJsonMapper(applicationContext)));
         }
-        else if (!legacy) {
-            ConvertersConfigurationHolder.setJsonMapper(withDomainClasses(null));
+        else {
+            // a default one, also where the converters were initialized before without being cleared
+            ConvertersConfigurationHolder.setJsonMapper(legacy ? null : withDomainClasses(null));
         }
         initJSONConfiguration(legacy);
         initDeepJSONConfiguration();

@@ -125,6 +125,23 @@ class Grails8JsonRenderingSpec extends Specification {
         Grails8DomainRendering.renderAll() == GRAILS_8_DOMAIN
     }
 
+    void "the legacy converter writes as Grails 8 did after the converters were initialized with the setting false"() {
+        given: 'the converters initialized with legacy false, then, without being cleared, with legacy true'
+        def nonLegacy = new DefaultGrailsApplication()
+        nonLegacy.config.setAt('grails.converters.json.legacy', false)
+        nonLegacy.initialise()
+        def mappingContext = new KeyValueMappingContext('json')
+        nonLegacy.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> mappingContext
+        })
+        nonLegacy.setMappingContext(mappingContext)
+        new ConvertersConfigurationInitializer(grailsApplication: nonLegacy).initialize()
+        new ConvertersConfigurationInitializer(grailsApplication: grailsApplication).initialize()
+
+        expect: 'with the escapes of Grails 8'
+        new JSON([value: 'esc\u001B']).toString() == '{"value":"esc\\u001b"}'
+    }
+
     void "domain class instances render as Grails 8 rendered them"() {
         expect: 'associations, embedded values, proxies, includes and excludes, deep, the version and the class name'
         Grails8DomainRendering.renderAll(LEGACY) == GRAILS_8_DOMAIN
