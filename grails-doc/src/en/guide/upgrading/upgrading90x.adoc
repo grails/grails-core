@@ -947,7 +947,9 @@ Web test traits such as `ControllerUnitTest` and `TagLibUnitTest` now always inc
 conversion beans with Boot's Jackson configuration, build Spring MVC's message converters from the
 test classpath, and add the `grails-xml` beans when that module is on the test classpath, without
 loading the XML plugin's dependency graph. A spec that overrides `getIncludePlugins()` or asserts on
-the beans in its application context sees these additions. A test request resolves its format and MIME types from its
+the beans in its application context sees these additions. A controller a test creates with `new`, which Spring does not
+autowire, responds with the application's renderer registry, its JSON and markup views and the renderers of the
+application and of `grails-xml` included, where Grails 8 gave it a registry of the default renderers alone. A test request resolves its format and MIME types from its
 content type as a request to an application does, and again when its content type changes:
 `application/json;charset=UTF-8` is the `json` format, where Grails 8 matched only a configured type's exact name and
 gave no format, and `text/xml` is read as `application/xml`.

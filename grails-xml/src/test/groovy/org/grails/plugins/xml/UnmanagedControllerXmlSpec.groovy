@@ -18,8 +18,13 @@
  */
 package org.grails.plugins.xml
 
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+
 import grails.artefact.Artefact
+import grails.rest.render.RendererRegistry
 import grails.testing.web.controllers.ControllerUnitTest
+import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import spock.lang.Specification
 
 class UnmanagedControllerXmlSpec extends Specification implements ControllerUnitTest<UnmanagedXmlController> {
@@ -33,6 +38,32 @@ class UnmanagedControllerXmlSpec extends Specification implements ControllerUnit
         controller.respond(new UnmanagedXmlBody(title: 'Grails'))
 
         then:
+        response.status == 200
+        response.contentType.startsWith('application/xml')
+        response.xml.title.text() == 'Grails'
+    }
+}
+
+class UnmanagedControllerSecondRegistrySpec extends Specification implements ControllerUnitTest<UnmanagedXmlController> {
+
+    @Configuration
+    static class RegistryConfiguration {
+
+        @Bean
+        RendererRegistry otherRendererRegistry() {
+            new DefaultRendererRegistry()
+        }
+    }
+
+    void 'a controller Spring did not create responds with the registry of the application where it has another too'() {
+        given: 'a controller created with new, and a second registry, neither of them primary'
+        def controller = new UnmanagedXmlController()
+        request.addHeader('Accept', 'application/xml')
+
+        when:
+        controller.respond(new UnmanagedXmlBody(title: 'Grails'))
+
+        then: 'the one an autowired controller is given, by its name'
         response.status == 200
         response.contentType.startsWith('application/xml')
         response.xml.title.text() == 'Grails'

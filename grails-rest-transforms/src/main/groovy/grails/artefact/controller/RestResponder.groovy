@@ -163,9 +163,14 @@ trait RestResponder {
         MimeType[] mimeTypes = getResponseFormat(response)
         def registry = rendererRegistry
         if (registry == null) {
-            // a controller Spring did not create, such as one a test creates with new, responds with the registry of the
-            // application, which has the renderers of the application and of modules such as grails-xml
-            registry = webRequest.applicationContext?.getBeanProvider(RendererRegistry)?.getIfAvailable()
+            // a controller Spring did not create, such as one a test creates with new, responds with the registry an
+            // autowired one is given, which has the renderers of the application and of modules such as grails-xml: the
+            // application's only or primary one, or else the one of that name
+            ApplicationContext applicationContext = webRequest.applicationContext
+            registry = applicationContext?.getBeanProvider(RendererRegistry)?.getIfUnique()
+            if (registry == null && applicationContext?.containsBean('rendererRegistry')) {
+                registry = applicationContext.getBean('rendererRegistry', RendererRegistry)
+            }
         }
         if (registry == null) {
             registry = new DefaultRendererRegistry()
