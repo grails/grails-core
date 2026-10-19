@@ -161,9 +161,10 @@ trait RestResponder {
         }
 
         Renderer renderer = null
-        // A problem is written as Spring MVC writes it with Spring Boot's converters: in XML for a client that asks for a
-        // problem in XML, where the action responds in XML, and in JSON for any other. A format's renderer of any object
-        // writes it only in that format, and the HTML renderer only with the view respond names
+        // A problem is written as Spring MVC writes it with Spring Boot's converters, an XML one among them: in XML for a
+        // client that asks for a problem in XML, where the action responds in XML, and in JSON for any other. Without
+        // jackson-dataformat-xml, where Spring MVC would answer in JSON, the XML renderer writes the XML itself. A format's
+        // renderer of any object writes it only in that format, and the HTML renderer only with the view respond names
         boolean problem = value instanceof ProblemDetail
         MimeType problemFormat = problem && !args.view ?
                 (formats.contains('xml') && ProblemDetailResponse.negotiatesXml(webRequest.currentRequest) ? MimeType.XML : MimeType.JSON) :

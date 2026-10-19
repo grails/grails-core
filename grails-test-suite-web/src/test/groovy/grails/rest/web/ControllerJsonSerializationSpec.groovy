@@ -363,6 +363,22 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         format << ['html', 'csv']
     }
 
+    void 'without jackson-dataformat-xml a client that asks for a problem in XML is answered with XML Grails writes itself'() {
+        given: 'grails-xml without the library Spring MVC needs for its XML converter, which answers such a client in JSON'
+        assert !org.springframework.util.ClassUtils.isPresent('tools.jackson.dataformat.xml.XmlMapper', getClass().classLoader)
+        response.format = null
+        request.addHeader('Accept', 'application/problem+xml')
+
+        when:
+        controller.respond(org.springframework.http.ProblemDetail.forStatusAndDetail(
+                org.springframework.http.HttpStatus.CONFLICT, 'taken'), formats: ['xml', 'json'])
+
+        then:
+        response.status == 409
+        response.contentType.startsWith('application/problem+xml')
+        new groovy.xml.XmlSlurper().parseText(response.contentAsString).detail.text() == 'taken'
+    }
+
     void 'a client that accepts only #accept is answered as one that asks for #format'() {
         given: 'the Accept header, rather than the format this spec sets up, decides'
         response.format = null

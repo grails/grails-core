@@ -784,7 +784,8 @@ Applications can also inject the factory when they need to create or customize t
 When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem and fills in an absent
 `instance` with the current resource path. A `status` argument decides the status instead, as the status of a
 `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. It writes the
-problem as Spring MVC writes it with Spring Boot's message converters: as `application/problem+xml` for a client whose
+problem as Spring MVC writes it with Spring Boot's message converters, an XML converter among them: as
+`application/problem+xml` for a client whose
 `Accept` header asks for it, where the action responds in XML, and as `application/problem+json` for any other client,
 whatever `grails.mime` says and whatever format the request names. A client that asks for `application/xml` or
 `text/xml` is answered with `application/problem+json`, as Spring MVC answers it, where Grails 8 wrote the problem as a
@@ -795,8 +796,10 @@ such as `Serializable`, renders them in its format. Otherwise a `ProblemDetail` 
 converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
 to, so the example above answers with `application/problem+json` in Grails 9 as well. A web
 application with Spring MVC always has the JSON converter; where none can write the problem, Grails
-logs a warning and the legacy converter writes it as a bean, with the same status. Spring writes
-XML problems with `jackson-dataformat-xml`, and without it Grails writes them in the same format. XML is
+logs a warning and the legacy converter writes it as a bean, with the same status. Spring MVC's
+XML converter needs `jackson-dataformat-xml`. Without it, Spring MVC answers a client asking for a problem in XML with
+`application/problem+json`, while `respond` still answers it with `application/problem+xml`, which Grails writes itself
+in the format of Spring's converter. XML is
 rendered by the `grails-xml` module, without which a client asking for `application/problem+xml` is answered with
 `application/problem+json`.
 Rejected field values are excluded from the problem by default because they can contain passwords, tokens, or other

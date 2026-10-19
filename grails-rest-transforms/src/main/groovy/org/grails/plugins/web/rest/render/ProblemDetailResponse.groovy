@@ -88,11 +88,13 @@ class ProblemDetailResponse {
     }
 
     /**
-     * Whether Spring MVC writes a problem for the request in XML, with Spring Boot's message converters, which list
-     * JSON's ahead of XML's: only for a client whose {@code Accept} header asks for a problem in XML, such as one that
-     * asks for {@code application/problem+xml} or {@code application/*+xml}, ahead of one in JSON. A client that asks
-     * for {@code application/xml}, a browser, and one that accepts any type are answered in JSON, and the format a
-     * request names is not consulted, as Spring MVC does not consult it.
+     * Whether a problem is written for the request in XML, as Spring MVC writes it with Spring Boot's message converters,
+     * an XML converter among them, which Boot lists after the JSON one: only for a client whose {@code Accept} header asks
+     * for a problem in XML, such as {@code application/problem+xml} or {@code application/*+xml}, ahead of one in JSON. A
+     * client that asks for {@code application/xml}, a browser, and one that accepts any type are answered in JSON, and the
+     * format a request names is not consulted, as Spring MVC does not consult it. Nor is whether an XML converter is
+     * present: without {@code jackson-dataformat-xml}, which Spring's XML converter needs, Spring MVC answers in JSON a
+     * client that asks for a problem in XML, where the XML renderer writes the XML itself.
      *
      * @param request the request
      * @return {@code true} where the problem is written as {@code application/problem+xml}
