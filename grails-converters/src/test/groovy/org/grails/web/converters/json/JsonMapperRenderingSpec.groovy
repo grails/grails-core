@@ -57,6 +57,7 @@ import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.ser.std.StdSerializer
+import tools.jackson.databind.ser.std.ToStringSerializer
 
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
@@ -301,6 +302,57 @@ class JsonMapperRenderingSpec extends Specification {
         new JSON([money: new Money(5), wrapper: new Wrapper(inner: new Money(6))]).toString() ==
                 '{"money":"$5","wrapper":{"inner":"$6","others":[]}}'
         new JSON(new Money(7)).toString() == '"$7"'
+
+        cleanup:
+        context.close()
+    }
+
+    void "a #description is written with the serializer a module of the application gives its type, wherever it is written"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, {
+                JsonMapper.builder().addModule(new SimpleModule().addSerializer(Long, ToStringSerializer.instance)).build()
+            })
+        }
+        initialize([:], context)
+        JSON.registerObjectMarshaller(new ObjectMarshaller<JSON>() {
+            boolean supports(Object object) { object instanceof PropertyIdHolder }
+
+            void marshalObject(Object object, JSON json) {
+                json.writer.object()
+                json.property('id', ((PropertyIdHolder) object).id)
+                json.writer.endObject()
+            }
+        })
+        JSON.registerObjectMarshaller(BuiltIdHolder) { BuiltIdHolder holder, JSON json -> json.build { id holder.id } }
+
+        expect:
+        new JSON(value).toString() == written
+
+        cleanup:
+        context.close()
+
+        where:
+        description                                | value                        || written
+        'number on its own'                        | 5L                           || '"5"'
+        'number in a map'                          | [id: 5L]                     || '{"id":"5"}'
+        'number a marshaller writes as a property' | new PropertyIdHolder(id: 5L) || '{"id":"5"}'
+        'number a marshaller builds'               | new BuiltIdHolder(id: 5L)    || '{"id":"5"}'
+        'number of a type the module leaves alone' | 5                            || '5'
+    }
+
+    void "with legacy, a number is written as Grails 8 wrote it, whatever serializer a module of the application gives its type"() {
+        given:
+        def context = applicationContext {
+            it.registerBean(JsonMapper, {
+                JsonMapper.builder().addModule(new SimpleModule().addSerializer(Long, ToStringSerializer.instance)).build()
+            })
+        }
+        initialize(['grails.converters.json.legacy': true], context)
+
+        expect:
+        new JSON(5L).toString() == '5'
+        new JSON([id: 5L]).toString() == '{"id":5}'
 
         cleanup:
         context.close()
@@ -1286,6 +1338,14 @@ class Secret {
 class Wrapper {
     Object inner
     List<Object> others = []
+}
+
+class PropertyIdHolder {
+    Long id
+}
+
+class BuiltIdHolder {
+    Long id
 }
 
 class WrapperSerializer extends StdSerializer<Wrapper> {

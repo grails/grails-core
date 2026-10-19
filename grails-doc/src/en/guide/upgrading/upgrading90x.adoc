@@ -429,7 +429,10 @@ Setting it to either value turns the warning off.
 With the setting `false`, the mapper writes the JSON text (numbers and pretty printing), and writes every single value
 that it has a dedicated serializer for: dates and times, `Month`, `UUID`, `Locale`, `byte[]`, types with a `@JsonValue`,
 and the types of any Jackson module registered with the application. Those values render as Spring Boot renders them,
-and `spring.jackson.*` properties apply to them. For example, `spring.jackson.time-zone` writes `Date` and `Calendar`
+and `spring.jackson.*` properties apply to them. A number, string or boolean is written by the mapper's serializer for
+its type where a Jackson module registered with the application gives the type one, such as `ToStringSerializer` for
+`Long`, whether the converter renders it on its own, inside a collection or map, or for a marshaller's `property`,
+`convertAnother` or `build` call; otherwise it is written as Jackson writes it. For example, `spring.jackson.time-zone` writes `Date` and `Calendar`
 values in that time zone, and converts `OffsetDateTime` and `ZonedDateTime` values to it. The mapper is the
 application's only or primary `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`, as for `respond` and data
 binding; where the application context has none of those, as in a unit test other than a web test, whose traits

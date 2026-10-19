@@ -88,6 +88,8 @@ public final class JsonMapperSupport {
 
     private final ClassValue<Boolean> writesObjectIds;
 
+    private final ClassValue<Boolean> customSerializer;
+
     // the escapes the generators write with, or null for the mapper's
     private final CharacterEscapes characterEscapes;
 
@@ -104,7 +106,24 @@ public final class JsonMapperSupport {
         this.attributes = Map.of();
         this.rendersValue = rendersValue();
         this.writesObjectIds = writesObjectIds();
+        this.customSerializer = customSerializer();
         this.characterEscapes = characterEscapes;
+    }
+
+    private ClassValue<Boolean> customSerializer() {
+        return new ClassValue<>() {
+            @Override
+            protected Boolean computeValue(Class<?> type) {
+                try {
+                    // looked up as a value written on its own is, so that the configured format of the type counts
+                    return innermost(serializationContext(mapper).findTypedValueSerializer(type, true)).getClass() !=
+                            innermost(serializationContext(JsonMapper.shared()).findTypedValueSerializer(type, true)).getClass();
+                }
+                catch (RuntimeException | LinkageError e) {
+                    return false;
+                }
+            }
+        };
     }
 
     private ClassValue<Boolean> writesObjectIds() {
@@ -112,7 +131,7 @@ public final class JsonMapperSupport {
             @Override
             protected Boolean computeValue(Class<?> type) {
                 try {
-                    return serializationContext().findValueSerializer(type).usesObjectId();
+                    return serializationContext(mapper).findValueSerializer(type).usesObjectId();
                 }
                 catch (RuntimeException | LinkageError e) {
                     return false;
@@ -129,7 +148,7 @@ public final class JsonMapperSupport {
                     return false;
                 }
                 try {
-                    ValueSerializer<?> serializer = innermost(serializationContext().findValueSerializer(type));
+                    ValueSerializer<?> serializer = innermost(serializationContext(mapper).findValueSerializer(type));
                     if (Enum.class.isAssignableFrom(type) && serializer instanceof JsonValueSerializer) {
                         // an enum renders by name(), so that it binds back, even when it has a @JsonValue
                         return false;
@@ -162,6 +181,7 @@ public final class JsonMapperSupport {
         this.attributes = attributes;
         this.rendersValue = base.rendersValue;
         this.writesObjectIds = base.writesObjectIds;
+        this.customSerializer = base.customSerializer;
         this.characterEscapes = base.characterEscapes;
     }
 
@@ -256,6 +276,18 @@ public final class JsonMapperSupport {
      */
     public boolean writesObjectIds(Class<?> type) {
         return writesObjectIds.get(type);
+    }
+
+    /**
+     * Whether the mapper writes values of the type with a serializer other than the one a default {@code JsonMapper}
+     * writes them with, such as a {@code ToStringSerializer} a module of the application registers for {@code Long}.
+     *
+     * @param type a value type
+     * @return whether the mapper has a serializer of its own for the type
+     * @since 9.0
+     */
+    public boolean hasCustomSerializer(Class<?> type) {
+        return customSerializer.get(type);
     }
 
     /**
@@ -380,7 +412,7 @@ public final class JsonMapperSupport {
         if (key instanceof String string) {
             return string;
         }
-        SerializationContext context = serializationContext();
+        SerializationContext context = serializationContext(mapper);
         ValueSerializer<Object> keySerializer = context.findKeySerializer(key.getClass(), null);
         try (TokenBuffer buffer = TokenBuffer.forGeneration()) {
             buffer.writeStartObject();
@@ -397,10 +429,10 @@ public final class JsonMapperSupport {
     }
 
     /**
-     * A serialization context with the mapper's configuration, from its public API: the mapper passes one to a format
+     * A serialization context with a mapper's configuration, from its public API: the mapper passes one to a format
      * visitor before it visits a type.
      */
-    private SerializationContext serializationContext() {
+    private static SerializationContext serializationContext(JsonMapper mapper) {
         JsonFormatVisitorWrapper visitor = new JsonFormatVisitorWrapper.Base();
         mapper.acceptJsonFormatVisitor(String.class, visitor);
         return visitor.getContext();

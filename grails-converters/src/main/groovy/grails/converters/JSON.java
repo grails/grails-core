@@ -72,6 +72,7 @@ import org.grails.web.json.JSONTokener;
 import org.grails.web.json.JSONWriter;
 import org.grails.web.json.JsonDateFormat;
 import org.grails.web.json.JsonMapperSupport;
+import org.grails.web.json.JsonMapperValue;
 import org.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.grails.web.json.PrettyPrintJSONWriter;
 
@@ -238,6 +239,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
             if (o == null) {
                 writer.valueNull();
             }
+            else if (!ConvertersConfigurationHolder.isLegacyJson() && isScalar(o) &&
+                    getJsonMapperSupport().hasCustomSerializer(o.getClass())) {
+                // as the mapper writes it inside a container, with the serializer a module of the application gives its type
+                writer.value(new JsonMapperValue(o, getJsonMapperSupport()));
+            }
             else if (o instanceof CharSequence) {
                 writer.value(o);
             }
@@ -356,6 +362,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     @SuppressWarnings("rawtypes")
     public List<String> getExcludes(Class type) {
         return excludes.get(projectionClass(type));
+    }
+
+    /** A string, class name, boolean or number the converter writes as a single JSON value itself. */
+    private static boolean isScalar(Object o) {
+        return o instanceof CharSequence || o instanceof Class<?> || o instanceof Boolean ||
+                (o instanceof Number number && isJdkNumber(number));
     }
 
     private static boolean isJdkNumber(Number number) {
