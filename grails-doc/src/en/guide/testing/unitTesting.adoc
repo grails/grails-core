@@ -25,11 +25,11 @@ Web test traits such as `ControllerUnitTest` and `TagLibUnitTest` automatically 
 `restResponder`, including when a spec overrides `getIncludePlugins()`. They provide JSON conversion
 beans and Boot's Jackson configuration, and contribute XML beans when `grails-xml` is present.
 This does not automatically load the controllers, URL mappings or i18n plugins. Web tests resolve
-locales with the resolver `grails.i18n.localeResolver` configures, as the application does, and a
-URL mappings holder, link generator or locale resolver the test declares in `doWithSpring`,
-`beanRegistrar()` or a `@Bean` method of a nested `@Configuration` class, under its name or with its
-name as an alias, replaces the one the traits provide; a bean of a class that configuration class
-imports does not. The traits replace the URL mappings holder and link generator of the URL mappings
+locales with the resolver `grails.i18n.localeResolver` configures, as the application does, or with
+any other locale resolver the test's context has, and a URL mappings holder or link generator the test
+declares in `doWithSpring`, `beanRegistrar()` or a `@Bean` method of a nested `@Configuration` class,
+under its name or with its name as an alias, replaces the one the traits provide; one of a class that
+configuration class imports does not. The traits replace the URL mappings holder and link generator of the URL mappings
 plugin, which a test including the `controllers` or `urlMappings` plugin loads, with their own, which
 generate links from the application's `UrlMappings` and absolute links from `grails.serverURL`, or
 `http://localhost:8080`. Such a test declares its URL mappings holder in `doWithSpring` or

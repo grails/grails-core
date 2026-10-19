@@ -986,10 +986,11 @@ content type as a request to an application does, and again when its content typ
 `application/json;charset=UTF-8` is the `json` format, where Grails 8 matched only a configured type's exact name and
 gave no format, and `text/xml` is read as `application/xml`.
 
-The traits still do not load the controllers, URL mappings or i18n plugins themselves. A URL mappings holder, link
-generator or locale resolver a spec declares itself, in `doWithSpring`, `beanRegistrar()` or a `@Bean` method of a nested
-`@Configuration` class, under its name or with its name as an alias, is now kept, where the traits replaced it with their
-own; a bean of a class that configuration class imports is replaced, as in Grails 8. The URL mappings holder and link
+The traits still do not load the controllers, URL mappings or i18n plugins themselves. A URL mappings holder or link
+generator a spec declares itself, in `doWithSpring`, `beanRegistrar()` or a `@Bean` method of a nested `@Configuration`
+class, under its name or with its name as an alias, is now kept, where the traits replaced it with their own; one of a
+class that configuration class imports is replaced, as in Grails 8. A locale resolver the test's context has is kept,
+whatever declares it, where the traits replaced it with a session resolver. The URL mappings holder and link
 generator of the URL mappings plugin, which a spec that includes the `controllers` or `urlMappings` plugin loads, are
 still replaced, as in Grails 8, so that links follow the application's `UrlMappings` and absolute links start with
 `grails.serverURL`, or `http://localhost:8080` without it. Such a spec declares its URL mappings holder in `doWithSpring`
