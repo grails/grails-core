@@ -111,6 +111,7 @@ Content Type(s),Bean Name,Module
 "application/xml, text/xml",xmlDataBindingSourceCreator,grails-xml
 "application/json, text/json",jsonDataBindingSourceCreator,grails-web-databinding
 application/hal+json,halJsonDataBindingSourceCreator,grails-web-databinding
+application/vnd.api+json,jsonApiDataBindingSourceCreator,grails-web-databinding
 application/hal+xml,halXmlDataBindingSourceCreator,grails-xml
 |===
 

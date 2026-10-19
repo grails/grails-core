@@ -897,7 +897,7 @@ first format, and `withFormat` runs no block where it has neither one for that f
 its first block. `respond` writes a `ProblemDetail` as Spring MVC does, whatever format this selects (see
 section 10), and any other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
 sends as `application/problem+json` is now the `json` format, which `withFormat` selects and the JSON binding source
-binds.
+binds, and one sent as `application/problem+xml` the `xml` format, which the XML binding source of `grails-xml` binds.
 
 Grails 8 merged `text/xml` and `application/xml` into one `xml` type with the larger of their qualities, but kept the
 quality and the place of `application/xml`: `Accept: text/xml, application/xml;q=0.1, application/json;q=0.5` resolved to

@@ -219,9 +219,12 @@ class Widget {
 $ curl -H "Content-Type: application/json" -d '{"name":"Some Widget","size":"42"}' localhost:8080/demo/createWidget
  Name: Some Widget, Size: 42
 
-$ curl -H "Content-Type: application/xml" -d '<widget><name>Some Other Widget</name><size>2112</size></widget>' localhost:8080/bodybind/demo/createWidget
+$ curl -H "Content-Type: application/xml" -d '<widget><name>Some Other Widget</name><size>2112</size></widget>' localhost:8080/demo/createWidget
  Name: Some Other Widget, Size: 2112
 ----
+
+NOTE: Binding an XML body requires `org.apache.grails:grails-xml`, which the Grails 9 web starter and `grails-web-boot`
+bring. Without it the body is not read, and only the request parameters are bound.
 
 [NOTE]
 ====
