@@ -24,6 +24,7 @@ import tools.jackson.databind.json.JsonMapper
 import grails.web.mime.MimeType
 import org.grails.testing.GrailsUnitTest
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
+import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
 import spock.lang.Specification
@@ -79,6 +80,31 @@ class JacksonApplicationMapperJsonCreatorSpec extends Specification implements G
     }
 }
 
+class JacksonApplicationRegistryJsonCreatorSpec extends Specification implements GrailsUnitTest {
+
+    Closure doWithConfig() {
+        { config -> config['grails.databinding.json.jackson'] = true }
+    }
+
+    Closure doWithSpring() {
+        { ->
+            dataBindingSourceRegistry(ApplicationDataBindingSourceRegistry)
+            jsonDataBindingSourceCreator(OneClassJsonCreator)
+            applicationJsonMapper(JsonMapper, JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS))
+        }
+    }
+
+    void "with Jackson parsing, a registry the application defines parses them with the application's mapper too"() {
+        given: "the application's registry is in effect"
+        def registry = applicationContext.getBean(DataBindingSourceRegistry)
+        assert registry instanceof ApplicationDataBindingSourceRegistry
+
+        expect:
+        registry.createDataBindingSource(MimeType.JSON, OtherBinding, new StringReader('/* a comment */ {"name":"Grails"}'))
+                .getPropertyValue('name') == 'Grails'
+    }
+}
+
 class LegacyDefaultJsonCreatorSpec extends Specification implements GrailsUnitTest {
 
     Closure doWithSpring() {
@@ -94,6 +120,9 @@ class LegacyDefaultJsonCreatorSpec extends Specification implements GrailsUnitTe
                 .createDataBindingSource(MimeType.JSON, OtherBinding, new StringReader('{"name":"Grails",}'))
                 .getPropertyValue('name') == 'Grails'
     }
+}
+
+class ApplicationDataBindingSourceRegistry extends DefaultDataBindingSourceRegistry {
 }
 
 class OneClassJsonCreator extends JsonDataBindingSourceCreator {
