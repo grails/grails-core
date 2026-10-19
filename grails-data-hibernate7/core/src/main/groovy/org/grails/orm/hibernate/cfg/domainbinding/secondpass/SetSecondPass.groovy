@@ -57,10 +57,10 @@ class SetSecondPass implements SecondPass, GrailsSecondPass, Serializable {
     @Override
     void doSecondPass(Map persistentClasses) throws MappingException {
         if (collection != null) {
-            property.hibernateCollection = collection
+            property.setHibernateCollection(collection)
         }
         collectionSecondPassBinder.bindCollectionSecondPass(property)
-        createCollectionKeys(property.collection)
+        createCollectionKeys(property.getCollection())
     }
 
 }
