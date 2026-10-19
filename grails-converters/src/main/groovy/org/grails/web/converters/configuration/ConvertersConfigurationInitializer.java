@@ -134,6 +134,9 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
 
     public final Log LOG = LogFactory.getLog(ConvertersConfigurationInitializer.class);
 
+    /** The name of Spring Boot's JsonMapper bean. */
+    private static final String JACKSON_JSON_MAPPER = "jacksonJsonMapper";
+
     /**
      * The initializer of the XML converter, found by name since {@code grails-xml} depends on this module, or
      * {@code null} without it; {@code grails-xml} registers it for an ahead-of-time image.
@@ -169,10 +172,10 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         if (applicationContext != null) {
             ConvertersConfigurationHolder.setObservationRegistry(
                     applicationContext.getBeanProvider(ObservationRegistry.class).getIfAvailable(() -> ObservationRegistry.NOOP));
-            // the application's JsonMapper, or a default one when there is none, or more than one and none is primary.
-            // Rendering as Grails 8 did, a default one, so that the application's Jackson settings do not change the text
-            ConvertersConfigurationHolder.setJsonMapper(legacy ? null : withDomainClasses(
-                    applicationContext.getBeanProvider(JsonMapper.class).getIfUnique()));
+            // the application's JsonMapper: its only or primary one, or else Spring Boot's, as respond and data binding
+            // find it, or a default one where it has none of those. Rendering as Grails 8 did, a default one, so that the
+            // application's Jackson settings do not change the text
+            ConvertersConfigurationHolder.setJsonMapper(legacy ? null : withDomainClasses(applicationJsonMapper(applicationContext)));
         }
         else if (!legacy) {
             ConvertersConfigurationHolder.setJsonMapper(withDomainClasses(null));
@@ -205,6 +208,14 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         return ClassUtils.isPresent(name, classLoader) ?
                 (Class<? extends AbstractConvertersConfigurationInitializer>) ClassUtils.resolveClassName(name, classLoader) :
                 null;
+    }
+
+    private static JsonMapper applicationJsonMapper(ApplicationContext applicationContext) {
+        JsonMapper mapper = applicationContext.getBeanProvider(JsonMapper.class).getIfUnique();
+        if (mapper == null && applicationContext.containsBean(JACKSON_JSON_MAPPER)) {
+            mapper = applicationContext.getBean(JACKSON_JSON_MAPPER, JsonMapper.class);
+        }
+        return mapper;
     }
 
     /**

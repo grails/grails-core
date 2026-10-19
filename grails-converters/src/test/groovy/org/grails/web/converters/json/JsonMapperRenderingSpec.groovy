@@ -53,6 +53,7 @@ import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.SerializationFeature
 import tools.jackson.databind.cfg.ContextAttributes
+import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.ser.std.StdSerializer
@@ -139,6 +140,21 @@ class JsonMapperRenderingSpec extends Specification {
         "the application's mapper, to which Grails adds a GString serializer" | [:]                                     | true
         'the default mapper'                                                   | [:]                                     | false
         'the legacy converter'                                                 | ['grails.converters.json.legacy': true] | false
+    }
+
+    void "with several mappers and none primary, the converter writes with Spring Boot's, as respond and binding do"() {
+        given: "another mapper registered first, so that the first mapper found is not Boot's"
+        initialize([:], applicationContext {
+            it.registerBean('pluginMapper', JsonMapper, {
+                JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE).build()
+            })
+            it.registerBean('jacksonJsonMapper', JsonMapper, {
+                JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE).build()
+            })
+        })
+
+        expect:
+        new JSON(new NamedMapperBean(firstName: 'Ada')).toString() == '{"first_name":"Ada"}'
     }
 
     void "pretty printed JSON is indented by the JsonMapper's default pretty printer"() {
@@ -1372,4 +1388,8 @@ class EqualLink {
     int hashCode() {
         name.hashCode()
     }
+}
+
+class NamedMapperBean {
+    String firstName
 }
