@@ -130,61 +130,53 @@ Grails 8, or, with `grails.databinding.json.jackson: true`, by the `halJsonDataB
 application's own where it replaces it, as the HAL JSON bodies of other types are, unless the application's creator
 handles another class only, where they are parsed with the application's Jackson `JsonMapper`.
 
-The `DataBindingSourceCreator` interface defines just 2 methods:
+The `DataBindingSourceCreator` interface, a `MimeTypeProvider`, defines these methods:
 
 [source,groovy]
 ----
 package org.grails.databinding.bindingsource
 
-import grails.web.mime.MimeType
+import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
+import grails.web.mime.MimeType
+import grails.web.mime.MimeTypeProvider
 
-/**
- * A factory for DataBindingSource instances
- *
- * @since 2.3
- * @see DataBindingSourceRegistry
- * @see DataBindingSource
- *
- */
-interface DataBindingSourceCreator {
+interface DataBindingSourceCreator extends MimeTypeProvider {
 
-    /**
-     * `return All of the {`link MimeType} supported by this helper
-     */
+    // the content types this creator handles, from MimeTypeProvider
     MimeType[] getMimeTypes()
 
-    /**
-     * Creates a DataBindingSource suitable for binding bindingSource to bindingTarget
-     *
-     * @param mimeType a mime type
-     * @param bindingTarget the target of the data binding
-     * @param bindingSource the value being bound
-     * @return a DataBindingSource
-     */
-    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource)
+    // the class of the targets whose bodies this creator handles, Object for any
+    Class getTargetType()
+
+    // a DataBindingSource for the body bound to a single object
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource)
+
+    // a CollectionDataBindingSource for the body bound to a collection, as bindData binds a list
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType,
+                                                                  Object bindingSource)
 }
 ----
 
 link:{api}org/grails/web/databinding/bindingsource/AbstractRequestBodyDataBindingSourceCreator.html[AbstractRequestBodyDataBindingSourceCreator]
-is an abstract class designed to be extended to simplify writing custom `DataBindingSourceCreator` classes.  Classes which
-extend `AbstractRequestbodyDatabindingSourceCreator` need to implement a method named `createBindingSource`
-which accepts an `InputStream` as an argument and returns a `DataBindingSource` as well as implementing the `getMimeTypes`
-method described in the `DataBindingSourceCreator` interface above.  The `InputStream` argument to `createBindingSource`
-provides access to the body of the request.
+is an abstract class designed to be extended to simplify writing custom `DataBindingSourceCreator` classes. It handles
+the bodies bound to any class, and reads the body of a request in the request's character encoding. Classes which
+extend it implement `createBindingSource` and `createCollectionBindingSource`, which take a `Reader` of the body and
+return a `DataBindingSource` and a `CollectionDataBindingSource`, as well as the `getMimeTypes` method of the
+interface.
 
 The code below shows a simple implementation.
-
 
 [source,groovy]
 .src/main/groovy/com/demo/myapp/databinding/MyCustomDataBindingSourceCreator.groovy
 ----
 package com.demo.myapp.databinding
 
-import grails.web.mime.MimeType
+import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
-import org...databinding.SimpleMapDataBindingSource
-import org...databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
+import grails.databinding.SimpleMapDataBindingSource
+import grails.web.mime.MimeType
+import org.grails.web.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
 
 /**
  * A custom DataBindingSourceCreator capable of parsing key value pairs out of
@@ -192,42 +184,44 @@ import org...databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreat
  *
  * name:Herman,age:99,town:STL
  *
+ * A body bound to a collection has one such line for each element.
  */
 class MyCustomDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
 
     @Override
-    public MimeType[] getMimeTypes() {
+    MimeType[] getMimeTypes() {
         [new MimeType('text/custom+demo+csv')] as MimeType[]
     }
 
     @Override
-    protected DataBindingSource createBindingSource(InputStream inputStream) {
-        def map = [:]
+    protected DataBindingSource createBindingSource(Reader reader) {
+        new SimpleMapDataBindingSource(parse(reader.text))
+    }
 
-        def reader = new InputStreamReader(inputStream)
+    @Override
+    protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
+        List<DataBindingSource> sources = reader.readLines().findAll { it.trim() }.collect { String line ->
+            (DataBindingSource) new SimpleMapDataBindingSource(parse(line))
+        }
+        return { -> sources } as CollectionDataBindingSource
+    }
 
-        // this is an obviously naive parser and is intended
-        // for demonstration purposes only.
-
-        reader.eachLine { line ->
-            def keyValuePairs = line.split(',')
-            keyValuePairs.each { keyValuePair ->
-                if(keyValuePair?.trim()) {
-                    def keyValuePieces = keyValuePair.split(':')
-                    def key = keyValuePieces[0].trim()
-                    def value = keyValuePieces[1].trim()
-                    map<<key>> = value
-                }
+    // this is an obviously naive parser and is intended
+    // for demonstration purposes only
+    private static Map parse(String text) {
+        Map map = [:]
+        text.split(',').each { String keyValuePair ->
+            if (keyValuePair?.trim()) {
+                def keyValuePieces = keyValuePair.split(':')
+                map.put(keyValuePieces[0].trim(), keyValuePieces[1].trim())
             }
         }
-
-        // create and return a DataBindingSource which contains the parsed data
-        new SimpleMapDataBindingSource(map)
+        map
     }
 }
 ----
 
-An instance of `MyCustomDataSourceCreator` needs to be registered in the spring application context.
+An instance of `MyCustomDataBindingSourceCreator` needs to be registered in the spring application context.
 
 [source,groovy]
 .grails-app/conf/spring/resources.groovy
