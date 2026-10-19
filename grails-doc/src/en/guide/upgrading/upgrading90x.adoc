@@ -593,8 +593,11 @@ value outside any object or array, where it threw a `JSONException`.
 * `array()`, `object()`, `key()` and the `value` methods no longer go through the protected `append` and `comma`
 methods. A subclass that overrides those to change the output, or writes to the `writer` field directly, must use the
 public methods instead.
-* `PrettyPrintJSONWriter` still indents as Grails 8 did, and is deprecated. Use
-`new JSONWriter(writer, new JsonMapperSupport(jsonMapper), true)`, which indents with the mapper's default pretty printer.
+* `PrettyPrintJSONWriter` still indents as Grails 8 did, and is deprecated. Use `new JSONWriter(writer, true)`, which
+indents with Jackson's default pretty printer and writes with a default `JsonMapper`, as `new JSONWriter(writer)` does. To
+indent the JSON the converter writes, set its `prettyPrint` property, as `toString(true)` does, or
+`grails.converters.json.pretty.print`: it indents as Grails 8 did with `grails.converters.json.legacy` left `true`, and
+with the application's `JsonMapper` with it set to `false`.
 
 The JavaCC JSON parser in `org.grails.web.json.parser` (`JSONParser`), which Grails does not use, is deprecated. Use
 `JSON.parse` or `new JSONObject(String)`.
@@ -692,8 +695,10 @@ grails:
                     enabled: true
 ----
 
-Grails then registers the module with the mapper, as the `domainClassJacksonModule` bean, which you can also add to a
-`JsonMapper` you build yourself. The mapper renders associated instances as references of their id, such as `{"id":3}`,
+Grails then registers the module as a Jackson `JacksonModule` bean named `domainClassJacksonModule`, which Spring Boot
+adds to its `JsonMapper` and to every mapper built from its `JsonMapper.Builder` bean. To add it to a `JsonMapper` you
+build otherwise, inject that bean as a `tools.jackson.databind.JacksonModule` and pass it to the builder's `addModule`.
+The mapper renders associated instances as references of their id, such as `{"id":3}`,
 or in full with `grails.converters.json.default.deep`, and proxies as the instances they proxy, and names the id of a
 reference as the referenced class names it.
 

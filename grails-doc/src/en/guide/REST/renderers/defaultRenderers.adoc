@@ -170,8 +170,9 @@ grails:
                     enabled: true
 ----
 
-Grails then registers the module with the mapper, as the `domainClassJacksonModule` bean, which you can also add to a
-`JsonMapper` you build yourself.
+Grails then registers the module as a Jackson `JacksonModule` bean named `domainClassJacksonModule`, which Spring Boot
+adds to its `JsonMapper` and to every mapper built from its `JsonMapper.Builder` bean. To add it to a `JsonMapper` you
+build otherwise, inject that bean as a `tools.jackson.databind.JacksonModule` and pass it to the builder's `addModule`.
 
 
 ==== Date and Time Rendering

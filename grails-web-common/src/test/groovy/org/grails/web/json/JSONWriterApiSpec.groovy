@@ -111,6 +111,22 @@ class JSONWriterApiSpec extends Specification {
         ({ JSONWriter w -> w.array().endArray() })    | ({ w -> w.value(1L) })            | 'Value out of sequence'
     }
 
+    void "a writer made to pretty print indents as a default JsonMapper's default pretty printer does"() {
+        given:
+        def indented = new StringWriter()
+        def plain = new StringWriter()
+        def unindented = new StringWriter()
+
+        when:
+        new JSONWriter(indented, true).object().key('a').value(1).key('b').array().value(2).endArray().endObject()
+        new JSONWriter(plain, false).object().key('a').value(1).endObject()
+        new JSONWriter(unindented).object().key('a').value(1).endObject()
+
+        then:
+        indented.toString() == JsonMapper.builder().build().writerWithDefaultPrettyPrinter().writeValueAsString([a: 1, b: [2]])
+        plain.toString() == unindented.toString()
+    }
+
     void "the nesting depth is the number of objects and arrays the next value is written in"() {
         given:
         def writer = new JSONWriter(new StringWriter())

@@ -100,6 +100,17 @@ public class JSONWriter {
     }
 
     /**
+     * Makes a fresh JSONWriter, which writes with a default JsonMapper, as {@link #JSONWriter(Writer)} does.
+     *
+     * @param w the writer to write the JSON text to
+     * @param prettyPrint whether to indent the JSON text with Jackson's default pretty printer
+     * @since 9.0
+     */
+    public JSONWriter(Writer w, boolean prettyPrint) {
+        this(w, JsonMapperSupport.DEFAULT, prettyPrint);
+    }
+
+    /**
      * Makes a fresh JSONWriter.
      *
      * @param w the writer to write the JSON text to

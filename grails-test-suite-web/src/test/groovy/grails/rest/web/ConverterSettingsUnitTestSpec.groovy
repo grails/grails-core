@@ -21,6 +21,7 @@ package grails.rest.web
 import groovy.json.JsonSlurper
 
 import org.springframework.validation.BeanPropertyBindingResult
+import tools.jackson.databind.JacksonModule
 import tools.jackson.databind.json.JsonMapper
 
 import grails.artefact.Artefact
@@ -77,6 +78,18 @@ class ConverterDomainModuleSettingUnitTestSpec extends Specification
 
         then: 'the association is a reference of its id'
         written == [id: book.id, title: 'Grails', shelf: [id: shelf.id]]
+    }
+
+    void "a mapper built from Spring Boot's builder, or with the domainClassJacksonModule bean, renders it as Boot's mapper does"() {
+        given:
+        def shelf = new ConverterSettingsShelf(name: 'top').save()
+        def book = new ConverterSettingsBook(title: 'Grails', shelf: shelf).save()
+        def expected = applicationContext.getBean(JsonMapper).writeValueAsString(book)
+
+        expect:
+        applicationContext.getBean(JsonMapper.Builder).build().writeValueAsString(book) == expected
+        JsonMapper.builder().addModule(applicationContext.getBean('domainClassJacksonModule', JacksonModule)).build()
+                .writeValueAsString(book) == expected
     }
 }
 
