@@ -210,8 +210,9 @@ An accept header that contains no registered content types also results in `all`
 `application/problem+json` and `application/problem+xml`, result in `json` and `xml`, read as `application/json` and
 `application/xml` where those are configured, and otherwise as the first type of the format, in the accept header and in
 `Content-Type`, unless `grails.mime.types`, or a `MimeTypeProvider` bean, such as a renderer or binding source creator, provides a type of that name, so a client that accepts only a problem type is answered as
-one that asks for that format: an action that does not respond in it answers `406 Not Acceptable`, and `withFormat`
-runs its `*` block where it has none for that format, and no block where it has neither. Media type names in the accept header and in `Content-Type` are matched case-insensitively, so `Application/JSON` results in `json`.
+one that asks for that format: an action that does not respond in it answers `406 Not Acceptable`, unless it responds
+with a `ProblemDetail`, which `respond` writes as Spring MVC writes it, whatever formats the action lists, and
+`withFormat` runs its `*` block where it has none for that format, and no block where it has neither. Media type names in the accept header and in `Content-Type` are matched case-insensitively, so `Application/JSON` results in `json`.
 
 
 
