@@ -18,14 +18,20 @@
  */
 package org.apache.grails.web.databinding.aot;
 
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
+import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator;
+
 /**
- * Registers the data binding API a request is bound through.
+ * Registers the data binding API a request is bound through, and the constructor of the JSON binding source creator
+ * that parses with Jackson the JSON bodies no creator bean handles, which is created by its class.
  *
  * <p>Binding is reached only by a request that carries a body or parameters to bind, so a
  * read-only walk of an application never records it and the absence shows up the first time
@@ -58,5 +64,8 @@ public class DataBindingRuntimeHints implements RuntimeHintsRegistrar {
                     MemberCategory.INVOKE_PUBLIC_METHODS,
                     MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
         }
+        // created by its class, to parse the JSON bodies no creator bean handles with Jackson
+        hints.reflection().registerType(JsonDataBindingSourceCreator.class,
+                type -> type.withConstructor(List.of(), ExecutableMode.INVOKE));
     }
 }
