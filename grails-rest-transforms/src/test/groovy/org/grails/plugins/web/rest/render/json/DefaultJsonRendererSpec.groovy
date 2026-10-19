@@ -569,6 +569,31 @@ class DefaultJsonRendererSpec extends Specification {
         'a problem' | ProblemDetail.forStatus(409)
     }
 
+    void 'an unknown named JSON configuration fails where a JSON view renders the response too, for #description'() {
+        given: 'a JSON view of the action, and one respond names'
+        def locator = Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'show', 'json') >> Stub(GroovyPageScriptSource)
+            findViewForFormat('book', 'conflict', 'json') >> Stub(GroovyPageScriptSource)
+        }
+        def renderer = new DefaultJsonRenderer<Object>(Object, locator)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+
+        when:
+        renderer.render(value, new ServletRenderContext(webRequest, [jsonConfiguration: 'missing'] + arguments))
+
+        then:
+        def error = thrown(IllegalArgumentException)
+        error.message == 'Named JSON configuration [missing] is not registered.'
+        webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW) == null
+
+        where:
+        description                          | value                         | arguments
+        'a value the action view renders'    | [ok: true]                    | [:]
+        'a problem the view respond names'   | ProblemDetail.forStatus(409)  | [view: 'conflict']
+    }
+
     void setup() {
         new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication()).initialize()
     }

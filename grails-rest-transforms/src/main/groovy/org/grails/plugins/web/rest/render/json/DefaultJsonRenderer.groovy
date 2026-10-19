@@ -174,6 +174,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         final view = viewName && !(object instanceof Errors) ?
                 resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
         if (view) {
+            // a name that is wrong is found where a view writes the response, as where this renderer writes it
+            requireRegisteredConfiguration(context)
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view; one an
             // application registers for problems renders their HTML page rather than the view respond names
             Renderer htmlRenderer = object instanceof ProblemDetail ? null : rendererRegistry?.findRenderer(MimeType.HTML, object)
@@ -191,18 +193,26 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     /**
+     * The named JSON configuration {@code respond} selects, which must be registered: also for a problem, which Spring's
+     * message converters write whatever the configuration, and for a view, so that a name that is wrong is found
+     * whatever writes the response.
+     */
+    private String requireRegisteredConfiguration(RenderContext context) {
+        String selectedConfiguration = context.arguments?.get('jsonConfiguration')?.toString()
+        if (selectedConfiguration && (namedJsonRenderer == null || !namedJsonRenderer.contains(selectedConfiguration))) {
+            throw new IllegalArgumentException("Named JSON configuration [$selectedConfiguration] is not registered.")
+        }
+        selectedConfiguration
+    }
+
+    /**
      * Subclasses should override to customize JSON response rendering
      *
      * @param object
      * @param context
      */
     protected void renderJson(T object, RenderContext context) {
-        String selectedConfiguration = context.arguments?.get('jsonConfiguration')?.toString()
-        if (selectedConfiguration && (namedJsonRenderer == null || !namedJsonRenderer.contains(selectedConfiguration))) {
-            // also for a problem, which Spring's message converters write whatever the configuration, so that a name
-            // that is wrong is found whatever value this renderer writes
-            throw new IllegalArgumentException("Named JSON configuration [$selectedConfiguration] is not registered.")
-        }
+        String selectedConfiguration = requireRegisteredConfiguration(context)
         // validation errors are written as the problem they make, as a problem is
         if (selectedConfiguration && !(object instanceof ProblemDetail || object instanceof Errors)) {
             try {
