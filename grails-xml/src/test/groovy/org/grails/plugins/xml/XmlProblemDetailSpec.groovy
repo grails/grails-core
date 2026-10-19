@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
 import tools.jackson.databind.BeanDescription
+import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.SerializationConfig
 import tools.jackson.databind.json.JsonMapper
@@ -330,7 +331,10 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'a bean that unwraps two beans of one class with properties it ignores',
                 'a bean that unwraps two beans of one class with one prefix and properties it ignores',
                 'beans an unwrapped list property names the properties of',
-                'beans an unwrapped list property ignores properties of'
+                'beans an unwrapped list property ignores properties of',
+                'an extension member named like a member of RFC 9457',
+                'a subclass with an extension member named like one of its properties',
+                'a bean whose any-getter writes the name of one of its properties'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -354,7 +358,10 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new TwiceIgnoringOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
                 { -> extended('member', new TwicePrefixingOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
                 { -> extended('member', new UnwrappedIncludingListOwner(beans: [new ListBean(tags: ['a']), new ListBean(tags: ['b', 'c'])])) },
-                { -> extended('member', new UnwrappedIgnoringListOwner(beans: [new LabelledListBean(label: 'x', tags: ['a']), new LabelledListBean(label: 'y', tags: ['b', 'c'])])) }
+                { -> extended('member', new UnwrappedIgnoringListOwner(beans: [new LabelledListBean(label: 'x', tags: ['a']), new LabelledListBean(label: 'y', tags: ['b', 'c'])])) },
+                { -> extended('status', 'x') },
+                { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { setProperty('product', 'other') } },
+                { -> extended('member', new DuplicatingAnyGetter()) }
         ]
     }
 
@@ -426,6 +433,25 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then: 'its values are elements of its name, unwrapped, as without the module'
         tree(written)[3].find { it[0] == 'member' } ==
                 ['member', 'urn:ietf:rfc:7807', null, [['point', '', null, '2'], ['point', '', null, '1'], ['name', '', null, 'a']]]
+    }
+
+    void "without a converter for problems, the read features of the JSON converter's mapper do not change the problem written"() {
+        given: "Spring's JSON converter, whose mapper reads arrays as Java arrays and floating-point numbers as BigDecimal"
+        def reading = JsonMapper.builder()
+                .enable(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                .build()
+        def withFeatures = new DefaultXmlRenderer<Object>(Object)
+        withFeatures.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(reading)] }
+        def plain = new DefaultXmlRenderer<Object>(Object)
+        plain.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
+        def problem = { -> extended('member', new ListBean(tags: ['a', 'b'])).tap { it.setProperty('ratio', 1.0E20d) } }
+
+        when:
+        def written = tree(renderProblem(withFeatures, problem()).contentAsString)
+
+        then:
+        written == tree(renderProblem(plain, problem()).contentAsString)
+        written[3].find { it[0] == 'ratio' }[3] == '1.0E20'
     }
 
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
@@ -888,6 +914,15 @@ class UnwrappedIgnoringListOwner {
     @JsonUnwrapped
     @JsonIgnoreProperties(['label'])
     List<LabelledListBean> beans
+}
+
+class DuplicatingAnyGetter {
+    String code = 'a'
+
+    @JsonAnyGetter
+    Map<String, Object> other() {
+        [code: 'b']
+    }
 }
 
 class UntypedPayload {

@@ -24,9 +24,14 @@ import javax.xml.stream.XMLStreamWriter
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
+import tools.jackson.core.JsonParser
+import tools.jackson.core.JsonToken
 import tools.jackson.core.StreamWriteFeature
 import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.databind.exc.MismatchedInputException
 import tools.jackson.databind.util.RawValue
+import tools.jackson.databind.util.TokenBuffer
 
 import org.springframework.http.ProblemDetail
 
@@ -34,8 +39,8 @@ import org.springframework.http.ProblemDetail
  * Writes a problem in the XML format of RFC 9457, as Spring's Jackson XML converter writes it, for an application without
  * {@code jackson-dataformat-xml}: a {@code problem} element in the {@code urn:ietf:rfc:7807} namespace, with the members
  * of the problem, those of a subclass included, and its extension members, as a mapper with Spring's mix-in for problems
- * converts them, the properties of a bean in no namespace and the entries of a map in that of the map, as Spring's
- * converter writes them. A list is written as an element for each of its values, wrapped in an element of its name where
+ * writes them, every member it writes included, also one whose name it writes twice, the properties of a bean in no
+ * namespace and the entries of a map in that of the map, as Spring's converter writes them. A list is written as an element for each of its values, wrapped in an element of its name where
  * it is the property of a bean, and a {@code null} as an {@code xsi:nil} element.
  *
  * @since 9.0
@@ -60,23 +65,41 @@ final class ProblemXml {
     /**
      * @param problem the problem
      * @param writer the response writer
-     * @param mapper a mapper with Spring's {@code ProblemDetailJacksonMixin}, which converts the problem as Spring's
+     * @param mapper a mapper with Spring's {@code ProblemDetailJacksonMixin}, which writes the problem as Spring's
      *        converters write it
      */
     static void write(ProblemDetail problem, Writer writer, ObjectMapper mapper) {
         XMLStreamWriter xml = OUTPUT.createXMLStreamWriter(writer)
         xml.writeStartElement('problem')
         xml.writeDefaultNamespace(NAMESPACE)
-        Set<String> extensions = problem.properties?.keySet() ?: Collections.<String> emptySet()
         boolean plainDecimals = mapper.isEnabled(StreamWriteFeature.WRITE_BIGDECIMAL_AS_PLAIN)
-        Map<?, ?> converted = ProblemBeans.marking(mapper).convertValue(problem, Map)
-        converted.each { Object name, Object value ->
-            String member = name.toString()
-            if (!ProblemBeans.isMarker(member)) {
-                // Spring's converter writes the members of RFC 9457 and the extension members in its namespace, and the
-                // properties of a subclass, as those of any bean, in none
-                boolean property = !(MEMBERS.contains(member) || extensions.contains(member))
-                element(xml, writer, member, value, property ? '' : NAMESPACE, NAMESPACE, plainDecimals, property)
+        // the tokens the mapper writes, read back without its read features, with every member it writes, one whose name
+        // it writes twice included, as Spring's converters write them
+        TokenBuffer buffer = ProblemBeans.marking(mapper).writer().without(SerializationFeature.WRAP_ROOT_VALUE)
+                .writeValueIntoBuffer(problem)
+        Object converted
+        JsonParser parser = buffer.asParser()
+        try {
+            JsonToken first = parser.nextToken()
+            if (first != JsonToken.START_OBJECT) {
+                throw MismatchedInputException.from(parser, Map, 'A problem is written as an object')
+            }
+            converted = read(parser, first)
+        }
+        finally {
+            parser.close()
+        }
+        boolean extension = false
+        for (Map.Entry<String, Object> entry : ((Members) converted).entries) {
+            String member = entry.key
+            if (member == ProblemBeans.ANY_START || member == ProblemBeans.ANY_END) {
+                extension = member == ProblemBeans.ANY_START
+            }
+            else if (!ProblemBeans.isMarker(member)) {
+                // Spring's converter writes the members of RFC 9457 and the extension members, which the any-getter
+                // writes, in its namespace, and the properties of a subclass, as those of any bean, in none
+                boolean property = !(extension || MEMBERS.contains(member))
+                element(xml, writer, member, entry.value, property ? '' : NAMESPACE, NAMESPACE, plainDecimals, property)
             }
         }
         xml.writeEndElement()
@@ -124,14 +147,14 @@ final class ProblemXml {
         else {
             xml.writeStartElement(name)
             declare(xml, namespace, enclosing)
-            if (value instanceof Map) {
-                Map<?, ?> members = (Map<?, ?>) value
+            if (value instanceof Members) {
+                Members members = (Members) value
                 // the properties of a bean are in no namespace, and the entries of a map in that of the map
-                boolean bean = members.keySet().any { Object key -> ProblemBeans.isMarker(key) }
+                boolean bean = members.bean
                 String inner = bean ? '' : namespace
-                members.each { Object key, Object member ->
-                    if (!ProblemBeans.isMarker(key)) {
-                        element(xml, writer, key.toString(), member, inner, namespace, plainDecimals, bean)
+                for (Map.Entry<String, Object> member : members.entries) {
+                    if (!ProblemBeans.isMarker(member.key)) {
+                        element(xml, writer, member.key, member.value, inner, namespace, plainDecimals, bean)
                     }
                 }
             }
@@ -145,6 +168,55 @@ final class ProblemXml {
                 xml.writeCharacters(text(value, plainDecimals))
             }
             xml.writeEndElement()
+        }
+    }
+
+    /** Reads the value that starts with the token given, an object as its members, in their order. */
+    private static Object read(JsonParser parser, JsonToken token) {
+        switch (token) {
+            case JsonToken.START_OBJECT:
+                List<Map.Entry<String, Object>> entries = []
+                for (JsonToken next = parser.nextToken(); next == JsonToken.PROPERTY_NAME; next = parser.nextToken()) {
+                    String name = parser.currentName()
+                    entries << (Map.Entry<String, Object>) new AbstractMap.SimpleImmutableEntry<String, Object>(name,
+                            read(parser, parser.nextToken()))
+                }
+                return new Members(entries)
+            case JsonToken.START_ARRAY:
+                List<Object> values = []
+                for (JsonToken next = parser.nextToken(); next != JsonToken.END_ARRAY; next = parser.nextToken()) {
+                    values << read(parser, next)
+                }
+                return values
+            case JsonToken.VALUE_STRING:
+                return parser.getString()
+            case JsonToken.VALUE_NUMBER_INT:
+            case JsonToken.VALUE_NUMBER_FLOAT:
+                // the number the serializer wrote
+                return parser.getNumberValue()
+            case JsonToken.VALUE_TRUE:
+                return Boolean.TRUE
+            case JsonToken.VALUE_FALSE:
+                return Boolean.FALSE
+            case JsonToken.VALUE_EMBEDDED_OBJECT:
+                // binary data and raw values
+                return parser.getEmbeddedObject()
+            default:
+                return null
+        }
+    }
+
+    /** The members of an object as the mapper writes them, in their order, a name it writes twice included. */
+    private static final class Members {
+
+        final List<Map.Entry<String, Object>> entries
+
+        Members(List<Map.Entry<String, Object>> entries) {
+            this.entries = entries
+        }
+
+        boolean isBean() {
+            entries.any { Map.Entry<String, Object> entry -> ProblemBeans.isMarker(entry.key) }
         }
     }
 

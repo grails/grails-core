@@ -47,12 +47,15 @@ import tools.jackson.databind.introspect.NopAnnotationIntrospector;
 import tools.jackson.databind.introspect.VirtualAnnotatedMember;
 import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.AnyGetterWriter;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.BeanSerializerBuilder;
 import tools.jackson.databind.ser.FilterProvider;
 import tools.jackson.databind.ser.PropertyFilter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.VirtualBeanPropertyWriter;
+import tools.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
 import tools.jackson.databind.util.NameTransformer;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 
@@ -77,6 +80,14 @@ final class ProblemBeans {
      * mapper orders the properties of the bean.
      */
     static final String ARRAY_MARKER = ProblemBeans.class.getName() + "#array";
+
+    /**
+     * The keys of the markers written before and after the entries of an any-getter, such as the extension members of a
+     * problem.
+     */
+    static final String ANY_START = MARKER + "any";
+
+    static final String ANY_END = MARKER + "/any";
 
     private static final Map<ObjectMapper, ObjectMapper> MARKING = Collections.synchronizedMap(new WeakHashMap<>());
 
@@ -251,6 +262,71 @@ final class ProblemBeans {
             marked.add(new MarkerWriter(definition, description, type));
             marked.addAll(properties);
             return marked;
+        }
+
+        // the entries of an any-getter are marked, so that the extension members of a problem, which Spring's converter
+        // writes in its namespace, are told from the properties of a subclass of the same name, which it writes in none
+        @Override
+        public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription.Supplier beanDescription,
+                BeanSerializerBuilder builder) {
+            List<BeanPropertyWriter> properties = new ArrayList<>(builder.getProperties());
+            BeanPropertyWriter[] filtered = builder.getFilteredProperties() == null ? null :
+                    builder.getFilteredProperties().clone();
+            for (int i = 0; i < properties.size(); i++) {
+                if (properties.get(i) instanceof AnyGetterWriter anyGetter && !(anyGetter instanceof MarkedAnyGetter)) {
+                    MarkedAnyGetter marked = new MarkedAnyGetter(anyGetter);
+                    properties.set(i, marked);
+                    if (filtered != null && filtered[i] != null) {
+                        filtered[i] = filtered[i] == anyGetter ? marked :
+                                FilteredBeanPropertyWriter.constructViewBased(marked, anyGetter.getViews());
+                    }
+                }
+            }
+            builder.setProperties(properties);
+            builder.setFilteredProperties(filtered);
+            return builder;
+        }
+    }
+
+    /** An any-getter that writes a marker before and after its entries, and is otherwise the one it marks. */
+    private static final class MarkedAnyGetter extends AnyGetterWriter {
+
+        private static final long serialVersionUID = 1L;
+
+        private final AnyGetterWriter anyGetter;
+
+        MarkedAnyGetter(AnyGetterWriter anyGetter) {
+            super(anyGetter, null, anyGetter.getMember(), null);
+            this.anyGetter = anyGetter;
+        }
+
+        @Override
+        public void fixAccess(SerializationConfig config) {
+            anyGetter.fixAccess(config);
+        }
+
+        @Override
+        public void resolve(SerializationContext context) {
+            anyGetter.resolve(context);
+        }
+
+        @Override
+        public void getAndSerialize(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
+            generator.writeName(ANY_START);
+            generator.writeBoolean(true);
+            anyGetter.getAndSerialize(bean, generator, context);
+            generator.writeName(ANY_END);
+            generator.writeBoolean(true);
+        }
+
+        @Override
+        public void getAndFilter(Object bean, JsonGenerator generator, SerializationContext context, PropertyFilter filter)
+                throws Exception {
+            generator.writeName(ANY_START);
+            generator.writeBoolean(true);
+            anyGetter.getAndFilter(bean, generator, context, filter);
+            generator.writeName(ANY_END);
+            generator.writeBoolean(true);
         }
     }
 
