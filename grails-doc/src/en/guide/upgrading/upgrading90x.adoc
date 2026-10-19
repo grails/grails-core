@@ -72,7 +72,11 @@ A library compiled with classic call sites needs the module too, whatever the ap
 XML conversion, request-body binding, and REST renderers now live in the optional
 `grails-xml` module. In Grails 9 the web starter still brings it, and so does `grails-web-boot`, which the
 applications forge and the profiles generate list instead of the starter, preserving existing XML endpoints.
-JSON-only applications can exclude `org.apache.grails:grails-xml` now:
+The module depends on `grails-rest-transforms`, and through it on `grails-controllers`, `grails-datasource`,
+`grails-converters` and `grails-web-databinding`, so `grails-web-boot` brings those modules and their plugins too.
+The applications forge generates list them already; a build that lists `grails-web-boot` without them now loads the
+REST responder, controllers, data source, converters and XML plugins, and excluding `grails-xml` leaves out again those
+that nothing else in the build brings. JSON-only applications can exclude `org.apache.grails:grails-xml` now:
 
 [source,groovy]
 .build.gradle
