@@ -28,6 +28,7 @@ import jakarta.xml.bind.DatatypeConverter
 import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
@@ -92,23 +93,32 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     }
 
     /**
+     * Whether the HAL JSON bodies of this renderer's type are parsed by the application's
+     * {@code halJsonDataBindingSourceCreator} bean, as {@code grails.databinding.json.jackson} sets; otherwise a creator of
+     * the renderer's own parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper} bean
+     * the application defines.
+     *
+     * @since 9.0
+     */
+    @Value('${grails.databinding.json.jackson:false}')
+    boolean useJackson = false
+
+    /**
      * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types where
-     * it parses with Jackson, as {@code grails.databinding.json.jackson} sets. Otherwise a creator of the renderer's own
-     * parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper} bean the application
-     * defines.
+     * {@link #useJackson} is set, whatever creator the application defines under that name.
      *
      * @since 9.0
      */
     @Autowired(required = false)
     @Qualifier('halJsonDataBindingSourceCreator')
-    HalJsonDataBindingSourceCreator halJsonDataBindingSourceCreator
+    DataBindingSourceCreator halJsonDataBindingSourceCreator
 
     @PostConstruct
     void initialize() {
         if (dataBindingSourceRegistry != null) {
             final thisType = getTargetType()
             final thisMimeTypes = getMimeTypes()
-            final DataBindingSourceCreator parser = halJsonDataBindingSourceCreator?.useJackson ?
+            final DataBindingSourceCreator parser = useJackson && halJsonDataBindingSourceCreator != null ?
                     halJsonDataBindingSourceCreator : new HalJsonDataBindingSourceCreator()
             final halDataBindingSourceCreator = new DataBindingSourceCreator() {
                 @Override

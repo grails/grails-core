@@ -21,6 +21,8 @@ package org.grails.plugins.databinding
 
 import groovy.transform.CompileStatic
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration
@@ -107,9 +109,16 @@ class DataBindingGrailsPlugin extends Plugin {
 
         // Declared as an array rather than the original varargs parameter; Spring resolves both the
         // same way, injecting every DataBindingSourceCreator bean.
-        bean(DataBindingSourceRegistry) { DataBindingSourceCreator[] creators ->
+        bean(DataBindingSourceRegistry) { DataBindingSourceCreator[] creators, AutowireCapableBeanFactory beanFactory,
+                @Value('${grails.databinding.json.jackson:false}') boolean jackson ->
             new DefaultDataBindingSourceRegistry().tap {
                 dataBindingSourceCreators = creators
+                if (jackson) {
+                    // the JSON bodies of a type no creator bean handles are parsed as the jsonDataBindingSourceCreator bean
+                    // parses them, with the application's mapper
+                    defaultJsonDataBindingSourceCreator = beanFactory.createBean(JsonDataBindingSourceCreator)
+                }
+                // read again when Spring initializes the bean this returns
                 initialize()
             }
         }

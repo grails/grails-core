@@ -72,6 +72,8 @@ import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Shared
+import org.grails.databinding.bindingsource.DataBindingSourceCreator
+import grails.databinding.SimpleMapDataBindingSource
 import spock.lang.Specification
 
 import jakarta.xml.bind.DatatypeConverter
@@ -107,6 +109,7 @@ class HalJsonRendererSpec extends Specification {
         def registry = new DefaultDataBindingSourceRegistry()
         def renderer = new HalJsonRenderer(Product)
         renderer.dataBindingSourceRegistry = registry
+        renderer.useJackson = true
         renderer.halJsonDataBindingSourceCreator = new HalJsonDataBindingSourceCreator(
                 jsonMapper: JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build(), useJackson: true)
         renderer.initialize()
@@ -138,6 +141,27 @@ class HalJsonRendererSpec extends Specification {
 
         then: 'the default parser rejects it'
         thrown(InvalidRequestBodyException)
+    }
+
+    void 'a HAL body of the type of a renderer is parsed by whatever creator the application names halJsonDataBindingSourceCreator, as the setting has it parse bodies'() {
+        given: 'an application creator of its own under that name'
+        def registry = new DefaultDataBindingSourceRegistry()
+        def renderer = new HalJsonRenderer(Product)
+        renderer.dataBindingSourceRegistry = registry
+        renderer.useJackson = true
+        renderer.halJsonDataBindingSourceCreator = Stub(DataBindingSourceCreator) {
+            createDataBindingSource(_, _, _) >> new SimpleMapDataBindingSource([name: 'from the application creator'])
+        }
+        renderer.initialize()
+        def request = new MockHttpServletRequest()
+        request.contentType = HalJsonRenderer.MIME_TYPE.name
+        request.content = '{"name": "MacBook"}'.bytes
+
+        when:
+        def source = registry.createDataBindingSource(HalJsonRenderer.MIME_TYPE, Product, request)
+
+        then:
+        source.getPropertyValue('name') == 'from the application creator'
     }
 
     @Issue('GRAILS-10372')
