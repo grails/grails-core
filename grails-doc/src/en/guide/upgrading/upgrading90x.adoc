@@ -1014,6 +1014,8 @@ holder for each feature with one for the URL mappings it tests, as in Grails 8. 
 has, is kept: a test resolves locales with the resolver `grails.i18n.localeResolver` configures, as the application does,
 where the traits replaced it with a session resolver. A spec that relies on changing the locale of a request where the
 application configures a fixed or accept-header resolver sets `grails.i18n.localeResolver` to `session` in its
-`doWithConfig`. Without `grails-xml` on the test classpath, setting `request.xml` to an object to convert,
+`doWithConfig`. `JsonViewUnitTest` keeps them as the web test traits do: a URL mappings holder or link generator a spec
+declares, and any locale resolver the context has, the i18n plugin's among them, where Grails 8 replaced them with its
+own, a session locale resolver among them. Without `grails-xml` on the test classpath, setting `request.xml` to an object to convert,
 rather than to a `String` of XML, or reading `request.XML` fails with an `IllegalStateException` that names the module. `GrailsUnitTest` and `ServiceUnitTest` do
 not load XML or the web plugins just because those modules are on the classpath. See <<unitTesting,Unit Testing>>.

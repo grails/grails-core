@@ -34,7 +34,8 @@ plugin, which a test including the `controllers` or `urlMappings` plugin loads, 
 generate links from the application's `UrlMappings` and absolute links from `grails.serverURL`, or
 `http://localhost:8080`. Such a test declares its URL mappings holder in `doWithSpring` or
 `beanRegistrar()`, since the plugin's holder takes the place of one a configuration class declares. A
-`UrlMappingsUnitTest` replaces the holder for each feature with one for the URL mappings it tests. Non-web traits such as `ServiceUnitTest` retain their own plugin selection.
+`UrlMappingsUnitTest` replaces the holder for each feature with one for the URL mappings it tests.
+`JsonViewUnitTest` keeps the URL mappings holder, link generator and locale resolver in the same way. Non-web traits such as `ServiceUnitTest` retain their own plugin selection.
 
 Web unit tests do not start Spring MVC, but they build its message converters the same way: Spring's
 defaults for the libraries on the test classpath, with JSON written by Boot's configured mapper, then
