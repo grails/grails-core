@@ -131,7 +131,7 @@ class JsonMapperRenderingSpec extends Specification {
         def buffer = new StreamCharBuffer()
         buffer.writer.write('</b>')
 
-        expect: "by Grails' JSON encoder, as in Grails 8"
+        expect: 'with the HTML end tag escaped as in Grails 8'
         new JSON("</a>${1}").toString() == '"<\\u002fa>1"'
         new JSON([gstring: "</a>${1}", buffer: buffer, list: ["</c>${2}"]]).toString() ==
                 '{"gstring":"<\\u002fa>1","buffer":"<\\u002fb>","list":["<\\u002fc>2"]}'
@@ -141,6 +141,29 @@ class JsonMapperRenderingSpec extends Specification {
         "the application's mapper, to which Grails adds a GString serializer" | [:]                                     | true
         'the default mapper'                                                   | [:]                                     | false
         'the legacy converter'                                                 | ['grails.converters.json.legacy': true] | false
+    }
+
+    void "a String, a GString and a StreamCharBuffer write a control character alike, with #description"() {
+        given:
+        initialize(config, mapper ? applicationContext {
+            it.registerBean(JsonMapper, {
+                def builder = JsonMapper.builder()
+                new GrailsJsonMapperCustomizer().customize(builder)
+                builder.build()
+            })
+        } : null)
+        def buffer = new StreamCharBuffer()
+        buffer.writer.write('a\u001Bb')
+
+        expect:
+        new JSON([string: 'a\u001Bb', gstring: "a\u001B${'b'}", buffer: buffer]).toString() ==
+                "{\"string\":\"a${escaped}b\",\"gstring\":\"a${escaped}b\",\"buffer\":\"a${escaped}b\"}"
+
+        where:
+        description                                                            | config                                  | mapper || escaped
+        "the application's mapper, to which Grails adds a GString serializer" | [:]                                     | true   || '\\u001B'
+        'the default mapper'                                                   | [:]                                     | false  || '\\u001B'
+        'the legacy converter, as Grails 8 wrote it'                          | ['grails.converters.json.legacy': true] | false  || '\\u001b'
     }
 
     void "with several mappers and none primary, the converter writes with Spring Boot's, as respond and binding do"() {

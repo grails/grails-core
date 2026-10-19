@@ -603,8 +603,11 @@ through a Jackson `JsonGenerator`, and `new JSONWriter(writer)` writes with a de
 
 * It keeps its public methods, rejects the same misplaced calls, and writes the same JSON text, apart from a `NaN` or
 infinite `double`, which it writes as a string (`"NaN"`) where Grails 8 wrote `NaN`, which is not JSON. A `JSONWriter`
-given the application's `JsonMapper`, as the converter is with `grails.converters.json.legacy` set to `false`, writes as
-that mapper does, such as `\u001B` for the escape character where Grails 8 wrote `\u001b`. It also accepts a single
+given the application's `JsonMapper`, as the converter is with `grails.converters.json.legacy` set to `false`, escapes
+every string as that mapper does, a `GString`, a `StreamCharBuffer` or the text of any other value as a `String`, such as
+`\u001B` for the escape character where Grails 8 wrote `\u001b`; a `JSONObject` or `JSONArray` it is given is written as
+the JSON text it writes itself, as in Grails 8. Wherever a `JSONWriter` writes, `</` is written as `<\u002f`, as the
+converter always wrote it, also where `grails-converters` is not on the classpath, where Grails 8 wrote `<\/`. It also accepts a single
 value outside any object or array, where it threw a `JSONException`.
 * The generator buffers the text. It reaches the `Writer` as the buffer fills, once the JSON text is complete, and when
 `flush()` is called, rather than as each value is written. The `Writer` itself is not flushed or closed.

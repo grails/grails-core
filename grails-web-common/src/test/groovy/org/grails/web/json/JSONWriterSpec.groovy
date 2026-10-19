@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import spock.lang.Issue
 import spock.lang.Specification
 import tools.jackson.core.JsonGenerator
+import tools.jackson.core.json.JsonWriteFeature
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.cfg.DateTimeFeature
 import tools.jackson.databind.json.JsonMapper
@@ -118,7 +119,7 @@ class JSONWriterSpec extends Specification {
         out.toString() == '{"list":[{"a":1}]}'
     }
 
-    void "a GString and a StreamCharBuffer are escaped for an HTML script element, as in Grails 8"() {
+    void "a GString and a StreamCharBuffer are escaped as a String is, for an HTML script element"() {
         given:
         def buffer = new StreamCharBuffer()
         buffer.writer.write('</b> ')
@@ -126,8 +127,32 @@ class JSONWriterSpec extends Specification {
         when:
         writer.array().value("</a>${1} ").value(buffer).value('</c> ').endArray()
 
-        then: "as JSONWriter quotes them without the JSON encoder of grails-converters, which writes </ as <\\u002f, and a String by the generator"
-        out.toString() == '["<\\/a>1\\u2028","<\\/b>\\u2028","<\\u002fc>\\u2028"]'
+        then: 'by the generator, also without the JSON encoder of grails-converters, which wrote </ as <\\/'
+        out.toString() == '["<\\u002fa>1\\u2028","<\\u002fb>\\u2028","<\\u002fc>\\u2028"]'
+    }
+
+    void "a GString, a StreamCharBuffer and any other value are escaped as #description escapes a String"() {
+        given:
+        def buffer = new StreamCharBuffer()
+        buffer.writer.write('\u001B\u00e9')
+        def out = new StringWriter()
+
+        when:
+        new JSONWriter(out, support, false).array()
+                .value('\u001B\u00e9')
+                .value("\u001B${'\u00e9'}")
+                .value(buffer)
+                .value(new StringBuilder('\u001B\u00e9'))
+                .value(new TextOf('\u001B\u00e9'))
+                .endArray()
+
+        then:
+        out.toString() == '[' + ([element] * 5).join(',') + ']'
+
+        where:
+        description                                    | support                                                                                         || element
+        'a mapper that escapes non-ASCII characters'   | new JsonMapperSupport(JsonMapper.builder().enable(JsonWriteFeature.ESCAPE_NON_ASCII).build()) || '"\\u001B\\u00E9"'
+        'the default mapper, as Grails 8 escaped them' | JsonMapperSupport.DEFAULT                                                                       || '"\\u001b\u00e9"'
     }
 
     void 'a scalar root is a complete JSON document with #writerType.simpleName'() {
@@ -422,5 +447,19 @@ class AttributeSerializer extends StdSerializer<Box> {
     @Override
     void serialize(Box box, JsonGenerator generator, SerializationContext context) {
         generator.writeString((context.getAttribute('who') ?: 'none') as String)
+    }
+}
+
+class TextOf {
+
+    private final String text
+
+    TextOf(String text) {
+        this.text = text
+    }
+
+    @Override
+    String toString() {
+        text
     }
 }
