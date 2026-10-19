@@ -21,6 +21,7 @@ package org.grails.plugins.xml
 import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
+import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
@@ -374,6 +375,23 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         given: "Spring's JSON converter, whose mapper has the application's filter"
         def mapper = JsonMapper.builder()
                 .filterProvider(new SimpleFilterProvider().addFilter('onlyName', SimpleBeanPropertyFilter.filterOutAllExcept('name')))
+                .build()
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(mapper)] }
+
+        when:
+        def written = renderProblem(renderer, extended('member', new FilteredBean(name: 'a', hidden: 'b'))).contentAsString
+
+        then:
+        tree(written)[3].find { it[0] == 'member' } == ['member', 'urn:ietf:rfc:7807', null, [['name', '', null, 'a']]]
+    }
+
+    void "without a converter for problems, a bean the JSON converter's property filter filters in a view keeps its properties in no namespace"() {
+        given: "Spring's JSON converter, whose mapper has the application's filter and writes in a view that includes the properties of none"
+        def mapper = JsonMapper.builder()
+                .filterProvider(new SimpleFilterProvider().addFilter('onlyName', SimpleBeanPropertyFilter.filterOutAllExcept('name')))
+                .defaultSerializationView(PublicView)
+                .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
                 .build()
         def renderer = new DefaultXmlRenderer<Object>(Object)
         renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(mapper)] }
