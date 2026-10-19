@@ -524,6 +524,22 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         response.contentAsString == '<outOfStock/>'
     }
 
+    void "without a converter for problems, the JSON converter is asked about the class of the problem, as Spring MVC asks"() {
+        given: 'a JSON converter ahead of the plain one with a mapper for the subclass in JSON alone, so that it does not write that problem'
+        def other = new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())
+        other.registerMappersForType(OutOfStock) { Map<MediaType, JsonMapper> mappers ->
+            mappers.put(MediaType.APPLICATION_JSON, JsonMapper.builder().build())
+        }
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [other, new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
+
+        when:
+        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)
+
+        then: 'the problem is written with the mapper of the converter that writes it'
+        written[3]*.getAt(0).containsAll(['balance', 'product'])
+    }
+
     void "without a converter for problems, the problem is written with the mapper the JSON converter has for problems"() {
         given: "Spring's JSON converter, with a mapper of its own for problems, which names properties otherwise"
         def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
