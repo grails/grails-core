@@ -121,7 +121,7 @@ are replacing one of the existing helpers, use the corresponding bean name from 
 helper for a content type other than those accounted for by the core framework, the bean name may be anything that
 you like but you should take care not to conflict with one of the bean names above.
 
-A creator whose `getTargetType()` returns a class other than `Object` handles only the bodies bound to that class.
+A creator whose `getTargetType()` returns a class other than `Object` handles only the bodies bound to that class and its subclasses, or to the classes implementing it where it is an interface.
 Replacing `jsonDataBindingSourceCreator` with one leaves the JSON bodies bound to other types to Grails' default parser,
 which `grails.databinding.json.jackson` selects: `JsonSlurper` by default, as in Grails 8, or the application's Jackson
 `JsonMapper`. Likewise, replacing `xmlDataBindingSourceCreator` with one leaves the XML bodies bound to other types to
