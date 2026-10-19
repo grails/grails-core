@@ -540,6 +540,22 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         written[3]*.getAt(0).containsAll(['balance', 'product'])
     }
 
+    void "without a converter for problems, the members of RFC 9457 are in its namespace by the names the JSON converter's mapper gives them"() {
+        given: 'a mapper whose naming strategy renames them'
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = {
+            [new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())]
+        }
+
+        when:
+        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)[3]
+
+        then: 'the members of RFC 9457 in its namespace, the properties of the subclass in none'
+        written.find { it[0] == 'Status' }[1] == 'urn:ietf:rfc:7807'
+        written.find { it[0] == 'Title' }[1] == 'urn:ietf:rfc:7807'
+        written.find { it[0] == 'Balance' }[1] == ''
+    }
+
     void "without a converter for problems, the problem is written with the mapper the JSON converter has for problems"() {
         given: "Spring's JSON converter, with a mapper of its own for problems, which names properties otherwise"
         def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())

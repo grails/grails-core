@@ -39,6 +39,7 @@ import tools.jackson.databind.jsontype.TypeSerializer
 import tools.jackson.databind.util.RawValue
 import tools.jackson.databind.util.TokenBuffer
 
+import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 
 /**
@@ -60,8 +61,9 @@ final class ProblemXml {
 
     private static final String XSI = 'http://www.w3.org/2001/XMLSchema-instance'
 
-    /** The members of RFC 9457. */
-    private static final Set<String> MEMBERS = ['type', 'title', 'status', 'detail', 'instance'] as Set<String>
+    /** The names each mapper writes the members of RFC 9457 under, which its naming strategy may change. */
+    private static final Map<ObjectMapper, Set<String>> MEMBER_NAMES =
+            Collections.synchronizedMap(new WeakHashMap<ObjectMapper, Set<String>>())
 
     // The JDK's own writer, whatever StAX implementation another library puts on the classpath
     private static final XMLOutputFactory OUTPUT = XMLOutputFactory.newDefaultFactory()
@@ -105,7 +107,7 @@ final class ProblemXml {
             else if (!ProblemBeans.isMarker(member)) {
                 // Spring's converter writes the members of RFC 9457 and the extension members, which the any-getter
                 // writes, in its namespace, and the properties of a subclass, as those of any bean, in none
-                boolean property = !(extension || MEMBERS.contains(member))
+                boolean property = !(extension || memberNames(mapper).contains(member))
                 element(xml, writer, member, entry.value, property ? '' : NAMESPACE, NAMESPACE, plainDecimals, property)
             }
         }
@@ -175,6 +177,30 @@ final class ProblemXml {
                 xml.writeCharacters(text(value, plainDecimals))
             }
             xml.writeEndElement()
+        }
+    }
+
+    /** The names the mapper writes the members of RFC 9457 under, read off a problem it writes with all of them. */
+    private static Set<String> memberNames(ObjectMapper mapper) {
+        MEMBER_NAMES.computeIfAbsent(mapper) { ObjectMapper writing ->
+            ProblemDetail sample = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, 'detail')
+            sample.type = URI.create('urn:sample')
+            sample.title = 'title'
+            sample.instance = URI.create('/instance')
+            Set<String> names = new HashSet<String>()
+            JsonParser parser = writing.writer().without(SerializationFeature.WRAP_ROOT_VALUE).writeValueIntoBuffer(sample).asParser()
+            try {
+                parser.nextToken()
+                for (JsonToken token = parser.nextToken(); token == JsonToken.PROPERTY_NAME; token = parser.nextToken()) {
+                    names << parser.currentName()
+                    parser.nextToken()
+                    parser.skipChildren()
+                }
+            }
+            finally {
+                parser.close()
+            }
+            names
         }
     }
 
