@@ -829,7 +829,9 @@ rejects, such as a quality value above 1, is still read as Grails 8 read it. The
 `application/problem+json` and `application/problem+xml`, are the `json` and `xml` formats unless `grails.mime.types`
 configures them. In the `Accept` header, Grails 8 resolved them to `all`, so an action answered with its first format;
 `Accept: application/problem+json` now selects the `json` format, and `application/problem+xml` the `xml` format where the
-action responds in XML. `respond` writes a `ProblemDetail` as Spring MVC does, whatever format this selects (see
+action responds in XML. A client that sends only a problem type is therefore answered as one that asks for that format:
+`respond` sends `406 Not Acceptable` for an action that does not respond in it, where Grails 8 answered in the action's
+first format, and `withFormat` runs no block where it has none for that format, where Grails 8 ran its first block. `respond` writes a `ProblemDetail` as Spring MVC does, whatever format this selects (see
 section 10), and any other value as the format's own type, such as `application/xml`. In `Content-Type`, Grails 8 gave `null`: a body a client
 sends as `application/problem+json` is now the `json` format, which `withFormat` selects and the JSON binding source
 binds.

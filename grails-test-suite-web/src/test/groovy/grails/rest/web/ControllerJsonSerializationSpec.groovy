@@ -363,6 +363,32 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         format << ['html', 'csv']
     }
 
+    void 'a client that accepts only #accept is answered as one that asks for #format'() {
+        given: 'the Accept header, rather than the format this spec sets up, decides'
+        response.format = null
+        request.addHeader('Accept', accept)
+
+        when:
+        def chosen = controller.withFormat {
+            html { 'html' }
+            "${other}" { other }
+        }
+
+        then: 'withFormat runs no block where it has none for the format'
+        chosen == null
+
+        when:
+        controller.respond([title: 'Grails'], formats: [other])
+
+        then: 'respond answers an action that does not respond in it with 406'
+        response.status == 406
+
+        where:
+        accept                     | format | other
+        'application/problem+json' | 'json' | 'xml'
+        'application/problem+xml'  | 'xml'  | 'json'
+    }
+
     void 'a problem respond names a view for, which a client asks for in a format nothing writes problems in, is rendered by the JSON view of the name'() {
         given: 'the view in HTML and in JSON, and in no other format'
         views['/jsonResponse/conflict.gsp'] = 'conflict'
