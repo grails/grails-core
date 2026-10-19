@@ -878,9 +878,9 @@ in the format of Spring's converter, with the members Spring Boot's JSON mapper 
 those of a `JsonMapperBuilderCustomizer` included, decide them as they decide those of `application/problem+json`, so a
 default serialization view leaves out the members in no view, those of RFC 9457 and the extension members among them,
 unless `spring.jackson.mapper.default-view-inclusion` is `true`, where Spring's XML converter, with
-`jackson-dataformat-xml`, writes the problem with Spring Boot's `XmlMapper`. That mapper's write limit,
-`spring.jackson.factory.constraints.write.max-nesting-depth`, 500 by default, fails a problem nested deeper, with an
-`HttpMessageNotWritableException`, as Spring's converters fail it. In JSON as in XML, the problem's properties are written by Spring Boot's mapper as in
+`jackson-dataformat-xml`, writes the problem with Spring Boot's `XmlMapper`. The write limit of the JSON mapper Grails
+writes it with, `spring.jackson.factory.constraints.write.max-nesting-depth`, 500 by default, fails a problem nested
+deeper, with an `HttpMessageNotWritableException`, as Spring's converters fail it. In JSON as in XML, the problem's properties are written by Spring Boot's mapper as in
 a Spring MVC controller: a domain class instance, validation errors or a value that leads back to itself among them is
 written, or fails, as Jackson writes any bean, whatever the `grails.converters.json` settings, unless
 `grails.converters.json.domain.jackson.enabled` gives that mapper the domain class serializer. XML is
