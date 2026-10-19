@@ -18,10 +18,17 @@
  */
 package grails.plugin.json.view
 
+import org.springframework.beans.factory.BeanRegistrar
+import org.springframework.beans.factory.BeanRegistry
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import org.springframework.web.servlet.i18n.FixedLocaleResolver
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 import grails.views.json.test.JsonViewUnitTest
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import spock.lang.Specification
@@ -45,6 +52,48 @@ class JsonViewUnitTestHarnessBeansSpec extends Specification implements JsonView
         applicationContext.getBean('grailsUrlMappingsHolder') instanceof OwnJsonViewUrlMappingsHolder
         applicationContext.getBean('grailsLinkGenerator').serverBaseURL == 'https://own.example'
         applicationContext.getBean('localeResolver') instanceof FixedLocaleResolver
+    }
+}
+
+class JsonViewUnitTestRegisteredBeansSpec extends Specification implements JsonViewUnitTest {
+
+    BeanRegistrar beanRegistrar() {
+        return { BeanRegistry registry, Environment environment ->
+            registry.registerBean('grailsUrlMappingsHolder', OwnJsonViewUrlMappingsHolder)
+            registry.registerBean('ownLinkGenerator', DefaultLinkGenerator) { spec ->
+                spec.supplier { new DefaultLinkGenerator('https://registered.example') }
+            }
+            registry.registerAlias('ownLinkGenerator', 'grailsLinkGenerator')
+        } as BeanRegistrar
+    }
+
+    void 'a URL mappings holder, and a link generator under an alias of its name, a JSON view spec registers are kept'() {
+        expect:
+        applicationContext.getBean('grailsUrlMappingsHolder') instanceof OwnJsonViewUrlMappingsHolder
+        applicationContext.getBean('grailsLinkGenerator').serverBaseURL == 'https://registered.example'
+    }
+}
+
+class JsonViewUnitTestConfiguredBeansSpec extends Specification implements JsonViewUnitTest {
+
+    @Configuration
+    static class OwnBeans {
+
+        @Bean
+        UrlMappingsHolder grailsUrlMappingsHolder() {
+            new OwnJsonViewUrlMappingsHolder()
+        }
+
+        @Bean
+        LinkGenerator grailsLinkGenerator() {
+            new DefaultLinkGenerator('https://configured.example')
+        }
+    }
+
+    void 'the URL mappings holder and link generator of a configuration class of a JSON view spec are kept'() {
+        expect:
+        applicationContext.getBean('grailsUrlMappingsHolder') instanceof OwnJsonViewUrlMappingsHolder
+        applicationContext.getBean('grailsLinkGenerator').serverBaseURL == 'https://configured.example'
     }
 }
 
