@@ -204,7 +204,7 @@ trait RestResponder {
                 if (hasErrors) {
                     errorsFormatListed = true
                     Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors, target)
-                    if (!rendersValue(errorsRenderer, errors, errorsContext)) {
+                    if (!rendersValue(errorsRenderer, errors, errorsContext, mimeType)) {
                         continue
                     }
                     webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
@@ -235,7 +235,7 @@ trait RestResponder {
                         candidate.is(registry.findRenderer(mimeType, new Object()))) {
                     continue
                 }
-                if (rendersValue(candidate, value, context)) {
+                if (rendersValue(candidate, value, context, mimeType)) {
                     renderer = candidate
                     matched = mimeType
                     break negotiation
@@ -253,7 +253,7 @@ trait RestResponder {
             // renders the problem, as for a client that asks for JSON
             matched = problemFormat ?: MimeType.JSON
             renderer = registry.findRenderer(matched, value)
-            if (matched != MimeType.JSON && !rendersValue(renderer, value, context)) {
+            if (matched != MimeType.JSON && !rendersValue(renderer, value, context, matched)) {
                 matched = MimeType.JSON
                 renderer = registry.findRenderer(matched, value)
             }
@@ -283,8 +283,28 @@ trait RestResponder {
      * Whether a renderer renders a value: one that renders some values only, such as that of markup views without a
      * renderer of XML, says so, as a Spring message converter says whether it writes a value.
      */
-    private static boolean rendersValue(Renderer renderer, Object value, ServletRenderContext context) {
-        renderer != null && (!(renderer instanceof SelectiveRenderer) || ((SelectiveRenderer) renderer).canRender(value, context))
+    private static boolean rendersValue(Renderer renderer, Object value, ServletRenderContext context, MimeType mimeType) {
+        if (renderer == null) {
+            return false
+        }
+        if (!(renderer instanceof SelectiveRenderer)) {
+            return true
+        }
+        // asked in the type it would render in, which the view it looks up depends on, as it is rendered
+        def request = context.webRequest.currentRequest
+        Object previous = request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
+        request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
+        try {
+            return ((SelectiveRenderer) renderer).canRender(value, context)
+        }
+        finally {
+            if (previous == null) {
+                request.removeAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
+            }
+            else {
+                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, previous)
+            }
+        }
     }
 
     /** Any status code, as a {@code ResponseEntity} takes it, also one {@link HttpStatus} has no constant for. */

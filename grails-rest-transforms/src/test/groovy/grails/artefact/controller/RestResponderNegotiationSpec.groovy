@@ -143,6 +143,27 @@ class RestResponderNegotiationSpec extends Specification {
         webRequest.response.contentAsString == '{"title":"Grails"}'
     }
 
+    void 'a renderer is asked whether it can render the value in the type it would render it in'() {
+        given:
+        MimeType asked = null
+        def xmlRenderer = Mock(Renderer, additionalInterfaces: [SelectiveRenderer]) {
+            getTargetType() >> Object
+            getMimeTypes() >> ([MimeType.XML, MimeType.TEXT_XML] as MimeType[])
+        }
+        GrailsWebRequest webRequest = bindRequest('text/html, application/xml')
+
+        when:
+        controller(xmlRenderer).respond([title: 'Grails'], formats: ['xml'])
+
+        then:
+        1 * ((SelectiveRenderer) xmlRenderer).canRender(_, _) >> { Object value, RenderContext context ->
+            asked = context.acceptMimeType
+            false
+        }
+        asked.extension == 'xml'
+        webRequest.response.status == 406
+    }
+
     void 'a renderer that can render the value renders it'() {
         given:
         def xmlRenderer = Mock(Renderer, additionalInterfaces: [SelectiveRenderer]) {
