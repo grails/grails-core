@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
@@ -41,6 +42,7 @@ import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.introspect.Annotated;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.introspect.NopAnnotationIntrospector;
@@ -66,7 +68,8 @@ import org.springframework.http.ProblemDetail;
  * orders them, and marks around the extension members of a problem, so that the tokens it writes for a problem say
  * which of its objects were beans and which members are extension members: Jackson's XML converter writes the properties
  * of a bean in no namespace, and the entries of a map, the extension members included, in that of the element the map is
- * in.
+ * in. It also keeps the names it writes the members of RFC 9457 of each class of problem under, which Spring's mix-in
+ * for problems writes in the namespace of RFC 9457 by their getters, whatever names they are written under.
  *
  * @since 9.0
  */
@@ -90,7 +93,10 @@ final class ProblemBeans {
 
     static final String ANY_END = MARKER + "/any";
 
-    private static final Map<ObjectMapper, ObjectMapper> MARKING = Collections.synchronizedMap(new WeakHashMap<>());
+    /** The getters of the members of RFC 9457, which Spring's mix-in for problems writes in its namespace. */
+    private static final Set<String> MEMBER_GETTERS = Set.of("getType", "getTitle", "getStatus", "getDetail", "getInstance");
+
+    private static final Map<ObjectMapper, Marking> MARKING = Collections.synchronizedMap(new WeakHashMap<>());
 
     private ProblemBeans() {
     }
@@ -107,16 +113,43 @@ final class ProblemBeans {
      * @param mapper a mapper
      * @return a copy of it that marks the beans and extension members it writes, made once for each mapper
      */
-    static ObjectMapper marking(ObjectMapper mapper) {
+    static Marking marking(ObjectMapper mapper) {
         return MARKING.computeIfAbsent(mapper, source -> {
-            MapperBuilder<?, ?> builder = source.rebuild().addModule(new MarkingModule());
+            Marker marker = new Marker();
+            MapperBuilder<?, ?> builder = source.rebuild().addModule(new MarkingModule(marker));
             FilterProvider filters = source.serializationConfig().getFilterProvider();
             if (filters != null) {
                 // the property filters of a bean filter its properties, never the marker
                 builder.filterProvider(new MarkerKeepingFilters(filters));
             }
-            return builder.build();
+            return new Marking(builder.build(), marker);
         });
+    }
+
+    /** A copy of a mapper that marks the beans and extension members it writes. */
+    static final class Marking {
+
+        private final ObjectMapper mapper;
+
+        private final Marker marker;
+
+        private Marking(ObjectMapper mapper, Marker marker) {
+            this.mapper = mapper;
+            this.marker = marker;
+        }
+
+        ObjectMapper getMapper() {
+            return mapper;
+        }
+
+        /**
+         * @param beanMarker the key of the marker of a bean the mapper wrote, or {@code null}
+         * @return the names it wrote the members of RFC 9457 of the bean under, where the bean is a problem
+         */
+        Set<String> memberNames(String beanMarker) {
+            Set<String> names = beanMarker == null ? null : marker.members.get(beanMarker);
+            return names == null ? Set.of() : names;
+        }
     }
 
     /**
@@ -127,9 +160,9 @@ final class ProblemBeans {
 
         private static final long serialVersionUID = 1L;
 
-        MarkingModule() {
+        MarkingModule(Marker marker) {
             super("grails-problem-beans");
-            setSerializerModifier(new Marker());
+            setSerializerModifier(marker);
         }
 
         @Override
@@ -243,19 +276,34 @@ final class ProblemBeans {
 
         private static final long serialVersionUID = 1L;
 
+        /** The names of the members of RFC 9457 of each class of problem, by the key of its marker. */
+        private final Map<String, Set<String>> members = new ConcurrentHashMap<>();
+
         // once the properties are filtered, so that the inclusions and ignorals of the bean's class keep the marker;
         // those of a property holding the bean keep it through MarkerIncluding, unless the property unwraps the bean
         @Override
         public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 List<BeanPropertyWriter> properties) {
             BeanDescription description = beanDescription.get();
+            String name = MARKER + description.getBeanClass().getName();
+            if (ProblemDetail.class.isAssignableFrom(description.getBeanClass())) {
+                // by their getters, as Spring's mix-in names them, so also where the problem's class or a getter it
+                // overrides names them otherwise
+                Set<String> names = new HashSet<>();
+                for (BeanPropertyWriter property : properties) {
+                    if (property.getMember() instanceof AnnotatedMethod getter && getter.getParameterCount() == 0 &&
+                            MEMBER_GETTERS.contains(getter.getName())) {
+                        names.add(property.getName());
+                    }
+                }
+                members.put(name, Set.copyOf(names));
+            }
             if (properties.isEmpty() && description.findAnyGetter() == null) {
                 // a bean without properties is an empty value, which Jackson leaves out where the inclusion says so,
                 // unless an any-getter writes its entries
                 return properties;
             }
             JavaType type = config.getTypeFactory().constructType(Boolean.class);
-            String name = MARKER + description.getBeanClass().getName();
             BeanPropertyDefinition definition = SimpleBeanPropertyDefinition.construct(config,
                     new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), name, type),
                     PropertyName.construct(name));

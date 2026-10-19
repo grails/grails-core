@@ -21,20 +21,35 @@ package org.grails.plugins.xml
 import com.fasterxml.jackson.annotation.JsonRawValue
 import javax.xml.stream.XMLStreamException
 
+import tools.jackson.core.JsonGenerator
 import tools.jackson.core.StreamWriteConstraints
 import tools.jackson.core.exc.StreamConstraintsException
 import tools.jackson.core.json.JsonFactory
 import tools.jackson.databind.BeanDescription
 import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JavaType
 import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.PropertyName
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationConfig
+import tools.jackson.databind.SerializationContext
+import tools.jackson.databind.ValueSerializer
+import tools.jackson.databind.annotation.JsonNaming
+import tools.jackson.databind.annotation.JsonSerialize
+import tools.jackson.databind.cfg.MapperConfig
+import tools.jackson.databind.introspect.AnnotatedClass
+import tools.jackson.databind.introspect.BeanPropertyDefinition
+import tools.jackson.databind.introspect.VirtualAnnotatedMember
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
 import tools.jackson.databind.ser.BeanPropertyWriter
 import tools.jackson.databind.ser.ValueSerializerModifier
+import tools.jackson.databind.ser.VirtualBeanPropertyWriter
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
+import tools.jackson.databind.util.Annotations
+import tools.jackson.databind.util.SimpleBeanPropertyDefinition
+import tools.jackson.dataformat.xml.XmlMapper
 
 import groovy.json.JsonSlurper
 import groovy.namespace.QName
@@ -47,6 +62,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.fasterxml.jackson.annotation.JsonView
@@ -439,7 +455,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'an extension member named like a member of RFC 9457',
                 'a subclass with an extension member named like one of its properties',
                 'a bean whose any-getter writes the name of one of its properties',
-                'a subclass that unwraps a bean with an any-getter'
+                'a subclass that unwraps a bean with an any-getter',
+                'a subclass that names its members with a strategy of its own',
+                'a subclass that renames a member of RFC 9457',
+                'a problem in an extension member',
+                'problems listed in an extension member',
+                'a problem a serializer of its own writes'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -467,7 +488,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('status', 'x') },
                 { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { setProperty('product', 'other') } },
                 { -> extended('member', new DuplicatingAnyGetter()) },
-                { -> new Throttled().tap { it.setProperty('retry', 'later') } }
+                { -> new Throttled().tap { it.setProperty('retry', 'later') } },
+                { -> new RateLimited(retryAfter: 30).tap { it.setDetail('Slow down') } },
+                { -> new Headlined().tap { it.setTitle('Taken') } },
+                { -> extended('cause', new OutOfStock(balance: 12.5G, product: 'Grails').tap { it.setProperty('retry', 'later') }) },
+                { -> extended('errors', [ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, 'a'), ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, 'b')]) },
+                { -> new SelfWrittenProblem() }
         ]
     }
 
@@ -639,6 +665,24 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then: 'its values are elements of its name, unwrapped, as without the module'
         tree(written)[3].find { it[0] == 'member' } ==
                 ['member', 'urn:ietf:rfc:7807', null, [['point', '', null, '2'], ['point', '', null, '1'], ['name', '', null, 'a']]]
+    }
+
+    void "without a converter for problems, a property a module of the JSON converter's mapper adds to every problem is written as Spring writes it"() {
+        given: 'a module that adds a property to every problem, in the mapper of each converter'
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = {
+            [new JacksonJsonHttpMessageConverter(JsonMapper.builder().addModule(new SimpleModule('tracing').setSerializerModifier(new TracingModifier())))]
+        }
+        def xml = new JacksonXmlHttpMessageConverter(XmlMapper.builder().addModule(new SimpleModule('tracing').setSerializerModifier(new TracingModifier())))
+        def spring = new MockHttpOutputMessage()
+        xml.write(ProblemDetail.forStatus(HttpStatus.CONFLICT), MediaType.APPLICATION_PROBLEM_XML, spring)
+
+        when:
+        def written = tree(renderProblem(renderer, ProblemDetail.forStatus(HttpStatus.CONFLICT)).contentAsString)
+
+        then: 'in no namespace, as the members of RFC 9457 are those of the getters of a problem'
+        written[3].find { it[0] == 'trace' } == ['trace', '', null, 'abc']
+        written == tree(spring.bodyAsString)
     }
 
     void "without a converter for problems, the read features of the JSON converter's mapper do not change the problem written"() {
@@ -1322,6 +1366,83 @@ class DuplicatingAnyGetter {
     @JsonAnyGetter
     Map<String, Object> other() {
         [code: 'b']
+    }
+}
+
+/** Adds a property to every problem, as a module may. */
+class TracingModifier extends ValueSerializerModifier {
+
+    @Override
+    List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier description,
+            List<BeanPropertyWriter> properties) {
+        if (!ProblemDetail.isAssignableFrom(description.beanClass)) {
+            return properties
+        }
+        JavaType type = config.typeFactory.constructType(String)
+        def definition = SimpleBeanPropertyDefinition.construct(config,
+                new VirtualAnnotatedMember(description.classInfo, description.beanClass, 'trace', type), PropertyName.construct('trace'))
+        properties + [(BeanPropertyWriter) new TraceWriter(definition, description.classAnnotations, type)]
+    }
+}
+
+class TraceWriter extends VirtualBeanPropertyWriter {
+
+    TraceWriter(BeanPropertyDefinition definition, Annotations annotations, JavaType type) {
+        super(definition, annotations, type)
+    }
+
+    @Override
+    protected Object value(Object bean, JsonGenerator generator, SerializationContext context) {
+        'abc'
+    }
+
+    @Override
+    VirtualBeanPropertyWriter withConfig(MapperConfig<?> config, AnnotatedClass declaringClass, BeanPropertyDefinition definition,
+            JavaType type) {
+        this
+    }
+}
+
+@JsonSerialize(using = SelfWrittenProblemSerializer)
+class SelfWrittenProblem extends ProblemDetail {
+
+    SelfWrittenProblem() {
+        super(409)
+    }
+}
+
+class SelfWrittenProblemSerializer extends ValueSerializer<SelfWrittenProblem> {
+
+    @Override
+    void serialize(SelfWrittenProblem value, JsonGenerator generator, SerializationContext context) {
+        generator.writeStartObject()
+        generator.writeStringProperty('title', 'Own')
+        generator.writeNumberProperty('status', value.status)
+        generator.writeStringProperty('retry', 'later')
+        generator.writeEndObject()
+    }
+}
+
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy)
+class RateLimited extends ProblemDetail {
+
+    Integer retryAfter
+
+    RateLimited() {
+        super(429)
+    }
+}
+
+class Headlined extends ProblemDetail {
+
+    Headlined() {
+        super(409)
+    }
+
+    @Override
+    @JsonProperty('headline')
+    String getTitle() {
+        super.getTitle()
     }
 }
 

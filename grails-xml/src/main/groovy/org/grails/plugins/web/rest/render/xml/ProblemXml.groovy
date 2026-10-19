@@ -40,7 +40,6 @@ import tools.jackson.databind.jsontype.TypeSerializer
 import tools.jackson.databind.util.RawValue
 import tools.jackson.databind.util.TokenBuffer
 
-import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 
 /**
@@ -48,7 +47,9 @@ import org.springframework.http.ProblemDetail
  * {@code jackson-dataformat-xml}: a {@code problem} element in the {@code urn:ietf:rfc:7807} namespace, with the members
  * of the problem, those of a subclass included, and its extension members, as a mapper with Spring's mix-in for problems
  * writes them, every member it writes included, also one whose name it writes twice, the properties of a bean in no
- * namespace and the entries of a map in that of the map, as Spring's converter writes them. It fails, as Spring's
+ * namespace and the entries of a map in that of the map, as Spring's converter writes them, but for the members of RFC
+ * 9457, by the getters Spring's mix-in names, and the extension members of the problem, or of a problem it holds, which
+ * are in the namespace of RFC 9457. It fails, as Spring's
  * converters fail, for a problem nested deeper than the mapper's {@code StreamWriteConstraints} allow. A list is written as an element for each of its values, wrapped in an element of its name where
  * it is the property of a bean, and a {@code null} as an {@code xsi:nil} element.
  *
@@ -61,10 +62,6 @@ final class ProblemXml {
     static final String NAMESPACE = 'urn:ietf:rfc:7807'
 
     private static final String XSI = 'http://www.w3.org/2001/XMLSchema-instance'
-
-    /** The names each mapper writes the members of RFC 9457 under, which its naming strategy may change. */
-    private static final Map<ObjectMapper, Set<String>> MEMBER_NAMES =
-            Collections.synchronizedMap(new WeakHashMap<ObjectMapper, Set<String>>())
 
     // The JDK's own writer, whatever StAX implementation another library puts on the classpath
     private static final XMLOutputFactory OUTPUT = XMLOutputFactory.newDefaultFactory()
@@ -83,9 +80,10 @@ final class ProblemXml {
         xml.writeStartElement('problem')
         xml.writeDefaultNamespace(NAMESPACE)
         boolean plainDecimals = mapper.isEnabled(StreamWriteFeature.WRITE_BIGDECIMAL_AS_PLAIN)
+        ProblemBeans.Marking marking = ProblemBeans.marking(mapper)
         // the tokens the mapper writes, read back without its read features, with every member it writes, one whose name
         // it writes twice included, as Spring's converters write them
-        TokenBuffer buffer = ProblemBeans.marking(mapper).writer().without(SerializationFeature.WRAP_ROOT_VALUE)
+        TokenBuffer buffer = marking.mapper.writer().without(SerializationFeature.WRAP_ROOT_VALUE)
                 .writeValueIntoBuffer(new NestingLimited(problem, mapper.tokenStreamFactory().streamWriteConstraints()))
         Object converted
         JsonParser parser = buffer.asParser()
@@ -99,19 +97,7 @@ final class ProblemXml {
         finally {
             parser.close()
         }
-        boolean extension = false
-        for (Map.Entry<String, Object> entry : ((Members) converted).entries) {
-            String member = entry.key
-            if (member == ProblemBeans.ANY_START || member == ProblemBeans.ANY_END) {
-                extension = member == ProblemBeans.ANY_START
-            }
-            else if (!ProblemBeans.isMarker(member)) {
-                // Spring's converter writes the members of RFC 9457 and the extension members, which the any-getter
-                // writes, in its namespace, and the properties of a subclass, as those of any bean, in none
-                boolean property = !(extension || memberNames(mapper).contains(member))
-                element(xml, writer, member, entry.value, property ? '' : NAMESPACE, NAMESPACE, plainDecimals, property)
-            }
-        }
+        members(xml, writer, (Members) converted, NAMESPACE, marking, plainDecimals)
         xml.writeEndElement()
         xml.flush()
     }
@@ -121,7 +107,7 @@ final class ProblemXml {
      * @param enclosing the namespace of the element it is in, which it declares its own where they differ
      */
     private static void element(XMLStreamWriter xml, Writer writer, String name, Object value, String namespace,
-            String enclosing, boolean plainDecimals, boolean property) {
+            String enclosing, ProblemBeans.Marking marking, boolean plainDecimals, boolean property) {
         if (value instanceof List) {
             List<?> listed = (List<?>) value
             // a bean written as an array is not a collection; its marker is first, unless a serializer modifier of another
@@ -138,13 +124,13 @@ final class ProblemXml {
                 xml.writeStartElement(name)
                 declare(xml, namespace, enclosing)
                 for (Object each : values) {
-                    element(xml, writer, name, each, namespace, namespace, plainDecimals, false)
+                    element(xml, writer, name, each, namespace, namespace, marking, plainDecimals, false)
                 }
                 xml.writeEndElement()
             }
             else {
                 for (Object each : values) {
-                    element(xml, writer, name, each, namespace, enclosing, plainDecimals, false)
+                    element(xml, writer, name, each, namespace, enclosing, marking, plainDecimals, false)
                 }
             }
         }
@@ -158,15 +144,7 @@ final class ProblemXml {
             xml.writeStartElement(name)
             declare(xml, namespace, enclosing)
             if (value instanceof Members) {
-                Members members = (Members) value
-                // the properties of a bean are in no namespace, and the entries of a map in that of the map
-                boolean bean = members.bean
-                String inner = bean ? '' : namespace
-                for (Map.Entry<String, Object> member : members.entries) {
-                    if (!ProblemBeans.isMarker(member.key)) {
-                        element(xml, writer, member.key, member.value, inner, namespace, plainDecimals, bean)
-                    }
-                }
+                members(xml, writer, (Members) value, namespace, marking, plainDecimals)
             }
             else if (value instanceof RawValue) {
                 // written as it is, as Jackson writes a raw value: the start tag is closed, then the text follows it
@@ -181,27 +159,27 @@ final class ProblemXml {
         }
     }
 
-    /** The names the mapper writes the members of RFC 9457 under, read off a problem it writes with all of them. */
-    private static Set<String> memberNames(ObjectMapper mapper) {
-        MEMBER_NAMES.computeIfAbsent(mapper) { ObjectMapper writing ->
-            ProblemDetail sample = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, 'detail')
-            sample.type = URI.create('urn:sample')
-            sample.title = 'title'
-            sample.instance = URI.create('/instance')
-            Set<String> names = new HashSet<String>()
-            JsonParser parser = writing.writer().without(SerializationFeature.WRAP_ROOT_VALUE).writeValueIntoBuffer(sample).asParser()
-            try {
-                parser.nextToken()
-                for (JsonToken token = parser.nextToken(); token == JsonToken.PROPERTY_NAME; token = parser.nextToken()) {
-                    names << parser.currentName()
-                    parser.nextToken()
-                    parser.skipChildren()
-                }
+    /**
+     * Writes the members of an object in an element of the namespace given: those of a bean in no namespace, as Spring's
+     * converter writes them, but for the members of RFC 9457 of a problem, by whatever name they are written, and its
+     * extension members, which its any-getter writes, which it writes in the namespace of RFC 9457, also where the problem
+     * is in another; and the entries of a map in that of the map.
+     */
+    private static void members(XMLStreamWriter xml, Writer writer, Members members, String namespace,
+            ProblemBeans.Marking marking, boolean plainDecimals) {
+        boolean bean = members.bean
+        Set<String> problemMembers = marking.memberNames(members.beanMarker)
+        boolean extension = false
+        for (Map.Entry<String, Object> member : members.entries) {
+            String name = member.key
+            if (name == ProblemBeans.ANY_START || name == ProblemBeans.ANY_END) {
+                extension = name == ProblemBeans.ANY_START
             }
-            finally {
-                parser.close()
+            else if (!ProblemBeans.isMarker(name)) {
+                boolean property = bean && !(extension || problemMembers.contains(name))
+                String inner = property ? '' : (bean ? NAMESPACE : namespace)
+                element(xml, writer, name, member.value, inner, namespace, marking, plainDecimals, property)
             }
-            names
         }
     }
 
@@ -349,6 +327,13 @@ final class ProblemXml {
 
         boolean isBean() {
             entries.any { Map.Entry<String, Object> entry -> ProblemBeans.isMarker(entry.key) }
+        }
+
+        /** The key of the marker of the bean, which names its class, or {@code null}. */
+        String getBeanMarker() {
+            entries.find { Map.Entry<String, Object> entry ->
+                ProblemBeans.isMarker(entry.key) && entry.key != ProblemBeans.ANY_START && entry.key != ProblemBeans.ANY_END
+            }?.key
         }
     }
 
