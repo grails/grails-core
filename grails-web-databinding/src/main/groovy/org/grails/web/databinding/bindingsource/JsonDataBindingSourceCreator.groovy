@@ -117,7 +117,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
      * @return the mapper request bodies are parsed with when {@link #useJackson} is set: the one
      *         {@link #setJsonMapper} sets, or else the application's {@code JsonMapper}, found when a body is first
      *         parsed: its only or primary one, or else Spring Boot's {@code jacksonJsonMapper}; or a default
-     *         {@code JsonMapper} where the application has none of those, as when it has several and none is primary
+     *         {@code JsonMapper} where the application has none of those, as when it has several and none is primary;
+     *         bodies are read with a copy of it without its default typing
      * @since 9.0
      */
     JsonMapper getJsonMapper() {
@@ -147,15 +148,30 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
      * as doubles first would round them before the binder ever saw them. A body is read as it is, without a root value,
      * which the mapper would otherwise expect for {@code Object} where it unwraps root values, and its arrays as lists and
      * its whole numbers as the smallest of {@code Integer}, {@code Long} and {@code BigInteger} that holds them, as the
-     * legacy parser reads them, whatever the mapper's features say.
+     * legacy parser reads them, whatever the mapper's features say, and without the type ids the mapper's default typing
+     * would have a body carry, so that a body binds without them and cannot name a class to create.
      *
      * @since 9.0
      */
     protected ObjectReader untypedReader() {
-        return getJsonMapper().reader().forType(Object).withoutRootName()
+        return bodyMapper().reader().forType(Object).withoutRootName()
                 .with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
                 .without(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, DeserializationFeature.USE_BIG_INTEGER_FOR_INTS,
                         DeserializationFeature.USE_LONG_FOR_INTS)
+    }
+
+    /** The mapper request bodies are read with, and the application's mapper it is derived from. */
+    private volatile Tuple2<JsonMapper, JsonMapper> derivedBodyMapper
+
+    /** The application's mapper without its default typing, derived once for each mapper. */
+    private JsonMapper bodyMapper() {
+        JsonMapper source = getJsonMapper()
+        Tuple2<JsonMapper, JsonMapper> derived = derivedBodyMapper
+        if (derived == null || !derived.v1.is(source)) {
+            derived = new Tuple2<JsonMapper, JsonMapper>(source, source.rebuild().deactivateDefaultTyping().build())
+            derivedBodyMapper = derived
+        }
+        derived.v2
     }
 
     @Override

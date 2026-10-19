@@ -786,7 +786,9 @@ names, as it binds what `JsonSlurper` reads, so the mapper's naming strategy and
 module for other types, and Jackson annotations on command objects and domain classes do not apply to binding, and
 `spring.jackson.deserialization.unwrap-root-value` does not expect a root value around a body, nor do
 `use-java-array-for-json-array`, `use-big-integer-for-ints` and `use-long-for-ints` change the lists and whole numbers it
-reads.
+reads. Nor does the mapper's default typing, which `activateDefaultTyping` turns on, apply: a body is read without type
+ids, which would otherwise have every body without one fail and let a client name the classes Jackson creates for its
+values. It still applies where the application reads with the mapper itself, such as a Spring MVC `@RequestBody`.
 
 Both parsers report a malformed body bound to an object as a binding error, and one bound to a collection with
 `bindData` as a `DataBindingSourceCreationException`, as in Grails 8, but Jackson rejects inputs that the legacy

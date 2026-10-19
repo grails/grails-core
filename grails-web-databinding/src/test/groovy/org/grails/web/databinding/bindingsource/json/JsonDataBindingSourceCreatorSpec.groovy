@@ -35,7 +35,10 @@ import java.nio.charset.StandardCharsets
 import org.grails.web.databinding.bindingsource.InvalidRequestBodyException
 
 import tools.jackson.core.json.JsonReadFeature
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import tools.jackson.databind.DefaultTyping
 import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator
 import tools.jackson.databind.json.JsonMapper
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
@@ -332,6 +335,55 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
                     DeserializationFeature.USE_LONG_FOR_INTS]
     }
 
+    void "Jackson request parsing reads a body without type ids where the application's mapper reads them by #description, with #creator.class.simpleName"() {
+        given:
+        creator.jsonMapper = mapper
+
+        when:
+        def source = creator.createDataBindingSource(MimeType.JSON, Object, new StringReader('{"name":"Grails","tags":["a"],"count":3}'))
+        def sources = creator.createCollectionDataBindingSource(MimeType.JSON, Object, new StringReader('[{"name":"Grails"}]'))
+
+        then:
+        source.getPropertyValue('name') == 'Grails'
+        source.getPropertyValue('tags') == ['a']
+        source.getPropertyValue('count').getClass() == Integer
+        sources.dataBindingSources*.getPropertyValue('name') == ['Grails']
+
+        where:
+        [description, mapper, creator] << [
+                [['default typing for Object', defaultTyping(DefaultTyping.JAVA_LANG_OBJECT)],
+                 ['default typing for every type that is not final', defaultTyping(DefaultTyping.NON_FINAL)],
+                 ['a mix-in that names the class of every Object', JsonMapper.builder().addMixIn(Object, ClassTypeIds).build()]],
+                [new JsonDataBindingSourceCreator(useJackson: true), new HalJsonDataBindingSourceCreator(useJackson: true)]
+        ].combinations().collect { List row -> [row[0][0], row[0][1], row[1]] }
+    }
+
+    void "a body read with Jackson cannot name a class for Grails to create, where the application's mapper reads type ids by #description"() {
+        given:
+        def creator = new JsonDataBindingSourceCreator(useJackson: true)
+        creator.jsonMapper = mapper
+
+        when:
+        def source = creator.createDataBindingSource(MimeType.JSON, Object,
+                new StringReader('{"@class":"java.util.LinkedHashMap","created":["java.util.Date",0]}'))
+
+        then: 'the values as the body writes them'
+        source.getPropertyValue('@class') == 'java.util.LinkedHashMap'
+        source.getPropertyValue('created') == ['java.util.Date', 0]
+
+        where:
+        description                                    | mapper
+        'default typing for every type that is not final' | defaultTyping(DefaultTyping.NON_FINAL)
+        'a mix-in that names the class of every Object' | JsonMapper.builder().addMixIn(Object, ClassTypeIds).build()
+    }
+
+    private static JsonMapper defaultTyping(DefaultTyping typing) {
+        JsonMapper.builder()
+                .activateDefaultTyping(BasicPolymorphicTypeValidator.builder().allowIfSubType(Object).build(), typing,
+                        JsonTypeInfo.As.PROPERTY)
+                .build()
+    }
+
     void 'the JsonSlurper of the legacy path is deprecated for removal in Grails 11'() {
         expect:
         JsonDataBindingSourceCreator.getDeclaredField('jsonSlurper').getAnnotation(Deprecated).forRemoval()
@@ -428,4 +480,8 @@ class InitializingJsonCreator extends JsonDataBindingSourceCreator {
     void initialize() {
         initialized = true
     }
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+abstract class ClassTypeIds {
 }

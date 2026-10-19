@@ -104,6 +104,8 @@ parser features, such as `spring.jackson.json.read.*`, apply; Jackson becomes th
 plain JSON values, which the data binder binds by their names, so its naming strategy, date format and annotations do not
 apply to binding, and a body is read as it is, also where the mapper unwraps root values, its arrays as lists and its
 whole numbers as `Integer`, `Long` or `BigInteger`, whatever the mapper's `spring.jackson.deserialization.*` features say.
+Nor does the mapper's default typing apply: a body is read without type ids, so that it binds where the mapper's
+`activateDefaultTyping` would require them, and it cannot name a class for Grails to create.
 
 [format="csv", options="header"]
 |===
