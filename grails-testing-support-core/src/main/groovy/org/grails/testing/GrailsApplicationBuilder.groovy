@@ -479,10 +479,11 @@ class GrailsApplicationBuilder {
                 continue
             }
             String declaringClass = ((AnnotatedBeanDefinition) definition).factoryMethodMetadata?.declaringClassName
-            // the class of the configuration bean whose method creates it, which declares the method or inherits it
+            // the class of the configuration bean whose method creates it, which declares the method or inherits it, or,
+            // for a static method, the configuration class itself
             String factoryName = definition.factoryBeanName
-            String factoryClass = factoryName && registry.containsBeanDefinition(factoryName) ?
-                    registry.getBeanDefinition(factoryName).beanClassName : null
+            String factoryClass = factoryName ? (registry.containsBeanDefinition(factoryName) ?
+                    registry.getBeanDefinition(factoryName).beanClassName : null) : definition.beanClassName
             if ([declaringClass, factoryClass].any { String type ->
                 type && owners.any { String owner -> type == owner || type.startsWith(owner + '$') }
             }) {
