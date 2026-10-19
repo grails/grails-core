@@ -57,7 +57,7 @@ class JsonMapperParsingSpec extends Specification {
         JSON.parse('[1,"two",{"three":3}]') == [1, 'two', [three: 3]]
     }
 
-    void "JSON.parse rejects #syntax, which Grails' own parser accepts"() {
+    void "JSON.parse rejects #syntax, which is not JSON, Grails' own parser accepting most of them"() {
         when:
         JSON.parse(text)
 

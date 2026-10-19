@@ -153,8 +153,8 @@ class MimeType {
      * Creates the default MimeType configuration used when none is supplied via the
      * {@code grails.mime.types} setting. The defaults mirror the full set of MIME types that new
      * Grails applications have historically declared in {@code application.yml}, so content
-     * negotiation works out of the box without any configuration. User supplied configuration is
-     * merged over these defaults, overriding them per extension.
+     * negotiation works out of the box without any configuration. A {@code grails.mime.types} setting replaces
+     * them, or, with {@code grails.mime.mergeDefaults}, is merged over them, overriding them per extension.
      */
     static MimeType[] createDefaults() {
         [
