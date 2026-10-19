@@ -100,12 +100,11 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     /**
      * Logs, once for each application, that request bodies are parsed by the legacy parser, unless {@link #useJackson}
-     * has the application's Jackson mapper parse them.
-     *
-     * @since 9.0
+     * has the application's Jackson mapper parse them; private, so that a method of a subclass of the same name is not
+     * called in its place.
      */
     @PostConstruct
-    void initialize() {
+    private void reportLegacyParsing() {
         if (!useJackson && LEGACY_PARSING_REPORTED.compareAndSet(false, true)) {
             log.warn('Legacy JSON request parsing is deprecated for removal in Grails 11. ' +
                     'Set grails.databinding.json.jackson=true to opt into Jackson; it becomes the default in Grails 10.')

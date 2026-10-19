@@ -240,23 +240,40 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
     void 'the legacy parsing notice is logged once however many JSON binding sources start'() {
         given: 'a new application'
         ShutdownOperations.runOperations()
+        def context = new AnnotationConfigApplicationContext()
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean(JsonDataBindingSourceCreator)
+        context.registerBean(HalJsonDataBindingSourceCreator)
+        context.registerBean(JsonApiDataBindingSourceCreator)
 
         when:
-        String output = stderrWhile {
-            [new JsonDataBindingSourceCreator(), new HalJsonDataBindingSourceCreator(),
-             new JsonApiDataBindingSourceCreator()]*.initialize()
-        }
+        String output = stderrWhile { context.refresh() }
 
         then:
         output.readLines().count { it.contains(LEGACY_PARSING_NOTICE) } == 1
         output.contains('Set grails.databinding.json.jackson=true to opt into Jackson; it becomes the default in Grails 10.')
 
-        when: 'the next application opts into Jackson'
+        cleanup:
+        context.close()
         ShutdownOperations.runOperations()
-        output = stderrWhile { new JsonDataBindingSourceCreator(useJackson: true).initialize() }
+    }
 
-        then:
-        !output.contains(LEGACY_PARSING_NOTICE)
+    void 'a subclass of a JSON binding source creator whose own initialize method takes no arguments is not initialized by it'() {
+        given:
+        ShutdownOperations.runOperations()
+        def context = new AnnotationConfigApplicationContext()
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean(InitializingJsonCreator)
+
+        when:
+        context.refresh()
+
+        then: 'Spring calls only what the subclass marks to be called'
+        !context.getBean(InitializingJsonCreator).initialized
+
+        cleanup:
+        context.close()
+        ShutdownOperations.runOperations()
     }
 
     void 'an application context logs the legacy parsing notice as it starts the creator bean, unless #description'() {
@@ -370,4 +387,13 @@ class JsonBindingTarget {
 
 class JsonBindingChild {
     String name
+}
+
+class InitializingJsonCreator extends JsonDataBindingSourceCreator {
+
+    boolean initialized
+
+    void initialize() {
+        initialized = true
+    }
 }

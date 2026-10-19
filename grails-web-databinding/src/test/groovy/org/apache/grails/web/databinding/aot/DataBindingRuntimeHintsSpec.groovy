@@ -54,7 +54,7 @@ class DataBindingRuntimeHintsSpec extends Specification {
         ['jsonMapperProvider', 'applicationContext', 'useJackson', 'jsonSlurper'].every { String field ->
             RuntimeHintsPredicates.reflection().onFieldAccess(JsonDataBindingSourceCreator, field).test(hints)
         }
-        RuntimeHintsPredicates.reflection().onMethodInvocation(JsonDataBindingSourceCreator, 'initialize').test(hints)
+        RuntimeHintsPredicates.reflection().onMethodInvocation(JsonDataBindingSourceCreator, 'reportLegacyParsing').test(hints)
     }
 
     void 'is registered for ahead-of-time processing'() {
