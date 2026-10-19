@@ -46,6 +46,7 @@ import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
 
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
@@ -94,11 +95,12 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     }
 
     /**
-     * Whether the HAL JSON bodies of this renderer's type are parsed by the application's
-     * {@code halJsonDataBindingSourceCreator} bean, as {@code grails.databinding.json.jackson} sets, where that creator
-     * parses the bodies of this type, and otherwise with the application's Jackson mapper; without the setting a creator
-     * of the renderer's own parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper}
-     * bean the application defines.
+     * Whether the HAL JSON bodies of this renderer's type are parsed with Jackson, as {@code grails.databinding.json.jackson}
+     * sets: by the application's {@code halJsonDataBindingSourceCreator} bean where it parses the bodies of this type with
+     * Jackson, as Grails' own does with the setting, or is a creator the application implements itself, and otherwise by a
+     * creator of the renderer's own that parses them with the application's Jackson mapper. Unset, a creator of the
+     * renderer's own parses them with a default {@code JsonSlurper}, as in Grails 8, whatever {@code JsonSlurper} bean or
+     * creator of that name the application defines.
      *
      * @since 9.0
      */
@@ -108,7 +110,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     /**
      * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types where
      * {@link #useJackson} is set, whatever creator the application defines under that name, unless it is one for another
-     * class only.
+     * class only, or one of Grails' JSON binding source creators that does not parse with Jackson, as Grails' own does not
+     * without the setting.
      *
      * @since 9.0
      */
@@ -159,7 +162,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     private DataBindingSourceCreator jacksonParser(Class type) {
         DataBindingSourceCreator applicationCreator = halJsonDataBindingSourceCreator
         Class creatorType = applicationCreator?.targetType
-        if (applicationCreator != null && (creatorType == null || creatorType.isAssignableFrom(type))) {
+        if (applicationCreator != null && (creatorType == null || creatorType.isAssignableFrom(type)) &&
+                parsesWithJackson(applicationCreator)) {
             return applicationCreator
         }
         // injected as a bean is, so that it finds the application's mapper, and set to parse with Jackson, as this
@@ -168,6 +172,14 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         applicationContext?.autowireCapableBeanFactory?.autowireBean(creator)
         creator.useJackson = true
         return creator
+    }
+
+    /**
+     * Whether a creator parses with Jackson: one of Grails' JSON creators where it is set to, and one the application
+     * implements itself, which Grails cannot tell, as it does.
+     */
+    private static boolean parsesWithJackson(DataBindingSourceCreator creator) {
+        !(creator instanceof JsonDataBindingSourceCreator) || ((JsonDataBindingSourceCreator) creator).useJackson
     }
 
     @Override

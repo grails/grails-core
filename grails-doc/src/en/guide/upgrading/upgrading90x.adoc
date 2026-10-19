@@ -770,7 +770,7 @@ class, which a default `JsonSlurper` parses, as in Grails 8; once Jackson parsin
 Set `grails.databinding.json.jackson: true` to parse binding bodies with Boot's configured Jackson
 `JsonMapper`, JSON, HAL JSON and JSON API bodies alike, among them two kinds Grails 8 always parsed with a default
 `JsonSlurper`: the bodies of a type a `HalJsonRenderer` bean renders, which the `halJsonDataBindingSourceCreator` bean then
-parses, where it handles that type, and the JSON bodies of a type no creator bean handles, as where an application replaces
+parses, where it handles that type and parses with Jackson, and the JSON bodies of a type no creator bean handles, as where an application replaces
 `jsonDataBindingSourceCreator` with a creator for one class. The mapper is the application's only or primary
 `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
 application context has none of those, as when it has several and none is primary, a default `JsonMapper` parses them,

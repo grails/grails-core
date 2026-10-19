@@ -18,6 +18,8 @@
  */
 package org.grails.plugins.web.rest.render.hal
 
+import java.util.function.Supplier
+
 import tools.jackson.core.json.JsonReadFeature
 import tools.jackson.databind.json.JsonMapper
 
@@ -40,6 +42,7 @@ import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingConte
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 
 class HalJsonRendererBindingSettingSpec extends Specification {
 
@@ -111,8 +114,8 @@ class HalJsonRendererOneClassCreatorSpec extends Specification {
 
 class HalJsonRendererOwnSettingSpec extends Specification {
 
-    void "a HAL renderer set to parse with Jackson parses the bodies of its type with the application's mapper, where the application's HAL creator is for another class"() {
-        given: 'the setting off, a renderer bean set to parse with Jackson, and an application HAL creator for another class'
+    void "a HAL renderer set to parse with Jackson parses the bodies of its type as #description says"() {
+        given: 'the setting off, a renderer bean set to parse with Jackson, and the HAL creator bean'
         def context = new GenericApplicationContext()
         AnnotationConfigUtils.registerAnnotationConfigProcessors(context)
         context.registerBean(DataBindingSourceRegistry, { new DefaultDataBindingSourceRegistry() })
@@ -122,7 +125,7 @@ class HalJsonRendererOwnSettingSpec extends Specification {
         def rendererRegistry = Stub(RendererRegistry)
         context.registerBean(RendererRegistry, { rendererRegistry })
         context.registerBean(JsonMapper, { JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build() })
-        context.registerBean('halJsonDataBindingSourceCreator', DataBindingSourceCreator, { new OneClassHalCreator() })
+        context.registerBean('halJsonDataBindingSourceCreator', DataBindingSourceCreator, creator as Supplier<DataBindingSourceCreator>)
         def renderer = new RootBeanDefinition(HalJsonRenderer)
         renderer.constructorArgumentValues.addGenericArgumentValue(Product)
         renderer.propertyValues.add('useJackson', true)
@@ -136,10 +139,16 @@ class HalJsonRendererOwnSettingSpec extends Specification {
         def source = context.getBean(DataBindingSourceRegistry).createDataBindingSource(HalJsonRenderer.MIME_TYPE, Product, request)
 
         then:
-        source.getPropertyValue('name') == 'MacBook'
+        source.getPropertyValue('name') == name
 
         cleanup:
         context.close()
+
+        where:
+        description                                                      | creator                                     || name
+        "an application creator for another class, the application's mapper" | { new OneClassHalCreator() }                || 'MacBook'
+        "Grails' HAL creator, which the setting leaves on JsonSlurper, the application's mapper" | { new HalJsonDataBindingSourceCreator() } || 'MacBook'
+        'a creator the application implements itself'                    | { new ApplicationHalCreator() }             || 'from the application creator'
     }
 }
 
