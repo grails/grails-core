@@ -436,6 +436,23 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 //            'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = null' // TODO: can no longer detect if something is set to null using new Config API, investigate..
     }
 
+    void "a Pattern the setting lists is used as it is, with its own case"() {
+        given: 'a case-sensitive pattern among the user agents, and a user agent it does not match in that case'
+            def config = getTestConfig()
+            config.merge(new ConfigSlurper().parse(
+                    'grails.mime.disable.accept.header.userAgents = [java.util.regex.Pattern.compile("Gecko")]'))
+            application.setConfig(config)
+            final webRequest = boundMimeTypeRequest()
+            webRequest.currentRequest.addHeader('Accept', 'application/xml')
+            webRequest.currentRequest.addHeader('User-Agent', 'gecko-bot')
+
+        expect: 'the Accept header is honoured'
+            webRequest.currentResponse.withFormat {
+                json { 'got json' }
+                xml { 'got xml' }
+            } == 'got xml'
+    }
+
     void "a user agent the setting lists that quotes what follows it applies to itself alone"() {
         given: 'an entry that would quote the rest of a pattern it were joined into'
             def config = getTestConfig()

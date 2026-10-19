@@ -99,7 +99,7 @@ class GrailsContentNegotiationStrategy {
      * @return the patterns of the user agents whose {@code Accept} header is ignored, any of which is found anywhere in the
      * {@code User-Agent} header: each regular expression {@code grails.mime.disable.accept.header.userAgents} lists, as a
      * list or a comma-separated string, on its own and ignoring case, so that the flags and groups of one do not change
-     * another, a blank one left out; a {@link Pattern} configured itself, as it is; or none
+     * another, a blank one left out; a {@link Pattern} configured itself, or listed, as it is; or none
      * @throws IllegalArgumentException if it lists one that is not a regular expression
      */
     static List<Pattern> disabledUserAgentPatterns(Config config) {
@@ -112,6 +112,11 @@ class GrailsContentNegotiationStrategy {
         List<Pattern> patterns = []
         for (Object userAgent in userAgents) {
             if (userAgent == null || String.valueOf(userAgent).isBlank()) {
+                continue
+            }
+            if (userAgent instanceof Pattern) {
+                // as it is, with its own case and flags
+                patterns << (Pattern) userAgent
                 continue
             }
             try {

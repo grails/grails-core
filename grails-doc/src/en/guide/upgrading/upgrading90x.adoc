@@ -891,7 +891,7 @@ next, where Grails 8 sent `404`. A renderer that renders some values only, such 
 `grails.mime.disable.accept.header.userAgents` matched its first user agent with its case in Grails 8, and a user agent
 that was not a regular expression failed the first request, after which the setting was ignored. Every user agent listed as
 text is now matched ignoring case, as a regular expression of its own, while a `java.util.regex.Pattern` the
-configuration gives is used as it is, where Grails 8 joined them into one, in which the flags of
+configuration gives, on its own or in the list, is used as it is, with its own case and flags, where Grails 8 joined them into one, in which the flags of
 one changed the others and a blank one matched every user agent; a blank one is now left out. A comma-separated string is
 read as a list, and one that is not a regular expression fails as Spring MVC is configured, naming the setting.
 
