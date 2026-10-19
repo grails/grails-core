@@ -26,6 +26,7 @@ import java.util.function.Supplier
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -86,6 +87,13 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
+    /**
+     * Finds the GSP locator when a response is written, for a renderer built before the locator, as the registry's own
+     * are built in a unit test.
+     */
+    @Autowired(required = false)
+    ObjectProvider<GrailsConventionGroovyPageLocator> groovyPageLocatorProvider
+
     @Autowired(required = false)
     RendererRegistry rendererRegistry
 
@@ -134,6 +142,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     NamedJsonRenderer namedJsonRenderer
     GrailsJsonMapperCustomizer grailsJsonMapperCustomizer
 
+    private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
+
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
@@ -162,7 +172,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         def viewName = object instanceof ProblemDetail ? context.arguments?.view?.toString() :
                 (context.viewName ?: context.actionName)
         final view = viewName && !(object instanceof Errors) ?
-                groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
+                resolveGroovyPageLocator()?.findViewForFormat(context.controllerName, viewName, mimeType.extension) : null
         if (view) {
             // if a view is provided, we use the HTML renderer to return an appropriate model to the view; one an
             // application registers for problems renders their HTML page rather than the view respond names
@@ -403,6 +413,17 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
                 return headers
             }
         }
+    }
+
+    private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
+        if (groovyPageLocator != null) {
+            return groovyPageLocator
+        }
+        // Only a locator that was found is kept: one registered after the first response is still found
+        if (resolvedGroovyPageLocator == null) {
+            resolvedGroovyPageLocator = groovyPageLocatorProvider?.getIfAvailable()
+        }
+        return resolvedGroovyPageLocator
     }
 
     private MimeType resolveMimeType(RenderContext context) {

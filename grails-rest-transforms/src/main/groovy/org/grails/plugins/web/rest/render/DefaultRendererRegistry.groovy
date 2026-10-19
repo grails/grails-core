@@ -29,6 +29,7 @@ import jakarta.annotation.PostConstruct
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.validation.BeanPropertyBindingResult
@@ -65,6 +66,10 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
+
+    /** Finds a GSP locator created after this registry, as a unit test creates it, when a JSON response is written. */
+    @Autowired(required = false)
+    ObjectProvider<GrailsConventionGroovyPageLocator> groovyPageLocatorProvider
 
     @Autowired(required = false)
     ProxyHandler proxyHandler
@@ -174,6 +179,9 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         }
         if (renderer.validationProblemDetailFactory == null) {
             renderer.validationProblemDetailFactory = validationProblemDetailFactory
+        }
+        if (renderer.groovyPageLocatorProvider == null) {
+            renderer.groovyPageLocatorProvider = groovyPageLocatorProvider
         }
         if (renderer.springHttpMessageConvertersSupplier == null && springMessageConverters != null) {
             renderer.springHttpMessageConvertersSupplier = springMessageConverters::getConverters

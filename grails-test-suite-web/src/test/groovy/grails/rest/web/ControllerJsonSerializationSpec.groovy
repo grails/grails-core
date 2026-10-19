@@ -363,6 +363,22 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         format << ['html', 'csv']
     }
 
+    void 'respond renders the JSON GSP view of the action in a unit test, as in an application'() {
+        given:
+        views['/jsonResponse/show.json.gsp'] = '{"shown":true}'
+        webRequest.actionName = 'show'
+        response.format = 'json'
+        def body = new JsonResponseBody(title: 'Grails')
+
+        when:
+        controller.respond(body)
+
+        then:
+        response.contentType == 'application/json;charset=UTF-8'
+        view == 'show'
+        model.jsonResponseBody.is(body)
+    }
+
     void 'a problem respond names a view for, which a client asks for in a format no view renders, is written as problem JSON'() {
         given: 'the view in HTML and in JSON, and in no other format'
         views['/jsonResponse/conflict.gsp'] = 'conflict'

@@ -33,6 +33,13 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
 import org.springframework.core.env.MapPropertySource
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import grails.util.GrailsWebMockUtil
+import org.grails.gsp.io.GroovyPageScriptSource
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.beans.factory.support.StaticListableBeanFactory
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.ModelAndView
 import spock.lang.Specification
 
 class DefaultRendererRegistrySpec extends Specification {
@@ -149,6 +156,29 @@ class DefaultRendererRegistrySpec extends Specification {
         then:
         registry.findContainerRenderer(MimeType.XML, List, ['a']).is(fallback)
         registry.findContainerRenderer(MimeType.XML, List, [1]).is(fallback)
+    }
+
+    void 'the default JSON renderer finds the views of a GSP locator created after the registry'() {
+        given:
+        def beanFactory = new StaticListableBeanFactory()
+        def registry = new DefaultRendererRegistry()
+        registry.groovyPageLocatorProvider = beanFactory.getBeanProvider(GrailsConventionGroovyPageLocator)
+        registry.initialize()
+        beanFactory.addBean('groovyPageLocator', Stub(GrailsConventionGroovyPageLocator) {
+            findViewForFormat('book', 'show', 'json') >> Stub(GroovyPageScriptSource)
+        })
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.controllerName = 'book'
+        webRequest.actionName = 'show'
+
+        when:
+        registry.findRenderer(MimeType.JSON, [title: 'Grails']).render([title: 'Grails'], new ServletRenderContext(webRequest))
+
+        then:
+        ((ModelAndView) webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)).viewName == 'show'
+
+        cleanup:
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void 'a JSON renderer bean takes the registry settings it does not set itself'() {
