@@ -615,6 +615,34 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         written[3]*.getAt(0).containsAll(['Balance', 'Product'])
     }
 
+    void "without a converter for problems, the problem is written with the mapper the JSON converter selects for it, with #first.simpleName registered first"() {
+        given: "Spring's JSON converter, with mappers for problems and for the subclass, which name properties otherwise"
+        def naming = [(ProblemDetail): PropertyNamingStrategies.UPPER_CAMEL_CASE, (OutOfStock): PropertyNamingStrategies.UPPER_SNAKE_CASE]
+        def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
+        [first, second].each { Class type ->
+            json.registerMappersForType(type) { Map<MediaType, JsonMapper> mappers ->
+                mappers.put(MediaType.APPLICATION_PROBLEM_JSON, JsonMapper.builder().propertyNamingStrategy(naming[type]).build())
+            }
+        }
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [json] }
+        def problem = { -> new OutOfStock(balance: 12.5G, product: 'Grails') }
+        def written = new MockHttpOutputMessage()
+        json.write(problem(), MediaType.APPLICATION_PROBLEM_JSON, written)
+
+        when:
+        def members = tree(renderProblem(renderer, problem()).contentAsString)[3]*.getAt(0)
+
+        then: 'named as the mapper the converter selects, that of the type registered first, names them in application/problem+json'
+        (new JsonSlurper().parseText(written.bodyAsString) as Map).keySet().containsAll(names)
+        members.containsAll(names)
+
+        where:
+        first         | second        || names
+        ProblemDetail | OutOfStock    || ['Balance', 'Product']
+        OutOfStock    | ProblemDetail || ['BALANCE', 'PRODUCT']
+    }
+
     void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {
         given: "Spring's JSON converter, whose mapper has the application's filter"
         def mapper = JsonMapper.builder()
