@@ -330,7 +330,9 @@ trait RestResponder {
         if (locator == null) {
             return false
         }
-        return inResponseType(webRequest.currentRequest, mimeType) { locator.findView(controller, viewName) != null }
+        // named with its suffix or without it, as the GSP view resolver takes it
+        String page = viewName.endsWith('.gsp') ? viewName.substring(0, viewName.length() - '.gsp'.length()) : viewName
+        return inResponseType(webRequest.currentRequest, mimeType) { locator.findView(controller, page) != null }
     }
 
     /** Answers a question about the response as if it were in the given type, which is restored afterwards. */

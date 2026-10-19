@@ -481,6 +481,27 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         model.problemDetail.is(problem)
     }
 
+    void 'a problem is rendered as HTML with the GSP #page respond names as #viewName'() {
+        given:
+        views[page] = 'conflict'
+        response.format = 'html'
+        def problem = org.springframework.http.ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem, view: viewName)
+
+        then:
+        response.status == 409
+        view == viewName
+        model.problemDetail.is(problem)
+
+        where:
+        page                              | viewName
+        '/jsonResponse/conflict.html.gsp' | 'conflict'
+        '/jsonResponse/conflict.gsp'      | 'conflict.gsp'
+        '/errors/conflict.gsp'            | '/errors/conflict'
+    }
+
     void 'a problem respond names a view for, which a client asks for in HTML, is written as problem JSON without an HTML view'() {
         given:
         request.requestURI = '/books'
@@ -842,6 +863,29 @@ class WrappedCycleNode {
     String name
     WrappedCycleNode parent
     List<WrappedCycleNode> children
+}
+
+class ControllerProblemNamespacedPageSpec extends Specification implements ControllerUnitTest<NamespacedProblemController> {
+
+    void 'a problem is rendered as HTML with the GSP of the name in the controller namespace'() {
+        given:
+        views['/admin/namespacedProblem/conflict.gsp'] = 'conflict'
+        response.format = 'html'
+        def problem = ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem, view: 'conflict')
+
+        then:
+        response.status == 409
+        view == 'conflict'
+        model.problemDetail.is(problem)
+    }
+}
+
+@Artefact('Controller')
+class NamespacedProblemController {
+    static namespace = 'admin'
 }
 
 class ControllerProblemNonGspViewSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
