@@ -19,14 +19,37 @@ on:
     branches:
       - '[0-9]+.[0-9]+.x'
   pull_request:
+    # ready_for_review is not a default type: a draft runs nothing until it is ready or labelled "run ci".
+    types: [ opened, synchronize, reopened, ready_for_review ]
   workflow_dispatch:
-# Queue jobs - cancel in-progress PR runs when new commits pushed, but allow branch builds to complete
+    inputs:
+      run-tests:
+        description: "Run the test jobs where the branch rule would skip them (a release branch below the default); a [skip tests] head commit still skips them"
+        type: boolean
+        default: false
+# A new commit on the same pull request or branch cancels the build and test jobs of the run in flight: their
+# results would be for a superseded commit, and the run that replaces it publishes the newer one. The publish
+# jobs (publishGradle, publish, publishForge, verifyWrapper, docs) run on always() with explicit result checks
+# instead, so a publish that has started completes: an interrupted upload would leave the snapshot repository
+# with modules from two commits. Nothing of the cancelled commit is published when the cancel arrives before
+# publish starts, because a cancelled test job fails the explicit checks. The replacing run is pending until
+# the cancelled run has finished every job, so two publishes of the same branch never overlap.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 jobs:
+  policy:
+    name: "CI policy"
+    # A pull request labelled "no ci", or a draft without the "run ci" label, skips this job; every other
+    # job needs it, so nothing runs for such a pull request.
+    if: >-
+      github.event_name != 'pull_request'
+      || (!contains(github.event.pull_request.labels.*.name, 'no ci')
+          && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run ci')))
+    uses: ./.github/workflows/ci-policy.yml
   validateDependencies:
     name: 'Validate Dependency Versions'
+    needs: [ policy ]
     runs-on: ubuntu-24.04
     steps:
       - name: "📥 Checkout repository"
@@ -58,6 +81,7 @@ jobs:
           --stacktrace
   buildGradle:
     name: 'Build Gradle Plugins'
+    needs: [ policy ]
     strategy:
       fail-fast: false
       matrix:
@@ -85,7 +109,7 @@ jobs:
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
       - name: "🔨 Build project without tests"
-        if: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests != 'true' }}
         working-directory: 'grails-gradle'
         run: >
           ./gradlew build
@@ -94,7 +118,7 @@ jobs:
           -PskipCodeStyle
           -PskipTests
       - name: "🔨 Build project with tests"
-        if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests == 'true' }}
         working-directory: 'grails-gradle'
         run: >
           ./gradlew build
@@ -103,7 +127,8 @@ jobs:
           --rerun-tasks
           -PskipCodeStyle
   build:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: 'Build Grails-Core'
     strategy:
       fail-fast: false
@@ -155,7 +180,8 @@ jobs:
           -PonlyCoreTests
           -PskipCodeStyle
   buildRerunTasks:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: 'Build Grails-Core Rerunning all Tasks'
     strategy:
       fail-fast: false
@@ -195,6 +221,7 @@ jobs:
           -PskipCodeStyle
   buildForge:
     name: "Build Grails Forge"
+    needs: [ policy ]
     strategy:
       fail-fast: false
       matrix:
@@ -222,7 +249,7 @@ jobs:
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d96a555133c275a00949d2cc77b70fe9a4242ebf # v1.9.2
       - name: "🔨 Build project without tests"
-        if: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests != 'true' }}
         working-directory: 'grails-forge'
         run: >
           ./gradlew build
@@ -231,7 +258,7 @@ jobs:
           -PskipCodeStyle
           -PskipTests
       - name: "🔨 Build project with tests"
-        if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests == 'true' }}
         working-directory: 'grails-forge'
         run: >
           ./gradlew build
@@ -257,7 +284,8 @@ jobs:
           if-no-files-found: 'error'
   functional:
     name: "Functional Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -305,7 +333,8 @@ jobs:
           if-no-files-found: ignore
   security:
     name: "Spring Security Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -342,7 +371,8 @@ jobs:
           -PskipCodeStyle
   securityConfig:
     name: "Spring Security Config Functional Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -385,7 +415,8 @@ jobs:
           -PskipCodeStyle
   redis:
     name: "Redis Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -423,7 +454,8 @@ jobs:
           -PredisContainerVersion=${{ matrix.redis-version }}
           -PskipCodeStyle
   mongodbFunctional:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: "Mongodb Functional Tests"
     runs-on: ubuntu-24.04
     strategy:
@@ -462,7 +494,8 @@ jobs:
           -PmongodbContainerVersion=${{ matrix.mongodb-version }}
           -PskipCodeStyle
   hibernate5Functional:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: "Hibernate5 Functional Tests"
     runs-on: ubuntu-24.04
     strategy:
@@ -499,7 +532,13 @@ jobs:
           -PonlyHibernate5Tests
           -PskipCodeStyle
   publishGradle:
-    if: github.repository_owner == 'apache' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # always() with an explicit result check, see the concurrency comment at the top.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+          needs.buildGradle.result == 'success'
+      }}
     needs: [ buildGradle ]
     runs-on: ubuntu-24.04
     steps:
@@ -546,6 +585,10 @@ jobs:
           path: grails-gradle/build/grails-gradle-artifacts.txt
   publish:
     needs: [ publishGradle, build, functional, security, securityConfig, redis, hibernate5Functional, mongodbFunctional ]
+    # always() with explicit result checks, see the concurrency comment at the top. The results are checked
+    # explicitly because the implicit success() check also covers the skipped test jobs upstream, which would
+    # skip this job on a build-only run, and because a cancelled test job must not be published: nothing of a
+    # commit whose run was cancelled before this job started reaches the snapshot repository.
     if: >-
       ${{ always() &&
           github.repository_owner == 'apache' &&
@@ -616,7 +659,17 @@ jobs:
           name: apache-grails-wrapper-SNAPSHOT-bin
           path: build/tmp/wrapper
   publishForge:
-    if: github.repository_owner == 'apache' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # The implicit success() check also covers the skipped test jobs upstream of publish, which skipped this job
+    # on every build-only push although its own needs had succeeded; check them explicitly, as publish does.
+    # always() for the same reason as publish.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+          needs.buildForge.result == 'success' &&
+          needs.publishGradle.result == 'success' &&
+          needs.publish.result == 'success'
+      }}
     needs: [ buildForge, publishGradle, publish ]
     runs-on: ubuntu-24.04
     steps:
@@ -665,7 +718,14 @@ jobs:
     name: "Verify grails-wrapper"
     # Verifies the wrapper works end-to-end. Must run after publishForge so that
     # grails-cli (which the wrapper resolves at runtime) is available in Nexus.
-    if: github.repository_owner == 'apache' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # Explicit results and always() for the same reason as publishForge.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+          needs.publish.result == 'success' &&
+          needs.publishForge.result == 'success'
+      }}
     needs: [ publish, publishForge ]
     runs-on: ubuntu-24.04
     steps:
@@ -696,7 +756,13 @@ jobs:
           chmod +x ./wrapper/grailsw
           ./wrapper/grailsw --version
   docs:
-    if: github.repository_owner == 'apache' && github.event_name == 'push'
+    # Explicit results and always() for the same reason as publishForge.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          github.event_name == 'push' &&
+          needs.publish.result == 'success'
+      }}
     needs: [ publish ]
     runs-on: ubuntu-24.04
     steps:
