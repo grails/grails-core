@@ -283,7 +283,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'a bean with a property whose class is written as an array',
                 'a bean with a list of beans',
                 'a bean that unwraps a bean without a prefix',
-                'a bean with an empty bean its property leaves out'
+                'a bean with an empty bean its property leaves out',
+                'a bean a property names the properties of',
+                'a subclass of the bean a property names the properties of',
+                'a bean an untyped property names the properties of',
+                'beans a list property names the properties of',
+                'a bean written as an array a property names the properties of'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -295,7 +300,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2))) },
                 { -> extended('member', new BeanListOwner(items: [new PrefixedInner(code: 'a'), new PrefixedInner(code: 'b')])) },
                 { -> extended('member', new PlainPrice(label: 'a', money: new PlainMoney(amount: 12.5G, currency: 'EUR'))) },
-                { -> extended('member', new EmptyOwner(name: 'a', empty: new NoProperties())) }
+                { -> extended('member', new EmptyOwner(name: 'a', empty: new NoProperties())) },
+                { -> extended('member', new IncludingOwner(bean: new ListBean(tags: ['a', 'b']))) },
+                { -> extended('member', new IncludingOwner(bean: new LabelledListBean(label: 'x', tags: ['a', 'b']))) },
+                { -> extended('member', new IncludingUntypedOwner(bean: new ListBean(tags: ['a', 'b']))) },
+                { -> extended('member', new IncludingListOwner(beans: [new ListBean(tags: ['a']), new ListBean(tags: ['b', 'c'])])) },
+                { -> extended('member', new IncludingArrayOwner(point: new ArrayClassPoint(x: 1, y: 2))) }
         ]
     }
 
@@ -701,4 +711,28 @@ class EmptyOwner {
 }
 
 class NoProperties {
+}
+
+class IncludingOwner {
+    @JsonIncludeProperties(['tags'])
+    ListBean bean
+}
+
+class LabelledListBean extends ListBean {
+    String label
+}
+
+class IncludingUntypedOwner {
+    @JsonIncludeProperties(['tags'])
+    Object bean
+}
+
+class IncludingListOwner {
+    @JsonIncludeProperties(['tags'])
+    List<ListBean> beans
+}
+
+class IncludingArrayOwner {
+    @JsonIncludeProperties(['x'])
+    ArrayClassPoint point
 }

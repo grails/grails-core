@@ -20,11 +20,15 @@ package org.grails.plugins.web.rest.render.xml;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.AnnotationIntrospector;
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
@@ -33,8 +37,11 @@ import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.Annotated;
 import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.introspect.NopAnnotationIntrospector;
 import tools.jackson.databind.introspect.VirtualAnnotatedMember;
 import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.module.SimpleModule;
@@ -87,8 +94,7 @@ final class ProblemBeans {
      */
     static ObjectMapper marking(ObjectMapper mapper) {
         return MARKING.computeIfAbsent(mapper, source -> {
-            MapperBuilder<?, ?> builder = source.rebuild().addModule(new SimpleModule("grails-problem-beans")
-                    .setSerializerModifier(new Marker()));
+            MapperBuilder<?, ?> builder = source.rebuild().addModule(new MarkingModule());
             FilterProvider filters = source.serializationConfig().getFilterProvider();
             if (filters != null) {
                 // the property filters of a bean filter its properties, never the marker
@@ -98,11 +104,83 @@ final class ProblemBeans {
         });
     }
 
+    /**
+     * Marks the beans and, set up after the modules of the mapper, makes the names a property includes of the bean it
+     * holds include the marker of that bean.
+     */
+    private static final class MarkingModule extends SimpleModule {
+
+        private static final long serialVersionUID = 1L;
+
+        MarkingModule() {
+            super("grails-problem-beans");
+            setSerializerModifier(new Marker());
+        }
+
+        @Override
+        public void setupModule(SetupContext context) {
+            super.setupModule(context);
+            // set up last, so that the introspector holds those every other module of the mapper adds
+            MapperBuilder<?, ?> builder = (MapperBuilder<?, ?>) context.getOwner();
+            AnnotationIntrospector introspector = builder.annotationIntrospector();
+            if (introspector != null) {
+                builder.annotationIntrospector(new MarkerIncluding(introspector));
+            }
+        }
+    }
+
+    /**
+     * The introspector of a mapper, except that the names a property includes, with {@code @JsonIncludeProperties}, of
+     * the bean it holds include the marker of that bean, whatever its class.
+     */
+    private static final class MarkerIncluding extends AnnotationIntrospectorPair {
+
+        private static final long serialVersionUID = 1L;
+
+        MarkerIncluding(AnnotationIntrospector introspector) {
+            super(introspector, NopAnnotationIntrospector.instance);
+        }
+
+        @Override
+        public JsonIncludeProperties.Value findPropertyInclusionByName(MapperConfig<?> config, Annotated annotated) {
+            JsonIncludeProperties.Value inclusion = _primary.findPropertyInclusionByName(config, annotated);
+            if (inclusion == null || inclusion.getIncluded() == null) {
+                return inclusion;
+            }
+            return new MarkerInclusion(inclusion);
+        }
+    }
+
+    private static final class MarkerInclusion extends JsonIncludeProperties.Value {
+
+        private static final long serialVersionUID = 1L;
+
+        MarkerInclusion(JsonIncludeProperties.Value inclusion) {
+            super(new MarkersIncluded(inclusion.getIncluded()), inclusion.getOrdered());
+        }
+    }
+
+    /** Names that include the marker of every bean as well. */
+    private static final class MarkersIncluded extends HashSet<String> {
+
+        private static final long serialVersionUID = 1L;
+
+        MarkersIncluded(Set<String> names) {
+            super(names);
+        }
+
+        @Override
+        public boolean contains(Object name) {
+            return isMarker(name) || super.contains(name);
+        }
+    }
+
     private static final class Marker extends ValueSerializerModifier {
 
         private static final long serialVersionUID = 1L;
 
-        // once the properties are filtered, so that the inclusions and ignorals of the bean keep the marker
+        // once the properties are filtered, so that the inclusions and ignorals of the bean's class keep the marker;
+        // those of a property holding the bean keep it through MarkerIncluding
         @Override
         public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 List<BeanPropertyWriter> properties) {
