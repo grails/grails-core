@@ -312,7 +312,9 @@ definition error, such as a property a bean unwraps with the name of one of its 
 the Grails exception resolver sees it, as it does for any Spring MVC controller: with a 500 and a warning without the stack
 trace, and the error page finds the exception in the `jakarta.servlet.error.exception` request attribute rather than in
 the model the Grails exception resolver gives it. A type definition error reaches the Grails exception resolver as any
-other exception does. The legacy converter fails as it did in Grails 8.
+other exception does. The legacy converter fails as it did in Grails 8. `render json:` throws the mapper's own exception,
+a Jackson `JacksonException`, and a `ControllerExecutionException` where the response's writer fails, which the Grails
+exception resolver sees as any other exception.
 
 Controller unit tests use Boot's Jackson configuration and the same setting. Supply a mapper or
 `JsonMapperBuilderCustomizer` from a nested Spring `@Configuration` class, so Boot can see it before
