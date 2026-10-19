@@ -112,7 +112,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
     /**
      * @param header an {@code Accept} header
      * @return the media types it lists, in the order it lists them, read with Spring's parser, and a token Spring
-     *         rejects as Grails 8 read it
+     *         rejects read leniently, as Grails 8 read it, except that the names of its parameters are read ignoring
+     *         case, as Spring reads them
      * @since 9.0
      */
     protected List<MimeType> parseRequestedMimeTypes(String header) {
@@ -130,8 +131,9 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
                 mimeTypes.add(SpringMediaTypeAdapter.toMimeType(mediaType))
             }
             catch (InvalidMediaTypeException ignored) {
-                // Preserve Grails' lenient handling of what Spring rejects, such as a parameter with an empty value,
-                // an invalid character in a name, an unknown charset, or an out-of-range or non-numeric quality value
+                // Read leniently what Spring rejects, as Grails 8 did, such as a parameter with an empty value, an
+                // invalid character in a name, an unknown charset, or an out-of-range or non-numeric quality value; the
+                // names of its parameters are read in lower case, as Spring reads them
                 mimeTypes.add(new MimeType(candidate))
             }
         }

@@ -68,12 +68,6 @@ class HttpServletRequestExtension {
     }
 
     /**
-     * Obtains a list of configured {@link grails.web.mime.MimeType} instances for the request
-     *
-     * @param request The request
-     * @return A list of configured mime types
-     */
-    /**
      * The type a request's {@code Content-Type} names where no configured type matches it, with its type and subtype in
      * lower case, as Spring reads them, so that it equals the type of a binding source creator whatever case the client
      * sends.
@@ -84,6 +78,12 @@ class HttpServletRequestExtension {
         mimeType
     }
 
+    /**
+     * Obtains a list of configured {@link grails.web.mime.MimeType} instances for the request
+     *
+     * @param request The request
+     * @return A list of configured mime types
+     */
     static MimeType[] getMimeTypes(HttpServletRequest request) {
         MimeType[] result = (MimeType[]) request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
         if (!result) {

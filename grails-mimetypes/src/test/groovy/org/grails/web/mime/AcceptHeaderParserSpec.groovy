@@ -104,6 +104,10 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         expect: 'atom takes the place of the xml before it, ahead of json, which is as preferred'
         getAcceptHeaderParser().parse('application/xml;q=0.9, application/json, application/atom+xml')*.extension ==
                 ['atom', 'json', 'xml']
+
+        and: 'of several, the one listed later goes ahead of those listed before it'
+        getAcceptHeaderParser().parse('application/xml, application/atom+xml, application/rss+xml')*.extension ==
+                ['rss', 'atom', 'xml']
     }
 
     void 'a bare * with parameters, which Java clients send, is not a match, as in Grails 8'() {
