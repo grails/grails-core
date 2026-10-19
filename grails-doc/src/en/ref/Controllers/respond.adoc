@@ -75,7 +75,12 @@ Supported `arguments`:
 * `jsonConfiguration` - For a JSON response, the name of a configuration registered with the `NamedJsonConfigurationRegistry` to write the value with, such as `deep`, which Grails registers to write the associations of domain class instances in full. The default JSON renderers, and `JsonRenderer` and `JsonCollectionRenderer` beans, write the value with it; the HAL and Vnd.Error renderers, a view, and a renderer the application implements itself do not use it. A `ProblemDetail` and validation errors are written as they are without one, a problem as Spring MVC writes it. Wherever one of the renderers that use it writes the response, or renders a GSP view in its place, a name that is not registered throws `IllegalArgumentException`, also for a problem and for validation errors
 
 A Spring `ProblemDetail` is written as Spring MVC writes it with Spring Boot's message converters, with the status the
-problem carries, and an absent `instance` is set to the current resource path. A `status` argument decides the status of
+problem carries, and an absent `instance` is set to the current resource path. Its properties are written by the mapper
+of Spring Boot's converter, as a Spring MVC controller writes them: a domain class instance, validation errors or a value
+that leads back to itself among them is written, or fails, as Jackson writes any bean, whatever the
+`grails.converters.json` settings, unless `grails.converters.json.domain.jackson.enabled` gives Spring Boot's mapper the
+domain class serializer. Respond with `validationProblemDetailFactory.create(errors)` to answer with validation errors
+as a problem. A `status` argument decides the status of
 the response, as the status of a `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a
 warning is logged. It is written as `application/problem+xml` for a client whose `Accept` header asks for a problem in
 XML, such as `application/problem+xml` or `application/*+xml`, where the action responds in XML, and as

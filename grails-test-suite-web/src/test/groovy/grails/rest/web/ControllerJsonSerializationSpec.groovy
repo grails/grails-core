@@ -22,12 +22,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import grails.artefact.Artefact
 import grails.gorm.MultiTenant
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
 import grails.testing.gorm.DomainUnitTest
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
@@ -38,7 +40,11 @@ import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
 import grails.rest.render.json.JsonRenderer
 import grails.testing.web.controllers.ControllerUnitTest
+import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.mock.http.MockHttpOutputMessage
 import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
@@ -695,6 +701,43 @@ class ControllerProblemDefaultsSpec extends Specification implements ControllerU
     }
 }
 
+class ControllerProblemConverterSpec extends Specification implements ControllerUnitTest<JsonResponseController>,
+        DataTest {
+
+    Closure doWithConfig() {
+        { config -> config['grails.converters.json.domain.include.class'] = true }
+    }
+
+    void setupSpec() {
+        mockDomains(ProblemResponseBook, ProblemResponseAuthor)
+    }
+
+    void "a problem holding a domain class instance is written by Spring MVC's converter, whatever the grails.converters.json settings"() {
+        given:
+        def author = new ProblemResponseAuthor(name: 'Ada').save(failOnError: true)
+        def book = new ProblemResponseBook(title: 'Grails', author: author).save(failOnError: true)
+        def problem = { ->
+            ProblemDetail.forStatus(409).tap {
+                it.instance = URI.create('/books/1')
+                it.setProperty('book', book)
+            }
+        }
+        def converter = (HttpMessageConverter<Object>) applicationContext.getBean(SpringMessageConverters).converters.find {
+            it instanceof JacksonJsonHttpMessageConverter
+        }
+        def written = new MockHttpOutputMessage()
+        converter.write(problem(), MediaType.APPLICATION_PROBLEM_JSON, written)
+
+        when:
+        response.format = 'json'
+        controller.respond(problem())
+
+        then:
+        response.status == 409
+        response.contentAsString == written.bodyAsString
+    }
+}
+
 class ControllerProblemPageSpec extends Specification implements ControllerUnitTest<JsonResponseController> {
 
     @Configuration
@@ -897,6 +940,17 @@ class JsonValidatedBody {
 class TenantResponseDomain implements MultiTenant<TenantResponseDomain> {
     String name
     String tenantId
+}
+
+@Entity
+class ProblemResponseBook {
+    String title
+    ProblemResponseAuthor author
+}
+
+@Entity
+class ProblemResponseAuthor {
+    String name
 }
 
 @Entity

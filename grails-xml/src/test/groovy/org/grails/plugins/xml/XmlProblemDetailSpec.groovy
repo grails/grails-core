@@ -345,6 +345,23 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'a type definition error' | new ClashingXmlValue(id: 1, inner: new ClashingXmlInner(id: 2)) || HttpMessageConversionException  | 'Type definition error: '
     }
 
+    void 'a problem a client asks for as #accept whose member refers to itself fails as Spring MVC fails to write it'() {
+        given:
+        request.addHeader('Accept', accept)
+        def member = new SelfReferencingMember(name: 'a')
+        member.self = member
+
+        when:
+        controller.respond(extended('member', member))
+
+        then:
+        HttpMessageConversionException e = thrown()
+        e.message.startsWith('Type definition error: ')
+
+        where:
+        accept << ['application/problem+json', 'application/problem+xml']
+    }
+
     void 'without a converter for problems, a response writer that fails is reported as Spring reports it'() {
         given:
         def renderer = new DefaultXmlRenderer<Object>(Object)
@@ -711,6 +728,11 @@ class EmptyOwner {
 }
 
 class NoProperties {
+}
+
+class SelfReferencingMember {
+    String name
+    SelfReferencingMember self
 }
 
 class IncludingOwner {

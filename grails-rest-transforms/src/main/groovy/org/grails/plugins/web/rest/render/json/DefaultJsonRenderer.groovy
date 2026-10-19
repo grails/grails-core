@@ -343,8 +343,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         List<String> excludes = problem ? null : getEffectiveExcludes(context)
 
         // Only adapt the standard converter. Application converter subclasses and per-type
-        // mappers retain their own serialization contract.
-        boolean grailsMapper = grailsJsonMapperCustomizer != null &&
+        // mappers retain their own serialization contract, and a problem is written by the converter
+        // itself, with the mapper Spring MVC writes it with, as the XML converter writes it.
+        boolean grailsMapper = !problem && grailsJsonMapperCustomizer != null &&
                 converter.getClass() == JacksonJsonHttpMessageConverter &&
                 !((JacksonJsonHttpMessageConverter) converter).getMappersForType(objectType)
         if ((includes != null || excludes) && !grailsMapper) {
@@ -371,11 +372,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * Writes a value as Spring MVC's converter writes it, with the isolated Grails mapper: the converter's prefix is
-     * application configuration, and the mapper, which is derived from the converter's, writes the wrapper of a root
-     * value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value itself. One write
-     * writes the whole value, so that an object a serializer writes with {@code writePOJO} is found when it repeats one
-     * being written. The writer is left unflushed, so that a value that fails part-way leaves the response uncommitted.
+     * Writes a value other than a problem as Spring MVC's converter writes it, with the isolated Grails mapper: the
+     * converter's prefix is application configuration, and the mapper, which is derived from the converter's, writes the
+     * wrapper of a root value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value
+     * itself. One write writes the whole value, so that an object a serializer writes with {@code writePOJO} is found
+     * when it repeats one being written. The writer is left unflushed, so that a value that fails part-way leaves the
+     * response uncommitted.
      */
     private static void writeWithGrailsMapper(Object value, JsonMapper mapper, JsonProjection projection, String prefix,
                                               Writer output) {

@@ -265,7 +265,8 @@ against JSON hijacking. A response `respond` writes with a named configuration, 
 `spring-boot-starter-web`, which the web starter brings with SiteMesh 3, had it already; one without it now has Boot's
 `JsonMapper` too, and Spring MVC's JSON converter writes with it rather than with a mapper of its own.
 
-The standard Jackson converter uses an isolated mapper derived from Boot's configured `JsonMapper`.
+The standard Jackson converter uses an isolated mapper derived from Boot's configured `JsonMapper` for every value but
+a `ProblemDetail`, which Spring's converter writes with Boot's mapper itself (see section 10).
 It renders domain classes with the same Jackson serializer as the `JsonMapper` itself does when
 `grails.converters.json.domain.jackson.enabled` is set, and as `render ... as JSON` does with
 `grails.converters.json.legacy` set to `false` (see the section on domain classes below): the
@@ -815,7 +816,10 @@ application with Spring MVC always has the JSON converter; where none can write 
 logs a warning and the legacy converter writes it as a bean, with the same status. Spring MVC's
 XML converter needs `jackson-dataformat-xml`. Without it, Spring MVC answers a client asking for a problem in XML with
 `application/problem+json`, while `respond` still answers it with `application/problem+xml`, which Grails writes itself
-in the format of Spring's converter. XML is
+in the format of Spring's converter. In JSON as in XML, the problem's properties are written by Spring Boot's mapper as in
+a Spring MVC controller: a domain class instance, validation errors or a value that leads back to itself among them is
+written, or fails, as Jackson writes any bean, whatever the `grails.converters.json` settings, unless
+`grails.converters.json.domain.jackson.enabled` gives that mapper the domain class serializer. XML is
 rendered by the `grails-xml` module, without which a client asking for `application/problem+xml` is answered with
 `application/problem+json`.
 Rejected field values are excluded from the problem by default because they can contain passwords, tokens, or other
