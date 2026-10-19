@@ -948,7 +948,10 @@ rejects, such as a quality value above 1, is still read as Grails 8 read it, exc
 `ProblemDetail` as without a view, which is answered as Spring MVC answers such a client (see section 10). Parameter names are read ignoring case,
 as Spring reads them, so `text/html;Q=0.1` has the quality 0.1, where Grails 8 read only a lower-case `q`. The problem types of RFC 9457,
 `application/problem+json` and `application/problem+xml`, are the `json` and `xml` formats unless `grails.mime.types`,
-or a `MimeTypeProvider` bean, such as a renderer or binding source creator, provides a type of that name. They are read
+or a `MimeTypeProvider` bean, such as a renderer or binding source creator, provides a type of that name. A binding
+source creator an application adds to the binding source registry rather than declares as a bean is not among those: a
+body sent as `application/problem+json` is bound by the creator of `application/json`, where Grails 8 found a creator the
+application added for the problem type; declare it as a bean, or name the type in `grails.mime.types`. They are read
 as `application/json` and `application/xml` where those are configured, whatever order `grails.mime.types` lists the types
 of the format in, and as the first type of the format otherwise, so `Accept: application/problem+xml, application/atom+xml`
 resolves to `atom`, as in Grails 8, which ignored the problem type. Listed ahead of another type, a problem type now counts
