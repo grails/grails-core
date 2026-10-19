@@ -78,7 +78,7 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
         response.xml.title.text() == 'Grails'
     }
 
-    void "the XML view of an action renders where the application has a second registry"() {
+    void "the XML view of an action is given to the HTML renderer of the registry respond writes with, where the application has a second registry"() {
         given: 'a view of the action in XML'
         views['/unmanagedXml/show.xml.gsp'] = '<book><title>${unmanagedXmlBody.title}</title></book>'
         webRequest.actionName = 'show'
@@ -87,7 +87,7 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
         when:
         controller.respond(new UnmanagedXmlBody(title: 'Grails'))
 
-        then: 'the HTML renderer of the registry respond writes with renders the view'
+        then: 'the HTML renderer of that registry, which the other has not, writes the response in place of the view'
         response.status == 200
         response.contentAsString == 'the view of Grails'
     }
