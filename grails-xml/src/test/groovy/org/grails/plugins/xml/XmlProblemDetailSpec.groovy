@@ -25,6 +25,9 @@ import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
 
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIncludeProperties
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 
 import org.springframework.http.HttpStatus
@@ -247,6 +250,44 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         tree(fallback.contentAsString) == tree(spring)
     }
 
+    void 'without a converter for problems, #description is written as Spring writes it'() {
+        given:
+        request.addHeader('Accept', 'application/problem+xml')
+        controller.respond(problem())
+        def spring = response.contentAsString
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [] }
+
+        when:
+        def fallback = renderProblem(renderer, problem())
+
+        then:
+        writesProblemsWithJackson()
+        tree(fallback.contentAsString) == tree(spring)
+
+        where:
+        description << [
+                'a bean that unwraps a bean with a prefix',
+                'a bean with a property written as an array',
+                'a bean that names the properties it includes',
+                'a subclass with properties and extension members',
+                'a bean with a list',
+                'an infinite double',
+                'a bean with a property whose class is written as an array',
+                'a bean with a list of beans'
+        ]
+        problem << [
+                { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
+                { -> extended('member', new ArrayShapedOwner(name: 'a', point: new ArrayShapedPoint(x: 1, y: 2))) },
+                { -> extended('member', new IncludingBean(name: 'a', hidden: 'b')) },
+                { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { setProperty('retry', 'later') } },
+                { -> extended('member', new ListBean(tags: ['a', 'b'])) },
+                { -> extended('ratio', Double.POSITIVE_INFINITY) },
+                { -> extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2))) },
+                { -> extended('member', new BeanListOwner(items: [new PrefixedInner(code: 'a'), new PrefixedInner(code: 'b')])) }
+        ]
+    }
+
     void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
         given:
         def renderer = new DefaultXmlRenderer<Object>(Object)
@@ -429,6 +470,12 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         } instanceof JacksonXmlHttpMessageConverter
     }
 
+    private static ProblemDetail extended(String name, Object value) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
+        problem.setProperty(name, value)
+        problem
+    }
+
     private static GrailsWebRequest xmlRequest() {
         def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
         webRequest.controllerName = 'book'
@@ -508,4 +555,52 @@ class ClashingXmlInner {
 class RawMarkup {
     @JsonRawValue
     String fragment
+}
+
+class PrefixedOwner {
+    String name
+    @JsonUnwrapped(prefix = 'x_')
+    PrefixedInner inner
+}
+
+class PrefixedInner {
+    String code
+}
+
+class ArrayShapedOwner {
+    String name
+    @JsonFormat(shape = JsonFormat.Shape.ARRAY)
+    ArrayShapedPoint point
+}
+
+@JsonPropertyOrder(['x', 'y'])
+class ArrayShapedPoint {
+    int x
+    int y
+}
+
+@JsonIncludeProperties(['name'])
+class IncludingBean {
+    String name
+    String hidden
+}
+
+class ListBean {
+    List<String> tags
+}
+
+class ArrayClassOwner {
+    String name
+    ArrayClassPoint point
+}
+
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+@JsonPropertyOrder(['x', 'y'])
+class ArrayClassPoint {
+    int x
+    int y
+}
+
+class BeanListOwner {
+    List<PrefixedInner> items
 }

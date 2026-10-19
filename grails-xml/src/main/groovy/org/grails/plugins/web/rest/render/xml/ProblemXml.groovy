@@ -35,8 +35,8 @@ import org.springframework.http.ProblemDetail
  * {@code jackson-dataformat-xml}: a {@code problem} element in the {@code urn:ietf:rfc:7807} namespace, with the members
  * of the problem, those of a subclass included, and its extension members, as a mapper with Spring's mix-in for problems
  * converts them, the properties of a bean in no namespace and the entries of a map in that of the map, as Spring's
- * converter writes them. A list is written as an element for each of its values, and a {@code null} as an
- * {@code xsi:nil} element.
+ * converter writes them. A list is written as an element for each of its values, wrapped in an element of its name where
+ * it is the property of a bean, and a {@code null} as an {@code xsi:nil} element.
  *
  * @since 9.0
  */
@@ -75,8 +75,8 @@ final class ProblemXml {
             if (member != ProblemBeans.MARKER) {
                 // Spring's converter writes the members of RFC 9457 and the extension members in its namespace, and the
                 // properties of a subclass, as those of any bean, in none
-                element(xml, writer, member, value,
-                        MEMBERS.contains(member) || extensions.contains(member) ? NAMESPACE : '', NAMESPACE, plainDecimals)
+                boolean property = !(MEMBERS.contains(member) || extensions.contains(member))
+                element(xml, writer, member, value, property ? '' : NAMESPACE, NAMESPACE, plainDecimals, property)
             }
         }
         xml.writeEndElement()
@@ -88,10 +88,25 @@ final class ProblemXml {
      * @param enclosing the namespace of the element it is in, which it declares its own where they differ
      */
     private static void element(XMLStreamWriter xml, Writer writer, String name, Object value, String namespace,
-            String enclosing, boolean plainDecimals) {
+            String enclosing, boolean plainDecimals, boolean property) {
         if (value instanceof List) {
-            for (Object listed : (List) value) {
-                element(xml, writer, name, listed, namespace, enclosing, plainDecimals)
+            List<?> listed = (List<?>) value
+            // a bean written as an array is not a collection
+            boolean array = !listed.isEmpty() && listed[0] == ProblemBeans.ARRAY_MARKER
+            List<?> values = array ? listed.subList(1, listed.size()) : listed
+            if (property && !array) {
+                // a collection a bean property holds is wrapped in an element of its name, as Jackson's XML mapper wraps it
+                xml.writeStartElement(name)
+                declare(xml, namespace, enclosing)
+                for (Object each : values) {
+                    element(xml, writer, name, each, namespace, namespace, plainDecimals, false)
+                }
+                xml.writeEndElement()
+            }
+            else {
+                for (Object each : values) {
+                    element(xml, writer, name, each, namespace, enclosing, plainDecimals, false)
+                }
             }
         }
         else if (value == null) {
@@ -106,10 +121,11 @@ final class ProblemXml {
             if (value instanceof Map) {
                 Map<?, ?> members = (Map<?, ?>) value
                 // the properties of a bean are in no namespace, and the entries of a map in that of the map
-                String inner = members.containsKey(ProblemBeans.MARKER) ? '' : namespace
+                boolean bean = members.containsKey(ProblemBeans.MARKER)
+                String inner = bean ? '' : namespace
                 members.each { Object key, Object member ->
                     if (key != ProblemBeans.MARKER) {
-                        element(xml, writer, key.toString(), member, inner, namespace, plainDecimals)
+                        element(xml, writer, key.toString(), member, inner, namespace, plainDecimals, bean)
                     }
                 }
             }
@@ -126,10 +142,16 @@ final class ProblemXml {
         }
     }
 
-    /** The text of a value, as Jackson writes it: binary data in Base64, and a decimal as the mapper's features say. */
+    /**
+     * The text of a value, as Jackson writes it: binary data in Base64, a decimal as the mapper's features say, and an
+     * infinite floating-point number as XML Schema writes it, as Jackson's XML mapper does by default.
+     */
     private static String text(Object value, boolean plainDecimals) {
         if (value instanceof byte[]) {
             return Base64.encoder.encodeToString((byte[]) value)
+        }
+        if ((value instanceof Double || value instanceof Float) && ((Number) value).doubleValue().infinite) {
+            return ((Number) value).doubleValue() > 0 ? 'INF' : '-INF'
         }
         if (value instanceof BigDecimal && plainDecimals) {
             return ((BigDecimal) value).toPlainString()

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.JavaType;
@@ -32,14 +31,20 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.introspect.VirtualAnnotatedMember;
+import tools.jackson.databind.jsonFormatVisitors.JsonObjectFormatVisitor;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.FilterProvider;
+import tools.jackson.databind.ser.PropertyFilter;
+import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.VirtualBeanPropertyWriter;
+import tools.jackson.databind.util.NameTransformer;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 
 /**
@@ -54,6 +59,12 @@ final class ProblemBeans {
     /** The key of the marker, which no property of a bean has. */
     static final String MARKER = ProblemBeans.class.getName() + "#bean";
 
+    /**
+     * The first element of the array a bean is written as, where its format asks for one, so that the array is not taken
+     * for a collection, which a property of a bean wraps.
+     */
+    static final String ARRAY_MARKER = ProblemBeans.class.getName() + "#array";
+
     private static final Map<ObjectMapper, ObjectMapper> MARKING = Collections.synchronizedMap(new WeakHashMap<>());
 
     private ProblemBeans() {
@@ -64,23 +75,27 @@ final class ProblemBeans {
      * @return a copy of it that marks the beans it converts, made once for each mapper
      */
     static ObjectMapper marking(ObjectMapper mapper) {
-        return MARKING.computeIfAbsent(mapper, source -> source.rebuild().addModule(new SimpleModule("grails-problem-beans")
-                .setSerializerModifier(new Marker())).build());
+        return MARKING.computeIfAbsent(mapper, source -> {
+            MapperBuilder<?, ?> builder = source.rebuild().addModule(new SimpleModule("grails-problem-beans")
+                    .setSerializerModifier(new Marker()));
+            FilterProvider filters = source.serializationConfig().getFilterProvider();
+            if (filters != null) {
+                // the property filters of a bean filter its properties, never the marker
+                builder.filterProvider(new MarkerKeepingFilters(filters));
+            }
+            return builder.build();
+        });
     }
 
     private static final class Marker extends ValueSerializerModifier {
 
         private static final long serialVersionUID = 1L;
 
+        // once the properties are filtered, so that the inclusions and ignorals of the bean keep the marker
         @Override
-        public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
+        public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 List<BeanPropertyWriter> properties) {
             BeanDescription description = beanDescription.get();
-            JsonFormat.Value format = beanDescription.findExpectedFormat(description.getBeanClass());
-            if (format != null && format.getShape() == JsonFormat.Shape.ARRAY) {
-                // a bean written as an array has no names to mark it with
-                return properties;
-            }
             JavaType type = config.getTypeFactory().constructType(Boolean.class);
             BeanPropertyDefinition definition = SimpleBeanPropertyDefinition.construct(config,
                     new VirtualAnnotatedMember(description.getClassInfo(), description.getBeanClass(), MARKER, type),
@@ -92,21 +107,108 @@ final class ProblemBeans {
         }
     }
 
+    private static final class MarkerKeepingFilters extends FilterProvider {
+
+        private static final long serialVersionUID = 1L;
+
+        private final FilterProvider filters;
+
+        MarkerKeepingFilters(FilterProvider filters) {
+            this.filters = filters;
+        }
+
+        @Override
+        public FilterProvider snapshot() {
+            return new MarkerKeepingFilters(filters.snapshot());
+        }
+
+        @Override
+        public PropertyFilter findPropertyFilter(SerializationContext context, Object filterId, Object valueToFilter) {
+            PropertyFilter filter = filters.findPropertyFilter(context, filterId, valueToFilter);
+            return filter == null ? null : new MarkerKeepingFilter(filter);
+        }
+    }
+
+    private static final class MarkerKeepingFilter implements PropertyFilter {
+
+        private final PropertyFilter filter;
+
+        MarkerKeepingFilter(PropertyFilter filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public PropertyFilter snapshot() {
+            return new MarkerKeepingFilter(filter.snapshot());
+        }
+
+        @Override
+        public void serializeAsProperty(Object pojo, JsonGenerator generator, SerializationContext context,
+                PropertyWriter writer) throws Exception {
+            if (writer instanceof MarkerWriter) {
+                writer.serializeAsProperty(pojo, generator, context);
+            }
+            else {
+                filter.serializeAsProperty(pojo, generator, context, writer);
+            }
+        }
+
+        @Override
+        public void serializeAsElement(Object elementValue, JsonGenerator generator, SerializationContext context,
+                PropertyWriter writer) throws Exception {
+            if (!(writer instanceof MarkerWriter)) {
+                filter.serializeAsElement(elementValue, generator, context, writer);
+            }
+        }
+
+        @Override
+        public void depositSchemaProperty(PropertyWriter writer, JsonObjectFormatVisitor visitor, SerializationContext context) {
+            filter.depositSchemaProperty(writer, visitor, context);
+        }
+    }
+
     private static final class MarkerWriter extends VirtualBeanPropertyWriter {
 
         private static final long serialVersionUID = 1L;
 
         MarkerWriter(BeanPropertyDefinition definition, BeanDescription description, JavaType type) {
             super(definition, description.getClassAnnotations(), type);
+            this.silent = false;
         }
 
-        private MarkerWriter(MarkerWriter base, PropertyName name) {
+        /** Whether it writes nothing, as the marker of a bean unwrapped into another, which has its own. */
+        private final boolean silent;
+
+        private MarkerWriter(MarkerWriter base, PropertyName name, boolean silent) {
             super(base, name);
+            this.silent = silent;
         }
 
         @Override
         protected BeanPropertyWriter _new(PropertyName newName) {
-            return new MarkerWriter(this, newName);
+            return new MarkerWriter(this, newName, silent);
+        }
+
+        // the marker of a bean unwrapped with a prefix or suffix takes its name, so that it does not conflict with the
+        // marker of the bean it is unwrapped into, and writes nothing
+        @Override
+        public BeanPropertyWriter rename(NameTransformer transformer) {
+            return new MarkerWriter(this, PropertyName.construct(transformer.transform(getName())), true);
+        }
+
+        @Override
+        public void serializeAsProperty(Object bean, JsonGenerator generator, SerializationContext context) throws Exception {
+            if (!silent) {
+                super.serializeAsProperty(bean, generator, context);
+            }
+        }
+
+        // a bean written as an array, as its format asks, has no names to mark it with: the array is marked instead
+        @Override
+        public void serializeAsElement(Object bean, JsonGenerator generator, SerializationContext context) {
+            if (!silent) {
+                generator.writeString(ARRAY_MARKER);
+            }
         }
 
         @Override
