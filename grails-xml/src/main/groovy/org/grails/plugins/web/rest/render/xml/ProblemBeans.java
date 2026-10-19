@@ -62,9 +62,11 @@ import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 import org.springframework.http.ProblemDetail;
 
 /**
- * A copy of a mapper whose bean serializers write a marker ahead of the properties of each bean, so that a problem
- * converted to maps says which of its maps were beans: Jackson's XML converter writes the properties of a bean in no
- * namespace, and the entries of a map in that of the element the map is in.
+ * A copy of a mapper whose bean serializers write a marker among the properties of each bean, first unless another module
+ * orders them, and marks around the extension members of a problem, so that the tokens it writes for a problem say
+ * which of its objects were beans and which members are extension members: Jackson's XML converter writes the properties
+ * of a bean in no namespace, and the entries of a map, the extension members included, in that of the element the map is
+ * in.
  *
  * @since 9.0
  */
@@ -94,8 +96,8 @@ final class ProblemBeans {
     }
 
     /**
-     * @param key a key of a converted map
-     * @return whether it is the key of the marker of a bean
+     * @param key the name of a member the mapper writes
+     * @return whether it is the name of a marker
      */
     static boolean isMarker(Object key) {
         return key instanceof String && ((String) key).startsWith(MARKER);
@@ -103,7 +105,7 @@ final class ProblemBeans {
 
     /**
      * @param mapper a mapper
-     * @return a copy of it that marks the beans it converts, made once for each mapper
+     * @return a copy of it that marks the beans and extension members it writes, made once for each mapper
      */
     static ObjectMapper marking(ObjectMapper mapper) {
         return MARKING.computeIfAbsent(mapper, source -> {
@@ -242,7 +244,7 @@ final class ProblemBeans {
         private static final long serialVersionUID = 1L;
 
         // once the properties are filtered, so that the inclusions and ignorals of the bean's class keep the marker;
-        // those of a property holding the bean keep it through MarkerIncluding
+        // those of a property holding the bean keep it through MarkerIncluding, unless the property unwraps the bean
         @Override
         public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 List<BeanPropertyWriter> properties) {
