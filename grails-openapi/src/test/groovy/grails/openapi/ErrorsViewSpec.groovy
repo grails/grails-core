@@ -249,6 +249,11 @@ class ErrorsViewSpec extends Specification {
         errors(openApi, '/kettles')['text/xml'].schema.$ref == ERRORS
     }
 
+    void "settings a generator is created without describe the errors as the converter writes them by default"() {
+        expect: 'the default of grails.converters.json.legacy, as the converter reads it'
+        new OpenApiSettings().legacyJson == OpenApiFixture.settings([:]).legacyJson
+    }
+
     void "the errors view and a controller's own view still render the JSON with grails.web.rendering.json.spring"() {
         given:
         view('object/_object.gson', OBJECT_VIEW)

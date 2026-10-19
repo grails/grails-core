@@ -24,7 +24,9 @@ import io.swagger.v3.oas.models.SpecVersion
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
 import org.springframework.core.env.Environment
+import org.springframework.core.env.MutablePropertySources
 import org.springframework.core.env.PropertySource
+import org.springframework.core.env.PropertySourcesPropertyResolver
 
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 
@@ -109,11 +111,12 @@ class OpenApiSettings {
 
     /**
      * Whether the JSON converter renders as Grails 8 did, which it does unless {@code grails.converters.json.legacy}
-     * is {@code false}: then it writes validation errors with their codes and without the rejected value.
+     * is {@code false}: then it writes validation errors with their codes and without the rejected value. It defaults to
+     * the converter's default, which a later release changes.
      *
      * @since 9.0
      */
-    boolean legacyJson = true
+    boolean legacyJson = ConvertersConfigurationInitializer.isLegacyJson(new PropertySourcesPropertyResolver(new MutablePropertySources()))
 
     /**
      * What the default document selects.
