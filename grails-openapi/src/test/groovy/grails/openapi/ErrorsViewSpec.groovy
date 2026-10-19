@@ -85,30 +85,28 @@ class ErrorsViewSpec extends Specification {
         }
     }
 
-    void 'describes no JSON errors where JSON views fall back to the object view, which answers with success'() {
-        given: 'JSON views without an errors view, which render the errors with the view for any object'
+    void 'describes the errors the converters render where JSON views have no errors view, which the object view does not render'() {
+        given: 'JSON views without an errors view'
         view('object/_object.gson', OBJECT_VIEW)
 
         when:
         def openApi = document()
 
-        then: 'the JSON is not a 422'
-        !errors(openApi, '/kettles').containsKey('application/json')
-
-        and: 'the converters render the XML'
+        then: 'the JSON and the XML are the 422 of the converters'
+        errors(openApi, '/kettles')['application/json'].schema.$ref == ERRORS
         errors(openApi, '/kettles')['text/xml'].schema.$ref == ERRORS
         openApi.components.schemas['ValidationErrors'].properties.keySet() == ['errors'] as Set
     }
 
-    void 'describes no 422 for a controller responding only in JSON where JSON views fall back to the object view'() {
+    void 'describes the 422 of a controller responding only in JSON where JSON views have no errors view'() {
         given:
         view('object/_object.gson', OBJECT_VIEW)
 
         when:
         def openApi = document()
 
-        then: 'it never answers with 422'
-        !openApi.paths['/teapots'].post.responses.containsKey('422')
+        then:
+        errors(openApi, '/teapots')['application/json'].schema.$ref == ERRORS
         openApi.paths['/teapots'].post.responses.containsKey('201')
     }
 

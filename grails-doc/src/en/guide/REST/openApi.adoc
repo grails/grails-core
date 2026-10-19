@@ -572,8 +572,9 @@ an application is generated with. So:
 * A controller with an errors view of its own, such as `grails-app/views/book/_errors.gson`, is
   described answering `422` in JSON without a shape, since only the application knows it; the view
   answers with the status it sets, as the errors view it is usually copied from sets `422`.
-* An application with JSON views but no errors view renders the errors with the view for any
-  object, which answers with success rather than `422`, so its `422` is described in XML alone.
+* An application with JSON views but no errors view renders the errors as the converters render
+  them, with `422`, since the view for any object does not render them, so they are described as
+  the converters render them, in JSON and XML.
 * An application rendering its errors another way declares `ValidationErrors` in the base document,
   which then describes them in every media type, or describes an action's errors with
   `@ApiResponse`.

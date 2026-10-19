@@ -39,9 +39,9 @@ import grails.core.GrailsControllerClass
  *
  * <p>The converters render the errors, in JSON and XML, and answer with 422. Where the application
  * renders with JSON views, a view renders them in JSON instead: the errors view an application is
- * generated with, which answers with 422, a controller's own errors view, which answers as it sets,
- * or, without either, the view for any object, which answers with success. A schema the base
- * document declares under the name describes the errors in every media type, in place of these.</p>
+ * generated with, which answers with 422, or a controller's own errors view, which answers as it
+ * sets; without either, the converters render them. A schema the base document declares under the
+ * name describes the errors in every media type, in place of these.</p>
  */
 @CompileStatic
 class ValidationErrorsContent {
@@ -95,7 +95,7 @@ class ValidationErrorsContent {
             // Only the application knows the shape of the controller's own view.
             content.addMediaType(mediaType, new MediaType())
         }
-        else if (views.rendering() != ErrorsRendering.OBJECT_VIEW) {
+        else {
             content.addMediaType(mediaType, new MediaType().schema(reference()))
         }
     }
