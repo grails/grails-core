@@ -67,6 +67,33 @@ class ControllerUnitTestConverterCustomizerSpec extends Specification implements
     }
 }
 
+class ControllerUnitTestConverterBeanSpec extends Specification implements ControllerUnitTest<CustomizedConverterController> {
+
+    Closure doWithConfig() {
+        { config -> config['grails.web.rendering.json.spring'] = true }
+    }
+
+    @Configuration
+    static class ConverterConfiguration {
+
+        @Bean
+        BadgeConverter badgeConverter() {
+            new BadgeConverter()
+        }
+    }
+
+    void "respond writes with a converter bean of the application, which Spring Boot adds to Spring MVC's converters"() {
+        given:
+        response.format = 'json'
+
+        when:
+        controller.respond(new Badge(name: 'Grails'))
+
+        then:
+        response.contentAsString == 'badge:Grails'
+    }
+}
+
 @Artefact('Controller')
 class CustomizedConverterController { }
 
