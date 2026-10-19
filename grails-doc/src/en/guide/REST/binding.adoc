@@ -102,7 +102,8 @@ JSON, HAL JSON and JSON API bodies are parsed by `JsonSlurper`, as in Grails 8, 
 `grails.databinding.json.jackson` is `true`, which has the application's Jackson `JsonMapper` parse them, so that its
 parser features, such as `spring.jackson.json.read.*`, apply; Jackson becomes the default in Grails 10. The mapper reads
 plain JSON values, which the data binder binds by their names, so its naming strategy, date format and annotations do not
-apply to binding, and a body is read as it is, also where the mapper unwraps root values.
+apply to binding, and a body is read as it is, also where the mapper unwraps root values, its arrays as lists and its
+whole numbers as `Integer`, `Long` or `BigInteger`, whatever the mapper's `spring.jackson.deserialization.*` features say.
 
 [format="csv", options="header"]
 |===

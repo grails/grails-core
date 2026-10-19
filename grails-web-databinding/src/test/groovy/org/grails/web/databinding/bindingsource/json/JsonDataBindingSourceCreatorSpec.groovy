@@ -314,6 +314,24 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         creator << [new JsonDataBindingSourceCreator(useJackson: true), new HalJsonDataBindingSourceCreator(useJackson: true)]
     }
 
+    void "Jackson request parsing reads lists and whole numbers as the legacy parser does where the application's mapper enables #feature"() {
+        given:
+        def creator = new JsonDataBindingSourceCreator(useJackson: true)
+        creator.jsonMapper = JsonMapper.builder().enable(feature).build()
+
+        when:
+        def source = creator.createDataBindingSource(MimeType.JSON, Object, new StringReader('{"tags":["a","b"],"count":3}'))
+
+        then: 'a list and an Integer'
+        source.getPropertyValue('tags') instanceof List
+        source.getPropertyValue('tags') == ['a', 'b']
+        source.getPropertyValue('count').getClass() == Integer
+
+        where:
+        feature << [DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, DeserializationFeature.USE_BIG_INTEGER_FOR_INTS,
+                    DeserializationFeature.USE_LONG_FOR_INTS]
+    }
+
     void 'the JsonSlurper of the legacy path is deprecated for removal in Grails 11'() {
         expect:
         JsonDataBindingSourceCreator.getDeclaredField('jsonSlurper').getAnnotation(Deprecated).forRemoval()
