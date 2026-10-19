@@ -32,6 +32,7 @@ import tools.jackson.databind.ser.ValueSerializerModifier
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
 import tools.jackson.databind.ser.std.SimpleFilterProvider
 
+import groovy.json.JsonSlurper
 import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
@@ -54,6 +55,7 @@ import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter
+import org.springframework.mock.http.MockHttpOutputMessage
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -381,6 +383,26 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then: 'its list is wrapped and its array-shaped bean is not, as without the view'
         viewed != null
         viewed == plain
+    }
+
+    void "without a converter for problems, the default view of the JSON converter's mapper decides the members, as it decides them in JSON"() {
+        given: "Spring's JSON converter, whose mapper writes the view one member of the problem is in by default"
+        def viewing = JsonMapper.builder().defaultSerializationView(PublicView).build()
+        def json = new JacksonJsonHttpMessageConverter(viewing)
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [json] }
+        def problem = { ->
+            new ViewedProblem(detailed: new ViewedDetail(tags: ['a'], point: new ViewedPoint(x: 1, y: 2))).tap { it.setProperty('retry', 'later') }
+        }
+        def written = new MockHttpOutputMessage()
+        json.write(problem(), MediaType.APPLICATION_PROBLEM_JSON, written)
+
+        when:
+        def members = tree(renderProblem(renderer, problem()).contentAsString)[3]*.getAt(0)
+
+        then: 'only the member in the view, as the converter writes the problem in JSON'
+        (new JsonSlurper().parseText(written.bodyAsString) as Map).keySet() as List == ['detailed']
+        members == ['detailed']
     }
 
     void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {

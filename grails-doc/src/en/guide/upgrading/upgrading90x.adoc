@@ -863,7 +863,11 @@ application with Spring MVC always has the JSON converter; where none can write 
 logs a warning and the legacy converter writes it as a bean, with the same status. Spring MVC's
 XML converter needs `jackson-dataformat-xml`. Without it, Spring MVC answers a client asking for a problem in XML with
 `application/problem+json`, while `respond` still answers it with `application/problem+xml`, which Grails writes itself
-in the format of Spring's converter. In JSON as in XML, the problem's properties are written by Spring Boot's mapper as in
+in the format of Spring's converter, with the members Spring Boot's JSON mapper writes for the problem: its settings,
+those of a `JsonMapperBuilderCustomizer` included, decide them as they decide those of `application/problem+json`, so a
+default serialization view leaves out the members in no view, those of RFC 9457 and the extension members among them,
+unless `spring.jackson.mapper.default-view-inclusion` is `true`, where Spring's XML converter, with
+`jackson-dataformat-xml`, writes the problem with Spring Boot's `XmlMapper`. In JSON as in XML, the problem's properties are written by Spring Boot's mapper as in
 a Spring MVC controller: a domain class instance, validation errors or a value that leads back to itself among them is
 written, or fails, as Jackson writes any bean, whatever the `grails.converters.json` settings, unless
 `grails.converters.json.domain.jackson.enabled` gives that mapper the domain class serializer. XML is
