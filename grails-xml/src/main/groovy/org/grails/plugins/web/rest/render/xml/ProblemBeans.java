@@ -39,6 +39,7 @@ import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.introspect.Annotated;
 import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.AnnotatedMember;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.introspect.NopAnnotationIntrospector;
@@ -147,6 +148,11 @@ final class ProblemBeans {
             if (inclusion == null || inclusion.getIncluded() == null) {
                 return inclusion;
             }
+            if (annotated instanceof AnnotatedMember member && _primary.findUnwrappingNameTransformer(config, member) != null) {
+                // the properties of a bean a property unwraps are written into the bean that holds it, which has its own
+                // marker, so that the bean's own would conflict with that of another bean of its class unwrapped there
+                return inclusion;
+            }
             return new MarkerInclusion(inclusion);
         }
     }
@@ -184,11 +190,12 @@ final class ProblemBeans {
         @Override
         public List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 List<BeanPropertyWriter> properties) {
-            if (properties.isEmpty()) {
-                // a bean without properties is an empty value, which Jackson leaves out where the inclusion says so
+            BeanDescription description = beanDescription.get();
+            if (properties.isEmpty() && description.findAnyGetter() == null) {
+                // a bean without properties is an empty value, which Jackson leaves out where the inclusion says so,
+                // unless an any-getter writes its entries
                 return properties;
             }
-            BeanDescription description = beanDescription.get();
             JavaType type = config.getTypeFactory().constructType(Boolean.class);
             String name = MARKER + description.getBeanClass().getName();
             BeanPropertyDefinition definition = SimpleBeanPropertyDefinition.construct(config,
@@ -239,7 +246,8 @@ final class ProblemBeans {
         @Override
         public void serializeAsProperty(Object pojo, JsonGenerator generator, SerializationContext context,
                 PropertyWriter writer) throws Exception {
-            if (writer instanceof MarkerWriter) {
+            // by its name, since a view the mapper writes in wraps it
+            if (isMarker(writer.getName())) {
                 writer.serializeAsProperty(pojo, generator, context);
             }
             else {
@@ -250,7 +258,7 @@ final class ProblemBeans {
         @Override
         public void serializeAsElement(Object elementValue, JsonGenerator generator, SerializationContext context,
                 PropertyWriter writer) throws Exception {
-            if (!(writer instanceof MarkerWriter)) {
+            if (!isMarker(writer.getName())) {
                 filter.serializeAsElement(elementValue, generator, context, writer);
             }
         }
@@ -266,7 +274,9 @@ final class ProblemBeans {
         private static final long serialVersionUID = 1L;
 
         MarkerWriter(BeanPropertyDefinition definition, BeanDescription description, JavaType type) {
-            super(definition, description.getClassAnnotations(), type);
+            // in every view, so that a view the mapper writes in, which leaves out the properties of no view, keeps it
+            super(definition, description.getClassAnnotations(), type, null, null, null, definition.findInclusion(),
+                    new Class<?>[] {Object.class});
             this.silent = false;
         }
 

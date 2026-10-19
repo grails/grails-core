@@ -29,12 +29,14 @@ import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import com.fasterxml.jackson.annotation.JsonView
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -302,7 +304,10 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'a subclass of the bean a property names the properties of',
                 'a bean an untyped property names the properties of',
                 'beans a list property names the properties of',
-                'a bean written as an array a property names the properties of'
+                'a bean written as an array a property names the properties of',
+                'a bean whose only output is an any-getter',
+                'a bean that unwraps two beans of one class with properties it names',
+                'a bean with an untyped list and an untyped value'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -319,8 +324,29 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new IncludingOwner(bean: new LabelledListBean(label: 'x', tags: ['a', 'b']))) },
                 { -> extended('member', new IncludingUntypedOwner(bean: new ListBean(tags: ['a', 'b']))) },
                 { -> extended('member', new IncludingListOwner(beans: [new ListBean(tags: ['a']), new ListBean(tags: ['b', 'c'])])) },
-                { -> extended('member', new IncludingArrayOwner(point: new ArrayClassPoint(x: 1, y: 2))) }
+                { -> extended('member', new IncludingArrayOwner(point: new ArrayClassPoint(x: 1, y: 2))) },
+                { -> extended('member', new AnyGetterOnly()) },
+                { -> extended('member', new TwiceUnwrappingOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
+                { -> extended('member', new UntypedPayload(tags: ['a', 'b'], tag: 'c')) }
         ]
+    }
+
+    void "without a converter for problems, a bean the JSON converter's mapper writes in its default view is shaped as without a view"() {
+        given: "Spring's JSON converter, whose mapper writes the view the bean's properties are in by default"
+        def viewing = JsonMapper.builder().defaultSerializationView(PublicView).build()
+        def withView = new DefaultXmlRenderer<Object>(Object)
+        withView.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(viewing)] }
+        def withoutView = new DefaultXmlRenderer<Object>(Object)
+        withoutView.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
+        def problem = { -> new ViewedProblem(detailed: new ViewedDetail(tags: ['a', 'b'], point: new ViewedPoint(x: 1, y: 2))) }
+
+        when:
+        def viewed = tree(renderProblem(withView, problem()).contentAsString)[3].find { it[0] == 'detailed' }
+        def plain = tree(renderProblem(withoutView, problem()).contentAsString)[3].find { it[0] == 'detailed' }
+
+        then: 'its list is wrapped and its array-shaped bean is not, as without the view'
+        viewed != null
+        viewed == plain
     }
 
     void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {
@@ -357,6 +383,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         description               | value                                                           || type                            | message
         'a value that fails'      | new UnreadableXmlValue()                                        || HttpMessageNotWritableException | 'Could not write JSON: '
         'a type definition error' | new ClashingXmlValue(id: 1, inner: new ClashingXmlInner(id: 2)) || HttpMessageConversionException  | 'Type definition error: '
+        'a value that refers to itself' | new SelfReferencingMember(name: 'a').tap { it.self = it } || HttpMessageConversionException  | 'Type definition error: '
     }
 
     void 'a problem a client asks for as #accept whose member refers to itself fails as Spring MVC fails to write it'() {
@@ -742,6 +769,61 @@ class EmptyOwner {
 }
 
 class NoProperties {
+}
+
+class AnyGetterOnly {
+
+    @JsonAnyGetter
+    Map<String, Object> other() {
+        [code: 'X1']
+    }
+}
+
+class UnwrappedPair {
+    String a
+    String b
+}
+
+class TwiceUnwrappingOwner {
+    @JsonUnwrapped
+    @JsonIncludeProperties(['a'])
+    UnwrappedPair first
+
+    @JsonUnwrapped
+    @JsonIncludeProperties(['b'])
+    UnwrappedPair second
+}
+
+class UntypedPayload {
+    def tags
+    def tag
+}
+
+class PublicView {
+}
+
+class ViewedProblem extends ProblemDetail {
+
+    @JsonView(PublicView)
+    ViewedDetail detailed
+
+    ViewedProblem() {
+        super(409)
+    }
+}
+
+@JsonView(PublicView)
+class ViewedDetail {
+    List<String> tags
+    ViewedPoint point
+}
+
+@JsonView(PublicView)
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+@JsonPropertyOrder(['x', 'y'])
+class ViewedPoint {
+    int x
+    int y
 }
 
 class SelfReferencingMember {
