@@ -942,7 +942,9 @@ binds, and one sent as `application/problem+xml` the `xml` format, which the XML
 Grails 8 merged `text/xml` and `application/xml` into one `xml` type with the larger of their qualities, but kept the
 quality and the place of `application/xml`: `Accept: text/xml, application/xml;q=0.1, application/json;q=0.5` resolved to
 `json`. The merged type now has the larger quality, and the place of the one of the two the header lists first, which
-decides between types of equal quality, so that header resolves to `xml`.
+decides between types of equal quality, so that header resolves to `xml`. A more specific XML type listed after the first of the two now takes that place ahead of the merged
+type: `Accept: text/xml, application/json, application/atom+xml, application/xml` resolves to `atom`, where Grails 8
+resolved it to `json`.
 
 `respond` answers a client that lists a format the action does not respond in ahead of one it does in the one it does,
 and labels the response with it: `Accept: application/xml, application/json` to an action that responds only in JSON
