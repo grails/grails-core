@@ -314,8 +314,8 @@ other exception does. The legacy converter fails as it did in Grails 8.
 
 Controller unit tests use Boot's Jackson configuration and the same setting. Supply a mapper or
 `JsonMapperBuilderCustomizer` from a nested Spring `@Configuration` class, so Boot can see it before
-evaluating its conditional beans. A mapper registered by the deprecated `doWithSpring` callback is too
-late to make Boot back off. Named JSON
+evaluating its conditional beans. A mapper registered by the deprecated `doWithSpring` callback or by
+`beanRegistrar()` is too late to make Boot back off. Named JSON
 configurations work through `render` and `respond` in `ControllerUnitTest`. Section 13 covers the
 other changes to web unit tests.
 

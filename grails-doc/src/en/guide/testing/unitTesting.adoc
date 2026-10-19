@@ -42,5 +42,5 @@ Boot's converter customizers, which add the test's `HttpMessageConverter` beans,
 `WebMvcConfigurer` beans. Adding
 `jackson-dataformat-xml`, for example, installs the Jackson XML converter in unit tests as it does at
 runtime. Declare converter customizations and mapper beans as `@Bean` methods on a nested Spring
-`@Configuration` class; the deprecated `doWithSpring` callback runs too late for a mapper bean to make
-Boot's auto-configuration back off.
+`@Configuration` class; the deprecated `doWithSpring` callback and `beanRegistrar()` run too late for a
+mapper bean to make Boot's auto-configuration back off.
