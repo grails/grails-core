@@ -363,6 +363,24 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         format << ['html', 'csv']
     }
 
+    void 'a problem respond names a view for, which a client asks for in a format nothing writes problems in, is rendered by the JSON view of the name'() {
+        given: 'the view in HTML and in JSON, and in no other format'
+        views['/jsonResponse/conflict.gsp'] = 'conflict'
+        views['/jsonResponse/conflict.json.gsp'] = '{"conflict":true}'
+        request.requestURI = '/books'
+        response.format = 'csv'
+        def problem = org.springframework.http.ProblemDetail.forStatus(409)
+
+        when:
+        controller.respond(problem, view: 'conflict')
+
+        then: 'as for a client that asks for JSON'
+        response.status == 409
+        response.contentType == 'application/json;charset=UTF-8'
+        view == 'conflict'
+        model.problemDetail.is(problem)
+    }
+
     void 'respond renders the JSON GSP view of the action in a unit test, as in an application'() {
         given:
         views['/jsonResponse/show.json.gsp'] = '{"shown":true}'
@@ -379,10 +397,9 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         model.jsonResponseBody.is(body)
     }
 
-    void 'a problem respond names a view for, which a client asks for in a format no view renders, is written as problem JSON'() {
-        given: 'the view in HTML and in JSON, and in no other format'
+    void 'a problem respond names a view for, which a client asks for in a format nothing writes problems in, is written as problem JSON without a JSON view'() {
+        given: 'the view in HTML only'
         views['/jsonResponse/conflict.gsp'] = 'conflict'
-        views['/jsonResponse/conflict.json.gsp'] = '{"conflict":true}'
         request.requestURI = '/books'
         response.format = 'csv'
 

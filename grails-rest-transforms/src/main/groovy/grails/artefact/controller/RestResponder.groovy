@@ -245,14 +245,14 @@ trait RestResponder {
             return
         }
         if (renderer == null && problem) {
+            // The view respond names for the problem is then the JSON one, as for a client that asks for JSON
             renderer = registry.findRenderer(MimeType.JSON, value)
+            matched = MimeType.JSON
         }
         if (renderer != null) {
             // The response is in the format the renderer was found for, which may not be the client's first: a client
             // that lists one the action does not respond in ahead of it is answered in the next it does
-            if (matched != null) {
-                webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, matched)
-            }
+            webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, matched)
             if (statusCode != null) {
                 setStatus(context, statusCode)
             }
