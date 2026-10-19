@@ -28,6 +28,7 @@ import groovy.json.JsonSlurper
 
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.mock.env.MockEnvironment
 import org.springframework.mock.http.MockHttpOutputMessage
 import org.springframework.validation.BeanPropertyBindingResult
 
@@ -250,8 +251,8 @@ class ErrorsViewSpec extends Specification {
     }
 
     void "settings a generator is created without describe the errors as the converter writes them by default"() {
-        expect: 'the default of grails.converters.json.legacy, as the converter reads it'
-        new OpenApiSettings().legacyJson == OpenApiFixture.settings([:]).legacyJson
+        expect: 'the default of grails.converters.json.legacy, as the converter reads it, whatever the JVM is started with'
+        new OpenApiSettings().legacyJson == OpenApiSettings.from(new MockEnvironment()).legacyJson
     }
 
     void "the errors view and a controller's own view still render the JSON with grails.web.rendering.json.spring"() {
