@@ -42,8 +42,11 @@ import org.apache.commons.logging.LogFactory;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.PropertyResolver;
+import org.springframework.util.ClassUtils;
 
 import grails.config.Config;
 import grails.converters.JSON;
@@ -131,6 +134,31 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
 
     public final Log LOG = LogFactory.getLog(ConvertersConfigurationInitializer.class);
 
+    /**
+     * The initializer of the XML converter, found by name since {@code grails-xml} depends on this module, or
+     * {@code null} without it; {@code grails-xml} registers it for an ahead-of-time image.
+     */
+    private static final Class<? extends AbstractConvertersConfigurationInitializer> XML_INITIALIZER = xmlInitializer();
+
+    /** Whether this initializer is starting as a bean, when the XML plugin's own initializer configures the XML converter. */
+    private boolean starting;
+
+    @Override
+    public void afterPropertiesSet() {
+        starting = true;
+        try {
+            super.afterPropertiesSet();
+        }
+        finally {
+            starting = false;
+        }
+    }
+
+    /**
+     * Initializes the default and named configurations of the JSON converter and, when the application includes the
+     * {@code grails-xml} module, of its XML converter, as before that converter moved there. Starting as a bean beside the
+     * XML plugin's initializer, it leaves the XML converter to that bean.
+     */
     @Override
     public void initialize() {
         if (LOG.isDebugEnabled()) {
@@ -151,6 +179,32 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         }
         initJSONConfiguration(legacy);
         initDeepJSONConfiguration();
+        initXmlConfiguration();
+    }
+
+    private void initXmlConfiguration() {
+        if (XML_INITIALIZER == null) {
+            return;
+        }
+        ApplicationContext applicationContext = getApplicationContext();
+        if (starting && applicationContext != null && BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
+                applicationContext, XML_INITIALIZER, true, false).length > 0) {
+            // the XML plugin's initializer bean configures it as it starts
+            return;
+        }
+        AbstractConvertersConfigurationInitializer xml = BeanUtils.instantiateClass(XML_INITIALIZER);
+        xml.setApplicationContext(applicationContext);
+        xml.setGrailsApplication(getGrailsApplication());
+        xml.initialize();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Class<? extends AbstractConvertersConfigurationInitializer> xmlInitializer() {
+        String name = "org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer";
+        ClassLoader classLoader = ConvertersConfigurationInitializer.class.getClassLoader();
+        return ClassUtils.isPresent(name, classLoader) ?
+                (Class<? extends AbstractConvertersConfigurationInitializer>) ClassUtils.resolveClassName(name, classLoader) :
+                null;
     }
 
     /**

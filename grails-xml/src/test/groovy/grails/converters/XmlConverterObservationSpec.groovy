@@ -25,7 +25,6 @@ import io.micrometer.observation.ObservationRegistry
 import grails.core.support.proxy.DefaultProxyHandler
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 import org.springframework.context.support.StaticApplicationContext
 import org.springframework.mock.web.MockHttpServletResponse
 
@@ -81,8 +80,7 @@ class XmlConverterObservationSpec extends Specification {
             beanFactory.registerSingleton('observationRegistry', registry)
             refresh()
         }
-        // the JSON converter's initializer sets the observation registry the XML converter observes with
+        // the converters' initializer configures the XML converter and the observation registry it observes with
         new ConvertersConfigurationInitializer(applicationContext: applicationContext).initialize()
-        new XmlConvertersConfigurationInitializer(applicationContext: applicationContext).initialize()
     }
 }

@@ -25,6 +25,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader
 import spock.lang.Specification
 
 import grails.converters.XML
+import org.grails.web.converters.configuration.XmlConvertersConfigurationInitializer
 
 /**
  * Covers the XML converter that encodeAsXML creates by name surviving into an ahead-of-time image, without which an
@@ -42,6 +43,18 @@ class XmlRuntimeHintsSpec extends Specification {
         then:
         RuntimeHintsPredicates.reflection().onType(XML).test(hints)
         RuntimeHintsPredicates.reflection().onConstructorInvocation(XML.getConstructor(Object)).test(hints)
+    }
+
+    void 'the initializer of the XML converter, which the converters create by name, is registered'() {
+        given:
+        def hints = new RuntimeHints()
+
+        when:
+        new XmlRuntimeHints().registerHints(hints, getClass().classLoader)
+
+        then:
+        RuntimeHintsPredicates.reflection().onConstructorInvocation(
+                XmlConvertersConfigurationInitializer.getConstructor()).test(hints)
     }
 
     void 'is registered for ahead-of-time processing'() {

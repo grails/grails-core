@@ -20,6 +20,7 @@ package grails.web
 
 import grails.core.DefaultGrailsApplication
 import groovy.json.JsonBuilder
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -33,6 +34,11 @@ class JSONBuilderSpec extends Specification {
     void setup() {
         def initializer = new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication())
         initializer.initialize()
+    }
+
+    void cleanup() {
+        // the initializer configures the JSON and XML converters for the whole JVM
+        ConvertersConfigurationHolder.clear()
     }
 
     void testSimple() {
