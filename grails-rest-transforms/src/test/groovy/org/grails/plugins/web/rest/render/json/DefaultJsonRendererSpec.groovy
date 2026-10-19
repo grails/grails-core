@@ -31,6 +31,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter
 import org.springframework.http.converter.StringHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.mock.http.MockHttpOutputMessage
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import tools.jackson.core.JsonGenerator
@@ -289,6 +290,22 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         webRequest.response.contentType == 'application/json;charset=ISO-8859-1'
         webRequest.response.contentAsByteArray == '{"hidden":false,"title":"caf\u00e9"}'.getBytes(ISO_8859_1)
+    }
+
+    void 'a Jackson 2 converter writes the configured encoding of the response, as Spring MVC writes it'() {
+        given: 'a converter of Jackson 2, which writes UTF-8 for any encoding Jackson has no writer of'
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.useSpringJson = true
+        renderer.springHttpMessageConvertersSupplier = { [new MappingJackson2HttpMessageConverter()] }
+        renderer.encoding = 'ISO-8859-1'
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+
+        when:
+        renderer.render(new AccentBody(title: 'caf\u00e9'), new ServletRenderContext(webRequest))
+
+        then:
+        webRequest.response.contentType == 'application/json;charset=ISO-8859-1'
+        webRequest.response.contentAsByteArray == '{"title":"caf\u00e9"}'.getBytes(ISO_8859_1)
     }
 
     void 'a projection a serializer of its own bypasses on the Spring path is reported'() {
@@ -1149,4 +1166,8 @@ class SuffixedJsonConverter extends JacksonJsonHttpMessageConverter {
     protected void writeSuffix(JsonGenerator generator, Object object) {
         generator.writeRaw(';')
     }
+}
+
+class AccentBody {
+    String title
 }

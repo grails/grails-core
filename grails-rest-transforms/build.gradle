@@ -63,6 +63,7 @@ dependencies {
 
     testImplementation 'jakarta.servlet:jakarta.servlet-api'
     testImplementation 'org.springframework:spring-test'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind' // Spring's Jackson 2 converters
 
     testImplementation 'org.apache.groovy:groovy-test-junit5'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'

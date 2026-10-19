@@ -18,11 +18,15 @@
  */
 package org.grails.plugins.web.rest.render
 
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+
 import groovy.transform.CompileStatic
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 
@@ -38,6 +42,32 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 @CompileStatic
 class SpringMessageConverters {
+
+    /** Spring's base of the converters of Jackson 2, named so that this class does not depend on it. */
+    private static final String JACKSON_2_CONVERTER = 'org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter'
+
+    /**
+     * The charset to have a converter write a body in, which a writer then decodes and the response's writer encodes in
+     * the response's encoding: UTF-8 for a converter of Jackson 3 or Jackson 2, which writes only UTF encodings and UTF-8
+     * for any other it is given, and the response's encoding for any other converter.
+     *
+     * @param converter a converter
+     * @param encoding the encoding of the response
+     * @return the charset
+     */
+    static Charset writeCharset(HttpMessageConverter<?> converter, String encoding) {
+        return converter instanceof AbstractJacksonHttpMessageConverter || isJackson2(converter) ?
+                StandardCharsets.UTF_8 : Charset.forName(encoding)
+    }
+
+    private static boolean isJackson2(HttpMessageConverter<?> converter) {
+        for (Class<?> type = converter.getClass(); type != null; type = type.superclass) {
+            if (type.name == JACKSON_2_CONVERTER) {
+                return true
+            }
+        }
+        return false
+    }
 
     @Autowired(required = false)
     @Qualifier('requestMappingHandlerAdapter')

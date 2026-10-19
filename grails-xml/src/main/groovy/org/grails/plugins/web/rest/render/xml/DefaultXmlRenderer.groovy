@@ -19,7 +19,6 @@
 package org.grails.plugins.web.rest.render.xml
 
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.util.function.Supplier
 import javax.xml.stream.XMLStreamException
 
@@ -38,7 +37,6 @@ import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
-import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.json.ProblemDetailJacksonMixin
 import org.springframework.validation.Errors
@@ -298,8 +296,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     private void renderWithSpringConverter(
             HttpMessageConverter<Object> converter, Object object, MediaType mediaType, RenderContext context) {
         // Jackson only writes UTF encodings; the servlet writer applies the response encoding.
-        Charset charset = converter instanceof AbstractJacksonHttpMessageConverter ?
-                StandardCharsets.UTF_8 : Charset.forName(encoding)
+        Charset charset = SpringMessageConverters.writeCharset(converter, encoding)
         MediaType contentType = new MediaType(mediaType, charset)
         WriterOutputStream.writeThrough(context.writer, charset) { OutputStream body ->
             HttpOutputMessage message = new HttpOutputMessage() {

@@ -34,7 +34,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
-import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.validation.Errors
@@ -58,6 +57,7 @@ import grails.web.mime.MimeType
 import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
+import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
@@ -354,8 +354,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         }
         // Jackson only writes UTF encodings. Use UTF-8 for the intermediate byte stream;
         // the servlet writer still applies the configured response encoding.
-        Charset charset = converter instanceof AbstractJacksonHttpMessageConverter ?
-                StandardCharsets.UTF_8 : Charset.forName(encoding)
+        Charset charset = SpringMessageConverters.writeCharset(converter, encoding)
         MediaType contentType = new MediaType(mediaType, charset)
         if (grailsMapper) {
             JacksonJsonHttpMessageConverter source = (JacksonJsonHttpMessageConverter) converter
