@@ -24,6 +24,7 @@ import javax.xml.stream.XMLStreamException
 import tools.jackson.databind.BeanDescription
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.MapperFeature
+import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.SerializationConfig
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
@@ -405,6 +406,24 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         then: 'only the member in the view, as the converter writes the problem in JSON'
         (new JsonSlurper().parseText(written.bodyAsString) as Map).keySet() as List == ['detailed']
         members == ['detailed']
+    }
+
+    void "without a converter for problems, the problem is written with the mapper of the JSON converter that writes problems"() {
+        given: 'a JSON converter ahead of Spring\'s that does not write problems, whose mapper names properties otherwise'
+        def other = new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build()) {
+            @Override
+            boolean canWrite(Class<?> clazz, MediaType mediaType) {
+                clazz != ProblemDetail && super.canWrite(clazz, mediaType)
+            }
+        }
+        def renderer = new DefaultXmlRenderer<Object>(Object)
+        renderer.springHttpMessageConvertersSupplier = { [other, new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
+
+        when:
+        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)
+
+        then: 'its properties are named as the converter that writes problems names them'
+        written[3]*.getAt(0).containsAll(['balance', 'product'])
     }
 
     void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {

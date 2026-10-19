@@ -218,12 +218,14 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * The mapper of Spring's JSON converter, with Spring's mix-in for problems, derived once for the mapper it derives
-     * from.
+     * The mapper of the JSON converter Spring MVC writes {@code application/problem+json} with, with Spring's mix-in for
+     * problems, derived once for the mapper it derives from.
      */
     @CompileDynamic
     private ObjectMapper problemMapper(List<HttpMessageConverter<?>> converters) {
-        def json = (JacksonJsonHttpMessageConverter) converters.find { it instanceof JacksonJsonHttpMessageConverter }
+        def json = (JacksonJsonHttpMessageConverter) converters.find {
+            it instanceof JacksonJsonHttpMessageConverter && it.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON)
+        }
         ObjectMapper source = json?.mapper ?: JsonMapperSupport.DEFAULT.mapper
         Tuple2<ObjectMapper, ObjectMapper> derived = problemMapper
         if (derived == null || !derived.v1.is(source)) {
