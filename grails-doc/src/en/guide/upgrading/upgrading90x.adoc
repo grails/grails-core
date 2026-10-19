@@ -951,8 +951,9 @@ next, where Grails 8 sent `404`. A renderer that renders some values only, such 
 that was not a regular expression failed the first request, after which the setting was ignored. Every user agent listed as
 text is now matched ignoring case, as a regular expression of its own, while a `java.util.regex.Pattern` the
 configuration gives, on its own or in the list, is used as it is, with its own case and flags, where Grails 8 joined them into one, in which the flags of
-one changed the others and a blank one matched every user agent; a blank one is now left out. A comma-separated string is
-read as a list, and one that is not a regular expression fails as Spring MVC is configured, naming the setting.
+one changed the others and a blank one matched every user agent; a blank one is now left out. A string, which Grails 8
+ignored, so that the `Accept` header of every client was honoured, is now read as a comma-separated list, and a user agent
+that is not a regular expression fails as Spring MVC is configured, naming the setting.
 
 The data-format extensions `json`, `xml`, `hal`, `atom`, `rss`, `csv` and `text` declared in
 `grails.mime.types`, or among the defaults where it declares none or `grails.mime.mergeDefaults` adds them, are
