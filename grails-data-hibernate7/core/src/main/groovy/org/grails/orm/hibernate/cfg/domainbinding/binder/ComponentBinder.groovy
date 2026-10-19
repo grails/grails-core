@@ -16,21 +16,22 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.binder
+@SuppressWarnings('UnnecessarySemicolon')
+package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
-import groovy.transform.CompileStatic
-import org.hibernate.boot.spi.MetadataBuildingContext
-import org.hibernate.mapping.Collection
-import org.hibernate.mapping.Component
-import org.hibernate.mapping.PersistentClass
-import org.jspecify.annotations.NonNull
+import groovy.transform.CompileStatic;
+import org.hibernate.boot.spi.MetadataBuildingContext;
+import org.hibernate.mapping.Collection;
+import org.hibernate.mapping.Component;
+import org.hibernate.mapping.PersistentClass;
+import org.jspecify.annotations.NonNull;
 
-import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
-import org.grails.orm.hibernate.cfg.MappingCacheHolder
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedCollectionProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.grails.orm.hibernate.cfg.MappingCacheHolder;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedCollectionProperty;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedProperty;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
 
 // ComponentBinder holds a GrailsPropertyBinder reference set post-construction via
 // setGrailsPropertyBinder() to break a circular dependency (ComponentBinder ↔ GrailsPropertyBinder ↔
@@ -41,55 +42,56 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentP
  *
  * @since 8.0
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.DataflowAnomalyAnalysis', 'UnnecessarySemicolon'])
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class ComponentBinder {
 
-    private final MetadataBuildingContext metadataBuildingContext
-    private final MappingCacheHolder mappingCacheHolder
-    private final ComponentUpdater componentUpdater
-    private GrailsPropertyBinder grailsPropertyBinder
+    private final MetadataBuildingContext metadataBuildingContext;
+    private final MappingCacheHolder mappingCacheHolder;
+    private final ComponentUpdater componentUpdater;
+    private GrailsPropertyBinder grailsPropertyBinder;
 
     ComponentBinder(
             MetadataBuildingContext metadataBuildingContext,
             MappingCacheHolder mappingCacheHolder,
             ComponentUpdater componentUpdater) {
-        this.metadataBuildingContext = metadataBuildingContext
-        this.mappingCacheHolder = mappingCacheHolder
-        this.componentUpdater = componentUpdater
+        this.metadataBuildingContext = metadataBuildingContext;
+        this.mappingCacheHolder = mappingCacheHolder;
+        this.componentUpdater = componentUpdater;
     }
 
     void setGrailsPropertyBinder(GrailsPropertyBinder grailsPropertyBinder) {
-        this.grailsPropertyBinder = grailsPropertyBinder
+        this.grailsPropertyBinder = grailsPropertyBinder;
     }
 
     Component bindComponent(@NonNull HibernateEmbeddedProperty embeddedProperty, String path) {
-        PersistentClass owner = embeddedProperty.persistentClass
-        Component component = new Component(metadataBuildingContext, owner)
-        Class<?> type = embeddedProperty.type
-        String role = GrailsHibernateUtil.qualify(type.name, embeddedProperty.name)
-        component.roleName = role
-        component.componentClassName = type.name
+        PersistentClass owner = embeddedProperty.getPersistentClass();
+        Component component = new Component(metadataBuildingContext, owner);
+        Class<?> type = embeddedProperty.getType();
+        String role = GrailsHibernateUtil.qualify(type.getName(), embeddedProperty.getName());
+        component.setRoleName(role);
+        component.setComponentClassName(type.getName());
 
         GrailsHibernatePersistentEntity associatedEntity =
-                (GrailsHibernatePersistentEntity) embeddedProperty.associatedEntity
-        mappingCacheHolder.cacheMapping(associatedEntity)
+                (GrailsHibernatePersistentEntity) embeddedProperty.getAssociatedEntity();
+        mappingCacheHolder.cacheMapping(associatedEntity);
 
-        PersistentClass persistentClass = component.owner
-        associatedEntity.persistentClass = persistentClass
-        String currentPath = path.isEmpty() ? embeddedProperty.name : "${path}.${embeddedProperty.name}"
-        Class<?> propertyType = embeddedProperty.owner.javaClass
+        PersistentClass persistentClass = component.getOwner();
+        associatedEntity.setPersistentClass(persistentClass);
+        String currentPath = path.isEmpty() ? embeddedProperty.getName() : path + '.' + embeddedProperty.getName();
+        Class<?> propertyType = embeddedProperty.getOwner().getJavaClass();
 
         associatedEntity
                 .getHibernateParentProperty(propertyType)
-                .ifPresent { p -> component.setParentProperty(p.name) }
+                .ifPresent { p -> component.setParentProperty(p.name) };
 
         for (HibernatePersistentProperty peerProperty :
                 associatedEntity.getHibernatePersistentProperties(propertyType)) {
-            def value = grailsPropertyBinder.bindProperty(peerProperty, embeddedProperty, currentPath)
-            componentUpdater.updateComponent(component, embeddedProperty, peerProperty, value)
+            var value = grailsPropertyBinder.bindProperty(peerProperty, embeddedProperty, currentPath);
+            componentUpdater.updateComponent(component, embeddedProperty, peerProperty, value);
         }
-        return component
+        return component;
     }
 
     /**
@@ -98,31 +100,30 @@ class ComponentBinder {
      * (a GORM embedded type) rather than a scalar or persistent entity.
      */
     Component bindEmbeddedCollectionComponent(@NonNull HibernateEmbeddedCollectionProperty property) {
-        Collection collection = property.collection
-        Component component = new Component(metadataBuildingContext, collection)
+        Collection collection = property.getCollection();
+        Component component = new Component(metadataBuildingContext, collection);
 
         GrailsHibernatePersistentEntity associatedEntity =
-                (GrailsHibernatePersistentEntity) property.associatedEntity
-        mappingCacheHolder.cacheMapping(associatedEntity)
+                (GrailsHibernatePersistentEntity) property.getAssociatedEntity();
+        mappingCacheHolder.cacheMapping(associatedEntity);
 
-        Class<?> elementType = property.componentType
+        Class<?> elementType = property.getComponentType();
         if (elementType == null) {
-            elementType = property.type
+            elementType = property.getType();
         }
-        component.componentClassName = elementType.name
+        component.setComponentClassName(elementType.getName());
 
-        String role = GrailsHibernateUtil.qualify(property.owner.javaClass.name, property.name)
-        component.roleName = role
+        String role = GrailsHibernateUtil.qualify(property.getOwner().getJavaClass().getName(), property.getName());
+        component.setRoleName(role);
 
-        associatedEntity.persistentClass = collection.owner
+        associatedEntity.setPersistentClass(collection.getOwner());
 
-        Class<?> ownerType = property.owner.javaClass
-        for (HibernatePersistentProperty peer : associatedEntity.getHibernatePersistentProperties(ownerType)) {
-            def value = grailsPropertyBinder.bindProperty(peer, null, property.name)
-            componentUpdater.updateComponent(component, property, peer, value)
+        Class<?> ownerType = property.getOwner().getJavaClass();
+        for (HibernatePersistentProperty peer in associatedEntity.getHibernatePersistentProperties(ownerType)) {
+            var value = grailsPropertyBinder.bindProperty(peer, null, property.getName());
+            componentUpdater.updateComponent(component, property, peer, value);
         }
 
-        return component
+        return component;
     }
-
 }

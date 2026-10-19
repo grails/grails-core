@@ -1,78 +1,78 @@
-package liquibase.harness.diff
+package liquibase.harness.diff;
 
-import java.sql.Date
-import java.sql.Timestamp
+import java.sql.Date;
+import java.sql.Timestamp;
 
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 @CompileStatic
 class Authors {
 
-    int id
-    String firstName
-    String lastName
-    String email
-    Date birthdate
-    Timestamp added
+    int id;
+    String firstName;
+    String lastName;
+    String email;
+    Date birthdate;
+    Timestamp added;
 
-    Authors() {
+    public Authors() {
     }
 
-    Authors(int id, String firstName, String lastName, String email, Date birthdate, Timestamp added) {
-        this.id = id
-        this.firstName = firstName
-        this.lastName = lastName
-        this.email = email
-        this.birthdate = birthdate
-        this.added = added
+    public Authors(int id, String firstName, String lastName, String email, Date birthdate, Timestamp added) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.birthdate = birthdate;
+        this.added = added;
     }
 
-    int getId() {
-        return id
+    public int getId() {
+        return id;
     }
 
-    void setId(int id) {
-        this.id = id
+    public void setId(int id) {
+        this.id = id;
     }
 
-    String getFirstName() {
-        return firstName
+    public String getFirstName() {
+        return firstName;
     }
 
-    void setFirstName(String firstName) {
-        this.firstName = firstName
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    String getLastName() {
-        return lastName
+    public String getLastName() {
+        return lastName;
     }
 
-    void setLastName(String lastName) {
-        this.lastName = lastName
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    String getEmail() {
-        return email
+    public String getEmail() {
+        return email;
     }
 
-    void setEmail(String email) {
-        this.email = email
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    Date getBirthdate() {
-        return birthdate
+    public Date getBirthdate() {
+        return birthdate;
     }
 
-    void setBirthdate(Date birthdate) {
-        this.birthdate = birthdate
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
     }
 
-    Timestamp getAdded() {
-        return added
+    public Timestamp getAdded() {
+        return added;
     }
 
-    void setAdded(Timestamp added) {
-        this.added = added
+    public void setAdded(Timestamp added) {
+        this.added = added;
     }
 
 }
