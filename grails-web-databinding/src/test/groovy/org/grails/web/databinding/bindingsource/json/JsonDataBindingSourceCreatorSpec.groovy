@@ -39,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import tools.jackson.databind.DefaultTyping
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import tools.jackson.databind.ObjectReader
 import tools.jackson.databind.json.JsonMapper
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
@@ -377,6 +378,35 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         'a mix-in that names the class of every Object' | JsonMapper.builder().addMixIn(Object, ClassTypeIds).build()
     }
 
+    void 'a mapper set after a body was read is the one the next body is read with'() {
+        given: 'a mapper with default typing that allows comments, and a body read with it'
+        def creator = new JsonDataBindingSourceCreator(useJackson: true)
+        creator.jsonMapper = JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
+                .activateDefaultTyping(BasicPolymorphicTypeValidator.builder().allowIfSubType(Object).build(), DefaultTyping.NON_FINAL)
+                .build()
+        assert creator.createDataBindingSource(MimeType.JSON, Object, new StringReader('/* c */ {"a":1}'))['a'] == 1
+
+        when: 'a default mapper is set, which allows none'
+        creator.jsonMapper = JsonMapper.builder().build()
+        creator.createDataBindingSource(MimeType.JSON, Object, new StringReader('/* c */ {"a":1}'))
+
+        then:
+        thrown(InvalidRequestBodyException)
+    }
+
+    void "a body is read by the application's own mapper, of its own class, where it has no default typing"() {
+        given:
+        def mapper = new ReaderCountingMapper()
+        def creator = new JsonDataBindingSourceCreator(useJackson: true)
+        creator.jsonMapper = mapper
+
+        when:
+        creator.createDataBindingSource(MimeType.JSON, Object, new StringReader('{"a":1}'))
+
+        then:
+        mapper.readers > 0
+    }
+
     private static JsonMapper defaultTyping(DefaultTyping typing) {
         JsonMapper.builder()
                 .activateDefaultTyping(BasicPolymorphicTypeValidator.builder().allowIfSubType(Object).build(), typing,
@@ -484,4 +514,19 @@ class InitializingJsonCreator extends JsonDataBindingSourceCreator {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
 abstract class ClassTypeIds {
+}
+
+class ReaderCountingMapper extends JsonMapper {
+
+    int readers
+
+    ReaderCountingMapper() {
+        super(JsonMapper.builder())
+    }
+
+    @Override
+    ObjectReader reader() {
+        readers++
+        super.reader()
+    }
 }

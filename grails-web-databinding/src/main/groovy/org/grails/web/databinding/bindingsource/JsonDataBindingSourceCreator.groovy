@@ -118,7 +118,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
      *         {@link #setJsonMapper} sets, or else the application's {@code JsonMapper}, found when a body is first
      *         parsed: its only or primary one, or else Spring Boot's {@code jacksonJsonMapper}; or a default
      *         {@code JsonMapper} where the application has none of those, as when it has several and none is primary;
-     *         bodies are read with a copy of it without its default typing
+     *         bodies are read with a copy of it without its default typing where it has any
      * @since 9.0
      */
     JsonMapper getJsonMapper() {
@@ -163,12 +163,16 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     /** The mapper request bodies are read with, and the application's mapper it is derived from. */
     private volatile Tuple2<JsonMapper, JsonMapper> derivedBodyMapper
 
-    /** The application's mapper without its default typing, derived once for each mapper. */
+    /**
+     * The application's mapper, or, where it has default typing, a copy of it without, derived once for each mapper, so
+     * that a mapper of the application's own class without it reads as it does.
+     */
     private JsonMapper bodyMapper() {
         JsonMapper source = getJsonMapper()
         Tuple2<JsonMapper, JsonMapper> derived = derivedBodyMapper
         if (derived == null || !derived.v1.is(source)) {
-            derived = new Tuple2<JsonMapper, JsonMapper>(source, source.rebuild().deactivateDefaultTyping().build())
+            boolean typing = source.deserializationConfig().getDefaultTyper(source.constructType(Object)) != null
+            derived = new Tuple2<JsonMapper, JsonMapper>(source, typing ? source.rebuild().deactivateDefaultTyping().build() : source)
             derivedBodyMapper = derived
         }
         derived.v2
