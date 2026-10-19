@@ -384,8 +384,8 @@ render json: [ok: true]
 Both accept `includes` and `excludes`. A projection applies to the properties of the type written,
 or of each element's type when a collection or array is written, unlike the legacy converter, which
 projects only the objects of the class of the value written, so not the elements of a collection unless a
-`JsonCollectionRenderer` bean renders it, which applies the `includes` `respond` is given to them, and the `excludes` only
-where the bean is given none of its own, which on the legacy path it never is, as in Grails 8. It applies to domain objects and other beans alike; objects of
+`JsonCollectionRenderer` bean renders it, which applies the `includes` `respond` is given to them but, on the legacy path,
+its own `excludes`, an empty list unless the bean sets them, in the place of those `respond` is given, as in Grails 8. It applies to domain objects and other beans alike; objects of
 other types inside them are written in full. Properties are named by their bean property names, and a JSON name given by a Jackson
 annotation or naming strategy matches as well. A value with no properties to project, such as a map
 or a string, throws `IllegalArgumentException` before anything is written. A type that a Jackson
