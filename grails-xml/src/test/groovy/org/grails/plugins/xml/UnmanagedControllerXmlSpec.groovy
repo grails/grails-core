@@ -60,6 +60,7 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
         given: 'a controller created with new, and a second registry, which renders nothing, neither of them primary'
         def controller = new UnmanagedXmlController()
         request.addHeader('Accept', 'application/xml')
+        assert applicationContext.getBeansOfType(RendererRegistry).keySet() == ['rendererRegistry', 'otherRendererRegistry'] as Set
 
         when:
         controller.respond(new UnmanagedXmlBody(title: 'Grails'))
