@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 import grails.artefact.Artefact
+import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
@@ -54,6 +55,12 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
         RendererRegistry otherRendererRegistry() {
             new RenderingNothingRegistry()
         }
+
+        // an HTML renderer of the body, which the registry respond writes with has, and the other has not
+        @Bean
+        Renderer<UnmanagedXmlBody> bodyHtmlRenderer() {
+            new BodyHtmlRenderer()
+        }
     }
 
     void 'a controller Spring did not create responds with the registry of the application where it has another too'() {
@@ -80,10 +87,9 @@ class UnmanagedControllerSecondRegistrySpec extends Specification implements Con
         when:
         controller.respond(new UnmanagedXmlBody(title: 'Grails'))
 
-        then: 'the view renders the value, with the model the HTML renderer of the registry gives it'
+        then: 'the HTML renderer of the registry respond writes with renders the view'
         response.status == 200
-        view == 'show'
-        model.unmanagedXmlBody.title == 'Grails'
+        response.contentAsString == 'the view of Grails'
     }
 }
 
@@ -117,6 +123,24 @@ class RenderingNothingRegistry implements RendererRegistry {
     @Override
     boolean isContainerType(Class<?> aClass) {
         false
+    }
+}
+
+class BodyHtmlRenderer implements Renderer<UnmanagedXmlBody> {
+
+    @Override
+    Class<UnmanagedXmlBody> getTargetType() {
+        UnmanagedXmlBody
+    }
+
+    @Override
+    MimeType[] getMimeTypes() {
+        [MimeType.HTML] as MimeType[]
+    }
+
+    @Override
+    void render(Object object, RenderContext context) {
+        context.writer.write("the view of ${((UnmanagedXmlBody) object).title}")
     }
 }
 
