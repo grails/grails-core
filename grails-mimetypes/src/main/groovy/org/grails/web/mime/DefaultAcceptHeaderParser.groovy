@@ -142,10 +142,19 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         return mimeTypes
     }
 
+    /**
+     * The configured type a problem type of RFC 9457 is read as: its format's own type, {@code application/json} or
+     * {@code application/xml}, where that is configured, whatever order the configuration lists the types of the format
+     * in, and otherwise the first type of the format.
+     */
     private static MimeType problemFormat(String name, MimeType[] mimeConfig) {
-        String extension = name.equalsIgnoreCase('application/problem+json') ? 'json' :
-                name.equalsIgnoreCase('application/problem+xml') ? 'xml' : null
-        extension ? mimeConfig.find { MimeType mt -> mt.extension == extension } : null
+        MimeType format = name.equalsIgnoreCase('application/problem+json') ? MimeType.JSON :
+                name.equalsIgnoreCase('application/problem+xml') ? MimeType.XML : null
+        if (format == null) {
+            return null
+        }
+        mimeConfig.find { MimeType mt -> mt.extension == format.extension && mt.name.equalsIgnoreCase(format.name) } ?:
+                mimeConfig.find { MimeType mt -> mt.extension == format.extension }
     }
 
     /**
@@ -168,7 +177,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         }
         //Fallback: Try to find match using the name (if version match is not found).
         foundMime = foundMime ?: mimeConfig.find { MimeType mt -> mt.name.equalsIgnoreCase(name) }
-        // The problem types of RFC 9457 are JSON and XML documents: unless they are configured, they are those formats
+        // The problem types of RFC 9457 are JSON and XML documents: unless they are configured, they are read as the own types
+        // of those formats, where configured, whatever order the configuration lists the types of a format in
         foundMime = foundMime ?: problemFormat(name, mimeConfig)
         if (foundMime) {
             mime.name = foundMime.name

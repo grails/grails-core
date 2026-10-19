@@ -110,6 +110,23 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                 ['rss', 'atom', 'xml']
     }
 
+    void "a problem type is read as the format's own type whatever order the configuration lists its types in, #header"() {
+        given:
+        def atom = new MimeType('application/atom+xml', 'atom')
+        def parser = new DefaultAcceptHeaderParser(types.collect { it == 'atom' ? atom : it } as MimeType[])
+
+        expect:
+        parser.parse(header)*.name == names
+
+        where:
+        types                                   | header                                                             || names
+        [MimeType.TEXT_XML, MimeType.XML, 'atom'] | 'application/problem+xml, application/atom+xml'                    || ['application/atom+xml', 'application/xml']
+        [MimeType.XML, MimeType.TEXT_XML, 'atom'] | 'application/problem+xml, application/atom+xml'                    || ['application/atom+xml', 'application/xml']
+        [MimeType.TEXT_XML, MimeType.XML, MimeType.JSON] | 'text/xml;q=0.5, application/problem+xml, application/json;q=0.8' || ['application/xml', 'application/json']
+        [MimeType.TEXT_JSON, MimeType.JSON]       | 'application/problem+json'                                         || ['application/json']
+        [MimeType.TEXT_XML]                       | 'application/problem+xml'                                          || ['application/xml']
+    }
+
     void 'a bare * with parameters, which Java clients send, is not a match, as in Grails 8'() {
         expect:
         getAcceptHeaderParser().parse('text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2')*.name == ['text/html', '*/*']

@@ -52,6 +52,14 @@ class WithFormatSpec extends Specification implements ControllerUnitTest<MimeTyp
         format == 'html'
         response.mimeTypes*.extension == ['html']
     }
+
+    void 'a client that asks for a problem in XML, and next for Atom, is answered in Atom, as in Grails 8'() {
+        given:
+        request.addHeader('Accept', 'application/problem+xml, application/atom+xml')
+
+        expect:
+        response.format == 'atom'
+    }
 }
 
 @Artefact('Controller')
