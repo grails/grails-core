@@ -848,15 +848,20 @@ Applications can also inject the factory when they need to create or customize t
 When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem and fills in an absent
 `instance` with the current resource path. A `status` argument decides the status instead, as the status of a
 `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. It writes the
-problem as Spring MVC writes it with Spring Boot's message converters, an XML converter among them: as
-`application/problem+xml` for a client whose
-`Accept` header asks for it, where the action responds in XML, and as `application/problem+json` for any other client,
-whatever `grails.mime` says and whatever format the request names. A client whose `Accept` header Spring MVC cannot
-read, such as one with a quality value above 1 or one that lists more than 50 media types, is answered with the status
-alone, without a body or a `Content-Type`, as Spring MVC answers it, or with `406 Not Acceptable` where that status is not
-an error status, where `respond` writes the problem as without a view: with no `view` argument, where the HTML page it
-names does not exist, or where no renderer writes the problem in the format Grails reads from the header. Otherwise the
-header is read as Grails 8 read it, and the problem is written in the format read from it. Unless `respond` names a view for the problem, a
+problem as Spring MVC writes it with Spring Boot's message converters, an XML converter among them, in the type Spring
+MVC's content negotiation selects: as `application/problem+xml` where the types it resolves for the request ask for a
+problem in XML and the action responds in XML, and as `application/problem+json` otherwise, whatever `grails.mime` says.
+That negotiation reads the `Accept` header unless `spring.mvc.contentnegotiation.*` or a `WebMvcConfigurer` configures it
+otherwise: with `favor-parameter: true` a `format` parameter decides ahead of the header, so `?format=json` and
+`?format=xml` are answered with `application/problem+json`, as neither `application/json` nor `application/xml` is a
+problem type, and `default-content-types` decides for a client that sends no `Accept` header or only `*/*`. A request
+that negotiation rejects, such as one whose `Accept` header Spring MVC cannot read, with a quality value above 1 or more
+than 50 media types, or, with `favor-parameter: true`, one whose `format` parameter names a format Spring MVC does not
+know, is answered with the status alone, without a body or a `Content-Type`, as Spring MVC answers it, or with
+`406 Not Acceptable` where that status is not an error status, where `respond` writes the problem as without a view: with
+no `view` argument, where the HTML page it names does not exist, or where no renderer writes the problem in the format
+Grails reads from the request. Otherwise the request is read as Grails 8 read it, and the problem is written in the format
+read from it. Unless `respond` names a view for the problem, a
 client that asks for `application/xml` or `text/xml` is answered with `application/problem+json`, as Spring MVC answers
 it, where Grails 8 wrote the problem as a bean with a 200; so is a browser, and a client that accepts neither JSON nor
 XML, such as one asking only for HTML, where Grails 8 rendered the action's view with a 200. A view renders a problem
@@ -991,7 +996,8 @@ additionally registered with Spring as format aliases. The MIME types a `MimeTyp
 Spring MVC asks for its formats while it starts. Spring MVC negotiates
 with them only when the application enables parameter negotiation with
 `spring.mvc.contentnegotiation.favor-parameter: true`. Spring Boot leaves it disabled, so after the
-upgrade `?format=json` still does not change what a Spring MVC endpoint returns. Browser formats such
+upgrade `?format=json` still does not change what a Spring MVC endpoint returns. Where it is enabled, it also decides the type `respond`
+writes a `ProblemDetail` in, as for a Spring MVC controller (see section 10). Browser formats such
 as `html` and `js` are not registered, preserving Spring's reflected-file-download protection.
 Where a format has several media types, an `application/*` one is preferred over a `text/*` one, and Boot's
 `spring.mvc.contentnegotiation.media-types.*` overrides these defaults. Invalid names are skipped.

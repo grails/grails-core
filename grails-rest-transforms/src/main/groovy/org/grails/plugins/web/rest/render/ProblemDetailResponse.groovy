@@ -23,16 +23,18 @@ import groovy.util.logging.Slf4j
 
 import jakarta.servlet.http.HttpServletRequest
 
-import org.springframework.http.HttpHeaders
+import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
-import org.springframework.http.InvalidMediaTypeException
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
-import org.springframework.util.InvalidMimeTypeException
 import org.springframework.util.MimeTypeUtils
+import org.springframework.web.HttpMediaTypeNotAcceptableException
+import org.springframework.web.accept.ContentNegotiationManager
+import org.springframework.web.context.request.ServletWebRequest
 
 import grails.rest.render.RenderContext
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * Prepares the response to a {@link ProblemDetail}, as the JSON and XML renderers write it: the response takes the
@@ -47,6 +49,15 @@ class ProblemDetailResponse {
 
     /** The request attribute that holds the problem the response has been prepared for. */
     private static final String PREPARED = ProblemDetailResponse.name + '.prepared'
+
+    /** The name of the bean Spring MVC's content negotiation manager is, which its handler adapter is given by name. */
+    private static final String MVC_CONTENT_NEGOTIATION_MANAGER = 'mvcContentNegotiationManager'
+
+    /** A manager that reads the Accept header alone, as Spring MVC does by default. */
+    private static final ContentNegotiationManager HEADER_NEGOTIATION = new ContentNegotiationManager()
+
+    /** The types Spring Boot's converters write a problem in, in their order. */
+    private static final List<MediaType> PROBLEM_TYPES = List.of(MediaType.APPLICATION_PROBLEM_JSON, MediaType.APPLICATION_PROBLEM_XML)
 
     private ProblemDetailResponse() {
     }
@@ -88,51 +99,58 @@ class ProblemDetailResponse {
     }
 
     /**
-     * Whether a problem is written for the request in XML, as Spring MVC writes it with Spring Boot's message converters,
-     * an XML converter among them, which Boot lists after the JSON one: only for a client whose {@code Accept} header asks
-     * for a problem in XML, such as {@code application/problem+xml} or {@code application/*+xml}, ahead of one in JSON. A
-     * client that asks for {@code application/xml}, a browser, and one that accepts any type are answered in JSON, and the
-     * format a request names is not consulted, as Spring MVC does not consult it. Nor is whether an XML converter is
-     * present: without {@code jackson-dataformat-xml}, which Spring's XML converter needs, Spring MVC answers in JSON a
+     * The type Spring MVC writes a problem in for the request with Spring Boot's message converters, an XML one among
+     * them, which Boot lists after the JSON one, as its content negotiation, {@code spring.mvc.contentnegotiation.*} and
+     * the application's {@code WebMvcConfigurer} beans included, selects it: {@code application/problem+xml} only where
+     * the types it resolves for the request ask for a problem in XML, such as {@code application/problem+xml} or
+     * {@code application/*+xml}, ahead of one in JSON, and {@code application/problem+json} otherwise, also for a client
+     * that asks for {@code application/xml}, a browser, and one that accepts any type; or {@code null} where that
+     * negotiation rejects the request, such as an {@code Accept} header with a quality value above 1 or more than 50
+     * types, or, with parameter negotiation, a format it does not know. Whether an XML converter is present is not
+     * consulted: without {@code jackson-dataformat-xml}, which Spring's XML converter needs, Spring MVC answers in JSON a
      * client that asks for a problem in XML, where the XML renderer writes the XML itself.
      *
-     * @param request the request
-     * @return {@code true} where the problem is written as {@code application/problem+xml}
+     * @param webRequest the request
+     * @return {@code application/problem+xml}, {@code application/problem+json}, or {@code null}
      */
-    static boolean negotiatesXml(HttpServletRequest request) {
-        List<MediaType> accepted = acceptedTypes(request)
-        if (accepted == null) {
-            return false
-        }
-        MediaType preferred = accepted.find { MediaType type ->
-            type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON) || type.isCompatibleWith(MediaType.APPLICATION_PROBLEM_XML)
-        }
-        preferred != null && !preferred.isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
-    }
-
-    /**
-     * Whether Spring MVC reads the {@code Accept} header of the request: one with a type it cannot parse, such as a
-     * quality value above 1, or with more than the 50 types {@code MimeTypeUtils} sorts, it does not, and then writes no
-     * problem.
-     *
-     * @param request the request
-     * @return {@code true} where Spring MVC reads the header
-     */
-    static boolean readsAcceptHeader(HttpServletRequest request) {
-        acceptedTypes(request) != null
-    }
-
-    /** The types the request accepts, as Spring MVC reads and orders them, or {@code null} where it cannot read them. */
-    private static List<MediaType> acceptedTypes(HttpServletRequest request) {
+    static MediaType negotiatedType(GrailsWebRequest webRequest) {
+        List<MediaType> acceptable
         try {
-            List<MediaType> accepted = MediaType.parseMediaTypes(Collections.list(request.getHeaders(HttpHeaders.ACCEPT)))
-            // Spring's order: quality, then specificity
-            MimeTypeUtils.sortBySpecificity(accepted)
-            return accepted
+            acceptable = contentNegotiationManager(webRequest).resolveMediaTypes(new ServletWebRequest(webRequest.currentRequest))
         }
-        catch (InvalidMediaTypeException | InvalidMimeTypeException ignored) {
+        catch (HttpMediaTypeNotAcceptableException ignored) {
             return null
         }
+        // the problem types the request accepts, each as the more specific of the two, as Spring MVC selects them, or the
+        // problem types themselves where it accepts none
+        List<MediaType> compatible = compatibleTypes(acceptable)
+        if (compatible.isEmpty()) {
+            compatible = compatibleTypes(PROBLEM_TYPES)
+        }
+        // Spring's order: quality, then specificity
+        MimeTypeUtils.sortBySpecificity(compatible)
+        compatible[0].isCompatibleWith(MediaType.APPLICATION_PROBLEM_XML) ? MediaType.APPLICATION_PROBLEM_XML :
+                MediaType.APPLICATION_PROBLEM_JSON
+    }
+
+    /** The manager Spring MVC negotiates with, or one that reads the {@code Accept} header alone, as Spring MVC's default. */
+    private static ContentNegotiationManager contentNegotiationManager(GrailsWebRequest webRequest) {
+        ApplicationContext context = webRequest.applicationContext
+        context != null && context.containsBean(MVC_CONTENT_NEGOTIATION_MANAGER) ?
+                context.getBean(MVC_CONTENT_NEGOTIATION_MANAGER, ContentNegotiationManager) : HEADER_NEGOTIATION
+    }
+
+    private static List<MediaType> compatibleTypes(List<MediaType> acceptable) {
+        Set<MediaType> compatible = new LinkedHashSet<MediaType>()
+        for (MediaType accepted : acceptable) {
+            for (MediaType problemType : PROBLEM_TYPES) {
+                if (accepted.isCompatibleWith(problemType)) {
+                    MediaType produced = problemType.copyQualityValue(accepted)
+                    compatible.add(accepted.isLessSpecific(produced) ? produced : accepted)
+                }
+            }
+        }
+        new ArrayList<MediaType>(compatible)
     }
 
     private static void prepare(ProblemDetail problem, RenderContext context, int status) {

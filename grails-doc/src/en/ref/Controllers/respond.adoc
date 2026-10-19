@@ -83,11 +83,17 @@ that leads back to itself among them is written, or fails, as Jackson writes any
 domain class serializer. Respond with `validationProblemDetailFactory.create(errors)` to answer with validation errors
 as a problem. A `status` argument decides the status of
 the response, as the status of a `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a
-warning is logged. It is written as `application/problem+xml` for a client whose `Accept` header asks for a problem in
-XML, such as `application/problem+xml` or `application/*+xml`, where the action responds in XML, and as
-`application/problem+json` for any other client: also a client that asks for `application/xml` or `text/xml`, a browser,
-one that accepts anything, and one asking only for HTML or CSV. Neither the `grails.mime` settings nor a `format`
-parameter or file extension change this. That is how Spring MVC answers these clients where its converters include the
+warning is logged. It is written in the type Spring MVC's content negotiation selects for it, as for a Spring MVC
+controller: the types the request accepts are resolved as `spring.mvc.contentnegotiation.*` and the application's
+`WebMvcConfigurer` beans configure Spring MVC to resolve them, from the `Accept` header unless they configure otherwise,
+and the problem is written as `application/problem+xml` where those types ask for a problem in XML ahead of one in JSON,
+such as `application/problem+xml` or `application/*+xml`, and the action responds in XML, and as
+`application/problem+json` otherwise: also for a client that asks for `application/xml` or `text/xml`, a browser, one
+that accepts anything, and one asking only for HTML or CSV. The `grails.mime` settings and a file extension do not change
+this, nor does a `format` parameter unless `spring.mvc.contentnegotiation.favor-parameter` is `true`: Spring MVC then
+reads the parameter ahead of the header, so `?format=json` is answered with `application/problem+json` whatever the
+header asks for, and so is `?format=xml`, since `application/xml` is not a problem type. That is how Spring MVC answers
+these requests where its converters include the
 XML one, which Spring Boot lists after the JSON one and which needs `jackson-dataformat-xml`. Without that library
 Spring MVC has no XML converter and answers a client asking for a problem in XML with `application/problem+json`;
 `respond` still answers it with `application/problem+xml`, which Grails writes itself in the format of Spring's
@@ -96,12 +102,14 @@ default serialization view of that mapper leaves out the members in no view, tho
 among them, where Spring's XML converter writes them with Spring Boot's `XmlMapper`. It fails, as Spring's converters
 fail, where the problem is nested deeper than that JSON mapper writes: 500 levels, unless
 `spring.jackson.factory.constraints.write.max-nesting-depth` says otherwise. XML is written by the `grails-xml` module, without which every client is answered with
-`application/problem+json`. A client whose `Accept` header Spring MVC cannot read, such as one with a quality value above
-1, as in `application/json;q=2`, or one that lists more than 50 media types, is answered as Spring MVC answers it where
+`application/problem+json`. A request Spring MVC's content negotiation rejects, such as one whose `Accept` header it
+cannot read, with a quality value above 1, as in `application/json;q=2`, or more than 50 media types, or, where
+`favor-parameter` is `true`, one whose `format` parameter names a format Spring MVC does not know, such as `html`, which
+Grails does not register with it, is answered as Spring MVC answers it where
 `respond` writes the problem as without a view: with no `view` argument, where the HTML page it names does not exist, or
 where no renderer writes the problem in the format Grails reads from the header. It is answered with the status alone,
 without a body or a `Content-Type`, or with `406 Not Acceptable` where that status is not a 4xx or 5xx one. Otherwise, as
-for any other value, `respond` reads such a header as Grails 8 did, and writes the problem in the format it reads, which
+for any other value, `respond` reads such a request as Grails 8 did, and writes the problem in the format it reads, which
 the view of the name of that format renders if there is one. A view, whether a GSP, a JSON view or a markup view, renders a problem only when
 `respond` names it with the `view` argument: `respond` then picks the format as for any value, the view of that format
 renders the problem with the status it would have in JSON or XML, and in a format with no such view, such as HTML where

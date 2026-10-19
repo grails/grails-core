@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
@@ -176,21 +177,23 @@ trait RestResponder {
         }
 
         Renderer renderer = null
-        // A problem is written as Spring MVC writes it with Spring Boot's converters, an XML one among them: in XML for a
-        // client that asks for a problem in XML, where the action responds in XML, and in JSON for any other. Without
-        // jackson-dataformat-xml, where Spring MVC would answer in JSON, the XML renderer writes the XML itself. A format's
-        // renderer of any object writes it only in that format, and the HTML renderer only with the view respond names
+        // A problem is written as Spring MVC writes it with Spring Boot's converters, an XML one among them, in the type its
+        // content negotiation selects: in XML where that asks for a problem in XML and the action responds in XML, and in
+        // JSON otherwise. Without jackson-dataformat-xml, where Spring MVC would answer in JSON, the XML renderer writes the
+        // XML itself. A format's renderer of any object writes it only in that format, and the HTML renderer only with the
+        // view respond names
         boolean problem = value instanceof ProblemDetail
+        MediaType springProblemType = problem ? ProblemDetailResponse.negotiatedType(webRequest) : null
         MimeType negotiatedProblemFormat = problem ?
-                (formats.contains('xml') && ProblemDetailResponse.negotiatesXml(webRequest.currentRequest) ? MimeType.XML : MimeType.JSON) :
+                (formats.contains('xml') && springProblemType == MediaType.APPLICATION_PROBLEM_XML ? MimeType.XML : MimeType.JSON) :
                 null
         // with a view, respond picks the format as for any value; a problem the HTML page it names does not render, which
         // the application does not have, is negotiated again and written as without a view
         MimeType problemFormat = args.view ? null : negotiatedProblemFormat
         final context = new ServletRenderContext(webRequest, args)
-        // a client whose Accept header Spring MVC cannot read is answered as Spring MVC answers it, where respond writes a
-        // problem as without a view
-        boolean unreadable = problem && !ProblemDetailResponse.readsAcceptHeader(webRequest.currentRequest)
+        // a request Spring MVC's content negotiation rejects, such as one whose Accept header it cannot read, is answered as
+        // Spring MVC answers it, where respond writes a problem as without a view
+        boolean unreadable = problem && springProblemType == null
         if (unreadable && !args.view) {
             respondWithoutProblem((ProblemDetail) value, context)
             return
