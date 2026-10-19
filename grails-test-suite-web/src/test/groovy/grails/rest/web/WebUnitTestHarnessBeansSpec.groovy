@@ -18,12 +18,18 @@
  */
 package grails.rest.web
 
+import org.springframework.beans.factory.BeanRegistrar
+import org.springframework.beans.factory.BeanRegistry
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import org.springframework.web.servlet.i18n.FixedLocaleResolver
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import spock.lang.Specification
 
 import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
+import grails.web.mapping.LinkGenerator
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 
@@ -67,6 +73,58 @@ class WebUnitTestDefaultLocaleResolverSpec extends Specification implements Cont
     void 'without a configured locale resolver, a web unit test resolves the locale of the session, as an application does'() {
         expect:
         applicationContext.getBean('localeResolver') instanceof SessionLocaleResolver
+    }
+}
+
+/** The URL mappings plugin's beans, which a spec including the controllers plugin loads, are replaced, as in Grails 8. */
+class WebUnitTestUrlMappingsPluginSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    Set<String> getIncludePlugins() {
+        ['controllers'] as Set<String>
+    }
+
+    void 'absolute links start with the server URL of the web test traits where the spec includes the URL mappings plugin'() {
+        expect:
+        controller.createLink(controller: 'book', action: 'show', id: 1, absolute: true) == 'http://localhost:8080/book/show/1'
+    }
+}
+
+class WebUnitTestDeclaredLinkGeneratorSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    Set<String> getIncludePlugins() {
+        ['controllers'] as Set<String>
+    }
+
+    @Configuration
+    static class LinkGeneratorConfiguration {
+
+        @Bean
+        LinkGenerator grailsLinkGenerator() {
+            new DefaultLinkGenerator('https://own.example')
+        }
+    }
+
+    void 'a link generator the spec declares is kept where it includes the URL mappings plugin'() {
+        expect:
+        controller.createLink(controller: 'book', action: 'show', id: 1, absolute: true) == 'https://own.example/book/show/1'
+    }
+}
+
+class WebUnitTestRegisteredUrlMappingsHolderSpec extends Specification implements ControllerUnitTest<HarnessBeansController> {
+
+    Set<String> getIncludePlugins() {
+        ['controllers'] as Set<String>
+    }
+
+    BeanRegistrar beanRegistrar() {
+        return { BeanRegistry registry, Environment environment ->
+            registry.registerBean('grailsUrlMappingsHolder', OwnUrlMappingsHolder)
+        } as BeanRegistrar
+    }
+
+    void 'a URL mappings holder the spec registers is kept where it includes the URL mappings plugin'() {
+        expect:
+        applicationContext.getBean('grailsUrlMappingsHolder') instanceof OwnUrlMappingsHolder
     }
 }
 

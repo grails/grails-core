@@ -26,6 +26,8 @@ import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import tools.jackson.databind.json.JsonMapper
 
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverters
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
@@ -49,6 +51,7 @@ import org.grails.gsp.jsp.TagLibraryResolverImpl
 import org.grails.plugins.codecs.CodecsGrailsPlugin
 import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.plugins.web.rest.render.SpringMessageConverters
+import org.grails.testing.GrailsApplicationBuilder
 import org.grails.testing.runtime.support.GroovyPageUnitTestResourceLoader
 import org.grails.testing.runtime.support.LazyTagLibraryLookup
 import org.grails.validation.ConstraintEvalUtils
@@ -111,6 +114,7 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
         test.applicationContext.getBean(SpringMessageConverters).setConverters(messageConverters(test))
 
         def config = grailsApplication.config
+        ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) test.applicationContext).beanFactory
         test.defineBeans {
 
             final classLoader = ControllerUnitTest.getClassLoader()
@@ -132,11 +136,14 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
             String urlConverterType = config.getProperty(Settings.WEB_URL_CONVERTER)
             "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
-            if (!test.applicationContext.containsBean('grailsUrlMappingsHolder')) {
+            // A URL mappings holder and link generator the spec declares are kept; the URL mappings plugin's, which a spec
+            // including the controllers or urlMappings plugin loads, are replaced, as in Grails 8, so that links follow the
+            // application's UrlMappings and absolute links start with grails.serverURL or http://localhost:8080
+            if (!GrailsApplicationBuilder.isDeclaredByTest(beanFactory, 'grailsUrlMappingsHolder')) {
                 grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean)
             }
 
-            if (!test.applicationContext.containsBean('grailsLinkGenerator')) {
+            if (!GrailsApplicationBuilder.isDeclaredByTest(beanFactory, 'grailsLinkGenerator')) {
                 grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: 'http://localhost:8080')
             }
 

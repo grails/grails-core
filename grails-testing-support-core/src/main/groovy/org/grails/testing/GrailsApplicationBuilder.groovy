@@ -92,6 +92,13 @@ class GrailsApplicationBuilder {
     static final String DO_WITH_CONFIG_PROPERTY_SOURCE = 'doWithConfig'
     static final String GRAILS_PLUGIN_SUFFIX = 'GrailsPlugin'
     static final String AUTO_CONFIGURATION_SUFFIX = 'AutoConfiguration'
+
+    /**
+     * The attribute of the definition of a bean the test declares itself, in its {@code doWithSpring}, its
+     * {@code beanRegistrar()} or one of its configuration classes, rather than a plugin or the framework. The web test
+     * traits keep such a bean where they otherwise define one of their own.
+     */
+    static final String DECLARED_BY_TEST = GrailsApplicationBuilder.name + '.declaredByTest'
     private static final String GRAILS_BEANS_DESCRIPTOR = 'Lgrails/compiler/beans/GrailsBeans;'
     private static final String AUTO_CONFIGURATION_NAME_ATTRIBUTE = 'autoConfigurationName'
 
@@ -370,7 +377,31 @@ class GrailsApplicationBuilder {
 
     void executeDoWithSpringCallback(GrailsApplication grailsApplication) {
         if (!doWithSpring) return
-        defineBeans(grailsApplication, doWithSpring)
+        declareByTest((BeanDefinitionRegistry) grailsApplication.mainContext) { defineBeans(grailsApplication, doWithSpring) }
+    }
+
+    /**
+     * @param beanFactory the bean factory of a test's application context
+     * @param name the name of a bean
+     * @return whether the test declares the bean of the name itself
+     */
+    static boolean isDeclaredByTest(ConfigurableListableBeanFactory beanFactory, String name) {
+        beanFactory.containsBeanDefinition(name) && beanFactory.getBeanDefinition(name).getAttribute(DECLARED_BY_TEST) == Boolean.TRUE
+    }
+
+    /** Runs a registration of the test's own beans, marking each definition it adds or replaces. */
+    static void declareByTest(BeanDefinitionRegistry registry, Closure<?> registration) {
+        Map<String, BeanDefinition> before = [:]
+        for (String name : registry.beanDefinitionNames) {
+            before[name] = registry.getBeanDefinition(name)
+        }
+        registration.call()
+        for (String name : registry.beanDefinitionNames) {
+            BeanDefinition definition = registry.getBeanDefinition(name)
+            if (!before[name].is(definition)) {
+                definition.setAttribute(DECLARED_BY_TEST, Boolean.TRUE)
+            }
+        }
     }
 
     void defineBeans(Closure callable) {
@@ -399,7 +430,9 @@ class GrailsApplicationBuilder {
                 keep[name] = definition
             }
         }
-        keep.putAll(beanDefinitionsDeclaredBy(configurationClasses, registry))
+        Map<String, BeanDefinition> declared = beanDefinitionsDeclaredBy(configurationClasses, registry)
+        declared.values().each { BeanDefinition definition -> definition.setAttribute(DECLARED_BY_TEST, Boolean.TRUE) }
+        keep.putAll(declared)
 
         defineBeans(grailsApplication) { ->
 
@@ -599,8 +632,10 @@ class GrailsApplicationBuilder {
             super.postProcessBeanDefinitionRegistry(registry)
             // Where an application's registrar drains: after the DSL, so it wins a name conflict with doWithSpring
             if (beanRegistrar != null) {
-                new BeanRegistryAdapter(registry, applicationContext, applicationContext.environment, beanRegistrar.getClass())
-                        .register(beanRegistrar)
+                declareByTest(registry) {
+                    new BeanRegistryAdapter(registry, applicationContext, applicationContext.environment, beanRegistrar.getClass())
+                            .register(beanRegistrar)
+                }
             }
             PropertySourcesPlaceholderConfigurer propertySourcePlaceholderConfigurer  = (PropertySourcesPlaceholderConfigurer) grailsApplication.mainContext.getBean('grailsPlaceholderConfigurer')
             propertySourcePlaceholderConfigurer.order = Ordered.HIGHEST_PRECEDENCE
