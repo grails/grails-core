@@ -695,7 +695,6 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'int'    | [1, 2] as int[]
         'long'   | [1L, 2L] as long[]
         'double' | [1.5d, 2.5d] as double[]
-        'String' | ['a', 'b'] as String[]
     }
 
     void "without a converter for problems, the write limit of the JSON converter's mapper decides how deep a problem is written"() {

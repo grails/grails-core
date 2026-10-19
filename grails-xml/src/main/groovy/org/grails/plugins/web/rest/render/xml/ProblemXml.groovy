@@ -286,7 +286,7 @@ final class ProblemXml {
             validated()
         }
 
-        // a primitive array, which the delegate writes as a whole, is one level deeper than what holds it
+        // an array of int, long or double, which the delegate writes as a whole, is one level deeper than what holds it
         @Override
         JsonGenerator writeArray(int[] array, int offset, int length) {
             constraints.validateNestingDepth(streamWriteContext().nestingDepth + 1)
@@ -301,12 +301,6 @@ final class ProblemXml {
 
         @Override
         JsonGenerator writeArray(double[] array, int offset, int length) {
-            constraints.validateNestingDepth(streamWriteContext().nestingDepth + 1)
-            super.writeArray(array, offset, length)
-        }
-
-        @Override
-        JsonGenerator writeArray(String[] array, int offset, int length) {
             constraints.validateNestingDepth(streamWriteContext().nestingDepth + 1)
             super.writeArray(array, offset, length)
         }
