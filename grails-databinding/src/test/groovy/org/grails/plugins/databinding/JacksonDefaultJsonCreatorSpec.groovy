@@ -18,6 +18,9 @@
  */
 package org.grails.plugins.databinding
 
+import tools.jackson.core.json.JsonReadFeature
+import tools.jackson.databind.json.JsonMapper
+
 import grails.web.mime.MimeType
 import org.grails.testing.GrailsUnitTest
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
@@ -39,7 +42,7 @@ class JacksonDefaultJsonCreatorSpec extends Specification implements GrailsUnitT
         { -> jsonDataBindingSourceCreator(OneClassJsonCreator) }
     }
 
-    void 'with Jackson parsing, they are parsed by the application mapper, which rejects a trailing comma'() {
+    void 'with Jackson parsing, they are parsed with Jackson, whose default mapper rejects a trailing comma'() {
         given: 'the replacement creator is in effect'
         assert applicationContext.getBean('jsonDataBindingSourceCreator') instanceof OneClassJsonCreator
 
@@ -49,6 +52,30 @@ class JacksonDefaultJsonCreatorSpec extends Specification implements GrailsUnitT
 
         then:
         thrown(InvalidRequestBodyException)
+    }
+}
+
+class JacksonApplicationMapperJsonCreatorSpec extends Specification implements GrailsUnitTest {
+
+    Closure doWithConfig() {
+        { config -> config['grails.databinding.json.jackson'] = true }
+    }
+
+    Closure doWithSpring() {
+        { ->
+            jsonDataBindingSourceCreator(OneClassJsonCreator)
+            applicationJsonMapper(JsonMapper, JsonMapper.builder().enable(JsonReadFeature.ALLOW_TRAILING_COMMA))
+        }
+    }
+
+    void "with Jackson parsing, they are parsed by the application's mapper, with its read features"() {
+        given: 'the replacement creator is in effect'
+        assert applicationContext.getBean('jsonDataBindingSourceCreator') instanceof OneClassJsonCreator
+
+        expect: 'the mapper allows a trailing comma'
+        applicationContext.getBean(DataBindingSourceRegistry)
+                .createDataBindingSource(MimeType.JSON, OtherBinding, new StringReader('{"name":"Grails",}'))
+                .getPropertyValue('name') == 'Grails'
     }
 }
 
