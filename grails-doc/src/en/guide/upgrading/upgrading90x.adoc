@@ -276,7 +276,7 @@ persistent properties and the id, associated instances as references of their id
 `grails.converters.json.default.deep`, the version and class name with the `grails.converters.json.domain.*`
 settings, and what Jackson applies to a bean, such as `@JsonIgnore`, `@JsonInclude` and the naming strategy.
 Per-response `includes` and `excludes` apply to domain classes too. On top of that serializer, the converter applies what
-section 6 describes, which the mapper does not, such as the marshallers registered with `JSON.registerObjectMarshaller(...)`
+sections 6 and 7 describe, which the mapper does not, such as the marshallers registered with `JSON.registerObjectMarshaller(...)`
 or an `ObjectMarshallerRegisterer`, subclasses of `DomainClassMarshaller`, enums written by their names, and strings escaped
 for an HTML `<script>` element. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
 subclasses and per-type mapper registrations keep their configured behavior and precedence.
