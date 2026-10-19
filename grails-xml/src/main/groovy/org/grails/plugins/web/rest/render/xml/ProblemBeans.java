@@ -59,6 +59,8 @@ import tools.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
 import tools.jackson.databind.util.NameTransformer;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 
+import org.springframework.http.ProblemDetail;
+
 /**
  * A copy of a mapper whose bean serializers write a marker ahead of the properties of each bean, so that a problem
  * converted to maps says which of its maps were beans: Jackson's XML converter writes the properties of a bean in no
@@ -81,10 +83,7 @@ final class ProblemBeans {
      */
     static final String ARRAY_MARKER = ProblemBeans.class.getName() + "#array";
 
-    /**
-     * The keys of the markers written before and after the entries of an any-getter, such as the extension members of a
-     * problem.
-     */
+    /** The keys of the markers written before and after the extension members of a problem, which its any-getter writes. */
     static final String ANY_START = MARKER + "any";
 
     static final String ANY_END = MARKER + "/any";
@@ -264,8 +263,9 @@ final class ProblemBeans {
             return marked;
         }
 
-        // the entries of an any-getter are marked, so that the extension members of a problem, which Spring's converter
-        // writes in its namespace, are told from the properties of a subclass of the same name, which it writes in none
+        // the entries of the any-getter of a problem are marked, so that its extension members, which Spring's converter
+        // writes in its namespace, are told from the properties of a subclass of the same name, and from the entries of
+        // the any-getter of a bean it unwraps, which it writes in none
         @Override
         public BeanSerializerBuilder updateBuilder(SerializationConfig config, BeanDescription.Supplier beanDescription,
                 BeanSerializerBuilder builder) {
@@ -273,7 +273,8 @@ final class ProblemBeans {
             BeanPropertyWriter[] filtered = builder.getFilteredProperties() == null ? null :
                     builder.getFilteredProperties().clone();
             for (int i = 0; i < properties.size(); i++) {
-                if (properties.get(i) instanceof AnyGetterWriter anyGetter && !(anyGetter instanceof MarkedAnyGetter)) {
+                if (properties.get(i) instanceof AnyGetterWriter anyGetter && !(anyGetter instanceof MarkedAnyGetter) &&
+                        ProblemDetail.class.isAssignableFrom(anyGetter.getMember().getDeclaringClass())) {
                     MarkedAnyGetter marked = new MarkedAnyGetter(anyGetter);
                     properties.set(i, marked);
                     if (filtered != null && filtered[i] != null) {

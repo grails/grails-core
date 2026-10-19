@@ -336,7 +336,8 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 'beans an unwrapped list property ignores properties of',
                 'an extension member named like a member of RFC 9457',
                 'a subclass with an extension member named like one of its properties',
-                'a bean whose any-getter writes the name of one of its properties'
+                'a bean whose any-getter writes the name of one of its properties',
+                'a subclass that unwraps a bean with an any-getter'
         ]
         problem << [
                 { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
@@ -363,7 +364,8 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
                 { -> extended('member', new UnwrappedIgnoringListOwner(beans: [new LabelledListBean(label: 'x', tags: ['a']), new LabelledListBean(label: 'y', tags: ['b', 'c'])])) },
                 { -> extended('status', 'x') },
                 { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { setProperty('product', 'other') } },
-                { -> extended('member', new DuplicatingAnyGetter()) }
+                { -> extended('member', new DuplicatingAnyGetter()) },
+                { -> new Throttled().tap { it.setProperty('retry', 'later') } }
         ]
     }
 
@@ -944,6 +946,24 @@ class DuplicatingAnyGetter {
     @JsonAnyGetter
     Map<String, Object> other() {
         [code: 'b']
+    }
+}
+
+class Throttled extends ProblemDetail {
+
+    @JsonUnwrapped
+    RetryHints hints = new RetryHints()
+
+    Throttled() {
+        super(429)
+    }
+}
+
+class RetryHints {
+
+    @JsonAnyGetter
+    Map<String, Object> hints() {
+        [after: '5s']
     }
 }
 
