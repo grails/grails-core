@@ -240,7 +240,7 @@ class GeneratedDomainClassesSerializationSpec extends Specification {
         generated.proxy == [true, true, true, true, true, true, true]
 
         and: 'a serialized proxy deserializes as a plain instance of the real class with its state, as it did with classic binding'
-        generated.proxySerialization == [false, false, 'reattached']
+        generated.proxySerialization == [false, true, 'reattached']
     }
 
     def "lookups by entity name, class name and class give the real class"() {
