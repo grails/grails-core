@@ -28,6 +28,7 @@ import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import tools.jackson.databind.json.JsonMapper
 
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.RootBeanDefinition
@@ -36,12 +37,17 @@ import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverters
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.util.ClassUtils
+import org.springframework.validation.Validator
+import org.springframework.web.ErrorResponse
 import org.springframework.web.accept.ContentNegotiationManager
+import org.springframework.web.method.support.HandlerMethodArgumentResolver
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 
 import grails.config.Settings
 import grails.core.GrailsApplication
@@ -75,6 +81,8 @@ import org.grails.web.util.GrailsApplicationAttributes
 class WebSetupSpecInterceptor implements IMethodInterceptor {
 
     private static final String MVC_CONTENT_NEGOTIATION_MANAGER = 'mvcContentNegotiationManager'
+
+    private static final String MVC_HANDLER_ADAPTER = 'requestMappingHandlerAdapter'
 
     private static final String CONTENT_NEGOTIATION_PROPERTIES = WebSetupSpecInterceptor.name + '.contentNegotiationProperties'
 
@@ -136,7 +144,33 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
         } as Supplier<ContentNegotiationManager>))
     }
 
-    /** Spring MVC's configuration, as far as content negotiation, with the converters and configurers of the test. */
+    /**
+     * Registers Spring MVC's handler adapter, which {@code respond} writes a {@code ProblemDetail} with, built as Spring
+     * MVC builds it: with the message converters, the content negotiation manager and the test's {@link WebMvcConfigurer}
+     * beans, so that the {@code ResponseBodyAdvice} and {@code ErrorResponse.Interceptor} beans the test declares apply as
+     * in the application; unless the test declares a bean of its name. It is built when a response first needs it.
+     */
+    protected void registerHandlerAdapter(GrailsWebUnitTest test, List<HttpMessageConverter<?>> converters) {
+        ConfigurableApplicationContext context = (ConfigurableApplicationContext) test.applicationContext
+        if (context.containsBean(MVC_HANDLER_ADAPTER)) {
+            return
+        }
+        RootBeanDefinition definition = new RootBeanDefinition(RequestMappingHandlerAdapter, { ->
+            List<WebMvcConfigurer> configurers = context.getBeanProvider(WebMvcConfigurer).orderedStream().toList()
+            UnitTestWebMvcConfiguration mvc = new UnitTestWebMvcConfiguration(converters, configurers)
+            mvc.applicationContext = context
+            Validator validator = mvc.mvcValidator()
+            if (validator instanceof InitializingBean) {
+                ((InitializingBean) validator).afterPropertiesSet()
+            }
+            mvc.requestMappingHandlerAdapter(context.getBean(MVC_CONTENT_NEGOTIATION_MANAGER, ContentNegotiationManager),
+                    mvc.mvcConversionService(), validator)
+        } as Supplier<RequestMappingHandlerAdapter>)
+        definition.lazyInit = true
+        ((BeanDefinitionRegistry) context.beanFactory).registerBeanDefinition(MVC_HANDLER_ADAPTER, definition)
+    }
+
+    /** Spring MVC's configuration, as far as content negotiation and its handler adapter, with the converters and configurers of the test. */
     private static class UnitTestWebMvcConfiguration extends WebMvcConfigurationSupport {
 
         private final List<HttpMessageConverter<?>> converters
@@ -171,6 +205,27 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
                 webMvcConfigurer.configureContentNegotiation(configurer)
             }
         }
+
+        @Override
+        protected void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+            for (WebMvcConfigurer webMvcConfigurer : configurers) {
+                webMvcConfigurer.addArgumentResolvers(argumentResolvers)
+            }
+        }
+
+        @Override
+        protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
+            for (WebMvcConfigurer webMvcConfigurer : configurers) {
+                webMvcConfigurer.addReturnValueHandlers(returnValueHandlers)
+            }
+        }
+
+        @Override
+        protected void configureErrorResponseInterceptors(List<ErrorResponse.Interceptor> interceptors) {
+            for (WebMvcConfigurer webMvcConfigurer : configurers) {
+                webMvcConfigurer.addErrorResponseInterceptors(interceptors)
+            }
+        }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
@@ -182,6 +237,7 @@ class WebSetupSpecInterceptor implements IMethodInterceptor {
         List<HttpMessageConverter<?>> converters = messageConverters(test)
         test.applicationContext.getBean(SpringMessageConverters).setConverters(converters)
         registerContentNegotiationManager(test, converters)
+        registerHandlerAdapter(test, converters)
 
         def config = grailsApplication.config
         ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) test.applicationContext).beanFactory

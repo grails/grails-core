@@ -1013,7 +1013,10 @@ Web test traits such as `ControllerUnitTest` and `TagLibUnitTest` now always inc
 conversion beans with Boot's Jackson configuration, build Spring MVC's message converters from the
 test classpath, register Spring MVC's content negotiation manager, the `mvcContentNegotiationManager` bean, with a
 `WebMvcConfigurer` bean that applies `spring.mvc.contentnegotiation.*` to it, as Spring Boot's auto-configuration
-applies them with one, unless the spec declares a bean of that name, and add the `grails-xml` beans when that module is
+applies them with one, unless the spec declares a bean of that name, register Spring MVC's handler adapter, the
+`requestMappingHandlerAdapter` bean, built as Spring MVC builds it from those converters, that manager and the spec's
+`WebMvcConfigurer` beans, unless the spec declares a bean of that name, so that the spec's `ResponseBodyAdvice` and
+`ErrorResponse.Interceptor` beans apply to a problem `respond` writes, and add the `grails-xml` beans when that module is
 on the test classpath, without loading the XML plugin's dependency graph. A spec that overrides `getIncludePlugins()` or
 asserts on the beans in its application context sees these additions. The manager is built as Spring MVC builds it, from
 `spring.mvc.contentnegotiation.*`, which a spec sets in `application.yml` or `doWithConfig`, and the spec's

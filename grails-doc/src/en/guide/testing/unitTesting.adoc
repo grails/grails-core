@@ -52,8 +52,10 @@ mapping gives and which Spring MVC does not read either. A test that declares a 
 `mvcContentNegotiationManager` negotiates with it instead, as a test for an application that declares `@EnableWebMvc`,
 which turns those properties off with Spring Boot's Spring MVC auto-configuration, declares the manager the application
 configures. `respond` writes a `ProblemDetail` with the handler that Spring MVC's handler adapter writes a
-`ResponseEntity` with; a test that declares no `requestMappingHandlerAdapter` bean gets one built with those converters
-and that manager, without the application's `ResponseBodyAdvice` and `ErrorResponse.Interceptor` beans. Declare converter customizations and mapper beans as `@Bean` methods on a nested Spring
+`ResponseEntity` with, and the traits register that adapter as Spring MVC builds it, with those converters, that manager
+and the test's `WebMvcConfigurer` beans, unless the test declares a `requestMappingHandlerAdapter` bean, so that the
+`@ControllerAdvice` `ResponseBodyAdvice` beans and the `ErrorResponse.Interceptor` beans a test declares apply as in the
+application. Declare converter customizations and mapper beans as `@Bean` methods on a nested Spring
 `@Configuration` class; the deprecated `doWithSpring` callback and `beanRegistrar()` run too late for a
 mapper bean to make Boot's auto-configuration back off. In any unit test, the bean of a `@Bean` method such a class
 declares or inherits, from a superclass or as a default method of an interface, replaces the stand-in the test's
