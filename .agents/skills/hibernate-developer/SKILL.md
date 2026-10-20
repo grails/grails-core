@@ -66,6 +66,8 @@ This skill is for the Grails framework's Hibernate 7 integration module, not for
 - `SimpleValueBinder`: binds simple properties.
 - `SimpleValueColumnBinder`: binds columns to simple values.
 - `ComponentBinder`, `ComponentPropertyBinder`: embedded/component binding.
+- `CompositeUserTypeBinder`: binds a property mapped with a Hibernate `CompositeUserType` as a `Component` (one column per attribute of the user type's `embeddable()` class, in alphabetical attribute order); a `BasicValue` cannot carry a composite user type.
+- `GrailsDomainGenerator.compositeUserTypeFacets` / `defineCompositeUserTypeField`: the native binding's counterpart of `CompositeUserTypeBinder`. A property mapped with a `CompositeUserType` becomes an `@Embedded` field of the value class with `@CompositeType` and one `@AttributeOverride` per attribute of the user type's `embeddable()` class, in the same alphabetical order and with the same column rule, so the two bindings create the same schema.
 - `EnumTypeBinder`: enum mapping.
 
 ### Generators

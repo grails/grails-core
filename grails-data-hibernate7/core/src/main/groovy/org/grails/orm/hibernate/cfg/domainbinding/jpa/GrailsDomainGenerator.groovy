@@ -19,8 +19,11 @@
 package org.grails.orm.hibernate.cfg.domainbinding.jpa
 
 import java.lang.annotation.Annotation
+import java.beans.PropertyDescriptor
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.lang.reflect.RecordComponent
 import java.sql.Types
 
 import groovy.transform.CompileStatic
@@ -82,6 +85,7 @@ import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.hibernate.annotations.Cascade
 import org.hibernate.annotations.CollectionType
+import org.hibernate.annotations.CompositeType
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.ColumnTransformer
 import org.hibernate.annotations.Comment
@@ -116,18 +120,23 @@ import org.hibernate.generator.Assigned
 import org.hibernate.generator.Generator
 import org.hibernate.type.BasicType
 import org.hibernate.type.spi.TypeConfiguration
+import org.hibernate.usertype.CompositeUserType
 import org.hibernate.usertype.UserCollectionType
 import org.hibernate.usertype.UserType
 
+import org.springframework.beans.BeanUtils
 import org.springframework.core.GenericTypeResolver
 import org.springframework.util.ClassUtils
+import org.springframework.util.ReflectionUtils
 
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.config.GormProperties
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.orm.hibernate.cfg.CacheConfig
 import org.grails.orm.hibernate.cfg.ColumnConfig
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.grails.orm.hibernate.cfg.DiscriminatorConfig
 import org.grails.orm.hibernate.cfg.HibernateSimpleIdentity
 import org.grails.orm.hibernate.cfg.IdentityEnumType
@@ -166,6 +175,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateTenantIdPro
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToOneProperty
+import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 import org.grails.orm.hibernate.cfg.domainbinding.util.CascadeBehavior
 import org.grails.orm.hibernate.cfg.domainbinding.util.CascadeBehaviorFetcher
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
@@ -209,6 +219,7 @@ class GrailsDomainGenerator {
     private final CascadeBehaviorFetcher cascadeFetcher = new CascadeBehaviorFetcher()
     private final IndexBinder indexBinder = new IndexBinder()
     private final CreateKeyForProps keyForProps
+    private final BackticksRemover backticksRemover = new BackticksRemover()
     private final ForeignKeyColumnCountCalculator foreignKeyColumnCount = new ForeignKeyColumnCountCalculator()
 
     /** The collections of embedded types that more than one embedded property reaches, as {@code <embedded class>#<collection>}. */
@@ -697,6 +708,9 @@ class GrailsDomainGenerator {
                 isCustomProperty(property) || isEmbeddedValue(property)) && !decideType(property).supported) {
             return typeNotSupported(property, decideType(property))
         }
+        if (isCompositeUserType(property)) {
+            return "Property [${property.name}] of [${entity.name}] ${compositeProblem(property) ?: 'is mapped with a composite user type the generator cannot describe'}"
+        }
         PropertyConfig stated = property.hibernateMappedForm
         if (stated != null && stated.columns != null && stated.columns.size() > 1) {
             return "Property [${property.name}] of [${entity.name}] is mapped with ${stated.columns.size()} columns, which the binder " +
@@ -929,6 +943,11 @@ class GrailsDomainGenerator {
         } else if ((property instanceof HibernateBasicProperty && !boundAsColumn(property)) || property instanceof HibernateToManyEntityProperty ||
                 isDerived(property) || (property instanceof HibernateToOneProperty && boundAsOneToOne((HibernateToOneProperty) property))) {
             return
+        } else if (isCompositeUserType(property)) {
+            // CompositeUserTypeBinder passes every attribute column through ColumnBinder, with that column's mapping
+            for (CompositeAttributeFacets attribute : compositeUserTypeFacets(property, path, null).attributes()) {
+                sites << new ConstraintSite(property, path, attribute.column().name(), attribute.columnConfig())
+            }
         } else {
             ColumnConfig columnConfig = firstColumnConfig(property.hibernateMappedForm)
             boolean enumeration = property instanceof HibernateEnumProperty && !boundAsColumn(property)
@@ -936,6 +955,160 @@ class GrailsDomainGenerator {
                     ((HibernateEnumProperty) property).resolveEnumColumnName(namingStrategy, columnNames, path) :
                     columnNames.getColumnNameForPropertyAndPath(property, path, columnConfig)
             sites << new ConstraintSite(property, path, name, columnConfig)
+        }
+    }
+
+    /**
+     * @return whether the property is mapped with a Hibernate {@code CompositeUserType}, which the binder binds as a component of
+     *     the user type ({@code CompositeUserTypeBinder}) and the generator states as an {@code @Embedded} field with {@code @CompositeType}
+     */
+    private static boolean isCompositeUserType(HibernatePersistentProperty property) {
+        return property.compositeUserType != null
+    }
+
+    /**
+     * @return why the generator rejects a property mapped with a composite user type, or null: the mapping names more columns than
+     *     the user type's embeddable class has attributes, the one mapping the binder refuses as well
+     */
+    private static String compositeProblem(HibernatePersistentProperty property) {
+        Class<? extends CompositeUserType<?>> userType = property.compositeUserType
+        Class<?> embeddable = BeanUtils.instantiateClass(userType).embeddable()
+        List<CompositeAttribute> attributes = compositeAttributes(embeddable)
+        List<ColumnConfig> columns = property.hibernateMappedForm.columns ?: []
+        if (columns.size() > attributes.size()) {
+            return "maps ${columns.size()} columns, but the embeddable class [${embeddable.name}] of its composite user type " +
+                    "[${userType.name}] has ${attributes.size()} attributes: ${attributes*.name}"
+        }
+        return null
+    }
+
+    /**
+     * A property mapped with a composite user type, as {@code CompositeUserTypeBinder} binds it: one column per attribute of the user
+     * type's embeddable class, in alphabetical attribute order, the configured columns assigned to the attributes in that order and an
+     * attribute without one named {@code <property>_<attribute>} (prefixed by the path of an embedded owner). Each column has the
+     * nullability, uniqueness and constraints of the property, and the settings of its own column mapping.
+     *
+     * @throws UnsupportedOperationException when the mapping names more columns than the embeddable class has attributes
+     */
+    CompositeUserTypeFacets compositeUserTypeFacets(
+            HibernatePersistentProperty property, String path = '', HibernatePersistentProperty parent = null) {
+        String problem = compositeProblem(property)
+        if (problem != null) {
+            throw new UnsupportedOperationException("Property [${property.name}] of [${property.hibernateOwner.name}] ${problem}")
+        }
+        Class<? extends CompositeUserType<?>> userType = property.compositeUserType
+        Class<?> embeddable = BeanUtils.instantiateClass(userType).embeddable()
+        PropertyConfig mappedForm = property.hibernateMappedForm
+        List<ColumnConfig> columns = mappedForm.columns ?: []
+        List<CompositeAttribute> declared = compositeAttributes(embeddable)
+        List<CompositeAttributeFacets> attributes = []
+        for (int i = 0; i < declared.size(); i++) {
+            CompositeAttribute attribute = declared.get(i)
+            ColumnConfig columnConfig = i < columns.size() ? columns.get(i) : null
+            Column column = new Column()
+            columnConfigBinder.bindColumnConfigToColumn(column, columnConfig, mappedForm)
+            if (columnConfig != null) {
+                column.comment = columnConfig.comment
+                column.defaultValue = columnConfig.defaultValue
+                column.customRead = columnConfig.read
+                column.customWrite = columnConfig.write
+            }
+            String name = columnConfig?.name ? columnConfig.name : defaultCompositeColumnName(property, path, attribute.name)
+            attributes << new CompositeAttributeFacets(attribute.name, attribute.javaType, columnConfig,
+                    facets(property, column, name, isNullable(property, parent), mappedForm.isUnique() && !mappedForm.isUniqueWithinGroup()))
+        }
+        return new CompositeUserTypeFacets(userType, embeddable, attributes)
+    }
+
+    /**
+     * The attributes of the embeddable class of a composite user type, as {@code CompositeUserTypeBinder} lists them: a record's
+     * components, else the fields and the readable bean properties less the static, transient and synthetic ones, {@code transients}
+     * and the properties every Groovy object has, in alphabetical order, which is the index order of
+     * {@code CompositeUserType.getPropertyValue}. The type of an attribute is its field's, or its getter's when it has no field.
+     */
+    private static List<CompositeAttribute> compositeAttributes(Class<?> embeddable) {
+        if (embeddable.isRecord()) {
+            return embeddable.recordComponents
+                    .collect { RecordComponent component -> new CompositeAttribute(component.name, component.type) }
+                    .sort { CompositeAttribute a, CompositeAttribute b -> a.name <=> b.name }
+        }
+        Map<String, Class<?>> attributes = new TreeMap<String, Class<?>>()
+        ReflectionUtils.doWithFields(embeddable,
+                { Field field -> attributes.putIfAbsent(field.name, field.type) },
+                { Field field ->
+                    !field.synthetic && !Modifier.isStatic(field.modifiers) && !Modifier.isTransient(field.modifiers)
+                })
+        for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(embeddable)) {
+            Method getter = descriptor.readMethod
+            if (getter != null && !Modifier.isStatic(getter.modifiers)) {
+                attributes.putIfAbsent(descriptor.name, getter.returnType)
+            }
+        }
+        Collection<?> transients =
+                ClassPropertyFetcher.getStaticPropertyValue(embeddable, GormProperties.TRANSIENT, Collection) ?: []
+        attributes.keySet().removeIf { String name ->
+            ClassPropertyFetcher.EXCLUDED_PROPERTIES.contains(name) || transients.contains(name) || hasTransientField(embeddable, name)
+        }
+        return attributes.collect { String name, Class<?> type -> new CompositeAttribute(name, type) }
+    }
+
+    /** Whether the property is backed by a {@code transient} field, which makes it transient however it is read. */
+    private static boolean hasTransientField(Class<?> embeddable, String name) {
+        Field field = ReflectionUtils.findField(embeddable, name)
+        return field != null && Modifier.isTransient(field.modifiers)
+    }
+
+    private String defaultCompositeColumnName(HibernatePersistentProperty property, String path, String attribute) {
+        String prefix = backticksRemover.apply(namingStrategy.resolveColumnName(property.name))
+        if (GrailsHibernateUtil.isNotEmpty(path)) {
+            prefix = backticksRemover.apply(namingStrategy.resolveColumnName(path)) + '_' + prefix
+        }
+        return prefix + '_' + backticksRemover.apply(namingStrategy.resolveColumnName(attribute))
+    }
+
+    /**
+     * The field of a property mapped with a composite user type: {@code @Embedded}, typed with the value class, {@code @CompositeType}
+     * naming the user type, whose {@code embeddable()} class Hibernate reads the attributes from, and an {@code @AttributeOverride} per
+     * attribute with the column the binder gives it.
+     */
+    private DynamicType.Builder<Object> defineCompositeUserTypeField(
+            DynamicType.Builder<Object> builder, HibernatePersistentProperty property, List<AnnotationDescription> extra) {
+        CompositeUserTypeFacets facets = compositeUserTypeFacets(property)
+        List<AnnotationDescription> annotations = new ArrayList<>(extra)
+        annotations << AnnotationDescription.Builder.ofType(Embedded).build()
+        annotations << AnnotationDescription.Builder.ofType(CompositeType)
+                .define('value', TypeDescription.ForLoadedType.of(facets.userType()))
+                .build()
+        List<AnnotationDescription> overrides = facets.attributes().collect { CompositeAttributeFacets attribute ->
+            AnnotationDescription.Builder.ofType(AttributeOverride)
+                    .define('name', attribute.name())
+                    .define('column', columnAnnotation(attribute.column(), attribute.javaType()))
+                    .build()
+        }
+        annotations << AnnotationDescription.Builder.ofType(AttributeOverrides)
+                .defineAnnotationArray('value', TypeDescription.ForLoadedType.of(AttributeOverride), overrides as AnnotationDescription[])
+                .build()
+        Boolean naturalMutable = naturalIdMutable(property)
+        if (naturalMutable != null) {
+            annotations << AnnotationDescription.Builder.ofType(HibernateNaturalId).define('mutable', naturalMutable).build()
+        }
+        for (Annotation constraint : carriedAnnotations(property)) {
+            annotations << AnnotationDescription.ForLoadedAnnotation.of(constraint)
+        }
+        return builder.defineField(property.name, TypeDescription.ForLoadedType.of(property.type), Visibility.PRIVATE)
+                .annotateField(annotations as AnnotationDescription[])
+    }
+
+    /** An attribute of the embeddable class of a composite user type: its name and Java type. */
+    @CompileStatic
+    private static final class CompositeAttribute {
+
+        final String name
+        final Class<?> javaType
+
+        CompositeAttribute(String name, Class<?> javaType) {
+            this.name = name
+            this.javaType = javaType
         }
     }
 
@@ -1070,6 +1243,9 @@ class GrailsDomainGenerator {
                 !isCustomProperty(property) && !isEmbeddedValue(property)) {
             return false
         }
+        if (isCompositeUserType(property)) {
+            return compositeProblem(property) == null
+        }
         PropertyConfig mappedForm = property.hibernateMappedForm
         if (mappedForm.columns != null && mappedForm.columns.size() > 1) {
             return false
@@ -1166,6 +1342,10 @@ class GrailsDomainGenerator {
         }
         Class<?> named = loadClass(name, property)
         if (named != null) {
+            if (CompositeUserType.isAssignableFrom(named)) {
+                // a component of the user type, not a typed column: defineCompositeUserTypeField states it, with no @Type
+                return new TypeDecision(true, name, null)
+            }
             if (UserType.isAssignableFrom(named)) {
                 return new TypeDecision(true, name, new TypeFacets(named, null, parameters))
             }
@@ -2381,6 +2561,10 @@ class GrailsDomainGenerator {
         if (visiting.contains(type.javaClass)) {
             return "the embedded type [${type.name}] contains itself"
         }
+        HibernatePersistentProperty compositePeer = embeddedPeers(property).find { HibernatePersistentProperty peer -> isCompositeUserType(peer) }
+        if (compositePeer != null) {
+            return "its property [${compositePeer.name}] is mapped with a composite user type, which the generator states on an entity only"
+        }
         List<Class<?>> path = new ArrayList<Class<?>>(visiting)
         path << type.javaClass
         for (HibernatePersistentProperty peer : embeddedPeers(property)) {
@@ -2637,6 +2821,9 @@ class GrailsDomainGenerator {
             Map<String, DynamicType.Unloaded<?>> embeddables) {
         if (isComponent(property)) {
             return defineEmbeddedField(builder, (HibernateEmbeddedProperty) property, embeddables, true)
+        }
+        if (isCompositeUserType(property)) {
+            return defineCompositeUserTypeField(builder, property, extra)
         }
         if (property instanceof HibernateBasicProperty && !boundAsColumn(property)) {
             return defineCollectionField(builder, (HibernateBasicProperty) property)

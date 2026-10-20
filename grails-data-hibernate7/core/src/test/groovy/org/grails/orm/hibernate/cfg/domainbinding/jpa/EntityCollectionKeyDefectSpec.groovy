@@ -20,14 +20,14 @@ package org.grails.orm.hibernate.cfg.domainbinding.jpa
 
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.HibernateGormDatastoreSpec
-import spock.lang.PendingFeature
 
 /**
- * Pins a defect of the domain binder that {@link BasicCollectionKeyDefectSpec} fixed for collections of basic values:
- * {@code CollectionKeyColumnUpdater} makes the key of a collection of entities not updatable when its owner has more than
- * one unidirectional to-many property. Hibernate's collection persister then disables inserting and deleting the rows of the
- * join table, so the elements of such a collection are never written. The generator does not copy this: a join column must
- * be updatable, and it states it so. This feature reports as fixed when the binder is.
+ * Pins a defect the domain binder had, which {@link BasicCollectionKeyDefectSpec} covers for collections of basic values:
+ * {@code CollectionKeyColumnUpdater} made the key of a collection of entities not updatable when its owner had more than
+ * one unidirectional to-many property. Hibernate's collection persister then disabled inserting and deleting the rows of the
+ * join table, so the elements of such a collection were never written. The generator never copied this: a join column must
+ * be updatable, and it states it so. The binder now keeps the key updatable unless the collection shares a join table, so
+ * both features pass in both modes.
  */
 class EntityCollectionKeyDefectSpec extends HibernateGormDatastoreSpec {
 
@@ -47,7 +47,6 @@ class EntityCollectionKeyDefectSpec extends HibernateGormDatastoreSpec {
         DefectItemOneOwner.get(owner.id).items*.name.toSet() == ['a', 'b'].toSet()
     }
 
-    @PendingFeature(reason = 'the key of an entity collection is not updatable when its owner has two unidirectional collections, so the join table rows are never written')
     void "the items of each of two unidirectional collections of an owner are persisted"() {
         given:
         DefectItemTwoOwner owner = new DefectItemTwoOwner(name: 'two')
