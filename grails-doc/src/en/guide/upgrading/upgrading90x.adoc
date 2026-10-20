@@ -299,8 +299,10 @@ RFC 9457 problem response.
 Grails retains the legacy converter path when a renderer sets a legacy named converter
 configuration, when a per-response `includes`/`excludes` projection is requested and the selected
 converter is not Spring's standard Jackson converter, or when no configured MVC converter can write
-the selected type and media type. Explicit application and plugin `Renderer` beans continue to take
-precedence over the default renderer.
+the selected type and media type. With `grails.web.rendering.json.spring` enabled, Grails logs a warning for each type,
+and for each of these reasons, that the legacy converter writes, so that a response the setting does not change is
+found, up to 100 of them. Explicit application and plugin `Renderer` beans continue to take precedence over the default
+renderer.
 
 Jackson conversion uses UTF-8 for intermediate bytes; the response writer applies
 `grails.converters.encoding`, so non-UTF response encodings do not corrupt the intermediate JSON.

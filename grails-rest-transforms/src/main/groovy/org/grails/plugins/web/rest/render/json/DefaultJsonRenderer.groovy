@@ -20,6 +20,7 @@ package org.grails.plugins.web.rest.render.json
 
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
 
@@ -79,6 +80,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     private static final ValidationProblemDetailFactory DEFAULT_PROBLEM_DETAIL_FACTORY = new ValidationProblemDetailFactory()
 
+    /** How many types, each with a reason, the legacy converter is reported for while Spring JSON rendering is enabled. */
+    static final int MAX_REPORTED_FALLBACKS = 100
+
     /** The prefix of each converter, which a converter that is no longer used does not keep. */
     private static final Map<JacksonJsonHttpMessageConverter, String> PREFIXES =
             Collections.synchronizedMap(new WeakHashMap<JacksonJsonHttpMessageConverter, String>())
@@ -130,6 +134,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     /** Shared by the renderers of one registry, like {@link #legacyFallbackReported}. */
     AtomicBoolean missingConvertersReported = new AtomicBoolean()
+
+    /**
+     * Shared by the renderers of one registry: each type, with the reason, that the legacy converter writes while Spring
+     * JSON rendering is enabled is reported once, up to {@link #MAX_REPORTED_FALLBACKS} of them.
+     */
+    Set<String> springFallbacksReported = ConcurrentHashMap.newKeySet()
 
     /**
      * Shared by the renderers of one registry, like {@link #legacyFallbackReported}: a problem the legacy converter
@@ -278,20 +288,37 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             }
             return
         }
-        if (!legacyFallbackReported.compareAndSet(false, true)) {
-            return
-        }
+        boolean first = legacyFallbackReported.compareAndSet(false, true)
         if (useSpringJson == Boolean.TRUE) {
             if (springFallbackReason != null || namedConfiguration) {
-                log.warn("Spring JSON rendering is enabled, but [${object?.getClass()?.name}] is written by the " +
-                        'legacy JSON converter, which is deprecated and will be removed in Grails 11, because ' +
-                        "${springFallbackReason ?: "this renderer uses the legacy named configuration [${namedConfiguration}]"}.")
+                // each type the legacy converter writes, for each reason, so that another one is not missed
+                String type = object?.getClass()?.name
+                String reason = springFallbackReason ?: "this renderer uses the legacy named configuration [${namedConfiguration}]"
+                if (reportsSpringFallback("${type}: ${reason}")) {
+                    log.warn("Spring JSON rendering is enabled, but [${type}] is written by the legacy JSON converter, " +
+                            "which is deprecated and will be removed in Grails 11, because ${reason}.")
+                }
             }
+            return
+        }
+        if (!first) {
             return
         }
         log.warn('Legacy respond() JSON rendering is deprecated and will be removed in Grails 11. ' +
                 'Migrate to Jackson serializers and set grails.web.rendering.json.spring=true. ' +
                 'Spring JSON becomes the default in Grails 10.')
+    }
+
+    /** Whether a fallback is reported: the first time for it, until {@link #MAX_REPORTED_FALLBACKS} have been. */
+    private boolean reportsSpringFallback(String fallback) {
+        if (springFallbacksReported.size() >= MAX_REPORTED_FALLBACKS || !springFallbacksReported.add(fallback)) {
+            return false
+        }
+        if (springFallbacksReported.size() == MAX_REPORTED_FALLBACKS) {
+            log.warn("The legacy JSON converter has written ${MAX_REPORTED_FALLBACKS} types while Spring JSON rendering is " +
+                    'enabled; further types are not reported.')
+        }
+        return true
     }
 
     /**

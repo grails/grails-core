@@ -107,6 +107,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     private final AtomicBoolean legacyJsonFallbackReported = new AtomicBoolean()
     private final AtomicBoolean missingJsonConvertersReported = new AtomicBoolean()
     private final AtomicBoolean problemJsonFallbackReported = new AtomicBoolean()
+    private final Set<String> springJsonFallbacksReported = ConcurrentHashMap.newKeySet()
 
     /** The renderers plugins contribute as defaults, collected with the renderer beans. */
     private final List<Renderer<Object>> pendingDefaultRenderers = []
@@ -168,6 +169,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         renderer.legacyFallbackReported = legacyJsonFallbackReported
         renderer.missingConvertersReported = missingJsonConvertersReported
         renderer.problemFallbackReported = problemJsonFallbackReported
+        renderer.springFallbacksReported = springJsonFallbacksReported
         if (renderer.useSpringJson == null) {
             renderer.useSpringJson = useSpringJson
         }

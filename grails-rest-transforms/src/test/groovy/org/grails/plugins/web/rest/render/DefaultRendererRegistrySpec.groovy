@@ -201,6 +201,7 @@ class DefaultRendererRegistrySpec extends Specification {
         bean.legacyFallbackReported.is(registry.findRenderer(MimeType.JSON, new Object()).legacyFallbackReported)
         bean.problemFallbackReported.is(registry.findRenderer(MimeType.JSON, new Object()).problemFallbackReported)
         !bean.problemFallbackReported.is(bean.legacyFallbackReported)
+        bean.springFallbacksReported.is(registry.findRenderer(MimeType.JSON, new Object()).springFallbacksReported)
 
         and: 'a renderer that chose its path keeps it'
         !legacyBean.useSpringJson

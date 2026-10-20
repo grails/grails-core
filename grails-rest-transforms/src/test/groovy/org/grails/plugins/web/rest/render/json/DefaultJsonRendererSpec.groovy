@@ -540,6 +540,61 @@ class DefaultJsonRendererSpec extends Specification {
         problemFirst << [false, true]
     }
 
+    void 'with Spring JSON on, each type the legacy converter writes is reported once, for each reason'() {
+        given: 'an application converter, which cannot apply a projection'
+        def converter = Mock(HttpMessageConverter) {
+            canWrite(_, MediaType.APPLICATION_JSON) >> true
+            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON]
+        }
+        def renderers = (1..2).collect {
+            new DefaultJsonRenderer<Object>(Object).tap {
+                useSpringJson = true
+                grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+                springHttpMessageConvertersSupplier = { [converter] }
+            }
+        }
+        // as the renderers of one registry share it
+        renderers[1].springFallbacksReported = renderers[0].springFallbacksReported
+
+        when: 'each renderer writes both types'
+        String log = stderrWhile {
+            renderers.each { renderer ->
+                [new ProjectionBody(title: 'Grails'), new AccentBody(title: 'Grails')].each { value ->
+                    renderer.render(value, new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest(), [includes: ['title']]))
+                }
+            }
+        }
+
+        then:
+        log.readLines().count { it.contains("but [${ProjectionBody.name}] is written by the legacy JSON converter") } == 1
+        log.readLines().count { it.contains("but [${AccentBody.name}] is written by the legacy JSON converter") } == 1
+    }
+
+    void 'with Spring JSON on, no more types are reported once as many as the limit have been'() {
+        given:
+        def converter = Mock(HttpMessageConverter) {
+            canWrite(_, MediaType.APPLICATION_JSON) >> true
+            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON]
+        }
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        (1..<DefaultJsonRenderer.MAX_REPORTED_FALLBACKS).each { renderer.springFallbacksReported.add("reported ${it}".toString()) }
+
+        when:
+        String log = stderrWhile {
+            [new ProjectionBody(title: 'Grails'), new AccentBody(title: 'Grails')].each { value ->
+                renderer.render(value, new ServletRenderContext(GrailsWebMockUtil.bindMockWebRequest(), [includes: ['title']]))
+            }
+        }
+
+        then: 'the last type the limit allows, and that no more are reported'
+        log.contains("but [${ProjectionBody.name}] is written by the legacy JSON converter")
+        log.contains("has written ${DefaultJsonRenderer.MAX_REPORTED_FALLBACKS} types while Spring JSON rendering is enabled")
+        !log.contains("but [${AccentBody.name}] is written by the legacy JSON converter")
+    }
+
     void 'with Spring JSON on, a legacy fallback says why rather than asking for the setting again'() {
         given: 'an application converter, which cannot apply a projection'
         def converter = Mock(HttpMessageConverter) {
