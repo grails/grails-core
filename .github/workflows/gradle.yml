@@ -19,6 +19,8 @@ on:
     branches:
       - '[0-9]+.[0-9]+.x'
   pull_request:
+    # CHANGEME FOR ACCEPTANCE: PR triggers disabled on this stacked branch; revert before merge
+    branches: ['CHANGEME-FOR-ACCEPTANCE']
   workflow_dispatch:
 # Queue jobs - cancel in-progress PR runs when new commits pushed, but allow branch builds to complete
 concurrency:
