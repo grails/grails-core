@@ -79,6 +79,10 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     private static final ValidationProblemDetailFactory DEFAULT_PROBLEM_DETAIL_FACTORY = new ValidationProblemDetailFactory()
 
+    /** The prefix of each converter, which a converter that is no longer used does not keep. */
+    private static final Map<JacksonJsonHttpMessageConverter, String> PREFIXES =
+            Collections.synchronizedMap(new WeakHashMap<JacksonJsonHttpMessageConverter, String>())
+
     final Class<T> targetType
     MimeType[] mimeTypes = [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
@@ -388,10 +392,15 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * What a converter writes before a value, such as a JSON prefix, which it has no accessor for: what it writes for a
-     * marker, less the JSON its mapper writes for the marker, which includes the wrapper of a root value.
+     * What a converter writes before a value, such as a JSON prefix, which it has no accessor for, read once for each
+     * converter, as its prefix is configuration: what it writes for a marker, less the JSON its mapper writes for the
+     * marker, which includes the wrapper of a root value.
      */
     private static String prefixOf(JacksonJsonHttpMessageConverter converter, MediaType contentType) {
+        return PREFIXES.computeIfAbsent(converter) { JacksonJsonHttpMessageConverter probed -> probePrefix(probed, contentType) }
+    }
+
+    private static String probePrefix(JacksonJsonHttpMessageConverter converter, MediaType contentType) {
         ByteArrayOutputStream written = new ByteArrayOutputStream()
         converter.write(PrefixMarker.INSTANCE, contentType, outputMessage(written))
         String output = written.toString(StandardCharsets.UTF_8)

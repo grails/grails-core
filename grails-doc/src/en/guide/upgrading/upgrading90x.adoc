@@ -259,7 +259,8 @@ are skipped, so strings remain JSON strings and byte arrays use Jackson's base64
 The same media-family rule applies to XML conversion; a generic text converter cannot strip the XML
 string element. Where that converter is Spring's `JacksonJsonHttpMessageConverter`, the Grails mapper writes the value
 after what the converter writes ahead of it, such as the prefix its `setPrefixJson(true)` or `setJsonPrefix(...)` adds
-against JSON hijacking. A response `respond` writes with a named configuration, `render json:` and
+against JSON hijacking, which is read when the converter first writes a response, so configure it as Spring MVC starts,
+as a `WebMvcConfigurer` does. A response `respond` writes with a named configuration, `render json:` and
 `grails.converters.JSON` are written without the converter, and so without its prefix.
 
 `grails-converters` depends on Spring Boot's `spring-boot-jackson` module, so Boot's `JsonMapper`, configured by the

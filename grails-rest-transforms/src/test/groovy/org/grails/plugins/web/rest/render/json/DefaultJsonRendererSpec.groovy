@@ -191,6 +191,37 @@ class DefaultJsonRendererSpec extends Specification {
         !renderer.legacyFallbackReported.get()
     }
 
+    void 'the prefix of a converter is read once for the converter, as the configuration it is'() {
+        given:
+        def source = new JacksonJsonHttpMessageConverter()
+        source.jsonPrefix = 'first:'
+        def renderer = new DefaultJsonRenderer<Object>(Object)
+        renderer.useSpringJson = true
+        renderer.grailsJsonMapperCustomizer = new GrailsJsonMapperCustomizer()
+        renderer.springHttpMessageConvertersSupplier = { [source] }
+
+        when: 'a value is written, and the converter is configured again before the next'
+        def first = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render([title: 'Grails'], new ServletRenderContext(first))
+        source.jsonPrefix = 'second:'
+        def second = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render([title: 'Grails'], new ServletRenderContext(second))
+
+        then: 'both are written with the prefix it had when the first was written'
+        first.response.contentAsString == 'first:{"title":"Grails"}'
+        second.response.contentAsString == 'first:{"title":"Grails"}'
+
+        when: 'another converter writes it'
+        def other = new JacksonJsonHttpMessageConverter()
+        other.jsonPrefix = 'other:'
+        renderer.springHttpMessageConvertersSupplier = { [other] }
+        def third = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render([title: 'Grails'], new ServletRenderContext(third))
+
+        then: 'with its own prefix'
+        third.response.contentAsString == 'other:{"title":"Grails"}'
+    }
+
     void 'a source mapper that wraps root values names the wrapper after the value, after the prefix, as Spring MVC writes it'() {
         given:
         def mapper = JsonMapper.builder().enable(SerializationFeature.WRAP_ROOT_VALUE).build()
