@@ -56,6 +56,7 @@ Native domain binding is the only binding: `GrailsDomainGenerator` generates a J
 
 - `ColumnConfigToColumnBinder`, `StringColumnConstraintsBinder`, `NumericColumnConstraintsBinder`, `IndexBinder` (`domainbinding.column`): apply a column config to a Hibernate `Column`; the generator and the aligner share them.
 - `DefaultColumnNameFetcher`, `ColumnNameForPropertyAndPathFetcher`, `TableForManyCalculator`, `NamingStrategyWrapper`, `BackticksRemover`, `CascadeBehaviorFetcher`, `CreateKeyForProps`, `UniqueNameGenerator` (`domainbinding.util`).
+- `GrailsDomainGenerator.compositeUserTypeFacets` / `defineCompositeUserTypeField`: a property mapped with a Hibernate `CompositeUserType` becomes an `@Embedded` field of the value class with `@CompositeType` and one `@AttributeOverride` per attribute of the user type's `embeddable()` class (record components, else fields and readable properties, alphabetical; configured columns by position, else `<property>_<attribute>`), the schema Grails 8's classic binder created for it.
 
 ### Generators
 
