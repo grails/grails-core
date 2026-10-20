@@ -193,7 +193,8 @@ A datastore implementation of RxGORM compiled for Grails 8 or earlier, such as t
 
 - Replace `org.apache.grails.async:grails-async-rxjava` or `grails-async-rxjava2` with `grails-async-rxjava3`.
 - Replace `org.apache.grails.events:grails-events-rxjava` or `grails-events-rxjava2` with `grails-events-rxjava3`.
-- The `Promise` and `EventBus` APIs are the same for every implementation, so an application that only uses the Grails APIs needs no code change. Code that reaches into the RxJava types behind them, such as `RxPromise.toObservable()`, moves to the RxJava 3 types as described above.
+- The `Promise` and `EventBus` APIs are the same for every implementation, so an application that only uses the Grails APIs needs no code change. In Grails 9 the RxJava 3 promise factory carries a `null` value as the RxJava 1 one does: `createPromise()` resolves to `null`, a task that returns `null` resolves to `null`, and a `null` keeps its place in the list `onComplete` and `waitAll` deliver. The RxJava 2 factory, and the RxJava 3 one before Grails 9, failed with a `NullPointerException` or resolved to the `java.lang.Void` class instead.
+- Code that hands RxJava types to the Grails ones, such as the `rx.Scheduler` given to the `RxEventBus` constructor, moves to the RxJava 3 types as described above.
 - Configure RxJava 3 scheduling through `io.reactivex.rxjava3.plugins.RxJavaPlugins` instead of RxJava 1 `RxJavaHooks` or RxJava 2 `RxJavaPlugins`.
 
 ## Verification Checklist

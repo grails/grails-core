@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
 import grails.async.PromiseFactory
-import grails.async.Promises
+import org.grails.async.factory.PromiseFactoryBuilder
 
 class RxPromiseFactoryDeprecationSpec extends Specification {
 
@@ -47,10 +47,12 @@ class RxPromiseFactoryDeprecationSpec extends Specification {
         appender.stop()
     }
 
-    void 'the RxJava 2 promise factory is deprecated for removal since Grails 9.0'() {
+    void 'the RxJava 2 promise classes are deprecated for removal since Grails 9.0'() {
         expect:
-            RxPromiseFactory.getAnnotation(Deprecated).forRemoval()
-            RxPromiseFactory.getAnnotation(Deprecated).since() == '9.0'
+            [RxPromiseFactory, RxPromise].every { Class type ->
+                Deprecated deprecated = type.getAnnotation(Deprecated)
+                deprecated.forRemoval() && deprecated.since() == '9.0'
+            }
     }
 
     void 'creating the RxJava 2 promise factory warns that it is deprecated'() {
@@ -63,7 +65,7 @@ class RxPromiseFactoryDeprecationSpec extends Specification {
         and: 'a single warning names the module and its replacement'
             appender.list.size() == 1
             appender.list[0].level == Level.WARN
-            appender.list[0].formattedMessage.contains('grails-async-rxjava2')
+            appender.list[0].formattedMessage.contains('(grails-async-rxjava2)')
             appender.list[0].formattedMessage.contains('deprecated')
             appender.list[0].formattedMessage.contains('grails-async-rxjava3')
     }
@@ -76,9 +78,14 @@ class RxPromiseFactoryDeprecationSpec extends Specification {
             appender.list.size() == 1
     }
 
-    void 'the service-loaded promise factory is the deprecated RxJava 2 factory'() {
-        expect: 'the factory registered through META-INF/services is still used'
-            Promises.promiseFactory instanceof RxPromiseFactory
+    void 'the service-loaded promise factory is the deprecated RxJava 2 factory and warns once'() {
+        when: 'a promise factory is built through the registered service'
+            PromiseFactory factory = PromiseFactoryBuilder.build()
+
+        then: 'the RxJava 2 factory is still used'
+            factory instanceof RxPromiseFactory
+            appender.list.size() == 1
+            appender.list[0].level == Level.WARN
     }
 
     /**

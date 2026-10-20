@@ -74,7 +74,7 @@ A `Single` that finds nothing signals a `java.util.NoSuchElementException`, sinc
 
 ==== RxJava Results from Controllers
 
-An RxJava 3 `Flowable` is a Reactive Streams `Publisher`, so an action can return one and Grails streams every item it emits to the client as a server-sent event, with no plugin and with the container thread released while the stream produces. See <<asyncStreaming,Streaming Responses>>:
+An RxJava 3 `Flowable` is a Reactive Streams `Publisher`, so an action can return one and Grails streams every item it emits to the client as a server-sent event, with no plugin. See <<asyncStreaming,Streaming Responses>>:
 
 [source,groovy]
 ----
@@ -90,6 +90,8 @@ class BookController {
     }
 }
 ----
+
+Grails subscribes to the publisher on the request thread, so in this example the data service runs its query there, before the action returns, as the previous section describes; the items are then delivered on the IO scheduler and written to the response from it, with the container thread released while they are. Running the query itself on another thread with `subscribeOn(..)` needs a session on that thread, which the data services do not set up.
 
 `Observable` and `Single` are not `Publisher` instances, so returning one directly does not stream; convert it with `toFlowable(..)` as above.
 

@@ -178,7 +178,7 @@ NOTE: Like the GPars and RxJava factories, a service-loaded factory is created b
 
 The GPars integration in `grails-async-gpars` is deprecated and will be removed in a future release, because Groovy 6 folds the GPars patterns into `groovy.concurrent`. It logs a warning when it is selected. Replace the dependency with `grails-async-groovy-concurrent`; do not add both, since only one service-loaded `PromiseFactory` is used.
 
-The RxJava 1 and RxJava 2 integrations in `grails-async-rxjava` and `grails-async-rxjava2` are deprecated and will be removed in a future release, because neither RxJava version is maintained any more. Their promise factories log a warning when they are created. Replace either dependency with `grails-async-rxjava3`; the `Promise` API an application uses is the same.
+The RxJava 1 and RxJava 2 integrations in `grails-async-rxjava` and `grails-async-rxjava2` are deprecated and will be removed in a future release, because neither RxJava version is maintained any more. Their promise factories log a warning when they are created. Replace either dependency with `grails-async-rxjava3`; the `Promise` API an application uses is the same, and a promise that holds `null` resolves to `null` with the RxJava 3 factory as it does with every other.
 
 You can also override the `grails.async.PromiseFactory` class used by `Promises` by setting the `promiseFactory` static field.
 

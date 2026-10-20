@@ -33,7 +33,7 @@ If no asynchronous framework is present on the classpath then Grails creates an 
 
 When `grails.async.promiseFactory=virtual-thread` selects the opt-in factory, the event bus instead shares that factory's decorated virtual-thread executor and remains asynchronous.
 
-If you wish to use a popular async framework such as RxJava as the `EventBus` implementation then you will need to add the appropriate dependency. For example for RxJava 1.x:
+If you wish to use a popular async framework such as RxJava as the `EventBus` implementation then you will need to add the appropriate dependency. For example, for RxJava 3:
 
 [source,groovy,subs="attributes"]
 .build.gradle

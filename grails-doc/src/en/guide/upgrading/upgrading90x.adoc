@@ -358,7 +358,8 @@ The blocking helpers that tests and scripts use moved onto the `Observable` and 
 |===
 
 `Observable.toList()` returns a `Single<List<T>>` in RxJava 3.
-The RxGORM methods that emit a list, such as `list()`, `findAll().toList()` on a criteria query and `toListObservable()` on a lazy association, still return an `Observable<List<T>>`, so code that subscribes to them is unchanged.
+The RxGORM methods that emit a list, such as the static `list()`, `toList()` and `list()` on a `DetachedCriteria`, and `toListObservable()` on a lazy association, still return an `Observable<List<T>>`, so code that subscribes to them is unchanged.
+`findAll()` on a `DetachedCriteria` returns an `Observable<T>`, so `findAll().toList()` is RxJava's own `toList()` and gives a `Single<List<T>>`.
 
 Subscribing with a closure, for example `Book.get(id).subscribe { Book book -> ... }`, is unchanged.
 A class that subscribes with a full subscriber implements `io.reactivex.rxjava3.core.Observer` instead of `rx.Subscriber`: it gains `onSubscribe(Disposable)`, which receives the handle that cancels the subscription, and `onCompleted()` is named `onComplete()`.
@@ -379,3 +380,6 @@ The RxJava 1 and RxJava 2 implementations of the Grails promise and event bus AP
 They keep working in Grails 9 and log a warning when their promise factory or event bus is created.
 Replace either dependency with the RxJava 3 module, `grails-async-rxjava3` or `grails-events-rxjava3`; the `Promise` and `EventBus` APIs an application uses are the same.
 See <<asyncPromises,Promises>> and <<events,Events>>.
+
+`grails-async-rxjava3` now carries a `null` value as the RxJava 1 factory and every other promise factory do: `createPromise()` and `createPromise(Class)` give a promise whose `get()` returns `null`, a task that returns `null` resolves to `null`, and a `null` value keeps its place in the list that `onComplete`, `onError` and `waitAll` deliver.
+Before this release, as in `grails-async-rxjava2` still, `createPromise()` and `onComplete` over a list holding a bound promise of `null` failed with a `NullPointerException`, and a task that returned `null` resolved to the `java.lang.Void` class.

@@ -126,6 +126,7 @@ A controller action can return a Reactive Streams `Publisher`, such as a Reactor
 Items are rendered as text or JSON, or through a `StreamItemRenderer` bean for a type of its own, which is how `grails-spring-ai` streams the chat responses of a model.
 Such an action streams instead of rendering its view as it did before; set `grails.async.streaming.enabled` to `false` to keep the previous behaviour. A publisher that emits at most one item, such as a Reactor `Mono`, is not streamed but resolved, its value being the action's result as a returned `Promise`'s value is. See xref:upgrading#upgrading81x[the upgrade guide].
 See xref:async#asyncStreaming[Streaming Responses].
+
 ==== RxJava Data Services on RxJava 3
 
 `grails-datamapping-rx` is built on RxJava 3 instead of the unmaintained RxJava 1, so a GORM data service
@@ -150,8 +151,9 @@ runtimeOnly 'org.apache.grails.async:grails-async-rxjava3'
 runtimeOnly 'org.apache.grails.events:grails-events-rxjava3'
 ----
 
-The `Promise` and `EventBus` APIs an application uses are the same, so an application that only uses the
-Grails APIs needs no code change. See <<asyncPromises,Promises>> and <<events,Events>>.
+The `Promise` and `EventBus` APIs an application uses are the same, and the RxJava 3 promise factory now
+carries a `null` value as the RxJava 1 one does, so an application that only uses the Grails APIs needs no
+code change. See <<asyncPromises,Promises>> and <<events,Events>>.
 
 ==== Plugin Beans Register Before Spring Boot Auto-Configuration
 

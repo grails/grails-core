@@ -69,7 +69,7 @@ class RxEventBusDeprecationSpec extends Specification {
         and: 'a single warning names the module and its replacement'
             appender.list.size() == 1
             appender.list[0].level == Level.WARN
-            appender.list[0].formattedMessage.contains('grails-events-rxjava2')
+            appender.list[0].formattedMessage.contains('(grails-events-rxjava2)')
             appender.list[0].formattedMessage.contains('deprecated')
             appender.list[0].formattedMessage.contains('grails-events-rxjava3')
     }
