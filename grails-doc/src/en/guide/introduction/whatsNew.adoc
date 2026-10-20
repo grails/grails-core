@@ -42,6 +42,34 @@ See xref:commandLine#gradleConfigurationCache[Using the Gradle Configuration Cac
 
 Grails Micronaut is maintained and released from the https://github.com/apache/grails-micronaut[Apache Grails Micronaut repository] and consumes published Grails Core artifacts.
 
+==== Groovy's invokedynamic default applies again
+
+Grails 7 and 8 compile every Groovy source set of an application without invokedynamic, because Groovy 4 and 5 ran dynamic code markedly slower with it (https://github.com/apache/grails-core/issues/15293[#15293]).
+Grails 9 runs on Groovy 6 and no longer overrides the compiler: unless the build sets `grails { indy }`, each Groovy compile task keeps the Groovy compiler's own default, which is invokedynamic.
+Grails' own published modules are compiled with invokedynamic as well.
+
+To keep compiling classic call sites, set it in `build.gradle`:
+
+[source,groovy]
+.build.gradle
+----
+grails {
+    indy = false
+}
+----
+
+On Groovy 6, classic call sites need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that opts out declares it, at the version the Grails BOM manages:
+
+[source,groovy]
+.build.gradle
+----
+dependencies {
+    implementation 'org.apache.groovy:groovy-callsite'
+}
+----
+
+An application that keeps the default never ships the module. The same dependency is needed, whatever the application's own setting, for a library that was compiled with classic call sites, because Groovy 6 can load such a class only with the module: `org.testcontainers:testcontainers-spock` is one, so declare the module as `testRuntimeOnly` next to it.
+
 ==== Spring Boot 4.1 and Spring Framework 7
 
 Grails {grailsMajorVersion} is built on Spring Boot {springBootVersion} and Spring Framework {springVersion}.
@@ -84,6 +112,20 @@ grails -t forge create-app --features=gorm-async com.example.demo
 
 The feature layers on top of whichever GORM implementation is selected, defaulting to Hibernate when none is chosen.
 The `grails-datamapping-async` artifact it brings in is intended for direct consumption by applications and libraries, so it moved from the `org.apache.grails.data` group to `org.apache.grails`; see the xref:upgrading#upgrading80x[upgrade guide] for the coordinate change.
+
+==== Spring AI Integration
+
+The new `grails-spring-ai` plugin integrates https://spring.io/projects/spring-ai[Spring AI] {springAiVersion}.
+The Spring AI version is managed by the Grails BOM, a `ChatClient.Builder` is auto-configured for whichever provider the application adds, the plugin ships defaults suited to a web application, and `grails-testing-support-ai` gives unit and integration tests a scripted chat model so they need neither a provider nor credentials.
+New applications select it with the `grails-spring-ai`, `spring-ai-openai`, `spring-ai-anthropic` or `spring-ai-ollama` features, and the `org.apache.grails.skills:grails-ai-developer` agent skill teaches AI coding agents the same.
+See xref:usingAi#aiInstallation[Using AI in Your Application].
+
+==== Streaming Responses from Controller Actions
+
+A controller action can return a Reactive Streams `Publisher`, such as a Reactor `Flux`, and Grails streams every item it emits to the client as a server-sent event while the container thread is released.
+Items are rendered as text or JSON, or through a `StreamItemRenderer` bean for a type of its own, which is how `grails-spring-ai` streams the chat responses of a model.
+Such an action streams instead of rendering its view as it did before; set `grails.async.streaming.enabled` to `false` to keep the previous behaviour. A publisher that emits at most one item, such as a Reactor `Mono`, is not streamed but resolved, its value being the action's result as a returned `Promise`'s value is. See xref:upgrading#upgrading81x[the upgrade guide].
+See xref:async#asyncStreaming[Streaming Responses].
 
 ==== Plugin Beans Register Before Spring Boot Auto-Configuration
 
@@ -204,6 +246,9 @@ against `grails-core-cli-legacy`; consumers of an already-published legacy plugi
 with `grails { legacyCommandSupport = true }` (or declare `grailsCliLegacy` themselves). See the
 xref:upgrading#upgrading80x[upgrade guide] for the migration steps and the full upgrade-impact
 breakdown.
+
+The Grails Data plugin itself (`grails-data-hibernate5` or `grails-data-hibernate7`) is an application dependency only: generated builds no longer place it on the `buildscript` classpath or in `buildSrc`, where Gradle's own Groovy would run the compile-time transformations the plugin carries while compiling the build scripts.
+See the xref:upgrading#upgrading80x[upgrade guide] for the equivalent change in an existing build.
 
 ==== GSP Tag Library Improvements
 

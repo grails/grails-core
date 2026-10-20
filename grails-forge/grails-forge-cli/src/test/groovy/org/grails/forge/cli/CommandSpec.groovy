@@ -15,6 +15,9 @@
  */
 package org.grails.forge.cli
 
+import org.springframework.context.ConfigurableApplicationContext
+import spock.lang.AutoCleanup
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 import spock.util.environment.OperatingSystem
@@ -22,6 +25,11 @@ import spock.util.environment.OperatingSystem
 import java.nio.file.Files
 
 class CommandSpec extends Specification {
+
+    /** The Forge CLI's Grails application, started once per specification: what the specs run commands on. */
+    @Shared
+    @AutoCleanup
+    ConfigurableApplicationContext beanContext = Application.builder().run()
 
     File dir = Files.createTempDirectory('grailsforgetmp').toFile()
     StringBuilder output
@@ -46,13 +54,12 @@ class CommandSpec extends Specification {
     }
 
     Process executeGradleCommand(String command) {
-        StringBuilder gradleCommand = new StringBuilder()
-        if (OperatingSystem.current.isWindows()) {
-            gradleCommand.append('cmd.exe /c gradlew')
-        } else {
-            gradleCommand.append('./gradlew')
-        }
-        gradleCommand.append(' --no-daemon -S ').append(command)
+        List<String> gradleCommand = OperatingSystem.current.isWindows()
+                ? ['cmd.exe', '/c', 'gradlew']
+                : ['./gradlew']
+        gradleCommand.addAll(['--no-daemon', '-S'])
+        gradleCommand.addAll(GeneratedBuild.arguments())
+        gradleCommand.addAll(command.split(' '))
         executeCommand(gradleCommand)
     }
 
@@ -111,8 +118,7 @@ class CommandSpec extends Specification {
         }
     }
 
-    private Process executeCommand(StringBuilder builder) {
-        String[] args = builder.toString().split(' ')
+    private Process executeCommand(List<String> args) {
         ProcessBuilder pb = new ProcessBuilder(args)
         pb.environment().put('JAVA_HOME', System.getenv('JAVA_HOME') ?: System.getProperty('java.home'))
         pb.environment().put('GRAILS_REPO_URL', System.getenv('GRAILS_REPO_URL') ?: null)
