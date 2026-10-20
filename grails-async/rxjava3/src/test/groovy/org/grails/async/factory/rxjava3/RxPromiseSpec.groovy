@@ -67,8 +67,8 @@ class RxPromiseSpec extends Specification {
         }
         def result = promise.get()
 
-        then: 'result is void'
-        result == Void
+        then: 'the result is null, as with every other promise factory'
+        result == null
     }
 
     void 'Test promise map handling'() {
