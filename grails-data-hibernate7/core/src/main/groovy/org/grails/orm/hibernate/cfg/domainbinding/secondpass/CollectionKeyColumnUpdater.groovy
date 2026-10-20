@@ -19,7 +19,6 @@
 package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 
 import groovy.transform.CompileStatic
-import org.hibernate.mapping.Collection
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.DependantValue
 import org.hibernate.mapping.Table
@@ -49,11 +48,9 @@ class CollectionKeyColumnUpdater {
         Table collectionTable = property.collection.collectionTable
         long unidirectionalCount = 0
         for (def p : property.hibernateOwner.persistentPropertiesToBind) {
-            if (p instanceof HibernateToManyProperty && !((HibernateToManyProperty) p).isBidirectional()) {
-                Collection other = ((HibernateToManyProperty) p).collection
-                if (other != null && Objects.equals(other.collectionTable, collectionTable)) {
-                    unidirectionalCount++
-                }
+            if (HibernateToManyProperty.isBoundAsCollection(p) && !((HibernateToManyProperty) p).isBidirectional() &&
+                    Objects.equals(((HibernateToManyProperty) p).collection.collectionTable, collectionTable)) {
+                unidirectionalCount++
             }
         }
 
@@ -62,7 +59,8 @@ class CollectionKeyColumnUpdater {
         // For entity collections (HibernateToManyEntityProperty) the key is non-updatable only when the owner has
         // two or more unidirectional to-many properties that share this collection's join table, the rule for issue
         // 10811. Unidirectional collections with join tables of their own keep an updatable key, as they have no
-        // second key column to leave null.
+        // second key column to leave null. A to-many that is not bound as a collection (a serializable or user type)
+        // has no join table and no Hibernate collection, so it is neither counted nor asked for one.
         key.updateable = property instanceof HibernateToManyCollectionProperty || unidirectionalCount <= 1
     }
 
