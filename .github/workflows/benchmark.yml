@@ -20,11 +20,8 @@ name: "JMH Benchmark Comparison"
 # to that code through a privileged pull_request_target workflow.
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.adoc'
-      - 'grails-doc/**'
+    # CHANGEME FOR ACCEPTANCE: PR triggers disabled on this stacked branch; revert before merge
+    branches: ['CHANGEME-FOR-ACCEPTANCE']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}-${{ github.event.action == 'labeled' && github.event.label.name != 'performance' && github.run_id || 'benchmark' }}
