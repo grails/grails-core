@@ -18,54 +18,15 @@
  */
 package org.grails.plugins.xml
 
-import com.fasterxml.jackson.annotation.JsonRawValue
-import javax.xml.stream.XMLStreamException
-
 import tools.jackson.core.JsonGenerator
-import tools.jackson.core.StreamWriteConstraints
-import tools.jackson.core.exc.StreamConstraintsException
-import tools.jackson.core.json.JsonFactory
-import tools.jackson.databind.BeanDescription
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.databind.JavaType
-import tools.jackson.databind.MapperFeature
-import tools.jackson.databind.PropertyName
-import tools.jackson.databind.PropertyNamingStrategies
-import tools.jackson.databind.SerializationConfig
 import tools.jackson.databind.SerializationContext
 import tools.jackson.databind.ValueSerializer
-import tools.jackson.databind.annotation.JsonNaming
 import tools.jackson.databind.annotation.JsonSerialize
-import tools.jackson.databind.cfg.MapperConfig
-import tools.jackson.databind.introspect.AnnotatedClass
-import tools.jackson.databind.introspect.BeanPropertyDefinition
-import tools.jackson.databind.introspect.VirtualAnnotatedMember
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.databind.module.SimpleModule
-import tools.jackson.databind.ser.BeanPropertyWriter
-import tools.jackson.databind.ser.ValueSerializerModifier
-import tools.jackson.databind.ser.VirtualBeanPropertyWriter
-import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter
-import tools.jackson.databind.ser.std.SimpleFilterProvider
-import tools.jackson.databind.util.Annotations
-import tools.jackson.databind.util.SimpleBeanPropertyDefinition
-import tools.jackson.dataformat.xml.XmlMapper
 
 import groovy.json.JsonSlurper
 import groovy.namespace.QName
 import groovy.xml.XmlParser
 import groovy.xml.XmlSlurper
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter
-import com.fasterxml.jackson.annotation.JsonFilter
-import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonIncludeProperties
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonPropertyOrder
-import com.fasterxml.jackson.annotation.JsonUnwrapped
-import com.fasterxml.jackson.annotation.JsonView
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -74,11 +35,9 @@ import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.converter.AbstractHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConversionException
-import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotWritableException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter
-import org.springframework.mock.http.MockHttpOutputMessage
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -94,7 +53,6 @@ import grails.web.mime.MimeType
 import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
-import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -382,178 +340,6 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         new XmlSlurper().parseText(response.contentAsString).status.text() == '409'
     }
 
-    void 'without a converter for problems, as without jackson-dataformat-xml, a problem is written as Spring writes it'() {
-        given: 'a problem with extension members, which Spring writes'
-        def problem = { ->
-            def written = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken & <gone>')
-            written.instance = URI.create('/books/1')
-            written.setProperty('errors', [[objectName: 'book', field: 'title', codes: ['a', 'b']],
-                                           [objectName: 'book', message: null]])
-            written.setProperty('retryAt', new Date(0))
-            written.setProperty('none', null)
-            written.setProperty('empty', [])
-            written.setProperty('checksum', [1, 2, 3] as byte[])
-            written.setProperty('markup', new RawMarkup(fragment: '<b>bold</b>'))
-            written
-        }
-        request.addHeader('Accept', 'application/problem+xml')
-        controller.respond(problem())
-        def spring = response.contentAsString
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-
-        when:
-        def fallback = renderProblem(renderer, problem())
-
-        then: "the reference is what Spring MVC's XML converter writes"
-        writesProblemsWithJackson()
-
-        and:
-        fallback.status == 409
-        fallback.contentType.startsWith('application/problem+xml')
-        tree(fallback.contentAsString) == tree(spring)
-    }
-
-    void 'without a converter for problems, #description is written as Spring writes it'() {
-        given:
-        request.addHeader('Accept', 'application/problem+xml')
-        controller.respond(problem())
-        def spring = response.contentAsString
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-
-        when:
-        def fallback = renderProblem(renderer, problem())
-
-        then:
-        writesProblemsWithJackson()
-        tree(fallback.contentAsString) == tree(spring)
-
-        where:
-        description << [
-                'a bean that unwraps a bean with a prefix',
-                'a bean with a property written as an array',
-                'a bean that names the properties it includes',
-                'a subclass with properties and extension members',
-                'a bean with a list',
-                'an infinite double',
-                'a bean with a property whose class is written as an array',
-                'a bean with a list of beans',
-                'a bean that unwraps a bean without a prefix',
-                'a bean with an empty bean its property leaves out',
-                'a bean a property names the properties of',
-                'a subclass of the bean a property names the properties of',
-                'a bean an untyped property names the properties of',
-                'beans a list property names the properties of',
-                'a bean written as an array a property names the properties of',
-                'a bean whose only output is an any-getter',
-                'a bean that unwraps two beans of one class with properties it names',
-                'a bean with an untyped list and an untyped value',
-                'a bean that unwraps two beans of one class with properties it ignores',
-                'a bean that unwraps two beans of one class with one prefix and properties it ignores',
-                'beans an unwrapped list property names the properties of',
-                'beans an unwrapped list property ignores properties of',
-                'an extension member named like a member of RFC 9457',
-                'a subclass with an extension member named like one of its properties',
-                'a bean whose any-getter writes the name of one of its properties',
-                'a subclass that unwraps a bean with an any-getter',
-                'a subclass that names its members with a strategy of its own',
-                'a subclass that renames a member of RFC 9457',
-                'a problem in an extension member',
-                'problems listed in an extension member',
-                'a problem a serializer of its own writes'
-        ]
-        problem << [
-                { -> extended('member', new PrefixedOwner(name: 'a', inner: new PrefixedInner(code: 'b'))) },
-                { -> extended('member', new ArrayShapedOwner(name: 'a', point: new ArrayShapedPoint(x: 1, y: 2))) },
-                { -> extended('member', new IncludingBean(name: 'a', hidden: 'b')) },
-                { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { setProperty('retry', 'later') } },
-                { -> extended('member', new ListBean(tags: ['a', 'b'])) },
-                { -> extended('ratio', Double.POSITIVE_INFINITY) },
-                { -> extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2))) },
-                { -> extended('member', new BeanListOwner(items: [new PrefixedInner(code: 'a'), new PrefixedInner(code: 'b')])) },
-                { -> extended('member', new PlainPrice(label: 'a', money: new PlainMoney(amount: 12.5G, currency: 'EUR'))) },
-                { -> extended('member', new EmptyOwner(name: 'a', empty: new NoProperties())) },
-                { -> extended('member', new IncludingOwner(bean: new ListBean(tags: ['a', 'b']))) },
-                { -> extended('member', new IncludingOwner(bean: new LabelledListBean(label: 'x', tags: ['a', 'b']))) },
-                { -> extended('member', new IncludingUntypedOwner(bean: new ListBean(tags: ['a', 'b']))) },
-                { -> extended('member', new IncludingListOwner(beans: [new ListBean(tags: ['a']), new ListBean(tags: ['b', 'c'])])) },
-                { -> extended('member', new IncludingArrayOwner(point: new ArrayClassPoint(x: 1, y: 2))) },
-                { -> extended('member', new AnyGetterOnly()) },
-                { -> extended('member', new TwiceUnwrappingOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
-                { -> extended('member', new UntypedPayload(tags: ['a', 'b'], tag: 'c')) },
-                { -> extended('member', new TwiceIgnoringOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
-                { -> extended('member', new TwicePrefixingOwner(first: new UnwrappedPair(a: 'x', b: 'y'), second: new UnwrappedPair(a: 'z', b: 'w'))) },
-                { -> extended('member', new UnwrappedIncludingListOwner(beans: [new ListBean(tags: ['a']), new ListBean(tags: ['b', 'c'])])) },
-                { -> extended('member', new UnwrappedIgnoringListOwner(beans: [new LabelledListBean(label: 'x', tags: ['a']), new LabelledListBean(label: 'y', tags: ['b', 'c'])])) },
-                { -> extended('status', 'x') },
-                { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { setProperty('product', 'other') } },
-                { -> extended('member', new DuplicatingAnyGetter()) },
-                { -> new Throttled().tap { it.setProperty('retry', 'later') } },
-                { -> new RateLimited(retryAfter: 30).tap { it.setDetail('Slow down') } },
-                { -> new Headlined().tap { it.setTitle('Taken') } },
-                { -> extended('cause', new OutOfStock(balance: 12.5G, product: 'Grails').tap { it.setProperty('retry', 'later') }) },
-                { -> extended('errors', [ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, 'a'), ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, 'b')]) },
-                { -> new SelfWrittenProblem() }
-        ]
-    }
-
-    void "without a converter for problems, a bean the JSON converter's mapper writes in its default view is shaped as without a view"() {
-        given: "Spring's JSON converter, whose mapper writes the view the bean's properties are in by default"
-        def viewing = JsonMapper.builder().defaultSerializationView(PublicView).build()
-        def withView = new DefaultXmlRenderer<Object>(Object)
-        withView.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(viewing)] }
-        def withoutView = new DefaultXmlRenderer<Object>(Object)
-        withoutView.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
-        def problem = { -> new ViewedProblem(detailed: new ViewedDetail(tags: ['a', 'b'], point: new ViewedPoint(x: 1, y: 2))) }
-
-        when:
-        def viewed = tree(renderProblem(withView, problem()).contentAsString)[3].find { it[0] == 'detailed' }
-        def plain = tree(renderProblem(withoutView, problem()).contentAsString)[3].find { it[0] == 'detailed' }
-
-        then: 'its list is wrapped and its array-shaped bean is not, as without the view'
-        viewed != null
-        viewed == plain
-    }
-
-    void "without a converter for problems, the default view of the JSON converter's mapper decides the members, as it decides them in JSON"() {
-        given: "Spring's JSON converter, whose mapper writes the view one member of the problem is in by default"
-        def viewing = JsonMapper.builder().defaultSerializationView(PublicView).build()
-        def json = new JacksonJsonHttpMessageConverter(viewing)
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [json] }
-        def problem = { ->
-            new ViewedProblem(detailed: new ViewedDetail(tags: ['a'], point: new ViewedPoint(x: 1, y: 2))).tap { it.setProperty('retry', 'later') }
-        }
-        def written = new MockHttpOutputMessage()
-        json.write(problem(), MediaType.APPLICATION_PROBLEM_JSON, written)
-
-        when:
-        def members = tree(renderProblem(renderer, problem()).contentAsString)[3]*.getAt(0)
-
-        then: 'only the member in the view, as the converter writes the problem in JSON'
-        (new JsonSlurper().parseText(written.bodyAsString) as Map).keySet() as List == ['detailed']
-        members == ['detailed']
-    }
-
-    void "without a converter for problems, the problem is written with the mapper of the JSON converter that writes problems"() {
-        given: 'a JSON converter ahead of Spring\'s that does not write problems, whose mapper names properties otherwise'
-        def other = new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build()) {
-            @Override
-            boolean canWrite(Class<?> clazz, MediaType mediaType) {
-                !ProblemDetail.isAssignableFrom(clazz) && super.canWrite(clazz, mediaType)
-            }
-        }
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [other, new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
-
-        when:
-        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)
-
-        then: 'its properties are named as the converter that writes problems names them'
-        written[3]*.getAt(0).containsAll(['balance', 'product'])
-    }
-
     void 'a problem of a class an XML converter writes is written by it, as Spring MVC asks the converters about its class'() {
         given: 'a converter that writes the subclass only, as a JAXB converter writes an annotated class'
         def renderer = new DefaultXmlRenderer<Object>(Object)
@@ -567,344 +353,32 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         response.contentAsString == '<outOfStock/>'
     }
 
-    void "without a converter for problems, the JSON converter is asked about the class of the problem, as Spring MVC asks"() {
-        given: 'a JSON converter ahead of the plain one with a mapper for the subclass in JSON alone, so that it does not write that problem'
-        def other = new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())
-        other.registerMappersForType(OutOfStock) { Map<MediaType, JsonMapper> mappers ->
-            mappers.put(MediaType.APPLICATION_JSON, JsonMapper.builder().build())
-        }
+    void 'without a converter that writes problems in XML, the XML renderer writes a problem in JSON, as Spring MVC answers a client that asks for one in XML'() {
+        given: 'Spring MVC without jackson-dataformat-xml, which has its JSON converter alone'
         def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [other, new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
 
         when:
-        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)
-
-        then: 'the problem is written with the mapper of the converter that writes it'
-        written[3]*.getAt(0).containsAll(['balance', 'product'])
-    }
-
-    void "without a converter for problems, the members of RFC 9457 are in its namespace by the names the JSON converter's mapper gives them"() {
-        given: 'a mapper whose naming strategy renames them'
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = {
-            [new JacksonJsonHttpMessageConverter(JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())]
-        }
-
-        when:
-        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)[3]
-
-        then: 'the members of RFC 9457 in its namespace, the properties of the subclass in none'
-        written.find { it[0] == 'Status' }[1] == 'urn:ietf:rfc:7807'
-        written.find { it[0] == 'Title' }[1] == 'urn:ietf:rfc:7807'
-        written.find { it[0] == 'Balance' }[1] == ''
-    }
-
-    void "without a converter for problems, the problem is written with the mapper the JSON converter has for problems"() {
-        given: "Spring's JSON converter, with a mapper of its own for problems, which names properties otherwise"
-        def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
-        json.registerMappersForType(ProblemDetail) { Map<MediaType, JsonMapper> mappers ->
-            mappers.put(MediaType.APPLICATION_PROBLEM_JSON,
-                    JsonMapper.builder().propertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE).build())
-        }
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [json] }
-
-        when:
-        def written = tree(renderProblem(renderer, new OutOfStock(balance: 12.5G, product: 'Grails')).contentAsString)
-
-        then: 'its properties are named as that mapper names them, as in application/problem+json'
-        written[3]*.getAt(0).containsAll(['Balance', 'Product'])
-    }
-
-    void "without a converter for problems, the problem is written with the mapper the JSON converter selects for it, with #first.simpleName registered first"() {
-        given: "Spring's JSON converter, with mappers for problems and for the subclass, which name properties otherwise"
-        def naming = [(ProblemDetail): PropertyNamingStrategies.UPPER_CAMEL_CASE, (OutOfStock): PropertyNamingStrategies.UPPER_SNAKE_CASE]
-        def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
-        [first, second].each { Class type ->
-            json.registerMappersForType(type) { Map<MediaType, JsonMapper> mappers ->
-                mappers.put(MediaType.APPLICATION_PROBLEM_JSON, JsonMapper.builder().propertyNamingStrategy(naming[type]).build())
-            }
-        }
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [json] }
-        def problem = { -> new OutOfStock(balance: 12.5G, product: 'Grails') }
-        def written = new MockHttpOutputMessage()
-        json.write(problem(), MediaType.APPLICATION_PROBLEM_JSON, written)
-
-        when:
-        def members = tree(renderProblem(renderer, problem()).contentAsString)[3]*.getAt(0)
-
-        then: 'named as the mapper the converter selects, that of the type registered first, names them in application/problem+json'
-        (new JsonSlurper().parseText(written.bodyAsString) as Map).keySet().containsAll(names)
-        members.containsAll(names)
-
-        where:
-        first         | second        || names
-        ProblemDetail | OutOfStock    || ['Balance', 'Product']
-        OutOfStock    | ProblemDetail || ['BALANCE', 'PRODUCT']
-    }
-
-    void "without a converter for problems, a bean the JSON converter's property filter filters keeps its properties in no namespace"() {
-        given: "Spring's JSON converter, whose mapper has the application's filter"
-        def mapper = JsonMapper.builder()
-                .filterProvider(new SimpleFilterProvider().addFilter('onlyName', SimpleBeanPropertyFilter.filterOutAllExcept('name')))
-                .build()
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(mapper)] }
-
-        when:
-        def written = renderProblem(renderer, extended('member', new FilteredBean(name: 'a', hidden: 'b'))).contentAsString
+        def response = renderProblem(renderer, ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken'))
 
         then:
-        tree(written)[3].find { it[0] == 'member' } == ['member', 'urn:ietf:rfc:7807', null, [['name', '', null, 'a']]]
+        response.status == 409
+        response.contentType == 'application/problem+json'
+        new JsonSlurper().parseText(response.contentAsString).detail == 'The title is taken'
     }
 
-    void "without a converter for problems, a bean the JSON converter's property filter filters in a view keeps its properties in no namespace"() {
-        given: "Spring's JSON converter, whose mapper has the application's filter and writes in a view that includes the properties of none"
-        def mapper = JsonMapper.builder()
-                .filterProvider(new SimpleFilterProvider().addFilter('onlyName', SimpleBeanPropertyFilter.filterOutAllExcept('name')))
-                .defaultSerializationView(PublicView)
-                .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-                .build()
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(mapper)] }
-
-        when:
-        def written = renderProblem(renderer, extended('member', new FilteredBean(name: 'a', hidden: 'b'))).contentAsString
-
-        then:
-        tree(written)[3].find { it[0] == 'member' } == ['member', 'urn:ietf:rfc:7807', null, [['name', '', null, 'a']]]
-    }
-
-    void "without a converter for problems, a bean written as an array is not a list, where a module of the JSON converter's mapper orders the properties"() {
-        given: "Spring's JSON converter, whose mapper has a module that orders the properties of each bean by their names, last first"
-        def ordering = new SimpleModule('descending').setSerializerModifier(new ValueSerializerModifier() {
-            @Override
-            List<BeanPropertyWriter> orderProperties(SerializationConfig config, BeanDescription.Supplier description,
-                    List<BeanPropertyWriter> properties) {
-                properties.sort(false) { BeanPropertyWriter a, BeanPropertyWriter b -> b.name <=> a.name }
-            }
-        })
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(JsonMapper.builder().addModule(ordering).build())] }
-
-        when:
-        def written = renderProblem(renderer, extended('member', new ArrayClassOwner(name: 'a', point: new ArrayClassPoint(x: 1, y: 2)))).contentAsString
-
-        then: 'its values are elements of its name, unwrapped, as without the module'
-        tree(written)[3].find { it[0] == 'member' } ==
-                ['member', 'urn:ietf:rfc:7807', null, [['point', '', null, '2'], ['point', '', null, '1'], ['name', '', null, 'a']]]
-    }
-
-    void "without a converter for problems, a property a module of the JSON converter's mapper adds to every problem is written as Spring writes it"() {
-        given: 'a module that adds a property to every problem, in the mapper of each converter'
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = {
-            [new JacksonJsonHttpMessageConverter(JsonMapper.builder().addModule(new SimpleModule('tracing').setSerializerModifier(new TracingModifier())))]
-        }
-        def xml = new JacksonXmlHttpMessageConverter(XmlMapper.builder().addModule(new SimpleModule('tracing').setSerializerModifier(new TracingModifier())))
-        def spring = new MockHttpOutputMessage()
-        xml.write(ProblemDetail.forStatus(HttpStatus.CONFLICT), MediaType.APPLICATION_PROBLEM_XML, spring)
-
-        when:
-        def written = tree(renderProblem(renderer, ProblemDetail.forStatus(HttpStatus.CONFLICT)).contentAsString)
-
-        then: 'in no namespace, as the members of RFC 9457 are those of the getters of a problem'
-        written[3].find { it[0] == 'trace' } == ['trace', '', null, 'abc']
-        written == tree(spring.bodyAsString)
-    }
-
-    void "without a converter for problems, the read features of the JSON converter's mapper do not change the problem written"() {
-        given: "Spring's JSON converter, whose mapper reads arrays as Java arrays and floating-point numbers as BigDecimal"
-        def reading = JsonMapper.builder()
-                .enable(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-                .build()
-        def withFeatures = new DefaultXmlRenderer<Object>(Object)
-        withFeatures.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(reading)] }
-        def plain = new DefaultXmlRenderer<Object>(Object)
-        plain.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] }
-        def problem = { -> extended('member', new ListBean(tags: ['a', 'b'])).tap { it.setProperty('ratio', 1.0E20d) } }
-
-        when:
-        def written = tree(renderProblem(withFeatures, problem()).contentAsString)
-
-        then:
-        written == tree(renderProblem(plain, problem()).contentAsString)
-        written[3].find { it[0] == 'ratio' }[3] == '1.0E20'
-    }
-
-    void "without a converter for problems, a problem nested deeper than the JSON converter's mapper writes fails as Spring's converters fail to write it, #maps maps deep"() {
+    void 'without a converter that writes problems, the legacy XML converter writes a problem as a bean, with the status it carries'() {
         given:
         def renderer = new DefaultXmlRenderer<Object>(Object)
         renderer.springHttpMessageConvertersSupplier = { [] }
-        def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
-        def depth = 'Could not write JSON: Document nesting depth (501) exceeds the maximum allowed (500, '
-
-        when: "Spring's XML converter writes it"
-        ((HttpMessageConverter<Object>) xml).write(extended('member', nestedMaps(maps)), MediaType.APPLICATION_PROBLEM_XML,
-                new MockHttpOutputMessage())
-
-        then: 'it fails at the same depth'
-        HttpMessageNotWritableException springXml = thrown()
-        springXml.message.startsWith(depth)
-
-        when: "Spring's JSON converter, with a default mapper, writes it"
-        new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
-                .write(extended('member', nestedMaps(maps)), MediaType.APPLICATION_PROBLEM_JSON, new MockHttpOutputMessage())
-
-        then:
-        HttpMessageNotWritableException springJson = thrown()
-
-        when: 'the problem XML Grails writes, without a JSON converter'
-        renderProblem(renderer, extended('member', nestedMaps(maps)))
-
-        then: 'it fails as the JSON converter fails, without a stack overflow'
-        HttpMessageNotWritableException e = thrown()
-        e.message == springJson.message
-        e.message.startsWith(depth)
-        e.cause instanceof StreamConstraintsException
-
-        where:
-        maps << [500, 100_000]
-    }
-
-    void "without a converter for problems, a #type array nested deeper than the JSON converter's mapper writes fails as Spring's JSON converter fails to write it"() {
-        given: 'an array the 501st level deep, and one the 500th'
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-        def json = new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())
-        def tooDeep = { -> extended('member', nestedMaps(499).tap { Map maps -> innermost(maps).values = array }) }
-        def deepest = { -> extended('member', nestedMaps(498).tap { Map maps -> innermost(maps).values = array }) }
-
-        when: "Spring's JSON converter writes it"
-        json.write(tooDeep(), MediaType.APPLICATION_PROBLEM_JSON, new MockHttpOutputMessage())
-
-        then:
-        HttpMessageNotWritableException spring = thrown()
-
-        when: 'the problem XML Grails writes'
-        renderProblem(renderer, tooDeep())
-
-        then:
-        HttpMessageNotWritableException e = thrown()
-        e.message == spring.message
-
-        when: 'one level less deep'
-        renderProblem(renderer, deepest())
-
-        then:
-        notThrown(Exception)
-
-        where:
-        type     | array
-        'int'    | [1, 2] as int[]
-        'long'   | [1L, 2L] as long[]
-        'double' | [1.5d, 2.5d] as double[]
-    }
-
-    void "without a converter for problems, the write limit of the JSON converter's mapper decides how deep a problem is written"() {
-        given: 'a mapper that writes ten levels'
-        def mapper = JsonMapper.builder(JsonFactory.builder()
-                .streamWriteConstraints(StreamWriteConstraints.builder().maxNestingDepth(10).build()).build()).build()
-        def json = new JacksonJsonHttpMessageConverter(mapper)
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [json] }
-
-        when: "Spring's JSON converter writes a problem eleven levels deep"
-        json.write(extended('member', nestedMaps(10)), MediaType.APPLICATION_PROBLEM_JSON, new MockHttpOutputMessage())
-
-        then:
-        HttpMessageNotWritableException spring = thrown()
-
-        when: 'the problem XML Grails writes'
-        renderProblem(renderer, extended('member', nestedMaps(10)))
-
-        then:
-        HttpMessageNotWritableException e = thrown()
-        e.message == spring.message
-
-        when: 'ten levels deep'
-        renderProblem(renderer, extended('member', nestedMaps(9)))
-
-        then:
-        notThrown(Exception)
-    }
-
-    void "without a converter for problems, a problem with #description fails as Spring's XML converter fails to write it"() {
-        given:
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-        def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
-        def problem = { -> ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail) }
-
-        when: "Spring's XML converter writes it"
-        ((HttpMessageConverter<Object>) xml).write(problem(), MediaType.APPLICATION_PROBLEM_XML, new MockHttpOutputMessage())
-
-        then:
-        HttpMessageNotWritableException spring = thrown()
-
-        when: 'the problem XML Grails writes'
-        renderProblem(renderer, problem())
-
-        then: "it fails as Spring's converter fails, rather than writing XML that is not well-formed or a ? in its place"
-        HttpMessageNotWritableException e = thrown()
-        e.message == "Could not write JSON: ${invalid}".toString()
-        spring.message.startsWith(e.message)
-
-        where:
-        description                              | detail          || invalid
-        'a control character'                    | 'a\u0001b'      || 'Invalid white space character (0x1) in text to output (in xml 1.1, could output as a character entity)'
-        'a null character'                       | 'a\u0000b'      || 'Invalid null character in text to output'
-        'a null character and half a pair'       | 'a\uD800\u0000' || 'Invalid null character in text to output'
-        'the first half of a surrogate pair'     | 'a\uD800b'      || 'Broken surrogate pair: first char 0xd800, second 0x62; illegal combination'
-        'the first half of a pair at its end'    | 'a\uD800'       || 'Broken surrogate pair: first char 0xd800, second 0x3c; illegal combination'
-        'two first halves of a surrogate pair'   | 'a\uD800\uD800' || 'Broken surrogate pair: first char 0xd800, second 0xd800; illegal combination'
-        'the second half of a surrogate pair'    | 'a\uDC00\uD800' || 'Unmatched second part of surrogate pair (0xdc00)'
-    }
-
-    void "without a converter for problems, a problem with #description is written as Spring's XML converter writes it"() {
-        given:
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-        def xml = applicationContext.getBean(SpringMessageConverters).converters.find { it instanceof JacksonXmlHttpMessageConverter }
-        def problem = { -> ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail) }
-        def spring = new MockHttpOutputMessage()
-        ((HttpMessageConverter<Object>) xml).write(problem(), MediaType.APPLICATION_PROBLEM_XML, spring)
 
         when:
-        def fallback = renderProblem(renderer, problem())
-
-        then: 'a carriage return, which a parser would read as a line feed, and a noncharacter as character references'
-        spring.bodyAsString.contains(written)
-        fallback.contentAsString == spring.bodyAsString
-
-        where:
-        description             | detail             || written
-        'a carriage return'     | 'a\r\nb'           || 'a&#xd;\nb'
-        'U+FFFE and U+FFFF'     | 'a￾b￿c'  || 'a&#xfffe;b&#xffff;c'
-        'a pair of surrogates'  | 'a😀b'   || 'a😀b'
-    }
-
-    void 'without a converter for problems, a problem that cannot be converted fails as Spring reports it, for #description'() {
-        given:
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
-        problem.setProperty('value', value)
-
-        when:
-        renderProblem(renderer, problem)
+        def response = renderProblem(renderer, ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken'))
 
         then:
-        HttpMessageConversionException e = thrown()
-        e.class == type
-        e.message.startsWith(message)
-
-        where:
-        description               | value                                                           || type                            | message
-        'a value that fails'      | new UnreadableXmlValue()                                        || HttpMessageNotWritableException | 'Could not write JSON: '
-        'a type definition error' | new ClashingXmlValue(id: 1, inner: new ClashingXmlInner(id: 2)) || HttpMessageConversionException  | 'Type definition error: '
-        'a value that refers to itself' | new SelfReferencingMember(name: 'a').tap { it.self = it } || HttpMessageConversionException  | 'Type definition error: '
+        response.status == 409
+        response.contentType.startsWith('application/xml')
+        new XmlSlurper().parseText(response.contentAsString).detail.text() == 'The title is taken'
     }
 
     void 'a problem a client asks for as #accept whose member refers to itself fails as Spring MVC fails to write it'() {
@@ -922,107 +396,6 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         where:
         accept << ['application/problem+json', 'application/problem+xml']
-    }
-
-    void 'without a converter for problems, a response writer that fails is reported as Spring reports it'() {
-        given:
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
-        def failing = new Writer() {
-            @Override
-            void write(char[] buffer, int offset, int length) throws IOException {
-                throw new IOException('Broken pipe')
-            }
-
-            @Override
-            void flush() { }
-
-            @Override
-            void close() { }
-        }
-
-        when:
-        renderer.render(ProblemDetail.forStatus(HttpStatus.CONFLICT), new ServletRenderContext(webRequest) {
-            @Override
-            MimeType getAcceptMimeType() {
-                MimeType.XML
-            }
-
-            @Override
-            Writer getWriter() {
-                failing
-            }
-        })
-
-        then:
-        HttpMessageNotWritableException e = thrown()
-        e.message.startsWith('Could not write JSON: ')
-        e.cause instanceof XMLStreamException
-    }
-
-    void 'without a converter for problems, a response writer that fails while a raw value is written is reported as Spring reports it'() {
-        given:
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
-        def problem = ProblemDetail.forStatus(HttpStatus.CONFLICT)
-        problem.setProperty('markup', new RawMarkup(fragment: '<b>bold</b>'))
-        def failing = new Writer() {
-            @Override
-            void write(char[] buffer, int offset, int length) throws IOException {
-                if (new String(buffer, offset, length).contains('<b>')) {
-                    throw new IOException('Broken pipe')
-                }
-            }
-
-            @Override
-            void write(String text) throws IOException {
-                write(text.toCharArray(), 0, text.length())
-            }
-
-            @Override
-            void flush() { }
-
-            @Override
-            void close() { }
-        }
-
-        when:
-        renderer.render(problem, new ServletRenderContext(webRequest) {
-            @Override
-            MimeType getAcceptMimeType() {
-                MimeType.XML
-            }
-
-            @Override
-            Writer getWriter() {
-                failing
-            }
-        })
-
-        then:
-        HttpMessageNotWritableException e = thrown()
-        e.message == 'Could not write JSON: Broken pipe'
-        e.cause instanceof IOException
-    }
-
-    void 'without a converter for problems, the properties of a subclass of ProblemDetail are written as Spring writes them'() {
-        given:
-        def problem = { -> new OutOfStock(balance: 12.5G, product: 'Grails').tap { instance = URI.create('/books/1') } }
-        request.addHeader('Accept', 'application/problem+xml')
-        controller.respond(problem())
-        def spring = response.contentAsString
-        def renderer = new DefaultXmlRenderer<Object>(Object)
-        renderer.springHttpMessageConvertersSupplier = { [] }
-
-        when:
-        def fallback = renderProblem(renderer, problem())
-
-        then:
-        writesProblemsWithJackson()
-        new XmlSlurper().parseText(spring).balance.text() == '12.5'
-        tree(fallback.contentAsString) == tree(spring)
     }
 
     void 'a ProblemDetail is rendered by the XML view respond names, with the status it carries'() {
@@ -1051,7 +424,7 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         when: 'respond names no view'
         def unnamed = xmlRequest()
-        renderer.springHttpMessageConvertersSupplier = { [] }
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonXmlHttpMessageConverter()] }
         renderer.render(ProblemDetail.forStatus(HttpStatus.CONFLICT), new ServletRenderContext(unnamed) {
             @Override
             MimeType getAcceptMimeType() {
@@ -1122,33 +495,6 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
 
         then:
         xml.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW).model == [problemDetailInstance: problem]
-    }
-
-    /** Whether the first converter that writes problems in XML is Spring's Jackson XML converter, as in Spring MVC. */
-    private boolean writesProblemsWithJackson() {
-        applicationContext.getBean(SpringMessageConverters).converters.find { HttpMessageConverter converter ->
-            converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_XML)
-        } instanceof JacksonXmlHttpMessageConverter
-    }
-
-    /** Maps the number deep, each in the {@code inner} entry of the one before it. */
-    private static Map nestedMaps(int maps) {
-        Map root = [:]
-        Map current = root
-        (maps - 1).times {
-            Map inner = [:]
-            current.inner = inner
-            current = inner
-        }
-        root
-    }
-
-    private static Map innermost(Map maps) {
-        Map current = maps
-        while (current.inner != null) {
-            current = (Map) current.inner
-        }
-        current
     }
 
     private static ProblemDetail extended(String name, Object value) {
@@ -1239,199 +585,6 @@ class OutOfStock extends ProblemDetail {
     }
 }
 
-class UnreadableXmlValue {
-    String getTitle() {
-        throw new IllegalStateException('unreadable')
-    }
-}
-
-class ClashingXmlValue {
-    Integer id
-    @JsonUnwrapped
-    ClashingXmlInner inner
-}
-
-class ClashingXmlInner {
-    Integer id
-}
-
-class RawMarkup {
-    @JsonRawValue
-    String fragment
-}
-
-class PrefixedOwner {
-    String name
-    @JsonUnwrapped(prefix = 'x_')
-    PrefixedInner inner
-}
-
-class PrefixedInner {
-    String code
-}
-
-class ArrayShapedOwner {
-    String name
-    @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-    ArrayShapedPoint point
-}
-
-@JsonPropertyOrder(['x', 'y'])
-class ArrayShapedPoint {
-    int x
-    int y
-}
-
-@JsonIncludeProperties(['name'])
-class IncludingBean {
-    String name
-    String hidden
-}
-
-class ListBean {
-    List<String> tags
-}
-
-class ArrayClassOwner {
-    String name
-    ArrayClassPoint point
-}
-
-@JsonFormat(shape = JsonFormat.Shape.ARRAY)
-@JsonPropertyOrder(['x', 'y'])
-class ArrayClassPoint {
-    int x
-    int y
-}
-
-class BeanListOwner {
-    List<PrefixedInner> items
-}
-
-@JsonFilter('onlyName')
-class FilteredBean {
-    String name
-    String hidden
-}
-
-class PlainPrice {
-    String label
-    @JsonUnwrapped
-    PlainMoney money
-}
-
-class PlainMoney {
-    BigDecimal amount
-    String currency
-}
-
-class EmptyOwner {
-    String name
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    NoProperties empty
-}
-
-class NoProperties {
-}
-
-class AnyGetterOnly {
-
-    @JsonAnyGetter
-    Map<String, Object> other() {
-        [code: 'X1']
-    }
-}
-
-class UnwrappedPair {
-    String a
-    String b
-}
-
-class TwiceUnwrappingOwner {
-    @JsonUnwrapped
-    @JsonIncludeProperties(['a'])
-    UnwrappedPair first
-
-    @JsonUnwrapped
-    @JsonIncludeProperties(['b'])
-    UnwrappedPair second
-}
-
-class TwiceIgnoringOwner {
-    @JsonUnwrapped
-    @JsonIgnoreProperties(['b'])
-    UnwrappedPair first
-
-    @JsonUnwrapped
-    @JsonIgnoreProperties(['a'])
-    UnwrappedPair second
-}
-
-class TwicePrefixingOwner {
-    @JsonUnwrapped(prefix = 'p_')
-    @JsonIgnoreProperties(['b'])
-    UnwrappedPair first
-
-    @JsonUnwrapped(prefix = 'p_')
-    @JsonIgnoreProperties(['a'])
-    UnwrappedPair second
-}
-
-class UnwrappedIncludingListOwner {
-    @JsonUnwrapped
-    @JsonIncludeProperties(['tags'])
-    List<ListBean> beans
-}
-
-class UnwrappedIgnoringListOwner {
-    @JsonUnwrapped
-    @JsonIgnoreProperties(['label'])
-    List<LabelledListBean> beans
-}
-
-class DuplicatingAnyGetter {
-    String code = 'a'
-
-    @JsonAnyGetter
-    Map<String, Object> other() {
-        [code: 'b']
-    }
-}
-
-/** Adds a property to every problem, as a module may. */
-class TracingModifier extends ValueSerializerModifier {
-
-    @Override
-    List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription.Supplier description,
-            List<BeanPropertyWriter> properties) {
-        if (!ProblemDetail.isAssignableFrom(description.beanClass)) {
-            return properties
-        }
-        JavaType type = config.typeFactory.constructType(String)
-        def definition = SimpleBeanPropertyDefinition.construct(config,
-                new VirtualAnnotatedMember(description.classInfo, description.beanClass, 'trace', type), PropertyName.construct('trace'))
-        properties + [(BeanPropertyWriter) new TraceWriter(definition, description.classAnnotations, type)]
-    }
-}
-
-class TraceWriter extends VirtualBeanPropertyWriter {
-
-    TraceWriter(BeanPropertyDefinition definition, Annotations annotations, JavaType type) {
-        super(definition, annotations, type)
-    }
-
-    @Override
-    protected Object value(Object bean, JsonGenerator generator, SerializationContext context) {
-        'abc'
-    }
-
-    @Override
-    VirtualBeanPropertyWriter withConfig(MapperConfig<?> config, AnnotatedClass declaringClass, BeanPropertyDefinition definition,
-            JavaType type) {
-        this
-    }
-}
-
 @JsonSerialize(using = SelfWrittenProblemSerializer)
 class SelfWrittenProblem extends ProblemDetail {
 
@@ -1452,104 +605,7 @@ class SelfWrittenProblemSerializer extends ValueSerializer<SelfWrittenProblem> {
     }
 }
 
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy)
-class RateLimited extends ProblemDetail {
-
-    Integer retryAfter
-
-    RateLimited() {
-        super(429)
-    }
-}
-
-class Headlined extends ProblemDetail {
-
-    Headlined() {
-        super(409)
-    }
-
-    @Override
-    @JsonProperty('headline')
-    String getTitle() {
-        super.getTitle()
-    }
-}
-
-class Throttled extends ProblemDetail {
-
-    @JsonUnwrapped
-    RetryHints hints = new RetryHints()
-
-    Throttled() {
-        super(429)
-    }
-}
-
-class RetryHints {
-
-    @JsonAnyGetter
-    Map<String, Object> hints() {
-        [after: '5s']
-    }
-}
-
-class UntypedPayload {
-    def tags
-    def tag
-}
-
-class PublicView {
-}
-
-class ViewedProblem extends ProblemDetail {
-
-    @JsonView(PublicView)
-    ViewedDetail detailed
-
-    ViewedProblem() {
-        super(409)
-    }
-}
-
-@JsonView(PublicView)
-class ViewedDetail {
-    List<String> tags
-    ViewedPoint point
-}
-
-@JsonView(PublicView)
-@JsonFormat(shape = JsonFormat.Shape.ARRAY)
-@JsonPropertyOrder(['x', 'y'])
-class ViewedPoint {
-    int x
-    int y
-}
-
 class SelfReferencingMember {
     String name
     SelfReferencingMember self
-}
-
-class IncludingOwner {
-    @JsonIncludeProperties(['tags'])
-    ListBean bean
-}
-
-class LabelledListBean extends ListBean {
-    String label
-}
-
-class IncludingUntypedOwner {
-    @JsonIncludeProperties(['tags'])
-    Object bean
-}
-
-class IncludingListOwner {
-    @JsonIncludeProperties(['tags'])
-    List<ListBean> beans
-}
-
-class IncludingArrayOwner {
-    @JsonIncludeProperties(['x'])
-    ArrayClassPoint point
 }

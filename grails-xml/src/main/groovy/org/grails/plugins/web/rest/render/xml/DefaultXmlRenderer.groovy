@@ -19,15 +19,11 @@
 package org.grails.plugins.web.rest.render.xml
 
 import java.nio.charset.Charset
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
-import javax.xml.stream.XMLStreamException
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-
-import tools.jackson.core.JacksonException
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.databind.json.JsonMapper
+import groovy.util.logging.Slf4j
 
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,8 +35,6 @@ import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
-import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
-import org.springframework.http.converter.json.ProblemDetailJacksonMixin
 import org.springframework.validation.Errors
 
 import grails.converters.XML
@@ -51,7 +45,6 @@ import grails.util.GrailsWebUtil
 import grails.web.mime.MimeType
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
-import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.SpringMessageConverters
@@ -64,6 +57,7 @@ import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
  * @author Graeme Rocher
  * @since 2.3
  */
+@Slf4j
 @CompileStatic
 class DefaultXmlRenderer<T> implements Renderer<T> {
 
@@ -105,10 +99,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     private volatile GrailsConventionGroovyPageLocator resolvedGroovyPageLocator
     private volatile RendererRegistry resolvedRendererRegistry
 
-    // the mappers derived for problems, for each mapper they derive from, the converter's own and those it has for types
-    private final Map<ObjectMapper, ObjectMapper> problemMappers = Collections.synchronizedMap(new WeakHashMap<ObjectMapper, ObjectMapper>())
-
-    private static final ObjectMapper DEFAULT_PROBLEM_MAPPER = JsonMapper.builder().build()
+    private final AtomicBoolean problemFallbackReported = new AtomicBoolean()
 
     private GrailsConventionGroovyPageLocator resolveGroovyPageLocator() {
         if (groovyPageLocator != null) {
@@ -193,61 +184,27 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * Writes a problem as Spring MVC writes one a handler method returns, as {@code application/problem+xml}, whatever
-     * {@code grails.web.rendering.xml.spring} is set to. Where no message converter writes it, as without
-     * {@code jackson-dataformat-xml}, it is written in the format Spring's converter writes, with the extension members
-     * written by the mapper of Spring's JSON converter with Spring's mix-in for problems, as Spring's own XML
-     * converter writes them: without the Grails serializers of the problem written in JSON, so that validation errors
-     * or a value that leads back to itself are written as Jackson writes any bean, and a domain class instance too,
-     * unless {@code grails.converters.json.domain.jackson.enabled} gives the application's mapper the domain serializer,
-     * and fails, as Spring's converters fail, for a problem nested deeper than that mapper's
-     * {@code StreamWriteConstraints} allow.
+     * Writes a problem as Spring MVC writes one a handler method returns, whatever
+     * {@code grails.web.rendering.xml.spring} is set to: as {@code application/problem+xml} where a message converter
+     * writes it in XML, and otherwise as {@code application/problem+json}, as Spring MVC answers a client that asks for a
+     * problem in XML without {@code jackson-dataformat-xml}. Where no converter writes it, the legacy converter writes it
+     * as a bean, with the status it carries.
      */
     private void renderProblem(ProblemDetail problem, RenderContext context) {
-        if (context instanceof ServletRenderContext && ProblemDetailResponse.write(problem, (ServletRenderContext) context,
-                ProblemDetailResponse.requestedStatus(context), [MediaType.APPLICATION_PROBLEM_XML],
-                configuredSpringHttpMessageConverters())) {
-            return
+        if (context instanceof ServletRenderContext) {
+            ServletRenderContext servletContext = (ServletRenderContext) context
+            Integer status = ProblemDetailResponse.requestedStatus(context)
+            List<HttpMessageConverter<?>> converters = configuredSpringHttpMessageConverters()
+            if (ProblemDetailResponse.write(problem, servletContext, status, [MediaType.APPLICATION_PROBLEM_XML], converters) ||
+                    ProblemDetailResponse.write(problem, servletContext, status, [MediaType.APPLICATION_PROBLEM_JSON], converters)) {
+                return
+            }
+        }
+        if (problemFallbackReported.compareAndSet(false, true)) {
+            log.warn('No Spring message converter writes a ProblemDetail, so the legacy XML converter writes it as a bean.')
         }
         ProblemDetailResponse.prepare(problem, context)
-        MediaType problemXml = MediaType.APPLICATION_PROBLEM_XML
-        context.setContentType(GrailsWebUtil.getContentType(problemXml.toString(), encoding))
-        List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()
-        try {
-            ProblemXml.write(problem, context.writer, problemMapper(converters, problem.getClass()))
-        }
-        catch (JacksonException | XMLStreamException | IOException e) {
-            // as Spring's converter reports it, also a failure of the response's writer while it writes a raw value
-            throw JacksonWriteFailures.reported(e)
-        }
-    }
-
-    /**
-     * The mapper the JSON converter Spring MVC writes the problem as {@code application/problem+json} with uses for it,
-     * with Spring's mix-in for problems, derived once for the mapper it derives from.
-     */
-    @CompileDynamic
-    private ObjectMapper problemMapper(List<HttpMessageConverter<?>> converters, Class<?> problemType) {
-        def json = (JacksonJsonHttpMessageConverter) converters.find {
-            it instanceof JacksonJsonHttpMessageConverter && it.canWrite(problemType, MediaType.APPLICATION_PROBLEM_JSON)
-        }
-        // the one the converter has for the type of the problem, or else its own; without one, a default mapper, with
-        // Jackson's limits, which the legacy writer's has not
-        ObjectMapper source = json != null ? (mapperForType(json, problemType) ?: json.mapper) : DEFAULT_PROBLEM_MAPPER
-        problemMappers.computeIfAbsent(source) { ObjectMapper mapper ->
-            mapper.rebuild().addMixIn(ProblemDetail, ProblemDetailJacksonMixin).build()
-        }
-    }
-
-    /**
-     * The mapper a JSON converter has of its own for the problem and {@code application/problem+json}: that of the type
-     * registered first that the problem is an instance of, as the converter selects it.
-     */
-    private static ObjectMapper mapperForType(JacksonJsonHttpMessageConverter json, Class<?> problemType) {
-        Map<MediaType, ? extends ObjectMapper> mappers = json.getMappersForType(problemType)
-        mappers?.find { Map.Entry<MediaType, ? extends ObjectMapper> entry ->
-            entry.key.includes(MediaType.APPLICATION_PROBLEM_JSON)
-        }?.value
+        renderXml(new XML(problem), context)
     }
 
     /**
