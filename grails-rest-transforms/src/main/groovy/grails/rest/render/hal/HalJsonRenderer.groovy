@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
+import grails.config.Settings
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
 import grails.rest.Link
@@ -104,8 +105,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
      *
      * @since 9.0
      */
-    @Value('${grails.databinding.json.jackson:false}')
-    boolean useJackson = false
+    @Value('${' + Settings.DATABINDING_JSON_JACKSON + ':' + Settings.DATABINDING_JSON_JACKSON_DEFAULT + '}')
+    boolean useJackson = Boolean.parseBoolean(Settings.DATABINDING_JSON_JACKSON_DEFAULT)
 
     /**
      * The application's HAL binding source creator, which parses the bodies of this renderer's type and media types where

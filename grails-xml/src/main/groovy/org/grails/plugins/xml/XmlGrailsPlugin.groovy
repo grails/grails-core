@@ -24,6 +24,7 @@ import org.springframework.beans.factory.BeanRegistrar
 import org.springframework.beans.factory.BeanRegistry
 import org.springframework.core.env.Environment
 
+import grails.config.Settings
 import grails.converters.XML
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
@@ -50,7 +51,8 @@ class XmlGrailsPlugin extends Plugin {
     private static <T extends DefaultXmlRenderer> T configure(T renderer, Environment environment,
             SpringMessageConverters converters) {
         renderer.encoding = environment.getProperty('grails.converters.encoding', 'UTF-8')
-        renderer.useSpringXml = environment.getProperty('grails.web.rendering.xml.spring', Boolean, false)
+        renderer.useSpringXml = environment.getProperty(Settings.WEB_RENDERING_XML_SPRING, Boolean,
+                Boolean.valueOf(Settings.WEB_RENDERING_XML_SPRING_DEFAULT))
         if (converters != null) {
             renderer.springHttpMessageConvertersSupplier = converters::getConverters
         }

@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.core.annotation.AnnotationAwareOrderComparator
 
+import grails.config.Settings
 import grails.core.GrailsApplication
 import grails.databinding.TypedStructuredBindingEditor
 import grails.databinding.converters.FormattedValueConverter
@@ -110,7 +111,7 @@ class DataBindingGrailsPlugin extends Plugin {
         // Declared as an array rather than the original varargs parameter; Spring resolves both the
         // same way, injecting every DataBindingSourceCreator bean.
         bean(DataBindingSourceRegistry) { DataBindingSourceCreator[] creators, AutowireCapableBeanFactory beanFactory,
-                @Value('${grails.databinding.json.jackson:false}') boolean jackson ->
+                @Value('${' + Settings.DATABINDING_JSON_JACKSON + ':' + Settings.DATABINDING_JSON_JACKSON_DEFAULT + '}') boolean jackson ->
             new DefaultDataBindingSourceRegistry().tap {
                 dataBindingSourceCreators = creators
                 if (jackson) {

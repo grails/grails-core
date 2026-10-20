@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
+import grails.config.Settings
 import grails.core.support.proxy.ProxyHandler
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.Renderer
@@ -101,8 +102,8 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
      * Opts into Spring JSON in Grails 9. The default changes in Grails 10;
      * the legacy response path is scheduled for removal in Grails 11.
      */
-    @Value('${grails.web.rendering.json.spring:false}')
-    Boolean useSpringJson = false
+    @Value('${' + Settings.WEB_RENDERING_JSON_SPRING + ':' + Settings.WEB_RENDERING_JSON_SPRING_DEFAULT + '}')
+    Boolean useSpringJson = Boolean.valueOf(Settings.WEB_RENDERING_JSON_SPRING_DEFAULT)
 
     private final AtomicBoolean legacyJsonFallbackReported = new AtomicBoolean()
     private final AtomicBoolean missingJsonConvertersReported = new AtomicBoolean()

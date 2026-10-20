@@ -37,6 +37,7 @@ import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.validation.Errors
 
+import grails.config.Settings
 import grails.converters.XML
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
@@ -61,8 +62,8 @@ import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 @CompileStatic
 class DefaultXmlRenderer<T> implements Renderer<T> {
 
-    @Value('${grails.web.rendering.xml.spring:false}')
-    boolean useSpringXml = false
+    @Value('${' + Settings.WEB_RENDERING_XML_SPRING + ':' + Settings.WEB_RENDERING_XML_SPRING_DEFAULT + '}')
+    boolean useSpringXml = Boolean.parseBoolean(Settings.WEB_RENDERING_XML_SPRING_DEFAULT)
 
     final Class<T> targetType
     MimeType[] mimeTypes = [MimeType.XML, MimeType.TEXT_XML] as MimeType[]

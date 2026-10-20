@@ -387,6 +387,54 @@ interface Settings {
     String DATABINDING_DENY_BY_DEFAULT = 'grails.databinding.denyByDefault'
 
     /**
+     * Whether JSON request bodies are bound as the application's Jackson mapper parses them, rather than with the legacy
+     * parser. Defaults to {@link #DATABINDING_JSON_JACKSON_DEFAULT}.
+     *
+     * @since 9.0
+     */
+    String DATABINDING_JSON_JACKSON = 'grails.databinding.json.jackson'
+
+    /**
+     * The default of {@link #DATABINDING_JSON_JACKSON}, as a property placeholder reads it: {@code false} in Grails 9,
+     * and {@code true} from Grails 10.
+     *
+     * @since 9.0
+     */
+    String DATABINDING_JSON_JACKSON_DEFAULT = 'false'
+
+    /**
+     * Whether {@code respond} writes JSON with Spring MVC's message converters, rather than with the legacy JSON
+     * converter. Defaults to {@link #WEB_RENDERING_JSON_SPRING_DEFAULT}.
+     *
+     * @since 9.0
+     */
+    String WEB_RENDERING_JSON_SPRING = 'grails.web.rendering.json.spring'
+
+    /**
+     * The default of {@link #WEB_RENDERING_JSON_SPRING}, as a property placeholder reads it: {@code false} in Grails 9,
+     * and {@code true} from Grails 10.
+     *
+     * @since 9.0
+     */
+    String WEB_RENDERING_JSON_SPRING_DEFAULT = 'false'
+
+    /**
+     * Whether {@code respond} writes ordinary beans as XML with Spring MVC's message converters, rather than with the
+     * legacy XML converter. Defaults to {@link #WEB_RENDERING_XML_SPRING_DEFAULT}.
+     *
+     * @since 9.0
+     */
+    String WEB_RENDERING_XML_SPRING = 'grails.web.rendering.xml.spring'
+
+    /**
+     * The default of {@link #WEB_RENDERING_XML_SPRING}, as a property placeholder reads it: {@code false} until legacy XML
+     * conversion is removed.
+     *
+     * @since 9.0
+     */
+    String WEB_RENDERING_XML_SPRING_DEFAULT = 'false'
+
+    /**
      * Whether message bundles contributed by plugins participate, both in message resolution and in
      * the locales offered by a language selector. Defaults to {@code true}.
      *

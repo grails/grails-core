@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 
+import grails.config.Settings
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
 import grails.web.mime.MimeType
@@ -71,8 +72,8 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
      */
     DataBindingSourceCreator defaultJsonDataBindingSourceCreator
 
-    @Value('${grails.databinding.json.jackson:false}')
-    private boolean jacksonJsonParsing
+    @Value('${' + Settings.DATABINDING_JSON_JACKSON + ':' + Settings.DATABINDING_JSON_JACKSON_DEFAULT + '}')
+    private boolean jacksonJsonParsing = Boolean.parseBoolean(Settings.DATABINDING_JSON_JACKSON_DEFAULT)
 
     @Autowired(required = false)
     private ApplicationContext applicationContext

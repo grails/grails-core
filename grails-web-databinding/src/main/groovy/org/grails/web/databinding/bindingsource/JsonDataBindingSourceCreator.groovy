@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationContext
 
+import grails.config.Settings
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
 import grails.databinding.SimpleMapDataBindingSource
@@ -77,8 +78,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
      *
      * @since 9.0
      */
-    @Value('${grails.databinding.json.jackson:false}')
-    boolean useJackson = false
+    @Value('${' + Settings.DATABINDING_JSON_JACKSON + ':' + Settings.DATABINDING_JSON_JACKSON_DEFAULT + '}')
+    boolean useJackson = Boolean.parseBoolean(Settings.DATABINDING_JSON_JACKSON_DEFAULT)
 
     /**
      * Parses request bodies on the legacy path; an application bean replaces it, as on Grails 8.
