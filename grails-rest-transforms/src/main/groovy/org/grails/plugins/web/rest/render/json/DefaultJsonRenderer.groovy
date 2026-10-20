@@ -18,7 +18,6 @@
  */
 package org.grails.plugins.web.rest.render.json
 
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -41,11 +40,8 @@ import org.springframework.validation.Errors
 
 import tools.jackson.core.JacksonException
 import tools.jackson.core.JsonGenerator
-import tools.jackson.core.StreamWriteFeature
 import tools.jackson.databind.JacksonSerializable
-import tools.jackson.databind.ObjectWriter
 import tools.jackson.databind.SerializationContext
-import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.jsontype.TypeSerializer
 
 import grails.converters.JSON
@@ -59,8 +55,7 @@ import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.ServletRenderContext
-import org.grails.plugins.web.rest.render.SpringMessageConverters
-import org.grails.plugins.web.rest.render.WriterOutputStream
+import org.grails.plugins.web.rest.render.SpringResponseBody
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.web.converters.jackson.GrailsJsonMapperCustomizer
 import org.grails.web.converters.jackson.JsonProjection
@@ -231,6 +226,13 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         String selectedConfiguration = requireRegisteredConfiguration(context)
         // validation errors are written as the problem they make, as a problem is
         if (selectedConfiguration && !(object instanceof ProblemDetail || object instanceof Errors)) {
+            if (context instanceof ServletRenderContext) {
+                // written by Spring MVC, with the application's response body advice, as any other JSON respond writes
+                SpringResponseBody.write(object, (ServletRenderContext) context, new NamedJsonConfigurationConverter(
+                        namedJsonRenderer, selectedConfiguration, getEffectiveIncludes(context), getEffectiveExcludes(context)),
+                        MediaType.parseMediaType(resolveMimeType(context).name))
+                return
+            }
             try {
                 namedJsonRenderer.render(selectedConfiguration, object, context.writer,
                         getEffectiveIncludes(context), getEffectiveExcludes(context))
@@ -347,21 +349,27 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     /**
+     * Writes a value as Spring MVC writes the value a {@code @ResponseBody} handler method returns, with its response
+     * body handler and the application's {@code ResponseBodyAdvice} beans: with the first converter that writes it in
+     * JSON, or, where that is Spring's standard Jackson converter, with a converter that writes it with the Grails mapper
+     * derived from that converter's, in its types and with its prefix, and with the projection of the response.
+     *
      * @return {@code null} once the value is written, otherwise why the Spring converters could not write it
      */
     private String writeWithSpringConverter(Object object, MediaType mediaType, RenderContext context) {
-        if (mediaType.type == 'text' && mediaType.subtype == 'json') {
-            mediaType = MediaType.APPLICATION_JSON
+        if (!(context instanceof ServletRenderContext)) {
+            return 'Spring MVC writes a response to a servlet request'
         }
+        MediaType converterType = mediaType.type == 'text' && mediaType.subtype == 'json' ? MediaType.APPLICATION_JSON : mediaType
         Class<?> objectType = object?.getClass() ?: Object
         HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) resolveSpringHttpMessageConverters().find {
-            HttpMessageConverter<?> candidate -> candidate.canWrite(objectType, mediaType) &&
+            HttpMessageConverter<?> candidate -> candidate.canWrite(objectType, converterType) &&
                     candidate.getSupportedMediaTypes(objectType).any { MediaType supported ->
                         supported.subtype == 'json' || supported.subtype.endsWith('+json')
                     }
         }
         if (converter == null) {
-            return "no Spring message converter writes [${objectType.name}] as ${mediaType}"
+            return "no Spring message converter writes [${objectType.name}] as ${converterType}"
         }
         List<String> includes = getEffectiveIncludes(context)
         List<String> excludes = getEffectiveExcludes(context)
@@ -375,47 +383,18 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             // Only the Grails mapper applies a projection; the legacy converter applies it otherwise.
             return 'includes and excludes need the Grails JSON mapper, which the application\'s message converter replaces'
         }
-        // Jackson only writes UTF encodings. Use UTF-8 for the intermediate byte stream;
-        // the servlet writer still applies the configured response encoding.
-        Charset charset = SpringMessageConverters.writeCharset(converter, encoding)
-        MediaType contentType = new MediaType(mediaType, charset)
         if (grailsMapper) {
             JacksonJsonHttpMessageConverter source = (JacksonJsonHttpMessageConverter) converter
             JsonProjection projection = JsonProjection.of(object, includes, excludes)
-            writeWithGrailsMapper(object, grailsJsonMapperCustomizer.forGrails(source.mapper), projection,
-                    prefixOf(source, contentType), context.writer)
+            GrailsMapperJsonConverter grails = new GrailsMapperJsonConverter(source,
+                    grailsJsonMapperCustomizer.forGrails(source.mapper),
+                    prefixOf(source, new MediaType(converterType, StandardCharsets.UTF_8)), projection)
+            SpringResponseBody.write(object, (ServletRenderContext) context, grails, mediaType)
             projection?.reportUnapplied()
             return null
         }
-        WriterOutputStream.writeThrough(context.writer, charset) { OutputStream body ->
-            converter.write(object, contentType, outputMessage(body))
-        }
+        SpringResponseBody.write(object, (ServletRenderContext) context, converter, converterType)
         return null
-    }
-
-    /**
-     * Writes a value as Spring MVC's converter writes it, with the isolated Grails mapper: the
-     * converter's prefix is application configuration, and the mapper, which is derived from the converter's, writes the
-     * wrapper of a root value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value
-     * itself. One write writes the whole value, so that an object a serializer writes with {@code writePOJO} is found
-     * when it repeats one being written. The writer is left unflushed, so that a value that fails part-way leaves the
-     * response uncommitted.
-     */
-    private static void writeWithGrailsMapper(Object value, JsonMapper mapper, JsonProjection projection, String prefix,
-                                              Writer output) {
-        ObjectWriter writer = mapper.writer().without(StreamWriteFeature.AUTO_CLOSE_TARGET)
-                .without(StreamWriteFeature.FLUSH_PASSED_TO_STREAM)
-        if (projection != null) {
-            writer = writer.withAttribute(JsonProjection.ATTRIBUTE, projection)
-        }
-        try {
-            output.write(prefix)
-            writer.writeValue(output, value)
-        }
-        catch (JacksonException | IOException e) {
-            // the converter writes its prefix with its generator, which reports a failure of the writer as Jackson's
-            throw JacksonWriteFailures.reported(e)
-        }
     }
 
     /**

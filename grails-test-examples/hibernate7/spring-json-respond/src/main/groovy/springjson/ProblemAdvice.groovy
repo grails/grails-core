@@ -28,7 +28,7 @@ import org.springframework.http.server.ServerHttpResponse
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
 
-/** Advice for the problems the book controller responds with, as an application adds what all of its problems carry. */
+/** Advice for the bodies the book controller responds with, as an application adds what all of its responses carry. */
 @ControllerAdvice(assignableTypes = BookController)
 class ProblemAdvice implements ResponseBodyAdvice<Object> {
 
@@ -41,6 +41,7 @@ class ProblemAdvice implements ResponseBodyAdvice<Object> {
     Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
                            Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
                            ServerHttpResponse response) {
+        response.headers.set('X-Advised-By', ProblemAdvice.simpleName)
         if (body instanceof ProblemDetail) {
             ((ProblemDetail) body).setProperty('advisedBy', ProblemAdvice.simpleName)
         }

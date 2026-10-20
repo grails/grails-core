@@ -253,8 +253,11 @@ grails:
                 spring: true
 ----
 
-Grails selects the first configured MVC `HttpMessageConverter` that can write the
-response type and negotiated JSON media type and advertises a JSON media type for that class
+`respond` writes the value as Spring MVC writes the value a `@ResponseBody` handler method of the controller returns,
+with Spring MVC's response body handler, so the application's `ResponseBodyAdvice` beans apply to it as to a method of
+the controller, also where a named configuration writes it. Grails selects the first configured MVC
+`HttpMessageConverter` that can write the response type and negotiated JSON media type and advertises a JSON media
+type for that class
 (`application/json`, `text/json`, or a `+json` subtype). Generic `*/*` string and byte-array converters
 are skipped, so strings remain JSON strings and byte arrays use Jackson's base64 JSON representation.
 The same media-family rule applies to XML conversion; a generic text converter cannot strip the XML
@@ -262,7 +265,9 @@ string element. Where that converter is Spring's `JacksonJsonHttpMessageConverte
 after what the converter writes ahead of it, such as the prefix its `setPrefixJson(true)` or `setJsonPrefix(...)` adds
 against JSON hijacking, which is read when the converter first writes a response, so configure it as Spring MVC starts,
 as a `WebMvcConfigurer` does. A response `respond` writes with a named configuration, `render json:` and
-`grails.converters.JSON` are written without the converter, and so without its prefix.
+`grails.converters.JSON` are written without the converter, and so without its prefix. A response written this way is
+in UTF-8 and labelled `application/json`, or `text/json` for a client that asks for it, as Spring MVC writes JSON,
+whatever `grails.converters.encoding` says, which the legacy converter and `render json:` still write in.
 
 `grails-converters` depends on Spring Boot's `spring-boot-jackson` module, so Boot's `JsonMapper`, configured by the
 `spring.jackson.*` properties, is in every application context that has the converters. An application with
@@ -304,9 +309,6 @@ the selected type and media type. With `grails.web.rendering.json.spring` enable
 and for each of these reasons, that the legacy converter writes, so that a response the setting does not change is
 found, up to 100 of them. Explicit application and plugin `Renderer` beans continue to take precedence over the default
 renderer.
-
-Jackson conversion uses UTF-8 for intermediate bytes; the response writer applies
-`grails.converters.encoding`, so non-UTF response encodings do not corrupt the intermediate JSON.
 
 Where `respond` writes JSON through Spring MVC's converters, or with a named configuration, a value it fails to write
 fails as Spring MVC's Jackson converters fail, as a `ProblemDetail`, which Spring MVC writes itself, does: a type

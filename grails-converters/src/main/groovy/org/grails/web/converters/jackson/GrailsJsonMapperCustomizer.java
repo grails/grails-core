@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import groovy.lang.GString;
 
 import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.std.ToStringSerializer;
@@ -88,6 +89,19 @@ public final class GrailsJsonMapperCustomizer implements JsonMapperBuilderCustom
                         () -> this.grailsApplication == null ? null : this.grailsApplication.getMainContext())),
                 JsonProjection.module(),
                 new CircularReferenceModule(this::circularReferenceBehaviour)).build());
+    }
+
+    /**
+     * Prepares a writer of the Grails mapper for one write through a generator it did not create in that write, as
+     * Spring's Jackson converter creates its generator before it writes: the objects being written are kept for the
+     * whole write, so that a value a serializer writes with {@code writePOJO}, which the generator writes, is found
+     * where it repeats one being written, as in one write of the mapper.
+     *
+     * @param writer a writer of the Grails mapper, for one write
+     * @return the writer to write with
+     */
+    public static ObjectWriter forOneWrite(ObjectWriter writer) {
+        return Cycles.sharingInstances(writer);
     }
 
     /**

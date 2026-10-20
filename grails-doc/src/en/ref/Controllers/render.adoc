@@ -115,7 +115,7 @@ Parameters:
 * `model` (optional) - The model to use in rendering
 * `collection` (optional) - For rendering a template against each item in a collection
 * `contentType` (optional) - The contentType of the response
-* `encoding` (optional) - The encoding of the response. With `json`, it defaults to `grails.converters.encoding`, which `respond` and the JSON converter write JSON in, and which defaults to UTF-8
+* `encoding` (optional) - The encoding of the response. With `json`, it defaults to `grails.converters.encoding`, which the JSON converter, and `respond` without Spring JSON rendering, write JSON in, and which defaults to UTF-8
 * `plugin` (optional) - The plugin to look for the template in
 * `status` (optional) - The HTTP status code to use
 * `file` (optional) - The byte[], java.io.File, or inputStream you wish to send with the response. File responses are rendered with `Content-Disposition: attachment` by default. If a `Content-Disposition` header is already set on the response, Grails leaves it alone.

@@ -27,6 +27,7 @@ import java.util.stream.BaseStream;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.TokenStreamContext;
 import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.SerializationContext;
 
 import org.grails.web.converters.Converter.CircularReferenceBehaviour;
@@ -49,6 +50,19 @@ final class Cycles {
      * form the converter's {@code PATH} behaviour writes, where that behaviour may write it, or else {@code null}.
      */
     record Frame(int depth, String path) {
+    }
+
+    /**
+     * A writer whose writes share the objects being written across the serialization contexts of a write: that of the
+     * generator, which writes a value a serializer hands to {@code writePOJO}, and that of the write, where the
+     * generator was created apart from the write, as Spring's Jackson converter creates it. The map is the writer's,
+     * which each context reads where it has no map of its own.
+     *
+     * @param writer a writer for one write
+     * @return the writer, with a map of its own
+     */
+    static ObjectWriter sharingInstances(ObjectWriter writer) {
+        return writer.withAttribute(INSTANCES, new IdentityHashMap<Object, Frame>());
     }
 
     @SuppressWarnings("unchecked")

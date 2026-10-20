@@ -23,6 +23,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import groovy.json.JsonSlurper
 
+import jakarta.servlet.ServletOutputStream
+import jakarta.servlet.WriteListener
+
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.ResolvableType
@@ -37,6 +40,9 @@ import org.springframework.http.converter.HttpMessageConversionException
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.mock.http.MockHttpOutputMessage
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockServletContext
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import tools.jackson.core.JsonGenerator
 import tools.jackson.databind.SerializationContext
@@ -78,7 +84,6 @@ import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller
 
 import spock.lang.Specification
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1
 import static java.nio.charset.StandardCharsets.UTF_8
 
 class DefaultJsonRendererSpec extends Specification {
@@ -271,23 +276,7 @@ class DefaultJsonRendererSpec extends Specification {
         def source = new JacksonJsonHttpMessageConverter()
         source.setPrefixJson(true)
         def renderer = grailsMapperRenderer(source)
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
-        def failing = new Writer() {
-            @Override
-            void write(char[] buffer, int offset, int length) throws IOException {
-                throw new IOException('Broken pipe')
-            }
-
-            @Override
-            void flush() { }
-
-            @Override
-            void close() { }
-        }
-        def context = new ServletRenderContext(webRequest) {
-            @Override
-            Writer getWriter() { failing }
-        }
+        def context = new ServletRenderContext(brokenPipeRequest())
 
         when:
         renderer.render(new ProjectionBody(title: 'Grails', hidden: true), context)
@@ -295,7 +284,7 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         HttpMessageNotWritableException e = thrown()
         e.message == 'Could not write JSON: Broken pipe'
-        e.cause instanceof IOException
+        e.mostSpecificCause instanceof IOException
     }
 
     void 'a type definition error of the Grails mapper is reported as Spring MVC reports it, leaving the response uncommitted'() {
@@ -313,7 +302,7 @@ class DefaultJsonRendererSpec extends Specification {
         !webRequest.response.committed
     }
 
-    void 'the Grails mapper writes the configured encoding of the response, as Spring MVC writes it'() {
+    void 'the Grails mapper writes JSON in UTF-8, as Spring MVC writes it, whatever the encoding of the converters'() {
         given:
         def renderer = grailsMapperRenderer(new JacksonJsonHttpMessageConverter())
         renderer.encoding = 'ISO-8859-1'
@@ -323,12 +312,12 @@ class DefaultJsonRendererSpec extends Specification {
         renderer.render(new ProjectionBody(title: 'caf\u00e9'), new ServletRenderContext(webRequest))
 
         then:
-        webRequest.response.contentType == 'application/json;charset=ISO-8859-1'
-        webRequest.response.contentAsByteArray == '{"hidden":false,"title":"caf\u00e9"}'.getBytes(ISO_8859_1)
+        webRequest.response.contentType == 'application/json'
+        webRequest.response.contentAsByteArray == '{"hidden":false,"title":"caf\u00e9"}'.getBytes(UTF_8)
     }
 
-    void 'a Jackson 2 converter writes the configured encoding of the response, as Spring MVC writes it'() {
-        given: 'a converter of Jackson 2, which writes UTF-8 for any encoding Jackson has no writer of'
+    void 'a Jackson 2 converter writes JSON in UTF-8, as Spring MVC writes it, whatever the encoding of the converters'() {
+        given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = true
         renderer.springHttpMessageConvertersSupplier = { [new MappingJackson2HttpMessageConverter()] }
@@ -339,8 +328,8 @@ class DefaultJsonRendererSpec extends Specification {
         renderer.render(new AccentBody(title: 'caf\u00e9'), new ServletRenderContext(webRequest))
 
         then:
-        webRequest.response.contentType == 'application/json;charset=ISO-8859-1'
-        webRequest.response.contentAsByteArray == '{"title":"caf\u00e9"}'.getBytes(ISO_8859_1)
+        webRequest.response.contentType == 'application/json'
+        webRequest.response.contentAsByteArray == '{"title":"caf\u00e9"}'.getBytes(UTF_8)
     }
 
     void 'a projection a serializer of its own bypasses on the Spring path is reported'() {
@@ -750,7 +739,7 @@ class DefaultJsonRendererSpec extends Specification {
         [65, 66] as byte[]               | '"QUI="'
     }
 
-    void 'Jackson bytes decode correctly with a non UTF response encoding'() {
+    void 'Jackson bytes decode correctly with a non UTF encoding of the converters'() {
         given:
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.useSpringJson = true
@@ -761,9 +750,9 @@ class DefaultJsonRendererSpec extends Specification {
         when:
         renderer.render([title: 'café'], new ServletRenderContext(webRequest))
 
-        then:
+        then: 'in UTF-8, which the response says it is in'
         webRequest.response.contentAsString == '{"title":"café"}'
-        webRequest.response.characterEncoding == 'ISO-8859-1'
+        webRequest.response.characterEncoding == 'UTF-8'
     }
 
     void 'repeated Grails conversion keeps each source converter mapper configuration'() {
@@ -801,8 +790,8 @@ class DefaultJsonRendererSpec extends Specification {
 
         then:
         1 * first.canWrite(LinkedHashMap, MediaType.APPLICATION_JSON) >> false
-        1 * selected.canWrite(LinkedHashMap, MediaType.APPLICATION_JSON) >> true
-        1 * selected.write(_, new MediaType(MediaType.APPLICATION_JSON, UTF_8), _) >> { arguments ->
+        (1.._) * selected.canWrite(LinkedHashMap, MediaType.APPLICATION_JSON) >> true
+        1 * selected.write(_, MediaType.APPLICATION_JSON, _) >> { arguments ->
             arguments[2].body.write('{"title":"MVC"}'.bytes)
         }
         webRequest.response.contentAsString == '{"title":"MVC"}'
@@ -871,12 +860,8 @@ class DefaultJsonRendererSpec extends Specification {
         registry.register('plain') { }
         def renderer = new DefaultJsonRenderer<Object>(Object)
         renderer.namedJsonRenderer = new JacksonNamedJsonRenderer(registry)
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
-        Writer output = failingWriter ? brokenPipe() : null
-        def context = new ServletRenderContext(webRequest, [jsonConfiguration: 'plain']) {
-            @Override
-            Writer getWriter() { output ?: super.getWriter() }
-        }
+        def webRequest = failingWriter ? brokenPipeRequest() : GrailsWebMockUtil.bindMockWebRequest()
+        def context = new ServletRenderContext(webRequest, [jsonConfiguration: 'plain'])
 
         when:
         renderer.render(value, context)
@@ -892,19 +877,34 @@ class DefaultJsonRendererSpec extends Specification {
         'a type definition error' | new ClashingBody(id: 5, inner: new ClashingInner(id: 1)) | false         || HttpMessageConversionException  | 'Type definition error: '
     }
 
-    private static Writer brokenPipe() {
-        new Writer() {
+    /** A request whose response fails to take what is written to it, as a client that went away. */
+    private static GrailsWebRequest brokenPipeRequest() {
+        def response = new MockHttpServletResponse() {
             @Override
-            void write(char[] buffer, int offset, int length) throws IOException {
-                throw new IOException('Broken pipe')
+            ServletOutputStream getOutputStream() {
+                new ServletOutputStream() {
+                    @Override
+                    boolean isReady() {
+                        true
+                    }
+
+                    @Override
+                    void setWriteListener(WriteListener listener) {
+                    }
+
+                    @Override
+                    void write(int b) throws IOException {
+                        throw new IOException('Broken pipe')
+                    }
+
+                    @Override
+                    void write(byte[] bytes, int offset, int length) throws IOException {
+                        throw new IOException('Broken pipe')
+                    }
+                }
             }
-
-            @Override
-            void flush() { }
-
-            @Override
-            void close() { }
         }
+        GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), new MockHttpServletRequest(), response)
     }
 
     void 'respond selects a registered named JSON configuration'() {
@@ -1039,8 +1039,8 @@ class DefaultJsonRendererSpec extends Specification {
         }
     }
 
-    void 'a non UTF-8 encoding round-trips through the Spring converter'() {
-        given: "a renderer configured with a non UTF-8 encoding"
+    void 'an application converter is given the type Spring MVC selects, whatever the encoding of the converters'() {
+        given:
         def converter = Mock(HttpMessageConverter) {
             getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON]
         }
@@ -1053,17 +1053,12 @@ class DefaultJsonRendererSpec extends Specification {
         when:
         renderer.render([title: 'Cafe\u0301'], new ServletRenderContext(webRequest))
 
-        then: "the configured charset is handed to the converter"
-        1 * converter.canWrite(_, MediaType.APPLICATION_JSON) >> true
-        1 * converter.write(_, { MediaType mediaType ->
-            mediaType.charset == Charset.forName('ISO-8859-1')
-        }, _) >> { arguments ->
-            // a converter honours the charset on the media type it is given
-            arguments[2].body.write('{"title":"caf\u00e9"}'.getBytes(arguments[1].charset))
+        then:
+        (1.._) * converter.canWrite(_, MediaType.APPLICATION_JSON) >> true
+        1 * converter.write(_, MediaType.APPLICATION_JSON, _) >> { arguments ->
+            arguments[2].body.write('{"title":"caf\u00e9"}'.getBytes(UTF_8))
         }
-
-        and: "the bytes it produced decode back to the same characters"
-        webRequest.response.contentAsString == '{"title":"caf\u00e9"}'
+        webRequest.response.contentAsByteArray == '{"title":"caf\u00e9"}'.getBytes(UTF_8)
     }
 
     void 'the problem body carries a resolved message, not a raw template'() {

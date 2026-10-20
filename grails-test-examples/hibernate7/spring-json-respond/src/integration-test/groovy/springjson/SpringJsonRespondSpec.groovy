@@ -58,9 +58,10 @@ class SpringJsonRespondSpec extends Specification implements HttpClientSupport {
         when:
         def response = http("/book/show/$bookId")
 
-        then:
+        then: 'as Spring MVC writes a response body, with the advice of the application'
         response.assertStatus(200)
-        response.contentType.startsWith('application/json')
+        response.contentType == 'application/json'
+        response.headerValue('X-Advised-By') == 'ProblemAdvice'
         response.json() == [id: bookId, title: 'The Definitive Guide', isbn: '978-1', author: [id: authorId]]
     }
 

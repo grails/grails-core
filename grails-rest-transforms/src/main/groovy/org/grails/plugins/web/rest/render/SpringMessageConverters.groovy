@@ -26,13 +26,18 @@ import groovy.transform.CompileStatic
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.core.MethodParameter
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.web.accept.ContentNegotiationManager
+import org.springframework.web.method.ControllerAdviceBean
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler
 import org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor
+import org.springframework.web.servlet.mvc.method.annotation.JsonViewResponseBodyAdvice
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
 
 /**
  * Resolves the message converters Spring MVC ends up configured with at response time.
@@ -45,7 +50,10 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @since 9.0
  */
 @CompileStatic
-class SpringMessageConverters {
+class SpringMessageConverters implements ApplicationContextAware {
+
+    /** The response body advice Spring MVC adds where Jackson is present, as its configuration adds it to the adapter. */
+    static final List<Object> DEFAULT_RESPONSE_BODY_ADVICE = List.<Object>of(new JsonViewResponseBodyAdvice())
 
     /** Spring's base of the converters of Jackson 2, named so that this class does not depend on it. */
     private static final String JACKSON_2_CONVERTER = 'org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter'
@@ -85,6 +93,41 @@ class SpringMessageConverters {
     private volatile List<HttpMessageConverter<?>> converters = List.of()
 
     private volatile HttpEntityMethodProcessor sliceEntityHandler
+
+    private ApplicationContext applicationContext
+
+    private volatile List<Object> responseBodyAdvice
+
+    @Override
+    void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext
+    }
+
+    /**
+     * The advice Spring MVC's handler adapter writes the body of a response with: the application's
+     * {@code @ControllerAdvice} beans that are {@code ResponseBodyAdvice}, found as the adapter finds them, which apply to
+     * the controllers they are for, ahead of the advice Spring MVC adds where Jackson is present.
+     *
+     * @return the advice, found when a response first needs it
+     */
+    List<Object> getResponseBodyAdvice() {
+        List<Object> advice = responseBodyAdvice
+        if (advice == null) {
+            advice = []
+            if (applicationContext != null) {
+                for (ControllerAdviceBean adviceBean : ControllerAdviceBean.findAnnotatedBeans(applicationContext)) {
+                    Class<?> beanType = adviceBean.beanType
+                    if (beanType != null && ResponseBodyAdvice.isAssignableFrom(beanType)) {
+                        advice.add(adviceBean)
+                    }
+                }
+            }
+            advice.addAll(DEFAULT_RESPONSE_BODY_ADVICE)
+            advice = Collections.unmodifiableList(advice)
+            responseBodyAdvice = advice
+        }
+        return advice
+    }
 
     void setConverters(List<HttpMessageConverter<?>> converters) {
         // Lightweight web test slices have no MVC handler adapter. They supply their converters
