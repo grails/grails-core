@@ -44,11 +44,10 @@ public class CollectionKeyColumnUpdater {
         long unidirectionalCount = property.getHibernateOwner()
                 .getPersistentPropertiesToBind()
                 .stream()
-                .filter(HibernateToManyProperty.class::isInstance)
+                .filter(HibernateToManyProperty::isBoundAsCollection)
                 .map(HibernateToManyProperty.class::cast)
                 .filter(p -> !p.isBidirectional())
-                .filter(p -> p.getCollection() != null &&
-                        Objects.equals(p.getCollection().getCollectionTable(), collectionTable))
+                .filter(p -> Objects.equals(p.getCollection().getCollectionTable(), collectionTable))
                 .count();
 
         // Collections of basic values or enums (HibernateToManyCollectionProperty) always keep an updatable key: they
@@ -56,7 +55,8 @@ public class CollectionKeyColumnUpdater {
         // For entity collections (HibernateToManyEntityProperty) the key is non-updatable only when the owner has
         // two or more unidirectional to-many properties that share this collection's join table, the rule for issue
         // 10811. Unidirectional collections with join tables of their own keep an updatable key, as they have no
-        // second key column to leave null.
+        // second key column to leave null. A to-many that is not bound as a collection (a serializable or user type)
+        // has no join table and no Hibernate collection, so it is neither counted nor asked for one.
         key.setUpdateable(property instanceof HibernateToManyCollectionProperty || unidirectionalCount <= 1);
     }
 
