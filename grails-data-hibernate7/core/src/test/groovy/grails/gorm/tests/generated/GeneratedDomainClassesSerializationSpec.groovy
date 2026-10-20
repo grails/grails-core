@@ -120,14 +120,14 @@ class GeneratedDomainClassesSerializationSpec extends Specification {
 
         GdcSerAuthor.withNewSession { Session s ->
             Object proxy = s.getReference(GdcSerAuthor, authorId)
-            r.proxy = [proxy instanceof HibernateProxy, proxy.getClass().superclass == GdcSerAuthor,
+            r.proxy = [proxy instanceof HibernateProxy, GdcSerAuthor.isAssignableFrom(proxy.getClass()),
                        ProxyInspector.persistentClass(proxy) == GdcSerAuthor,
                        ProxyInspector.entityName(proxy) == GdcSerAuthor.name,
                        s.getEntityName(proxy) == GdcSerAuthor.name, Hibernate.getClass(proxy) == GdcSerAuthor,
                        Hibernate.isInitialized(proxy)]
             try {
                 Object proxyCopy = deserialize(serialize(proxy))
-                r.proxySerialization = [proxyCopy instanceof HibernateProxy, proxyCopy.getClass().superclass == GdcSerAuthor,
+                r.proxySerialization = [proxyCopy instanceof HibernateProxy, GdcSerAuthor.isAssignableFrom(proxyCopy.getClass()),
                                         proxyCopy.name]
             } catch (Exception e) {
                 r.proxySerialization = e.class.name
@@ -236,11 +236,11 @@ class GeneratedDomainClassesSerializationSpec extends Specification {
         when:
         Map generated = results()
 
-        then: 'superclass, persistent class, entity name and Hibernate.getClass are the real ones'
+        then: 'the proxy extends the real class (through the proxy base class Hibernate derives per entity), and persistent class, entity name and Hibernate.getClass are the real ones, as in binder mode'
         generated.proxy == [true, true, true, true, true, true, true]
 
         and: 'a serialized proxy deserializes as a plain instance of the real class with its state, as it did with classic binding'
-        generated.proxySerialization == [false, false, 'reattached']
+        generated.proxySerialization == [false, true, 'reattached']
     }
 
     def "lookups by entity name, class name and class give the real class"() {

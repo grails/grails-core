@@ -341,6 +341,18 @@ class GrailsDomainGeneratorDifferentialSpec extends HibernateGormDatastoreSpec {
                             mismatches.addAll(compareType("${entity.name}.${property.name}".toString(), property, generator, bound, explicitTypes))
                             continue
                         }
+                        if (property.compositeUserType != null) {
+                            // a composite user type is a component of one column per attribute, each compared like a column
+                            if (bound == null || !isA(bound.value, 'Component')) {
+                                skipped['composite user type with no bound component']++
+                            } else {
+                                compared++
+                                explicitTypes['composite user type']++
+                                mismatches.addAll(compareColumnsByName("${entity.name}.${property.name}".toString(),
+                                        generator.compositeUserTypeFacets(property).attributes()*.column(), bound, known, []))
+                            }
+                            continue
+                        }
                         if (bound == null || columnsOf(bound).size() != 1) {
                             skipped['no single bound column']++
                             continue
@@ -2220,6 +2232,14 @@ class GrailsDomainGeneratorDifferentialSpec extends HibernateGormDatastoreSpec {
                             sqlType  : leaf.column()?.sqlType(),
                             toOne    : leaf.toOne(),
                             validated: !generator.validationAnnotations(leaf.property).isEmpty(),
+                    ]
+                }
+            } else if (property.compositeUserType != null) {
+                // a composite user type is bound as a component: one leaf per attribute, with the column the generator gives it
+                generator.compositeUserTypeFacets(property).attributes().each { CompositeAttributeFacets attribute ->
+                    found["${property.name}.${attribute.name()}".toString()] = [
+                            sqlType  : attribute.column().sqlType(),
+                            validated: !generator.validationAnnotations(property).isEmpty(),
                     ]
                 }
             } else if (property instanceof HibernateBasicProperty) {
