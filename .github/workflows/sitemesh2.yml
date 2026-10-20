@@ -34,12 +34,8 @@ on:
       - 'grails-dependencies/**'
       - '.github/workflows/sitemesh2.yml'
   pull_request:
-    paths:
-      - 'grails-gsp/**'
-      - 'grails-test-suite-uber/**'
-      - 'grails-test-examples/**'
-      - 'grails-dependencies/**'
-      - '.github/workflows/sitemesh2.yml'
+    # CHANGEME FOR ACCEPTANCE: PR triggers disabled on this stacked branch; revert before merge
+    branches: ['CHANGEME-FOR-ACCEPTANCE']
 # Queue jobs - cancel in-progress PR runs when new commits pushed, but allow branch builds to complete
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
