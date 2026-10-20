@@ -88,7 +88,9 @@ class ActionExceptionHandlerResolver implements HandlerExceptionResolver, Ordere
     private static HandlerMethod action(HttpServletRequest request, GrailsControllerUrlMappingInfo info) {
         Object controller = request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
         String actionName = GrailsWebRequest.lookup(request)?.actionName ?: info.actionName ?: info.controllerClass.defaultAction
-        Method method = controller != null && actionName ? ReflectionUtils.findMethod(controller.getClass(), actionName) : null
+        // the action as its URL names it, such as show-book with the hyphenated URL converter, to the name of its method
+        Method method = controller != null && actionName ?
+                ReflectionUtils.findMethod(controller.getClass(), info.controllerClass.actionUriToViewName(actionName)) : null
         return method != null ? new HandlerMethod(controller, method) : null
     }
 

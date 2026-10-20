@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.support.GenericWebApplicationContext
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver
 
+import grails.web.Action
+import grails.web.HyphenatedUrlConverter
 import grails.web.mapping.UrlMappingInfo
 import org.grails.core.DefaultGrailsControllerClass
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -114,6 +116,23 @@ class ActionExceptionHandlerResolverSpec extends Specification {
         resolver.resolveException(request, response, new Object(), new IllegalStateException('taken')) == null
     }
 
+    void 'the advice handles an exception of an action named in a URL with the hyphenated URL converter'() {
+        given:
+        def resolver = resolver(true)
+        def controllerClass = new DefaultGrailsControllerClass(HandledController)
+        controllerClass.registerUrlConverter(new HyphenatedUrlConverter())
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, new HandledController())
+        def info = new GrailsControllerUrlMappingInfo(controllerClass, Stub(UrlMappingInfo) {
+            getActionName() >> 'show-book'
+        })
+
+        when:
+        resolver.resolveException(request, response, info, new IllegalStateException('taken'))
+
+        then:
+        response.status == 409
+    }
+
     private ActionExceptionHandlerResolver resolver(Boolean setting) {
         context = new GenericWebApplicationContext()
         if (setting != null) {
@@ -143,6 +162,10 @@ class ActionExceptionHandlerResolverSpec extends Specification {
 class HandledController {
 
     def index() {
+    }
+
+    @Action
+    def showBook() {
     }
 
     @ExceptionHandler(UnsupportedOperationException)
