@@ -89,6 +89,9 @@ class GrailsContextSchemaSpec extends Specification {
 
         then: 'the element was parsed, which registers the annotation config processors'
         context.containsBeanDefinition(AnnotationConfigUtils.AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)
+
+        cleanup:
+        context?.close()
     }
 
     /**
