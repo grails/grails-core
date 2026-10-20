@@ -159,7 +159,10 @@ dependencies {
 
 Grails 9 defaults this setting to `false`: adding the Jackson XML dependency alone does not bypass
 registered XML marshallers. Enabling it explicitly selects Spring for ordinary beans, even when a
-legacy marshaller is registered. `null`, domain objects, collections, arrays, maps, validation errors, values
+legacy marshaller is registered. `respond` writes such a bean as Spring MVC writes the value a `@ResponseBody` handler
+method of the controller returns, with Spring MVC's response body handler, so the application's `ResponseBodyAdvice`
+beans apply to it as to a method of the controller, in UTF-8 whatever `grails.converters.encoding` says, as for JSON.
+`null`, domain objects, collections, arrays, maps, validation errors, values
 `respond` is given `includes` or `excludes` for, and the values of a renderer with a legacy `namedConfiguration`
 continue to use the Grails XML converter; migrate these to DTOs or explicit application renderers
 before legacy XML conversion is removed in Grails 11.

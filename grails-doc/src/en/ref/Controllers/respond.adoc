@@ -50,7 +50,10 @@ accepts one of the formats.
 With `grails.web.rendering.json.spring: true`, and with a `jsonConfiguration`, `respond` writes JSON as Spring MVC writes
 the value a `@ResponseBody` handler method of the controller returns: with Spring MVC's response body handler, so the
 application's `ResponseBodyAdvice` beans apply to it as to a method of the controller, in UTF-8 and as
-`application/json`, or `text/json` for a client that asks for it.
+`application/json`, or `text/json` for a client that asks for it. With `grails.web.rendering.xml.spring: true`, `respond`
+writes an ordinary bean in XML the same way, with the Spring MVC converter that writes it, in UTF-8; the values the
+Grails XML converter still writes, such as domain classes, collections and validation errors, are not given to the
+advice.
 
 If a view is picked for rendering then a model will automatically be calculated to pass to the view.
 

@@ -98,11 +98,11 @@ class SpringXmlRendererSpec extends Specification {
         when:
         renderer.render(new XmlGreeting(message: 'hello'), context)
 
-        then:
+        then: 'and Spring MVC writes with it, as it writes the value of a handler method'
         1 * first.canWrite(XmlGreeting, MediaType.APPLICATION_XML) >> false
-        1 * second.canWrite(XmlGreeting, MediaType.APPLICATION_XML) >> true
+        2 * second.canWrite(XmlGreeting, MediaType.APPLICATION_XML) >> true
         1 * second.getSupportedMediaTypes(XmlGreeting) >> [MediaType.APPLICATION_XML]
-        1 * second.write(_, new MediaType(MediaType.APPLICATION_XML, UTF_8), _)
+        1 * second.write(_, MediaType.APPLICATION_XML, _)
         0 * _
     }
 
@@ -183,7 +183,7 @@ class SpringXmlRendererSpec extends Specification {
         new XmlSlurper().parseText(response.contentAsString).entry.find { it.@key == 'legacy' }.text() == 'hello'
     }
 
-    void 'Jackson XML bytes round trip through a non UTF response encoding'() {
+    void 'XML a Spring converter writes is UTF-8, as Spring MVC writes it, whatever grails.converters.encoding says'() {
         given:
         def renderer = new DefaultXmlRenderer<XmlGreeting>(XmlGreeting)
         renderer.useSpringXml = true
@@ -196,8 +196,8 @@ class SpringXmlRendererSpec extends Specification {
         renderer.render(new XmlGreeting(message: 'café'), new FixedMimeServletRenderContext(request, MimeType.XML))
 
         then:
-        response.characterEncoding == 'ISO-8859-1'
-        new XmlSlurper().parseText(response.contentAsString).message.text() == 'café'
+        response.contentType == MediaType.APPLICATION_XML_VALUE
+        new XmlSlurper().parseText(new String(response.contentAsByteArray, UTF_8)).message.text() == 'café'
     }
 
     void 'the excludes of an XmlRenderer keep a response on the legacy converter with Spring XML enabled'() {

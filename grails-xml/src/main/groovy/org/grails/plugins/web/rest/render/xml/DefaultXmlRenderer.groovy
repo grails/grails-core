@@ -18,7 +18,6 @@
  */
 package org.grails.plugins.web.rest.render.xml
 
-import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
 
@@ -30,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageConverter
@@ -49,7 +46,7 @@ import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.SpringMessageConverters
-import org.grails.plugins.web.rest.render.WriterOutputStream
+import org.grails.plugins.web.rest.render.SpringResponseBody
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 
 /**
@@ -222,8 +219,9 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         }
         HttpMessageConverter<Object> springConverter = findSpringConverter(object, context)
         if (springConverter != null) {
-            renderWithSpringConverter(springConverter, object,
-                    MediaType.parseMediaType((context.acceptMimeType ?: MimeType.XML).name), context)
+            // as Spring MVC writes the value a @ResponseBody handler method returns, with the application's advice
+            SpringResponseBody.write(object, (ServletRenderContext) context, springConverter,
+                    MediaType.parseMediaType((context.acceptMimeType ?: MimeType.XML).name))
             return
         }
 
@@ -254,7 +252,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
 
     private HttpMessageConverter<Object> findSpringConverter(Object object, RenderContext context) {
         // the legacy converter applies includes, also empty ones, which include none of the properties, and excludes
-        if (!useSpringXml || namedConfiguration || getEffectiveIncludes(context) != null || getEffectiveExcludes(context)) {
+        if (!useSpringXml || !(context instanceof ServletRenderContext) || namedConfiguration ||
+                getEffectiveIncludes(context) != null || getEffectiveExcludes(context)) {
             return null
         }
         List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()
@@ -271,29 +270,6 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
                     converter.getSupportedMediaTypes(object.getClass()).any { MediaType supported ->
                         supported.subtype == 'xml' || supported.subtype.endsWith('+xml')
                     }
-        }
-    }
-
-    private void renderWithSpringConverter(
-            HttpMessageConverter<Object> converter, Object object, MediaType mediaType, RenderContext context) {
-        // Jackson only writes UTF encodings; the servlet writer applies the response encoding.
-        Charset charset = SpringMessageConverters.writeCharset(converter, encoding)
-        MediaType contentType = new MediaType(mediaType, charset)
-        WriterOutputStream.writeThrough(context.writer, charset) { OutputStream body ->
-            HttpOutputMessage message = new HttpOutputMessage() {
-                private final HttpHeaders headers = new HttpHeaders()
-
-                @Override
-                OutputStream getBody() {
-                    return body
-                }
-
-                @Override
-                HttpHeaders getHeaders() {
-                    return headers
-                }
-            }
-            converter.write(object, contentType, message)
         }
     }
 
