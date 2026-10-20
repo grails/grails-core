@@ -26,8 +26,12 @@ import groovy.transform.CompileStatic
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.MethodParameter
 import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.web.accept.ContentNegotiationManager
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler
+import org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 
 /**
@@ -73,12 +77,20 @@ class SpringMessageConverters {
     @Qualifier('requestMappingHandlerAdapter')
     ObjectProvider<RequestMappingHandlerAdapter> handlerAdapter
 
+    /** The manager a slice without the handler adapter negotiates with, which a web unit test registers. */
+    @Autowired(required = false)
+    @Qualifier('mvcContentNegotiationManager')
+    ObjectProvider<ContentNegotiationManager> contentNegotiationManager
+
     private volatile List<HttpMessageConverter<?>> converters = List.of()
+
+    private volatile HttpEntityMethodProcessor sliceEntityHandler
 
     void setConverters(List<HttpMessageConverter<?>> converters) {
         // Lightweight web test slices have no MVC handler adapter. They supply their converters
         // here; production always uses the handler adapter's final list when it is available.
         this.converters = Collections.unmodifiableList(converters)
+        this.sliceEntityHandler = null
     }
 
     /**
@@ -88,5 +100,40 @@ class SpringMessageConverters {
     List<HttpMessageConverter<?>> getConverters() {
         RequestMappingHandlerAdapter adapter = handlerAdapter?.getIfAvailable()
         return adapter == null ? converters : Collections.unmodifiableList(adapter.messageConverters)
+    }
+
+    /**
+     * The handler Spring MVC writes a {@code ResponseEntity} a handler method returns with: the first of the handler
+     * adapter's return value handlers that supports the return type, as the adapter selects it, which is built with
+     * MVC's converters, content negotiation manager, {@code ResponseBodyAdvice} and {@code ErrorResponse.Interceptor}
+     * beans. A slice without the adapter gets one built with its converters and content negotiation manager.
+     *
+     * @param returnType the return type the value is written as
+     * @return the handler, or {@code null} where there are no converters
+     */
+    HandlerMethodReturnValueHandler entityHandler(MethodParameter returnType) {
+        List<HandlerMethodReturnValueHandler> handlers = handlerAdapter?.getIfAvailable()?.returnValueHandlers
+        if (handlers != null) {
+            return handlers.find { HandlerMethodReturnValueHandler handler -> handler.supportsReturnType(returnType) }
+        }
+        HttpEntityMethodProcessor handler = sliceEntityHandler
+        if (handler == null && converters) {
+            handler = entityHandler(converters, contentNegotiationManager?.getIfAvailable() ?: new ContentNegotiationManager())
+            sliceEntityHandler = handler
+        }
+        return handler
+    }
+
+    /**
+     * The handler Spring MVC writes a {@code ResponseEntity} with, built as its handler adapter builds it with the given
+     * converters and content negotiation manager, without advice.
+     *
+     * @param converters the converters
+     * @param contentNegotiationManager the content negotiation manager
+     * @return the handler
+     */
+    static HttpEntityMethodProcessor entityHandler(List<HttpMessageConverter<?>> converters,
+                                                   ContentNegotiationManager contentNegotiationManager) {
+        return new HttpEntityMethodProcessor(converters, contentNegotiationManager)
     }
 }

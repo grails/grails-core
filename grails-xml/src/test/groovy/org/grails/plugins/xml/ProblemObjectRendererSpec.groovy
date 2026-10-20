@@ -30,8 +30,8 @@ import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 /**
- * A renderer the application registers for Object stands in for the default renderer of its format, so it renders a
- * problem only where respond writes the problem in that format.
+ * A renderer the application registers for Object stands in for the default renderer of its format, which does not
+ * write a problem: Spring MVC writes it, in the type its content negotiation selects.
  */
 class ProblemObjectRendererSpec extends Specification implements ControllerUnitTest<ProblemObjectRendererController> {
 
@@ -44,7 +44,7 @@ class ProblemObjectRendererSpec extends Specification implements ControllerUnitT
         }
     }
 
-    void 'a client that asks for #accept is answered with #type, rendered by the renderer for Object: #rendered'() {
+    void 'a client that asks for #accept is answered with #type, which the renderer for Object does not render'() {
         given:
         request.addHeader('Accept', accept)
 
@@ -54,12 +54,12 @@ class ProblemObjectRendererSpec extends Specification implements ControllerUnitT
         then:
         response.status == 409
         response.contentType.startsWith(type)
-        response.contentAsString.contains('<object/>') == rendered
+        !response.contentAsString.contains('<object/>')
 
         where:
-        accept                    || type                       | rendered
-        'application/xml'         || 'application/problem+json' | false
-        'application/problem+xml' || 'application/xml'          | true
+        accept                    || type
+        'application/xml'         || 'application/problem+json'
+        'application/problem+xml' || 'application/problem+xml'
     }
 }
 

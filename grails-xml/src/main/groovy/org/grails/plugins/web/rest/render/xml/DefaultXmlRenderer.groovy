@@ -53,6 +53,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
+import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
@@ -132,9 +133,13 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     private List<HttpMessageConverter<?>> resolveSpringHttpMessageConverters() {
-        List<HttpMessageConverter<?>> supplied = springHttpMessageConvertersSupplier?.get() ?:
+        return configuredSpringHttpMessageConverters() ?: []
+    }
+
+    /** The converters this renderer is given, or else Spring MVC's, or {@code null} where it has neither. */
+    private List<HttpMessageConverter<?>> configuredSpringHttpMessageConverters() {
+        return springHttpMessageConvertersSupplier != null ? springHttpMessageConvertersSupplier.get() :
                 springMessageConvertersProvider?.getIfAvailable()?.converters
-        return supplied ?: []
     }
 
     String namedConfiguration
@@ -188,8 +193,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * Writes a problem as Spring MVC does, as {@code application/problem+xml} through its message converters, whatever
-     * {@code grails.web.rendering.xml.spring} is set to. Where none can write it, as without
+     * Writes a problem as Spring MVC writes one a handler method returns, as {@code application/problem+xml}, whatever
+     * {@code grails.web.rendering.xml.spring} is set to. Where no message converter writes it, as without
      * {@code jackson-dataformat-xml}, it is written in the format Spring's converter writes, with the extension members
      * written by the mapper of Spring's JSON converter with Spring's mix-in for problems, as Spring's own XML
      * converter writes them: without the Grails serializers of the problem written in JSON, so that validation errors
@@ -199,24 +204,17 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      * {@code StreamWriteConstraints} allow.
      */
     private void renderProblem(ProblemDetail problem, RenderContext context) {
+        if (context instanceof ServletRenderContext && ProblemDetailResponse.write(problem, (ServletRenderContext) context,
+                ProblemDetailResponse.requestedStatus(context), [MediaType.APPLICATION_PROBLEM_XML],
+                configuredSpringHttpMessageConverters())) {
+            return
+        }
         ProblemDetailResponse.prepare(problem, context)
         MediaType problemXml = MediaType.APPLICATION_PROBLEM_XML
         context.setContentType(GrailsWebUtil.getContentType(problemXml.toString(), encoding))
         List<HttpMessageConverter<?>> converters = resolveSpringHttpMessageConverters()
-        // asked about the class of the problem, as Spring MVC asks
-        Class<?> problemType = problem.getClass()
-        HttpMessageConverter<Object> converter = (HttpMessageConverter<Object>) converters.find {
-            HttpMessageConverter<?> candidate -> candidate.canWrite(problemType, problemXml) &&
-                    candidate.getSupportedMediaTypes(problemType).any { MediaType supported ->
-                        supported.subtype == 'xml' || supported.subtype.endsWith('+xml')
-                    }
-        }
-        if (converter != null) {
-            renderWithSpringConverter(converter, problem, problemXml, context)
-            return
-        }
         try {
-            ProblemXml.write(problem, context.writer, problemMapper(converters, problemType))
+            ProblemXml.write(problem, context.writer, problemMapper(converters, problem.getClass()))
         }
         catch (JacksonException | XMLStreamException | IOException e) {
             // as Spring's converter reports it, also a failure of the response's writer while it writes a raw value

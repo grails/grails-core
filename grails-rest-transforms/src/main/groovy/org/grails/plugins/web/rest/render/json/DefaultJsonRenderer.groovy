@@ -57,6 +57,7 @@ import grails.web.mime.MimeType
 import grails.web.render.NamedJsonRenderer
 import org.grails.plugins.web.rest.render.JacksonWriteFailures
 import org.grails.plugins.web.rest.render.ProblemDetailResponse
+import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.SpringMessageConverters
 import org.grails.plugins.web.rest.render.WriterOutputStream
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
@@ -227,34 +228,28 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             return
         }
         String springFallbackReason = null
-        if (object instanceof ProblemDetail || canUseSpringConverter(context)) {
-            Object springValue = object
-            if (object instanceof Errors) {
-                springValue = (validationProblemDetailFactory ?: DEFAULT_PROBLEM_DETAIL_FACTORY)
-                        .create((Errors) object, errorsHttpStatus)
-            }
-            MediaType mediaType = springValue instanceof ProblemDetail ?
-                    MediaType.parseMediaType(PROBLEM_JSON.name) :
-                    MediaType.parseMediaType(resolveMimeType(context).name)
-            // Set the content type before writing: once the writer flushes, the response is
-            // committed and a later content type change is silently discarded.
-            if (springValue instanceof ProblemDetail) {
-                if (object instanceof Errors) {
-                    ProblemDetailResponse.prepareBuilt((ProblemDetail) springValue, context)
-                }
-                else {
-                    ProblemDetailResponse.prepare((ProblemDetail) springValue, context)
-                }
-                context.setContentType(GrailsWebUtil.getContentType(PROBLEM_JSON.name, encoding))
-            }
-            springFallbackReason = writeWithSpringConverter(springValue, mediaType, context)
-            if (springFallbackReason == null) {
+        if (object instanceof ProblemDetail || (object instanceof Errors && canUseSpringConverter(context))) {
+            // validation errors are written as the problem they make, with the status it carries
+            ProblemDetail problem = object instanceof Errors ?
+                    (validationProblemDetailFactory ?: DEFAULT_PROBLEM_DETAIL_FACTORY).create((Errors) object, errorsHttpStatus) :
+                    (ProblemDetail) object
+            Integer status = object instanceof Errors ? null : ProblemDetailResponse.requestedStatus(context)
+            if (context instanceof ServletRenderContext &&
+                    ProblemDetailResponse.write(problem, (ServletRenderContext) context, status, [MediaType.APPLICATION_PROBLEM_JSON],
+                            springHttpMessageConvertersSupplier?.get())) {
                 return
             }
-            if (object instanceof Errors) {
-                // No converter could write the problem; restore the negotiated type for the
-                // legacy converter path below.
-                context.setContentType(GrailsWebUtil.getContentType(resolveMimeType(context).name, encoding))
+            if (object instanceof ProblemDetail) {
+                // the legacy converter writes it as a bean, in the response Spring MVC would have sent
+                ProblemDetailResponse.prepare((ProblemDetail) object, context)
+                context.setContentType(GrailsWebUtil.getContentType(PROBLEM_JSON.name, encoding))
+            }
+            springFallbackReason = "no Spring message converter writes [${problem.getClass().name}] as ${MediaType.APPLICATION_PROBLEM_JSON}"
+        }
+        else if (canUseSpringConverter(context)) {
+            springFallbackReason = writeWithSpringConverter(object, MediaType.parseMediaType(resolveMimeType(context).name), context)
+            if (springFallbackReason == null) {
+                return
             }
         }
 
@@ -337,15 +332,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         if (converter == null) {
             return "no Spring message converter writes [${objectType.name}] as ${mediaType}"
         }
-        // A problem is written as Spring MVC writes it, which no projection changes
-        boolean problem = object instanceof ProblemDetail
-        List<String> includes = problem ? null : getEffectiveIncludes(context)
-        List<String> excludes = problem ? null : getEffectiveExcludes(context)
+        List<String> includes = getEffectiveIncludes(context)
+        List<String> excludes = getEffectiveExcludes(context)
 
         // Only adapt the standard converter. Application converter subclasses and per-type
-        // mappers retain their own serialization contract, and a problem is written by the converter
-        // itself, with the mapper Spring MVC writes it with, as the XML converter writes it.
-        boolean grailsMapper = !problem && grailsJsonMapperCustomizer != null &&
+        // mappers retain their own serialization contract.
+        boolean grailsMapper = grailsJsonMapperCustomizer != null &&
                 converter.getClass() == JacksonJsonHttpMessageConverter &&
                 !((JacksonJsonHttpMessageConverter) converter).getMappersForType(objectType)
         if ((includes != null || excludes) && !grailsMapper) {
@@ -371,7 +363,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     /**
-     * Writes a value other than a problem as Spring MVC's converter writes it, with the isolated Grails mapper: the
+     * Writes a value as Spring MVC's converter writes it, with the isolated Grails mapper: the
      * converter's prefix is application configuration, and the mapper, which is derived from the converter's, writes the
      * wrapper of a root value, and a value a serializer hands to {@link JsonGenerator#writePOJO(Object)} as the value
      * itself. One write writes the whole value, so that an object a serializer writes with {@code writePOJO} is found

@@ -18,32 +18,37 @@
  */
 package org.grails.plugins.web.rest.render
 
+import java.lang.reflect.Method
+
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 
 import jakarta.servlet.http.HttpServletRequest
 
 import org.springframework.context.ApplicationContext
+import org.springframework.core.MethodParameter
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
-import org.springframework.util.MimeTypeUtils
-import org.springframework.web.HttpMediaTypeNotAcceptableException
+import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.context.request.ServletWebRequest
+import org.springframework.web.method.support.HandlerMethodReturnValueHandler
+import org.springframework.web.method.support.ModelAndViewContainer
+import org.springframework.web.servlet.HandlerMapping
 
 import grails.rest.render.RenderContext
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * Prepares the response to a {@link ProblemDetail}, as the JSON and XML renderers write it: the response takes the
- * status the problem carries, unless a {@code status} argument names another, and a problem without an
+ * Writes the response to a {@link ProblemDetail} as Spring MVC writes one a handler method returns, and prepares it
+ * where a view or a renderer of the application writes it: the response takes the status the problem carries, unless
+ * a {@code status} argument names another, as the status of a {@code ResponseEntity} does, and a problem without an
  * {@code instance} is given the path of the resource.
  *
  * @since 9.0
  */
-@Slf4j
 @CompileStatic
 class ProblemDetailResponse {
 
@@ -53,19 +58,87 @@ class ProblemDetailResponse {
     /** The name of the bean Spring MVC's content negotiation manager is, which its handler adapter is given by name. */
     private static final String MVC_CONTENT_NEGOTIATION_MANAGER = 'mvcContentNegotiationManager'
 
-    /** A manager that reads the Accept header alone, as Spring MVC does by default. */
-    private static final ContentNegotiationManager HEADER_NEGOTIATION = new ContentNegotiationManager()
-
-    /** The types Spring Boot's converters write a problem in, in their order. */
-    private static final List<MediaType> PROBLEM_TYPES = List.of(MediaType.APPLICATION_PROBLEM_JSON, MediaType.APPLICATION_PROBLEM_XML)
+    /** The method a problem is written as the return value of. */
+    private static final Method RETURNED_PROBLEM = ProblemDetailResponse.getDeclaredMethod('respond')
 
     private ProblemDetailResponse() {
     }
 
     /**
-     * Prepares the response to a problem the application responds with. A {@code status} argument decides the status
-     * of the response, as the status of a {@code ResponseEntity} does in Spring MVC, and a problem that carries another
-     * is written with its own, with a warning.
+     * Writes a problem as Spring MVC writes a {@code ResponseEntity} of one that a handler method of the controller
+     * returns, with the handler its handler adapter writes it with: in the type its content negotiation selects among
+     * those given that a message converter writes the problem in, with the application's {@code ResponseBodyAdvice}
+     * and {@code ErrorResponse.Interceptor} beans, which apply as to a method of the controller, and with the status the
+     * problem carries, unless a {@code status} is given, which Spring MVC logs a warning for where it differs. A
+     * request whose {@code Accept} header Spring MVC cannot read, or that accepts none of the types where the problem's
+     * status is not an error status, fails with the exception Spring MVC fails it with. A renderer given converters of
+     * its own, other than Spring MVC's, writes with a handler Spring MVC would build with them.
+     *
+     * @param problem the problem
+     * @param context the context of the response
+     * @param status the status the response is sent with, or {@code null} for that of the problem
+     * @param types the types the problem may be written in, in their order
+     * @param converters the converters to write with, or {@code null} for Spring MVC's
+     * @return {@code false}, with nothing written, where no message converter writes the problem in any of the types
+     */
+    static boolean write(ProblemDetail problem, ServletRenderContext context, Integer status, List<MediaType> types,
+                         List<HttpMessageConverter<?>> converters = null) {
+        GrailsWebRequest webRequest = context.webRequest
+        ApplicationContext applicationContext = webRequest.applicationContext
+        SpringMessageConverters springMessageConverters =
+                applicationContext?.getBeanProvider(SpringMessageConverters)?.getIfAvailable()
+        List<HttpMessageConverter<?>> mvcConverters = springMessageConverters?.converters
+        List<HttpMessageConverter<?>> writers = converters != null ? converters : mvcConverters
+        Class<?> problemType = problem.getClass()
+        Set<MediaType> producible = new LinkedHashSet<MediaType>(types.findAll { MediaType type ->
+            writers?.any { HttpMessageConverter<?> converter -> converter.canWrite(problemType, type) }
+        })
+        if (producible.isEmpty()) {
+            return false
+        }
+        Object controller = webRequest.attributes?.getController(webRequest.currentRequest)
+        MethodParameter returnType = new MethodParameter(RETURNED_PROBLEM, -1)
+                .withContainingClass(controller?.getClass() ?: ProblemDetailResponse)
+        HandlerMethodReturnValueHandler handler = springMessageConverters != null && writers == mvcConverters ?
+                springMessageConverters.entityHandler(returnType) :
+                SpringMessageConverters.entityHandler(writers, contentNegotiationManager(applicationContext))
+        if (handler == null) {
+            return false
+        }
+        if (problem.instance == null && context.resourcePath) {
+            problem.instance = URI.create(context.resourcePath)
+        }
+        HttpServletRequest request = webRequest.currentRequest
+        // the type and encoding a renderer set for its format are not the problem's, which Spring MVC selects
+        webRequest.currentResponse.setContentType(null)
+        webRequest.currentResponse.setCharacterEncoding((String) null)
+        Object previous = request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE)
+        request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producible)
+        try {
+            handler.handleReturnValue(status == null ? problem : ResponseEntity.status(status).body(problem), returnType,
+                    new ModelAndViewContainer(), new ServletWebRequest(request, webRequest.currentResponse))
+        }
+        finally {
+            if (previous == null) {
+                request.removeAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE)
+            }
+            else {
+                request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, previous)
+            }
+        }
+        webRequest.renderView = false
+        return true
+    }
+
+    /** The manager Spring MVC negotiates with, or one that reads the {@code Accept} header alone, as Spring MVC's default. */
+    private static ContentNegotiationManager contentNegotiationManager(ApplicationContext context) {
+        context != null && context.containsBean(MVC_CONTENT_NEGOTIATION_MANAGER) ?
+                context.getBean(MVC_CONTENT_NEGOTIATION_MANAGER, ContentNegotiationManager) : new ContentNegotiationManager()
+    }
+
+    /**
+     * Prepares the response to a problem a view or a renderer of the application writes: it takes the status a
+     * {@code status} argument gives, or else the one the problem carries.
      *
      * @param problem the problem a response is written for
      * @param context the context of the response
@@ -79,12 +152,7 @@ class ProblemDetailResponse {
             }
             request.setAttribute(PREPARED, problem)
         }
-        Integer requested = requestedStatus(context)
-        if (requested != null && requested != problem.status) {
-            log.warn("The response is sent with the status argument [${requested}], " +
-                    "but its ProblemDetail carries status [${problem.status}].")
-        }
-        prepare(problem, context, requested ?: problem.status)
+        prepare(problem, context, requestedStatus(context) ?: problem.status)
     }
 
     /**
@@ -99,71 +167,12 @@ class ProblemDetailResponse {
     }
 
     /**
-     * The type Spring MVC writes a problem in for the request with Spring Boot's message converters, an XML one among
-     * them, which Boot lists after the JSON one, as its content negotiation, {@code spring.mvc.contentnegotiation.*} and
-     * the application's {@code WebMvcConfigurer} beans included, selects it: {@code application/problem+xml} only where
-     * the types it resolves for the request ask for a problem in XML, such as {@code application/problem+xml} or
-     * {@code application/*+xml}, ahead of one in JSON, and {@code application/problem+json} otherwise, also for a client
-     * that asks for {@code application/xml}, a browser, and one that accepts any type; or {@code null} where that
-     * negotiation rejects the request, such as an {@code Accept} header with a quality value above 1 or more than 50
-     * types, or, with parameter negotiation, a format it does not know. Whether an XML converter is present is not
-     * consulted: without {@code jackson-dataformat-xml}, which Spring's XML converter needs, Spring MVC answers in JSON a
-     * client that asks for a problem in XML, where the XML renderer writes the XML itself.
-     *
-     * @param webRequest the request
-     * @return {@code application/problem+xml}, {@code application/problem+json}, or {@code null}
-     */
-    static MediaType negotiatedType(GrailsWebRequest webRequest) {
-        List<MediaType> acceptable
-        try {
-            acceptable = contentNegotiationManager(webRequest).resolveMediaTypes(new ServletWebRequest(webRequest.currentRequest))
-        }
-        catch (HttpMediaTypeNotAcceptableException ignored) {
-            return null
-        }
-        // the problem types the request accepts, each as the more specific of the two, as Spring MVC selects them, or the
-        // problem types themselves where it accepts none
-        List<MediaType> compatible = compatibleTypes(acceptable)
-        if (compatible.isEmpty()) {
-            compatible = compatibleTypes(PROBLEM_TYPES)
-        }
-        // Spring's order: quality, then specificity
-        MimeTypeUtils.sortBySpecificity(compatible)
-        compatible[0].isCompatibleWith(MediaType.APPLICATION_PROBLEM_XML) ? MediaType.APPLICATION_PROBLEM_XML :
-                MediaType.APPLICATION_PROBLEM_JSON
-    }
-
-    /** The manager Spring MVC negotiates with, or one that reads the {@code Accept} header alone, as Spring MVC's default. */
-    private static ContentNegotiationManager contentNegotiationManager(GrailsWebRequest webRequest) {
-        ApplicationContext context = webRequest.applicationContext
-        context != null && context.containsBean(MVC_CONTENT_NEGOTIATION_MANAGER) ?
-                context.getBean(MVC_CONTENT_NEGOTIATION_MANAGER, ContentNegotiationManager) : HEADER_NEGOTIATION
-    }
-
-    private static List<MediaType> compatibleTypes(List<MediaType> acceptable) {
-        Set<MediaType> compatible = new LinkedHashSet<MediaType>()
-        for (MediaType accepted : acceptable) {
-            for (MediaType problemType : PROBLEM_TYPES) {
-                if (accepted.isCompatibleWith(problemType)) {
-                    MediaType produced = problemType.copyQualityValue(accepted)
-                    compatible.add(accepted.isLessSpecific(produced) ? produced : accepted)
-                }
-            }
-        }
-        new ArrayList<MediaType>(compatible)
-    }
-
-    private static void prepare(ProblemDetail problem, RenderContext context, int status) {
-        setStatus(context, status)
-        if (problem.instance == null && context.resourcePath) {
-            problem.instance = URI.create(context.resourcePath)
-        }
-    }
-
-    /**
      * The status {@code respond} is given, read as {@code respond} reads it.
+     *
+     * @param context the context of the response
+     * @return the status, or {@code null} where none is given
      */
-    private static Integer requestedStatus(RenderContext context) {
+    static Integer requestedStatus(RenderContext context) {
         Object status = context.arguments?.get('status')
         if (!status) {
             return null
@@ -175,6 +184,13 @@ class ProblemDetailResponse {
             return ((HttpStatusCode) status).value()
         }
         status.toString().toInteger()
+    }
+
+    private static void prepare(ProblemDetail problem, RenderContext context, int status) {
+        setStatus(context, status)
+        if (problem.instance == null && context.resourcePath) {
+            problem.instance = URI.create(context.resourcePath)
+        }
     }
 
     /**
@@ -193,5 +209,11 @@ class ProblemDetailResponse {
             throw new IllegalArgumentException(
                     "Status [${code}] has no HttpStatus constant, which ${context.getClass().name} requires.")
         }
+    }
+
+    /** Stands for the handler method of the controller that responds with a problem. */
+    @SuppressWarnings('UnusedPrivateMethod')
+    private static ResponseEntity<ProblemDetail> respond() {
+        null
     }
 }

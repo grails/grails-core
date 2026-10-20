@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
+import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.accept.ContentNegotiationStrategy
 import org.springframework.web.accept.FixedContentNegotiationStrategy
@@ -88,23 +89,32 @@ class ProblemDetailContentNegotiationSpec extends Specification implements Contr
         response.json.status == 409
     }
 
-    void 'a format Spring MVC does not know is answered with the status alone, or 406 for a status that is not an error status, #arguments'() {
+    void 'a format Spring MVC does not know is answered with the status alone'() {
         given:
         request.addParameter('format', 'html')
         request.addHeader('Accept', 'application/problem+xml')
 
         when:
-        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), arguments + [formats: ['xml', 'json']])
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), formats: ['xml', 'json'])
 
         then:
-        response.status == status
+        response.status == 409
         response.contentAsString == ''
         view == null
+    }
 
-        where:
-        arguments     || status
-        [:]           || 409
-        [status: 200] || 406
+    void 'a format Spring MVC does not know fails as Spring MVC fails it for a status that is not an error status'() {
+        given:
+        request.addParameter('format', 'html')
+        request.addHeader('Accept', 'application/problem+xml')
+
+        when:
+        controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), status: 200, formats: ['xml', 'json'])
+
+        then: "which Spring MVC's exception resolver answers with 406"
+        thrown(HttpMediaTypeNotAcceptableException)
+        response.contentAsString == ''
+        view == null
     }
 
     void 'a client that sends no Accept header is answered in the default content type Spring MVC is configured with'() {
@@ -145,7 +155,7 @@ class ProblemDetailContentNegotiationSpec extends Specification implements Contr
 
         where:
         accept                    || type
-        'application/problem+xml' || 'application/problem+xml;charset=UTF-8'
+        'application/problem+xml' || 'application/problem+xml'
         'application/json;q=2'    || null
     }
 }

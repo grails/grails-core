@@ -25,6 +25,8 @@ import groovy.json.JsonSlurper
 
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.context.support.StaticMessageSource
+import org.springframework.core.ResolvableType
+import org.springframework.http.HttpOutputMessage
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
@@ -112,10 +114,10 @@ class DefaultJsonRendererSpec extends Specification {
             renderer.render(ProblemDetail.forStatus(409), new ServletRenderContext(webRequest, [status: argument]))
         }
 
-        then: 'the problem keeps its own status, and the mismatch is reported'
+        then: 'the problem keeps its own status, and Spring MVC reports the mismatch, as for a ResponseEntity'
         webRequest.response.status == 400
         webRequest.response.contentAsString.contains('"status":409')
-        log.contains('The response is sent with the status argument [400], but its ProblemDetail carries status [409].')
+        log.contains("but its status doesn't match the ProblemDetail status: 409")
 
         where:
         argument << [400, HttpStatus.BAD_REQUEST, '400']
@@ -134,7 +136,7 @@ class DefaultJsonRendererSpec extends Specification {
 
         then:
         webRequest.response.status == 409
-        !log.contains('status argument')
+        !log.contains("doesn't match the ProblemDetail status")
     }
 
     void 'a status argument does not change the status of the problem built for validation errors'() {
@@ -154,7 +156,7 @@ class DefaultJsonRendererSpec extends Specification {
         then:
         webRequest.response.status == 422
         webRequest.response.contentAsString.contains('"status":422')
-        !log.contains('status argument')
+        !log.contains("doesn't match the ProblemDetail status")
     }
 
     void 'the hooks of the legacy JSON path are deprecated for removal in Grails 11'() {
@@ -839,12 +841,9 @@ class DefaultJsonRendererSpec extends Specification {
 
     void 'with Spring JSON on, validation errors render as problem JSON through Spring conversion'() {
         given:
-        def converter = Mock(HttpMessageConverter) {
-            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON]
-        }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
-        renderer.springHttpMessageConvertersSupplier = { [converter] }
+        renderer.springHttpMessageConvertersSupplier = { [new JacksonJsonHttpMessageConverter()] }
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new FieldError('book', 'title', 'secret', false,
                 ['book.title.blank'] as String[], null, 'Title must not be blank'))
@@ -852,42 +851,40 @@ class DefaultJsonRendererSpec extends Specification {
 
         when:
         renderer.render(errors, new ServletRenderContext(webRequest))
+        def json = new JsonSlurper().parseText(webRequest.response.contentAsString)
 
-        then:
-        1 * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
-        1 * converter.write({ ProblemDetail problem ->
-            problem.status == 422 && !problem.properties.errors.first().containsKey('rejectedValue')
-        }, new MediaType(MediaType.APPLICATION_PROBLEM_JSON, UTF_8), _) >> { arguments ->
-            arguments[2].body.write('{"status":422,"title":"Validation failed"}'.bytes)
-        }
+        then: 'Spring MVC writes the problem the errors make, without the rejected value'
         webRequest.response.status == 422
-        webRequest.response.contentType == 'application/problem+json;charset=UTF-8'
-        webRequest.response.contentAsString == '{"status":422,"title":"Validation failed"}'
+        webRequest.response.contentType.startsWith('application/problem+json')
+        json.status == 422
+        json.title == 'Validation failed'
+        json.errors.size() == 1
+        !json.errors.first().containsKey('rejectedValue')
     }
 
     void 'the problem content type is set before the body is written, which can commit the response'() {
         given:
-        def converter = Mock(HttpMessageConverter) {
-            getSupportedMediaTypes(_ as Class) >> [MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON]
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        String contentTypeWhenWritten = null
+        def converter = new JacksonJsonHttpMessageConverter() {
+            @Override
+            protected void writeInternal(Object object, ResolvableType type, HttpOutputMessage message, Map<String, Object> hints) {
+                message.body
+                contentTypeWhenWritten = webRequest.response.contentType
+                super.writeInternal(object, type, message, hints)
+            }
         }
         def renderer = new DefaultJsonRenderer<Errors>(Errors)
         renderer.useSpringJson = true
         renderer.springHttpMessageConvertersSupplier = { [converter] }
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
         errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
-        String contentTypeWhenWritten = null
 
         when:
         renderer.render(errors, new ServletRenderContext(webRequest))
 
         then:
-        1 * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
-        1 * converter.write(_, new MediaType(MediaType.APPLICATION_PROBLEM_JSON, UTF_8), _) >> { arguments ->
-            contentTypeWhenWritten = webRequest.response.contentType
-            arguments[2].body.write('{"status":422}'.bytes)
-        }
-        contentTypeWhenWritten == 'application/problem+json;charset=UTF-8'
+        contentTypeWhenWritten.startsWith('application/problem+json')
     }
 
     void 'a write that fails part-way leaves the response uncommitted, so that the error page applies'() {
@@ -1004,7 +1001,7 @@ class DefaultJsonRendererSpec extends Specification {
         renderer.render(errors, new ServletRenderContext(webRequest))
 
         then:
-        1 * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
+        (1.._) * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
         1 * converter.write({ ProblemDetail problem ->
             problem.properties.errors.first().message == 'Property [title] cannot be null'
         }, _, _) >> { arguments -> arguments[2].body.write('{}'.bytes) }
@@ -1030,9 +1027,9 @@ class DefaultJsonRendererSpec extends Specification {
         renderer.render(errors, new ServletRenderContext(webRequest))
 
         then:
-        1 * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
+        (1.._) * converter.canWrite(ProblemDetail, MediaType.APPLICATION_PROBLEM_JSON) >> true
         1 * converter.write({ ProblemDetail problem -> problem.status == 400 },
-                new MediaType(MediaType.APPLICATION_PROBLEM_JSON, UTF_8), _) >> { arguments ->
+                MediaType.APPLICATION_PROBLEM_JSON, _) >> { arguments ->
             arguments[2].body.write('{"status":400}'.bytes)
         }
         webRequest.response.status == 400

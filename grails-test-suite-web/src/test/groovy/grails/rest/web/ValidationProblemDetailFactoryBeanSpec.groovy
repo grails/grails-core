@@ -66,7 +66,7 @@ class ValidationProblemDetailFactoryBeanSpec extends Specification implements Co
 
         then:
         response.status == 422
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.errors.first().rejectedValue == 'secret'
     }
 

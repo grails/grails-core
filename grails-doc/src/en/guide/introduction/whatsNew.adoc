@@ -105,12 +105,12 @@ respond book, jsonConfiguration: 'catalog'
 render json: book, jsonConfiguration: 'deep', excludes: ['isbn']
 ----
 
-`respond` writes a Spring `ProblemDetail` as Spring MVC writes it, as `application/problem+json`, or
-`application/problem+xml` for a request Spring MVC's content negotiation resolves to a problem in XML where the action responds in XML, which Grails
-writes itself where
-`jackson-dataformat-xml` is absent, with the status the problem carries unless `respond` is given one, as a
-`ResponseEntity` is in Spring MVC. `ValidationProblemDetailFactory`
-creates one for validation errors.
+`respond` writes a Spring `ProblemDetail` as Spring MVC writes one that a handler method returns, with the handler of
+Spring MVC's handler adapter, so the application's `ResponseBodyAdvice` and `ErrorResponse.Interceptor` beans apply to
+it: as `application/problem+json`, or as `application/problem+xml` for a request that asks for a problem in XML where
+the action responds in XML and `jackson-dataformat-xml` is present, with the status the problem carries unless `respond`
+is given one, as a `ResponseEntity` is in Spring MVC. `ValidationProblemDetailFactory` creates one for validation
+errors.
 
 With `grails.databinding.json.jackson: true`, JSON request bodies are bound as Spring Boot's mapper parses them, with its
 `spring.jackson.*` parser settings, in place of Groovy's `JsonSlurper`.

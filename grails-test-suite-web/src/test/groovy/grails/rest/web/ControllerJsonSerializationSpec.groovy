@@ -235,7 +235,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 422
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 422
         response.json.errors.first().message == 'Title is invalid'
         !response.json.errors.first().containsKey('rejectedValue')
@@ -253,7 +253,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 422
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 422
         response.json.errors.first().message == 'Title is invalid'
 
@@ -264,7 +264,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 422
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.errors.first().message == 'Title is invalid'
 
         when: 'a configuration that is not registered'
@@ -313,7 +313,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 422
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 422
         response.json.instance == '/books'
     }
@@ -324,11 +324,11 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 400
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
 
-        and: 'the mismatch is reported once'
-        output.readLines().count { it.contains('but its ProblemDetail carries status [409]') } == 1
+        and: 'Spring MVC reports the mismatch once, as for a ResponseEntity'
+        output.readLines().count { it.contains("but its status doesn't match the ProblemDetail status: 409") } == 1
     }
 
     void 'a status respond is given that has no HttpStatus constant is sent, as a ResponseEntity sends it, for #description'() {
@@ -367,7 +367,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
         response.json.instance == '/books'
 
@@ -375,8 +375,8 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
         format << ['html', 'csv']
     }
 
-    void 'without jackson-dataformat-xml a client that asks for a problem in XML is answered with XML Grails writes itself'() {
-        given: 'grails-xml without the library Spring MVC needs for its XML converter, which answers such a client in JSON'
+    void 'without jackson-dataformat-xml a client that asks for a problem in XML is answered in JSON, as Spring MVC answers it'() {
+        given: 'grails-xml without the library Spring MVC needs for its XML converter'
         assert !org.springframework.util.ClassUtils.isPresent('tools.jackson.dataformat.xml.XmlMapper', getClass().classLoader)
         response.format = null
         request.addHeader('Accept', 'application/problem+xml')
@@ -387,8 +387,8 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType.startsWith('application/problem+xml')
-        new groovy.xml.XmlSlurper().parseText(response.contentAsString).detail.text() == 'taken'
+        response.contentType == 'application/problem+json'
+        response.json.detail == 'taken'
     }
 
     void 'a client whose Accept header Spring MVC cannot read is answered with the status alone for #description, and as in Grails 8 for any other value'() {
@@ -480,7 +480,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
     }
 
@@ -530,7 +530,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
     }
 
@@ -562,7 +562,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
     }
 
@@ -697,7 +697,7 @@ class ControllerJsonSerializationSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
     }
 
@@ -784,7 +784,7 @@ class ControllerProblemDefaultsSpec extends Specification implements ControllerU
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
         response.json.instance == '/books'
 
@@ -933,7 +933,7 @@ class ControllerProblemNonGspViewSpec extends Specification implements Controlle
 
         then:
         response.status == 409
-        response.contentType == 'application/problem+json;charset=UTF-8'
+        response.contentType == 'application/problem+json'
         response.json.status == 409
 
         where:

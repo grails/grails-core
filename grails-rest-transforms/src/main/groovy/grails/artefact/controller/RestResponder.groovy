@@ -177,27 +177,12 @@ trait RestResponder {
         }
 
         Renderer renderer = null
-        // A problem is written as Spring MVC writes it with Spring Boot's converters, an XML one among them, in the type its
-        // content negotiation selects: in XML where that asks for a problem in XML and the action responds in XML, and in
-        // JSON otherwise. Without jackson-dataformat-xml, where Spring MVC would answer in JSON, the XML renderer writes the
-        // XML itself. A format's renderer of any object writes it only in that format, and the HTML renderer only with the
-        // view respond names
+        // A problem is written as Spring MVC writes one a handler method returns, unless a renderer the application
+        // registers for problems renders it or a view respond names does: the default renderer of a format, which one the
+        // application registers for Object stands in for, does not write it
         boolean problem = value instanceof ProblemDetail
-        MediaType springProblemType = problem ? ProblemDetailResponse.negotiatedType(webRequest) : null
-        MimeType negotiatedProblemFormat = problem ?
-                (formats.contains('xml') && springProblemType == MediaType.APPLICATION_PROBLEM_XML ? MimeType.XML : MimeType.JSON) :
-                null
-        // with a view, respond picks the format as for any value; a problem the HTML page it names does not render, which
-        // the application does not have, is negotiated again and written as without a view
-        MimeType problemFormat = args.view ? null : negotiatedProblemFormat
+        boolean problemWithoutView = problem && !args.view
         final context = new ServletRenderContext(webRequest, args)
-        // a request Spring MVC's content negotiation rejects, such as one whose Accept header it cannot read, is answered as
-        // Spring MVC answers it, where respond writes a problem as without a view
-        boolean unreadable = problem && springProblemType == null
-        if (unreadable && !args.view) {
-            respondWithoutProblem((ProblemDetail) value, context)
-            return
-        }
 
         Errors errors = value.hasProperty(GormProperties.ERRORS) ? getDomainErrors(value) : null
         boolean hasErrors = errors && errors.hasErrors()
@@ -262,8 +247,7 @@ trait RestResponder {
                     } else {
                         candidate = registry.findRenderer(mimeType, value)
                     }
-                    if (problemFormat != null && mimeType.extension != problemFormat.extension && candidate != null &&
-                            candidate.is(registry.findRenderer(mimeType, new Object()))) {
+                    if (problemWithoutView && candidate != null && candidate.is(registry.findRenderer(mimeType, new Object()))) {
                         continue
                     }
                     if (rendersValue(candidate, value, context, mimeType)) {
@@ -279,7 +263,7 @@ trait RestResponder {
                 callRender([status: statusCode ?: (errorsFormatListed ? HttpStatus.NOT_FOUND.value() : HttpStatus.NOT_ACCEPTABLE.value())])
                 return
             }
-            if (renderer != null && problem && problemFormat == null && args.view && renderer instanceof DefaultHtmlRenderer &&
+            if (renderer != null && problem && !problemWithoutView && renderer instanceof DefaultHtmlRenderer &&
                     !(renderer instanceof SelectiveRenderer) &&
                     renderer.is(registry.findRenderer(matched, new Object())) &&
                     !hasPage(this, webRequest, args.view.toString(), matched)) {
@@ -287,29 +271,33 @@ trait RestResponder {
                 // is negotiated again as without a view, so that a browser is answered as Spring MVC answers it, or by a
                 // renderer the application registers for problems. A renderer that renders with views of its own, such as
                 // that of markup views, has said whether it renders it
-                if (unreadable) {
-                    respondWithoutProblem((ProblemDetail) value, context)
-                    return
-                }
                 renderer = null
                 matched = null
-                problemFormat = negotiatedProblemFormat
+                problemWithoutView = true
                 negotiating = true
             }
         }
+        if (renderer == null && problem && args.view) {
+            // the JSON view respond names renders a problem for a client whose format has none, as for a client that asks
+            // for JSON
+            Renderer json = registry.findRenderer(MimeType.JSON, value)
+            boolean jsonView = json instanceof SelectiveRenderer ? rendersValue(json, value, context, MimeType.JSON) :
+                    hasFormatView(webRequest, args.view.toString(), MimeType.JSON)
+            if (jsonView) {
+                renderer = json
+                matched = MimeType.JSON
+            }
+        }
         if (renderer == null && problem) {
-            if (unreadable) {
-                respondWithoutProblem((ProblemDetail) value, context)
+            // Spring MVC writes it, and in XML only where the action responds in XML
+            List<MediaType> types = formats.contains('xml') ?
+                    [MediaType.APPLICATION_PROBLEM_JSON, MediaType.APPLICATION_PROBLEM_XML] : [MediaType.APPLICATION_PROBLEM_JSON]
+            if (ProblemDetailResponse.write((ProblemDetail) value, context, statusCode, types)) {
                 return
             }
-            // The format negotiated for the problem, or JSON where nothing renders it in that, whose view respond names
-            // renders the problem, as for a client that asks for that format
-            matched = negotiatedProblemFormat
+            // without a message converter that writes problems, the JSON renderer writes it
+            matched = MimeType.JSON
             renderer = registry.findRenderer(matched, value)
-            if (matched != MimeType.JSON && !rendersValue(renderer, value, context, matched)) {
-                matched = MimeType.JSON
-                renderer = registry.findRenderer(matched, value)
-            }
         }
         if (renderer != null) {
             // The response is in the format the renderer was found for, which may not be the client's first: a client
@@ -330,22 +318,6 @@ trait RestResponder {
             return
         }
         callRender([status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
-    }
-
-    /**
-     * Answers with a problem as Spring MVC answers a client whose {@code Accept} header it cannot read: with the status
-     * alone, without a body or a content type, or with {@code 406 Not Acceptable} where that status is not an error
-     * status.
-     */
-    private void respondWithoutProblem(ProblemDetail problem, ServletRenderContext context) {
-        ProblemDetailResponse.prepare(problem, context)
-        int series = context.webRequest.currentResponse.status.intdiv(100)
-        if (series == 4 || series == 5) {
-            context.webRequest.renderView = false
-        }
-        else {
-            callRender([status: HttpStatus.NOT_ACCEPTABLE.value()])
-        }
     }
 
     /**
@@ -378,6 +350,13 @@ trait RestResponder {
         // named with its suffix or without it, as the GSP view resolver takes it
         String page = viewName.endsWith('.gsp') ? viewName.substring(0, viewName.length() - '.gsp'.length()) : viewName
         return inResponseType(webRequest.currentRequest, mimeType) { locator.findView(controller, page) != null }
+    }
+
+    /** Whether the application has a view of the name in a format, such as {@code book/show.json.gsp}, as a format's renderer finds it. */
+    private static boolean hasFormatView(GrailsWebRequest webRequest, String viewName, MimeType mimeType) {
+        GrailsConventionGroovyPageLocator locator =
+                webRequest.applicationContext?.getBeanProvider(GrailsConventionGroovyPageLocator)?.getIfAvailable()
+        return locator?.findViewForFormat(webRequest.controllerName, viewName, mimeType.extension) != null
     }
 
     /** Answers a question about the response as if it were in the given type, which is restored afterwards. */

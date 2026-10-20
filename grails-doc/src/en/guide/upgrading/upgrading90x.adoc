@@ -304,8 +304,8 @@ precedence over the default renderer.
 Jackson conversion uses UTF-8 for intermediate bytes; the response writer applies
 `grails.converters.encoding`, so non-UTF response encodings do not corrupt the intermediate JSON.
 
-Where `respond` writes JSON through Spring MVC's converters, or with a named configuration, or writes a `ProblemDetail` as
-XML without `jackson-dataformat-xml`, a value it fails to write fails as Spring MVC's Jackson converters fail: a type
+Where `respond` writes JSON through Spring MVC's converters, or with a named configuration, a value it fails to write
+fails as Spring MVC's Jackson converters fail, as a `ProblemDetail`, which Spring MVC writes itself, does: a type
 definition error, such as a property a bean unwraps with the name of one of its own, is an
 `HttpMessageConversionException`, and any other failure, one of the response's writer included, an
 `HttpMessageNotWritableException`. Spring MVC's own exception resolver answers an `HttpMessageNotWritableException` before
@@ -845,58 +845,45 @@ written as without JSON views, with a 422: as the problem where `grails.web.rend
 Grails 8 wrote them without JSON views otherwise.
 
 Applications can also inject the factory when they need to create or customize the problem explicitly.
-When `respond` receives a `ProblemDetail`, it sets the HTTP status from the problem and fills in an absent
-`instance` with the current resource path. A `status` argument decides the status instead, as the status of a
-`ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and a warning is logged. It writes the
-problem as Spring MVC writes it with Spring Boot's message converters, an XML converter among them, in the type Spring
-MVC's content negotiation selects: as `application/problem+xml` where the types it resolves for the request ask for a
-problem in XML and the action responds in XML, and as `application/problem+json` otherwise, whatever `grails.mime` says.
-That negotiation reads the `Accept` header unless `spring.mvc.contentnegotiation.*` or a `WebMvcConfigurer` configures it
-otherwise: with `favor-parameter: true` a `format` parameter decides ahead of the header, so `?format=json` and
-`?format=xml` are answered with `application/problem+json`, as neither `application/json` nor `application/xml` is a
-problem type, and `default-content-types` decides for a client that sends no `Accept` header or only `*/*`. A request
-that negotiation rejects, such as one whose `Accept` header Spring MVC cannot read, with a quality value above 1 or more
-than 50 media types, or, with `favor-parameter: true`, one whose `format` parameter names a format Spring MVC does not
-know, is answered with the status alone, without a body or a `Content-Type`, as Spring MVC answers it, or with
-`406 Not Acceptable` where that status is not an error status, where `respond` writes the problem as without a view: with
-no `view` argument, where the HTML page it names does not exist, or where no renderer writes the problem in the format
-Grails reads from the request. Otherwise the request is read as Grails 8 read it, and the problem is written in the format
-read from it. Unless `respond` names a view for the problem, a
-client that asks for `application/xml` or `text/xml` is answered with `application/problem+json`, as Spring MVC answers
-it, where Grails 8 wrote the problem as a bean with a 200; so is a browser, and a client that accepts neither JSON nor
-XML, such as one asking only for HTML, where Grails 8 rendered the action's view with a 200. A view renders a problem
-only when `respond` names it with the `view` argument: `respond` then picks the format as for any value, so that a client
-that asks for `application/xml` is answered in XML where the action responds in XML, and the response has the status it
-would have in JSON or XML; where
-the format `respond` picks has no view of the name, the problem is
-written in that format where it is JSON or XML, and otherwise as it is written without a view, as
-`application/problem+json` for a browser where the application has no GSP of the name, or by a renderer the application
-registers for problems in a type the browser accepts, and the view of the name of that format renders it then if there
-is one. In HTML that
-view is a GSP: a JSON or markup view of the name, or a JSP, does not render a problem as HTML. A renderer the
-application registers for `ProblemDetail`, or for a type other than `Object` that problems share, such as `Serializable`,
-renders them in its format, while one registered for `Object` stands in for the default renderer of its format, and
-renders a problem only where `respond` writes it in that format; a `JsonRenderer` or `XmlRenderer` bean registered for problems writes
-them as Spring MVC writes them, whatever its `includes` and `excludes`. Otherwise a `ProblemDetail` is written through Spring's message
-converters, whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set
-to, so the example above answers with `application/problem+json` in Grails 9 as well. A web
-application with Spring MVC always has the JSON converter; where none can write the problem, Grails
-logs a warning and the legacy converter writes it as a bean, with the same status. Spring MVC's
-XML converter needs `jackson-dataformat-xml`. Without it, Spring MVC answers a client asking for a problem in XML with
-`application/problem+json`, while `respond` still answers it with `application/problem+xml`, which Grails writes itself
-in the format of Spring's converter, with the members that Spring's JSON converter writes for the problem with its mapper,
-Spring Boot's unless the converter has one of its own for the problem's type: its settings,
-those of a `JsonMapperBuilderCustomizer` included, decide them as they decide those of `application/problem+json`, so a
-default serialization view leaves out the members in no view, those of RFC 9457 and the extension members among them,
-unless `spring.jackson.mapper.default-view-inclusion` is `true`, where Spring's XML converter, with
-`jackson-dataformat-xml`, writes the problem with Spring Boot's `XmlMapper`. The write limit of the JSON mapper Grails
-writes it with, `spring.jackson.factory.constraints.write.max-nesting-depth`, 500 by default, fails a problem nested
-deeper, with an `HttpMessageNotWritableException`, as Spring's converters fail it. In JSON as in XML, the problem's properties are written by Spring Boot's mapper as in
-a Spring MVC controller: a domain class instance, validation errors or a value that leads back to itself among them is
-written, or fails, as Jackson writes any bean, whatever the `grails.converters.json` settings, unless
-`grails.converters.json.domain.jackson.enabled` gives that mapper the domain class serializer. XML is
-rendered by the `grails-xml` module, without which a client asking for `application/problem+xml` is answered with
-`application/problem+json`.
+When `respond` receives a `ProblemDetail`, it hands it to the handler Spring MVC's handler adapter writes a
+`ResponseEntity` with, so the problem is written as a Spring MVC controller method that returns it is written: the
+application's `ResponseBodyAdvice` beans apply to it as to a method of the controller, and its
+`ErrorResponse.Interceptor` beans see it. The response has the status the problem carries, and an absent `instance` is
+set to the current resource path. A `status` argument decides the status instead, as the status of a `ResponseEntity`
+does in Spring MVC: a problem that carries another keeps its own, and Spring MVC logs a warning. Spring MVC's content
+negotiation selects the type, whatever `grails.mime` says. It reads the `Accept` header unless
+`spring.mvc.contentnegotiation.*` or a `WebMvcConfigurer` configures it otherwise: with `favor-parameter: true` a
+`format` parameter decides ahead of the header, so `?format=json` and `?format=xml` are answered with
+`application/problem+json`, as neither `application/json` nor `application/xml` is a problem type, and
+`default-content-types` decides for a client that sends no `Accept` header or only `*/*`. The problem is written as
+`application/problem+xml` where the request asks for a problem in XML, the action responds in XML and Spring MVC has an
+XML converter, which needs `jackson-dataformat-xml`, and as `application/problem+json` otherwise. Unless `respond` names
+a view for the problem, a client that asks for `application/xml` or `text/xml` is answered with
+`application/problem+json`, as Spring MVC answers it, where Grails 8 wrote the problem as a bean with a 200; so is a
+browser, and a client that accepts neither JSON nor XML, such as one asking only for HTML, where Grails 8 rendered the
+action's view with a 200. A request Spring MVC's content negotiation rejects, such as one whose `Accept` header has a
+quality value above 1 or more than 50 media types, or, with `favor-parameter: true`, one whose `format` parameter names a
+format Spring MVC does not know, is answered as Spring MVC answers it: with the status alone, without a body or a
+`Content-Type`, for a 4xx or 5xx problem, and otherwise with an `HttpMediaTypeNotAcceptableException`, which Spring MVC's
+exception resolver answers with `406 Not Acceptable`.
+
+A view renders a problem only when `respond` names it with the `view` argument: `respond` then picks the format as for
+any value, so that a client that asks for `application/xml` is answered in XML where the action responds in XML, and the
+view of that format renders the problem with the status it carries. Where the format `respond` picks has no view of the
+name, the problem is written in that format where it is JSON or XML, the JSON view of the name renders it in any other
+format if there is one, and otherwise it is written as without a view, as `application/problem+json` for a browser where
+the application has no GSP of the name. In HTML that view is a GSP: a JSON or markup view of the name, or a JSP, does not
+render a problem as HTML. A renderer the application registers for `ProblemDetail`, or for a type other than `Object`
+that problems share, such as `Serializable`, renders them in its format; the default renderer of a format, and one the
+application registers for `Object`, which stands in for it, do not, so the example above answers with
+`application/problem+json` whatever `grails.web.rendering.json.spring` and `grails.web.rendering.xml.spring` are set to. A
+`JsonRenderer` or `XmlRenderer` bean registered for problems writes them as Spring MVC writes them, whatever its
+`includes` and `excludes`. A web application with Spring MVC always has the JSON converter; where none can write the
+problem, Grails logs a warning and the legacy converter writes it as a bean, with the same status. The problem's
+properties are written by Spring Boot's mapper as in a Spring MVC controller: a domain class instance, validation errors
+or a value that leads back to itself among them is written, or fails, as Jackson writes any bean, whatever the
+`grails.converters.json` settings, unless `grails.converters.json.domain.jackson.enabled` gives that mapper the domain
+class serializer.
 Rejected field values are excluded from the problem by default because they can contain passwords, tokens, or other
 sensitive request data. Validation errors an action responds with in XML are not written as a problem, and keep their
 rejected values, as in Grails 8. Applications that deliberately need those values can define their own factory

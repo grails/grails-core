@@ -82,6 +82,7 @@ import org.springframework.mock.http.MockHttpOutputMessage
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
+import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.servlet.ModelAndView
 
 import grails.artefact.Artefact
@@ -230,17 +231,17 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         'for a view respond names in a format no renderer writes' | 'text/csv;q=2'                                                                | [view: 'conflict'] || 409
     }
 
-    void 'a problem respond names a view for is written in the format Grails reads from an Accept header Spring MVC cannot read'() {
+    void 'a problem respond names a view for that the format Grails reads has not is answered with the status alone, where Spring MVC cannot read the Accept header'() {
         given: 'a header Grails reads as JSON, as Grails 8 read it, and no JSON view of the name'
         request.addHeader('Accept', 'application/json;q=2')
 
         when:
         controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), view: 'conflict', formats: ['html', 'xml', 'json'])
 
-        then: 'as without a view, for a client whose header Spring MVC reads'
+        then: 'as Spring MVC answers it without a view'
         response.status == 409
-        response.contentType.startsWith('application/problem+json')
-        response.json.status == 409
+        response.contentType == null
+        response.contentAsString == ''
     }
 
     void 'the page respond names for a problem renders it for a client whose Accept header Spring MVC cannot read'() {
@@ -259,15 +260,15 @@ class XmlProblemDetailSpec extends Specification implements ControllerUnitTest<P
         model.problemDetail.detail == 'taken'
     }
 
-    void 'a problem whose status is not an error status is answered with 406 for a client whose Accept header Spring MVC cannot read'() {
+    void 'a problem whose status is not an error status fails as Spring MVC fails it for a client whose Accept header Spring MVC cannot read'() {
         given:
         request.addHeader('Accept', 'application/json;q=2')
 
         when:
         controller.respond(ProblemDetail.forStatus(HttpStatus.CONFLICT), status: 200, formats: ['xml', 'json'])
 
-        then:
-        response.status == 406
+        then: "which Spring MVC's exception resolver answers with 406"
+        thrown(HttpMediaTypeNotAcceptableException)
         response.contentAsString == ''
     }
 
