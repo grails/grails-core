@@ -77,6 +77,16 @@ class SpringJsonRespondSpec extends Specification implements HttpClientSupport {
         response.json() == [id: bookId, title: 'The Definitive Guide', author: [id: authorId]]
     }
 
+    void 'the @JsonView of the action selects the properties of a domain class instance respond writes'() {
+        when:
+        def response = http("/book/brief/$bookId")
+
+        then:
+        response.assertStatus(200)
+        response.headerValue('X-Advised-By') == 'ProblemAdvice'
+        response.json() == [title: 'The Definitive Guide']
+    }
+
     void 'a JSON body Jackson binds is saved and written back'() {
         when:
         def response = httpPostJson('/book/save', '{"title":"Grails in Action","isbn":"978-2"}')

@@ -19,6 +19,7 @@
 package org.grails.plugins.web.rest.render
 
 import java.lang.reflect.Method
+import java.lang.reflect.Type
 
 import groovy.transform.CompileStatic
 
@@ -26,8 +27,10 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 
 import org.springframework.core.MethodParameter
+import org.springframework.core.annotation.SynthesizingMethodParameter
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.util.ReflectionUtils
 import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.accept.FixedContentNegotiationStrategy
 import org.springframework.web.context.request.ServletWebRequest
@@ -35,19 +38,23 @@ import org.springframework.web.method.support.ModelAndViewContainer
 import org.springframework.web.servlet.HandlerMapping
 import org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor
 
+import grails.core.GrailsControllerClass
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 
 /**
  * Writes the body of a response as Spring MVC writes the value a {@code @ResponseBody} handler method of the controller
  * returns, with its response body handler, in the type {@code respond} negotiated, with the converter given, and with the
- * application's {@code ResponseBodyAdvice} beans, which apply as to a method of the controller.
+ * application's {@code ResponseBodyAdvice} beans, which apply as to a method of the controller. The handler method is the
+ * action's, where the request names one, so that its annotations, such as {@code @JsonView}, apply as to a Spring MVC
+ * controller method.
  *
  * @since 9.0
  */
 @CompileStatic
 final class SpringResponseBody {
 
-    /** The method a value is written as the return value of. */
+    /** The method a value is written as the return value of where the request names no action of the controller. */
     private static final Method RETURNED_VALUE = SpringResponseBody.getDeclaredMethod('respond')
 
     private SpringResponseBody() {
@@ -71,8 +78,7 @@ final class SpringResponseBody {
                 [converter] as List<HttpMessageConverter<?>>,
                 new ContentNegotiationManager(new FixedContentNegotiationStrategy(type)), advice)
         Object controller = webRequest.attributes?.getController(webRequest.currentRequest)
-        MethodParameter returnType = new MethodParameter(RETURNED_VALUE, -1)
-                .withContainingClass(controller?.getClass() ?: SpringResponseBody)
+        MethodParameter returnType = returnType(webRequest, controller)
         HttpServletRequest request = webRequest.currentRequest
         HttpServletResponse response = webRequest.currentResponse
         // the type and encoding a renderer set for its format are the ones Spring MVC sets for the converter
@@ -92,6 +98,67 @@ final class SpringResponseBody {
             }
         }
         webRequest.renderView = false
+    }
+
+    /**
+     * The return type the value is written as: of the action the request names, with the action's annotations, or of
+     * a method that stands for it, where the request names none, as a unit test that calls an action may not.
+     */
+    private static MethodParameter returnType(GrailsWebRequest webRequest, Object controller) {
+        Class<?> controllerType = controller?.getClass()
+        String actionName = webRequest.actionName
+        if (controllerType != null && actionName) {
+            Object controllerClass = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS)
+            // the action as its URL names it, such as show-book with the hyphenated URL converter, to the name of its method
+            String methodName = controllerClass instanceof GrailsControllerClass ?
+                    ((GrailsControllerClass) controllerClass).actionUriToViewName(actionName) : actionName
+            Method method = ReflectionUtils.findMethod(controllerType, methodName)
+            if (method != null) {
+                return new ActionReturnType(method, controllerType)
+            }
+        }
+        return new MethodParameter(RETURNED_VALUE, -1).withContainingClass(controllerType ?: SpringResponseBody)
+    }
+
+    /**
+     * The return type of an action as {@code respond} writes a value: the action's method, without parameters, which
+     * has the action's annotations, of the controller, and declared to return {@code Object}, whatever the action
+     * declares, since the value is the one {@code respond} is given rather than what the action returns.
+     */
+    @CompileStatic
+    private static final class ActionReturnType extends SynthesizingMethodParameter {
+
+        private final Class<?> controllerType
+
+        ActionReturnType(Method method, Class<?> controllerType) {
+            super(method, -1)
+            this.controllerType = controllerType
+        }
+
+        private ActionReturnType(ActionReturnType original) {
+            super(original)
+            this.controllerType = original.controllerType
+        }
+
+        @Override
+        Class<?> getContainingClass() {
+            return controllerType
+        }
+
+        @Override
+        Class<?> getParameterType() {
+            return Object
+        }
+
+        @Override
+        Type getGenericParameterType() {
+            return Object
+        }
+
+        @Override
+        ActionReturnType clone() {
+            return new ActionReturnType(this)
+        }
     }
 
     /** Stands for the handler method of the controller that responds with the value. */

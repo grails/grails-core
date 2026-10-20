@@ -52,6 +52,38 @@ writes JSON with the legacy `grails.converters.JSON`, which does not use the ser
 applies to `grails.converters.JSON` only.
 
 
+==== Jackson Views of an Action
+
+
+With `grails.web.rendering.json.spring: true`, annotate an action `@JsonView` to have `respond` write the properties of
+that view, as Spring MVC writes the value of a controller method annotated so:
+
+[source,groovy]
+----
+import com.fasterxml.jackson.annotation.JsonView
+
+class Book {
+    @JsonView(BookViews.Brief)
+    String title
+    String isbn
+}
+
+class BookController {
+
+    @JsonView(BookViews.Brief)
+    def brief(Long id) {
+        respond Book.get(id)
+    }
+}
+----
+
+The properties without the view are written as the mapper's `DEFAULT_VIEW_INCLUSION` decides, which Spring Boot's mapper
+has off. A problem `respond` writes, such as the validation errors of the action, is written with all of its properties,
+and a named configuration, which has a `view` of its own, is not given the action's. In a controller unit test, an
+action the test calls has its annotations applied, as in the application, and `respond` called outside of an action has
+none.
+
+
 ==== Named JSON Configurations
 
 

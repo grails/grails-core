@@ -268,7 +268,8 @@ grails:
 
 `respond` writes the value as Spring MVC writes the value a `@ResponseBody` handler method of the controller returns,
 with Spring MVC's response body handler, so the application's `ResponseBodyAdvice` beans apply to it as to a method of
-the controller, also where a named configuration writes it. Grails selects the first configured MVC
+the controller, also where a named configuration writes it. The handler method is the action's, so its `@JsonView`
+selects the properties written, other than those of a problem or of a named configuration. Grails selects the first configured MVC
 `HttpMessageConverter` that can write the response type and negotiated JSON media type and advertises a JSON media
 type for that class
 (`application/json`, `text/json`, or a `+json` subtype). Generic `*/*` string and byte-array converters

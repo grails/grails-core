@@ -19,8 +19,11 @@
 
 package springjson
 
+import com.fasterxml.jackson.annotation.JsonView
+
 class Book {
 
+    @JsonView(BookViews.Brief)
     String title
     String isbn
     Author author

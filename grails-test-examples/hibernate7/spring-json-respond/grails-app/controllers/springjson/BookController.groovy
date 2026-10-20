@@ -21,6 +21,8 @@ package springjson
 
 import java.util.concurrent.CompletableFuture
 
+import com.fasterxml.jackson.annotation.JsonView
+
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -44,6 +46,11 @@ class BookController {
 
     def summary(Long id) {
         respond Book.get(id), excludes: ['isbn']
+    }
+
+    @JsonView(BookViews.Brief)
+    def brief(Long id) {
+        respond Book.get(id)
     }
 
     @Transactional
