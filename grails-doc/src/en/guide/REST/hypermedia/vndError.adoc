@@ -45,7 +45,7 @@ Content-Type: application/json;charset=UTF-8
 ----
 
 With `grails.web.rendering.json.spring: true`, which is the default from Grails 10, `respond` sends the
-errors as an RFC 9457 problem instead, and new applications should use that response:
+errors as an RFC 9457 problem instead:
 
 [source,groovy]
 ----
