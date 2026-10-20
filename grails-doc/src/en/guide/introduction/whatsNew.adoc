@@ -151,9 +151,8 @@ runtimeOnly 'org.apache.grails.async:grails-async-rxjava3'
 runtimeOnly 'org.apache.grails.events:grails-events-rxjava3'
 ----
 
-The `Promise` and `EventBus` APIs an application uses are the same, and the RxJava 3 promise factory now
-carries a `null` value as the RxJava 1 one does, so an application that only uses the Grails APIs needs no
-code change. See <<asyncPromises,Promises>> and <<events,Events>>.
+The `Promise` and `EventBus` APIs an application uses are the same, so an application that only uses the
+Grails APIs needs no code change. See <<asyncPromises,Promises>> and <<events,Events>>.
 
 ==== Plugin Beans Register Before Spring Boot Auto-Configuration
 

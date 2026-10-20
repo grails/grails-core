@@ -381,5 +381,5 @@ They keep working in Grails 9 and log a warning when their promise factory or ev
 Replace either dependency with the RxJava 3 module, `grails-async-rxjava3` or `grails-events-rxjava3`; the `Promise` and `EventBus` APIs an application uses are the same.
 See <<asyncPromises,Promises>> and <<events,Events>>.
 
-`grails-async-rxjava3` now carries a `null` value as the RxJava 1 factory and every other promise factory do: `createPromise()` and `createPromise(Class)` give a promise whose `get()` returns `null`, a task that returns `null` resolves to `null`, and a `null` value keeps its place in the list that `onComplete`, `onError` and `waitAll` deliver.
-Before this release, as in `grails-async-rxjava2` still, `createPromise()` and `onComplete` over a list holding a bound promise of `null` failed with a `NullPointerException`, and a task that returned `null` resolved to the `java.lang.Void` class.
+`grails-async-rxjava3` carries a `null` value as the RxJava 1 factory and every other promise factory do: `createPromise()` and `createPromise(Class)` give a promise whose `get()` returns `null`, a task that returns `null` resolves to `null`, and a `null` value keeps its place in the list that `onComplete`, `onError` and `waitAll` deliver.
+`grails-async-rxjava2` does not: there `createPromise()` and `onComplete` over a list holding a bound promise of `null` fail with a `NullPointerException`, and a task that returns `null` resolves to the `java.lang.Void` class.
