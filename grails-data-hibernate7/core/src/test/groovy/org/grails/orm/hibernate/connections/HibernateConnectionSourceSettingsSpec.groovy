@@ -18,6 +18,7 @@
  */
 package org.grails.orm.hibernate.connections
 
+import groovy.json.JsonSlurper
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.hibernate.dialect.H2Dialect
 import org.springframework.core.io.UrlResource
@@ -116,6 +117,30 @@ class HibernateConnectionSourceSettingsSpec extends Specification {
         listeners['merge'].is(interceptor)
         listeners['create'].is(interceptor)
         listeners['create-onflush'].is(onFlushListener)
+    }
+
+    void "the settings have no switch of the domain binding: hibernate.generatedDomainClasses is not a setting and is ignored when configured"() {
+        when:
+        HibernateConnectionSourceSettings settings = new HibernateConnectionSourceSettingsBuilder(
+                DatastoreUtils.createPropertyResolver(['hibernate.generatedDomainClasses': false, 'hibernate.flush.mode': 'commit'])).build()
+
+        then:
+        !settings.hibernate.hasProperty('generatedDomainClasses')
+        settings.hibernate.flush.mode.toString() == 'COMMIT'
+    }
+
+    void "the published configuration metadata lists hibernate.generatedDomainClasses as removed, so an IDE flags it"() {
+        given: 'the metadata an IDE shows for the key'
+        URL metadata = HibernateConnectionSourceSettings.getResource('/META-INF/additional-spring-configuration-metadata.json')
+        Map property = ((List<Map>) ((Map) new JsonSlurper().parse(metadata)).get('properties')).find {
+            it.get('name') == 'hibernate.generatedDomainClasses'
+        }
+
+        expect:
+        property != null
+        !property.containsKey('defaultValue')
+        ((Map) property.get('deprecation')).get('level') == 'error'
+        (property.get('description') as String).contains('No longer used')
     }
 
     void "test toProperties with dirty checking and custom config"() {

@@ -1,0 +1,299 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *    https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+package org.grails.orm.hibernate.cfg.domainbinding.jpa
+
+import spock.lang.IgnoreIf
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Unroll
+
+/**
+ * The frozen oracle itself ({@link ClassicOracle}): that its serialisation is deterministic, that the recorded files are the canonical
+ * rendering of what they hold and cover every scanned fixture, that a fixture without recorded data is refused with a message that says how
+ * to record it, and that the RECORD mode records exactly the groups that have no record and writes every other record back as it is. That
+ * a changed recorded fact makes the comparison fail is proven in {@code GrailsDomainGeneratorDifferentialSpec} and
+ * {@code GeneratedDomainClassesDdlDifferentialSpec}, which own the comparisons.
+ */
+class ClassicOracleSpec extends Specification {
+
+    static final List<String> ORACLES = ['generator-differential', 'ddl-differential']
+
+    @Shared
+    List<List<Class<?>>> groups = ScannedDomainClasses.groupByAssociation(ScannedDomainClasses.findEntities())
+
+    void "the serialisation is deterministic and independent of the order a map was built in"() {
+        given:
+        Map<String, Object> first = new LinkedHashMap<String, Object>()
+        first.putAll([b: [z: 1, a: [true, null, 'text']], a: null, c: 'x'])
+        Map<String, Object> second = new LinkedHashMap<String, Object>()
+        second.putAll([c: 'x', a: null, b: [a: [true, null, 'text'], z: 1]])
+
+        expect:
+        ClassicOracle.canonical(first) == ClassicOracle.canonical(first)
+        ClassicOracle.canonical(first) == ClassicOracle.canonical(second)
+        ClassicOracle.canonical(first) == '{"b":{"a":[true,null,"text"],"z":1},"c":"x"}'
+        ClassicOracle.canonical(first, true) == '{"a":null,"b":{"a":[true,null,"text"],"z":1},"c":"x"}'
+    }
+
+    void "a serialised value is read back as it was and serialises to the same text"() {
+        given:
+        Map<String, Object> value = [name: 'tab\tand\nnewline "quoted" é', count: 3, flag: false, list: [[x: 1], [x: 2]]]
+
+        when:
+        Object parsed = ClassicOracle.parse(ClassicOracle.canonical(value))
+
+        then:
+        parsed == value
+        ClassicOracle.canonical(parsed) == ClassicOracle.canonical(value)
+        !ClassicOracle.canonical(value).contains('\t')
+        !ClassicOracle.canonical(value).contains('\n')
+    }
+
+    void "what varies from boot to boot is left out"() {
+        expect:
+        ClassicOracle.canonical([name: 'g.A$__clinit__closure1$_closure2@3ff5aef4']) == '{"name":"g.A$__clinit__closure1$_closure2@0"}'
+        ClassicOracle.stableReason('Could not instantiate org.Foo@1b2c3d4e5 (see log)') == 'Could not instantiate org.Foo@# (see log)'
+        ClassicOracle.stableReason('plain reason') == 'plain reason'
+    }
+
+    void "a section is rendered and parsed back to the same lines"() {
+        given:
+        ClassicOracle.Section section = new ClassicOracle.Section('x.First', [members: ['x.First', 'x.Second']])
+        section.add('table', 'first_table', [columns: [id: [nullable: false, default: null]]], true)
+        section.add('script', '', 'CREATE TABLE "T"(\n  "ID" BIGINT\t);', true)
+
+        when:
+        Map<String, ClassicOracle.Section> parsed = ClassicOracle.parseText(section.render())
+
+        then:
+        parsed.keySet() == ['x.First'].toSet()
+        parsed['x.First'].header == [members: ['x.First', 'x.Second']]
+        parsed['x.First'].parsedByKey('table') == ['first_table': [columns: [id: [nullable: false, default: null]]]]
+        parsed['x.First'].parsed('script') == ['CREATE TABLE "T"(\n  "ID" BIGINT\t);']
+        ClassicOracle.render(parsed) == section.render()
+    }
+
+    @Unroll
+    void "the recorded file #oracle is the canonical rendering of what it holds"() {
+        given:
+        String text = ClassicOracle.getResourceAsStream("/${ClassicOracle.RESOURCE_DIRECTORY}/${oracle}.txt").getText('UTF-8')
+
+        expect:
+        ClassicOracle.render(ClassicOracle.read(oracle)) == text
+
+        where:
+        oracle << ORACLES
+    }
+
+    @IgnoreIf(value = { ClassicOracle.currentMode() == ClassicOracle.Mode.RECORD },
+            reason = 'a recording run writes the file the differential specs read from the classpath; run again to check it')
+    @Unroll
+    void "the recorded file #oracle holds every scanned group, and only those"() {
+        given:
+        ClassicOracle frozen = new ClassicOracle(oracle, ClassicOracle.Mode.FROZEN)
+        Map<String, List<String>> scanned = groups.collectEntries { List<Class<?>> group -> [(group.first().name): group*.name] }
+
+        expect: "the groups, with the classes they are made of, are the ones scanned now"
+        frozen.recordedKeys() == scanned.keySet()
+        scanned.every { String key, List<String> members -> frozen.recordedSection(key).header.members == members }
+
+        and: "every scanned domain class is in one recorded group"
+        scanned.values().flatten().toSet() == ScannedDomainClasses.findEntities()*.name.toSet()
+
+        and: "a group the classic binder cannot boot has its reason and nothing else, and a group it booted has content, but for the few whose entities live in another data source"
+        scanned.keySet().every { String key ->
+            ClassicOracle.Section section = frozen.recordedSection(key)
+            section.header.unbootable == null || (!section.header.unbootable.toString().isEmpty() && section.records.isEmpty())
+        }
+        scanned.keySet().count { String key ->
+            ClassicOracle.Section section = frozen.recordedSection(key)
+            section.header.unbootable == null && section.records.isEmpty()
+        } <= 20
+        scanned.keySet().count { String key -> !frozen.recordedSection(key).records.isEmpty() } > 700
+
+        where:
+        oracle << ORACLES
+    }
+
+    @IgnoreIf(value = { ClassicOracle.currentMode() == ClassicOracle.Mode.RECORD },
+            reason = 'a recording run writes the file the differential specs read from the classpath; run again to check it')
+    void "the groups the classic binder booted have their entities in the generator oracle and their tables and statements in the DDL oracle"() {
+        given:
+        ClassicOracle generator = new ClassicOracle('generator-differential', ClassicOracle.Mode.FROZEN)
+        ClassicOracle ddl = new ClassicOracle('ddl-differential', ClassicOracle.Mode.FROZEN)
+        Set<String> withEntities = generator.recordedKeys().findAll { String key -> !generator.recordedSection(key).parsedByKey('entity').isEmpty() }
+        Set<String> withTables = ddl.recordedKeys().findAll { String key -> !ddl.recordedSection(key).parsedByKey('table').isEmpty() }
+
+        expect: "the groups the DDL oracle holds tables of are among those the generator oracle holds entities of (the DDL snapshot cannot describe a few more)"
+        withEntities.size() > 700
+        withEntities.containsAll(withTables)
+        withTables.count { String key -> !ddl.recordedSection(key).parsed('script').isEmpty() } > 700
+    }
+
+    @Unroll
+    void "a fixture with no recorded data fails with the way to record it (#oracle)"() {
+        given:
+        ClassicOracle frozen = new ClassicOracle(oracle, ClassicOracle.Mode.FROZEN)
+        boolean booted = false
+
+        when:
+        frozen.section('org.example.NewFixture', ['org.example.NewFixture']) {
+            booted = true
+            return new ClassicOracle.Section('org.example.NewFixture', [members: ['org.example.NewFixture']])
+        }
+
+        then:
+        IllegalStateException e = thrown()
+        e.message.contains('org.example.NewFixture')
+        e.message.contains('-Pgrails.test.recordClassicOracle=true')
+        e.message.contains('src/test/resources/classic-oracle/')
+        !booted
+
+        where:
+        oracle << ORACLES
+    }
+
+    @Unroll
+    void "a recorded group whose classes changed fails with the way to record it (#oracle)"() {
+        given:
+        ClassicOracle frozen = new ClassicOracle(oracle, ClassicOracle.Mode.FROZEN)
+        String key = frozen.recordedKeys().first()
+        List<String> members = (List<String>) frozen.recordedSection(key).header.members
+
+        when:
+        frozen.section(key, members + ['org.example.AddedToTheGroup']) { null }
+
+        then:
+        IllegalStateException e = thrown()
+        e.message.contains('-Pgrails.test.recordClassicOracle=true')
+
+        where:
+        oracle << ORACLES
+    }
+
+    void "the frozen mode does not call the recorder for a recorded group and returns the recorded section"() {
+        given:
+        ClassicOracle frozen = new ClassicOracle('ddl-differential', ClassicOracle.Mode.FROZEN)
+        String key = frozen.recordedKeys().first()
+        List<String> members = (List<String>) frozen.recordedSection(key).header.members
+        boolean booted = false
+
+        when:
+        ClassicOracle.Section section = frozen.section(key, members) { booted = true; null }
+
+        then:
+        !booted
+        section.is(frozen.recordedSection(key))
+        frozen.drift.isEmpty()
+    }
+
+    void "the frozen mode reports recorded groups that were not visited, with the way to drop them"() {
+        given:
+        ClassicOracle frozen = new ClassicOracle('generator-differential', ClassicOracle.Mode.FROZEN)
+
+        when:
+        frozen.finish()
+
+        then:
+        frozen.drift.size() == frozen.recordedKeys().size()
+        frozen.drift.every { String line -> line.contains('no scanned fixture') && line.contains('-Pgrails.test.recordClassicOracle=true') }
+    }
+
+    void "the record mode returns a recorded group without calling the recorder, and writes nothing when every record is backed"() {
+        given:
+        File directory = File.createTempDir('classic-oracle', 'record')
+        ClassicOracle record = new ClassicOracle('ddl-differential', ClassicOracle.Mode.RECORD, directory)
+        boolean booted = false
+
+        when:
+        record.recordedKeys().each { String key ->
+            record.section(key, (List<String>) record.recordedSection(key).header.members) { booted = true; null }
+        }
+        record.finish()
+
+        then:
+        !booted
+        record.recordedNow.isEmpty()
+        record.dropped.isEmpty()
+        !new File(directory, 'ddl-differential.txt').exists()
+
+        cleanup:
+        directory.deleteDir()
+    }
+
+    void "the record mode records a group that has no record from the recorder, at its place in the scan order, and writes every other record back as it is"() {
+        given:
+        File directory = File.createTempDir('classic-oracle', 'record')
+        String original = ClassicOracle.getResourceAsStream("/${ClassicOracle.RESOURCE_DIRECTORY}/ddl-differential.txt").getText('UTF-8')
+        ClassicOracle record = new ClassicOracle('ddl-differential', ClassicOracle.Mode.RECORD, directory)
+        List<String> keys = record.recordedKeys().toList()
+        ClassicOracle.Section fresh = new ClassicOracle.Section('org.example.NewFixture', [members: ['org.example.NewFixture']])
+        fresh.add('table', 'new_fixture', [columns: [id: [type: 'bigint']]], true)
+        int booted = 0
+
+        when: "the scan visits the new group after the third recorded one"
+        keys.eachWithIndex { String key, int index ->
+            record.section(key, (List<String>) record.recordedSection(key).header.members) { booted++; null }
+            if (index == 2) {
+                record.section('org.example.NewFixture', ['org.example.NewFixture']) { booted++; fresh }
+            }
+        }
+        record.finish()
+        String written = new File(directory, 'ddl-differential.txt').getText('UTF-8')
+
+        then: "the recorder ran for the new group only"
+        booted == 1
+        record.recordedNow == ['org.example.NewFixture']
+        record.dropped.isEmpty()
+
+        and: "the file is the original with the new section inserted after the third group, byte for byte otherwise"
+        written.length() == original.length() + fresh.render().length()
+        written.startsWith(original.substring(0, original.indexOf("@group\t${keys[3]}\t")))
+        written.endsWith(original.substring(original.indexOf("@group\t${keys[3]}\t")))
+        written.contains(fresh.render())
+        ClassicOracle.parseText(written).keySet().toList() == keys[0..2] + ['org.example.NewFixture'] + keys[3..-1]
+
+        cleanup:
+        directory.deleteDir()
+    }
+
+    void "the record mode drops a recorded group no scanned fixture makes up any more and says so"() {
+        given:
+        File directory = File.createTempDir('classic-oracle', 'record')
+        ClassicOracle record = new ClassicOracle('ddl-differential', ClassicOracle.Mode.RECORD, directory)
+        List<String> keys = record.recordedKeys().toList()
+        String gone = keys.last()
+
+        when:
+        keys.findAll { it != gone }.each { String key ->
+            record.section(key, (List<String>) record.recordedSection(key).header.members) { null }
+        }
+        record.finish()
+        Map<String, ClassicOracle.Section> written = ClassicOracle.parseText(new File(directory, 'ddl-differential.txt').getText('UTF-8'))
+
+        then:
+        record.dropped == [gone]
+        record.recordedNow.isEmpty()
+        written.keySet().toList() == keys - gone
+        written.values()*.render() == (keys - gone).collect { String key -> record.recordedSection(key).render() }
+
+        cleanup:
+        directory.deleteDir()
+    }
+}

@@ -89,6 +89,7 @@ class HibernateConnectionSourceSettings extends ConnectionSourceSettings {
          * Whether to use Hibernate's dirty checking instead of Grails'
          */
         boolean hibernateDirtyChecking = false
+
         /**
          * Cache settings
          */

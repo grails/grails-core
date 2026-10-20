@@ -143,3 +143,430 @@ The Groovy actor event bus delivers each event to its subscribers in publication
 Applications that use GPars directly, for example `GParsPool.withPool { list.eachParallel { } }`, should move to the Groovy equivalents: the parallel collection methods are available on every `Collection` without a pool, and `groovy.concurrent.ParallelScope.withPool(n) { scope -> list.eachParallel { } }` runs them on a pool of a chosen size. Once the deprecated modules are removed, Grails will no longer bring GPars onto the classpath, so an application that still needs it must declare `org.codehaus.gpars:gpars` itself.
 
 NOTE: Groovy 6 marks the concurrency toolkit as incubating. The Grails modules that build on it expose only the Grails `Promise` and `EventBus` contracts, so changes to the Groovy API in later Groovy releases are absorbed by Grails rather than by application code.
+
+==== 2. Groovy Code Is Compiled with invokedynamic
+
+Grails 8 compiles every Groovy source set of an application without invokedynamic (`grails { indy = false }` was the default). Grails 9 leaves the setting unset, so the Groovy compiler's own default applies, and on Groovy 6 that is invokedynamic. An application that set `grails { indy = true }` can remove the line. Build logic that read the property, for example `grails.indy.get()`, must allow for it having no value now: use `grails.indy.getOrElse(true)` or check `grails.indy.present`.
+
+An application that has to keep classic call sites, for example while it measures the difference, sets the property explicitly. An application that applies GraalVM's native image plugin cannot: the build fails with the reason, because an image needs invokedynamic.
+
+To keep classic call sites:
+
+[source,groovy]
+.build.gradle
+----
+grails {
+    indy = false
+}
+----
+
+Classic call sites on Groovy 6 need `org.apache.groovy:groovy-callsite` on the classpath. Grails does not carry it, so an application that sets `indy` to `false` declares `implementation 'org.apache.groovy:groovy-callsite'` itself, at the version the Grails BOM manages, and again for every source set that does not see its implementation dependencies, such as the test fixtures of Gradle's `java-test-fixtures` plugin. Without it the Groovy compiler stops with a message naming the module.
+
+A library compiled with classic call sites needs the module too, whatever the application's own setting, because Groovy 6 loads such a class only with it; the failure is a `NoClassDefFoundError` naming `org.codehaus.groovy.runtime.callsite.CallSiteArray`. Spock 2.5, Geb 8 and the Asset Pipeline 5.2 are compiled with invokedynamic, but `org.testcontainers:testcontainers-spock` is not, so an application that uses it declares `testRuntimeOnly 'org.apache.groovy:groovy-callsite'` next to it.
+
+==== 3. `grails.converters.JSON` Can Write JSON With Spring Boot's JsonMapper
+
+In Grails 9, `render ... as JSON`, `respond` for a JSON request and every other use of `grails.converters.JSON` still
+render JSON as Grails 8 did, by default (see <<renderingJsonAsGrails8,Rendering JSON As Grails 8 Did>>). Setting
+`grails.converters.json.legacy` to `false` makes the JSON converter write JSON through the application's Jackson
+`JsonMapper`, the one Spring Boot auto-configures, so that it renders values as a Spring Boot application does. A later
+release makes that the default, so check your application's JSON with the setting before you upgrade to it:
+
+[source,yaml]
+----
+grails:
+    converters:
+        json:
+            legacy: false
+----
+
+While `grails.converters.json.legacy` is not set, Grails logs a warning once at startup that the default will change.
+Setting it to either value turns the warning off.
+
+With the setting `false`, the mapper writes the JSON text (numbers and pretty printing), and writes every single value
+that it has a dedicated serializer for: dates and times, `Month`, `UUID`, `Locale`, `byte[]`, types with a `@JsonValue`,
+and the types of any Jackson module registered with the application. Those values render as Spring Boot renders them,
+and `spring.jackson.*` properties apply to them. For example, `spring.jackson.time-zone` writes `Date` and `Calendar`
+values in that time zone, and converts `OffsetDateTime` and `ZonedDateTime` values to it. When the application context
+has no `JsonMapper`, or has several and none is primary, as in a unit test, a default `JsonMapper` is used.
+
+Parsing JSON does not change. `JSON.parse`, `request.JSON` and `new JSONObject(String)` parse with Grails' own
+`JSONTokener`, as before: they accept the same syntax beyond strict JSON (single quotes, comments, unquoted values,
+uppercase literals, trailing commas, `new Date(...)`), return the same number types (`Integer`, `Long`, `BigInteger`,
+`Double` or `BigDecimal`, depending on the number) and the same `JSONObject` and `JSONArray` containers, which implement
+`Map` and `List`.
+
+With the setting `false`, Grails marshallers still render domain classes, beans, enums, collections, maps and arrays,
+and now records (as an object of their components) and `Optional` (as its value), so the values they contain are
+rendered as any other value is. A marshaller that an application registers, with `JSON.registerObjectMarshaller(...)` or an
+`ObjectMarshallerRegisterer`, still takes precedence over the mapper for the types it supports.
+
+A Jackson module registered with the application, such as a `JacksonModule` bean or a `@JacksonComponent` serializer,
+applies to `grails.converters.JSON` with the setting `false`, where Grails 8 ignored it. When a module provides a serializer for a type that
+Grails 8 rendered as a bean, the serializer renders it instead. The values that the serializer writes, such as a property
+it writes with `JsonGenerator#writePOJO`, are rendered by the converter as any other value is, so registered marshallers,
+enum names and the circular reference behaviour apply to them. A marshaller registered for the type itself takes
+precedence over the module's serializer.
+
+With the setting `false`, two things deliberately differ from Spring Boot, as they do in Grails 8:
+
+* Enums, including one with a `@JsonValue`, render by `name()`, where Jackson 3 writes `toString()` or the `@JsonValue`,
+so that the JSON binds back to the enum.
+* Strings are escaped for an HTML `<script>` element: `</` is written as `<\u002f` (as `<\/` in a `GString` or a
+`StreamCharBuffer`, as in Grails 8), and U+2028 and U+2029 as `\u2028` and `\u2029`. The parsed values are the same as
+Spring Boot's.
+
+With the setting `false`, the following values render differently than in Grails 8:
+
+[cols="2,2,3", options="header"]
+|===
+| Value
+| Grails 8, and Grails 9 by default
+| `legacy: false`
+
+| `OffsetTime`
+| `"03:00:00-03:00"`, `"03:00:00.5+05:30"`
+| `"03:00-03:00"`, `"03:00:00.500+05:30"`, from `OffsetTime#toString()`
+
+| `Month`
+| `"SEPTEMBER"`
+| `9`, a JSON number. A `Month` binds back from its number.
+
+| `java.util.Locale`
+| `"zh_TW_#Hant"`, from `Locale#toString()`
+| `"zh-Hant-TW"`, its language tag
+
+| `char`, `Character`
+| `{}`
+| `"c"`
+
+| `byte[]`
+| `[1,2,3]`
+| `"AQID"`, Base64
+
+| `UUID`, `URI`, a type with a `@JsonValue` other than an enum
+| an object of its bean properties
+| its value, such as `"123e4567-e89b-12d3-a456-426614174000"`
+
+| `java.util.regex.Pattern`, `java.nio.charset.Charset`, `java.net.InetAddress`
+| an object of its bean properties
+| its string, such as `"a+b"`, `"UTF-8"` or the host name
+
+| `java.io.File`, `java.nio.file.Path`, `java.nio.ByteBuffer`
+| a failure to render it
+| `"/tmp/a.txt"`, `"file:///tmp/a.txt"`, and `"AQID"`, Base64
+
+| `char[]`
+| `[{},{}]`
+| `"ab"`
+
+| An enum constant with a body, whose class is a subclass of its enum
+| an object of its bean properties
+| its name, as any enum
+
+| `tools.jackson.databind.JsonNode`
+| an object of its bean properties
+| the JSON it holds
+
+| `Optional`
+| `{"empty":false,"present":true}`
+| its value, or `null` when it is empty
+
+| A `NaN` or infinite `double`
+| `NaN`, which is not valid JSON
+| `"NaN"`
+
+| Pretty printed JSON (`grails.converters.json.pretty.print`, `JSON#toString(true)`)
+| `"a": 1`, with every array element on its own line, or, from `toString(true)`, indented by three spaces
+| `"a" : 1`, the layout of the mapper's default pretty printer
+
+| A single value, such as `render Role.HEAD as JSON`
+| a `ConverterException`
+| the JSON value, `"HEAD"`
+|===
+
+The other default date and time formats are the same as Grails 8.0.0's, which already renders `Date`, `Calendar`,
+`java.sql.Date` and `java.sql.Timestamp` with millisecond precision and supports the additional date and time types.
+With the setting `false`, map keys use the mapper's key serializers, instead of Grails' fixed date formats or the key's
+`toString()`: a `Date` or `Calendar` key is written in the mapper's configured date format and time zone, a
+`ZonedDateTime` or `OffsetDateTime` key keeps its own offset, as before, a `Class` key is its name
+(`"java.lang.String"`, where Grails 8 wrote `"class java.lang.String"`), and the key of a type with a `@JsonValue` is
+that value.
+
+With the setting `false`, `JSON#toString(false)` does not indent the JSON when `grails.converters.json.pretty.print` is
+`true`; Grails 8 ignored the argument. JSON that is not pretty printed is not indented either when the application's
+`JsonMapper` indents its output (`spring.jackson.serialization.indent-output`).
+
+With the setting `false`, the JSON marshallers that rendered these values are not registered. They are deprecated:
+`DateMarshaller`, `CalendarMarshaller`, `ToStringBeanMarshaller`, `ByteArrayMarshaller`,
+`InstantMarshaller`, `LocalDateMarshaller`, `LocalDateTimeMarshaller`, `OffsetDateTimeMarshaller` and
+`ZonedDateTimeMarshaller`, in the `org.grails.web.converters.marshaller.json` package. To render one of these types
+differently, register a marshaller for it, or configure the `JsonMapper`. The XML marshallers of the same names are not
+changed. The default JSON marshallers have implicit priorities that follow their order (-1, -2, and so on), and with
+the setting `false` that order differs, so a marshaller registered with an explicit negative priority may come before or
+after different defaults.
+
+Whatever the setting, `org.grails.web.json.JSONWriter`, which the converter and its marshallers write to, now writes
+through a Jackson `JsonGenerator`, and `new JSONWriter(writer)` writes with a default `JsonMapper`:
+
+* It keeps its public methods, rejects the same misplaced calls, and writes the same JSON text. It also accepts a single
+value outside any object or array, where it threw a `JSONException`.
+* The generator buffers the text. It reaches the `Writer` as the buffer fills, once the JSON text is complete, and when
+`flush()` is called, rather than as each value is written. The `Writer` itself is not flushed or closed.
+* `array()`, `object()`, `key()` and the `value` methods no longer go through the protected `append` and `comma`
+methods. A subclass that overrides those to change the output, or writes to the `writer` field directly, must use the
+public methods instead.
+* `PrettyPrintJSONWriter` still indents as Grails 8 did, and is deprecated. Use
+`new JSONWriter(writer, new JsonMapperSupport(jsonMapper), true)`, which indents with the mapper's default pretty printer.
+
+The JavaCC JSON parser in `org.grails.web.json.parser` (`JSONParser`), which Grails does not use, is deprecated. Use
+`JSON.parse` or `new JSONObject(String)`.
+
+Whatever the setting, with the `PATH` circular reference behaviour (`grails.converters.json.circular.reference.behaviour`),
+an object with a `null` property, or a single value, now renders instead of failing, and a reference that follows a
+number now has the right path: `"root.x.other"` where Grails 8 wrote `"root.x.n"`, after a property `n` that is a
+number.
+
+JSON views, the XML converter and the HAL renderer are not changed.
+
+[[renderingJsonAsGrails8]]
+===== Rendering JSON As Grails 8 Did
+
+`grails.converters.json.legacy` is `true` by default in Grails 9. The JSON converter then renders values, including
+domain classes, with the marshallers of Grails 8, formats map keys and indents pretty printed JSON as Grails 8 did, and
+writes with a default `JsonMapper`, so that the application's `spring.jackson.*` settings and Jackson modules do not
+change the text: `render ... as JSON` and `JSON#toString` return the same text as in Grails 8. What Grails 8 failed to
+render, or rendered as invalid JSON, such as a single value, `NaN`, or a to-many association whose value is a `Map` with
+other than one entry, renders as it does with the setting `false`. A reference that the `PATH` circular reference
+behaviour writes after a number also has the right path, as described above, where Grails 8 wrote a wrong one. A later
+release makes `false` the default; setting `grails.converters.json.legacy` to `true` explicitly keeps the Grails 8
+rendering, and turns off the warning that Grails logs while it is not set. With
+`grails.converters.json.domain.jackson.enabled` set to `true` as well, the JSON converter still renders as Grails 8 did,
+and the application's `JsonMapper` renders domain classes with the module, as described below.
+
+With the setting `false`, to keep the Grails 8 rendering of some types only, register a marshaller for each, for
+example in `BootStrap.init`:
+
+[source,groovy]
+----
+JSON.registerObjectMarshaller(Month) { Month month -> month.name() }
+JSON.registerObjectMarshaller(Locale) { Locale locale -> locale.toString() }
+JSON.registerObjectMarshaller(byte[]) { byte[] bytes -> bytes as List }
+----
+
+==== 4. Domain Classes Can Render Through a Jackson Serializer
+
+With `grails.converters.json.legacy` set to `false`, the JSON converter renders domain classes with a Jackson serializer,
+`DomainClassSerializer`, as `DomainClassMarshaller` rendered them, with these changes:
+
+* A property annotated with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, is no longer rendered.
+* A to-many association whose value is a `Map` renders as an object of references, such as `{"a":{"id":1}}`, where it
+failed before.
+* `DomainClassMarshaller` and `DeepDomainClassMarshaller` render through the serializer. Their constructors and
+protected methods (`includesProperty`, `excludesProperty`, `extractValue`, `asShortObject` and
+`isRenderDomainClassRelations`) are unchanged, and a subclass that overrides them still renders as it did. They are
+consulted before the mapper's value serializers, as `ProxyUnwrappingMarshaller` is.
+
+The application's `JsonMapper` is not changed: writing a domain class instance with it, such as returning one from a
+Spring MVC controller, renders it as a Jackson bean, as in Grails 8. To have the mapper render domain classes as
+`render ... as JSON` does, set `grails.converters.json.domain.jackson.enabled` to `true`:
+
+[source,yaml]
+----
+grails:
+    converters:
+        json:
+            domain:
+                jackson:
+                    enabled: true
+----
+
+Grails then registers the serializer with the mapper, as a Jackson module, and the mapper renders associated instances as
+references of their id, such as `{"id":3}`, rather than in full, and proxies as the instances they proxy. Of what
+Jackson's bean serialization applies to a domain class, the serializer applies the following:
+
+* It leaves out a property annotated with `@JsonIgnore`, or with `@JsonProperty(access = WRITE_ONLY)`, on its field or
+getter, and the properties that a class-level `@JsonIgnoreProperties` names, such as those GORM names in the one it adds
+to every domain class.
+* It names the properties as Jackson does, by `@JsonProperty`, `@JsonNaming` and the mapper's naming strategy
+(`spring.jackson.property-naming-strategy`), and names the id of a reference as the referenced class names it.
+* It writes the type id of a domain class with `@JsonTypeInfo`. With `include = EXISTING_PROPERTY`, the type id is the
+value of that property, so it is written only when the property is persistent; a transient or computed one is not.
+* It writes the properties of a domain class instance in a `@JsonUnwrapped` property into the enclosing object. As with
+Jackson's own unwrapping, an instance with a type id fails there, unless
+`SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS` is disabled.
+* A domain class with its own `@JsonSerialize` serializer, with a `@JsonValue`, or that implements `JacksonSerializable`
+is written by Jackson, and so is a subclass of a domain class that is neither a domain class nor a proxy of one.
+
+It applies nothing else. Null properties are written whatever `@JsonInclude` or
+`spring.jackson.default-property-inclusion` say, properties are written in the converter's order rather than by
+`@JsonPropertyOrder` or sorted alphabetically, and `@JsonView`, `@JsonFilter`, `@JsonAnyGetter`, `@JsonIgnoreType`,
+`@JsonFormat` and `@JsonSerialize` on a property, and mix-ins, other than the property names they give, do not apply.
+
+==== 5. Hibernate 7 Domain Binding
+
+These notes apply to applications that use GORM for Hibernate 7 (`grails-hibernate7`).
+
+===== 5.1 A Many-to-Many Without `belongsTo` Fails at Startup
+
+A bidirectional many-to-many is written by its owning side, which `belongsTo` designates.
+When neither side declares `belongsTo`, both collections used to be bound as inverse, so no join table row was ever written and the relationship was silently lost.
+The application now refuses to start instead:
+
+[source,text]
+----
+Neither side of the many-to-many between [com.example.Author.books] and [com.example.Book.authors] declares belongsTo, so the relationship would never be stored. Declare belongsTo on the owned side, for example in Book: static belongsTo = Author
+----
+
+The message is a Hibernate `MappingException`.
+It names both sides of each affected relationship, and the sides in alphabetical order.
+
+Declare `belongsTo` on the side that should be owned:
+
+[source,groovy]
+----
+class Book {
+    String title
+    static hasMany = [authors: Author]
+    static belongsTo = Author
+}
+
+class Author {
+    String name
+    static hasMany = [books: Book]
+}
+----
+
+The same applies to a many-to-many from a class to itself: `belongsTo` names the class itself.
+A unidirectional many-to-many, a many-to-many that has `belongsTo` on either side, and one where either side is a `Map` need no change.
+The rule is enforced by native domain binding, see below.
+
+See link:{hibernate7Guide}index.html#gormAssociation-manyToMany[Many-to-Many Associations] in the GORM for Hibernate 7 manual.
+
+===== 5.2 Fixes That Change Mappings and Generated Schemas
+
+The following defects of the Hibernate 7 mapping are fixed.
+They are also fixed in the 8.0.x line, so an application that is already on a recent Grails 8 release has seen them.
+
+* *`insertable: false` and `updatable: false`* were ignored on every property.
+  They are honored now: a column mapped `insertable: false` is left out of the `INSERT`, and one mapped `updatable: false` is left out of the `UPDATE`.
+  Review the domain classes that use them, because values that used to be written are now not written.
+* *Enum columns* did not receive the `comment`, `defaultValue`, `read` and `write` of their column mapping.
+  They do now, so the generated column definition of an enum property changes.
+  Compare the generated schema with your database before you use `dbCreate: update`.
+* *Collections of basic values* of an owner with more than one unidirectional `hasMany` were not written to their table.
+  The elements are now stored.
+  No change is needed.
+* *The inverse side of a many-to-many* read a join table of its own default name when only the owning side named the join table.
+  The inverse side now reads the table that the owner writes.
+  An empty table with the default name may remain in an existing database.
+
+===== 5.3 Native Domain Binding
+
+GORM for Hibernate 7 binds your domain classes with Hibernate's own annotation binder instead of building Hibernate's mapping itself.
+This is native domain binding, and in Grails {version} it is the only binding: an upgraded application starts with it without any setting.
+The classic binding of Grails 8 was removed, with the `hibernate.generatedDomainClasses` setting that selected it.
+An application that still sets the setting, with either value, starts normally and logs a warning at startup that names it; remove the setting.
+
+Your domain classes, your queries and the GORM API do not change.
+The mapping can, though:
+
+* Native binding refuses a mapping only when the classic binding could not use it either: the classic binding failed to start with it, or booted it and failed on the first row.
+  The refusal is an `UnsupportedOperationException` at startup that says what the classic binding did.
+  The manual chapter lists them.
+  The one exception is an embedded object as a part of a composite identifier, which the classic binding booted and native binding refuses with a message that points at a workaround that keeps the schema, see <<native-binding-embedded-id,5.5>>.
+* The generated schema differs from the one of the classic binding in a few documented cases, for example a `check (idx >= 0)` constraint on the index column of every list, and the column types of foreign keys to nested composite identifiers.
+* A few defects of the classic binding are not copied, such as a custom collection type on a `hasMany` being ignored.
+* A `hasMany` inside a class listed in `static embedded` that more than one embedded property embeds gets a collection table of its own for every owner.
+  The classic binding shared one table whose foreign key pointed at only one owner, so the collection of any other owner could not be stored, and it did not start when the properties had the same name.
+  The first owner (by entity name, then property path) keeps the table and the key column it has today, the others get names that start with their table and the path of the embedded property.
+* A custom collection type on a `hasMany` now takes effect, see <<native-binding-custom-collection-type,5.4>>.
+* A `createTable` change set written by `dbm-generate-gorm-changelog` or `dbm-gorm-diff` lists the columns in a different order: the identifier, then the columns in the order of the property names, then the foreign keys.
+  A diff against an existing database does not report this, because Liquibase does not compare column order.
+
+Before you upgrade an application with an existing database:
+
+. Start the upgraded application against a copy of the database and fix every refused mapping; the startup error says what to change.
+. Run `dbm-gorm-diff` against the copy with the upgraded application.
+  An empty diff means the upgrade does not change your schema.
+  Otherwise, compare each reported change with the schema differences in the manual and apply the ones you want through a migration.
+. Run your test suite once.
+
+There is no setting that brings the classic binding back.
+An application whose mappings or database need work stays on Grails 8 until it is done; every refused mapping is one the classic binding could not use either, so the change it needs is the same on both lines.
+
+The link:{hibernate7Guide}index.html#advancedGORMFeatures-nativeDomainBinding[Native Domain Binding] chapter of the GORM for Hibernate 7 manual lists every refused mapping, every schema difference and what each means for an existing database.
+
+[[native-binding-custom-collection-type]]
+===== 5.4 Custom Collection Types Take Effect with Native Binding
+
+A `hasMany` of domain classes can name a Hibernate `UserCollectionType` as its `type`:
+
+[source,groovy]
+----
+class Author {
+    static hasMany = [books: Book]
+    static mapping = {
+        books type: MyCollectionType
+    }
+}
+----
+
+The classic binding of Grails 8 accepted this mapping and created the usual schema, but it never used the class.
+It did not even create an instance of `MyCollectionType`, and `author.books` was an ordinary Hibernate collection.
+
+Native binding applies the type.
+Hibernate creates, wraps and loads the collection with your class, so the code of your collection type runs where it never ran before.
+The schema is the same.
+
+If your application maps a custom collection type, test it with the upgraded application before you deploy.
+A type that was never exercised can fail or behave differently once it is used.
+
+A custom collection type on a `hasMany` of basic values is not supported (the classic binding did not boot it either).
+
+[[native-binding-embedded-id]]
+===== 5.5 An Embedded Object as a Part of a Composite Identifier
+
+Native binding refuses `id composite: ['code', 'address']` where `address` is listed in `static embedded`, because Hibernate cannot hold an embedded object in an identifier class.
+Declare the properties of the embedded class on the entity and name them in the identifier instead:
+
+[source,groovy]
+----
+class Customer implements Serializable {
+    String code
+    String addressStreet
+    String addressCity
+
+    static mapping = {
+        id composite: ['code', 'addressStreet', 'addressCity']
+        addressStreet column: 'address_street'
+        addressCity column: 'address_city'
+    }
+}
+----
+
+The table, its columns and its primary key are the ones the embedded version created with Grails 8 (`address_street` and `address_city` are the names the embedded object gave its columns), so an existing database needs no migration and its rows stay readable.
+A transient `Address getAddress()` accessor keeps `customer.address` working.
+The link:{hibernate7Guide}index.html#nativeDomainBinding-embeddedId[Native Domain Binding] chapter of the GORM for Hibernate 7 manual describes the accessor, the foreign keys to such an entity and how to switch an existing database.
+
+[[untyped-map-property]]
+===== 5.6 A `Map` Property Needs Its Element Type
+
+A `Map` property that is not a `hasMany` has to declare the type of its values:
+
+[source,groovy]
+----
+class Author {
+    String name
+
+    Map<String, String> homeLocation
+}
+----
+
+A property declared as a plain `Map` has no value type for Hibernate 7 to store.
+It does not work with either binding, and the declaration is not a new restriction of Grails {version}: Hibernate 7 has no type for a map whose values are `Object`.
+An application that only ran against Hibernate 5, for example one whose tests never boot the domain class, can still declare such a property.
+
+Declare the key and value types, `Map<String, String>` in the example, before you start the application on Hibernate 7.
+GORM maps are keyed by `String`.
+A map of domain classes is a `hasMany`, as before.

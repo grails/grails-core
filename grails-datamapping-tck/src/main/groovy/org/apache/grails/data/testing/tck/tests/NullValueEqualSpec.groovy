@@ -18,7 +18,6 @@
  */
 package org.apache.grails.data.testing.tck.tests
 
-import spock.lang.IgnoreIf
 
 import org.apache.grails.data.testing.tck.base.GrailsDataTckSpec
 import org.apache.grails.data.testing.tck.domains.TestEntity
@@ -42,7 +41,6 @@ class NullValueEqualSpec extends GrailsDataTckSpec {
         TestEntity.countByAge(null) == 2
     }
 
-    @IgnoreIf({ System.getProperty('hibernate7.gorm.suite') })
     void 'test null value in not equal'() {
         when:
         new TestEntity(name: 'Fred', age: null).save(failOnError: true)

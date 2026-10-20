@@ -25,9 +25,11 @@ import org.grails.forge.cli.CodeGenConfig
 import org.grails.forge.cli.CliRunner
 import org.grails.forge.cli.CommandFixture
 import org.grails.forge.cli.CommandSpec
+import org.grails.forge.cli.GeneratedBuild
 import org.grails.forge.cli.GrailsPicocliFactory
 import org.grails.forge.io.ConsoleOutput
 import picocli.CommandLine
+import spock.util.environment.RestoreSystemProperties
 
 class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
 
@@ -55,6 +57,25 @@ class CreateAppCommandSpec extends CommandSpec implements CommandFixture {
         then:
         noExceptionThrown()
         out.toString().contains("Application created")
+    }
+
+    @RestoreSystemProperties
+    void "a generated build accepts an init script whose path contains spaces"() {
+        given:
+        generateProject(ApplicationType.WEB)
+        File initScript = new File(dir, 'init scripts/verify arguments.gradle')
+        initScript.parentFile.mkdirs()
+        String configuredInitScript = System.getProperty(GeneratedBuild.INIT_SCRIPT_PROPERTY)
+        initScript.setText(configuredInitScript ? new File(configuredInitScript).getText('UTF-8') : '', 'UTF-8')
+        initScript.append("\nprintln 'FORGE_INIT_SCRIPT_LOADED'\n", 'UTF-8')
+        System.setProperty(GeneratedBuild.INIT_SCRIPT_PROPERTY, initScript.absolutePath)
+
+        when:
+        executeGradleCommand('help --console=plain')
+
+        then:
+        testOutputContains('FORGE_INIT_SCRIPT_LOADED')
+        testOutputContains('BUILD SUCCESSFUL')
     }
 
     void "test creating a project with an invalid gorm implementation"() {

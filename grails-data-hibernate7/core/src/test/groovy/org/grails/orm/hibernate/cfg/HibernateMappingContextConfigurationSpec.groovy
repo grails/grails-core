@@ -49,6 +49,11 @@ class HibernateMappingContextConfigurationSpec extends Specification {
         config.dataSourceName == 'default'
     }
 
+    def "the configuration has no switch of the domain binding"() {
+        expect:
+        !new HibernateMappingContextConfiguration().hasProperty('generatedDomainClasses')
+    }
+
     def "setBytecodeProvider stores the provider and getGrailsBytecodeProvider returns it"() {
         given:
         def config = new HibernateMappingContextConfiguration()

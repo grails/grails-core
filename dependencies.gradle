@@ -72,7 +72,7 @@ ext {
     bomDependencyVersions = [
             'asset-pipeline-bom.version'    : '5.2.2',
             'cas-client-core.version'       : '4.1.1',
-            'bootstrap-icons.version'       : '1.13.1',
+            'bootstrap-icons.version'       : '1.13.2',
             'bootstrap.version'             : '5.3.8',
             'checker-qual.version'          : '3.55.1',
             'geb-spock.version'             : '8.0.1',

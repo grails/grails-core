@@ -29,6 +29,11 @@ tasks.withType(Test).configureEach {
     outputs.cacheIf { cacheTests }
     outputs.upToDateWhen { cacheTests }
 
+    // This config does not apply test-config.gradle, so the forks would run at Gradle's 512 MB default. The scan of the
+    // roughly 1,200 domain classes of the core test sources (ClassicOracleSpec and the differential specs) does not
+    // fit: CI failed with "Java heap space" while reading the candidate components.
+    maxHeapSize = '2g'
+
     boolean skipped = [
             'onlyFunctionalTests',
             'skipHibernate7Tests',
@@ -42,6 +47,14 @@ tasks.withType(Test).configureEach {
     onlyIf { !skipped }
 
     useJUnitPlatform()
+
+    // The differential specs compare native domain binding against what the classic binder of Grails 8 produced, recorded
+    // under src/test/resources/classic-oracle/ before it was deleted. By default they read the recorded files; a scanned
+    // fixture with no record fails them. -Pgrails.test.recordClassicOracle=true boots such a fixture natively and writes its
+    // record, leaving the other records as they are (see ClassicOracle for the details).
+    if (providers.gradleProperty('grails.test.recordClassicOracle').map { it.toBoolean() }.getOrElse(false)) {
+        systemProperty('grails.test.recordClassicOracle', 'true')
+    }
     // Lets TCK specs gate features on the running suite. Spock evaluates @IgnoreIf/@Requires
     // preconditions before setupSpec() runs, so this must be set at the task level - a
     // TCK-manager System.setProperty would come too late.
