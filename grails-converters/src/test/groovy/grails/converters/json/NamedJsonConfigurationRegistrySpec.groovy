@@ -39,6 +39,8 @@ import tools.jackson.databind.cfg.ContextAttributes
 import tools.jackson.databind.exc.InvalidDefinitionException
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.databind.module.SimpleModule
+import tools.jackson.databind.node.JsonNodeFactory
+import tools.jackson.databind.node.ObjectNode
 
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
@@ -370,6 +372,17 @@ class NamedJsonConfigurationRegistrySpec extends Specification {
         projected(registry, extras, null, ['name']) == '{"extra":"v"}'
     }
 
+    void 'a projection applies to the entries of a @JsonAnyGetter that are an ObjectNode, as to those of a Map'() {
+        given:
+        def registry = new NamedJsonConfigurationRegistry(JsonMapper.builder().build())
+        def node = new NamedJsonAnyGetterNode(name: 'a')
+
+        expect:
+        projected(registry, node, null, null) == '{"name":"a","extra":"v"}'
+        projected(registry, node, ['name'], null) == '{"name":"a"}'
+        projected(registry, node, null, ['name']) == '{"extra":"v"}'
+    }
+
     private static String projected(NamedJsonConfigurationRegistry registry, Object value, List<String> includes,
                                      List<String> excludes) {
         def output = new StringWriter()
@@ -580,6 +593,15 @@ class NamedJsonAnyGetterProperty {
     String name
     @JsonAnyGetter
     Map<String, String> secrets
+}
+
+class NamedJsonAnyGetterNode {
+    String name
+
+    @JsonAnyGetter
+    ObjectNode getExtras() {
+        JsonNodeFactory.instance.objectNode().put('extra', 'v')
+    }
 }
 
 class NamedJsonAnyGetterMethod {

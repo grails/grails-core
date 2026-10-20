@@ -45,6 +45,14 @@ import tools.jackson.databind.util.NameTransformer;
  * includes and excludes, the projection of a response, and the rendering of a domain class instance. Each module that
  * gates a property adds its gate to the same writer.
  *
+ * <p>The gates are writers, rather than a {@code PropertyFilter}, since a mapper has one {@code FilterProvider}, which
+ * the application's filters use, which Spring's Jackson converter replaces with the one a write is given, and which an
+ * application's {@code SimpleFilterProvider} fails for a filter id it does not know: a filter id of every class would
+ * break the application's own filters, and a write with a filter of its own would lose the gates. The writers of the
+ * entries of a {@code @JsonAnyGetter} and of an unwrapped property are wrapped by subclasses of Jackson's own, which
+ * Jackson takes for them; {@code GatedPropertyWriterContractSpec} fails where a release of Jackson adds a method to
+ * those that the subclasses do not forward.</p>
+ *
  * @since 9.0
  */
 final class GatedPropertyWriter extends BeanPropertyWriter {
