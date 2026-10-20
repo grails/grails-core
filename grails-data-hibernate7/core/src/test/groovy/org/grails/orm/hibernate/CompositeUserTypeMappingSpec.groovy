@@ -20,6 +20,7 @@ package org.grails.orm.hibernate
 
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.Immutable
 import groovy.transform.ToString
 
 import grails.gorm.annotation.Entity
@@ -220,6 +221,45 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
+    void "a composite user type takes its attributes from the fields and the readable properties of its embeddable class"() {
+        given: 'an immutable value class with getters only, and an embeddable class with private fields only'
+        HibernateDatastore datastore = createDatastore('compositeUserTypeImmutable', {},
+                CompositeUserTypeImmutable, CompositeUserTypeFieldsTemplated)
+
+        expect: 'the final fields of the immutable value class are its attributes, less the computed property it lists in transients'
+        Component price = componentOf(datastore, CompositeUserTypeImmutable, 'price')
+        price.componentClassName == CompositeImmutableMoney.name
+        price.properties*.name == ['amount', 'currency']
+        columnNamesOf(price) == ['price_amount', 'price_currency']
+
+        and: 'the private fields of an embeddable class without accessors are its attributes'
+        Component amount = componentOf(datastore, CompositeUserTypeFieldsTemplated, 'amount')
+        amount.componentClassName == CompositeMoneyFields.name
+        amount.properties*.name == ['amount', 'currency']
+        columnNamesOf(amount) == ['amount_amount', 'amount_currency']
+
+        when:
+        Long priceId = CompositeUserTypeImmutable.withTransaction {
+            new CompositeUserTypeImmutable(price: new CompositeImmutableMoney(1250, 'EUR'))
+                    .save(flush: true, failOnError: true).id
+        }
+        Long amountId = CompositeUserTypeFieldsTemplated.withTransaction {
+            new CompositeUserTypeFieldsTemplated(amount: new CompositeMoney(amount: 13, currency: 'NOK'))
+                    .save(flush: true, failOnError: true).id
+        }
+
+        then:
+        CompositeUserTypeImmutable.withTransaction {
+            CompositeUserTypeImmutable.get(priceId).price == new CompositeImmutableMoney(1250, 'EUR')
+        }
+        CompositeUserTypeFieldsTemplated.withTransaction {
+            CompositeUserTypeFieldsTemplated.get(amountId).amount == new CompositeMoney(amount: 13, currency: 'NOK')
+        }
+
+        cleanup:
+        datastore?.close()
+    }
+
     void "more columns than the embeddable class has attributes is a mapping error"() {
         when:
         createDatastore('compositeUserTypeTooManyColumns', {}, CompositeUserTypeTooManyColumns)
@@ -356,6 +396,24 @@ class CompositeUserTypeTemplated implements HibernateEntity<CompositeUserTypeTem
 }
 
 @Entity
+class CompositeUserTypeImmutable implements HibernateEntity<CompositeUserTypeImmutable> {
+    CompositeImmutableMoney price
+
+    static mapping = {
+        price type: CompositeImmutableMoneyType
+    }
+}
+
+@Entity
+class CompositeUserTypeFieldsTemplated implements HibernateEntity<CompositeUserTypeFieldsTemplated> {
+    CompositeMoney amount
+
+    static mapping = {
+        amount type: CompositeMoneyFieldsTemplateType
+    }
+}
+
+@Entity
 class CompositeUserTypeTooManyColumns implements HibernateEntity<CompositeUserTypeTooManyColumns> {
     CompositeMoney amount
 
@@ -378,6 +436,33 @@ class CompositeMoney implements Serializable {
 
 /** The embeddable class of {@link CompositeMoneyTemplateType}: a source of attribute metadata only. */
 record CompositeMoneyTemplate(long amount, String currency) {}
+
+/**
+ * The embeddable class of {@link CompositeMoneyFieldsTemplateType}: private fields without accessors, as in the
+ * {@link CompositeUserType} javadoc.
+ */
+@CompileStatic
+class CompositeMoneyFields {
+    private long amount
+    private String currency
+}
+
+/**
+ * An immutable value class: final fields read through getters, without setters, and a computed property that
+ * is listed in {@code transients} so that it is not a column.
+ */
+@CompileStatic
+@Immutable
+class CompositeImmutableMoney implements Serializable {
+    long amount
+    String currency
+
+    static transients = ['display']
+
+    String getDisplay() {
+        "${amount} ${currency}"
+    }
+}
 
 /**
  * Maps {@link CompositeMoney} to two columns. The attribute indexes follow the alphabetical order of
@@ -461,5 +546,87 @@ class CompositeMoneyTemplateType extends CompositeMoneyType {
     @Override
     Class<?> embeddable() {
         CompositeMoneyTemplate
+    }
+}
+
+/** The same mapping, described by a class with private fields and no accessors. */
+@CompileStatic
+class CompositeMoneyFieldsTemplateType extends CompositeMoneyType {
+
+    @Override
+    Class<?> embeddable() {
+        CompositeMoneyFields
+    }
+}
+
+/** Maps {@link CompositeImmutableMoney} to two columns: {@code amount} is index 0 and {@code currency} is 1. */
+@CompileStatic
+class CompositeImmutableMoneyType implements CompositeUserType<CompositeImmutableMoney> {
+
+    @Override
+    Object getPropertyValue(CompositeImmutableMoney component, int property) {
+        switch (property) {
+            case 0:
+                return component.amount
+            case 1:
+                return component.currency
+            default:
+                throw new HibernateException("Unknown property index ${property}")
+        }
+    }
+
+    @Override
+    CompositeImmutableMoney instantiate(ValueAccess values) {
+        Long amount = values.getValue(0, Long)
+        String currency = values.getValue(1, String)
+        if (amount == null && currency == null) {
+            return null
+        }
+        new CompositeImmutableMoney(amount, currency)
+    }
+
+    @Override
+    Class<?> embeddable() {
+        CompositeImmutableMoney
+    }
+
+    @Override
+    Class<CompositeImmutableMoney> returnedClass() {
+        CompositeImmutableMoney
+    }
+
+    @Override
+    boolean equals(CompositeImmutableMoney x, CompositeImmutableMoney y) {
+        x == y
+    }
+
+    @Override
+    int hashCode(CompositeImmutableMoney x) {
+        x == null ? 0 : x.hashCode()
+    }
+
+    @Override
+    CompositeImmutableMoney deepCopy(CompositeImmutableMoney value) {
+        value
+    }
+
+    @Override
+    boolean isMutable() {
+        false
+    }
+
+    @Override
+    Serializable disassemble(CompositeImmutableMoney value) {
+        value
+    }
+
+    @Override
+    CompositeImmutableMoney assemble(Serializable cached, Object owner) {
+        (CompositeImmutableMoney) cached
+    }
+
+    @Override
+    CompositeImmutableMoney replace(CompositeImmutableMoney detached, CompositeImmutableMoney managed, Object owner) {
+        detached
     }
 }

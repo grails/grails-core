@@ -22,14 +22,16 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.hibernate.MappingException;
 import org.hibernate.boot.spi.MetadataBuildingContext;
@@ -208,35 +210,45 @@ public class CompositeUserTypeBinder {
 
     /**
      * The persistent attributes of the embeddable class, in alphabetical order: the components of a record, or
-     * the readable and writable bean properties of any other class, less the static ones, the ones every Groovy
-     * object has, the ones the class lists in {@code transients} and the ones backed by a transient field.
+     * the fields and the readable bean properties of any other class, less the static, transient and synthetic
+     * ones, the ones every Groovy object has, the ones the class lists in {@code transients} and the ones backed
+     * by a transient field. A setter is not required, nor is an accessor at all: Hibernate never writes the
+     * embeddable class, it reads the attributes through {@link CompositeUserType#getPropertyValue(Object, int)}.
+     * The type of an attribute is the type of its field, or of its getter when it has no field, which is how
+     * Hibernate resolves it.
      */
     private static List<Attribute> attributesOf(Class<?> embeddable) {
-        List<Attribute> attributes = new ArrayList<>();
         if (embeddable.isRecord()) {
-            for (RecordComponent component : embeddable.getRecordComponents()) {
-                attributes.add(new Attribute(component.getName(), component.getGenericType()));
-            }
-        } else {
-            Collection<?> transients = Optional.ofNullable(
-                    ClassPropertyFetcher.getStaticPropertyValue(embeddable, GormProperties.TRANSIENT, Collection.class))
-                    .orElseGet(List::of);
-            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(embeddable)) {
-                Method getter = descriptor.getReadMethod();
-                if (getter == null || descriptor.getWriteMethod() == null || Modifier.isStatic(getter.getModifiers())) {
-                    continue;
-                }
-                String name = descriptor.getName();
-                Field field = ReflectionUtils.findField(embeddable, name);
-                if (ClassPropertyFetcher.EXCLUDED_PROPERTIES.contains(name) || transients.contains(name) ||
-                        (field != null && Modifier.isTransient(field.getModifiers()))) {
-                    continue;
-                }
-                attributes.add(new Attribute(name, getter.getGenericReturnType()));
+            return Arrays.stream(embeddable.getRecordComponents())
+                    .map(component -> new Attribute(component.getName(), component.getGenericType()))
+                    .sorted(Comparator.comparing(Attribute::name))
+                    .toList();
+        }
+        Map<String, Type> attributes = new TreeMap<>();
+        ReflectionUtils.doWithFields(embeddable,
+                field -> attributes.putIfAbsent(field.getName(), field.getGenericType()),
+                field -> !field.isSynthetic() && !Modifier.isStatic(field.getModifiers()) &&
+                        !Modifier.isTransient(field.getModifiers()));
+        for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(embeddable)) {
+            Method getter = descriptor.getReadMethod();
+            if (getter != null && !Modifier.isStatic(getter.getModifiers())) {
+                attributes.putIfAbsent(descriptor.getName(), getter.getGenericReturnType());
             }
         }
-        attributes.sort(Comparator.comparing(Attribute::name));
-        return attributes;
+        Collection<?> transients = Optional.ofNullable(
+                ClassPropertyFetcher.getStaticPropertyValue(embeddable, GormProperties.TRANSIENT, Collection.class))
+                .orElseGet(List::of);
+        attributes.keySet().removeIf(name -> ClassPropertyFetcher.EXCLUDED_PROPERTIES.contains(name) ||
+                transients.contains(name) || hasTransientField(embeddable, name));
+        return attributes.entrySet().stream()
+                .map(entry -> new Attribute(entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    /** Whether the property is backed by a {@code transient} field, which makes it transient however it is read. */
+    private static boolean hasTransientField(Class<?> embeddable, String name) {
+        Field field = ReflectionUtils.findField(embeddable, name);
+        return field != null && Modifier.isTransient(field.getModifiers());
     }
 
     /**
