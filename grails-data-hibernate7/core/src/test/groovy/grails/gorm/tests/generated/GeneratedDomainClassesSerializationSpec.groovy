@@ -121,14 +121,14 @@ class GeneratedDomainClassesSerializationSpec extends Specification {
 
         GdcSerAuthor.withNewSession { Session s ->
             Object proxy = s.getReference(GdcSerAuthor, authorId)
-            r.proxy = [proxy instanceof HibernateProxy, proxy.getClass().superclass == GdcSerAuthor,
+            r.proxy = [proxy instanceof HibernateProxy, GdcSerAuthor.isAssignableFrom(proxy.getClass()),
                        ProxyInspector.persistentClass(proxy) == GdcSerAuthor,
                        ProxyInspector.entityName(proxy) == GdcSerAuthor.name,
                        s.getEntityName(proxy) == GdcSerAuthor.name, Hibernate.getClass(proxy) == GdcSerAuthor,
                        Hibernate.isInitialized(proxy)]
             try {
                 Object proxyCopy = deserialize(serialize(proxy))
-                r.proxySerialization = [proxyCopy instanceof HibernateProxy, proxyCopy.getClass().superclass == GdcSerAuthor,
+                r.proxySerialization = [proxyCopy instanceof HibernateProxy, GdcSerAuthor.isAssignableFrom(proxyCopy.getClass()),
                                         proxyCopy.name]
             } catch (Exception e) {
                 r.proxySerialization = e.class.name
@@ -241,8 +241,9 @@ class GeneratedDomainClassesSerializationSpec extends Specification {
         Map generated = results(true)
         Map binder = results(false)
 
-        then: 'superclass, persistent class, entity name and Hibernate.getClass are the real ones'
+        then: 'the proxy extends the real class (through the proxy base class Hibernate derives per entity), and persistent class, entity name and Hibernate.getClass are the real ones, as in binder mode'
         generated.proxy == [true, true, true, true, true, true, true]
+        generated.proxy == binder.proxy
         generated.proxySerialization == binder.proxySerialization
         generated.proxySerialization[2] == 'reattached'
     }
