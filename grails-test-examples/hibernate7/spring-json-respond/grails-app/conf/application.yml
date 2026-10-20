@@ -116,3 +116,9 @@ grails:
     databinding:
         json:
             jackson: true
+    exceptionresolver:
+        springHandlers: true
+spring:
+    mvc:
+        problemdetails:
+            enabled: true

@@ -357,6 +357,25 @@ interface Settings {
      * for resolver-driven emission.
      */
     String SETTING_LOG_FULL_STACKTRACE_ON_FILTER = 'grails.exceptionresolver.logFullStackTraceOnFilter'
+
+    /**
+     * Whether an exception a controller action throws is resolved first by the {@code @ExceptionHandler} methods Spring
+     * MVC resolves those of a handler method with: those of the controller's class and of the {@code @ControllerAdvice}
+     * beans that apply to it, Spring Boot's handler of {@code spring.mvc.problemdetails.enabled} among them, ahead of
+     * Spring MVC's other exception resolvers and of the Grails exception resolver, which resolve one none of them handles.
+     * Defaults to {@link #SETTING_EXCEPTION_RESOLVER_SPRING_HANDLERS_DEFAULT}.
+     *
+     * @since 9.0
+     */
+    String SETTING_EXCEPTION_RESOLVER_SPRING_HANDLERS = 'grails.exceptionresolver.springHandlers'
+
+    /**
+     * The default of {@link #SETTING_EXCEPTION_RESOLVER_SPRING_HANDLERS}, as a property placeholder reads it: {@code false}
+     * in Grails 9, and {@code true} from Grails 10.
+     *
+     * @since 9.0
+     */
+    String SETTING_EXCEPTION_RESOLVER_SPRING_HANDLERS_DEFAULT = 'false'
     /**
      * The class to use for stacktrace filtering. Should be an instanceof {@link org.grails.exceptions.reporting.StackTraceFilterer}
      */

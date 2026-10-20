@@ -17,8 +17,10 @@
  *  under the License.
  */
 
+import springjson.BookExceptionAdvice
 import springjson.ProblemAdvice
 
 beans = {
     problemAdvice(ProblemAdvice)
+    bookExceptionAdvice(BookExceptionAdvice)
 }

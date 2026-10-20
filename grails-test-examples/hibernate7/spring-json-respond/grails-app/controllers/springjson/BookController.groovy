@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.ErrorResponseException
+import org.springframework.web.bind.MissingServletRequestParameterException
 
 import grails.gorm.transactions.Transactional
 
@@ -50,6 +51,18 @@ class BookController {
 
     def conflict() {
         respond ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The title is taken'), formats: ['json', 'xml']
+    }
+
+    def missing(Long id) {
+        throw new BookNotFoundException(id)
+    }
+
+    def broken() {
+        throw new IllegalStateException('Not handled by any exception handler')
+    }
+
+    def search() {
+        throw new MissingServletRequestParameterException('title', 'String')
     }
 
     def unavailable() {

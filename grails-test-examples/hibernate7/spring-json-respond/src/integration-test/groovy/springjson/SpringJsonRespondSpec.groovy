@@ -29,7 +29,8 @@ import org.apache.grails.testing.http.client.HttpClientSupport
  * An application that sets grails.web.rendering.json.spring, grails.converters.json.legacy and
  * grails.databinding.json.jackson, the defaults later releases change to, as application.yml sets them: respond writes JSON
  * through Spring MVC's converter with the Grails mapper, binds JSON bodies with Jackson, and Spring MVC writes the
- * problems it responds with, with the application's advice.
+ * problems it responds with, with the application's advice. With grails.exceptionresolver.springHandlers, the exception
+ * handlers of the application and of spring.mvc.problemdetails.enabled answer the exceptions an action throws.
  */
 @Integration(applicationClass = Application)
 @Tag('http-client')
@@ -137,5 +138,34 @@ class SpringJsonRespondSpec extends Specification implements HttpClientSupport {
         response.headerValue('Retry-After') == '30'
         response.json().status == 503
         response.json().advisedBy == 'ProblemAdvice'
+    }
+
+    void 'an exception an action throws is answered by the exception handler the application advises the controller with'() {
+        when:
+        def response = http('/book/missing/42')
+
+        then:
+        response.assertStatus(404)
+        response.contentType == 'application/problem+json'
+        response.json().detail == 'Book 42 does not exist'
+        response.json().bookId == 42
+    }
+
+    void 'an exception no exception handler answers is resolved as without the setting'() {
+        when:
+        def response = http('/book/broken')
+
+        then:
+        response.assertStatus(500)
+    }
+
+    void 'an exception of Spring MVC an action throws is answered by the handler of spring.mvc.problemdetails.enabled'() {
+        when:
+        def response = http('/book/search')
+
+        then: "Spring Boot's handler answers it with a problem, where Spring MVC's other resolvers send the error alone"
+        response.assertStatus(400)
+        response.contentType == 'application/problem+json'
+        response.json().detail == "Required parameter 'title' is not present."
     }
 }

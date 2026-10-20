@@ -211,6 +211,11 @@ now brings Boot's `JsonMapper`, which Spring MVC's JSON converter then writes wi
 | XML written by `respond` for ordinary beans
 | `false`
 | unchanged until legacy XML conversion is removed in Grails 11
+
+| `grails.exceptionresolver.springHandlers`
+| Exceptions actions throw, resolved by Spring MVC's `@ExceptionHandler` methods (see section 14)
+| `false`
+| `true` in Grails 10
 |===
 
 `request.JSON` and data binding parse a request body under different settings, so set
@@ -1066,3 +1071,22 @@ declares, and any locale resolver the context has, the i18n plugin's among them,
 own, a session locale resolver among them. Without `grails-xml` on the test classpath, setting `request.xml` to an object to convert,
 rather than to a `String` of XML, or reading `request.XML` fails with an `IllegalStateException` that names the module. `GrailsUnitTest` and `ServiceUnitTest` do
 not load XML or the web plugins just because those modules are on the classpath. See <<unitTesting,Unit Testing>>.
+
+==== 14. Opt Into Spring MVC Exception Handlers
+
+Spring MVC resolves an exception with the `@ExceptionHandler` methods of the controller and of the `@ControllerAdvice`
+beans only for a handler method, which a Grails action is not, so such methods, and Spring Boot's handler of
+`spring.mvc.problemdetails.enabled`, did not see the exceptions Grails actions throw, which the Grails exception
+resolver rendered the error page for. Set `grails.exceptionresolver.springHandlers: true` to have them resolve those
+exceptions first, as for a Spring MVC controller, with the advice that applies to the controller; an exception none of
+them handles is resolved as before. Grails 10 makes it the default, so an application whose `@ControllerAdvice` beans
+are meant for its Spring MVC controllers alone should scope them, by `assignableTypes`, `basePackages` or
+`annotations`, before then. See <<controllerExceptionHandling,Declarative Controller Exception Handling>>.
+
+[source,yaml]
+.grails-app/conf/application.yml
+----
+grails:
+    exceptionresolver:
+        springHandlers: true
+----

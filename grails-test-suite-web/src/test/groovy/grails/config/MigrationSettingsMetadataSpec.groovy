@@ -37,6 +37,7 @@ class MigrationSettingsMetadataSpec extends Specification {
         Settings.WEB_RENDERING_JSON_SPRING  | Settings.WEB_RENDERING_JSON_SPRING_DEFAULT
         Settings.WEB_RENDERING_XML_SPRING   | Settings.WEB_RENDERING_XML_SPRING_DEFAULT
         Settings.DATABINDING_JSON_JACKSON   | Settings.DATABINDING_JSON_JACKSON_DEFAULT
+        Settings.SETTING_EXCEPTION_RESOLVER_SPRING_HANDLERS | Settings.SETTING_EXCEPTION_RESOLVER_SPRING_HANDLERS_DEFAULT
     }
 
     private static Map<String, Object> metadataDefaults() {
