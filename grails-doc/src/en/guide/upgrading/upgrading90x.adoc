@@ -817,7 +817,9 @@ With `grails.web.rendering.json.spring: true`, `respond()` renders Spring `Error
 body by default; this follows the same Grails 10 default flip and Grails 11 removal schedule as JSON
 rendering. Grails uses the public `ValidationProblemDetailFactory` bean to
 adapt the errors to Spring Framework's RFC 9457 `ProblemDetail` type. The resulting response has status
-422, the title `Validation failed`, and
+422, the title `Validation failed` and the detail `Request validation failed with 2 errors.`, which the
+application's messages translate with the `grails.validation.problem.title` and `grails.validation.problem.detail`
+codes, the latter given the number of errors, as `{0,choice,1#1 error|1<{0} errors}` uses it, and
 an `errors` extension containing stable maps with the object name, optional field name, message, and error
 codes:
 

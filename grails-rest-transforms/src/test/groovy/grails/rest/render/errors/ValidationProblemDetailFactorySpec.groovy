@@ -112,6 +112,46 @@ class ValidationProblemDetailFactorySpec extends Specification {
                 .properties.errors.first().message == 'Property [{0}] cannot be null'
     }
 
+    void 'the title and the detail are resolved through the MessageSource for the current locale, with the number of errors'() {
+        given:
+        def messages = new StaticMessageSource()
+        messages.addMessage(ValidationProblemDetailFactory.TITLE_MESSAGE_CODE, Locale.GERMAN, 'Validierung fehlgeschlagen')
+        messages.addMessage(ValidationProblemDetailFactory.DETAIL_MESSAGE_CODE, Locale.GERMAN, '{0} Fehler')
+        def errors = new BeanPropertyBindingResult(new Object(), 'book')
+        errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid'))
+        errors.addError(new ObjectError('book', ['book.taken'] as String[], null, 'Book is taken'))
+        LocaleContextHolder.locale = Locale.GERMAN
+
+        when:
+        def problem = new ValidationProblemDetailFactory(false, messages).create(errors)
+
+        then:
+        problem.title == 'Validierung fehlgeschlagen'
+        problem.detail == '2 Fehler'
+
+        cleanup:
+        LocaleContextHolder.resetLocaleContext()
+    }
+
+    void 'without messages of its codes the title and the detail are in English, for #count errors'() {
+        given:
+        def errors = new BeanPropertyBindingResult(new Object(), 'book')
+        count.times { errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid')) }
+
+        when:
+        def problem = new ValidationProblemDetailFactory(false, new StaticMessageSource()).create(errors)
+
+        then:
+        problem.title == 'Validation failed'
+        problem.detail == detail
+
+        where:
+        count || detail
+        1     || 'Request validation failed with 1 error.'
+        2     || 'Request validation failed with 2 errors.'
+        1000  || 'Request validation failed with 1000 errors.'
+    }
+
     void 'includes rejected values only when explicitly requested'() {
         given:
         def errors = new BeanPropertyBindingResult(new Object(), 'book')

@@ -18,12 +18,15 @@
  */
 package grails.rest.render.errors;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -45,6 +48,23 @@ import org.grails.web.errors.ValidationErrorEntries;
 public final class ValidationProblemDetailFactory {
 
     public static final String ERRORS_PROPERTY = "errors";
+
+    /**
+     * The message code of the problem's title, which the {@code MessageSource} resolves for the current locale, and
+     * {@code Validation failed} otherwise.
+     */
+    public static final String TITLE_MESSAGE_CODE = "grails.validation.problem.title";
+
+    /**
+     * The message code of the problem's detail, which the {@code MessageSource} resolves for the current locale with the
+     * number of errors as its argument, and {@code Request validation failed with 2 errors.} otherwise.
+     */
+    public static final String DETAIL_MESSAGE_CODE = "grails.validation.problem.detail";
+
+    private static final String DEFAULT_TITLE = "Validation failed";
+
+    private static final String DEFAULT_DETAIL =
+            "Request validation failed with {0,choice,0#0 errors|1#1 error|1<{0,number,#} errors}.";
 
     private final boolean includeRejectedValues;
 
@@ -92,8 +112,9 @@ public final class ValidationProblemDetailFactory {
         Objects.requireNonNull(status, "status");
 
         ProblemDetail problem = ProblemDetail.forStatus(status);
-        problem.setTitle("Validation failed");
-        problem.setDetail(detailFor(errors.getErrorCount()));
+        Locale locale = LocaleContextHolder.getLocale();
+        problem.setTitle(message(TITLE_MESSAGE_CODE, new Object[0], DEFAULT_TITLE, locale));
+        problem.setDetail(message(DETAIL_MESSAGE_CODE, new Object[] {errors.getErrorCount()}, DEFAULT_DETAIL, locale));
 
         List<Map<String, Object>> entries = new ArrayList<>(errors.getErrorCount());
         for (ObjectError error : errors.getAllErrors()) {
@@ -103,9 +124,14 @@ public final class ValidationProblemDetailFactory {
         return problem;
     }
 
-    private static String detailFor(int errorCount) {
-        return errorCount == 1 ?
-                "Request validation failed with 1 error." :
-                "Request validation failed with " + errorCount + " errors.";
+    /** The message of the code for the locale, or else the default message, formatted with the arguments. */
+    private String message(String code, Object[] arguments, String defaultMessage, Locale locale) {
+        if (messageSource != null) {
+            String message = messageSource.getMessage(code, arguments, null, locale);
+            if (message != null) {
+                return message;
+            }
+        }
+        return new MessageFormat(defaultMessage, locale).format(arguments);
     }
 }
