@@ -21,6 +21,7 @@ package grails.orm
 import grails.gorm.DetachedCriteria
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.HibernateGormDatastoreSpec
+import jakarta.persistence.criteria.Expression
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.query.api.BuildableCriteria
 import org.grails.orm.hibernate.query.PredicateGenerator
@@ -388,6 +389,81 @@ class HibernateCriteriaBuilderDirectSpec extends HibernateGormDatastoreSpec {
 
         cleanup:
         PredicateGenerator.clearCustomCriterionHandlers()
+    }
+
+    void "a contextual criterion handler resolves an association path to the join GORM created for it"() {
+        given: "a parent with two children, and a handler that resolves its criterion's path through the context"
+        var parent = CriteriaTestEntity.findByName('A')
+        parent.addToChildren(new CriteriaTestChild(name: 'Kid'))
+        parent.addToChildren(new CriteriaTestChild(name: 'Other')).save(flush: true)
+        PredicateGenerator.registerCriterionHandler(CriteriaTestPathLike, { query, root, cb, criterion, context ->
+            def c = criterion as CriteriaTestPathLike
+            cb.like(context.getFullyQualifiedPath(c.property) as Expression<String>, c.value as String)
+        } as PredicateGenerator.ContextualCriterionHandler)
+
+        when: "a GORM criterion and the custom criterion restrict the same association"
+        List<CriteriaTestEntity> both = new DetachedCriteria(CriteriaTestEntity).build {
+            children { eq('name', 'Kid') }
+            add(new CriteriaTestPathLike('children.name', 'K%'))
+        }.list()
+        List<CriteriaTestEntity> different = new DetachedCriteria(CriteriaTestEntity).build {
+            children { eq('name', 'Kid') }
+            add(new CriteriaTestPathLike('children.name', 'O%'))
+        }.list()
+
+        then: "a child matching both criteria is found"
+        both*.name == ['A']
+
+        and: "two children matching one criterion each are not: the handler used the join GORM created, not a second one"
+        different.empty
+
+        cleanup:
+        PredicateGenerator.clearCustomCriterionHandlers()
+    }
+
+    void "an order handler converts a Query.Order subclass in its place among the orders"() {
+        given: "a handler that orders by the remainder of the amount modulo 15, descending"
+        PredicateGenerator.registerOrderHandler(CriteriaTestRemainderOrder) { query, root, cb, order, context ->
+            cb.desc(cb.mod(root.get('amount') as Expression<Integer>, 15))
+        }
+
+        when: "the custom order comes before an order by name"
+        List<String> names = c.list {
+            order(new CriteriaTestRemainderOrder())
+            order('name', 'asc')
+        }*.name
+
+        then: "amounts 10, 20, 30 and 40 give remainders 10, 5, 0 and 10, and the name breaks the tie"
+        names == ['A', 'D', 'B', 'C']
+
+        when: "the handler returns null"
+        PredicateGenerator.registerOrderHandler(CriteriaTestRemainderOrder) { query, root, cb, order, context -> null }
+        names = c.list {
+            order(new CriteriaTestRemainderOrder())
+            order('name', 'desc')
+        }*.name
+
+        then: "its order is left out and the others still apply"
+        names == ['D', 'C', 'B', 'A']
+
+        cleanup:
+        PredicateGenerator.clearCustomOrderHandlers()
+    }
+}
+
+/** A criterion whose handler resolves the property through the query context. */
+class CriteriaTestPathLike extends Query.PropertyCriterion {
+
+    CriteriaTestPathLike(String property, String value) {
+        super(property, value)
+    }
+}
+
+/** An order that a registered handler converts. */
+class CriteriaTestRemainderOrder extends Query.Order {
+
+    CriteriaTestRemainderOrder() {
+        super('amount')
     }
 }
 

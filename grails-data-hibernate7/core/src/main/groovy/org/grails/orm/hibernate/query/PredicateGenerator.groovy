@@ -25,6 +25,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.From
 import jakarta.persistence.criteria.JoinType
@@ -84,6 +85,72 @@ class PredicateGenerator {
             Query.Criterion criterion
         )
 
+        /**
+         * Converts a criterion with the context of the query it belongs to. The context resolves a property path
+         * the way the built-in criteria do: {@link JpaQueryContext#getFullyQualifiedPath(String)} turns
+         * {@code alias.property}, for an alias created with {@code createAlias}, or {@code association.property}
+         * into a path on the join GORM created for that association, so a custom criterion and a GORM criterion on
+         * the same association restrict the same row instead of each joining the association again. This default
+         * ignores the context and calls {@link #handle(AbstractQuery, From, HibernateCriteriaBuilder, Query.Criterion)};
+         * a handler that needs the context implements {@link ContextualCriterionHandler}.
+         *
+         * @param criteriaQuery the query or subquery the predicate is for
+         * @param root the root of that query
+         * @param criteriaBuilder the criteria builder
+         * @param criterion the criterion to convert
+         * @param context the context of the query: its root, its joins and its aliases
+         * @return the predicate, or {@code null} to add none
+         * @since 10.0
+         */
+        default Predicate handle(
+            AbstractQuery<?> criteriaQuery,
+            From<?, ?> root,
+            HibernateCriteriaBuilder criteriaBuilder,
+            Query.Criterion criterion,
+            JpaQueryContext context
+        ) {
+            handle(criteriaQuery, root, criteriaBuilder, criterion)
+        }
+
+    }
+
+    /**
+     * A {@link CriterionHandler} that is given the context of the query, through which it resolves property paths
+     * with {@link JpaQueryContext#getFullyQualifiedPath(String)}. A closure with five parameters is coerced to it:
+     * <pre>
+     *     PredicateGenerator.registerCriterionHandler(MyCriterion, { query, root, cb, criterion, context -&gt;
+     *         def c = criterion as MyCriterion
+     *         cb.like(context.getFullyQualifiedPath(c.property) as Expression&lt;String&gt;, c.value as String)
+     *     } as PredicateGenerator.ContextualCriterionHandler)
+     * </pre>
+     *
+     * @since 10.0
+     */
+    @FunctionalInterface
+    static interface ContextualCriterionHandler extends CriterionHandler {
+
+        @Override
+        Predicate handle(
+            AbstractQuery<?> criteriaQuery,
+            From<?, ?> root,
+            HibernateCriteriaBuilder criteriaBuilder,
+            Query.Criterion criterion,
+            JpaQueryContext context
+        )
+
+        /**
+         * Called by code that has no context to give; the handler then receives {@code null} for it.
+         */
+        @Override
+        default Predicate handle(
+            AbstractQuery<?> criteriaQuery,
+            From<?, ?> root,
+            HibernateCriteriaBuilder criteriaBuilder,
+            Query.Criterion criterion
+        ) {
+            handle(criteriaQuery, root, criteriaBuilder, criterion, null)
+        }
+
     }
 
     /**
@@ -111,18 +178,111 @@ class PredicateGenerator {
 
     }
 
+    /**
+     * Extension point for ordering a criteria query by something other than a property. Register a handler for a
+     * {@link Query.Order} subclass to have it converted to a JPA {@link jakarta.persistence.criteria.Order}, in
+     * the place the order has among the query's orders. The order reaches the query through
+     * {@code order(Query.Order)} of the criteria builder or of a detached criteria.
+     *
+     * <pre>
+     *     class ByRandom extends Query.Order {
+     *         ByRandom() { super('random') }
+     *     }
+     *     PredicateGenerator.registerOrderHandler(ByRandom) { query, root, cb, order, context -&gt;
+     *         cb.asc(cb.function('random', Double))
+     *     }
+     * </pre>
+     *
+     * @since 10.0
+     */
+    @FunctionalInterface
+    static interface OrderHandler {
+
+        /**
+         * @param criteriaQuery the query, whose result type tells a query for the entity from a projection
+         * @param root the root of the query
+         * @param criteriaBuilder the criteria builder
+         * @param order the order to convert
+         * @param context the context of the query: its root, its joins and its aliases
+         * @return the JPA order, or {@code null} to leave this order out of the query
+         */
+        jakarta.persistence.criteria.Order handle(
+            CriteriaQuery<?> criteriaQuery,
+            From<?, ?> root,
+            HibernateCriteriaBuilder criteriaBuilder,
+            Query.Order order,
+            JpaQueryContext context
+        )
+
+    }
+
+    /**
+     * SPI for contributing an {@link OrderHandler} via {@link ServiceLoader}. Register an implementation in
+     * {@code META-INF/services/org.grails.orm.hibernate.query.PredicateGenerator$OrderHandlerProvider}; it is
+     * discovered on first query execution, like a {@link CriterionHandlerProvider}.
+     *
+     * @since 10.0
+     */
+    static interface OrderHandlerProvider {
+
+        Class<? extends Query.Order> orderType()
+
+        OrderHandler orderHandler()
+
+    }
+
     public static final Map<Class<? extends Query.Criterion>, CriterionHandler> CUSTOM_HANDLERS =
+        new ConcurrentHashMap<>()
+
+    public static final Map<Class<? extends Query.Order>, OrderHandler> CUSTOM_ORDER_HANDLERS =
         new ConcurrentHashMap<>()
 
     private static final AtomicBoolean SERVICE_LOADERS_INITIALIZED = new AtomicBoolean(false)
 
     private static void loadServiceProviders() {
         if (SERVICE_LOADERS_INITIALIZED.compareAndSet(false, true)) {
-            for (CriterionHandlerProvider p : ServiceLoader.load(CriterionHandlerProvider,
-                    Thread.currentThread().contextClassLoader)) {
+            ClassLoader classLoader = Thread.currentThread().contextClassLoader
+            for (CriterionHandlerProvider p : ServiceLoader.load(CriterionHandlerProvider, classLoader)) {
                 CUSTOM_HANDLERS.putIfAbsent(p.criterionType(), p.criterionHandler())
             }
+            for (OrderHandlerProvider p : ServiceLoader.load(OrderHandlerProvider, classLoader)) {
+                CUSTOM_ORDER_HANDLERS.putIfAbsent(p.orderType(), p.orderHandler())
+            }
         }
+    }
+
+    /**
+     * Registers an {@link OrderHandler} for the given order type. The handler converts every order of exactly
+     * that type; programmatic registration takes precedence over a {@link ServiceLoader}-discovered handler.
+     *
+     * @param type the exact order class to handle
+     * @param handler the handler that converts the order to a JPA order
+     * @since 10.0
+     */
+    static void registerOrderHandler(Class<? extends Query.Order> type, OrderHandler handler) {
+        CUSTOM_ORDER_HANDLERS.put(type, handler)
+    }
+
+    /**
+     * Returns the handler registered for an order type, loading the {@link ServiceLoader} providers first.
+     *
+     * @param type the exact order class
+     * @return the handler, or {@code null} when the type is ordered by its property as usual
+     * @since 10.0
+     */
+    static OrderHandler orderHandler(Class<? extends Query.Order> type) {
+        loadServiceProviders()
+        CUSTOM_ORDER_HANDLERS.get(type)
+    }
+
+    /**
+     * Removes all registered custom order handlers and resets the ServiceLoader flag. Useful for test cleanup.
+     *
+     * @since 10.0
+     */
+    static void clearCustomOrderHandlers() {
+        CUSTOM_ORDER_HANDLERS.clear()
+        SERVICE_LOADERS_INITIALIZED.set(false)
     }
 
     /**
@@ -191,7 +351,7 @@ class PredicateGenerator {
             Query.Criterion c = (Query.Criterion) criterion
             CriterionHandler customHandler = CUSTOM_HANDLERS.get(c.class)
             if (customHandler != null) {
-                return customHandler.handle(criteriaQuery, root, criteriaBuilder, c)
+                return customHandler.handle(criteriaQuery, root, criteriaBuilder, c, fromsByProvider)
             }
         }
 

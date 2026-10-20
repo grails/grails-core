@@ -287,6 +287,16 @@ class JpaCriteriaQueryCreator<T> {
         if (!orders.isEmpty()) {
             List<jakarta.persistence.criteria.Order> jpaOrders = [];
             for (Query.Order order : orders) {
+                PredicateGenerator.OrderHandler customHandler = PredicateGenerator.orderHandler(order.class);
+                if (customHandler != null) {
+                    // the handler of a Query.Order subclass builds its JPA order, or leaves the order out
+                    jakarta.persistence.criteria.Order customOrder =
+                            customHandler.handle(cq, context.root, criteriaBuilder, order, context);
+                    if (customOrder != null) {
+                        jpaOrders.add(customOrder);
+                    }
+                    continue;
+                }
                 String propertyName = order.property;
                 SqlProjection sqlProjection = findSqlProjection(propertyName, false);
                 Expression<?> expression = sqlProjection != null ?
