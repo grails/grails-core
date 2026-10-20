@@ -1592,6 +1592,32 @@ Subscript assignment, `attrs['gspTagSyntaxCall'] = value`, now stores an attribu
 
 NOTE: When adding a class that extends `grails.util.TypeConvertingMap`, do not declare a no-argument `getX()` or `isX()` method on it, or the entry `x` becomes unreachable for the same reason. Statically compiled callers bind directly to the accessor, so the collision cannot be corrected at runtime.
 
+===== 28.4 Map entries named `properties` or `metaClass`
+
+The accessor-first resolution described above applies to every `Map`, not only to a class that declares an accessor of its own, because every Groovy object has the `properties` and `metaClass` properties.
+In Groovy 4 `map.properties` and `map['properties']` read the map entry.
+In Groovy 5 both return the Groovy meta-properties of the map object, in dynamic and in statically compiled code alike, and `map['properties'] = value` throws `groovy.lang.ReadOnlyPropertyException`.
+`metaClass` behaves the same way, and assigning to it replaces the metaclass of the map.
+`class` and `empty` are exempt and still address the map entry.
+
+Such keys are common in data an application does not control; the `properties` member of a GeoJSON `Feature` is one.
+Grails 8 stores and loads them through the `Map` API, so they round-trip through a `Map` property or an embedded map of a GORM for MongoDB entity, and through data binding of a `Map` property, whether the value arrives as a nested map or as an indexed key such as `attributes[properties]`.
+
+Application code that reads one of these keys from a `Map` must call `get`:
+
+[source,groovy]
+----
+Map feature = place.geoJson    // a Map property holding a GeoJSON Feature
+
+feature.get('properties')      // the entry
+feature.properties             // the meta-properties of the map object
+feature['properties']          // the same, on Groovy 5
+----
+
+The map a loaded GORM `Map` property comes back as is a dirty-checking wrapper with accessors of its own, named `target`, `parent`, `property`, `originalSize` and `assigned`.
+The wrapper resolves those five names to the map entry, in dotted and subscript form, so an entry such as `parent` reads and writes through the wrapper as it does through the plain map, and as it did in Grails 7.
+The one form that still reaches the accessor is dotted access from statically compiled code, which binds at compile time as it always has; read such an entry with `get` there.
+
 ==== 29. MIME Types Are Now Framework Defaults
 
 Grails 8 ships the full set of supported MIME types as built-in framework defaults.
