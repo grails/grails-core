@@ -777,8 +777,11 @@ Set `grails.databinding.json.jackson: true` to parse binding bodies with Boot's 
 `JsonMapper`, JSON, HAL JSON and JSON API bodies alike, among them two kinds Grails 8 always parsed with a default
 `JsonSlurper`: the bodies of a type a `HalJsonRenderer` bean renders, which the `halJsonDataBindingSourceCreator` bean then
 parses, where it handles that type and parses with Jackson, and the JSON bodies of a type no creator bean handles, as where an application replaces
-`jsonDataBindingSourceCreator` with a creator for one class. The mapper is the application's only or primary
-`JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
+`jsonDataBindingSourceCreator` with a creator for one class. The mapper is the one Spring MVC reads a `@RequestBody`
+map with: that of the first of its message converters that reads JSON, where that is Spring's Jackson converter, so that
+a converter a `WebMvcConfigurer` configures parses both, or the mapper that converter has for maps. Where that converter
+is not Jackson's, such as Gson's with `spring.http.converters.preferred-json-mapper: gson`, or without Spring MVC, the
+mapper is the application's only or primary `JsonMapper`, or else Spring Boot's `jacksonJsonMapper`; where the
 application context has none of those, as when it has several and none is primary, a default `JsonMapper` parses them,
 as for the JSON converter. Jackson becomes the default in Grails 10 and legacy parsing is removed in Grails 11.
 The mapper's parser features and limits then apply to request bodies: the features a `JsonMapperBuilderCustomizer` or

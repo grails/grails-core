@@ -37,6 +37,10 @@ import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationContext
+import org.springframework.http.MediaType
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 
 import grails.config.Settings
 import grails.databinding.CollectionDataBindingSource
@@ -62,6 +66,9 @@ import org.grails.web.json.JSONObject
 class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
 
     private static final Pattern INDEX_PATTERN = ~/^(\S+)\[(\d+)\]$/
+
+    /** The name of the bean Spring MVC's handler adapter is. */
+    private static final String MVC_HANDLER_ADAPTER = 'requestMappingHandlerAdapter'
 
     // Resolved when a request body is first parsed rather than injected. Injecting it pulls
     // Jackson's auto-configuration into this bean's graph, and MimeTypesConfiguration depends on
@@ -116,16 +123,19 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     /**
      * @return the mapper request bodies are parsed with when {@link #useJackson} is set: the one
-     *         {@link #setJsonMapper} sets, or else the application's {@code JsonMapper}, found when a body is first
-     *         parsed: its only or primary one, or else Spring Boot's {@code jacksonJsonMapper}; or a default
-     *         {@code JsonMapper} where the application has none of those, as when it has several and none is primary;
-     *         bodies are read with a copy of it without its default typing where it has any
+     *         {@link #setJsonMapper} sets, or else, found when a body is first parsed, the one Spring MVC reads a
+     *         {@code @RequestBody} map with, that of the first of its message converters that reads JSON into a map where
+     *         that is a Jackson converter, so that a converter a {@code WebMvcConfigurer} configures applies to both;
+     *         or else the application's {@code JsonMapper}: its only or primary one, or else Spring Boot's
+     *         {@code jacksonJsonMapper}; or a default {@code JsonMapper} where the application has none of those, as
+     *         when it has several and none is primary; bodies are read with a copy of it without its default typing
+     *         where it has any
      * @since 9.0
      */
     JsonMapper getJsonMapper() {
         JsonMapper mapper = this.resolvedJsonMapper
         if (mapper == null) {
-            mapper = jsonMapperProvider?.getIfUnique()
+            mapper = springMvcJsonMapper() ?: jsonMapperProvider?.getIfUnique()
             if (mapper == null && applicationContext?.containsBean('jacksonJsonMapper')) {
                 mapper = applicationContext.getBean('jacksonJsonMapper', JsonMapper)
             }
@@ -133,6 +143,32 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             this.resolvedJsonMapper = mapper
         }
         return mapper
+    }
+
+    /**
+     * The mapper Spring MVC reads a {@code @RequestBody} map in JSON with: that of the first message converter of its
+     * handler adapter that reads one, which it has for maps or else its own, where that converter is Spring's Jackson
+     * converter; {@code null} where it is another, such as Gson's, or where Spring MVC has no handler adapter.
+     */
+    private JsonMapper springMvcJsonMapper() {
+        if (applicationContext == null || !applicationContext.containsBean(MVC_HANDLER_ADAPTER)) {
+            return null
+        }
+        Object adapter = applicationContext.getBean(MVC_HANDLER_ADAPTER)
+        if (!(adapter instanceof RequestMappingHandlerAdapter)) {
+            return null
+        }
+        HttpMessageConverter<?> reader = ((RequestMappingHandlerAdapter) adapter).messageConverters.find {
+            HttpMessageConverter<?> converter -> converter.canRead(Map, MediaType.APPLICATION_JSON)
+        }
+        if (!(reader instanceof JacksonJsonHttpMessageConverter)) {
+            return null
+        }
+        JacksonJsonHttpMessageConverter json = (JacksonJsonHttpMessageConverter) reader
+        Map.Entry<MediaType, JsonMapper> forMaps = json.getMappersForType(Map)?.find { Map.Entry<MediaType, JsonMapper> entry ->
+            entry.key.includes(MediaType.APPLICATION_JSON)
+        }
+        return forMaps?.value ?: json.mapper
     }
 
     /**

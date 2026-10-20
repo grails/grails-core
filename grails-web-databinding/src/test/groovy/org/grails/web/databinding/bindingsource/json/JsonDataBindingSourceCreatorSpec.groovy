@@ -44,6 +44,13 @@ import tools.jackson.databind.json.JsonMapper
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
 import org.springframework.core.env.MapPropertySource
+import org.springframework.http.HttpInputMessage
+import org.springframework.http.HttpOutputMessage
+import org.springframework.http.MediaType
+import org.springframework.http.converter.AbstractHttpMessageConverter
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 
 class JsonDataBindingSourceCreatorSpec extends Specification {
 
@@ -475,6 +482,63 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         context.close()
     }
 
+    void "Jackson request parsing uses the mapper Spring MVC reads a request body with, ahead of the application's #description"() {
+        given: 'a converter that reads comments, which the application mapper does not'
+        def context = new AnnotationConfigApplicationContext()
+        context.environment.propertySources.addFirst(new MapPropertySource('test', ['grails.databinding.json.jackson': true]))
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean('jacksonJsonMapper', JsonMapper) { JsonMapper.builder().build() }
+        context.registerBean('requestMappingHandlerAdapter', RequestMappingHandlerAdapter) {
+            new RequestMappingHandlerAdapter().tap {
+                messageConverters = [converter()] as List<HttpMessageConverter<?>>
+            }
+        }
+        context.registerBean(JsonDataBindingSourceCreator)
+        context.refresh()
+
+        expect:
+        context.getBean(JsonDataBindingSourceCreator).createDataBindingSource(MimeType.JSON, Object,
+                new StringReader('{/* comment */"name":"Grails"}'))['name'] == 'Grails'
+
+        cleanup:
+        context.close()
+
+        where:
+        description                  | converter
+        'its own mapper'             | { -> new JacksonJsonHttpMessageConverter(JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build()) }
+        'the one it has for maps'    | { ->
+            new JacksonJsonHttpMessageConverter(JsonMapper.builder().build()).tap {
+                registerMappersForType(Map) { Map<MediaType, JsonMapper> mappers ->
+                    mappers.put(MediaType.APPLICATION_JSON, JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build())
+                }
+            }
+        }
+    }
+
+    void "Jackson request parsing uses the application's mapper where Spring MVC reads JSON with a converter that is not Jackson's"() {
+        given: 'a converter ahead of Jackson\'s that reads JSON maps otherwise, as Gson\'s does'
+        def context = new AnnotationConfigApplicationContext()
+        context.environment.propertySources.addFirst(new MapPropertySource('test', ['grails.databinding.json.jackson': true]))
+        context.registerBean(PropertySourcesPlaceholderConfigurer)
+        context.registerBean('jacksonJsonMapper', JsonMapper) {
+            JsonMapper.builder().enable(JsonReadFeature.ALLOW_JAVA_COMMENTS).build()
+        }
+        context.registerBean('requestMappingHandlerAdapter', RequestMappingHandlerAdapter) {
+            new RequestMappingHandlerAdapter().tap {
+                messageConverters = [new OtherJsonConverter(), new JacksonJsonHttpMessageConverter(JsonMapper.builder().build())] as List<HttpMessageConverter<?>>
+            }
+        }
+        context.registerBean(JsonDataBindingSourceCreator)
+        context.refresh()
+
+        expect:
+        context.getBean(JsonDataBindingSourceCreator).createDataBindingSource(MimeType.JSON, Object,
+                new StringReader('{/* comment */"name":"Grails"}'))['name'] == 'Grails'
+
+        cleanup:
+        context.close()
+    }
+
     private static final String LEGACY_PARSING_NOTICE = 'Legacy JSON request parsing is deprecated for removal in Grails 11.'
 
     private static String stderrWhile(Closure<?> work) {
@@ -528,5 +592,27 @@ class ReaderCountingMapper extends JsonMapper {
     ObjectReader reader() {
         readers++
         super.reader()
+    }
+}
+
+/** A converter that reads JSON maps without Jackson, as Gson's does. */
+class OtherJsonConverter extends AbstractHttpMessageConverter<Map> {
+
+    OtherJsonConverter() {
+        super(MediaType.APPLICATION_JSON)
+    }
+
+    @Override
+    protected boolean supports(Class<?> type) {
+        Map.isAssignableFrom(type)
+    }
+
+    @Override
+    protected Map readInternal(Class<? extends Map> type, HttpInputMessage message) {
+        [:]
+    }
+
+    @Override
+    protected void writeInternal(Map map, HttpOutputMessage message) {
     }
 }
