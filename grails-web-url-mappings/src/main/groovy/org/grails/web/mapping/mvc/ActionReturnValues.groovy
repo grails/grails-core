@@ -55,6 +55,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 
+import grails.config.Settings
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 
@@ -62,7 +63,8 @@ import org.grails.web.util.GrailsApplicationAttributes
  * Writes the value a controller action returns as Spring MVC writes the value a handler method returns, where Spring
  * MVC writes it as the response: an {@code HttpEntity}, such as a {@code ResponseEntity}, {@code HttpHeaders}, a
  * {@code ProblemDetail}, an {@code ErrorResponse}, a {@code StreamingResponseBody} or a {@code ResponseBodyEmitter},
- * and any value of an action annotated {@code @ResponseBody}, or of an action of a controller annotated so. The action
+ * and, with {@code grails.controllers.responseBody}, any value of an action annotated {@code @ResponseBody}, or of an
+ * action of a controller annotated so. The action
  * is the handler method, typed by the value it returns, as Spring MVC types the value of a handler method declared to
  * return {@code Object}, and the value is handed to the return value handlers of Spring MVC's handler adapter, with the
  * status of the action's {@code @ResponseStatus}, so that the advice for the controller and the annotations of the
@@ -86,10 +88,15 @@ class ActionReturnValues {
 
     private final ApplicationContext applicationContext
 
+    /** Whether Spring MVC writes the values of actions annotated {@code @ResponseBody}, as the setting says. */
+    private final boolean responseBody
+
     private volatile MvcAdapter mvcAdapter
 
     ActionReturnValues(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
+        this.responseBody = applicationContext != null && applicationContext.environment.getProperty(
+                Settings.CONTROLLERS_RESPONSE_BODY, Boolean, Boolean.valueOf(Settings.CONTROLLERS_RESPONSE_BODY_DEFAULT))
     }
 
     /**
@@ -106,10 +113,10 @@ class ActionReturnValues {
     }
 
     /**
-     * Whether Spring MVC writes the value an action returns as the response. A {@code null} value is left to Grails,
-     * and so is the value of an action that rendered the response itself, with {@code render} or {@code respond},
-     * redirected, forwarded or processes the request asynchronously already, whatever the status of the response, so
-     * that what an action of an error page returns is written.
+     * Whether Spring MVC writes the value an action returns as the response, where its handler adapter is there to. A
+     * {@code null} value is left to Grails, and so is the value of an action that rendered the response itself, with
+     * {@code render} or {@code respond}, redirected, forwarded or processes the request asynchronously already, whatever
+     * the status of the response, so that what an action of an error page returns is written.
      *
      * @param value the value the action returns
      * @param controller the controller
@@ -117,16 +124,16 @@ class ActionReturnValues {
      * @param webRequest the request
      * @return whether it does
      */
-    static boolean isBody(Object value, Object controller, String methodName, GrailsWebRequest webRequest) {
+    boolean isBody(Object value, Object controller, String methodName, GrailsWebRequest webRequest) {
         if (value == null || webRequest.responseRendered ||
                 webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.FORWARD_ISSUED) != null ||
                 WebAsyncUtils.getAsyncManager(webRequest.currentRequest).concurrentHandlingStarted) {
             return false
         }
         ActionMethod action = actionMethod(controller, methodName)
-        return action?.method != null && (action.responseBody || value instanceof HttpEntity || value instanceof HttpHeaders ||
-                value instanceof ProblemDetail || value instanceof ErrorResponse || value instanceof StreamingResponseBody ||
-                value instanceof ResponseBodyEmitter)
+        return action?.method != null && ((responseBody && action.responseBody) || value instanceof HttpEntity ||
+                value instanceof HttpHeaders || value instanceof ProblemDetail || value instanceof ErrorResponse ||
+                value instanceof StreamingResponseBody || value instanceof ResponseBodyEmitter) && adapter() != null
     }
 
     /**
@@ -138,11 +145,6 @@ class ActionReturnValues {
      */
     static boolean isAsync(HttpServletRequest request) {
         return request.getAttribute(ASYNC_ACTION) instanceof ActionHandlerMethod
-    }
-
-    /** @return whether Spring MVC's handler adapter, which writes the values, is there */
-    boolean isAvailable() {
-        return adapter() != null
     }
 
     /**

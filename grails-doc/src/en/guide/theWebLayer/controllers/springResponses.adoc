@@ -64,14 +64,23 @@ Spring MVC selects how to write the body of a `ResponseEntity` by the type the a
 from the action itself: one an asynchronous value completes with is written as the value it is, which Spring MVC writes
 as a `ResponseEntity` of a bean.
 
-Annotate an action `@ResponseBody`, or its controller to annotate all of its actions, directly or with an annotation
-such as `@RestController`, and Spring MVC writes any value the action returns as the body of the response, as it writes
-the value of a controller method annotated so: in the format its content negotiation selects, with the properties of
+With `grails.controllers.responseBody: true`, which Grails 10 makes the default, annotate an action `@ResponseBody`, or
+its controller to annotate all of its actions, directly or with an annotation such as `@RestController`, and Spring MVC
+writes any value the action returns as the body of the response, as it writes the value of a controller method
+annotated so: in the format its content negotiation selects, with the properties of
 the action's `@JsonView` and the status of its `@ResponseStatus`. A `CompletableFuture`, a `DeferredResult` or a
 `Callable` such an action returns is processed asynchronously, with the executor, timeout and interceptors of Spring
 MVC's handler adapter, which `spring.mvc.async.request-timeout` and the `configureAsyncSupport` of the application's
 `WebMvcConfigurer` beans configure, and the value it completes with is written as the body. A Grails `Promise`, and a
 reactive `Publisher` with the `grails-async` plugin, are processed by Grails, as before.
+
+[source,yaml]
+.grails-app/conf/application.yml
+----
+grails:
+    controllers:
+        responseBody: true
+----
 
 [source,groovy]
 .grails-app/controllers/com/demo/TitleController.groovy
@@ -101,7 +110,7 @@ class TitleController {
 
 An action that returns `null` is left to Grails, and so is the value of an action that rendered the response itself,
 with `render`, `respond` or `redirect`, or forwarded the request. A model an action not annotated `@ResponseBody`
-returns renders the action's view, as before. As for an action that renders the response itself, Spring MVC writes the
+returns renders the action's view, as before, and so does the model of an action annotated so without the setting. As for an action that renders the response itself, Spring MVC writes the
 response before an interceptor's `after` runs, which sees no model.
 
 Spring MVC writes JSON with Spring Boot's `JsonMapper`, which writes a domain class instance as Grails does only with

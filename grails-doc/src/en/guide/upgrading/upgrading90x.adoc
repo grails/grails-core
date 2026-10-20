@@ -216,6 +216,11 @@ now brings Boot's `JsonMapper`, which Spring MVC's JSON converter then writes wi
 | Exceptions actions throw, resolved by Spring MVC's `@ExceptionHandler` methods (see section 14)
 | `false`
 | `true` in Grails 10
+
+| `grails.controllers.responseBody`
+| Values of actions annotated `@ResponseBody`, written by Spring MVC as the body (see section 15)
+| `false`
+| `true` in Grails 10
 |===
 
 `request.JSON` and data binding parse a request body under different settings, so set
@@ -1095,10 +1100,21 @@ grails:
 
 An action that returns a `ResponseEntity` or another `HttpEntity`, a `ProblemDetail`, an `ErrorResponse`,
 `HttpHeaders`, a `StreamingResponseBody` or a `ResponseBodyEmitter` has it written as Spring MVC writes what a handler
-method returns, which Grails 8 did not write, and Spring MVC writes the value of an action annotated `@ResponseBody`, or
-of an action of a controller annotated so, directly or with an annotation such as `@RestController`, as the body of the
-response, where Grails 8 ignored the annotation and rendered the action's view for a model. An application that
-annotates actions or controllers so to no effect should remove the annotation, or the model of such an action is
-written in place of its view, before an interceptor's `after` runs, which then sees no model. An action that returns
-`null`, or that renders the response itself with `render`, `respond` or `redirect`, or forwards the request, is
-unaffected. See <<springResponses,Returning Spring MVC Responses>>.
+method returns, whatever the settings, where Grails 8 did not write it. An action that returns `null`, or that renders
+the response itself with `render`, `respond` or `redirect`, or forwards the request, is unaffected.
+
+Set `grails.controllers.responseBody: true` to have Spring MVC write the value of an action annotated `@ResponseBody`,
+or of an action of a controller annotated so, directly or with an annotation such as `@RestController`, as the body of
+the response, as it writes the value of a controller method annotated so, where Grails 8 ignored the annotation and
+rendered the action's view for a model. Grails 10 makes it the default, so an application that annotates actions or
+controllers so to no effect should remove the annotation before then, or the model of such an action is written in
+place of its view, before an interceptor's `after` runs, which then sees no model. See
+<<springResponses,Returning Spring MVC Responses>>.
+
+[source,yaml]
+.grails-app/conf/application.yml
+----
+grails:
+    controllers:
+        responseBody: true
+----

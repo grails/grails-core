@@ -118,6 +118,8 @@ grails:
             jackson: true
     exceptionresolver:
         springHandlers: true
+    controllers:
+        responseBody: true
 spring:
     mvc:
         problemdetails:

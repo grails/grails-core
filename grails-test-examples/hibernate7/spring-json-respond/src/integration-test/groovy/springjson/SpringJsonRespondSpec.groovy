@@ -31,8 +31,8 @@ import org.apache.grails.testing.http.client.HttpClientSupport
  * through Spring MVC's converter with the Grails mapper, binds JSON bodies with Jackson, and Spring MVC writes the
  * problems it responds with, with the application's advice. With grails.exceptionresolver.springHandlers, the exception
  * handlers of the application and of spring.mvc.problemdetails.enabled answer the exceptions an action throws. What an
- * action returns, where Spring MVC writes what a handler method returns as the response, such as a ResponseEntity or the
- * value of an action annotated @ResponseBody, Spring MVC writes.
+ * action returns, where Spring MVC writes what a handler method returns as the response, such as a ResponseEntity, Spring
+ * MVC writes, and with grails.controllers.responseBody, so is the value of an action annotated @ResponseBody.
  */
 @Integration(applicationClass = Application)
 @Tag('http-client')

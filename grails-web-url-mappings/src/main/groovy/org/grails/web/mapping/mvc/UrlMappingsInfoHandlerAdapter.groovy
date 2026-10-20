@@ -172,7 +172,7 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 if (modelAndView instanceof ModelAndView) {
                     return (ModelAndView) modelAndView
                 }
-                else if (ActionReturnValues.isBody(result, controller, methodName, webRequest) && actionReturnValues?.available) {
+                else if (actionReturnValues?.isBody(result, controller, methodName, webRequest)) {
                     // a ResponseEntity, a ProblemDetail or the value of an action annotated @ResponseBody, which
                     // Spring MVC writes as the response
                     return actionReturnValues.write(result, controller, methodName, request, response)

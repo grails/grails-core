@@ -26,6 +26,7 @@ import groovy.json.JsonSlurper
 
 import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.core.MethodParameter
+import org.springframework.core.env.MapPropertySource
 import org.springframework.core.task.SimpleAsyncTaskExecutor
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -56,6 +57,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 
 import grails.artefact.Artefact
+import grails.config.Settings
 import grails.util.GrailsWebMockUtil
 import grails.web.HyphenatedUrlConverter
 import grails.web.UrlConverter
@@ -70,7 +72,8 @@ import spock.util.concurrent.PollingConditions
 
 /**
  * What a controller action returns is written as Spring MVC writes what a handler method returns, where Spring MVC
- * writes it as the response.
+ * writes it as the response, and, with {@code grails.controllers.responseBody}, which the features set unless they say
+ * otherwise, any value of an action annotated {@code @ResponseBody}.
  */
 class ActionReturnValuesSpec extends AbstractUrlMappingsSpec {
 
@@ -81,16 +84,7 @@ class ActionReturnValuesSpec extends AbstractUrlMappingsSpec {
     private UrlMappingsInfoHandlerAdapter adapter
 
     void setup() {
-        context = new GenericWebApplicationContext(new MockServletContext())
-        AnnotationConfigUtils.registerAnnotationConfigProcessors(context)
-        context.registerBean(DelegatingWebMvcConfiguration)
-        context.registerBean(ReturnValuesAdvice)
-        context.registerBean(ReturnValuesAsyncConfigurer)
-        def linkGenerator = Stub(LinkGenerator)
-        context.registerBean(LinkGenerator, { linkGenerator })
-        context.registerBean(ReturnValuesController.name, ReturnValuesController)
-        context.registerBean(ReturnValuesBodyController.name, ReturnValuesBodyController)
-        context.refresh()
+        context = mvcContext((Settings.CONTROLLERS_RESPONSE_BODY): true)
         webRequest = GrailsWebMockUtil.bindMockWebRequest(context)
         webRequest.currentRequest.requestURI = '/returnValues/action'
         webRequest.currentRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
@@ -100,6 +94,32 @@ class ActionReturnValuesSpec extends AbstractUrlMappingsSpec {
 
     void cleanup() {
         context?.close()
+    }
+
+    void 'without grails.controllers.responseBody, the Grails 9 default, an action annotated @ResponseBody renders its view, as before'() {
+        given:
+        def withoutSetting = mvcContext([:])
+        adapter = new UrlMappingsInfoHandlerAdapter()
+        adapter.applicationContext = withoutSetting
+        webRequest.currentRequest.addParameter('id', '7')
+
+        when:
+        def modelAndView = handle('show')
+
+        then:
+        modelAndView.viewName == 'show'
+        modelAndView.model == [id: 7]
+        response.contentAsString == ''
+
+        when: 'a ResponseEntity, which Spring MVC writes whatever an action is annotated with'
+        handle('entity')
+
+        then:
+        response.status == 201
+        json() == [title: 'Dune']
+
+        cleanup:
+        withoutSetting.close()
     }
 
     void 'a ResponseEntity is written with its status, headers and body, and the advice for the controller'() {
@@ -372,6 +392,21 @@ class ActionReturnValuesSpec extends AbstractUrlMappingsSpec {
 
         cleanup:
         withoutMvc.close()
+    }
+
+    private GenericWebApplicationContext mvcContext(Map<String, Object> properties) {
+        def mvc = new GenericWebApplicationContext(new MockServletContext())
+        mvc.environment.propertySources.addFirst(new MapPropertySource('test', properties))
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(mvc)
+        mvc.registerBean(DelegatingWebMvcConfiguration)
+        mvc.registerBean(ReturnValuesAdvice)
+        mvc.registerBean(ReturnValuesAsyncConfigurer)
+        def linkGenerator = Stub(LinkGenerator)
+        mvc.registerBean(LinkGenerator, { linkGenerator })
+        mvc.registerBean(ReturnValuesController.name, ReturnValuesController)
+        mvc.registerBean(ReturnValuesBodyController.name, ReturnValuesBodyController)
+        mvc.refresh()
+        mvc
     }
 
     private Object handle(String action, Class<?> controller = ReturnValuesController, UrlConverter urlConverter = null) {

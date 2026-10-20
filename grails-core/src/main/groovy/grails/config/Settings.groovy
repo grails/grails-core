@@ -210,6 +210,26 @@ interface Settings {
     String CONTROLLERS_DEFAULT_SCOPE = 'grails.controllers.defaultScope'
 
     /**
+     * Whether Spring MVC writes any value of a controller action annotated {@code @ResponseBody}, or of an action of a
+     * controller annotated so, directly or with an annotation such as {@code @RestController}, as the body of the
+     * response, as it writes the value of a handler method annotated so, where Grails 8 ignored the annotation and
+     * rendered the action's view for a model. The values Spring MVC writes as the response whatever a handler method is
+     * annotated with, such as a {@code ResponseEntity} or a {@code ProblemDetail}, are written whatever it says.
+     * Defaults to {@link #CONTROLLERS_RESPONSE_BODY_DEFAULT}.
+     *
+     * @since 9.0
+     */
+    String CONTROLLERS_RESPONSE_BODY = 'grails.controllers.responseBody'
+
+    /**
+     * The default of {@link #CONTROLLERS_RESPONSE_BODY}, as a property placeholder reads it: {@code false} in Grails 9,
+     * and {@code true} from Grails 10.
+     *
+     * @since 9.0
+     */
+    String CONTROLLERS_RESPONSE_BODY_DEFAULT = 'false'
+
+    /**
      * The encoding to use for filters, default to UTF-8
      */
     String FILTER_ENCODING = 'grails.filter.encoding'
