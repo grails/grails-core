@@ -18,8 +18,6 @@
  */
 package org.grails.web.mapping.mvc
 
-import java.lang.reflect.Method
-
 import groovy.transform.CompileStatic
 
 import jakarta.servlet.http.HttpServletRequest
@@ -28,7 +26,6 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.core.Ordered
-import org.springframework.util.ReflectionUtils
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerExceptionResolver
 import org.springframework.web.servlet.ModelAndView
@@ -86,12 +83,10 @@ class ActionExceptionHandlerResolver implements HandlerExceptionResolver, Ordere
 
     /** The action as a handler method: the controller that handles the request, and its method of the action. */
     private static HandlerMethod action(HttpServletRequest request, GrailsControllerUrlMappingInfo info) {
-        Object controller = request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
         String actionName = GrailsWebRequest.lookup(request)?.actionName ?: info.actionName ?: info.controllerClass.defaultAction
         // the action as its URL names it, such as show-book with the hyphenated URL converter, to the name of its method
-        Method method = controller != null && actionName ?
-                ReflectionUtils.findMethod(controller.getClass(), info.controllerClass.actionUriToViewName(actionName)) : null
-        return method != null ? new HandlerMethod(controller, method) : null
+        return ActionReturnValues.handlerMethod(request.getAttribute(GrailsApplicationAttributes.CONTROLLER),
+                actionName ? info.controllerClass.actionUriToViewName(actionName) : null)
     }
 
     /** Spring MVC's resolver of exception handler methods, which its configuration registers among its resolvers. */

@@ -30,7 +30,9 @@ import org.apache.grails.testing.http.client.HttpClientSupport
  * grails.databinding.json.jackson, the defaults later releases change to, as application.yml sets them: respond writes JSON
  * through Spring MVC's converter with the Grails mapper, binds JSON bodies with Jackson, and Spring MVC writes the
  * problems it responds with, with the application's advice. With grails.exceptionresolver.springHandlers, the exception
- * handlers of the application and of spring.mvc.problemdetails.enabled answer the exceptions an action throws.
+ * handlers of the application and of spring.mvc.problemdetails.enabled answer the exceptions an action throws. What an
+ * action returns, where Spring MVC writes what a handler method returns as the response, such as a ResponseEntity or the
+ * value of an action annotated @ResponseBody, Spring MVC writes.
  */
 @Integration(applicationClass = Application)
 @Tag('http-client')
@@ -157,6 +159,67 @@ class SpringJsonRespondSpec extends Specification implements HttpClientSupport {
 
         then:
         response.assertStatus(500)
+    }
+
+    void 'a ResponseEntity an action returns is written by Spring MVC, with the advice of the application'() {
+        when:
+        def response = http("/book/entity/$bookId")
+
+        then:
+        response.assertStatus(200)
+        response.contentType == 'application/json'
+        response.headerValue('X-Book') == 'The Definitive Guide'
+        response.headerValue('X-Advised-By') == 'ProblemAdvice'
+        response.json() == [id: bookId, title: 'The Definitive Guide']
+
+        when:
+        response = http('/book/entity/0')
+
+        then:
+        response.assertStatus(404)
+        response.body() == ''
+    }
+
+    void 'a ProblemDetail an action returns is written by Spring MVC, with the advice of the application'() {
+        when:
+        def response = http('/book/retired')
+
+        then:
+        response.assertStatus(410)
+        response.contentType == 'application/problem+json'
+        response.json().detail == 'The edition is retired'
+        response.json().advisedBy == 'ProblemAdvice'
+    }
+
+    void 'the value of an action annotated @ResponseBody is written as the body, with the status of its @ResponseStatus'() {
+        when:
+        def response = http('/book/titles')
+
+        then:
+        response.assertStatus(202)
+        response.contentType == 'application/json'
+        response.headerValue('X-Advised-By') == 'ProblemAdvice'
+        response.jsonList() == ['The Definitive Guide']
+    }
+
+    void 'the value a CompletableFuture of an action annotated @ResponseBody completes with is written as the body'() {
+        when:
+        def response = http('/book/later')
+
+        then:
+        response.assertStatus(200)
+        response.contentType == 'application/json'
+        response.json() == [title: 'Written later']
+    }
+
+    void 'a ResponseEntity of a StreamingResponseBody an action returns is streamed'() {
+        when:
+        def response = http('/book/download')
+
+        then:
+        response.assertStatus(200)
+        response.contentType.startsWith('text/plain')
+        response.body() == 'Streamed'
     }
 
     void 'an exception of Spring MVC an action throws is answered by the handler of spring.mvc.problemdetails.enabled'() {

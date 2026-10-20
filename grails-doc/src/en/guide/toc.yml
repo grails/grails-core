@@ -126,6 +126,7 @@ theWebLayer:
     jsonResponses: Responding with JSON
     moreOnJSONBuilder: More on JSONBuilder
     xmlResponses: Responding with XML    
+    springResponses: Returning Spring MVC Responses
     uploadingFiles: Uploading Files
     commandObjects: Command Objects
     formtokens: Handling Duplicate Form Submissions

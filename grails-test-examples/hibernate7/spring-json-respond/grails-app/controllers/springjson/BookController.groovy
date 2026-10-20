@@ -19,11 +19,18 @@
 
 package springjson
 
+import java.util.concurrent.CompletableFuture
+
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
+import org.springframework.http.ResponseEntity
 import org.springframework.web.ErrorResponseException
 import org.springframework.web.bind.MissingServletRequestParameterException
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
 
 import grails.gorm.transactions.Transactional
 
@@ -69,5 +76,32 @@ class BookController {
         def exception = new ErrorResponseException(HttpStatus.SERVICE_UNAVAILABLE)
         exception.headers.set(HttpHeaders.RETRY_AFTER, '30')
         respond exception
+    }
+
+    def entity(Long id) {
+        Book book = Book.get(id)
+        book ? ResponseEntity.ok().header('X-Book', book.title).body([id: book.id, title: book.title]) :
+                ResponseEntity.notFound().build()
+    }
+
+    def retired() {
+        ProblemDetail.forStatusAndDetail(HttpStatus.GONE, 'The edition is retired')
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    def titles() {
+        Book.list()*.title
+    }
+
+    @ResponseBody
+    def later() {
+        CompletableFuture.supplyAsync { [title: 'Written later'] }
+    }
+
+    ResponseEntity<StreamingResponseBody> download() {
+        ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body({ OutputStream out ->
+            out << 'Streamed'
+        } as StreamingResponseBody)
     }
 }
