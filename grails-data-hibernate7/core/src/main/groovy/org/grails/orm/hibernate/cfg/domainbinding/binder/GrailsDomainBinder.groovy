@@ -141,6 +141,8 @@ class GrailsDomainBinder implements AdditionalMappingContributor, TypeContributo
                 new ColumnNameForPropertyAndPathFetcher(namingStrategy, defaultColumnNameFetcher, backticksRemover)
         SimpleValueBinder simpleValueBinder =
                 new SimpleValueBinder(metadataBuildingContext, namingStrategy, jdbcEnvironment)
+        CompositeUserTypeBinder compositeUserTypeBinder =
+                new CompositeUserTypeBinder(metadataBuildingContext, namingStrategy, jdbcEnvironment)
         EnumTypeBinder enumTypeBinder =
                 new EnumTypeBinder(metadataBuildingContext, columnNameForPropertyAndPathFetcher, namingStrategy)
         PropertyFromValueCreator propertyFromValueCreator = new PropertyFromValueCreator()
@@ -185,6 +187,7 @@ class GrailsDomainBinder implements AdditionalMappingContributor, TypeContributo
                 componentBinder,
                 collectionBinder,
                 simpleValueBinder,
+                compositeUserTypeBinder,
                 oneToOneBinder,
                 manyToOneBinder,
                 foreignKeyOneToOneBinder)
