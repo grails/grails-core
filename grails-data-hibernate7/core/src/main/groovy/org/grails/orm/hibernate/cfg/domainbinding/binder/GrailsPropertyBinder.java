@@ -43,6 +43,7 @@ public class GrailsPropertyBinder {
     private final ComponentBinder componentBinder;
     private final CollectionBinder collectionBinder;
     private final SimpleValueBinder simpleValueBinder;
+    private final CompositeUserTypeBinder compositeUserTypeBinder;
     private final OneToOneBinder oneToOneBinder;
     private final ManyToOneBinder manyToOneBinder;
     private final ForeignKeyOneToOneBinder foreignKeyOneToOneBinder;
@@ -52,6 +53,7 @@ public class GrailsPropertyBinder {
             ComponentBinder componentBinder,
             CollectionBinder collectionBinder,
             SimpleValueBinder simpleValueBinder,
+            CompositeUserTypeBinder compositeUserTypeBinder,
             OneToOneBinder oneToOneBinder,
             ManyToOneBinder manyToOneBinder,
             ForeignKeyOneToOneBinder foreignKeyOneToOneBinder) {
@@ -59,6 +61,7 @@ public class GrailsPropertyBinder {
         this.componentBinder = componentBinder;
         this.collectionBinder = collectionBinder;
         this.simpleValueBinder = simpleValueBinder;
+        this.compositeUserTypeBinder = compositeUserTypeBinder;
         this.oneToOneBinder = oneToOneBinder;
         this.manyToOneBinder = manyToOneBinder;
         this.foreignKeyOneToOneBinder = foreignKeyOneToOneBinder;
@@ -81,6 +84,11 @@ public class GrailsPropertyBinder {
             // through collectionBinder.bindCollection() below so its join table gets created;
             // EnumTypeBinder only binds its element column, from BasicCollectionElementBinder.
             value = enumTypeBinder.bindEnumType(hibernateEnumProperty, path);
+        } else if (currentGrailsProp.getCompositeUserType() != null) {
+            // A composite user type spans one column per attribute of its embeddable class, so it is a
+            // component of that type rather than a basic value: Hibernate resolves the type of a basic value
+            // as a BasicType or a UserType only.
+            value = compositeUserTypeBinder.bindCompositeUserType(currentGrailsProp, parentProperty, path);
         } else if (currentGrailsProp.isUserButNotCollectionType()) {
             value = simpleValueBinder.bindBasicValue(currentGrailsProp, parentProperty, path);
         } else if (currentGrailsProp instanceof HibernateOneToOneProperty oneToOne &&

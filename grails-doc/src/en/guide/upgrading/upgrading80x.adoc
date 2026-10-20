@@ -1449,6 +1449,12 @@ class SportsCar extends Car {
 }
 ----
 
+===== 26.11 Custom User Types
+
+Hibernate 7 changed the `org.hibernate.usertype.UserType` contract. The interface is generic in the Java type, `sqlTypes()` became `getSqlType()`, and `nullSafeGet()` and `nullSafeSet()` take a column position and a `WrapperOptions` in place of the column names and the session. A `UserType` written for Hibernate 5 does not compile against Hibernate 7 and must be rewritten.
+
+A type that spans several columns no longer implements `UserType` with several `sqlTypes()`. It implements `org.hibernate.usertype.CompositeUserType`, whose `embeddable()` method names a class whose persistent attributes describe the columns. GORM binds such a property as a component: the columns of its `type` mapping are assigned to the attributes in the alphabetical order of their names, which is also the index that `getPropertyValue()` and `instantiate()` use, and a column that is not listed is named after the property and the attribute. In Hibernate 5, the columns followed the order of `getPropertyNames()` instead, so check the column order of every multi-column mapping when you port a `CompositeUserType`. The GORM guide describes the mapping under _Custom Hibernate Types_.
+
 ==== 27. GORM Properties Are Nullable by Default
 
 Grails 8 changes the validation default so that an *unconstrained persistent (domain) property is nullable by default* rather than required.
