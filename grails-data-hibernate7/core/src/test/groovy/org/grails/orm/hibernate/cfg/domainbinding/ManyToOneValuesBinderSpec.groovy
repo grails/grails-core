@@ -22,12 +22,14 @@ package org.grails.orm.hibernate.cfg.domainbinding
 import grails.gorm.annotation.Entity
 import grails.gorm.hibernate.HibernateEntity
 import grails.gorm.tests.HibernateGormDatastoreSpec
+import groovy.transform.EqualsAndHashCode
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.hibernate.FetchMode
 import org.hibernate.Hibernate
 import org.hibernate.engine.FetchStyle
+import org.hibernate.mapping.Component
 import org.hibernate.mapping.ManyToOne
 import spock.lang.Unroll
 
@@ -36,7 +38,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.binder.ManyToOneValuesBinder
 class ManyToOneValuesBinderSpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(ManyToOneValuesBinderBook, ManyToOneValuesBinderAuthor, ManyToOneValuesBinderUnproxyableAuthor)
+        manager.registerDomainClasses(ManyToOneValuesBinderBook, ManyToOneValuesBinderAuthor, ManyToOneValuesBinderUnproxyableAuthor,
+                ManyToOneValuesBinderLink)
     }
 
     @Unroll
@@ -105,6 +108,26 @@ class ManyToOneValuesBinderSpec extends HibernateGormDatastoreSpec {
         'editor'    | FetchMode.JOIN    | false | FetchStyle.JOIN
     }
 
+    @Unroll
+    void "the many-to-one #property in a composite identifier is bound with fetch mode SELECT and fetched with SELECT"() {
+        when:
+        def identifier = datastore.metadata.getEntityBinding(ManyToOneValuesBinderLink.name).identifier as Component
+        def value = identifier.getProperty(property).value as ManyToOne
+        def fetchOptions = sessionFactory.mappingMetamodel
+                .getEntityDescriptor(ManyToOneValuesBinderLink.name)
+                .identifierMapping
+                .findSubPart(property, null)
+                .mappedFetchOptions
+
+        then:
+        value.fetchMode == FetchMode.SELECT
+        value.lazy
+        fetchOptions.style == FetchStyle.SELECT
+
+        where:
+        property << ['owner', 'target']
+    }
+
     void "loading a book leaves a lazy author unloaded and loads the associations that cannot be deferred"() {
         given:
         Long bookId = ManyToOneValuesBinderBook.withTransaction {
@@ -144,6 +167,17 @@ class ManyToOneValuesBinderBook implements HibernateEntity<ManyToOneValuesBinder
     static mapping = {
         publisher lazy: false
         editor fetch: 'join'
+    }
+}
+
+@Entity
+@EqualsAndHashCode(includes = ['owner', 'target'])
+class ManyToOneValuesBinderLink implements HibernateEntity<ManyToOneValuesBinderLink>, Serializable {
+    ManyToOneValuesBinderAuthor owner
+    ManyToOneValuesBinderUnproxyableAuthor target
+
+    static mapping = {
+        id composite: ['owner', 'target']
     }
 }
 
