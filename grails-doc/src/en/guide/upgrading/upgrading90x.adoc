@@ -195,7 +195,7 @@ now brings Boot's `JsonMapper`, which Spring MVC's JSON converter then writes wi
 | `grails.converters.JSON`: `render ... as JSON`, `JSON.parse`, `request.JSON`, and `respond` while
 `grails.web.rendering.json.spring` is `false`
 | `true`
-| `false` in a later release
+| `false` in Grails 10
 
 | `grails.databinding.json.jackson`
 | JSON request bodies bound to command objects and domain classes
@@ -215,7 +215,8 @@ now brings Boot's `JsonMapper`, which Spring MVC's JSON converter then writes wi
 
 `request.JSON` and data binding parse a request body under different settings, so set
 `grails.converters.json.legacy: false` and `grails.databinding.json.jackson: true` together for both to accept the
-same JSON.
+same JSON. Grails 10 changes the defaults of the three JSON settings together, so that `respond`, `render ... as JSON`,
+`request.JSON` and data binding write and read JSON with the same mapper by default.
 
 Grails 9 preserves the legacy `grails.converters.JSON` converter for `respond()` by default and logs one
 deprecation warning when that path renders. Opt into Spring MVC's message converters, backed by Boot's

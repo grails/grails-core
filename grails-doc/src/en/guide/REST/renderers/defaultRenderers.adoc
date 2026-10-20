@@ -77,7 +77,7 @@ Why the separation between converters and renderers? Well a renderer has more fl
 
 
 In Grails 9, the JSON converter renders JSON as Grails 8 did, by default. With `grails.converters.json.legacy` set to
-`false`, which a later release makes the default, it writes JSON through the application's Jackson `JsonMapper`, the one
+`false`, which Grails 10 makes the default, it writes JSON through the application's Jackson `JsonMapper`, the one
 Spring Boot auto-configures, so a Grails application and a Spring Boot application return the same JSON for the same
 values. The mapper then writes every single value it has a dedicated serializer for, such as dates and times, `Month`,
 `UUID`, `Locale`, `byte[]`, types with a `@JsonValue` other than enums and the types of Jackson modules registered with

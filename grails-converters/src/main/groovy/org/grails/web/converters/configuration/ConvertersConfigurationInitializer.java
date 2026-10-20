@@ -84,14 +84,15 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
     /**
      * Whether the JSON converter renders values as Grails 8 did, with the marshallers of Grails 8 rather than the
      * application's {@code JsonMapper}. Defaults to {@code true} in Grails 9: set it to {@code false} to render JSON
-     * through the application's {@code JsonMapper}, which a later release makes the default.
+     * through the application's {@code JsonMapper}, which Grails 10 makes the default, together with
+     * {@code grails.web.rendering.json.spring} and {@code grails.databinding.json.jackson}.
      *
      * @since 9.0
      */
     public static final String SETTING_CONVERTERS_JSON_LEGACY = "grails.converters.json.legacy";
 
     /**
-     * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9, which a later release changes; read through
+     * The default of {@link #SETTING_CONVERTERS_JSON_LEGACY} in Grails 9, which Grails 10 changes; read through
      * {@link #isLegacyJson(PropertyResolver)}, so that code compiled against this release does not keep it.
      */
     private static final boolean LEGACY_JSON_BY_DEFAULT = true;
@@ -253,7 +254,7 @@ public class ConvertersConfigurationInitializer extends AbstractConvertersConfig
         ConvertersConfigurationHolder.setLegacyJson(legacy);
         if (!grailsConfig.containsProperty(SETTING_CONVERTERS_JSON_LEGACY) && LEGACY_JSON_DEFAULT_LOGGED.compareAndSet(false, true)) {
             LOG.warn(SETTING_CONVERTERS_JSON_LEGACY + " is not set, so the JSON converter renders JSON as Grails 8 did. " +
-                    "A later release renders JSON through the application's JsonMapper by default. Set it to true to keep " +
+                    "Grails 10 renders JSON through the application's JsonMapper by default. Set it to true to keep " +
                     "the Grails 8 rendering, or to false to render through the JsonMapper now; see \"Rendering JSON As " +
                     "Grails 8 Did\" in the upgrade guide.");
         }

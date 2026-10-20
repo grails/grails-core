@@ -114,7 +114,7 @@ class OpenApiSettings {
     /**
      * Whether the JSON converter renders as Grails 8 did, which it does unless {@code grails.converters.json.legacy}
      * is {@code false}: then it writes validation errors with their codes and without the rejected value. It defaults to
-     * the converter's default, which a later release changes.
+     * the converter's default, which Grails 10 changes.
      *
      * @since 9.0
      */
