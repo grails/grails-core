@@ -110,6 +110,32 @@ class DomainClassJacksonModuleSpec extends Specification {
         new JSON(volume).toString() == mapper().writeValueAsString(volume)
     }
 
+    void "a map association with a null key fails as Jackson fails to write a map with one"() {
+        given:
+        def volume = volume()
+        volume.writersByName = [(null): volume.writers[0]]
+
+        when:
+        mapper().writeValueAsString(volume)
+
+        then:
+        DatabindException e = thrown()
+        e.originalMessage == jacksonNullKeyFailure()
+    }
+
+    void "a map association is written in the order of its keys where the mapper orders map entries by them"() {
+        given:
+        def volume = volume()
+        volume.writersByName = [b: volume.writers[1], a: volume.writers[0]]
+        def ordered = JsonMapper.builder().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .addModule(new DomainClassJacksonModule(ConvertersConfigurationInitializer.jsonDomainClassRendering(
+                        grailsApplication, new DefaultProxyHandler()))).build()
+
+        expect:
+        ordered.writeValueAsString(volume).endsWith('"writersByName":{"a":{"id":1},"b":{"id":2}}}')
+        mapper().writeValueAsString(volume).endsWith('"writersByName":{"b":{"id":2},"a":{"id":1}}}')
+    }
+
     void "the version and the class name are written when they are included"() {
         given:
         def mapper = mapper(new DomainClassRendering(grailsApplication, new DefaultProxyHandler(), true, true, false))
@@ -1467,6 +1493,17 @@ class DomainClassJacksonModuleSpec extends Specification {
         JsonMapper.builder().addModule(new DomainClassJacksonModule(
                 ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())))
                 .addModule(module).build().writeValueAsString(writer) == '{"id":"w1","name":"a"}'
+    }
+
+    /** The failure Jackson reports for a map with a null key. */
+    private static String jacksonNullKeyFailure() {
+        try {
+            JsonMapper.builder().build().writeValueAsString([(null): 'a'])
+        }
+        catch (DatabindException e) {
+            return e.originalMessage
+        }
+        throw new AssertionError('Jackson wrote a map with a null key')
     }
 
     private JsonMapper mapper(DomainClassRendering rendering = ConvertersConfigurationInitializer.jsonDomainClassRendering(grailsApplication, new DefaultProxyHandler())) {

@@ -19,7 +19,10 @@
 package org.grails.web.converters.jackson;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
@@ -27,6 +30,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.jsontype.TypeSerializer;
@@ -34,6 +38,7 @@ import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.ser.impl.PropertySerializerMap;
 import tools.jackson.databind.ser.std.StdContainerSerializer;
+import tools.jackson.databind.util.ClassUtil;
 
 import org.grails.datastore.mapping.model.PersistentEntity;
 
@@ -265,7 +270,7 @@ final class DomainReferences {
             else if (value instanceof Map<?, ?> map) {
                 generator.writeStartObject();
                 TypeSerializer elementTypes = elementTypeSerializer(context);
-                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                for (Map.Entry<?, ?> entry : ordered(map, context).entrySet()) {
                     writeKey(entry.getKey(), generator, context);
                     references.writeAssociated(entry.getValue(), associated, generator, context, current, this,
                             elementTypes);
@@ -424,9 +429,45 @@ final class DomainReferences {
             return references.isEmpty(value, associated, context, current, this);
         }
 
+        /**
+         * The entries of a map association in the order Jackson writes those of a map: by their keys where
+         * {@code ORDER_MAP_ENTRIES_BY_KEYS} is enabled and the keys are comparable, with an entry of a {@code null} key
+         * first, and otherwise as the map has them, or failing as Jackson fails for keys that are not comparable where
+         * {@code FAIL_ON_ORDER_MAP_BY_INCOMPARABLE_KEY} is enabled.
+         */
+        private static Map<?, ?> ordered(Map<?, ?> map, SerializationContext context) {
+            if (!context.isEnabled(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS) || map instanceof SortedMap<?, ?> ||
+                    map.isEmpty()) {
+                return map;
+            }
+            Object firstKey = map.keySet().iterator().next();
+            if (!(firstKey instanceof Comparable<?>)) {
+                if (context.isEnabled(SerializationFeature.FAIL_ON_ORDER_MAP_BY_INCOMPARABLE_KEY)) {
+                    context.reportBadDefinition(firstKey == null ? Object.class : firstKey.getClass(),
+                            "Cannot order Map entries by key of incomparable type " + ClassUtil.classNameOf(firstKey) +
+                                    ", consider disabling `SerializationFeature.FAIL_ON_ORDER_MAP_BY_INCOMPARABLE_KEY` to " +
+                                    "simply skip sorting");
+                }
+                return map;
+            }
+            Map<Object, Object> ordered = new LinkedHashMap<>();
+            if (map.containsKey(null)) {
+                ordered.put(null, map.get(null));
+            }
+            TreeMap<Object, Object> sorted = new TreeMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() != null) {
+                    sorted.put(entry.getKey(), entry.getValue());
+                }
+            }
+            ordered.putAll(sorted);
+            return ordered;
+        }
+
+        /** Writes a key as Jackson writes the key of a map: a {@code null} one with its null key serializer, which fails by default. */
         private static void writeKey(Object key, JsonGenerator generator, SerializationContext context) {
             if (key == null) {
-                generator.writeName("null");
+                context.findNullKeySerializer(context.constructType(Object.class), null).serialize(null, generator, context);
             }
             else if (key instanceof String name) {
                 generator.writeName(name);
