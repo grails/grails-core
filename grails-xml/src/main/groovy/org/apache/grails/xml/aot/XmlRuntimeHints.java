@@ -41,6 +41,7 @@ import org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator;
  *
  * @since 9.0
  */
+@SuppressWarnings("removal")
 public class XmlRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
