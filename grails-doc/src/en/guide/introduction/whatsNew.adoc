@@ -109,8 +109,9 @@ render json: book, jsonConfiguration: 'deep', excludes: ['isbn']
 Spring MVC's handler adapter, so the application's `ResponseBodyAdvice` and `ErrorResponse.Interceptor` beans apply to
 it: as `application/problem+json`, or as `application/problem+xml` for a request that asks for a problem in XML where
 the action responds in XML and `jackson-dataformat-xml` is present, with the status the problem carries unless `respond`
-is given one, as a `ResponseEntity` is in Spring MVC. `ValidationProblemDetailFactory` creates one for validation
-errors.
+is given one, as a `ResponseEntity` is in Spring MVC. A Spring `ErrorResponse`, such as an `ErrorResponseException`,
+is answered the same way, with its status and headers. `ValidationProblemDetailFactory` creates a problem for
+validation errors.
 
 With `grails.databinding.json.jackson: true`, JSON request bodies are bound as Spring Boot's mapper parses them, with its
 `spring.jackson.*` parser settings, in place of Groovy's `JsonSlurper`.

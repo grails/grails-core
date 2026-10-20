@@ -20,7 +20,9 @@ package grails.rest.web
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.core.MethodParameter
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
@@ -30,6 +32,7 @@ import org.springframework.http.server.ServerHttpRequest
 import org.springframework.http.server.ServerHttpResponse
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.web.ErrorResponse
+import org.springframework.web.ErrorResponseException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
@@ -111,6 +114,55 @@ class ControllerProblemSpringMvcSpec extends Specification implements Controller
         response.json.advised == ProblemAdviceController.name
         response.json.intercepted == true
     }
+
+    void 'an ErrorResponse respond is given is answered with its problem, status and headers, as Spring MVC answers one a handler method returns'() {
+        given:
+        request.requestURI = '/books/1'
+        def exception = new ErrorResponseException(HttpStatus.SERVICE_UNAVAILABLE)
+        exception.headers.set(HttpHeaders.RETRY_AFTER, '30')
+
+        when:
+        controller.respond(exception)
+
+        then:
+        response.status == 503
+        response.contentType == 'application/problem+json'
+        response.getHeader(HttpHeaders.RETRY_AFTER) == '30'
+        response.json.status == 503
+        response.json.instance == '/books/1'
+
+        and: 'the interceptors are given the ErrorResponse'
+        response.json.source == 'ErrorResponseException'
+    }
+
+    void "the message codes of an ErrorResponse respond is given are resolved with the application's messages"() {
+        given:
+        Locale locale = LocaleContextHolder.locale
+        messageSource.addMessage(ErrorResponse.getDefaultTitleMessageCode(BookTakenException), locale, 'Book taken')
+        messageSource.addMessage(ErrorResponse.getDefaultDetailMessageCode(BookTakenException, null), locale, 'The book {0} is taken')
+
+        when:
+        controller.respond(new BookTakenException('Grails'))
+
+        then:
+        response.status == 409
+        response.json.title == 'Book taken'
+        response.json.detail == 'The book Grails is taken'
+    }
+
+    void 'a status respond is given decides the status of an ErrorResponse, which keeps its headers'() {
+        given:
+        def exception = new ErrorResponseException(HttpStatus.SERVICE_UNAVAILABLE)
+        exception.headers.set(HttpHeaders.RETRY_AFTER, '30')
+
+        when:
+        controller.respond(exception, status: 429)
+
+        then:
+        response.status == 429
+        response.getHeader(HttpHeaders.RETRY_AFTER) == '30'
+        response.json.status == 503
+    }
 }
 
 @Artefact('Controller')
@@ -166,5 +218,16 @@ class RecordingInterceptor implements ErrorResponse.Interceptor {
     @Override
     void handleError(ProblemDetail detail, ErrorResponse errorResponse) {
         detail.setProperty('intercepted', true)
+        if (errorResponse != null) {
+            detail.setProperty('source', errorResponse.getClass().simpleName)
+        }
+    }
+}
+
+/** An exception with a problem, whose detail message code takes the title of the book. */
+class BookTakenException extends ErrorResponseException {
+
+    BookTakenException(String title) {
+        super(HttpStatus.CONFLICT, ProblemDetail.forStatus(HttpStatus.CONFLICT), null, null, [title] as Object[])
     }
 }

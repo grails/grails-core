@@ -84,7 +84,10 @@ its own, and Spring MVC logs a warning. Its properties are written by the mapper
 MVC controller writes them: a domain class instance, validation errors or a value that leads back to itself among them is
 written, or fails, as Jackson writes any bean, whatever the `grails.converters.json` settings, unless
 `grails.converters.json.domain.jackson.enabled` gives Spring Boot's mapper the domain class serializer. Respond with
-`validationProblemDetailFactory.create(errors)` to answer with validation errors as a problem.
+`validationProblemDetailFactory.create(errors)` to answer with validation errors as a problem. A Spring `ErrorResponse`,
+such as an `ErrorResponseException`, is answered as Spring MVC answers one a handler method returns: with its problem,
+whose `problemDetail.type.*`, `problemDetail.title.*` and `problemDetail.*` message codes are resolved with the
+application's messages, as Spring MVC's `ResponseEntityExceptionHandler` resolves them, and with its status and headers.
 
 Spring MVC's content negotiation selects the type, as for a Spring MVC controller, whatever the `grails.mime` settings
 say: from the `Accept` header, unless `spring.mvc.contentnegotiation.*` or the application's `WebMvcConfigurer` beans
@@ -115,6 +118,7 @@ for problems writes them as Spring MVC writes them, whatever its `includes` and 
 ----
 respond validationProblemDetailFactory.create(book.errors)   // 422 application/problem+json
 respond ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, 'The book is checked out')
+respond new ErrorResponseException(HttpStatus.SERVICE_UNAVAILABLE)   // 503 application/problem+json, with its headers
 respond problem, view: 'conflict'                            // the conflict view of the format the problem is written in, with the problem's status, where one exists
 ----
 

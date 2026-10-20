@@ -850,7 +850,10 @@ When `respond` receives a `ProblemDetail`, it hands it to the handler Spring MVC
 application's `ResponseBodyAdvice` beans apply to it as to a method of the controller, and its
 `ErrorResponse.Interceptor` beans see it. The response has the status the problem carries, and an absent `instance` is
 set to the current resource path. A `status` argument decides the status instead, as the status of a `ResponseEntity`
-does in Spring MVC: a problem that carries another keeps its own, and Spring MVC logs a warning. Spring MVC's content
+does in Spring MVC: a problem that carries another keeps its own, and Spring MVC logs a warning. A Spring
+`ErrorResponse`, such as an `ErrorResponseException`, is answered with its problem, whose message codes are resolved with
+the application's messages as Spring MVC's `ResponseEntityExceptionHandler` resolves them, and with its status and
+headers, where Grails 8 wrote it as a bean with a 200. Spring MVC's content
 negotiation selects the type, whatever `grails.mime` says. It reads the `Accept` header unless
 `spring.mvc.contentnegotiation.*` or a `WebMvcConfigurer` configures it otherwise: with `favor-parameter: true` a
 `format` parameter decides ahead of the header, so `?format=json` and `?format=xml` are answered with

@@ -26,12 +26,14 @@ import jakarta.servlet.http.HttpServletRequest
 
 import org.springframework.context.ApplicationContext
 import org.springframework.core.MethodParameter
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.web.ErrorResponse
 import org.springframework.web.accept.ContentNegotiationManager
 import org.springframework.web.context.request.ServletWebRequest
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler
@@ -79,10 +81,12 @@ class ProblemDetailResponse {
      * @param status the status the response is sent with, or {@code null} for that of the problem
      * @param types the types the problem may be written in, in their order
      * @param converters the converters to write with, or {@code null} for Spring MVC's
+     * @param errorResponse the {@code ErrorResponse} the problem is the body of, whose status and headers the response
+     *        has and which the {@code ErrorResponse.Interceptor} beans are given, or {@code null}
      * @return {@code false}, with nothing written, where no message converter writes the problem in any of the types
      */
     static boolean write(ProblemDetail problem, ServletRenderContext context, Integer status, List<MediaType> types,
-                         List<HttpMessageConverter<?>> converters = null) {
+                         List<HttpMessageConverter<?>> converters = null, ErrorResponse errorResponse = null) {
         GrailsWebRequest webRequest = context.webRequest
         ApplicationContext applicationContext = webRequest.applicationContext
         SpringMessageConverters springMessageConverters =
@@ -115,8 +119,8 @@ class ProblemDetailResponse {
         Object previous = request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE)
         request.setAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producible)
         try {
-            handler.handleReturnValue(status == null ? problem : ResponseEntity.status(status).body(problem), returnType,
-                    new ModelAndViewContainer(), new ServletWebRequest(request, webRequest.currentResponse))
+            handler.handleReturnValue(returnValue(problem, status, errorResponse), returnType, new ModelAndViewContainer(),
+                    new ServletWebRequest(request, webRequest.currentResponse))
         }
         finally {
             if (previous == null) {
@@ -128,6 +132,17 @@ class ProblemDetailResponse {
         }
         webRequest.renderView = false
         return true
+    }
+
+    /**
+     * What a handler method returns for the problem: the {@code ErrorResponse} it is the body of, or the problem, or else a
+     * {@code ResponseEntity} of it with the status given, and the headers of the {@code ErrorResponse}.
+     */
+    private static Object returnValue(ProblemDetail problem, Integer status, ErrorResponse errorResponse) {
+        if (status == null) {
+            return errorResponse ?: problem
+        }
+        ResponseEntity.status(status).headers(errorResponse?.headers ?: HttpHeaders.EMPTY).body(problem)
     }
 
     /** The manager Spring MVC negotiates with, or one that reads the {@code Accept} header alone, as Spring MVC's default. */

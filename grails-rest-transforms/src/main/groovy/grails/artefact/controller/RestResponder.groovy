@@ -28,11 +28,13 @@ import jakarta.servlet.http.HttpServletResponse
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.springframework.web.ErrorResponse
 
 import grails.artefact.Controller
 import grails.artefact.controller.support.ResponseRenderer
@@ -157,6 +159,13 @@ trait RestResponder {
         }
 
         final webRequest = ((Controller) this).getWebRequest()
+        // an ErrorResponse, such as an ErrorResponseException, is answered with its problem, its message codes resolved as
+        // Spring MVC's exception handler resolves them, and with its status and headers
+        ErrorResponse errorResponse = null
+        if (value instanceof ErrorResponse) {
+            errorResponse = (ErrorResponse) value
+            value = errorResponse.updateAndGetBody(webRequest.applicationContext, LocaleContextHolder.locale)
+        }
         List<String> formats = calculateFormats(webRequest.actionName, value, args)
         final response = webRequest.getCurrentResponse()
         MimeType[] mimeTypes = getResponseFormat(response)
@@ -292,7 +301,7 @@ trait RestResponder {
             // Spring MVC writes it, and in XML only where the action responds in XML
             List<MediaType> types = formats.contains('xml') ?
                     [MediaType.APPLICATION_PROBLEM_JSON, MediaType.APPLICATION_PROBLEM_XML] : [MediaType.APPLICATION_PROBLEM_JSON]
-            if (ProblemDetailResponse.write((ProblemDetail) value, context, statusCode, types)) {
+            if (ProblemDetailResponse.write((ProblemDetail) value, context, statusCode, types, null, errorResponse)) {
                 return
             }
             // without a message converter that writes problems, the JSON renderer writes it
@@ -308,8 +317,11 @@ trait RestResponder {
             }
             if (problem) {
                 // A problem answers with the status it carries and the path of the resource whichever renderer writes it,
-                // one the application registers included, as in Spring MVC
+                // one the application registers included, as in Spring MVC, and with the headers of an ErrorResponse
                 ProblemDetailResponse.prepare((ProblemDetail) value, context)
+                errorResponse?.headers?.forEach { String name, List<String> values ->
+                    values.each { String header -> response.addHeader(name, header) }
+                }
             }
             renderer.render(value, context)
             if (context.wasWrittenTo() && !response.isCommitted()) {
