@@ -129,11 +129,12 @@ class GrailsJacocoPlugin implements Plugin<Project> {
                 // A cli companion (src/cli, added by the grails-plugin-cli plugin) is production code with its
                 // own testCli phase. Its exec data is wired in above like any other test task's; without its
                 // classes here the report has nothing to match that data against, and the whole tier is
-                // missing from Codecov.
+                // missing from Codecov. Both file collections are live: a directory the source set gains after
+                // the aggregate task is realized is still reported, where a snapshot of srcDirs would miss it.
                 sourceSets.matching { SourceSet sourceSet -> sourceSet.name == CLI_SOURCE_SET_NAME }
                         .configureEach { SourceSet cliSourceSet ->
                             aggregateTask.configure {
-                                it.sourceDirectories.from(cliSourceSet.allSource.srcDirs)
+                                it.sourceDirectories.from(cliSourceSet.allSource.sourceDirectories)
                                 it.classDirectories.from(cliSourceSet.output.classesDirs)
                             }
                         }

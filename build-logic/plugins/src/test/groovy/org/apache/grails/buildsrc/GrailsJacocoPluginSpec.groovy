@@ -177,7 +177,7 @@ class GrailsJacocoPluginSpec extends Specification {
     }
 
     def "jacocoAggregateReport includes a subproject's cli source set next to its main one"() {
-        given: "a subproject with a cli companion source set, as the grails-plugin-cli plugin adds"
+        given: "a subproject whose cli companion source set, as the grails-plugin-cli plugin adds, gains a directory after the aggregate is realized"
         testProjectDir.resolve('settings.gradle').toFile().text = "include 'app-module'"
         testProjectDir.resolve('build.gradle').toFile().text = """
             tasks.register('printAggregateDirs') {
@@ -197,6 +197,9 @@ class GrailsJacocoPluginSpec extends Specification {
             }
             repositories { mavenCentral() }
             sourceSets { cli }
+            // realize the aggregate before the source set gains a directory, as an eager build script or an IDE sync does
+            rootProject.tasks.getByName('jacocoAggregateReport')
+            sourceSets.cli.groovy.srcDir('src/extra-cli')
         """
 
         when: "listing the directories the aggregate reports on"
@@ -211,6 +214,9 @@ class GrailsJacocoPluginSpec extends Specification {
         reported(result.output, 'CLASS_DIR', 'app-module/build/classes/groovy/main')
         reported(result.output, 'SOURCE_DIR', 'app-module/src/cli/groovy')
         reported(result.output, 'SOURCE_DIR', 'app-module/src/main/groovy')
+
+        and: "so is the directory added after the aggregate was realized, which a snapshot of the source set would miss"
+        reported(result.output, 'SOURCE_DIR', 'app-module/src/extra-cli')
     }
 
     /** Whether the output lists a directory under the label, by its path relative to the test project. */
