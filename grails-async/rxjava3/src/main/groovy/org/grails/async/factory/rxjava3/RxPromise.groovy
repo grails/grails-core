@@ -114,13 +114,18 @@ class RxPromise<T>  implements Promise<T> {
             @Override
             void onComplete() {
                 finished = true
+                subject.onComplete()
             }
         })
         this.subject = subject
     }
 
+    /**
+     * @return the result of this promise, which replays the value once it is known, rather than its source, which
+     * would run a task again for every subscriber
+     */
     Observable<T> toObservable() {
-        return this.observable
+        return this.subject
     }
 
     @Override

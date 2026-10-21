@@ -91,7 +91,7 @@ class BookController {
 }
 ----
 
-Grails subscribes to the publisher on the request thread, so in this example the data service runs its query there, before the action returns, as the previous section describes; the items are then delivered on the IO scheduler and written to the response from it, with the container thread released while they are. Running the query itself on another thread with `subscribeOn(..)` needs a session on that thread, which the data services do not set up.
+Grails subscribes to the publisher on the request thread, so in this example the data service runs its query there, before the action returns, as the previous section describes; the items are then delivered on the IO scheduler and written to the response from it, with the container thread released while they are. With `subscribeOn(..)` the query runs on the IO thread instead, in the data service's own transaction, so once that transaction ends its results have no session to load lazy associations from, and anything that reads the current request, such as a tenant resolver, does not see the request on that thread.
 
 `Observable` and `Single` are not `Publisher` instances, so returning one directly does not stream; convert it with `toFlowable(..)` as above.
 
