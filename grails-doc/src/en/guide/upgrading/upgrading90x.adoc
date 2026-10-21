@@ -281,7 +281,9 @@ against JSON hijacking, which is read when the converter first writes a response
 as a `WebMvcConfigurer` does. A response `respond` writes with a named configuration, `render json:` and
 `grails.converters.JSON` are written without the converter, and so without its prefix. A response written this way is
 in UTF-8 and labelled `application/json`, or `text/json` for a client that asks for it, as Spring MVC writes JSON,
-whatever `grails.converters.encoding` says, which the legacy converter and `render json:` still write in.
+whatever `grails.converters.encoding` says, which the legacy converter and `render json:` still write in. Where an
+application's own JSON converter writes the response, such as a subclass of Spring's Jackson converter, one with mappers
+for the type, or a converter of another library, it is labelled with a JSON type that converter supports.
 
 `grails-converters` depends on Spring Boot's `spring-boot-jackson` module, so Boot's `JsonMapper`, configured by the
 `spring.jackson.*` properties, is in every application context that has the converters. An application with
