@@ -19,6 +19,8 @@ on:
     branches:
       - '[0-9]+.[0-9]+.x'
   pull_request:
+    # ready_for_review is not a default type: a draft runs nothing until it is ready or labelled "run ci".
+    types: [ opened, synchronize, reopened, ready_for_review ]
   workflow_dispatch:
 # queue jobs and only allow 1 run per branch due to the likelihood of hitting GitHub resource limits
 concurrency:
@@ -27,8 +29,13 @@ concurrency:
 permissions:
   contents: read
 jobs:
+  # A pull request labelled "no ci", or a draft without the "run ci" label, skips every job of this workflow.
   check_core_projects:
     name: "Core Projects"
+    if: >-
+      github.event_name != 'pull_request'
+      || (!contains(github.event.pull_request.labels.*.name, 'no ci')
+          && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run ci')))
     runs-on: ubuntu-24.04
     steps:
       - name: "🌐 Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -72,6 +79,10 @@ jobs:
           done
   check_gradle_plugin_projects:
     name: "Gradle Plugin Projects"
+    if: >-
+      github.event_name != 'pull_request'
+      || (!contains(github.event.pull_request.labels.*.name, 'no ci')
+          && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run ci')))
     runs-on: ubuntu-24.04
     steps:
       - name: "🌐 Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -113,6 +124,10 @@ jobs:
           fi
   check_grails_forge_projects:
     name: "Forge Projects"
+    if: >-
+      github.event_name != 'pull_request'
+      || (!contains(github.event.pull_request.labels.*.name, 'no ci')
+          && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run ci')))
     runs-on: ubuntu-24.04
     steps:
       - name: "🌐 Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
