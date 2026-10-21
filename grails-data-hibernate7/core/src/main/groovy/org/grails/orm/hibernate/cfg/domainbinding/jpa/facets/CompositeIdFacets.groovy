@@ -16,24 +16,20 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
- * The second-level cache the domain binder configures for the root of a hierarchy: the concurrency strategy, whether lazy
- * properties are cached with the entity, and whether the class is mutable (the binder makes a {@code read-only} cache
- * immutable). {@link GrailsDomainGenerator} writes them as {@code @Cacheable}, {@code @Cache(usage, includeLazy)} and
- * {@code @Immutable}.
- *
- * <p>{@code usage} is the strategy as the mapping names it ({@code read-only}, {@code read-write},
- * {@code nonstrict-read-write} or {@code transactional}).</p>
+ * The composite identifier the domain binder binds for a root entity ({@code id composite: [...]}): the parts in the order the
+ * mapping names them, each with its column facets (a simple property) or its foreign key column facets and association facets
+ * (a many-to-one part). The binder builds one embedded identifier component from them, whose columns form the primary key and so
+ * are never null. {@code GrailsDomainGenerator} writes each part as an {@code @Id} field of the generated entity, and names
+ * a generated key class with {@code @IdClass}.
  *
  * @since 9.0
  */
 @CompileStatic
-record CacheFacets(
-    String usage,
-    boolean includeLazy,
-    boolean mutable) {
+record CompositeIdFacets(
+    List<EmbeddedLeaf> parts) {
 }

@@ -16,7 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 import org.hibernate.FetchMode
@@ -24,7 +24,7 @@ import org.hibernate.FetchMode
 /**
  * The decisions the domain binder makes for an association whose foreign key is a column of the owner's table (a
  * many-to-one, or a one-to-one that the binder binds as one): the associated entity, the fetching, the cascade and the
- * foreign key column. {@link GrailsDomainGenerator} writes them into {@code @ManyToOne}, {@code @JoinColumn},
+ * foreign key column. {@code GrailsDomainGenerator} writes them into {@code @ManyToOne}, {@code @JoinColumn},
  * {@code @Fetch}, {@code @NotFound} and {@code @Cascade}.
  *
  * <p>The same record describes the inverse side of a bidirectional one-to-one, which the binder binds as a Hibernate

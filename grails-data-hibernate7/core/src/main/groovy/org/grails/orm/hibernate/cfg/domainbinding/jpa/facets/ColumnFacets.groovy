@@ -16,13 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
  * The column-level decisions the domain binder makes for one basic property: the facets that end up on a
- * Hibernate {@code Column} and that {@link GrailsDomainGenerator} writes into {@code @Column}.
+ * Hibernate {@code Column} and that {@code GrailsDomainGenerator} writes into {@code @Column}.
  *
  * <p>{@code length}, {@code precision}, {@code scale}, {@code sqlType}, {@code defaultValue}, {@code read}, {@code write}
  * and {@code comment} are {@code null} when nothing set them.</p>

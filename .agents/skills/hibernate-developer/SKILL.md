@@ -47,6 +47,17 @@ Native domain binding is the only binding: `GrailsDomainGenerator` generates a J
 - `GeneratedDomainClassBinder`: generates the classes, binds them with Hibernate's annotation binder, installs the GORM identifier generators and the tenant filter, aligns discriminators, unique keys, join columns and collection tables, then switches the class loader service to the real classes.
 - `GrailsDomainGenerator`: decides the facets (`*Facets` records) of every entity and property and emits the annotated class with Byte Buddy. A mapping it cannot describe is refused by name with an `UnsupportedOperationException` that says what to change.
 
+### Native Domain Binding (`domainbinding.jpa`): where to start
+
+Read the package in the order the binding runs:
+
+- `HibernateMappingContextConfiguration` creates a `GeneratedDomainClassBinder` and the `GormMappingContributor` that hands the entities to it.
+- `GeneratedDomainClassBinder.contribute`: the entry point; has `GrailsDomainGenerator.generateAll` generate an annotated class per entity and gives them to Hibernate's annotation binder. `getSessionFactoryBuilder` runs once the metadata is complete and points the bound entities at the real classes.
+- `GrailsDomainGenerator`: every mapping decision. Reads a `GrailsHibernatePersistentEntity` into the records of `domainbinding.jpa.facets` (what to state) and writes them as annotations with ByteBuddy. `supports` / `unsupportedReason` name what it refuses before Hibernate boots.
+- `GeneratedDomainClassLoader` resolves domain class names to the generated classes while Hibernate binds; `GeneratedDomainClassLoaderService` switches those names to the real classes afterwards.
+- `GrailsIdGenerator`: marker carrying the GORM id generator the binder installs on a generated identifier.
+- Tests: `grails.gorm.tests.generated.*`, then the two differential specs in the `jpa` test package against the recorded classic oracle in `src/test/resources/classic-oracle` (see the README for recording).
+
 ### Metamodel
 
 - `GrailsHibernatePersistentEntity`, `HibernatePersistentProperty` and the `Hibernate*Property` types: the GORM mapping model with the Hibernate-specific reads the generator needs (column names, join tables, cascade, lazy, the tenant id).

@@ -16,23 +16,24 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
+import org.hibernate.generator.Generator
+
+import org.grails.orm.hibernate.cfg.domainbinding.generator.GrailsSequenceGeneratorEnum
 
 /**
- * The multi-tenant filter the domain binder adds to the class of a multi-tenant entity: the name of the global filter
- * (and of its only parameter), the condition that compares the parameter with the tenant column, and the Java type of
- * the parameter, which the binder takes from the type of the tenant id property.
+ * The identifier generation the domain binder chooses for a root entity: the strategy, the generator class the
+ * binder instantiates for it, and the parameters it passes along.
  *
- * <p>The filter is enabled per session by GORM, never by Hibernate, so it carries no auto-enable and no default
- * condition. {@link GrailsDomainGenerator} writes it as {@code @Filter} on the entity and as one {@code @FilterDef}.</p>
+ * <p>{@code parameters} are exactly the identity mapping's {@code params}, never {@code null}.</p>
  *
  * @since 9.0
  */
 @CompileStatic
-record TenantFacets(
-    String filterName,
-    String condition,
-    Class<?> parameterType) {
+record IdFacets(
+    GrailsSequenceGeneratorEnum strategy,
+    Class<? extends Generator> generatorClass,
+    Map<String, String> parameters) {
 }

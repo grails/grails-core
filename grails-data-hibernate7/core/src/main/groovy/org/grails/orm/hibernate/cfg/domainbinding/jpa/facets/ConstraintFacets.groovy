@@ -16,13 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
  * The indexes and multi-column unique keys the domain binder puts on one table, in the order it creates them, with the
- * names and column order it gives them. {@link GrailsDomainGenerator} writes them into
+ * names and column order it gives them. {@code GrailsDomainGenerator} writes them into
  * {@code @Table(indexes, uniqueConstraints)}.
  *
  * <p>{@code primaryKeyOrder} is the order of the primary key's columns when a unique key over exactly those columns is created

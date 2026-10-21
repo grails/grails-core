@@ -27,6 +27,7 @@ import org.hibernate.mapping.PersistentClass
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateBasicProperty
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ConstraintFacets
 
 /**
  * Describes how {@link GrailsDomainGenerator} states the unique constraints a mapping asks for with {@code unique: 'group'}

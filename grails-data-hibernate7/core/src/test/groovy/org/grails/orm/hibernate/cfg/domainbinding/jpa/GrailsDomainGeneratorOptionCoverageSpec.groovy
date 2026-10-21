@@ -42,6 +42,9 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedPro
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToOneProperty
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CollectionFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ColumnFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ToManyFacets
 
 /**
  * Guards the rule that {@link GrailsDomainGenerator} never drops a mapping option without a word. Every option of
