@@ -28,7 +28,6 @@ import org.springframework.context.ApplicationEvent;
 import grails.gorm.multitenancy.Tenants;
 import org.grails.datastore.gorm.GormEnhancer;
 import org.grails.datastore.mapping.core.Datastore;
-import org.grails.datastore.mapping.core.connections.ConnectionSource;
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent;
 import org.grails.datastore.mapping.engine.event.PersistenceEventListener;
 import org.grails.datastore.mapping.engine.event.PreInsertEvent;
@@ -114,7 +113,7 @@ public class MultiTenantEventListener implements PersistenceEventListener {
                         }
                         if (currentId != null) {
                             try {
-                                if (currentId == ConnectionSource.DEFAULT) {
+                                if (Tenants.isWithoutId(datastore)) {
                                     currentId = (Serializable) preInsertEvent.getEntityAccess().getProperty(tenantId.getName());
                                 }
                                 preInsertEvent.getEntityAccess().setProperty(tenantId.getName(), currentId);

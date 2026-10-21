@@ -17,6 +17,7 @@
 
 plugins {
     id 'org.apache.grails.gradle.grails-ij-formatter'
+    id 'org.apache.grails.buildsrc.vulnerability-scan-report'
 }
 
 import java.time.Instant

@@ -80,11 +80,15 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "⚙️ Run pre-release"
         uses: apache/grails-github-actions/pre-release@asf
         env:
@@ -601,11 +605,15 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "📖 Generate Documentation"
         run: ./gradlew grails-doc:build -PgithubBranch=${TARGET_BRANCH}
       - name: "🚀 Publish to GitHub Pages"
@@ -640,20 +648,45 @@ jobs:
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
+      - name: "🔎 Determine SDKMAN release type"
+        id: sdkman-release
+        run: |
+          # Only the newest final release becomes the SDKMAN default. Milestones, release candidates
+          # and releases of an older line are published without changing the default.
+          latest=$(git ls-remote --tags --refs origin 'v*' \
+            | sed 's#.*refs/tags/v##' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n 1)
+          if [ -z "${latest}" ]; then
+            echo "❌ Could not determine the newest final release from the repository tags" >&2
+            exit 1
+          fi
+          if [ "${VERSION}" = "${latest}" ]; then
+            echo "${VERSION} is the newest final release, publishing it as the SDKMAN default"
+            echo "type=major" >> "$GITHUB_OUTPUT"
+          else
+            echo "${VERSION} is not the newest final release (${latest}), keeping the SDKMAN default"
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          fi
       - name: "🚀 Grails SDK Minor Release"
-        if: contains(env.VERSION, 'M') || contains(env.VERSION, 'RC')
+        if: steps.sdkman-release.outputs.type == 'minor'
         working-directory: grails-forge
         run: ./gradlew sdkMinorRelease
         env:
           GVM_SDKVENDOR_KEY: ${{ secrets.GVM_SDKVENDOR_KEY }}
           GVM_SDKVENDOR_TOKEN: ${{ secrets.GVM_SDKVENDOR_TOKEN }}
       - name: "🚀 Grails SDK Major Release"
-        if: startsWith(env.VERSION, '7.') && !contains(env.VERSION, 'M') && !contains(env.VERSION, 'RC')
+        if: steps.sdkman-release.outputs.type == 'major'
         working-directory: grails-forge
         run: ./gradlew sdkMajorRelease
         env:

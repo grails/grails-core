@@ -40,11 +40,15 @@ jobs:
         with:
           distribution: liberica
           java-version: 17
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Core Projects"
         # build-logic is an included build, so its own health task is invoked through the root build.
         run: ./gradlew buildHealth :build-logic-root:buildHealth --continue
@@ -79,11 +83,15 @@ jobs:
         with:
           distribution: liberica
           java-version: 17
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Gradle Plugin Projects"
         working-directory: grails-gradle
         run: ./gradlew buildHealth --continue
@@ -116,11 +124,15 @@ jobs:
         with:
           distribution: liberica
           java-version: 17
+      - name: "🗄️ Decide the Gradle cache mode"
+        id: gradle-cache-policy
+        uses: ./.github/actions/gradle-cache-policy
       - name: "🐘 Setup Gradle"
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
-          cache-provider: basic # 'basic' uses the MIT-licensed, open-source cache provider; the default 'enhanced' provider (v6+) is proprietary (Gradle commercial Terms of Use)
-          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+          # Decided by the step above; see .github/actions/gradle-cache-policy.
+          cache-read-only: ${{ steps.gradle-cache-policy.outputs.read-only }}
+          develocity-access-key: ${{ secrets.GRAILS_DEVELOCITY_ACCESS_KEY }}
       - name: "🩺 Check Forge Projects"
         working-directory: grails-forge
         run: ./gradlew buildHealth --continue

@@ -85,7 +85,8 @@ ext {
             'cas-client-core.version'       : '4.0.4',
             'bootstrap-icons.version'       : '1.13.1',
             'bootstrap.version'             : '5.3.8',
-            'commons-codec.version'         : '1.21.0',
+            // Align with pac4j-oauth 6.5.x so the BOM manages the transitive version too.
+            'commons-codec.version'         : '1.22.0',
             'commons-compress.version'      : '1.28.0',
             'commons-lang3.version'         : '3.20.0',
             'geb-spock.version'             : '8.0.1',
@@ -96,14 +97,15 @@ ext {
             // the classic i/o model when a response carries an unsupported Content-Encoding. 5.6.4 still targets
             // httpcore5 5.4.3, so it needs no companion httpcore5 change.
             'httpclient5.version'           : '5.6.4',
-            // Security: overrides spring-boot-dependencies (5.3.6). 5.4.3 fixes CVE-2026-54399 (httpcore5) and CVE-2026-54428 (httpcore5-h2).
-            'httpcore5.version'             : '5.4.3',
-            // Security: 2.21.6 fixes CVE-2026-19032 (unrestricted URI schemes in Path deserialization) and
-            // CVE-2026-68497 (unbounded number length in GregorianCalendar/Duration) flagged against 2.21.5.
-            'jackson.version'               : '2.21.6',
+            // Security: overrides spring-boot-dependencies (5.3.6). 5.4.3 and later fix CVE-2026-54399 (httpcore5) and CVE-2026-54428 (httpcore5-h2).
+            'httpcore5.version'             : '5.4.4',
+            // Security: pac4j 6.5.x pulls 2.22.1. 2.22.3 fixes CVE-2026-89425, CVE-2026-89407,
+            // CVE-2026-91777 and CVE-2026-91776, and retains the fixes for CVE-2026-19032,
+            // CVE-2026-68497 and CVE-2026-83557 on the 2.22.x line.
+            'jackson.version'               : '2.22.3',
             // Security: overrides spring-boot-dependencies (1.5.34). 1.5.38 is the newest release of the 1.5.x line
-            // and matches what Spring Boot 4.1.x manages. See the CVE-2026-19880 note in VulnerabilityScanPlugin
-            // for the one logback advisory this version does not clear.
+            // and matches what Spring Boot 4.1.x manages. See the CVE-2026-19880 and CVE-2026-104721 notes in
+            // VulnerabilityScanPlugin for the logback advisories this version does not clear.
             'logback.version'               : '1.5.38',
             'jquery.version'                : '3.7.1',
             // Overrides spring-boot-dependencies (1.0.0): micrometer 1.16.x annotates its API with JSpecify and
@@ -121,9 +123,9 @@ ext {
             // fixes CVE-2026-59295 (DoS in the Apache HttpAsyncClient instrumentation) and CVE-2026-59296 (metric
             // name/tag injection via unsanitised newlines); the 1.15.13 patch is Enterprise Support only.
             'micrometer.version'            : '1.16.7',
-            // Security: 5.9.2 fixes CVE-2026-18710, where ProxySettings.toString() renders the SOCKS5 proxy
-            // username and password into application logs.
-            'mongodb.version'               : '5.9.2',
+            // Security: 5.11.1 fixes CVE-2026-88033 (GridFS query-operator injection in file identifiers) and
+            // retains the 5.9.2 fix for CVE-2026-18710 (SOCKS5 proxy credentials exposed in logs).
+            'mongodb.version'               : '5.11.1',
             'nimbus-jose-jwt.version'       : '10.5',
             'opentelemetry.version'         : '1.62.0',
             'plexus-utils.version'          : '4.0.3',
@@ -132,7 +134,9 @@ ext {
             // still needs those classes, so any classpath where the BOM forces plexus-utils 4.x must
             // also carry plexus-xml. The 3.x line is the Maven 3-compatible one.
             'plexus-xml.version'            : '3.0.2',
-            'pac4j.version'                 : '6.4.3',
+            // Security: 6.5.6 fixes CVE-2026-82463 (reversed profile type check) and CVE-2026-82464 (logout open
+            // redirect); 6.5.9 includes the follow-up logout redirect and direct-client CSRF fixes on the same line.
+            'pac4j.version'                 : '6.5.9',
             'rxjava.version'                : '1.3.8',
             'rxjava2.version'               : '2.2.21',
             'rxjava3.version'               : '3.1.12',
@@ -143,6 +147,10 @@ ext {
             // Do not upgrade to 3.2.3 until cleared by the sitemesh author. 3.2.3 is not a small patch:
             // it adds a spring-webmvc-sitemesh module and an opt-in view-resolver integration.
             'starter-sitemesh.version'      : '3.2.2',
+            // Security: overrides spring-boot-dependencies (10.1.55). 10.1.60 includes the fixes for
+            // CVE-2026-65905, CVE-2026-65182, CVE-2026-68525 and CVE-2026-65927, plus the later 10.1.x fixes.
+            // 10.1.58, named by the advisories, failed its release vote; keep the Tomcat family aligned.
+            'tomcat.version'                : '10.1.60',
     ]
 
     // Note: the name of the dependency must be the prefix of the property name so properties in the pom are resolved correctly
@@ -264,6 +272,14 @@ ext {
             'scribejava-core'                                : "com.github.scribejava:scribejava-core:${bomDependencyVersions['scribejava.version']}",
             'sitemesh'                                       : "opensymphony:sitemesh:${bomDependencyVersions['sitemesh.version']}",
             'starter-sitemesh'                               : "org.sitemesh:spring-boot-starter-sitemesh:${bomDependencyVersions['starter-sitemesh.version']}",
+            // Security override of spring-boot-dependencies - see tomcat.version
+            'tomcat-annotations-api'                         : "org.apache.tomcat:tomcat-annotations-api:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-jdbc'                                    : "org.apache.tomcat:tomcat-jdbc:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-jsp-api'                                 : "org.apache.tomcat:tomcat-jsp-api:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-core'                              : "org.apache.tomcat.embed:tomcat-embed-core:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-el'                                : "org.apache.tomcat.embed:tomcat-embed-el:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-jasper'                            : "org.apache.tomcat.embed:tomcat-embed-jasper:${bomDependencyVersions['tomcat.version']}",
+            'tomcat-embed-websocket'                         : "org.apache.tomcat.embed:tomcat-embed-websocket:${bomDependencyVersions['tomcat.version']}",
     ]
 
     // Because pom exclusions aren't properly supported by gradle, we can't inherit the grails-gradle-bom
