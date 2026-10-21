@@ -54,6 +54,7 @@ import org.hibernate.mapping.Value
 import org.grails.orm.hibernate.cfg.ColumnConfig
 import org.grails.orm.hibernate.cfg.IdentityEnumType
 import org.grails.orm.hibernate.cfg.JoinTable
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CollectionKind
 
 /**
  * The facts of a bound Hibernate mapping model that the generator differential reads, as plain maps and lists.

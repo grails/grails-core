@@ -29,6 +29,7 @@ import org.hibernate.mapping.RootClass
 
 import org.grails.orm.hibernate.cfg.CacheConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CacheFacets
 
 /**
  * Describes how {@link GrailsDomainGenerator} states the second-level cache of an entity ({@code cache true},

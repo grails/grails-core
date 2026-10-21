@@ -16,23 +16,18 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
-import org.grails.orm.hibernate.cfg.ColumnConfig
-
 /**
- * One attribute of the embeddable class of a composite user type and the column the domain binder gives it: the attribute's name
- * (the name of the component property), its Java type, the column mapping the attribute was assigned by its position, or null when
- * the mapping names fewer columns than there are attributes, and the facets of the column.
+ * An index the domain binder puts on a table: its name and its columns in the order it added them.
+ * {@code GrailsDomainGenerator} writes it into {@code @Table(indexes)}.
  *
  * @since 9.0
  */
 @CompileStatic
-record CompositeAttributeFacets(
+record IndexFacets(
     String name,
-    Class<?> javaType,
-    ColumnConfig columnConfig,
-    ColumnFacets column) {
+    List<String> columns) {
 }

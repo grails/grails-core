@@ -127,19 +127,10 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Types
 
+import org.grails.orm.hibernate.cfg.HibernateMappingContext
 import org.grails.orm.hibernate.cfg.HibernateSimpleIdentity
 import org.grails.orm.hibernate.cfg.IdentityEnumType
 import org.grails.orm.hibernate.cfg.PropertyConfig
-import org.grails.orm.hibernate.cfg.HibernateMappingContext
-import org.grails.orm.hibernate.connections.HibernateConnectionSourceSettings
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateBasicProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateCustomProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToOneProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToOneProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToOneProperty
 import org.grails.orm.hibernate.cfg.domainbinding.generator.GrailsIdentityGenerator
 import org.grails.orm.hibernate.cfg.domainbinding.generator.GrailsIncrementGenerator
 import org.grails.orm.hibernate.cfg.domainbinding.generator.GrailsNativeGenerator
@@ -151,9 +142,24 @@ import org.grails.orm.hibernate.cfg.domainbinding.column.ColumnConfigToColumnBin
 import org.grails.orm.hibernate.cfg.domainbinding.column.NumericColumnConstraintsBinder
 import org.grails.orm.hibernate.cfg.domainbinding.column.StringColumnConstraintsBinder
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateBasicProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateCustomProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToOneProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToOneProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToOneProperty
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CollectionFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.HierarchyFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.IdFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ToOneFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.TypeFacets
 import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
 import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher
+import org.grails.orm.hibernate.cfg.domainbinding.util.GeneratorCreationContextWrapper
+import org.grails.orm.hibernate.connections.HibernateConnectionSourceSettings
 
 /**
  * Describes what {@link GrailsDomainGenerator} emits for a GORM entity. Expectations are written down only where the

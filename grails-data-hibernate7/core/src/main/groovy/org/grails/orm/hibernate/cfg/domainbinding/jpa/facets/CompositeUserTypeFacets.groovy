@@ -16,23 +16,21 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
-import jakarta.persistence.CascadeType
 
 /**
- * The cascade the domain binder gives an association, as the annotations state it. The binder's own
- * {@code CascadeBehaviorFetcher} decides the behavior; this record only splits it into what JPA's
- * {@code cascade} attribute can say ({@code jpa}), what only Hibernate's {@code @Cascade} can say
- * ({@code hibernate}: lock, replicate and the orphan delete of a to-one association) and whether
- * {@code orphanRemoval} is stated on a one-to-one or one-to-many association.
+ * A property mapped with a Hibernate {@code CompositeUserType}, as the domain binder binds it ({@code CompositeUserTypeBinder}):
+ * a component of the user type whose properties are the attributes of the user type's {@code embeddable()} class, one column each,
+ * in alphabetical attribute order. The generator states it as an {@code @Embedded} field of the value class with
+ * {@code @CompositeType} and an {@code @AttributeOverride} per attribute.
  *
  * @since 9.0
  */
 @CompileStatic
-record CascadeFacets(
-    List<CascadeType> jpa,
-    List<org.hibernate.annotations.CascadeType> hibernate,
-    boolean orphanRemoval) {
+record CompositeUserTypeFacets(
+    Class<?> userType,
+    Class<?> embeddable,
+    List<CompositeAttributeFacets> attributes) {
 }

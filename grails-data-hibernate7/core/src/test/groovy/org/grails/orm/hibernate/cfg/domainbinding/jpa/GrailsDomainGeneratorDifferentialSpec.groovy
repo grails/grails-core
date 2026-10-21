@@ -39,6 +39,7 @@ import org.hibernate.mapping.PersistentClass
 import org.hibernate.mapping.Table
 import org.hibernate.spi.NavigablePath
 
+
 import org.grails.datastore.mapping.multitenancy.MultiTenancySettings
 import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver
 import org.grails.datastore.mapping.reflect.ClassUtils
@@ -52,13 +53,33 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateBasicProper
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEnumProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToManyProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateSimpleIdentityProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToOneProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToManyProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateSimpleIdentityProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateSimpleProperty
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToOneProperty
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CacheFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CascadeFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CollectionFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CollectionKind
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ColumnFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CompositeAttributeFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CompositeIdFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ConstraintFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.DiscriminatorFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.EmbeddedLeaf
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.EntityFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.HierarchyFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.IdFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.IndexFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.NaturalIdFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.TenantFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ToManyFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.ToOneFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.TypeFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.UniqueKeyFacets
 import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
 import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher
