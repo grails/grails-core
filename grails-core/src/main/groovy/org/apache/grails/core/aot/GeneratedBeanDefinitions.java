@@ -18,6 +18,8 @@
  */
 package org.apache.grails.core.aot;
 
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -26,6 +28,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -39,9 +43,12 @@ import org.springframework.util.ClassUtils;
  * runs a side-effecting {@code @Autowired} method twice, which registered every executor's metrics a second
  * time.</p>
  *
- * <p>A bean of any other class has members the generated code never saw: a factory method declaring an
- * interface, as the link generator's does, leaves every annotated member of the class it returns to those
- * processors. Such a bean is processed as usual, and so is one whose class could not be told at all.</p>
+ * <p>A bean of a subclass of that type has members the generated code never saw, so those processors inject it
+ * too, but only through them: the members the generated code injected are first marked on the bean's
+ * definition as configured from outside, the way Spring keeps two processors from injecting one member. A
+ * factory method declaring an interface, as the link generator's does, leaves every annotated member of the
+ * class it returns to the processors, and a bean whose class could not be told at all is processed as
+ * usual.</p>
  *
  * <p>The definitions are recorded by identity as the context is initialized, after the generated initializer
  * has run and before any plugin declares a bean. A definition a plugin declares later, or declares again in
@@ -93,15 +100,50 @@ public final class GeneratedBeanDefinitions {
      */
     public static boolean isInjectedByGeneratedCode(@Nullable BeanFactory beanFactory, String beanName,
             Class<?> beanClass) {
+        Class<?> declaredType = getDeclaredType(beanFactory, beanName);
+        return declaredType != null && declaredType == ClassUtils.getUserClass(beanClass);
+    }
+
+    /**
+     * Marks the members the generated code injected as configured from outside, on the definition of a bean it
+     * created of a subclass of the type that definition declares: the members the given processor finds on the
+     * declared type, and the methods of the bean's class overriding them, which are the ones the generated code
+     * called. A processor of that kind then injects the bean only through the members its class adds.
+     *
+     * @param beanFactory the bean factory the bean is in
+     * @param beanName the bean's name
+     * @param beanType the class of the bean
+     * @param beanDefinition the bean's merged definition, before the processor of that kind processes it
+     * @param generatingProcessor a processor of the kind and configuration the code was generated with, which
+     *        is given a definition of its own to process
+     */
+    public static void markMembersInjectedByGeneratedCode(@Nullable BeanFactory beanFactory, String beanName,
+            Class<?> beanType, RootBeanDefinition beanDefinition, MergedBeanDefinitionPostProcessor generatingProcessor) {
+        Class<?> declaredType = getDeclaredType(beanFactory, beanName);
+        Class<?> beanClass = ClassUtils.getUserClass(beanType);
+        if (declaredType == null || declaredType == beanClass || !declaredType.isAssignableFrom(beanClass)) {
+            return;
+        }
+        RootBeanDefinition generated = new RootBeanDefinition(declaredType);
+        generatingProcessor.postProcessMergedBeanDefinition(generated, declaredType, beanName);
+        for (Member member : generated.getExternallyManagedConfigMembers()) {
+            beanDefinition.registerExternallyManagedConfigMember(member);
+            if (member instanceof Method method) {
+                beanDefinition.registerExternallyManagedConfigMember(ClassUtils.getMostSpecificMethod(method, beanClass));
+            }
+        }
+    }
+
+    @Nullable
+    private static Class<?> getDeclaredType(@Nullable BeanFactory beanFactory, String beanName) {
         if (!(beanFactory instanceof ConfigurableListableBeanFactory listable) ||
                 !listable.containsSingleton(BEAN_NAME) || !listable.containsBeanDefinition(beanName)) {
-            return false;
+            return null;
         }
         if (!(listable.getSingleton(BEAN_NAME) instanceof GeneratedBeanDefinitions recorded)) {
-            return false;
+            return null;
         }
-        Class<?> declaredType = recorded.declaredTypes.get(listable.getBeanDefinition(beanName));
-        return declaredType != null && declaredType == ClassUtils.getUserClass(beanClass);
+        return recorded.declaredTypes.get(listable.getBeanDefinition(beanName));
     }
 
 }

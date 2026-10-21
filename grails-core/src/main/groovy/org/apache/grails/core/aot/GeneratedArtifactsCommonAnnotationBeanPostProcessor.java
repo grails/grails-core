@@ -32,10 +32,17 @@ import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
  * created that are of the type their definitions declare: it has injected those and recorded their
  * initialization and destruction methods on their definitions.
  *
+ * <p>A bean it created of a subclass of that type is injected only through the members the subclass adds. Its
+ * initialization and destruction methods are all called here, and the container then skips the ones the
+ * generated code recorded, which this processor marks on the definition as called from outside.</p>
+ *
  * @since 8.0.1
  * @see GeneratedBeanDefinitions
  */
 public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonAnnotationBeanPostProcessor {
+
+    /** Spring's own, as the generated code was generated with: it finds the members that code injected. */
+    private final CommonAnnotationBeanPostProcessor generatingProcessor = new CommonAnnotationBeanPostProcessor();
 
     @Nullable
     private BeanFactory beanFactory;
@@ -48,9 +55,12 @@ public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonA
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        if (!GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
-            super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
+            return;
         }
+        GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, beanName, beanType, beanDefinition,
+                generatingProcessor);
+        super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
     }
 
     @Override

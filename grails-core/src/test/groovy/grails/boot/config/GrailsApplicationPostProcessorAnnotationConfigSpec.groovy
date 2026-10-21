@@ -47,7 +47,7 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
 
     /** What injecting and initializing an {@link InjectedFixture} calls, each once. */
     private static final Map<String, Integer> INJECTED_AND_INITIALIZED =
-            [collaborator: 1, resourceCollaborator: 1, initialize: 1].asImmutable()
+            [collaborator: 1, overridableCollaborator: 1, resourceCollaborator: 1, initialize: 1].asImmutable()
 
     BeanDefinitionRegistry registry = new DefaultListableBeanFactory()
 
@@ -170,6 +170,32 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
             context.close()
     }
 
+    void 'a bean the generated code created as a superclass is injected once through it, and through the rest by the processors'() {
+        given: 'a bean the generated code created from a factory method declaring a superclass of the class it ' +
+                'returns, so the code injected it through the members of that superclass and recorded its lifecycle methods'
+            def context = new GenericApplicationContext()
+            context.registerBean('collaborator', CollaboratorFixture)
+            context.registerBeanDefinition('declaredAsSuperclass', generatedDefinition { new SubclassFixture() })
+            GeneratedBeanDefinitions.record(context.beanFactory)
+
+        when:
+            refreshOnGeneratedArtifacts(context)
+            def bean = context.getBean('declaredAsSuperclass', SubclassFixture)
+
+        then: 'what the generated code injected is not injected again, nor is the override of it that code called, ' +
+                'and what only the subclass declares, which that code never saw, is injected by the processors'
+            bean.calls == INJECTED_AND_INITIALIZED + [subclassCollaborator: 1]
+
+        when:
+            context.close()
+
+        then:
+            bean.calls.shutdown == 1
+
+        cleanup:
+            context.close()
+    }
+
     /**
      * A definition as the generated code contributes one for a factory method declaring {@link InjectedFixture}:
      * the bean it creates is injected through the members of that type, and the type's lifecycle methods are
@@ -181,6 +207,7 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
                 factoryMethod.call().tap {
                     def collaborator = new CollaboratorFixture()
                     setCollaborator(collaborator)
+                    setOverridableCollaborator(collaborator)
                     setResourceCollaborator(collaborator)
                 }
             }
@@ -212,6 +239,11 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
             calls.collaborator++
         }
 
+        @Autowired
+        void setOverridableCollaborator(CollaboratorFixture collaborator) {
+            calls.overridableCollaborator++
+        }
+
         @Resource
         void setResourceCollaborator(CollaboratorFixture collaborator) {
             calls.resourceCollaborator++
@@ -225,6 +257,20 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
         @PreDestroy
         void shutdown() {
             calls.shutdown++
+        }
+    }
+
+    static class SubclassFixture extends InjectedFixture {
+
+        @Override
+        @Autowired
+        void setOverridableCollaborator(CollaboratorFixture collaborator) {
+            super.setOverridableCollaborator(collaborator)
+        }
+
+        @Autowired
+        void setSubclassCollaborator(CollaboratorFixture collaborator) {
+            calls.subclassCollaborator++
         }
     }
 }

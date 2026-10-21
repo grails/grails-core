@@ -29,12 +29,16 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 /**
  * Injects through {@code @Autowired}, {@code @Value} and {@code @Inject} the beans the code generated ahead of
  * time did not inject, and leaves alone the ones it did: the beans it created that are of the type their
- * definitions declare.
+ * definitions declare. A bean it created of a subclass of that type is injected only through the members the
+ * subclass adds.
  *
  * @since 8.0.1
  * @see GeneratedBeanDefinitions
  */
 public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends AutowiredAnnotationBeanPostProcessor {
+
+    /** Spring's own, as the generated code was generated with: it finds the members that code injected. */
+    private final AutowiredAnnotationBeanPostProcessor generatingProcessor = new AutowiredAnnotationBeanPostProcessor();
 
     @Nullable
     private BeanFactory beanFactory;
@@ -47,9 +51,12 @@ public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends Auto
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        if (!GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
-            super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
+            return;
         }
+        GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, beanName, beanType, beanDefinition,
+                generatingProcessor);
+        super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
     }
 
     @Override

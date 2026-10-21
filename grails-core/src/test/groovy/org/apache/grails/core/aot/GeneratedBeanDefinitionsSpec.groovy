@@ -18,6 +18,8 @@
  */
 package org.apache.grails.core.aot
 
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.cglib.proxy.Enhancer
@@ -26,7 +28,7 @@ import spock.lang.Specification
 
 /**
  * Covers telling the beans the generated code injected from the ones it did not: those declared after it,
- * and those of a class it never saw.
+ * and those of a class it never saw, of which it injected only the members of the type it declared.
  */
 class GeneratedBeanDefinitionsSpec extends Specification {
 
@@ -130,7 +132,68 @@ class GeneratedBeanDefinitionsSpec extends Specification {
             !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredLater', ConfigurationFixture)
     }
 
+    void 'the members the generated code injected are marked on the definition of a bean of a subclass'() {
+        given: 'a factory method product declared as a superclass of the class it returns'
+            beanFactory.registerBeanDefinition('product', new RootBeanDefinition(SuperclassFixture))
+            GeneratedBeanDefinitions.record(beanFactory)
+            def definition = new RootBeanDefinition(SuperclassFixture)
+
+        when:
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, 'product', SubclassFixture,
+                    definition, new AutowiredAnnotationBeanPostProcessor())
+
+        then: 'those of the superclass, and the override of one that the generated code called, not what only the subclass declares'
+            definition.externallyManagedConfigMembers == [
+                    SuperclassFixture.getDeclaredField('collaborator'),
+                    SuperclassFixture.getMethod('setOverridable', String),
+                    SubclassFixture.getMethod('setOverridable', String)
+            ] as Set
+    }
+
+    void 'nothing is marked when #reason'() {
+        given:
+            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(SuperclassFixture))
+            GeneratedBeanDefinitions.record(beanFactory)
+            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(SuperclassFixture))
+            def definition = new RootBeanDefinition(SuperclassFixture)
+
+        when:
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, beanName, beanType, definition,
+                    new AutowiredAnnotationBeanPostProcessor())
+
+        then:
+            definition.externallyManagedConfigMembers.empty
+
+        where:
+            beanName        | beanType             | reason
+            'generated'     | SuperclassFixture    | 'the bean is of the declared type, which the processors leave alone'
+            'declaredLater' | SubclassFixture      | 'the definition was not generated'
+            'generated'     | ConfigurationFixture | 'the bean is not of the declared type at all'
+    }
+
     static class ConfigurationFixture {
+    }
+
+    static class SuperclassFixture {
+
+        @Autowired
+        protected String collaborator
+
+        @Autowired
+        void setOverridable(String collaborator) {
+        }
+    }
+
+    static class SubclassFixture extends SuperclassFixture {
+
+        @Override
+        @Autowired
+        void setOverridable(String collaborator) {
+        }
+
+        @Autowired
+        void setOwn(String collaborator) {
+        }
     }
 
     static interface ProductType {
