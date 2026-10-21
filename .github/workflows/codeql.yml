@@ -32,6 +32,8 @@ on:
       - '[4-9]+.[0-9]+.x'
       - '8.0.x-hibernate7.*'
   pull_request:
+    # ready_for_review is not a default type: a draft runs nothing until it is ready or labelled "run ci".
+    types: [ opened, synchronize, reopened, ready_for_review ]
     # The branches below must be a subset of the branches above
     branches:
       - '[4-9]+.[0-9]+.x'
@@ -41,8 +43,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  # A pull request labelled "no ci", or a draft without the "run ci" label, skips every job of this workflow.
   analyze:
     name: Analyze
+    if: >-
+      github.event_name != 'pull_request'
+      || (!contains(github.event.pull_request.labels.*.name, 'no ci')
+          && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run ci')))
     runs-on: ubuntu-latest
     permissions:
       actions: read
