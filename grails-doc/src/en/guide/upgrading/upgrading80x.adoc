@@ -4828,3 +4828,12 @@ With `DISCRIMINATOR` multi-tenancy, only `Tenants.withoutId` and `@WithoutTenant
 * Before a query on an entity that isn't multi-tenant but has a collection of a multi-tenant entity, directly or through its associations, GORM for Hibernate now calls the `TenantResolver` and activates the filter for the current tenant, so that a collection the query fetches by join is restricted. When there is no current tenant, because the resolver throws a `TenantNotFoundException` or returns `null`, such a query runs as before. Any other exception from the resolver fails the query. A query that the resolver runs on an entity that isn't multi-tenant while GORM resolves the tenant does not call the resolver again. A query on a multi-tenant entity does, so a resolver must not run one.
 * A `TenantResolver` that returns `null` now causes a `TenantNotFoundException`, as a resolver that finds no tenant does, in every multi-tenancy mode.
 * The `DATABASE` and `SCHEMA` modes are otherwise unchanged.
+
+==== 88. Lookups by id are restricted to the current tenant with DISCRIMINATOR multi-tenancy
+
+With `DISCRIMINATOR` multi-tenancy, GORM for MongoDB, GORM for Neo4j and GORM's in-memory datastore used by unit tests now restrict `get`, `read`, `exists`, `getAll`, `load` and `proxy` to the current tenant, as queries and dynamic finders already were. Previously these methods looked an instance up by its id alone, so they returned an instance that belongs to another tenant. GORM for Hibernate is unchanged: it already restricts `get`, `read`, `exists` and `getAll` to the current tenant, and `load` and `proxy` since the previous note.
+
+* The id of another tenant's instance is treated like an id that does not exist: `get` and `read` return `null`, `exists` returns `false`, `getAll` returns `null` in its place, and the proxy returned by `load` or `proxy` throws when it is initialized.
+* Without a current tenant, these methods throw `TenantNotFoundException`, as a query does. `getAll` without ids still returns an empty list.
+* Inside `Tenants.withoutId { }` a lookup by id is still not restricted to a tenant, and neither is a proxy returned by `load` or `proxy` that is initialized there. As the previous note says, only `withoutId` lifts the restriction: a tenant id of `default` restricts a lookup by id to that tenant as it restricts a query.
+* A lookup by id still finds an instance that the session holds for the current tenant, including one that has been saved but not flushed, and it does not flush the session.
