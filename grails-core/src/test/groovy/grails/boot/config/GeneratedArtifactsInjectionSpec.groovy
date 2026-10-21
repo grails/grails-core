@@ -225,6 +225,34 @@ class GeneratedArtifactsInjectionSpec extends Specification {
             configured.calls.shutdown == 1
     }
 
+    void 'another instance with members annotated for both processors is injected once each, with the resource they name'() {
+        given: 'two more collaborators, the one autowiring by type would choose being primary'
+            startFromGeneratedCode({
+                registerBeanDefinition('named', new RootBeanDefinition(CollaboratorFixture))
+                registerBeanDefinition('preferred', new RootBeanDefinition(CollaboratorFixture).tap { primary = true })
+                registerBeanDefinition('generated', new RootBeanDefinition(DualAnnotatedFixture))
+            }, {}, {
+                registerBeanDefinition('declaredLater', new RootBeanDefinition(DualAnnotatedFixture))
+            })
+            def another = new DualAnnotatedFixture()
+            def named = context.getBean('named')
+
+        when:
+            context.beanFactory.configureBean(another, 'generated')
+
+        then: 'the common processor, which comes first, injects them, and the autowired processor leaves them to it'
+            another.collaborator.is(named)
+            another.wired.is(named)
+            another.calls == [wire: 1]
+
+        and: 'as for a bean declared any other way'
+            with(context.getBean('declaredLater', DualAnnotatedFixture)) {
+                collaborator.is(named)
+                wired.is(named)
+                calls == [wire: 1]
+            }
+    }
+
     void 'another instance initialized under the name of a generated bean is injected, initialized and destroyed once'() {
         given: 'a bean created as the Hibernate bean container creates one it is given the name of'
             startFromGeneratedCode {
@@ -392,6 +420,27 @@ class GeneratedArtifactsInjectionSpec extends Specification {
         @Autowired
         void setDependency(DependencyFixture dependency) {
             super.setDependency(dependency)
+        }
+    }
+
+    /** A field and a method each annotated for both processors, naming the resource to inject. */
+    static class DualAnnotatedFixture {
+
+        /** How many times each member was called. */
+        final Map<String, Integer> calls = [:].withDefault { 0 }
+
+        /** Public, for the generated code sets it directly, from classes these tests load separately. */
+        @Resource(name = 'named')
+        @Autowired
+        public CollaboratorFixture collaborator
+
+        public CollaboratorFixture wired
+
+        @Resource(name = 'named')
+        @Autowired
+        void wire(CollaboratorFixture collaborator) {
+            calls.wire++
+            wired = collaborator
         }
     }
 

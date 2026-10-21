@@ -25,11 +25,16 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
+import org.springframework.util.ClassUtils;
 
 /**
  * Injects through {@code @Autowired}, {@code @Value} and {@code @Inject} what the code generated ahead of time
  * did not: an instance that code created only through the members its class adds to the type the definition
  * names, and every other bean in full.
+ *
+ * <p>Another instance of a generated bean is injected in full as Spring injects any bean: the common processor
+ * comes first, and a member it injects, one annotated with {@code @Resource} as well, is left to it.</p>
  *
  * @since 8.0.1
  * @see GeneratedBeanDefinitions
@@ -41,6 +46,12 @@ public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends Auto
      * another instance of a generated bean.
      */
     private final AutowiredAnnotationBeanPostProcessor generatingProcessor = new AutowiredAnnotationBeanPostProcessor();
+
+    /**
+     * Spring's common processor, which processes a definition before this kind does: it finds the members it
+     * injects itself, which this kind leaves to it, such as a field annotated for both.
+     */
+    private final CommonAnnotationBeanPostProcessor commonProcessor = new CommonAnnotationBeanPostProcessor();
 
     @Nullable
     private BeanFactory beanFactory;
@@ -67,6 +78,10 @@ public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends Auto
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) throws BeansException {
         if (GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, beanName, bean)) {
+            Class<?> beanClass = ClassUtils.getUserClass(bean);
+            RootBeanDefinition processedInOrder = new RootBeanDefinition(beanClass);
+            commonProcessor.postProcessMergedBeanDefinition(processedInOrder, beanClass, "");
+            generatingProcessor.postProcessMergedBeanDefinition(processedInOrder, beanClass, beanName);
             return generatingProcessor.postProcessProperties(pvs, bean, beanName);
         }
         return super.postProcessProperties(pvs, bean, beanName);
