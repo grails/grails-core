@@ -71,7 +71,7 @@ class DefaultTenantService implements Service, TenantService {
         MultiTenantCapableDatastore multiTenantCapableDatastore = multiTenantDatastore()
         def mode = multiTenantCapableDatastore.getMultiTenancyMode()
         if (mode != MultiTenancySettings.MultiTenancyMode.NONE) {
-            return Tenants.withId(multiTenantCapableDatastore, currentId(), callable)
+            return Tenants.withCurrent(multiTenantCapableDatastore, callable)
         }
         else {
             throw new DatastoreConfigurationException("Current datastore [$datastore] is not configured for Multi-Tenancy")

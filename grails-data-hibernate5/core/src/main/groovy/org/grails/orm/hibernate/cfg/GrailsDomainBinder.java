@@ -471,13 +471,19 @@ public class GrailsDomainBinder implements MetadataContributor {
         }
 
         final boolean isManyToMany = property instanceof ManyToMany;
-        if (referenced != null && !isManyToMany && referenced.isMultiTenant()) {
+        if (referenced != null && referenced.isMultiTenant()) {
             String filterCondition = getMultiTenantFilterCondition(sessionFactoryBeanName, referenced);
             if (filterCondition != null) {
-                if (isUnidirectionalOneToMany(property)) {
+                if (isManyToMany || isUnidirectionalOneToMany(property)) {
                     collection.addManyToManyFilter(GormProperties.TENANT_IDENTITY, filterCondition, true, Collections.emptyMap(), Collections.emptyMap());
                 } else {
                     collection.addFilter(GormProperties.TENANT_IDENTITY, filterCondition, true, Collections.emptyMap(), Collections.emptyMap());
+                }
+                if (collection.getFetchMode() == FetchMode.JOIN) {
+                    // Hibernate does not apply the tenant filter to a collection that it fetches by join with an
+                    // instance loaded by id, so the collection is loaded eagerly with a select of its own instead
+                    collection.setFetchMode(FetchMode.SELECT);
+                    collection.setLazy(false);
                 }
             }
         }
