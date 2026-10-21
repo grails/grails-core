@@ -23,6 +23,7 @@ import org.apache.grails.data.mongo.core.GrailsDataMongoTckManager
 import org.apache.grails.data.testing.tck.base.GrailsDataTckSpec
 import org.bson.Document
 import org.bson.types.ObjectId
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckingMap
 import spock.lang.Issue
 
 /**
@@ -66,6 +67,7 @@ class MapKeysNamedLikeBeanPropertiesSpec extends GrailsDataTckSpec<GrailsDataMon
         loaded.geoJson == FEATURE
 
         and: "entries named like the accessors of the loaded map's wrapper read as entries"
+        loaded.geoJson instanceof DirtyCheckingMap
         loaded.geoJson.target == 't'
         loaded.geoJson['parent'] == 'p'
         loaded.geoJson.property == 'q'

@@ -1597,7 +1597,7 @@ NOTE: When adding a class that extends `grails.util.TypeConvertingMap`, do not d
 The accessor-first resolution described above applies to every `Map`, not only to a class that declares an accessor of its own, because every Groovy object has the `properties` and `metaClass` properties.
 In Groovy 4 `map.properties` and `map['properties']` read the map entry.
 In Groovy 5 both return the Groovy meta-properties of the map object, in dynamic and in statically compiled code alike, and `map['properties'] = value` throws `groovy.lang.ReadOnlyPropertyException`.
-`metaClass` behaves the same way, and assigning to it replaces the metaclass of the map.
+`metaClass` reads the same way. Assigning to it through a subscript was never a map put: in Groovy 4 as in Groovy 5 it sets the metaclass of the map, and a value that is not a `MetaClass` throws `groovy.lang.GroovyCastException`.
 `class` and `empty` are exempt and still address the map entry.
 
 Such keys are common in data an application does not control; the `properties` member of a GeoJSON `Feature` is one.
@@ -1614,9 +1614,12 @@ feature.properties             // the meta-properties of the map object
 feature['properties']          // the same, on Groovy 5
 ----
 
-The map a loaded GORM `Map` property comes back as is a dirty-checking wrapper with accessors of its own, named `target`, `parent`, `property`, `originalSize` and `assigned`.
+With GORM for MongoDB, a loaded `Map` property comes back as a dirty-checking wrapper with accessors of its own, named `target`, `parent`, `property`, `originalSize` and `assigned`.
 The wrapper resolves those five names to the map entry, in dotted and subscript form, so an entry such as `parent` reads and writes through the wrapper as it does through the plain map, and as it did in Grails 7.
 The one form that still reaches the accessor is dotted access from statically compiled code, which binds at compile time as it always has; read such an entry with `get` there.
+
+With GORM for Hibernate, a loaded `Map` property is Hibernate's `PersistentMap`, and its accessors are not redirected.
+In Groovy 5, `attrs.key`, `attrs['value']`, `attrs.owner`, `attrs.role`, `attrs.size`, `attrs.session` and `attrs.dirty`, among others, return the state of the collection rather than the entry; read such an entry with `get`.
 
 ==== 29. MIME Types Are Now Framework Defaults
 
