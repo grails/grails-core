@@ -67,6 +67,7 @@ import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.apache.grails.core.aot.GeneratedArtifactsAutowiredAnnotationBeanPostProcessor
 import org.apache.grails.core.aot.GeneratedArtifactsCommonAnnotationBeanPostProcessor
+import org.apache.grails.core.aot.GeneratedBeanDefinitions
 import org.apache.grails.core.plugins.PluginDiscovery
 
 /**
@@ -347,9 +348,11 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
      * <p>They are registered under the names Spring uses itself, so a context that already has them
      * keeps what it has, and a context running without generated artifacts is untouched.</p>
      *
-     * <p>They leave alone the beans the generated code created, which it has already injected: injected a
+     * <p>They do not inject again what the generated code injected into an instance it created: injected a
      * second time, a bean runs a side-effecting {@code @Autowired} method twice, and every executor's metrics
-     * were registered twice. See {@link org.apache.grails.core.aot.GeneratedBeanDefinitions}.</p>
+     * were registered twice. The initialization and destruction methods the generated code recorded from
+     * annotations are taken off its definitions, for the common processor calls them. See
+     * {@link GeneratedBeanDefinitions}.</p>
      */
     protected static void registerAnnotationConfigProcessorsForGeneratedArtifacts(BeanDefinitionRegistry registry) {
         if (!AotDetector.useGeneratedArtifacts()) {
@@ -359,6 +362,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                 GeneratedArtifactsAutowiredAnnotationBeanPostProcessor, () -> new GeneratedArtifactsAutowiredAnnotationBeanPostProcessor())
         registerInfrastructureBean(registry, AnnotationConfigUtils.COMMON_ANNOTATION_PROCESSOR_BEAN_NAME,
                 GeneratedArtifactsCommonAnnotationBeanPostProcessor, () -> new GeneratedArtifactsCommonAnnotationBeanPostProcessor())
+        GeneratedBeanDefinitions.leaveAnnotatedLifecycleMethodsToProcessor(registry)
     }
 
     /**

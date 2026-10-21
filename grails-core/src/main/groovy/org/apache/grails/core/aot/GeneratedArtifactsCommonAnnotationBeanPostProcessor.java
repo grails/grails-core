@@ -27,21 +27,23 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 
 /**
- * Injects through {@code @Resource}, and calls {@code @PostConstruct} and {@code @PreDestroy} methods on, the
- * beans the code generated ahead of time did not handle, and leaves alone the ones it did -- the beans it
- * created that are of the type their definitions declare: it has injected those and recorded their
- * initialization and destruction methods on their definitions.
+ * Injects through {@code @Resource} what the code generated ahead of time did not: an instance that code
+ * created only through the members its class adds to the type the definition names, and every other bean in
+ * full.
  *
- * <p>A bean it created of a subclass of that type is injected only through the members the subclass adds. Its
- * initialization and destruction methods are all called here, and the container then skips the ones the
- * generated code recorded, which this processor marks on the definition as called from outside.</p>
+ * <p>It calls {@code @PostConstruct} and {@code @PreDestroy} methods as Spring's own does, for every instance.
+ * The names the generated code recorded for them are taken off its definitions when this is registered, see
+ * {@link GeneratedBeanDefinitions#leaveAnnotatedLifecycleMethodsToProcessor}.</p>
  *
  * @since 8.0.1
  * @see GeneratedBeanDefinitions
  */
 public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonAnnotationBeanPostProcessor {
 
-    /** Spring's own, as the generated code was generated with: it finds the members that code injected. */
+    /**
+     * Spring's own, as the code was generated with: it finds the members that code injected, and injects in full
+     * another instance of a generated bean.
+     */
     private final CommonAnnotationBeanPostProcessor generatingProcessor = new CommonAnnotationBeanPostProcessor();
 
     @Nullable
@@ -50,40 +52,28 @@ public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonA
     @Override
     public void setBeanFactory(BeanFactory beanFactory) {
         super.setBeanFactory(beanFactory);
+        this.generatingProcessor.setBeanFactory(beanFactory);
         this.beanFactory = beanFactory;
     }
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
-            return;
-        }
-        GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, beanName, beanType, beanDefinition,
-                generatingProcessor);
+        GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanDefinition, beanType, generatingProcessor);
         super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
     }
 
     @Override
+    public void resetBeanDefinition(String beanName) {
+        super.resetBeanDefinition(beanName);
+        generatingProcessor.resetBeanDefinition(beanName);
+    }
+
+    @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) throws BeansException {
-        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
-            return pvs;
+        if (GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, beanName, bean)) {
+            return generatingProcessor.postProcessProperties(pvs, bean, beanName);
         }
         return super.postProcessProperties(pvs, bean, beanName);
-    }
-
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
-            return bean;
-        }
-        return super.postProcessBeforeInitialization(bean, beanName);
-    }
-
-    @Override
-    public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
-        if (!GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
-            super.postProcessBeforeDestruction(bean, beanName);
-        }
     }
 
 }

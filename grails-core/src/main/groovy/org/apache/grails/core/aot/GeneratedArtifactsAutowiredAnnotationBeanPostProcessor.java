@@ -27,17 +27,19 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.beans.factory.support.RootBeanDefinition;
 
 /**
- * Injects through {@code @Autowired}, {@code @Value} and {@code @Inject} the beans the code generated ahead of
- * time did not inject, and leaves alone the ones it did: the beans it created that are of the type their
- * definitions declare. A bean it created of a subclass of that type is injected only through the members the
- * subclass adds.
+ * Injects through {@code @Autowired}, {@code @Value} and {@code @Inject} what the code generated ahead of time
+ * did not: an instance that code created only through the members its class adds to the type the definition
+ * names, and every other bean in full.
  *
  * @since 8.0.1
  * @see GeneratedBeanDefinitions
  */
 public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends AutowiredAnnotationBeanPostProcessor {
 
-    /** Spring's own, as the generated code was generated with: it finds the members that code injected. */
+    /**
+     * Spring's own, as the code was generated with: it finds the members that code injected, and injects in full
+     * another instance of a generated bean.
+     */
     private final AutowiredAnnotationBeanPostProcessor generatingProcessor = new AutowiredAnnotationBeanPostProcessor();
 
     @Nullable
@@ -46,23 +48,26 @@ public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends Auto
     @Override
     public void setBeanFactory(BeanFactory beanFactory) {
         super.setBeanFactory(beanFactory);
+        this.generatingProcessor.setBeanFactory(beanFactory);
         this.beanFactory = beanFactory;
     }
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, beanType)) {
-            return;
-        }
-        GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, beanName, beanType, beanDefinition,
-                generatingProcessor);
+        GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanDefinition, beanType, generatingProcessor);
         super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
     }
 
     @Override
+    public void resetBeanDefinition(String beanName) {
+        super.resetBeanDefinition(beanName);
+        generatingProcessor.resetBeanDefinition(beanName);
+    }
+
+    @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) throws BeansException {
-        if (GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, beanName, bean.getClass())) {
-            return pvs;
+        if (GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, beanName, bean)) {
+            return generatingProcessor.postProcessProperties(pvs, bean, beanName);
         }
         return super.postProcessProperties(pvs, bean, beanName);
     }

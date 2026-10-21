@@ -18,129 +18,135 @@
  */
 package org.apache.grails.core.aot
 
+import java.lang.reflect.Method
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
+import org.springframework.beans.factory.support.InstanceSupplier
+import org.springframework.beans.factory.support.RegisteredBean
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.cglib.proxy.Enhancer
 import org.springframework.cglib.proxy.NoOp
 import spock.lang.Specification
 
 /**
- * Covers telling the beans the generated code injected from the ones it did not: those declared after it,
- * and those of a class it never saw, of which it injected only the members of the type it declared.
+ * Covers what the generated code marks on the definitions it contributes, and what is told from the marks:
+ * which instances that code created, and which of their members it injected.
  */
 class GeneratedBeanDefinitionsSpec extends Specification {
 
     DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory()
 
-    void 'a bean of the type its generated definition declares was injected by the generated code'() {
+    /** A definition as the generated code contributes one, naming the given type. */
+    private static RootBeanDefinition generated(Class<?> beanClass, Class<?> declaredType = beanClass) {
+        new RootBeanDefinition(beanClass).tap {
+            instanceSupplier = { beanClass.getDeclaredConstructor().newInstance() }
+            GeneratedBeanDefinitions.markGenerated(it, declaredType.name)
+        }
+    }
+
+    void 'a generated definition names the type its code injects'() {
+        expect:
+            generated(SubclassFixture, SuperclassFixture)
+                    .getAttribute(GeneratedBeanDefinitions.DECLARED_TYPE_ATTRIBUTE) == SuperclassFixture.name
+    }
+
+    void 'the instance the generated supplier creates is told from another instance of the bean'() {
         given:
-            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(ConfigurationFixture))
+            beanFactory.registerBeanDefinition('generated', generated(SuperclassFixture))
 
         when:
-            GeneratedBeanDefinitions.record(beanFactory)
+            def created = beanFactory.getBean('generated')
 
         then:
-            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'generated', ConfigurationFixture)
+            !GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, 'generated', created)
+            GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, 'generated', new SuperclassFixture())
     }
 
-    void 'so was the subclass Spring generates for a configuration class'() {
-        given:
-            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(ConfigurationFixture))
-            GeneratedBeanDefinitions.record(beanFactory)
-            Class<?> enhanced = new Enhancer(superclass: ConfigurationFixture, callback: NoOp.INSTANCE).create().getClass()
-
-        expect:
-            enhanced != ConfigurationFixture
-            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'generated', enhanced)
-    }
-
-    void 'the type a factory method product is declared as is the one compared'() {
-        given: 'a factory method product, whose definition holds the factory class and the type it returns'
-            beanFactory.registerBeanDefinition('product', new RootBeanDefinition(ConfigurationFixture).tap {
-                targetType = ProductFixture
-            })
-            GeneratedBeanDefinitions.record(beanFactory)
-
-        expect:
-            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'product', ProductFixture)
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'product', ConfigurationFixture)
-    }
-
-    void 'a bean of another class than its definition declares was not'() {
-        given: 'a factory method declaring an interface, as the link generator is declared'
-            beanFactory.registerBeanDefinition('declaredAsInterface', new RootBeanDefinition(ProductType))
-            GeneratedBeanDefinitions.record(beanFactory)
-
-        expect: 'the generated code never saw the members of the class it returns'
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredAsInterface', ProductFixture)
-    }
-
-    void 'a bean declared afterwards was not'() {
-        given:
-            GeneratedBeanDefinitions.record(beanFactory)
+    void 'instances are told apart by identity, not by their own equality'() {
+        given: 'a bean every instance of which equals every other'
+            beanFactory.registerBeanDefinition('generated', generated(EqualFixture))
 
         when:
-            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(ConfigurationFixture))
+            def created = beanFactory.getBean('generated')
+            def another = new EqualFixture()
 
         then:
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredLater', ConfigurationFixture)
+            created == another
+            !GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, 'generated', created)
+            GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, 'generated', another)
     }
 
-    void 'a bean declared again in place of a generated one was not'() {
-        given: 'a plugin declaring a bean the generated code also contributed, as the bean DSL does at run time'
-            beanFactory.registerBeanDefinition('redeclared', new RootBeanDefinition(ConfigurationFixture))
-            GeneratedBeanDefinitions.record(beanFactory)
-
-        when:
-            beanFactory.registerBeanDefinition('redeclared', new RootBeanDefinition(ConfigurationFixture))
-
-        then: 'the definition that will be used is not the one the generated code wired'
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'redeclared', ConfigurationFixture)
-    }
-
-    void 'a definition that declares no type is left to the processors'() {
-        given:
-            beanFactory.registerBeanDefinition('untyped', new RootBeanDefinition())
-            GeneratedBeanDefinitions.record(beanFactory)
-
-        expect:
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'untyped', ConfigurationFixture)
-    }
-
-    void 'nothing was injected by generated code where nothing was recorded'() {
-        given: 'a context not running on generated artifacts'
-            beanFactory.registerBeanDefinition('ordinary', new RootBeanDefinition(ConfigurationFixture))
-
-        expect:
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'ordinary', ConfigurationFixture)
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(null, 'ordinary', ConfigurationFixture)
-    }
-
-    void 'recording twice keeps what was recorded first'() {
-        given:
-            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(ConfigurationFixture))
-            GeneratedBeanDefinitions.record(beanFactory)
-            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(ConfigurationFixture))
-
-        when:
-            GeneratedBeanDefinitions.record(beanFactory)
-
-        then:
-            GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'generated', ConfigurationFixture)
-            !GeneratedBeanDefinitions.isInjectedByGeneratedCode(beanFactory, 'declaredLater', ConfigurationFixture)
-    }
-
-    void 'the members the generated code injected are marked on the definition of a bean of a subclass'() {
-        given: 'a factory method product declared as a superclass of the class it returns'
-            beanFactory.registerBeanDefinition('product', new RootBeanDefinition(SuperclassFixture))
-            GeneratedBeanDefinitions.record(beanFactory)
+    void 'the factory method of the supplier the generated code gave the definition is kept'() {
+        given: 'a supplier as the generated code writes for a factory method'
+            Method factoryMethod = FactoryFixture.getMethod('create')
             def definition = new RootBeanDefinition(SuperclassFixture)
+            definition.instanceSupplier = new InstanceSupplier<SuperclassFixture>() {
+                @Override
+                SuperclassFixture get(RegisteredBean registeredBean) {
+                    FactoryFixture.create()
+                }
+
+                @Override
+                Method getFactoryMethod() {
+                    factoryMethod
+                }
+            }
 
         when:
-            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, 'product', SubclassFixture,
-                    definition, new AutowiredAnnotationBeanPostProcessor())
+            GeneratedBeanDefinitions.markGenerated(definition, SuperclassFixture.name)
+            beanFactory.registerBeanDefinition('generated', definition)
+
+        then: 'the supplier that records what it creates answers with it, as the container asks it to'
+            ((InstanceSupplier) definition.instanceSupplier).factoryMethod == factoryMethod
+
+        and:
+            !GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, 'generated',
+                    beanFactory.getBean('generated'))
+    }
+
+    void 'no instance is another instance of a bean #reason'() {
+        given:
+            beanFactory.registerBeanDefinition('declared', new RootBeanDefinition(SuperclassFixture))
+
+        expect:
+            !GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(factory(beanFactory), name, new SuperclassFixture())
+
+        where:
+            reason                           | name       | factory
+            'declared any other way'         | 'declared' | { it }
+            'nothing declares'               | 'missing'  | { it }
+            'outside a listable bean factory' | 'declared' | { null }
+    }
+
+    void 'every member of the declared type is marked for an instance #ofWhat'() {
+        given:
+            def definition = generated(SuperclassFixture)
+
+        when:
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(definition, beanType,
+                    new AutowiredAnnotationBeanPostProcessor())
+
+        then:
+            definition.externallyManagedConfigMembers == [
+                    SuperclassFixture.getDeclaredField('collaborator'),
+                    SuperclassFixture.getMethod('setOverridable', String)
+            ] as Set
+
+        where:
+            ofWhat                                         | beanType
+            'of that type'                                 | SuperclassFixture
+            'of the subclass Spring generates for a class' | new Enhancer(superclass: SuperclassFixture, callback: NoOp.INSTANCE).create().getClass()
+    }
+
+    void 'the members the generated code injected are marked for an instance of a subclass'() {
+        given: 'a factory method product declared as a superclass of the class it returns'
+            def definition = generated(SubclassFixture, SuperclassFixture)
+
+        when:
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(definition, SubclassFixture,
+                    new AutowiredAnnotationBeanPostProcessor())
 
         then: 'those of the superclass, and the override of one that the generated code called, not what only the subclass declares'
             definition.externallyManagedConfigMembers == [
@@ -152,16 +158,14 @@ class GeneratedBeanDefinitionsSpec extends Specification {
 
     void 'the override of a generic superclass method is marked, not the bridge to it'() {
         given: 'a factory method product declared as a generic superclass, whose subclass overrides its setter'
-            beanFactory.registerBeanDefinition('product', new RootBeanDefinition(GenericSuperclassFixture))
-            GeneratedBeanDefinitions.record(beanFactory)
-            def definition = new RootBeanDefinition(GenericSuperclassFixture)
+            def definition = generated(GenericSubclassFixture, GenericSuperclassFixture)
 
         expect: 'the subclass has a bridge taking the erased type, beside the override taking the actual one'
             GenericSubclassFixture.getMethod('setDependency', Object).bridge
 
         when:
-            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, 'product', GenericSubclassFixture,
-                    definition, new AutowiredAnnotationBeanPostProcessor())
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(definition, GenericSubclassFixture,
+                    new AutowiredAnnotationBeanPostProcessor())
 
         then: 'the generated code called the override through the bridge, and the override is what a processor injects'
             definition.externallyManagedConfigMembers == [
@@ -171,24 +175,17 @@ class GeneratedBeanDefinitionsSpec extends Specification {
     }
 
     void 'nothing is marked when #reason'() {
-        given:
-            beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(SuperclassFixture))
-            GeneratedBeanDefinitions.record(beanFactory)
-            beanFactory.registerBeanDefinition('declaredLater', new RootBeanDefinition(SuperclassFixture))
-            def definition = new RootBeanDefinition(SuperclassFixture)
-
         when:
-            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, beanName, beanType, definition,
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(definition, beanType,
                     new AutowiredAnnotationBeanPostProcessor())
 
         then:
             definition.externallyManagedConfigMembers.empty
 
         where:
-            beanName        | beanType             | reason
-            'generated'     | SuperclassFixture    | 'the bean is of the declared type, which the processors leave alone'
-            'declaredLater' | SubclassFixture      | 'the definition was not generated'
-            'generated'     | ConfigurationFixture | 'the bean is not of the declared type at all'
+            reason                                       | definition                                 | beanType
+            'the definition was declared any other way'  | new RootBeanDefinition(SuperclassFixture) | SuperclassFixture
+            'the bean is not of the type it names at all' | generated(SuperclassFixture)               | ConfigurationFixture
     }
 
     static class ConfigurationFixture {
@@ -201,6 +198,18 @@ class GeneratedBeanDefinitionsSpec extends Specification {
 
         @Autowired
         void setOverridable(String collaborator) {
+        }
+    }
+
+    static class SubclassFixture extends SuperclassFixture {
+
+        @Override
+        @Autowired
+        void setOverridable(String collaborator) {
+        }
+
+        @Autowired
+        void setOwn(String collaborator) {
         }
     }
 
@@ -219,21 +228,24 @@ class GeneratedBeanDefinitionsSpec extends Specification {
         }
     }
 
-    static class SubclassFixture extends SuperclassFixture {
+    /** Equal to every other instance, as a bean whose equality changes as it is injected may be. */
+    static class EqualFixture {
 
         @Override
-        @Autowired
-        void setOverridable(String collaborator) {
+        boolean equals(Object other) {
+            other instanceof EqualFixture
         }
 
-        @Autowired
-        void setOwn(String collaborator) {
+        @Override
+        int hashCode() {
+            1
         }
     }
 
-    static interface ProductType {
-    }
+    static class FactoryFixture {
 
-    static class ProductFixture implements ProductType {
+        static SuperclassFixture create() {
+            new SuperclassFixture()
+        }
     }
 }
