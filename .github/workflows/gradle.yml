@@ -955,7 +955,7 @@ jobs:
       # is exactly the run whose watchdog output is worth reading.
       - name: "🐕 Hang watchdog output"
         if: always()
-        run: cat "${RUNNER_TEMP}/hang-watchdog.log" || echo "no watchdog output""
+        run: cat "${RUNNER_TEMP}/hang-watchdog.log" || echo "no watchdog output"
   publishGradle:
     # always() with an explicit result check, see the concurrency comment at the top.
     if: >-
