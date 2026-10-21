@@ -246,6 +246,12 @@ class ActionReturnValues {
      * Spring MVC's handler adapter as it handles the value of a handler method: its return value handlers, and the
      * executor, timeout and interceptors of its asynchronous requests, which it has no accessors for, as Spring MVC's
      * configuration and the application's {@code WebMvcConfigurer} beans set them.
+     *
+     * <p>Those four are read from the adapter's private fields, and a field a release of Spring renames reads as
+     * {@code null}, which leaves the request with the default executor, the container's timeout and no interceptors.
+     * {@code ActionReturnValuesSpec} pins each of the four, by the name of the executor's threads, the timeout and an
+     * attribute each kind of interceptor sets, so that a rename fails the build rather than a request; keep that
+     * coverage where this changes.</p>
      */
     @CompileStatic
     private static final class MvcAdapter {
