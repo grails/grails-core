@@ -22,7 +22,9 @@ import org.hibernate.mapping.Collection;
 
 public interface GrailsSecondPass {
 
+    /** Creates the keys of the collection and completes the unique key of a join table the collection shares. */
     default void createCollectionKeys(Collection collection) {
         collection.createAllKeys();
+        new SharedJoinTableUniqueKeyBinder().bind(collection);
     }
 }

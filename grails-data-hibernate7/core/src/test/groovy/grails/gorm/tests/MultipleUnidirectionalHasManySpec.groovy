@@ -21,15 +21,15 @@ package grails.gorm.tests
 import grails.gorm.annotation.Entity
 
 /**
- * An owner with several unidirectional hasMany associations keeps a join table for each of them, whether they point
- * at different classes or at the same class with join tables of their own, and an element added to one of them is
- * written to its own join table. A sibling to-many that is not bound as a collection, such as a serializable one,
- * neither blocks the session factory nor counts as a sharer of the join table.
+ * An owner with several unidirectional hasMany associations writes an element added to any of them to the join table
+ * of that association: a table of its own when the associations point at different classes or map join tables of their
+ * own, or the one table two associations to the same class share, with a key column each. A sibling to-many that is not
+ * bound as a collection, such as a serializable one, does not block the session factory.
  */
 class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote)
+        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote, MuhGroup)
     }
 
     void cleanup() {
@@ -37,6 +37,7 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
             MuhItem.executeUpdate('delete from MuhItem', [:])
             MuhAccount.executeUpdate('delete from MuhAccount', [:])
             MuhNote.executeUpdate('delete from MuhNote', [:])
+            MuhGroup.executeUpdate('delete from MuhGroup', [:])
             MuhRole.executeUpdate('delete from MuhRole', [:])
             MuhTag.executeUpdate('delete from MuhTag', [:])
         }
@@ -84,6 +85,40 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         then: "each role is found through its own association of the reloaded account"
         MuhAccount.get(account.id).roles*.authority == ['ROLE_ALLOW']
         MuhAccount.get(account.id).denyRoles*.authority == ['ROLE_DENY']
+    }
+
+    void "two unidirectional hasMany associations to the same class sharing a join table are each written"() {
+        given: "a persisted group whose allow and deny roles share one join table, with a key column each"
+        def group = new MuhGroup(name: 'Example group').save(flush: true)
+
+        when: "a role is added to each association and the group is flushed"
+        group.addToRoles(new MuhRole(authority: 'ROLE_ALLOW'))
+        group.addToDenyRoles(new MuhRole(authority: 'ROLE_DENY'))
+        group.save(flush: true)
+        MuhGroup.withSession { it.clear() }
+
+        then: "each role is found through its own association of the reloaded group"
+        MuhGroup.get(group.id).roles*.authority == ['ROLE_ALLOW']
+        MuhGroup.get(group.id).denyRoles*.authority == ['ROLE_DENY']
+    }
+
+    void "one role denied by two groups is written to the shared join table once per group"() {
+        given: "a role and two persisted groups"
+        def role = new MuhRole(authority: 'ROLE_SHARED').save(flush: true)
+        def first = new MuhGroup(name: 'First group').save(flush: true)
+        def second = new MuhGroup(name: 'Second group').save(flush: true)
+
+        when: "both groups deny the role, which leaves the first association's key column null in both rows"
+        first.addToDenyRoles(role)
+        second.addToDenyRoles(role)
+        first.save(flush: true)
+        second.save(flush: true)
+        MuhGroup.withSession { it.clear() }
+
+        then: "each group finds the role, and the rows are unique by the key column of their own association"
+        MuhGroup.get(first.id).denyRoles*.authority == ['ROLE_SHARED']
+        MuhGroup.get(second.id).denyRoles*.authority == ['ROLE_SHARED']
+        MuhGroup.get(first.id).roles.isEmpty()
     }
 
     void "a unidirectional hasMany next to a serializable to-many is written to its join table"() {
@@ -140,4 +175,11 @@ class MuhNote {
     static mapping = {
         tags type: 'serializable'
     }
+}
+
+@Entity
+class MuhGroup {
+    Long id
+    String name
+    static hasMany = [roles: MuhRole, denyRoles: MuhRole]
 }
