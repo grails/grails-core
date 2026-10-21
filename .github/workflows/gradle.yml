@@ -599,7 +599,7 @@ jobs:
         # config only runs when TESTCONFIG matches. TESTCONFIG is applied at app startup, so every config
         # must be its own run. Carried over from the standalone grails-spring-security CI — do not drop
         # configs (add, don't remove) when the app's security configurations change.
-        test-config: [ 'static', 'annotation', 'requestmap', 'basic', 'basicCacheUsers', 'misc', 'putWithParams', 'bcrypt', 'issue503' ]
+        test-config: [ 'static', 'annotation', 'requestmap', 'basic', 'basicCacheUsers', 'misc', 'putWithParams', 'bcrypt', 'issue503', 'noAnonymous' ]
     runs-on: ubuntu-24.04
     steps:
       - name: "Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -721,7 +721,11 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
     name: "Mongodb Functional Tests (Java ${{ matrix.java }}, MongoDB ${{ matrix.mongodb-version }}, indy=${{ matrix.indy }})"
     timeout-minutes: 150 # slowest run: 70 min
-    runs-on: ubuntu-24.04
+    # ubuntu-22.04 while https://github.com/actions/runner-images/issues/15005 is open: the ubuntu-24.04 image 20261018.339
+    # ships kernel 7.0.0-1017-azure, which MongoDB 8.0 reads as 7.0.0 and refuses to start on (it exits on 6.19.0 through
+    # 7.0.13), so every mongo:8.0 container of the MongoDB 8.0 lane dies before "waiting for connections". The ubuntu-22.04
+    # image runs kernel 6.8. Move back to ubuntu-24.04 once the issue is resolved or mongo:8.0 is 8.0.35 or newer.
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
