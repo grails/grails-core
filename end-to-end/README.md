@@ -94,7 +94,8 @@ environment `grails run-app` starts in, with reloading on, where bundles stopped
 #16179. Every run is told which environment to expect and fails in any other, since the Grails Gradle
 plugin starts every application task in development unless told otherwise.
 
-The native half is opt-in because it needs a GraalVM toolchain and minutes of CPU.
+The native half is opt-in because it needs a GraalVM toolchain and minutes of CPU. CI runs it at the
+end of the End to End job, against the framework that job publishes.
 
 The native half needs no recorded metadata. Nothing traced by an agent is checked in or generated: the
 image is built from what the framework registers while the code is generated -- finding the plugins,
