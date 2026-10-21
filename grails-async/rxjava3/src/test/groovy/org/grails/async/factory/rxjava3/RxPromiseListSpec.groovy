@@ -141,4 +141,34 @@ class RxPromiseListSpec extends Specification {
             result == [2]
             callbacks.get() == 1
     }
+
+    void 'onError over a list reports the failure a bound promise holds'() {
+        given: 'a bound promise whose then callback failed, after a task'
+            def failure = new IllegalStateException('bad')
+            Promise<Object> failed = Promises.createBoundPromise(null).then { throw failure }
+            Throwable observed = null
+
+        when: 'the list is read'
+            Promises.onError([Promises.createPromise { 1 }, failed]) { observed = it }.get(5, TimeUnit.SECONDS)
+
+        then: 'the aggregate throws the failure and the error callback received it'
+            IllegalStateException e = thrown()
+            e.is(failure)
+            observed.is(failure)
+    }
+
+    void 'onComplete over a list skips its callback when a bound promise holds a failure'() {
+        given: 'a bound promise whose then callback failed, after a task'
+            def failure = new IllegalStateException('bad')
+            Promise<Object> failed = Promises.createBoundPromise(null).then { throw failure }
+            List completed = null
+
+        when: 'the list is read'
+            Promises.onComplete([Promises.createPromise { 1 }, failed]) { completed = it }.get(5, TimeUnit.SECONDS)
+
+        then: 'the aggregate throws the failure and the completion callback never ran'
+            IllegalStateException e = thrown()
+            e.is(failure)
+            completed == null
+    }
 }

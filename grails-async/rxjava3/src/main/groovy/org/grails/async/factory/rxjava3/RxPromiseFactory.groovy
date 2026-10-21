@@ -85,13 +85,15 @@ class RxPromiseFactory extends AbstractPromiseFactory {
     }
 
     /**
-     * Concatenates the values of the given promises into one list, in order, with a {@code null} value restored
-     * from the sentinel it travels through the stream as.
+     * Concatenates the results of the given promises into one list, in order, with a {@code null} value restored
+     * from the sentinel it travels through the stream as. A bound promise contributes its result through
+     * {@code get()}, so one that holds a failure fails the list, as it does with the default and synchronous
+     * factories.
      */
     private static <T> Single<List<T>> values(List<Promise<T>> promises) {
         List<Observable<T>> sources = promises.collect { Promise<T> p ->
             if (p instanceof BoundPromise) {
-                return Observable.just(RxPromise.wrap(((BoundPromise) p).value)) as Observable<T>
+                return Observable.fromCallable { RxPromise.wrap(p.get()) } as Observable<T>
             }
             return ((RxPromise<T>) p).toObservable()
         }
