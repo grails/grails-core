@@ -107,6 +107,8 @@ import static com.mongodb.client.model.Filters.*;
 Book.find(eq("title", "The Stand")).first()
 ----
 
+When an instance is saved, GORM sets its `tenantId` to the current tenant id, also when that tenant id is `default`, the name of the default connection source. Only inside `Tenants.withoutId` or a method annotated with `@WithoutTenant` does an instance keep the `tenantId` that is set on it.
+
 But this logic bypasses any built into tenant id interception and inclusion:
 
 [source,groovy]
