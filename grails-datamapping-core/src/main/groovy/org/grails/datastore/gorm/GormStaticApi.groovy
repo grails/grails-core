@@ -1034,6 +1034,15 @@ class GormStaticApi<D> extends AbstractGormApi<D> implements GormAllOperations<D
     }
 
     def <T1> T1 withoutId(Closure<T1> callable) {
+        Datastore defaultDs = registry.getDatastore(persistentClass.name, ConnectionSource.DEFAULT)
+        if (defaultDs instanceof MultiTenantCapableDatastore) {
+            MultiTenantCapableDatastore multiTenantDs = (MultiTenantCapableDatastore) defaultDs
+            // Bound rather than entered through Tenants.withoutId, which passes a closure with parameters the session
+            // only, so that the closure gets the tenant id and the session, as it does with withId.
+            return (T1) CurrentTenantHolder.withoutTenant(multiTenantDs) {
+                Tenants.withCurrent(multiTenantDs, callable)
+            }
+        }
         withId(ConnectionSource.DEFAULT, callable)
     }
 
