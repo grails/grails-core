@@ -60,6 +60,9 @@ import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy;
 import org.grails.orm.hibernate.cfg.PropertyConfig;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
 import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover;
+import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher;
+import org.grails.orm.hibernate.cfg.domainbinding.util.CreateKeyForProps;
+import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher;
 
 /**
  * Binds a property mapped with a Hibernate {@link CompositeUserType} as a {@link Component}.
@@ -72,7 +75,9 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover;
  * index of the attribute in that order and assembled through
  * {@link CompositeUserType#instantiate(org.hibernate.metamodel.spi.ValueAccess)}. The columns of the property
  * mapping are assigned to the attributes in the same order; an attribute without a configured column is named
- * after the property and the attribute.
+ * after the property and the attribute. The component class is the {@linkplain CompositeUserType#returnedClass()
+ * value class} of the user type, not its embeddable class. A unique property has one unique key across all of its
+ * columns, together with the columns of its uniqueness group, rather than a unique key per column.
  *
  * @since 8.0.1
  */
@@ -86,6 +91,7 @@ public class CompositeUserTypeBinder {
     private final PersistentEntityNamingStrategy namingStrategy;
     private final ColumnConfigToColumnBinder columnConfigToColumnBinder;
     private final ColumnBinder columnBinder;
+    private final CreateKeyForProps createKeyForProps;
     private final BackticksRemover backticksRemover;
 
     public CompositeUserTypeBinder(
@@ -97,6 +103,8 @@ public class CompositeUserTypeBinder {
                 namingStrategy,
                 new ColumnConfigToColumnBinder(),
                 new ColumnBinder(namingStrategy, jdbcEnvironment.getDialect()),
+                new CreateKeyForProps(new ColumnNameForPropertyAndPathFetcher(
+                        namingStrategy, new DefaultColumnNameFetcher(namingStrategy), new BackticksRemover())),
                 new BackticksRemover());
     }
 
@@ -105,11 +113,13 @@ public class CompositeUserTypeBinder {
             PersistentEntityNamingStrategy namingStrategy,
             ColumnConfigToColumnBinder columnConfigToColumnBinder,
             ColumnBinder columnBinder,
+            CreateKeyForProps createKeyForProps,
             BackticksRemover backticksRemover) {
         this.metadataBuildingContext = metadataBuildingContext;
         this.namingStrategy = namingStrategy;
         this.columnConfigToColumnBinder = columnConfigToColumnBinder;
         this.columnBinder = columnBinder;
+        this.createKeyForProps = createKeyForProps;
         this.backticksRemover = backticksRemover;
     }
 
@@ -141,7 +151,9 @@ public class CompositeUserTypeBinder {
         component.setRoleName(GrailsHibernateUtil.qualify(
                 property.getHibernateOwner().getJavaClass().getName(), property.getNameForPropertyAndPath(path)));
         component.setTypeName(userTypeClass.getName());
-        component.setComponentClassName(embeddable.getName());
+        // The component describes the value class, as Hibernate's own binding of a composite type does: the
+        // embeddable class only supplies the attributes, so whole-value queries and parameters see the value class.
+        component.setComponentClassName(userType.returnedClass().getName());
 
         Properties typeParams = propertyConfig.getTypeParams();
         if (typeParams != null && !typeParams.isEmpty()) {
@@ -161,6 +173,7 @@ public class CompositeUserTypeBinder {
 
         List<String> attributeNames = new ArrayList<>(attributes.size());
         List<Type> attributeTypes = new ArrayList<>(attributes.size());
+        List<String> columnNames = new ArrayList<>(attributes.size());
         PropertyAccessStrategy accessStrategy =
                 new PropertyAccessStrategyCompositeUserTypeImpl(userType, attributeNames, attributeTypes);
         for (int i = 0; i < attributes.size(); i++) {
@@ -173,12 +186,13 @@ public class CompositeUserTypeBinder {
 
             Column column = new Column();
             columnConfigToColumnBinder.bindColumnConfigToColumn(column, columnConfig, propertyConfig);
-            columnBinder.bindColumn(
+            columnBinder.bindColumnWithoutUniqueness(
                     property, parentProperty, column, columnConfig, path, table, userTypeClass.getName());
             if (table != null) {
                 table.addColumn(column);
             }
             value.addColumn(column);
+            columnNames.add(column.getName());
 
             Property attributeProperty = new Property();
             attributeProperty.setName(attribute.name());
@@ -189,6 +203,9 @@ public class CompositeUserTypeBinder {
 
             attributeNames.add(attribute.name());
             attributeTypes.add(attribute.type());
+        }
+        if (table != null) {
+            createKeyForProps.createKeyForColumns(property, path, table, columnNames);
         }
         component.sortProperties();
         return component;

@@ -26,6 +26,7 @@ import org.grails.orm.hibernate.CompositeMoneyType
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.*
 import org.grails.orm.hibernate.cfg.domainbinding.binder.*
 
+import org.hibernate.MappingException
 import org.hibernate.mapping.ManyToOne
 import org.hibernate.mapping.OneToOne
 import org.hibernate.mapping.Property
@@ -112,9 +113,19 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
                 foreignKeyOneToOneBinder
         )
         componentBinder.setGrailsPropertyBinder(propertyBinder)
+        GrailsPropertyBinder legacyPropertyBinder = new GrailsPropertyBinder(
+                enumTypeBinderToUse,
+                componentBinder,
+                collectionBinder,
+                simpleValueBinder,
+                oneToOneBinder,
+                manyToOneBinder,
+                foreignKeyOneToOneBinder
+        )
         
         return [
             propertyBinder: propertyBinder,
+            legacyPropertyBinder: legacyPropertyBinder,
             collectionBinder: collectionBinder
         ]
     }
@@ -318,6 +329,34 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
         rootClass.table.columns*.name == ['price_value', 'price_currency']
     }
 
+    void "Test a property binder created without a composite user type binder binds other properties and rejects a composite user type"() {
+        given:
+        def binder = getGrailsDomainBinder()
+        def propertyBinder = getBinders(binder).legacyPropertyBinder
+        def persistentEntity = getPersistentEntity(PropertyBinderSpecCompositeUserTypeEntity) as GrailsHibernatePersistentEntity
+        def rootClass = new RootClass(binder.getMetadataBuildingContext())
+        rootClass.setTable(new Table("COMPOSITE_USER_TYPE_ENTITY"))
+        persistentEntity.setPersistentClass(rootClass)
+
+        when: "a simple property is bound"
+        def nameProp = persistentEntity.getPropertyByName("name") as HibernatePersistentProperty
+        Value value = propertyBinder.bindProperty(nameProp, null, EMPTY_PATH)
+
+        then:
+        value instanceof BasicValue
+
+        when: "a property mapped with a composite user type is bound"
+        def priceProp = persistentEntity.getPropertyByName("price") as HibernatePersistentProperty
+        propertyBinder.bindProperty(priceProp, null, EMPTY_PATH)
+
+        then: "the binder explains that it cannot bind it"
+        MappingException e = thrown()
+        e.message.contains('price')
+        e.message.contains(PropertyBinderSpecCompositeUserTypeEntity.name)
+        e.message.contains(CompositeMoneyType.name)
+        e.message.contains(CompositeUserTypeBinder.simpleName)
+    }
+
     void "Test bind a genuine HibernateCustomProperty (GORM-detected custom type marshaller, no type: mapping)"() {
         given: "a HibernateCustomProperty built the way HibernateMappingFactory#createCustom does: no type: " +
                 "mapping is set, so isUserButNotCollectionType() is false and the instanceof HibernateCustomProperty " +
@@ -497,6 +536,7 @@ class PropertyBinderSpecCustomEntity {
 @Entity
 class PropertyBinderSpecCompositeUserTypeEntity {
     Long id
+    String name
     CompositeMoney price
     static mapping = {
         price type: CompositeMoneyType, {

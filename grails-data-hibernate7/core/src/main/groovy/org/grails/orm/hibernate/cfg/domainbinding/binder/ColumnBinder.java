@@ -95,6 +95,55 @@ public class ColumnBinder {
             Table table,
             String typeName) {
 
+        String columnName = bindColumnDefinition(property, parentProperty, column, cc, path, table, typeName);
+        createKeyForProps.createKeyForProps(property, path, table, columnName);
+
+        // Apply uniqueness last to ensure it isn't overridden by downstream binders
+        PropertyConfig mappedFormFinal = property.getHibernateMappedForm();
+        column.setUnique(mappedFormFinal.isUnique() && !mappedFormFinal.isUniqueWithinGroup());
+    }
+
+    /**
+     * Binds one of the columns of a property that spans several columns, such as one mapped with a composite
+     * user type, as {@link #bindColumn} does, except for the uniqueness of the property: the column is not unique
+     * on its own and no unique key is created for it, since two different values of the property can share the
+     * value of one column. The caller applies the uniqueness once, across all the columns of the property, through
+     * {@link CreateKeyForProps#createKeyForColumns}.
+     *
+     * @param property The Grails domain class property
+     * @param parentProperty parent property
+     * @param column The column to bind
+     * @param cc The configuration of the column
+     * @param path the path
+     * @param table The table name
+     * @param typeName the property's resolved Hibernate type name
+     */
+    public void bindColumnWithoutUniqueness(
+            HibernatePersistentProperty property,
+            HibernatePersistentProperty parentProperty,
+            Column column,
+            ColumnConfig cc,
+            String path,
+            Table table,
+            String typeName) {
+        bindColumnDefinition(property, parentProperty, column, cc, path, table, typeName);
+        column.setUnique(false);
+    }
+
+    /**
+     * Binds everything but the uniqueness of the column.
+     *
+     * @return the name of the column of the property
+     */
+    private String bindColumnDefinition(
+            HibernatePersistentProperty property,
+            HibernatePersistentProperty parentProperty,
+            Column column,
+            ColumnConfig cc,
+            String path,
+            Table table,
+            String typeName) {
+
         if (cc != null) {
             column.setComment(cc.getComment());
             column.setDefaultValue(cc.getDefaultValue());
@@ -125,7 +174,6 @@ public class ColumnBinder {
             }
         }
 
-        createKeyForProps.createKeyForProps(property, path, table, columnName);
         indexBinder.bindIndex(columnName, column, cc, table);
 
         var owner = property.getHibernateOwner();
@@ -141,12 +189,9 @@ public class ColumnBinder {
             }
         }
 
-        // Apply uniqueness last to ensure it isn't overridden by downstream binders
-        PropertyConfig mappedFormFinal = property.getHibernateMappedForm();
-        column.setUnique(mappedFormFinal.isUnique() && !mappedFormFinal.isUniqueWithinGroup());
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Bound property [{}] to column name [{}] in table [{}]", property.getName(), column.getName(), table.getName());
         }
+        return columnName;
     }
 }

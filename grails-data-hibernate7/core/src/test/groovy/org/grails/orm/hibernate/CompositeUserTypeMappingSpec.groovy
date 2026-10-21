@@ -29,10 +29,13 @@ import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.orm.hibernate.cfg.Settings
 import org.hibernate.HibernateException
 import org.hibernate.MappingException
+import org.hibernate.mapping.BasicValue
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.Component
+import org.hibernate.mapping.Value
 import org.hibernate.metamodel.spi.ValueAccess
 import org.hibernate.usertype.CompositeUserType
+import org.springframework.dao.DataIntegrityViolationException
 import spock.lang.Specification
 
 /**
@@ -195,16 +198,118 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
+    void "a type mapped on the property wins over a composite user type registered for its class"() {
+        given: 'a datastore whose default mapping registers the composite user type, and a property mapped as serializable'
+        HibernateDatastore datastore = createDatastore('compositeUserTypeRegisteredOverridden', {
+            'user-type'(type: CompositeMoneyType, 'class': CompositeMoney)
+        }, CompositeUserTypeRegisteredOverridden)
+
+        expect: 'the property is one serialized column rather than a component'
+        Value amount = datastore.metadata.getEntityBinding(CompositeUserTypeRegisteredOverridden.name).getProperty('amount').value
+        amount instanceof BasicValue
+        amount.columns*.name == ['amount']
+        tableColumnNames(datastore, CompositeUserTypeRegisteredOverridden).sort() == ['amount', 'id', 'version']
+
+        when:
+        Long id = CompositeUserTypeRegisteredOverridden.withTransaction {
+            new CompositeUserTypeRegisteredOverridden(amount: new CompositeMoney(amount: 9, currency: 'SEK'))
+                    .save(flush: true, failOnError: true).id
+        }
+
+        then:
+        CompositeUserTypeRegisteredOverridden.withTransaction {
+            CompositeUserTypeRegisteredOverridden.get(id).amount == new CompositeMoney(amount: 9, currency: 'SEK')
+        }
+
+        cleanup:
+        datastore?.close()
+    }
+
+    void "a unique composite user type property is unique across all of its columns"() {
+        given:
+        HibernateDatastore datastore = createDatastore('compositeUserTypeUnique', {}, CompositeUserTypeUnique)
+
+        expect: 'one unique key spans the columns of the property, and no column is unique on its own'
+        uniqueKeyColumns(datastore, CompositeUserTypeUnique) == [['amount_amount', 'amount_currency'] as Set]
+        columnsOf(componentOf(datastore, CompositeUserTypeUnique, 'amount')).every { !it.unique }
+
+        when: 'values that share one attribute are saved'
+        CompositeUserTypeUnique.withTransaction {
+            new CompositeUserTypeUnique(amount: new CompositeMoney(amount: 10, currency: 'EUR')).save(flush: true, failOnError: true)
+            new CompositeUserTypeUnique(amount: new CompositeMoney(amount: 20, currency: 'EUR')).save(flush: true, failOnError: true)
+            new CompositeUserTypeUnique(amount: new CompositeMoney(amount: 10, currency: 'USD')).save(flush: true, failOnError: true)
+        }
+
+        then: 'they are accepted'
+        CompositeUserTypeUnique.withTransaction { CompositeUserTypeUnique.count() } == 3
+
+        when: 'an equal complete value is validated'
+        boolean valid = CompositeUserTypeUnique.withTransaction {
+            new CompositeUserTypeUnique(amount: new CompositeMoney(amount: 10, currency: 'EUR')).validate()
+        }
+
+        then: 'the unique constraint rejects it'
+        !valid
+
+        when: 'an equal complete value is saved without validation'
+        CompositeUserTypeUnique.withTransaction {
+            new CompositeUserTypeUnique(amount: new CompositeMoney(amount: 10, currency: 'EUR')).save(flush: true, validate: false)
+        }
+
+        then: 'the database rejects it'
+        thrown(DataIntegrityViolationException)
+
+        cleanup:
+        datastore?.close()
+    }
+
+    void "a composite user type property unique within a group has one key over its columns and the group"() {
+        given:
+        HibernateDatastore datastore = createDatastore('compositeUserTypeUniqueGroup', {}, CompositeUserTypeUniqueGroup)
+
+        expect: 'one unique key spans the columns of the property and the column of the group'
+        uniqueKeyColumns(datastore, CompositeUserTypeUniqueGroup) == [['amount_amount', 'amount_currency', 'reference'] as Set]
+        columnsOf(componentOf(datastore, CompositeUserTypeUniqueGroup, 'amount')).every { !it.unique }
+
+        when: 'values that share one attribute, or the whole value with another reference, are saved'
+        CompositeUserTypeUniqueGroup.withTransaction {
+            new CompositeUserTypeUniqueGroup(reference: 'a', amount: new CompositeMoney(amount: 10, currency: 'EUR'))
+                    .save(flush: true, failOnError: true)
+            new CompositeUserTypeUniqueGroup(reference: 'a', amount: new CompositeMoney(amount: 20, currency: 'EUR'))
+                    .save(flush: true, failOnError: true)
+            new CompositeUserTypeUniqueGroup(reference: 'b', amount: new CompositeMoney(amount: 10, currency: 'EUR'))
+                    .save(flush: true, failOnError: true)
+        }
+
+        then: 'they are accepted'
+        CompositeUserTypeUniqueGroup.withTransaction { CompositeUserTypeUniqueGroup.count() } == 3
+
+        when: 'an equal complete value with the same reference is saved without validation'
+        CompositeUserTypeUniqueGroup.withTransaction {
+            new CompositeUserTypeUniqueGroup(reference: 'a', amount: new CompositeMoney(amount: 10, currency: 'EUR'))
+                    .save(flush: true, validate: false)
+        }
+
+        then: 'the database rejects it'
+        thrown(DataIntegrityViolationException)
+
+        cleanup:
+        datastore?.close()
+    }
+
     void "a composite user type takes its attributes from its embeddable class when that differs from the value class"() {
         given: 'a composite user type whose embeddable class is a record describing the value class'
         HibernateDatastore datastore = createDatastore('compositeUserTypeTemplate', {}, CompositeUserTypeTemplated)
 
-        expect: 'the component is described by the embeddable class, not by the value class'
+        expect: 'the attributes are those of the embeddable class'
         CompositeMoneyTemplate.isRecord()
         Component amount = componentOf(datastore, CompositeUserTypeTemplated, 'amount')
-        amount.componentClassName == CompositeMoneyTemplate.name
         amount.properties*.name == ['amount', 'currency']
         columnNamesOf(amount) == ['amount_amount', 'amount_currency']
+
+        and: 'the component, and the JPA attribute, describe the value class rather than the embeddable class'
+        amount.componentClassName == CompositeMoney.name
+        datastore.sessionFactory.metamodel.entity(CompositeUserTypeTemplated).getAttribute('amount').javaType == CompositeMoney
 
         when:
         Long id = CompositeUserTypeTemplated.withTransaction {
@@ -215,6 +320,37 @@ class CompositeUserTypeMappingSpec extends Specification {
         then:
         CompositeUserTypeTemplated.withTransaction {
             CompositeUserTypeTemplated.get(id).amount == new CompositeMoney(amount: 11, currency: 'JPY')
+        }
+
+        cleanup:
+        datastore?.close()
+    }
+
+    void "a composite user type whose embeddable class differs from the value class is queried by value"() {
+        given:
+        HibernateDatastore datastore = createDatastore('compositeUserTypeTemplateQuery', {}, CompositeUserTypeTemplated)
+        CompositeMoney twenty = new CompositeMoney(amount: 2000, currency: 'EUR')
+        CompositeUserTypeTemplated.withTransaction {
+            new CompositeUserTypeTemplated(amount: new CompositeMoney(amount: 1000, currency: 'EUR')).save(failOnError: true)
+            new CompositeUserTypeTemplated(amount: twenty).save(failOnError: true)
+            new CompositeUserTypeTemplated(amount: new CompositeMoney(amount: 2000, currency: 'USD'))
+                    .save(flush: true, failOnError: true)
+        }
+
+        expect: 'HQL, criteria and dynamic finders compare the whole value'
+        CompositeUserTypeTemplated.withTransaction {
+            CompositeUserTypeTemplated.executeQuery(
+                    'select p.amount from CompositeUserTypeTemplated p where p.amount = :amount', [amount: twenty]) == [twenty] &&
+                    CompositeUserTypeTemplated.createCriteria().list { eq('amount', twenty) }*.amount == [twenty] &&
+                    CompositeUserTypeTemplated.findAllByAmount(twenty)*.amount == [twenty] &&
+                    CompositeUserTypeTemplated.countByAmount(twenty) == 1
+        }
+
+        and: 'HQL reaches into the attributes of the embeddable class'
+        CompositeUserTypeTemplated.withTransaction {
+            CompositeUserTypeTemplated.executeQuery(
+                    'select p.amount.amount from CompositeUserTypeTemplated p where p.amount.currency = :currency order by p.amount.amount',
+                    [currency: 'EUR']) == [1000L, 2000L]
         }
 
         cleanup:
@@ -234,7 +370,7 @@ class CompositeUserTypeMappingSpec extends Specification {
 
         and: 'the private fields of an embeddable class without accessors are its attributes'
         Component amount = componentOf(datastore, CompositeUserTypeFieldsTemplated, 'amount')
-        amount.componentClassName == CompositeMoneyFields.name
+        amount.componentClassName == CompositeMoney.name
         amount.properties*.name == ['amount', 'currency']
         columnNamesOf(amount) == ['amount_amount', 'amount_currency']
 
@@ -295,6 +431,10 @@ class CompositeUserTypeMappingSpec extends Specification {
 
     private static List<String> tableColumnNames(HibernateDatastore datastore, Class entity) {
         datastore.metadata.getEntityBinding(entity.name).table.columns*.name
+    }
+
+    private static List<Set<String>> uniqueKeyColumns(HibernateDatastore datastore, Class entity) {
+        datastore.metadata.getEntityBinding(entity.name).table.uniqueKeys.values().collect { it.columns*.name.toSet() }
     }
 
     private static Map<String, Object> storedRow(HibernateDatastore datastore, Long id) {
@@ -383,6 +523,42 @@ class CompositeUserTypeRegistered implements HibernateEntity<CompositeUserTypeRe
             column name: 'money_value'
             column name: 'money_currency'
         }
+    }
+}
+
+@Entity
+class CompositeUserTypeRegisteredOverridden implements HibernateEntity<CompositeUserTypeRegisteredOverridden> {
+    CompositeMoney amount
+
+    static mapping = {
+        amount type: 'serializable'
+    }
+}
+
+@Entity
+class CompositeUserTypeUnique implements HibernateEntity<CompositeUserTypeUnique> {
+    CompositeMoney amount
+
+    static constraints = {
+        amount unique: true
+    }
+
+    static mapping = {
+        amount type: CompositeMoneyType
+    }
+}
+
+@Entity
+class CompositeUserTypeUniqueGroup implements HibernateEntity<CompositeUserTypeUniqueGroup> {
+    String reference
+    CompositeMoney amount
+
+    static constraints = {
+        amount unique: 'reference'
+    }
+
+    static mapping = {
+        amount type: CompositeMoneyType
     }
 }
 

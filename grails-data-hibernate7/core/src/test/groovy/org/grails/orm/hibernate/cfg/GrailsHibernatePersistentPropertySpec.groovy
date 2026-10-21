@@ -90,6 +90,7 @@ class GrailsHibernatePersistentPropertySpec extends HibernateGormDatastoreSpec {
         propertyName | expected
         'mapped'     | CompositeMoneyTemplateType
         'registered' | CompositeMoneyType
+        'overridden' | null
         'flag'       | null
         'name'       | null
     }
@@ -303,11 +304,13 @@ class TestEntityWithCompositeUserType {
     String name
     CompositeMoney mapped
     CompositeMoney registered
+    CompositeMoney overridden
     Boolean flag
 
     static mapping = {
         'user-type'(type: CompositeMoneyType, 'class': CompositeMoney)
         mapped type: CompositeMoneyTemplateType
+        overridden type: 'serializable'
         flag type: YesNoBooleanUserType
     }
 }

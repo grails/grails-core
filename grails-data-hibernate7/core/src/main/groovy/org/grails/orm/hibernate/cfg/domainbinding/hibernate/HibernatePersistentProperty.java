@@ -134,19 +134,19 @@ public interface HibernatePersistentProperty extends PersistentProperty<Property
     }
 
     /**
-     * The {@link CompositeUserType} the property is mapped with: the {@code type} of its own mapping, or
-     * the {@code user-type} registered for its class in the mapping of its owner, when that class
-     * implements the interface. A composite user type spans one column per attribute of its
-     * {@linkplain CompositeUserType#embeddable() embeddable class} and is bound as a component.
+     * The {@link CompositeUserType} the property is mapped with: the {@code type} of its own mapping, or, when its
+     * own mapping has no {@code type}, the {@code user-type} registered for its class in the mapping of its owner,
+     * when that class implements the interface. A {@code type} of its own that is not a composite user type, such
+     * as {@code 'serializable'}, wins over the registration, as it does for every other type. A composite user
+     * type spans one column per attribute of its {@linkplain CompositeUserType#embeddable() embeddable class} and
+     * is bound as a component.
      *
      * @return The composite user type, or {@code null} when the property is not mapped with one
      */
     @SuppressWarnings("unchecked")
     default @Nullable Class<? extends CompositeUserType<?>> getCompositeUserType() {
-        Class<?> userType = getUserType();
-        if (userType == null) {
-            userType = getRegisteredUserType();
-        }
+        PropertyConfig config = getMappedForm();
+        Class<?> userType = config != null && config.getType() != null ? getUserType() : getRegisteredUserType();
         return userType != null && CompositeUserType.class.isAssignableFrom(userType) ?
                 (Class<? extends CompositeUserType<?>>) userType :
                 null;

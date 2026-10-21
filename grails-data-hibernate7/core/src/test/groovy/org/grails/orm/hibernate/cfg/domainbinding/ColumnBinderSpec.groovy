@@ -518,6 +518,53 @@ class ColumnBinderSpec extends HibernateGormDatastoreSpec {
         then:
         !column.isUnique()
     }
+
+    def "a column bound without uniqueness is bound like any other but is not unique and gets no unique key"() {
+        given:
+        def columnNameFetcher = Mock(ColumnNameForPropertyAndPathFetcher)
+        def stringBinder = Mock(StringColumnConstraintsBinder)
+        def numericBinder = Mock(NumericColumnConstraintsBinder)
+        def keyCreator = Mock(CreateKeyForProps)
+        def indexBinder = Mock(IndexBinder)
+
+        def binder = new ColumnBinder(
+                columnNameFetcher,
+                stringBinder,
+                numericBinder,
+                keyCreator,
+                indexBinder
+        )
+
+        def entity = createPersistentEntity(entityClass)
+        def prop = entity.getPropertyByName(propertyName)
+        def column = new Column("test")
+        column.setUnique(true)
+        def table = new Table()
+        def cc = new ColumnConfig(comment: "cmt", defaultValue: "def", read: "r", write: "w")
+
+        columnNameFetcher.getColumnNameForPropertyAndPath(prop, "p", cc) >> "attr_col"
+
+        when:
+        binder.bindColumnWithoutUniqueness(prop, null, column, cc, "p", table, null)
+
+        then: "the column is named, configured and indexed as bindColumn does"
+        column.getName() == "attr_col"
+        column.getComment() == "cmt"
+        column.getDefaultValue() == "def"
+        column.getCustomRead() == "r"
+        column.getCustomWrite() == "w"
+        1 * indexBinder.bindIndex("attr_col", column, cc, table)
+
+        and: "neither the column nor a unique key carries the uniqueness of the property"
+        !column.isUnique()
+        0 * keyCreator._
+
+        where:
+        entityClass         | propertyName
+        CBUniqueEntity      | "uniqueProp"
+        CBUniqueGroupEntity | "groupedProp"
+        CBUniqueEntity      | "notUniqueProp"
+    }
 }
 
 @Entity

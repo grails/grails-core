@@ -20,6 +20,7 @@ package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
 import jakarta.annotation.Nonnull;
 
+import org.hibernate.MappingException;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
 import org.slf4j.Logger;
@@ -67,6 +68,33 @@ public class GrailsPropertyBinder {
         this.foreignKeyOneToOneBinder = foreignKeyOneToOneBinder;
     }
 
+    /**
+     * Creates a property binder without a {@link CompositeUserTypeBinder}. It binds every property the other
+     * constructor binds, except one mapped with a Hibernate {@link org.hibernate.usertype.CompositeUserType}, for
+     * which {@link #bindProperty} throws a {@link MappingException}.
+     *
+     * @deprecated use the constructor that takes a {@link CompositeUserTypeBinder}
+     */
+    @Deprecated(since = "8.0.1")
+    public GrailsPropertyBinder(
+            EnumTypeBinder enumTypeBinder,
+            ComponentBinder componentBinder,
+            CollectionBinder collectionBinder,
+            SimpleValueBinder simpleValueBinder,
+            OneToOneBinder oneToOneBinder,
+            ManyToOneBinder manyToOneBinder,
+            ForeignKeyOneToOneBinder foreignKeyOneToOneBinder) {
+        this(
+                enumTypeBinder,
+                componentBinder,
+                collectionBinder,
+                simpleValueBinder,
+                null,
+                oneToOneBinder,
+                manyToOneBinder,
+                foreignKeyOneToOneBinder);
+    }
+
     public Value bindProperty(
             @Nonnull HibernatePersistentProperty currentGrailsProp,
             HibernatePersistentProperty parentProperty,
@@ -88,7 +116,7 @@ public class GrailsPropertyBinder {
             // A composite user type spans one column per attribute of its embeddable class, so it is a
             // component of that type rather than a basic value: Hibernate resolves the type of a basic value
             // as a BasicType or a UserType only.
-            value = compositeUserTypeBinder.bindCompositeUserType(currentGrailsProp, parentProperty, path);
+            value = bindCompositeUserType(currentGrailsProp, parentProperty, path);
         } else if (currentGrailsProp.isUserButNotCollectionType()) {
             value = simpleValueBinder.bindBasicValue(currentGrailsProp, parentProperty, path);
         } else if (currentGrailsProp instanceof HibernateOneToOneProperty oneToOne &&
@@ -117,5 +145,17 @@ public class GrailsPropertyBinder {
         }
 
         return value;
+    }
+
+    private Value bindCompositeUserType(
+            HibernatePersistentProperty property, HibernatePersistentProperty parentProperty, String path) {
+        if (compositeUserTypeBinder == null) {
+            throw new MappingException("Property [" + property.getName() + "] of class [" +
+                    property.getOwner().getName() + "] is mapped with the composite user type [" +
+                    property.getCompositeUserType().getName() + "], which a " +
+                    GrailsPropertyBinder.class.getSimpleName() + " created without a " +
+                    CompositeUserTypeBinder.class.getSimpleName() + " cannot bind");
+        }
+        return compositeUserTypeBinder.bindCompositeUserType(property, parentProperty, path);
     }
 }
