@@ -196,6 +196,26 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
             context.close()
     }
 
+    void 'a bean the generated code created as a generic superclass is injected once through the override of its setter'() {
+        given: 'a factory method declaring a generic superclass, whose subclass overrides the annotated setter with ' +
+                'the actual type, so the generated code called that override through the bridge to it'
+            def context = new GenericApplicationContext()
+            context.registerBean('collaborator', CollaboratorFixture)
+            context.registerBeanDefinition('declaredAsGenericSuperclass', new RootBeanDefinition(GenericSuperclassFixture).tap {
+                instanceSupplier = { new GenericSubclassFixture().tap { setDependency(new CollaboratorFixture()) } }
+            })
+            GeneratedBeanDefinitions.record(context.beanFactory)
+
+        when:
+            refreshOnGeneratedArtifacts(context)
+
+        then:
+            context.getBean('declaredAsGenericSuperclass', GenericSubclassFixture).calls == [dependency: 1]
+
+        cleanup:
+            context.close()
+    }
+
     /**
      * A definition as the generated code contributes one for a factory method declaring {@link InjectedFixture}:
      * the bean it creates is injected through the members of that type, and the type's lifecycle methods are
@@ -257,6 +277,26 @@ class GrailsApplicationPostProcessorAnnotationConfigSpec extends Specification {
         @PreDestroy
         void shutdown() {
             calls.shutdown++
+        }
+    }
+
+    static class GenericSuperclassFixture<T> {
+
+        /** How many times each member was called. */
+        final Map<String, Integer> calls = [:].withDefault { 0 }
+
+        @Autowired
+        void setDependency(T dependency) {
+            calls.dependency++
+        }
+    }
+
+    static class GenericSubclassFixture extends GenericSuperclassFixture<CollaboratorFixture> {
+
+        @Override
+        @Autowired
+        void setDependency(CollaboratorFixture dependency) {
+            super.setDependency(dependency)
         }
     }
 

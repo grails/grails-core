@@ -150,6 +150,26 @@ class GeneratedBeanDefinitionsSpec extends Specification {
             ] as Set
     }
 
+    void 'the override of a generic superclass method is marked, not the bridge to it'() {
+        given: 'a factory method product declared as a generic superclass, whose subclass overrides its setter'
+            beanFactory.registerBeanDefinition('product', new RootBeanDefinition(GenericSuperclassFixture))
+            GeneratedBeanDefinitions.record(beanFactory)
+            def definition = new RootBeanDefinition(GenericSuperclassFixture)
+
+        expect: 'the subclass has a bridge taking the erased type, beside the override taking the actual one'
+            GenericSubclassFixture.getMethod('setDependency', Object).bridge
+
+        when:
+            GeneratedBeanDefinitions.markMembersInjectedByGeneratedCode(beanFactory, 'product', GenericSubclassFixture,
+                    definition, new AutowiredAnnotationBeanPostProcessor())
+
+        then: 'the generated code called the override through the bridge, and the override is what a processor injects'
+            definition.externallyManagedConfigMembers == [
+                    GenericSuperclassFixture.getMethod('setDependency', Object),
+                    GenericSubclassFixture.getMethod('setDependency', String)
+            ] as Set
+    }
+
     void 'nothing is marked when #reason'() {
         given:
             beanFactory.registerBeanDefinition('generated', new RootBeanDefinition(SuperclassFixture))
@@ -181,6 +201,21 @@ class GeneratedBeanDefinitionsSpec extends Specification {
 
         @Autowired
         void setOverridable(String collaborator) {
+        }
+    }
+
+    static class GenericSuperclassFixture<T> {
+
+        @Autowired
+        void setDependency(T dependency) {
+        }
+    }
+
+    static class GenericSubclassFixture extends GenericSuperclassFixture<String> {
+
+        @Override
+        @Autowired
+        void setDependency(String dependency) {
         }
     }
 

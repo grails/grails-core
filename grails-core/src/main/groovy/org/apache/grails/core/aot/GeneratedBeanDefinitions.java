@@ -30,6 +30,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.BridgeMethodResolver;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -108,7 +109,9 @@ public final class GeneratedBeanDefinitions {
      * Marks the members the generated code injected as configured from outside, on the definition of a bean it
      * created of a subclass of the type that definition declares: the members the given processor finds on the
      * declared type, and the methods of the bean's class overriding them, which are the ones the generated code
-     * called. A processor of that kind then injects the bean only through the members its class adds.
+     * called. An override of a generic method is the method declared with the actual type, not the bridge the
+     * compiler adds for the erased one. A processor of that kind then injects the bean only through the members
+     * its class adds.
      *
      * @param beanFactory the bean factory the bean is in
      * @param beanName the bean's name
@@ -129,7 +132,8 @@ public final class GeneratedBeanDefinitions {
         for (Member member : generated.getExternallyManagedConfigMembers()) {
             beanDefinition.registerExternallyManagedConfigMember(member);
             if (member instanceof Method method) {
-                beanDefinition.registerExternallyManagedConfigMember(ClassUtils.getMostSpecificMethod(method, beanClass));
+                beanDefinition.registerExternallyManagedConfigMember(
+                        BridgeMethodResolver.getMostSpecificMethod(method, beanClass));
             }
         }
     }
