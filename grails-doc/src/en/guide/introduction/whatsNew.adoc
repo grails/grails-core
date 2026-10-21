@@ -120,7 +120,21 @@ XML conversion, binding and renderers move to the `grails-xml` module, which the
 `grails-web-boot` still bring, and which a JSON-only application can exclude. Grails reads the `Accept` and
 `Content-Type` headers with Spring's media type parser, so media type names match whatever their case.
 
-See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 3 to 10, 12 and 13.
+With `grails.exceptionresolver.springHandlers: true`, which Grails 10 makes the default, an exception a controller
+action throws is resolved first as Spring MVC resolves one a handler method throws: by the `@ExceptionHandler` methods
+of the controller and of the `@ControllerAdvice` beans that apply to it, Spring Boot's handler of
+`spring.mvc.problemdetails.enabled` among them, which answers the exceptions of Spring MVC with RFC 9457 problems. See
+xref:theWebLayer#controllerExceptionHandling[Declarative Controller Exception Handling].
+
+An action can return what a Spring MVC handler method returns to write the response, such as a `ResponseEntity`, a
+`ProblemDetail` or a `StreamingResponseBody`, and Spring MVC writes it with the return value handlers of its handler
+adapter, the `ResponseBodyAdvice` beans that apply to the controller, and the action's `@JsonView` and
+`@ResponseStatus`. With `grails.controllers.responseBody: true`, which Grails 10 makes the default, so does any value of
+an action annotated `@ResponseBody`, a `CompletableFuture` it returns included. The `@JsonView` of an action also
+selects the properties `respond` writes through Spring MVC. See
+xref:theWebLayer#springResponses[Returning Spring MVC Responses].
+
+See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 3 to 10 and 12 to 15.
 
 ==== Hibernate 7 Application Generation
 
