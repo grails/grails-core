@@ -125,7 +125,10 @@ public final class ValidationProblemDetailFactory {
         return problem;
     }
 
-    /** The message of the code for the locale, or else the default message, formatted with the arguments. */
+    /**
+     * The message of the code for the locale, or else the default message, formatted with the arguments: in English, as
+     * the default message is, so that its numbers are written in the digits of its words whatever the locale.
+     */
     private String message(String code, Object[] arguments, String defaultMessage, Locale locale) {
         if (messageSource != null) {
             String message = messageSource.getMessage(code, arguments, null, locale);
@@ -133,6 +136,6 @@ public final class ValidationProblemDetailFactory {
                 return message;
             }
         }
-        return new MessageFormat(defaultMessage, locale).format(arguments);
+        return new MessageFormat(defaultMessage, Locale.ENGLISH).format(arguments);
     }
 }

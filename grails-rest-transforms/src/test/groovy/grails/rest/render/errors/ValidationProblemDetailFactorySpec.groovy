@@ -152,6 +152,27 @@ class ValidationProblemDetailFactorySpec extends Specification {
         1000  || 'Request validation failed with 1000 errors.'
     }
 
+    void 'the English detail without a message of its code has the digits of its words in a #locale request'() {
+        given:
+        LocaleContextHolder.locale = Locale.forLanguageTag(locale)
+        def errors = new BeanPropertyBindingResult(new Object(), 'book')
+        count.times { errors.addError(new ObjectError('book', ['book.invalid'] as String[], null, 'Book is invalid')) }
+
+        when:
+        def problem = new ValidationProblemDetailFactory(false, new StaticMessageSource()).create(errors)
+
+        then: 'where the locale writes numbers in its own digits, such as ٢ in ar-EG and ۱۰۰۰ in fa'
+        problem.detail == detail
+
+        cleanup:
+        LocaleContextHolder.resetLocaleContext()
+
+        where:
+        locale  | count || detail
+        'ar-EG' | 2     || 'Request validation failed with 2 errors.'
+        'fa'    | 1000  || 'Request validation failed with 1000 errors.'
+    }
+
     void 'includes rejected values only when explicitly requested'() {
         given:
         def errors = new BeanPropertyBindingResult(new Object(), 'book')
