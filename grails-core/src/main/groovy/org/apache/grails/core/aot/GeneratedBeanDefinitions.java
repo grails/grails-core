@@ -47,7 +47,7 @@ import org.springframework.util.ClassUtils;
  * has run and before any plugin declares a bean. A definition a plugin declares later, or declares again in
  * place of a generated one, is a different object and is processed as usual.</p>
  *
- * @since 9.0
+ * @since 8.0.1
  */
 public final class GeneratedBeanDefinitions {
 

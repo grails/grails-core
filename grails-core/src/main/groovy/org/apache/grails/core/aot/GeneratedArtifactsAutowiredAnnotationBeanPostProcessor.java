@@ -31,7 +31,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * time did not inject, and leaves alone the ones it did: the beans it created that are of the type their
  * definitions declare.
  *
- * @since 9.0
+ * @since 8.0.1
  * @see GeneratedBeanDefinitions
  */
 public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends AutowiredAnnotationBeanPostProcessor {

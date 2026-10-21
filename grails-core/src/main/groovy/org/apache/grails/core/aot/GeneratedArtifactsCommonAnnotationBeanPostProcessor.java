@@ -32,7 +32,7 @@ import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
  * created that are of the type their definitions declare: it has injected those and recorded their
  * initialization and destruction methods on their definitions.
  *
- * @since 9.0
+ * @since 8.0.1
  * @see GeneratedBeanDefinitions
  */
 public class GeneratedArtifactsCommonAnnotationBeanPostProcessor extends CommonAnnotationBeanPostProcessor {
