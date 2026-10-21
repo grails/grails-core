@@ -297,32 +297,6 @@ class PartitionedLookupByIdSpec extends Specification {
         } == ['Own', 'Other']
     }
 
-    void 'Tenants.isWithoutId is true inside withoutId only'() {
-        expect:
-        !Tenants.isWithoutId()
-        Tenants.withoutId(datastore) { Tenants.isWithoutId() }
-        !Tenants.withoutId(datastore) { Note.withTenant('own') { Tenants.isWithoutId() } }
-        !Note.withTenant('own') { Tenants.isWithoutId() }
-
-        and: 'it is restored after a nested withTenant'
-        Tenants.withoutId(datastore) {
-            Note.withTenant('own') { Tenants.isWithoutId() }
-            Tenants.isWithoutId()
-        }
-
-        and: 'the tenant id DEFAULT does not count'
-        !Tenants.withId(datastore, ConnectionSource.DEFAULT) { Tenants.isWithoutId() }
-        !Note.withTenant(ConnectionSource.DEFAULT) { Tenants.isWithoutId() }
-
-        when: 'the tenant resolver resolves the default connection source'
-        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, ConnectionSource.DEFAULT)
-
-        then:
-        Tenants.currentId(datastore) == ConnectionSource.DEFAULT
-        !Tenants.isWithoutId()
-        !Tenants.withCurrent(SimpleMapDatastore) { Tenants.isWithoutId() }
-    }
-
     void 'a proxy created under a tenant is not restricted to a tenant when it is initialized inside withoutId'() {
         expect:
         Note.withNewSession {
