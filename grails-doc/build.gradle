@@ -84,7 +84,8 @@ combinedGroovydoc.configure { Groovydoc gdoc ->
                 List possibleSources = [it.sourceSets.main]
 
                 def testFixturesSource = it.sourceSets.findByName('testFixtures')
-                if (testFixturesSource) {
+                // published test fixtures are test support for applications and plugins; a project's internal ones are not API
+                if (testFixturesSource && !it.findProperty('internalTestFixtures')) {
                     possibleSources.add(testFixturesSource)
                 }
 
@@ -274,6 +275,9 @@ generateConfigReference.configure { Task it ->
     it.dependsOn(
             project(':grails-core').tasks.named('jar'),
             project(':grails-web-core').tasks.named('jar'),
+            project(':grails-rest-transforms').tasks.named('jar'),
+            project(':grails-xml').tasks.named('jar'),
+            project(':grails-web-databinding').tasks.named('jar'),
             project(':grails-gsp').tasks.named('jar'),
             project(':grails-databinding').tasks.named('jar'),
             project(':grails-datamapping-core').tasks.named('jar'),
@@ -299,6 +303,9 @@ generateConfigReference.configure { Task it ->
     def metadataJars = [
             project(':grails-core').tasks.named('jar').flatMap { task -> task.archiveFile },
             project(':grails-web-core').tasks.named('jar').flatMap { task -> task.archiveFile },
+            project(':grails-rest-transforms').tasks.named('jar').flatMap { task -> task.archiveFile },
+            project(':grails-xml').tasks.named('jar').flatMap { task -> task.archiveFile },
+            project(':grails-web-databinding').tasks.named('jar').flatMap { task -> task.archiveFile },
             project(':grails-gsp').tasks.named('jar').flatMap { task -> task.archiveFile },
             project(':grails-databinding').tasks.named('jar').flatMap { task -> task.archiveFile },
             project(':grails-datamapping-core').tasks.named('jar').flatMap { task -> task.archiveFile },
