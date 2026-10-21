@@ -25,6 +25,8 @@ import org.hibernate.mapping.PersistentClass
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateBasicProperty
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.CollectionFacets
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.IndexFacets
 
 /**
  * Describes how {@link GrailsDomainGenerator} states the indexes a mapping asks for with {@code index:} on a column. The

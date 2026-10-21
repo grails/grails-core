@@ -16,21 +16,29 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
- * A property mapped with a Hibernate {@code CompositeUserType}, as the domain binder binds it ({@code CompositeUserTypeBinder}):
- * a component of the user type whose properties are the attributes of the user type's {@code embeddable()} class, one column each,
- * in alphabetical attribute order. The generator states it as an {@code @Embedded} field of the value class with
- * {@code @CompositeType} and an {@code @AttributeOverride} per attribute.
+ * The class-level decisions the domain binder makes for a root entity: the facets that end up on the Hibernate
+ * {@code PersistentClass} and its table, and that {@code GrailsDomainGenerator} writes into the class annotations.
+ *
+ * <p>{@code schema}, {@code catalog} and {@code comment} are {@code null} when unset; {@code batchSize} is
+ * {@code 0} when unset. {@code versioned} is whether the hierarchy has a version property: when it has none the binder
+ * sets the optimistic lock style of the root to {@code NONE}, where Hibernate's own default is {@code VERSION}.</p>
  *
  * @since 9.0
  */
 @CompileStatic
-record CompositeUserTypeFacets(
-    Class<?> userType,
-    Class<?> embeddable,
-    List<CompositeAttributeFacets> attributes) {
+record EntityFacets(
+    String jpaName,
+    String tableName,
+    String schema,
+    String catalog,
+    boolean dynamicInsert,
+    boolean dynamicUpdate,
+    int batchSize,
+    String comment,
+    boolean versioned) {
 }

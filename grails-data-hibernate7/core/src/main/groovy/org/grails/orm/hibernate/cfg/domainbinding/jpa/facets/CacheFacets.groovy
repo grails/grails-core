@@ -16,29 +16,24 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
- * The class-level decisions the domain binder makes for a root entity: the facets that end up on the Hibernate
- * {@code PersistentClass} and its table, and that {@link GrailsDomainGenerator} writes into the class annotations.
+ * The second-level cache the domain binder configures for the root of a hierarchy: the concurrency strategy, whether lazy
+ * properties are cached with the entity, and whether the class is mutable (the binder makes a {@code read-only} cache
+ * immutable). {@code GrailsDomainGenerator} writes them as {@code @Cacheable}, {@code @Cache(usage, includeLazy)} and
+ * {@code @Immutable}.
  *
- * <p>{@code schema}, {@code catalog} and {@code comment} are {@code null} when unset; {@code batchSize} is
- * {@code 0} when unset. {@code versioned} is whether the hierarchy has a version property: when it has none the binder
- * sets the optimistic lock style of the root to {@code NONE}, where Hibernate's own default is {@code VERSION}.</p>
+ * <p>{@code usage} is the strategy as the mapping names it ({@code read-only}, {@code read-write},
+ * {@code nonstrict-read-write} or {@code transactional}).</p>
  *
  * @since 9.0
  */
 @CompileStatic
-record EntityFacets(
-    String jpaName,
-    String tableName,
-    String schema,
-    String catalog,
-    boolean dynamicInsert,
-    boolean dynamicUpdate,
-    int batchSize,
-    String comment,
-    boolean versioned) {
+record CacheFacets(
+    String usage,
+    boolean includeLazy,
+    boolean mutable) {
 }

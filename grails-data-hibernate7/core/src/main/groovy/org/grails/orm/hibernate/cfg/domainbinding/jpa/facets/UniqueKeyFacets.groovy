@@ -16,24 +16,18 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
-import org.hibernate.generator.Generator
-
-import org.grails.orm.hibernate.cfg.domainbinding.generator.GrailsSequenceGeneratorEnum
 
 /**
- * The identifier generation the domain binder chooses for a root entity: the strategy, the generator class the
- * binder instantiates for it, and the parameters it passes along.
- *
- * <p>{@code parameters} are exactly the identity mapping's {@code params}, never {@code null}.</p>
+ * A multi-column unique key the domain binder puts on a table: its name and its columns in the order it added them.
+ * {@code GrailsDomainGenerator} writes it into {@code @Table(uniqueConstraints)}.
  *
  * @since 9.0
  */
 @CompileStatic
-record IdFacets(
-    GrailsSequenceGeneratorEnum strategy,
-    Class<? extends Generator> generatorClass,
-    Map<String, String> parameters) {
+record UniqueKeyFacets(
+    String name,
+    List<String> columns) {
 }

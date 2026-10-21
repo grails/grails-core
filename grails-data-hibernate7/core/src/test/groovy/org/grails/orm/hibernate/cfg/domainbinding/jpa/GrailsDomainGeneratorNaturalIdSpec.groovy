@@ -26,6 +26,7 @@ import org.hibernate.mapping.PersistentClass
 import org.hibernate.mapping.Property
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.NaturalIdFacets
 
 /**
  * Describes how {@link GrailsDomainGenerator} states the natural identifier a mapping asks for with
