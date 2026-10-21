@@ -88,8 +88,13 @@ cd end-to-end
 ```
 
 The JVM half runs in `check` and needs nothing special. It cannot falsify a hint; its value is as a
-fixture guard, keeping the bundles and the assertions from drifting apart. The native half is opt-in
-because it needs a GraalVM toolchain and minutes of CPU.
+fixture guard, keeping the bundles and the assertions from drifting apart. It starts the packaged
+application twice: in production, the environment the image starts in, and in development, the
+environment `grails run-app` starts in, with reloading on, where bundles stopped resolving until
+#16179. Every run is told which environment to expect and fails in any other, since the Grails Gradle
+plugin starts every application task in development unless told otherwise.
+
+The native half is opt-in because it needs a GraalVM toolchain and minutes of CPU.
 
 The native half needs no recorded metadata. Nothing traced by an agent is checked in or generated: the
 image is built from what the framework registers while the code is generated -- finding the plugins,

@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
+import grails.util.Environment
 
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.MessageSource
@@ -50,6 +51,12 @@ import org.springframework.context.MessageSource
  * <p>It also reads a value from the plugin's {@code plugin.yml}, which on a JVM is found beside the plugin's
  * classes and in an image only through the copy the build makes of it under the plugin's name.</p>
  *
+ * <p>Every run is told which environment it should have started in, through the property
+ * {@code i18n.check.environment}, and fails in any other. An image reads its environment from the build
+ * information packaged into it, and a run on a JVM from {@code grails.env}, which the Grails Gradle plugin
+ * sets to development for every task that runs an application. Either going wrong would check a
+ * different startup from the one intended.</p>
+ *
  * <p>Compiled statically, as a generated application's {@code Application} class is, so that the
  * image depends on resource hints for what this checks and not on reflection metadata for how it
  * checks it.</p>
@@ -66,6 +73,12 @@ class Application extends GrailsAutoConfiguration {
         ConfigurableApplicationContext context = GrailsApp.run(Application, args)
         int exitCode = 0
         try {
+            String expectedEnvironment = context.environment.getProperty('i18n.check.environment')
+            if (Environment.current.name != expectedEnvironment) {
+                throw new IllegalStateException("The application started in ${Environment.current.name}, " +
+                        "not in ${expectedEnvironment}, the environment i18n.check.environment names")
+            }
+
             MessageSource messages = context.getBean(MessageSource)
 
             // The application's own bundle, base name 'messages' — the one case Boot's hints cover.
@@ -108,7 +121,7 @@ class Application extends GrailsAutoConfiguration {
                         "native.plugin.configuration was '${configured}'")
             }
 
-            println 'i18n-check: every message bundle resolved, and the plugin configuration was read'
+            println "i18n-check: in ${expectedEnvironment}, every message bundle resolved, and the plugin configuration was read"
         }
         catch (Throwable failure) {
             failure.printStackTrace()

@@ -38,20 +38,38 @@ apply {
     from rootProject.layout.projectDirectory.file('../gradle/grails-extension-gradle-config.gradle')
 }
 
-// Runs on any JDK, and proves only that the fixture and its assertions are self-consistent - on a
-// JVM every bundle is readable whether it was registered or not. Cheap enough to keep in `check` so
-// the assertions cannot drift from the bundles while the native job is not being run.
-tasks.register('i18nCheckOnJvm', JavaExec) {
-    group = 'verification'
-    description = 'Resolves every message bundle from the packaged application on a JVM'
-    dependsOn tasks.named('bootJar')
-    classpath = files(tasks.named('bootJar').flatMap { it.archiveFile })
-    mainClass = 'org.springframework.boot.loader.launch.JarLauncher'
-    args = ['--i18n-check', '--server.port=0', '--spring.main.banner-mode=off']
+// What makes the application check itself, and the environment it must find it started in: Spring Boot reads
+// every --name=value argument as a property, which is how the application is told.
+def i18nCheckArgs = { String environment ->
+    ['--i18n-check', "--i18n.check.environment=${environment}".toString(), '--server.port=0',
+     '--spring.main.banner-mode=off']
 }
 
+// Runs the packaged application on any JDK in the given environment. It proves only that the fixture and its
+// assertions are self-consistent - on a JVM every bundle is readable whether it was registered or not - and is
+// cheap enough to keep in `check`, so the assertions cannot drift from the bundles between native runs. The
+// Grails Gradle plugin starts every JavaExec in development unless told otherwise, so each sets its own.
+def registerJvmCheck = { String name, String environment ->
+    tasks.register(name, JavaExec) {
+        group = 'verification'
+        description = "Resolves every message bundle from the packaged application on a JVM, in ${environment}"
+        dependsOn tasks.named('bootJar')
+        classpath = files(tasks.named('bootJar').flatMap { it.archiveFile })
+        mainClass = 'org.springframework.boot.loader.launch.JarLauncher'
+        systemProperty 'grails.env', environment
+        args = i18nCheckArgs(environment)
+    }
+}
+
+// In production, the environment the image starts in.
+registerJvmCheck('i18nCheckOnJvm', 'production')
+
+// In development as well, the environment `grails run-app` starts in, with reloading on. Bundles that resolved
+// in production did not here until #16179, and it was this run that found it.
+registerJvmCheck('i18nCheckOnJvmInDevelopment', 'development')
+
 tasks.named('check') {
-    dependsOn tasks.named('i18nCheckOnJvm')
+    dependsOn tasks.named('i18nCheckOnJvm'), tasks.named('i18nCheckOnJvmInDevelopment')
 }
 
 // The native half is opt-in: it needs a GraalVM toolchain and several minutes of CPU, which is too
@@ -81,10 +99,11 @@ if (project.hasProperty('nativeTests')) {
         // The path comes from the task that produces the binary, so the location and the dependency
         // on its producer stay in one place rather than repeating the layout convention here.
         Provider<RegularFile> binary = tasks.named('nativeCompile').flatMap { it.outputFile }
+        // An image starts in the environment its packaged build information names, which is production.
+        List<String> checkArgs = i18nCheckArgs('production')
         inputs.file(binary)
         doFirst {
-            commandLine binary.get().asFile.absolutePath,
-                    '--i18n-check', '--server.port=0', '--spring.main.banner-mode=off'
+            commandLine([binary.get().asFile.absolutePath] + checkArgs)
         }
     }
 
