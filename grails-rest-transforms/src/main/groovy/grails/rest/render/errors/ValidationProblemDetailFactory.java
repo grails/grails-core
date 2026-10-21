@@ -63,8 +63,9 @@ public final class ValidationProblemDetailFactory {
 
     private static final String DEFAULT_TITLE = "Validation failed";
 
+    // {0,number,0} rather than {0,number,#}: the choice format of Java 17 and 21 reads a # in a nested format as a limit
     private static final String DEFAULT_DETAIL =
-            "Request validation failed with {0,choice,0#0 errors|1#1 error|1<{0,number,#} errors}.";
+            "Request validation failed with {0,choice,0#0 errors|1#1 error|1<{0,number,0} errors}.";
 
     private final boolean includeRejectedValues;
 
