@@ -21,18 +21,22 @@ package grails.gorm.tests
 import grails.gorm.annotation.Entity
 
 /**
- * An owner with several unidirectional hasMany associations to different classes keeps a join table for each of
- * them, and an element added to one of them is written to its own join table.
+ * An owner with several unidirectional hasMany associations keeps a join table for each of them, whether they point
+ * at different classes or at the same class with join tables of their own, and an element added to one of them is
+ * written to its own join table. A sibling to-many that is not bound as a collection, such as a serializable one,
+ * neither blocks the session factory nor counts as a sharer of the join table.
  */
 class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag)
+        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote)
     }
 
     void cleanup() {
         MuhItem.withNewTransaction {
             MuhItem.executeUpdate('delete from MuhItem', [:])
+            MuhAccount.executeUpdate('delete from MuhAccount', [:])
+            MuhNote.executeUpdate('delete from MuhNote', [:])
             MuhRole.executeUpdate('delete from MuhRole', [:])
             MuhTag.executeUpdate('delete from MuhTag', [:])
         }
@@ -66,6 +70,35 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         MuhItem.get(item.id).roles*.authority == ['ROLE_A']
         MuhItem.get(item.id).tags*.name == ['tag-a']
     }
+
+    void "two unidirectional hasMany associations to the same class with their own join tables are each written"() {
+        given: "a persisted account whose allow and deny roles map their own join tables"
+        def account = new MuhAccount(name: 'Example account').save(flush: true)
+
+        when: "a role is added to each association and the account is flushed"
+        account.addToRoles(new MuhRole(authority: 'ROLE_ALLOW'))
+        account.addToDenyRoles(new MuhRole(authority: 'ROLE_DENY'))
+        account.save(flush: true)
+        MuhAccount.withSession { it.clear() }
+
+        then: "each role is found through its own association of the reloaded account"
+        MuhAccount.get(account.id).roles*.authority == ['ROLE_ALLOW']
+        MuhAccount.get(account.id).denyRoles*.authority == ['ROLE_DENY']
+    }
+
+    void "a unidirectional hasMany next to a serializable to-many is written to its join table"() {
+        given: "a persisted note whose tags are a serializable column, not a collection"
+        def note = new MuhNote(name: 'Example note', tags: ['tag-a', 'tag-b'] as Set).save(flush: true)
+
+        when: "a role is added to the managed note and the note is flushed"
+        note.addToRoles(new MuhRole(authority: 'ROLE_NOTE'))
+        note.save(flush: true)
+        MuhNote.withSession { it.clear() }
+
+        then: "the role is found through the reloaded note and the serializable tags are intact"
+        MuhNote.get(note.id).roles*.authority == ['ROLE_NOTE']
+        MuhNote.get(note.id).tags == ['tag-a', 'tag-b'] as Set
+    }
 }
 
 @Entity
@@ -85,4 +118,26 @@ class MuhRole {
 class MuhTag {
     Long id
     String name
+}
+
+@Entity
+class MuhAccount {
+    Long id
+    String name
+    static hasMany = [roles: MuhRole, denyRoles: MuhRole]
+    static mapping = {
+        roles joinTable: 'muh_account_allow_roles'
+        denyRoles joinTable: 'muh_account_deny_roles'
+    }
+}
+
+@Entity
+class MuhNote {
+    Long id
+    String name
+    Set<String> tags
+    static hasMany = [roles: MuhRole, tags: String]
+    static mapping = {
+        tags type: 'serializable'
+    }
 }
