@@ -31,31 +31,32 @@ class PathCapturingJSONWriterWrapperApiSpec extends Specification {
         def writer = new PathCapturingJSONWriterWrapper(new JSONWriter(output))
 
         expect:
-        writer.getCurrentStrackReference() == ''
+        writer.getCurrentStackReference() == ''
         writer.getStackReference(0) == ''
         writer.object().key('items').is(writer)
-        writer.getCurrentStrackReference() == '.items'
+        writer.getCurrentStackReference() == '.items'
         writer.array().is(writer)
-        writer.getCurrentStrackReference() == '.items[-1]'
+        writer.getCurrentStackReference() == '.items[-1]'
         writer.object().key('name').is(writer)
-        writer.getCurrentStrackReference() == '.items[0].name'
+        writer.getCurrentStackReference() == '.items[0].name'
+        writer.getCurrentStrackReference() == writer.getCurrentStackReference()
         writer.getStackReference(1) == '.items'
         writer.getStackReference(2) == '.items[0]'
         writeObjectValue(writer, 'Grails').is(writer)
-        writer.getCurrentStrackReference() == '.items[0]'
+        writer.getCurrentStackReference() == '.items[0]'
         writer.endObject().is(writer)
         writer.object().key('active').is(writer)
-        writer.getCurrentStrackReference() == '.items[1].active'
+        writer.getCurrentStackReference() == '.items[1].active'
         writeBoolean(writer, true).is(writer)
-        writer.getCurrentStrackReference() == '.items[1]'
+        writer.getCurrentStackReference() == '.items[1]'
         writer.endObject().endArray().is(writer)
-        writer.getCurrentStrackReference() == ''
+        writer.getCurrentStackReference() == ''
         writer.key('nested').object().key('count').is(writer)
-        writer.getCurrentStrackReference() == '.nested.count'
+        writer.getCurrentStackReference() == '.nested.count'
         writeLong(writer, 2L).is(writer)
-        writer.getCurrentStrackReference() == '.nested'
+        writer.getCurrentStackReference() == '.nested'
         writer.endObject().endObject().is(writer)
-        writer.getCurrentStrackReference() == ''
+        writer.getCurrentStackReference() == ''
         output.toString() == '{"items":[{"name":"Grails"},{"active":true}],"nested":{"count":2}}'
     }
 
@@ -69,29 +70,40 @@ class PathCapturingJSONWriterWrapperApiSpec extends Specification {
         expect:
         arrayWriter.array().is(arrayWriter)
         writeBoolean(arrayWriter, false).is(arrayWriter)
-        arrayWriter.getCurrentStrackReference() == '[0]'
+        arrayWriter.getCurrentStackReference() == '[0]'
         writeDouble(arrayWriter, 2.5d).is(arrayWriter)
-        arrayWriter.getCurrentStrackReference() == '[1]'
+        arrayWriter.getCurrentStackReference() == '[1]'
         writeLong(arrayWriter, 7L).is(arrayWriter)
-        arrayWriter.getCurrentStrackReference() == '[2]'
+        arrayWriter.getCurrentStackReference() == '[2]'
         writeObjectValue(arrayWriter, null).is(arrayWriter)
-        arrayWriter.getCurrentStrackReference() == '[3]'
+        arrayWriter.getCurrentStackReference() == '[3]'
         arrayWriter.endArray().is(arrayWriter)
-        arrayWriter.getCurrentStrackReference() == ''
+        arrayWriter.getCurrentStackReference() == ''
         arrayOutput.toString() == '[false,2.5,7,null]'
         objectWriter.object().key('boolean').is(objectWriter)
         writeBoolean(objectWriter, true).is(objectWriter)
-        objectWriter.getCurrentStrackReference() == ''
+        objectWriter.getCurrentStackReference() == ''
         objectWriter.key('double').is(objectWriter)
         writeDouble(objectWriter, 2.5d).is(objectWriter)
-        objectWriter.getCurrentStrackReference() == ''
+        objectWriter.getCurrentStackReference() == ''
         objectWriter.key('long').is(objectWriter)
         writeLong(objectWriter, 7L).is(objectWriter)
-        objectWriter.getCurrentStrackReference() == ''
+        objectWriter.getCurrentStackReference() == ''
         objectWriter.key('null').is(objectWriter)
         writeObjectValue(objectWriter, null).is(objectWriter)
         objectWriter.endObject().is(objectWriter)
         objectOutput.toString() == '{"boolean":true,"double":2.5,"long":7,"null":null}'
+    }
+
+    void "the nesting depth is the wrapped writer's"() {
+        given:
+        def writer = new PathCapturingJSONWriterWrapper(new JSONWriter(new StringWriter()))
+
+        when:
+        writer.object().key('list').array()
+
+        then:
+        writer.nestingDepth() == 2
     }
 
     void "public raw append delegates to the wrapped writer and comma writes nothing"() {
@@ -111,7 +123,7 @@ class PathCapturingJSONWriterWrapperApiSpec extends Specification {
         result.is(writer)
         output.toString() == '[true]'
         commaOutput.toString() == ''
-        writer.getCurrentStrackReference() == ''
+        writer.getCurrentStackReference() == ''
     }
 
     void "delegated raw append rejects null"() {
