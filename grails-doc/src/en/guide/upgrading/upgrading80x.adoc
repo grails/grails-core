@@ -4843,10 +4843,10 @@ With `DISCRIMINATOR` multi-tenancy, GORM for MongoDB, GORM for Neo4j and GORM's 
 ==== 88. Java 25 Memory Requirements
 
 Grails 8 supports Java 25 (the next LTS after Java 21).
-Java 25 uses more off-heap memory than Java 21, and the most significant change is that the **metaspace is now unbounded by default**.
-On Java 21 and earlier, the JVM imposed an initial high-water mark of approximately 12 MB on metaspace growth; on Java 25 there is no upper limit unless you set one explicitly.
+Both Java 21 and Java 25 leave metaspace unlimited by default unless you set an explicit ceiling with `-XX:MaxMetaspaceSize`; this default has been unchanged since JDK 8.
+On both versions, `-XX:MetaspaceSize` sets the initial high-water mark that triggers garbage collection, not a limit on metaspace growth. The JVM adjusts this threshold according to metadata usage.
 
-A Grails application loads a large number of classes — plugins, Hibernate entity mappings, GSP-compiled views, Spring beans — so metaspace can grow well beyond what earlier JDKs allowed without intervention.
+A Grails application loads a large number of classes — plugins, Hibernate entity mappings, GSP-compiled views, Spring beans — so metaspace can account for a significant part of the process's native memory on either JDK.
 In a container environment this is especially important: the heap limit (`-Xmx` or `-XX:MaxRAMPercentage`) does not cover metaspace, so a container sized only for the heap can be killed by the container runtime's OOM killer when metaspace grows beyond the remaining native memory budget.
 
 **What to do when running on Java 25:**
@@ -4871,6 +4871,5 @@ The `-XX:+/-UseCompressedClassPointers` flag is deprecated in Java 25 and will b
 
 * If your startup scripts pass `-XX:+UseCompressedClassPointers` (the default), remove it — it is superfluous.
 * If they pass `-XX:-UseCompressedClassPointers` to disable compressed class pointers, remove it.
-If you encounter class-space exhaustion after removing it, increase the class space with `-XX:CompressedClassSpaceSize=4g` instead.
 
 See <<java25-memory,Java 25 Memory Considerations>> in the deployment guide for full details, including systemd service unit examples and guidance on the metaspace free-ratio flags.
