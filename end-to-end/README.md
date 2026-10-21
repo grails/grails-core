@@ -124,10 +124,12 @@ image is not a Grails 8 capability and this module is not on that branch.
 **A GraalVM JDK, and not necessarily the one that published the framework.** `GRAALVM_HOME` and
 `JAVA_HOME` must point at a GraalVM before the image is built; `toolchainDetection = false` makes the
 plugin honour it rather than resolving a toolchain, so the publish JDK and the image JDK do not have
-to agree. Use GraalVM 25 or later: on the 21 line `nativeCompile` fails during "Initializing" with
-`Could not find target method: ...IndyInterface.invalidateSwitchPoints()`, because GraalVM's bundled
-Groovy substitution targets a method Groovy 4+ removed
-([oracle/graal#10200](https://github.com/oracle/graal/issues/10200), fixed in the 25 line). What must
+to agree. Use GraalVM 25.2 or later. GraalVM 21, and GraalVM 25 up to CE 25.0.2, fail `nativeCompile`
+during "Initializing" with `Could not find target method: ...IndyInterface.invalidateSwitchPoints()`,
+because their bundled Groovy substitution targets a method Groovy 4+ removed
+([oracle/graal#10200](https://github.com/oracle/graal/issues/10200)); 25.2.4 builds the image. GraalVM
+releases after CE 25.0.2 are numbered by GraalVM version rather than JDK version, so ask for the
+GraalVM release itself: `25.2.4-graalce` with SDKMAN, or `version: '25.2'` with `setup-graalvm`. What must
 not happen is publishing on a JDK *newer* than the one the image is built with: `GroovyCompile` has
 no `release` option, so the Groovy sources in `grails-gradle` are compiled for the running JDK, and a
 newer class file version makes the image fail at *configuration* time, naming a framework class as

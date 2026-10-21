@@ -33,7 +33,7 @@
 # fixture carries its own pin. The steps below read both out of those files rather than relying
 # on Gradle toolchain auto-detection.
 #
-# A third, GraalVM 25, builds the native-i18n image at the end of the job, from the same published
+# A third, GraalVM 25.2, builds the native-i18n image at the end of the job, from the same published
 # artifacts.
 name: "End to End"
 on:
@@ -165,13 +165,18 @@ jobs:
         uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
           distribution: graalvm-community
+          # The GraalVM release, not just the JDK: a java-version alone resolves to the last release tagged
+          # by JDK version, CE 25.0.2, which still cannot compile Groovy 4 or later. Releases since are
+          # tagged by GraalVM version, which is what this selects.
+          version: '25.2'
           java-version: '25'
           set-java-home: 'false'
           check-for-updates: 'false'
       - name: "🧪 Build and run the native-i18n image"
         # The native half of native-i18n: compile the application to a binary with no recorded
-        # metadata and resolve every message bundle from it. GraalVM 25 or later, because the 21 line
-        # cannot compile Groovy 4 or later (oracle/graal#10200); see end-to-end/README.md.
+        # metadata and resolve every message bundle from it. GraalVM 25.2 or later, because GraalVM 21 and
+        # the first GraalVM 25 releases cannot compile Groovy 4 or later (oracle/graal#10200); see
+        # end-to-end/README.md.
         if: ${{ !cancelled() && steps.publish-grails.outcome == 'success' }}
         working-directory: 'end-to-end'
         env:
