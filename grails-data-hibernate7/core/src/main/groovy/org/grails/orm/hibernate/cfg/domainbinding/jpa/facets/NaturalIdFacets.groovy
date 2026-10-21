@@ -16,18 +16,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
- * A multi-column unique key the domain binder puts on a table: its name and its columns in the order it added them.
- * {@link GrailsDomainGenerator} writes it into {@code @Table(uniqueConstraints)}.
+ * The natural identifier the domain binder binds for a root entity: the properties it names, in the order the mapping names
+ * them, and whether the natural identifier may change. {@code GrailsDomainGenerator} writes it as {@code @NaturalId(mutable)}
+ * on each of those properties.
  *
  * @since 9.0
  */
 @CompileStatic
-record UniqueKeyFacets(
-    String name,
-    List<String> columns) {
+record NaturalIdFacets(
+    List<String> propertyNames,
+    boolean mutable) {
 }

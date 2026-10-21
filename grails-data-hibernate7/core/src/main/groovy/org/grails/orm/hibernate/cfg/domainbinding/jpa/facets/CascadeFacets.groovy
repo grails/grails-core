@@ -16,19 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
+import jakarta.persistence.CascadeType
 
 /**
- * The natural identifier the domain binder binds for a root entity: the properties it names, in the order the mapping names
- * them, and whether the natural identifier may change. {@link GrailsDomainGenerator} writes it as {@code @NaturalId(mutable)}
- * on each of those properties.
+ * The cascade the domain binder gives an association, as the annotations state it. The binder's own
+ * {@code CascadeBehaviorFetcher} decides the behavior; this record only splits it into what JPA's
+ * {@code cascade} attribute can say ({@code jpa}), what only Hibernate's {@code @Cascade} can say
+ * ({@code hibernate}: lock, replicate and the orphan delete of a to-one association) and whether
+ * {@code orphanRemoval} is stated on a one-to-one or one-to-many association.
  *
  * @since 9.0
  */
 @CompileStatic
-record NaturalIdFacets(
-    List<String> propertyNames,
-    boolean mutable) {
+record CascadeFacets(
+    List<CascadeType> jpa,
+    List<org.hibernate.annotations.CascadeType> hibernate,
+    boolean orphanRemoval) {
 }

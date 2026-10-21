@@ -40,6 +40,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.binder.ColumnConfigToColumnBin
 import org.grails.orm.hibernate.cfg.domainbinding.binder.NumericColumnConstraintsBinder
 import org.grails.orm.hibernate.cfg.domainbinding.binder.StringColumnConstraintsBinder
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
+import org.grails.orm.hibernate.cfg.domainbinding.jpa.facets.TenantFacets
 import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
 import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher

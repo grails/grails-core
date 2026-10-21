@@ -16,7 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 import org.hibernate.FetchMode
@@ -24,7 +24,7 @@ import org.hibernate.FetchMode
 /**
  * The decisions the domain binder makes for a collection of entities: the associated entity, how the collection is
  * mapped (by the other side's foreign key, by a foreign key column that the owner manages, or through a join table), its
- * key, element and index columns, its fetching, cascade and ordering. {@link GrailsDomainGenerator} writes them into
+ * key, element and index columns, its fetching, cascade and ordering. {@code GrailsDomainGenerator} writes them into
  * {@code @OneToMany}, {@code @ManyToMany}, {@code @JoinColumn}, {@code @JoinTable}, {@code @OrderColumn},
  * {@code @OrderBy}, {@code @Fetch}, {@code @BatchSize}, {@code @Cache}, {@code @Cascade} and {@code @Filter}.
  *
@@ -53,7 +53,7 @@ import org.hibernate.FetchMode
  * {@code index:}, with the names and the column order it gives them: over the key column and, for a collection of enums, the element
  * column too. It is empty when there are none, or when the binder binds no key column for the property (it is mapped by the foreign key of
  * the other side, or the join table maps its key columns). A {@code unique} group on the property creates no key: it names columns of the
- * owner's table, which the table of the collection does not have. {@link GeneratedDomainClassBinder} creates the indexes on the bound
+ * owner's table, which the table of the collection does not have. {@code GeneratedDomainClassBinder} creates the indexes on the bound
  * table, since the inverse side of a many-to-many has no table annotation of its own to state them on.</p>
  *
  * <p>{@code collectionType} is the custom collection type ({@code UserCollectionType}) the mapping's {@code type} names for the collection, and

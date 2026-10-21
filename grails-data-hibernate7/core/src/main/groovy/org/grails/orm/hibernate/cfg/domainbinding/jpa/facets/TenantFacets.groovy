@@ -16,20 +16,23 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.jpa
+package org.grails.orm.hibernate.cfg.domainbinding.jpa.facets
 
 import groovy.transform.CompileStatic
 
 /**
- * The composite identifier the domain binder binds for a root entity ({@code id composite: [...]}): the parts in the order the
- * mapping names them, each with its column facets (a simple property) or its foreign key column facets and association facets
- * (a many-to-one part). The binder builds one embedded identifier component from them, whose columns form the primary key and so
- * are never null. {@link GrailsDomainGenerator} writes each part as an {@code @Id} field of the generated entity, and names
- * a generated key class with {@code @IdClass}.
+ * The multi-tenant filter the domain binder adds to the class of a multi-tenant entity: the name of the global filter
+ * (and of its only parameter), the condition that compares the parameter with the tenant column, and the Java type of
+ * the parameter, which the binder takes from the type of the tenant id property.
+ *
+ * <p>The filter is enabled per session by GORM, never by Hibernate, so it carries no auto-enable and no default
+ * condition. {@code GrailsDomainGenerator} writes it as {@code @Filter} on the entity and as one {@code @FilterDef}.</p>
  *
  * @since 9.0
  */
 @CompileStatic
-record CompositeIdFacets(
-    List<EmbeddedLeaf> parts) {
+record TenantFacets(
+    String filterName,
+    String condition,
+    Class<?> parameterType) {
 }
