@@ -87,6 +87,55 @@ Jackson `JsonMapper`, so a Grails application and a Spring Boot application retu
 render. See the Date and Time Rendering sections of the REST and JSON Views guides, and the upgrade guide for the
 types that render differently than in Grails 7.
 
+==== JSON Responses Through Spring Boot's Jackson Mapper, and RFC 9457 Problems
+
+With `grails.web.rendering.json.spring: true`, `respond` writes JSON through Spring MVC's message converters, with a
+mapper Grails derives from Spring Boot's Jackson `JsonMapper`, so the `spring.jackson.*` settings and the application's
+Jackson modules apply to its responses as they do in a Spring Boot application. `render json: value` writes with the
+same mapper, and `grails.converters.json.legacy: false` makes `grails.converters.JSON` write through Spring Boot's
+mapper as well. Grails 9 keeps Grails 8's JSON by default.
+
+Named Jackson configurations, registered with the `NamedJsonConfigurationRegistry` bean, are selected for each response,
+in place of the thread-local `JSON.use(...)`. Every registry has a `deep` configuration, which writes the associations of
+domain class instances in full:
+
+[source,groovy]
+----
+respond book, jsonConfiguration: 'catalog'
+render json: book, jsonConfiguration: 'deep', excludes: ['isbn']
+----
+
+`respond` writes a Spring `ProblemDetail` as Spring MVC writes one that a handler method returns, with the handler of
+Spring MVC's handler adapter, so the application's `ResponseBodyAdvice` and `ErrorResponse.Interceptor` beans apply to
+it: as `application/problem+json`, or as `application/problem+xml` for a request that asks for a problem in XML where
+the action responds in XML and `jackson-dataformat-xml` is present, with the status the problem carries unless `respond`
+is given one, as a `ResponseEntity` is in Spring MVC. A Spring `ErrorResponse`, such as an `ErrorResponseException`,
+is answered the same way, with its status and headers. `ValidationProblemDetailFactory` creates a problem for
+validation errors.
+
+With `grails.databinding.json.jackson: true`, JSON request bodies are bound as Spring Boot's mapper parses them, with its
+`spring.jackson.*` parser settings, in place of Groovy's `JsonSlurper`.
+
+XML conversion, binding and renderers move to the `grails-xml` module, which the Grails 9 web starter and
+`grails-web-boot` still bring, and which a JSON-only application can exclude. Grails reads the `Accept` and
+`Content-Type` headers with Spring's media type parser, so media type names match whatever their case.
+
+With `grails.exceptionresolver.springHandlers: true`, which Grails 10 makes the default, an exception a controller
+action throws is resolved first as Spring MVC resolves one a handler method throws: by the `@ExceptionHandler` methods
+of the controller and of the `@ControllerAdvice` beans that apply to it, Spring Boot's handler of
+`spring.mvc.problemdetails.enabled` among them, which answers the exceptions of Spring MVC with RFC 9457 problems. See
+xref:theWebLayer#controllerExceptionHandling[Declarative Controller Exception Handling].
+
+An action can return what a Spring MVC handler method returns to write the response, such as a `ResponseEntity`, a
+`ProblemDetail` or a `StreamingResponseBody`, and Spring MVC writes it with the return value handlers of its handler
+adapter, the `ResponseBodyAdvice` beans that apply to the controller, and the action's `@JsonView` and
+`@ResponseStatus`. With `grails.controllers.responseBody: true`, which Grails 10 makes the default, so does any value of
+an action annotated `@ResponseBody`, a `CompletableFuture` it returns included. The `@JsonView` of an action also
+selects the properties `respond` writes through Spring MVC. See
+xref:theWebLayer#springResponses[Returning Spring MVC Responses].
+
+See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 3 to 10 and 12 to 15.
+
 ==== Hibernate 7 Application Generation
 
 Grails Forge can now generate applications configured for Grails Data with Hibernate 7.
