@@ -26,12 +26,11 @@ class SearchController {
     static allowedMethods = [results: 'GET']
 
     def results() {
-        // Preserve the reproducer's template name: Grails resolves it to __results.gsp.
-        render(template: '_results', model: [results: ['Grails', 'Groovy', 'Spring Boot']])
+        render(template: 'results', model: [results: ['Grails', 'Groovy', 'Spring Boot']])
     }
 
     Map resultsWithModel() {
-        render(template: '_results', model: [results: ['Grails', 'Groovy', 'Spring Boot']])
+        render(template: 'results', model: [results: ['Grails', 'Groovy', 'Spring Boot']])
         [results: ['This model must not be rendered']]
     }
 

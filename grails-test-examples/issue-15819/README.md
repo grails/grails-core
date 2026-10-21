@@ -26,9 +26,8 @@ Grails' request filter, and serves a small GSP fragment from `/search/results`.
 Keep the fragment small and do not flush the response: committing it can mask
 the unwanted conventional view resolution that caused the original failure.
 
-There is deliberately no `results.gsp` or `resultsWithModel.gsp`. Both actions
-must render only `__results.gsp`, whether the action returns null or a Map and
-whether the request is AJAX or a normal GET. The tests also cover text rendering,
+There is deliberately no `results.gsp` or `resultsWithModel.gsp`. The tests cover
+both null and Map action returns with AJAX and normal GET requests, text rendering,
 the reproducer's GET-only restriction, explicit view rendering, conventional
 model rendering, and model rendering with an error status.
 

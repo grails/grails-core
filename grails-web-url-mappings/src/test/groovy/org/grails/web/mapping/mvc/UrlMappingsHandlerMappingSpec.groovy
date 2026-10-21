@@ -347,11 +347,12 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec {
         ctx.close()
 
         where:
-        actionName         | resultDesc                                                    | expectedStatus | expectedLocation                | expectedBody
-        'renderText'       | 'null (render(text:) returns null)'                            | 200            | null                            | 'hello'
-        'renderTextWithMap' | 'Map (render(text:) called, action also returns a Map)'        | 200            | null                            | 'hello'
-        'redirectWithMap'   | 'Map (redirect() issued, action also returns a Map)'           | 302            | 'http://example.com/redirected' | ''
-        'committedWithMap'  | 'Map (response already committed, action also returns a Map)' | 200            | null                            | 'already committed'
+        actionName            | resultDesc                                                    | expectedStatus | expectedLocation                | expectedBody
+        'renderText'          | 'null (render(text:) returns null)'                            | 200            | null                            | 'hello'
+        'renderTextWithMap'    | 'Map (render(text:) called, action also returns a Map)'        | 200            | null                            | 'hello'
+        'renderStatusWithMap'  | 'Map (render(status:) called without a body)'                  | 404            | null                            | ''
+        'redirectWithMap'      | 'Map (redirect() issued, action also returns a Map)'           | 302            | 'http://example.com/redirected' | ''
+        'committedWithMap'     | 'Map (response already committed, action also returns a Map)' | 200            | null                            | 'already committed'
     }
 
     @Issue('https://github.com/apache/grails-core/issues/15819')
@@ -594,6 +595,12 @@ class FooController implements Controller {
     def renderTextWithMap() {
         render(text: 'hello')
         [foo: 'bar']
+    }
+
+    @Action
+    def renderStatusWithMap() {
+        render(status: 404)
+        [message: 'probe']
     }
 
     @Action

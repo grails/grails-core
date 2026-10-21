@@ -441,7 +441,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest {
      *
      * @return {@code true} if no {@code render()} call has cleared the flag; {@code false} if
      *         {@code render()} (other than {@code render(view:)}) has already handled the response
-     * @since 8.0
+     * @since 8.0.1
      */
     public boolean isRenderViewRequested() {
         return renderView;

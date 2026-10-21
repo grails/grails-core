@@ -32,7 +32,7 @@ import org.apache.grails.testing.http.client.HttpClientSupport
 class ResponseRendererFunctionalSpec extends Specification implements HttpClientSupport {
 
     @Unroll
-    void '#action renders only the template fragment with ajax=#ajax'() {
+    void '#action renders only the _results.gsp template fragment with ajax=#ajax'() {
         when:
         def response = http(ajax ? ['X-Requested-With': 'XMLHttpRequest'] : [:], "/search/$action")
 
