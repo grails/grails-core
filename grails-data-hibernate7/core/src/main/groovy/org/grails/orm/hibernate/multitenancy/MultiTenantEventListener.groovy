@@ -88,8 +88,7 @@ class MultiTenantEventListener implements PersistenceEventListener {
                         if (currentId != null) {
                             try {
                                 if (Tenants.isWithoutId(hibernateDatastore)) {
-                                    currentId = (Serializable)
-                                            persistenceEvent.getEntityAccess().getProperty(tenantId.getName());
+                                    currentId = (Serializable) persistenceEvent.getEntityAccess().getProperty(tenantId.getName());
                                 }
                                 persistenceEvent.getEntityAccess().setProperty(tenantId.getName(), currentId);
                             } catch (Exception e) {
