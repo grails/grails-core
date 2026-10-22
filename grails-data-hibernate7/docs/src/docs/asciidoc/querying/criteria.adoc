@@ -421,12 +421,12 @@ class MyCriteriaExtensions {
 ----
 
 The handlers convert them. A criterion handler is given the query, its root, the Hibernate `CriteriaBuilder`, the
-criterion and the _query context_. Through the context, `getFullyQualifiedPath` resolves a property path the way
-the built-in criteria do: `alias.property`, for an alias created with `createAlias`, or `association.property`
+criterion and the query's `QueryPathContext`. Through the context, `getFullyQualifiedPath` resolves a property path
+the way the built-in criteria do: `alias.property`, for an alias created with `createAlias`, or `association.property`
 becomes a path on the join GORM created for that association, so a custom criterion and a built-in one on the
 same association restrict the same row rather than each joining the association again. An order handler is given
 the query, its root, the criteria builder, the order and the context, and returns the JPA order, or `null` to leave
-the order out, for example on a query whose result is a count:
+the order out. A query whose result is a count leaves every order out by itself, so no handler runs for it:
 
 [source,groovy]
 ----

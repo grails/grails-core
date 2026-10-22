@@ -283,6 +283,11 @@ class JpaCriteriaQueryCreator<T> {
 
     @SuppressWarnings("unchecked")
     private void assignOrderBy(CriteriaQuery<?> cq, JpaQueryContext context) {
+        if (isCountOnly()) {
+            // a count returns one row whatever the order, and an ORDER BY on a column that is not aggregated fails
+            // on H2 and most other databases, so a count query leaves the criteria's orders out, handled ones too
+            return;
+        }
         List<Query.Order> orders = detachedCriteria.orders;
         if (!orders.isEmpty()) {
             List<jakarta.persistence.criteria.Order> jpaOrders = [];
@@ -316,6 +321,17 @@ class JpaCriteriaQueryCreator<T> {
             }
             cq.orderBy(jpaOrders as jakarta.persistence.criteria.Order[]);
         }
+    }
+
+    /**
+     * Whether the query selects nothing but counts, as {@code count()} and {@code countDistinct()} set it up: such a
+     * query has one row, so the criteria's orders do not apply to it. A query that groups and counts keeps its orders.
+     */
+    private boolean isCountOnly() {
+        List<Query.Projection> projectionList = projections.projectionList;
+        return !projectionList.isEmpty() && projectionList.every { Query.Projection projection ->
+            projection instanceof Query.CountProjection || projection instanceof Query.CountDistinctProjection
+        };
     }
 
     private void discoverAliases(List<Query.Criterion> criteria, JpaQueryContext context) {

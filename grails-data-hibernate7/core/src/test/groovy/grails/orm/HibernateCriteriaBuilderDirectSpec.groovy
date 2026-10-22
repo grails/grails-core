@@ -417,6 +417,20 @@ class HibernateCriteriaBuilderDirectSpec extends HibernateGormDatastoreSpec {
         and: "two children matching one criterion each are not: the handler used the join GORM created, not a second one"
         different.empty
 
+        when: "the custom criterion comes before the association block"
+        List<CriteriaTestEntity> bothReversed = new DetachedCriteria(CriteriaTestEntity).build {
+            add(new CriteriaTestPathLike('children.name', 'K%'))
+            children { eq('name', 'Kid') }
+        }.list()
+        List<CriteriaTestEntity> differentReversed = new DetachedCriteria(CriteriaTestEntity).build {
+            add(new CriteriaTestPathLike('children.name', 'O%'))
+            children { eq('name', 'Kid') }
+        }.list()
+
+        then: "the handler creates the join from the discovered alias and the association block reuses it"
+        bothReversed*.name == ['A']
+        differentReversed.empty
+
         cleanup:
         PredicateGenerator.clearCustomCriterionHandlers()
     }
@@ -435,6 +449,18 @@ class HibernateCriteriaBuilderDirectSpec extends HibernateGormDatastoreSpec {
 
         then: "amounts 10, 20, 30 and 40 give remainders 10, 5, 0 and 10, and the name breaks the tie"
         names == ['A', 'D', 'B', 'C']
+
+        when: "the same orders go through a detached criteria"
+        List<String> detached = new DetachedCriteria(CriteriaTestEntity).build {
+            order(new CriteriaTestRemainderOrder())
+            order('name', 'asc')
+        }.list()*.name
+
+        then: "the handler converts the order there too"
+        detached == ['A', 'D', 'B', 'C']
+
+        and: "a count with the handled order counts every row, because a count query leaves its orders out"
+        new DetachedCriteria(CriteriaTestEntity).build { order(new CriteriaTestRemainderOrder()) }.count() == 4L
 
         when: "the handler returns null"
         PredicateGenerator.registerOrderHandler(CriteriaTestRemainderOrder) { query, root, cb, order, context -> null }

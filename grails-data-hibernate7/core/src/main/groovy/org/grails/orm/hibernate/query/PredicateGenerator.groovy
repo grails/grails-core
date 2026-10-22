@@ -19,7 +19,6 @@
 package org.grails.orm.hibernate.query
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
 
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
@@ -87,7 +86,7 @@ class PredicateGenerator {
 
         /**
          * Converts a criterion with the context of the query it belongs to. The context resolves a property path
-         * the way the built-in criteria do: {@link JpaQueryContext#getFullyQualifiedPath(String)} turns
+         * the way the built-in criteria do: {@link QueryPathContext#getFullyQualifiedPath(String)} turns
          * {@code alias.property}, for an alias created with {@code createAlias}, or {@code association.property}
          * into a path on the join GORM created for that association, so a custom criterion and a GORM criterion on
          * the same association restrict the same row instead of each joining the association again. This default
@@ -107,7 +106,7 @@ class PredicateGenerator {
             From<?, ?> root,
             HibernateCriteriaBuilder criteriaBuilder,
             Query.Criterion criterion,
-            JpaQueryContext context
+            QueryPathContext context
         ) {
             handle(criteriaQuery, root, criteriaBuilder, criterion)
         }
@@ -116,7 +115,7 @@ class PredicateGenerator {
 
     /**
      * A {@link CriterionHandler} that is given the context of the query, through which it resolves property paths
-     * with {@link JpaQueryContext#getFullyQualifiedPath(String)}. A closure with five parameters is coerced to it:
+     * with {@link QueryPathContext#getFullyQualifiedPath(String)}. A closure with five parameters is coerced to it:
      * <pre>
      *     PredicateGenerator.registerCriterionHandler(MyCriterion, { query, root, cb, criterion, context -&gt;
      *         def c = criterion as MyCriterion
@@ -135,7 +134,7 @@ class PredicateGenerator {
             From<?, ?> root,
             HibernateCriteriaBuilder criteriaBuilder,
             Query.Criterion criterion,
-            JpaQueryContext context
+            QueryPathContext context
         )
 
         /**
@@ -211,7 +210,7 @@ class PredicateGenerator {
             From<?, ?> root,
             HibernateCriteriaBuilder criteriaBuilder,
             Query.Order order,
-            JpaQueryContext context
+            QueryPathContext context
         )
 
     }
@@ -237,10 +236,23 @@ class PredicateGenerator {
     public static final Map<Class<? extends Query.Order>, OrderHandler> CUSTOM_ORDER_HANDLERS =
         new ConcurrentHashMap<>()
 
-    private static final AtomicBoolean SERVICE_LOADERS_INITIALIZED = new AtomicBoolean(false)
+    private static final Object SERVICE_LOADER_LOCK = new Object()
 
+    private static volatile boolean serviceLoadersInitialized = false
+
+    /**
+     * Loads the handler providers once. A caller that arrives while another thread is loading them waits until the
+     * loading is complete, so no query decides on a handler before the discovered ones are registered. A discovered
+     * handler never replaces one registered in code: the maps keep the first registration.
+     */
     private static void loadServiceProviders() {
-        if (SERVICE_LOADERS_INITIALIZED.compareAndSet(false, true)) {
+        if (serviceLoadersInitialized) {
+            return
+        }
+        synchronized (SERVICE_LOADER_LOCK) {
+            if (serviceLoadersInitialized) {
+                return
+            }
             ClassLoader classLoader = Thread.currentThread().contextClassLoader
             for (CriterionHandlerProvider p : ServiceLoader.load(CriterionHandlerProvider, classLoader)) {
                 CUSTOM_HANDLERS.putIfAbsent(p.criterionType(), p.criterionHandler())
@@ -248,6 +260,7 @@ class PredicateGenerator {
             for (OrderHandlerProvider p : ServiceLoader.load(OrderHandlerProvider, classLoader)) {
                 CUSTOM_ORDER_HANDLERS.putIfAbsent(p.orderType(), p.orderHandler())
             }
+            serviceLoadersInitialized = true
         }
     }
 
@@ -281,8 +294,10 @@ class PredicateGenerator {
      * @since 10.0
      */
     static void clearCustomOrderHandlers() {
-        CUSTOM_ORDER_HANDLERS.clear()
-        SERVICE_LOADERS_INITIALIZED.set(false)
+        synchronized (SERVICE_LOADER_LOCK) {
+            CUSTOM_ORDER_HANDLERS.clear()
+            serviceLoadersInitialized = false
+        }
     }
 
     /**
@@ -302,8 +317,10 @@ class PredicateGenerator {
      * Useful for test cleanup.
      */
     static void clearCustomCriterionHandlers() {
-        CUSTOM_HANDLERS.clear()
-        SERVICE_LOADERS_INITIALIZED.set(false)
+        synchronized (SERVICE_LOADER_LOCK) {
+            CUSTOM_HANDLERS.clear()
+            serviceLoadersInitialized = false
+        }
     }
 
     private final HibernateCriteriaBuilder criteriaBuilder

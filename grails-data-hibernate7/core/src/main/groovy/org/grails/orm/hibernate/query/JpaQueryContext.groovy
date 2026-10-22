@@ -33,7 +33,7 @@ import jakarta.persistence.criteria.Path;
 // TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
 @SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 @CompileStatic
-class JpaQueryContext implements Cloneable {
+class JpaQueryContext implements Cloneable, QueryPathContext {
 
     private final AliasRegistry aliasRegistry;
     private final JoinTracker joinTracker;
@@ -109,6 +109,7 @@ class JpaQueryContext implements Cloneable {
         this.parent = parent;
     }
 
+    @Override
     From<?, ?> getRoot() {
         return joinTracker.root;
     }
@@ -172,6 +173,7 @@ class JpaQueryContext implements Cloneable {
         return expr;
     }
 
+    @Override
     Expression<?> getFullyQualifiedExpression(String path) {
         if (parent != null) {
             if ('{alias}' == path) {
@@ -184,6 +186,7 @@ class JpaQueryContext implements Cloneable {
         return resolver.resolve(path);
     }
 
+    @Override
     Path<?> getFullyQualifiedPath(String path) {
         if (parent != null) {
             if ('{alias}' == path) {
