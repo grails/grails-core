@@ -45,11 +45,11 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     public static final String DEFAULT_DATABINDING_WHITELIST = '\$defaultDatabindingWhiteList'
     public static final String LEGACY_DATABINDING_WHITELIST = '\$legacyDatabindingWhiteList'
     public static final String NO_BINDABLE_PROPERTIES = '\$_NO_BINDABLE_PROPERTIES_\$'
-    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES = new HashMap<>()
+    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES = [:]
 
-    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES = new HashMap<>()
+    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES = [:]
 
-    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES = new HashMap<>()
+    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES = [:]
 
     private static final List<ClassNode> SIMPLE_TYPES = [
             new ClassNode(Boolean),
@@ -96,7 +96,7 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
 
     private void addWhitelistField(final ClassNode classNode, final String fieldName, final Set<String> propertyNamesToIncludeInWhiteList, final boolean denyWhenEmpty) {
         final ListExpression listExpression = new ListExpression()
-        if (propertyNamesToIncludeInWhiteList.size() > 0) {
+        if (!propertyNamesToIncludeInWhiteList.isEmpty()) {
             for (String propertyName in propertyNamesToIncludeInWhiteList) {
                 listExpression.addExpression(new ConstantExpression(propertyName))
 
@@ -105,7 +105,7 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 if (declaredField != null) {
                     final ClassNode type = declaredField.getType()
                     if (type != null) {
-                        isSimpleType = SIMPLE_TYPES.contains(type)
+                        isSimpleType = type in SIMPLE_TYPES
                     }
                 }
                 if (!isSimpleType) {
@@ -125,7 +125,7 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     private FieldNode getDeclaredFieldInInheritanceHierarchy(final ClassNode classNode, String propertyName) {
         FieldNode fieldNode = classNode.getDeclaredField(propertyName)
         if (fieldNode == null) {
-            if (!classNode.getSuperClass().equals(new ClassNode(Object))) {
+            if (classNode.getSuperClass() != new ClassNode(Object)) {
                 return getDeclaredFieldInInheritanceHierarchy(classNode.getSuperClass(), propertyName)
             }
         }
@@ -135,7 +135,7 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     private Set<String> getPropertyNamesToIncludeInWhiteListForParentClass(final SourceUnit sourceUnit, final ClassNode parentClassNode) {
         final Set<String> propertyNames
         if (CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.containsKey(parentClassNode)) {
-            propertyNames = CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.get(parentClassNode)
+            propertyNames = CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES[parentClassNode]
         } else {
             propertyNames = getPropertyNamesToIncludeInWhiteList(sourceUnit, parentClassNode)
         }
@@ -146,22 +146,22 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         if (!CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES.containsKey(parentClassNode)) {
             getPropertyNamesToIncludeInWhiteList(sourceUnit, parentClassNode)
         }
-        final Set<String> explicitlyBindable = CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES.get(parentClassNode)
-        return explicitlyBindable != null ? explicitlyBindable : new HashSet<>()
+        final Set<String> explicitlyBindable = CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES[parentClassNode]
+        return explicitlyBindable != null ? explicitlyBindable : ([] as Set)
     }
 
     private Set<String> getPropertyNamesToIncludeInWhiteList(final SourceUnit sourceUnit, final ClassNode classNode) {
-        final Set<String> propertyNamesToIncludeInWhiteList = new HashSet<>()
-        final Set<String> unbindablePropertyNames = new HashSet<>()
-        final Set<String> bindablePropertyNames = new HashSet<>()
+        final Set<String> propertyNamesToIncludeInWhiteList = [] as Set
+        final Set<String> unbindablePropertyNames = [] as Set
+        final Set<String> bindablePropertyNames = [] as Set
 
         // Special properties (id/version/dateCreated/lastUpdated) made bindable via an explicit constraint
         // somewhere in the class hierarchy. These are tracked separately so the inherited-whitelist filter
         // below can tell an explicit bindable: true from a special property that merely landed in a non-domain
         // parent's whitelist by default (for example id/version injected onto a @DirtyCheck base class).
-        final Set<String> explicitlyBindableSpecialPropertyNames = new HashSet<>()
+        final Set<String> explicitlyBindableSpecialPropertyNames = [] as Set
         final boolean isDomainClass = GrailsASTUtils.isDomainClass(classNode, sourceUnit)
-        if (!classNode.getSuperClass().equals(new ClassNode(Object))) {
+        if (classNode.getSuperClass() != new ClassNode(Object)) {
             final Set<String> parentClassPropertyNames = getPropertyNamesToIncludeInWhiteListForParentClass(sourceUnit, classNode.getSuperClass())
             final Set<String> parentExplicitlyBindableSpecialPropertyNames = getExplicitlyBindableSpecialPropertyNamesForParentClass(sourceUnit, classNode.getSuperClass())
             explicitlyBindableSpecialPropertyNames.addAll(parentExplicitlyBindableSpecialPropertyNames)
@@ -169,8 +169,8 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 // A domain class never binds its special properties (id/version/dateCreated/lastUpdated) by
                 // default, so don't inherit them from a non-domain parent such as a @DirtyCheck base class.
                 // An explicit bindable: true constraint declared up the hierarchy is honoured, however.
-                if (isDomainClass && DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(parentPropertyName) &&
-                        !parentExplicitlyBindableSpecialPropertyNames.contains(parentPropertyName)) {
+                if (isDomainClass && parentPropertyName in DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT &&
+                        !(parentPropertyName in parentExplicitlyBindableSpecialPropertyNames)) {
                     continue
                 }
                 bindablePropertyNames.add(parentPropertyName)
@@ -189,20 +189,20 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                     final Map<String, Expression> mapEntryExpressions = constraintConfig.getValue()
                     for (Map.Entry<String, Expression> entry in mapEntryExpressions.entrySet()) {
                         final String constraintName = entry.getKey()
-                        if (BINDABLE_CONSTRAINT_NAME.equals(constraintName)) {
+                        if (constraintName == BINDABLE_CONSTRAINT_NAME) {
                             final Expression valueExpression = entry.getValue()
                             Boolean bindableValue = null
                             if (valueExpression instanceof ConstantExpression) {
-                                final Object constantValue = ((ConstantExpression) valueExpression).getValue()
+                                final Object constantValue = valueExpression.getValue()
                                 if (constantValue instanceof Boolean) {
-                                    bindableValue = (Boolean) constantValue
+                                    bindableValue = constantValue
                                 }
                             }
                             if (bindableValue != null) {
-                                if (Boolean.TRUE.equals(bindableValue)) {
+                                if (Boolean.TRUE == bindableValue) {
                                     unbindablePropertyNames.remove(propertyName)
                                     bindablePropertyNames.add(propertyName)
-                                    if (DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(propertyName)) {
+                                    if (propertyName in DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT) {
                                         explicitlyBindableSpecialPropertyNames.add(propertyName)
                                     }
                                 } else {
@@ -211,9 +211,10 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                                     explicitlyBindableSpecialPropertyNames.remove(propertyName)
                                 }
                             } else {
-                                GrailsASTUtils.warning(sourceUnit, valueExpression, 'The bindable constraint for property [' +
-                                        propertyName + '] in class [' + classNode.getName() +
-                                        '] has a value which is not a boolean literal and will be ignored.')
+                                GrailsASTUtils.warning(sourceUnit, valueExpression,
+                                        "The bindable constraint for property [$propertyName] in class " +
+                                                "[${classNode.getName()}] has a value which is not a boolean " +
+                                                'literal and will be ignored.')
                             }
                         }
                     }
@@ -222,15 +223,15 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         }
 
         propertyNamesToIncludeInWhiteList.addAll(bindablePropertyNames)
-        CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList)
-        CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES.put(classNode, explicitlyBindableSpecialPropertyNames)
+        CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES[classNode] = propertyNamesToIncludeInWhiteList
+        CLASS_NODE_TO_EXPLICITLY_BINDABLE_SPECIAL_PROPERTY_NAMES[classNode] = explicitlyBindableSpecialPropertyNames
         return propertyNamesToIncludeInWhiteList
     }
 
     private Set<String> getLegacyPropertyNamesToIncludeInWhiteListForParentClass(final SourceUnit sourceUnit, final ClassNode parentClassNode) {
         final Set<String> propertyNames
         if (CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES.containsKey(parentClassNode)) {
-            propertyNames = CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES.get(parentClassNode)
+            propertyNames = CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES[parentClassNode]
         } else {
             propertyNames = getLegacyPropertyNamesToIncludeInWhiteList(sourceUnit, parentClassNode)
         }
@@ -238,19 +239,19 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     }
 
     private Set<String> getLegacyPropertyNamesToIncludeInWhiteList(final SourceUnit sourceUnit, final ClassNode classNode) {
-        final Set<String> propertyNamesToIncludeInWhiteList = new HashSet<>()
-        final Set<String> unbindablePropertyNames = new HashSet<>()
-        final Set<String> bindablePropertyNames = new HashSet<>()
+        final Set<String> propertyNamesToIncludeInWhiteList = [] as Set
+        final Set<String> unbindablePropertyNames = [] as Set
+        final Set<String> bindablePropertyNames = [] as Set
 
-        final Set<String> explicitlyBindableSpecialPropertyNames = new HashSet<>()
+        final Set<String> explicitlyBindableSpecialPropertyNames = [] as Set
         final boolean isDomainClass = GrailsASTUtils.isDomainClass(classNode, sourceUnit)
-        if (!classNode.getSuperClass().equals(new ClassNode(Object))) {
+        if (classNode.getSuperClass() != new ClassNode(Object)) {
             final Set<String> parentClassPropertyNames = getLegacyPropertyNamesToIncludeInWhiteListForParentClass(sourceUnit, classNode.getSuperClass())
             final Set<String> parentExplicitlyBindableSpecialPropertyNames = getExplicitlyBindableSpecialPropertyNamesForParentClass(sourceUnit, classNode.getSuperClass())
             explicitlyBindableSpecialPropertyNames.addAll(parentExplicitlyBindableSpecialPropertyNames)
             for (final String parentPropertyName in parentClassPropertyNames) {
-                if (isDomainClass && DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(parentPropertyName) &&
-                        !parentExplicitlyBindableSpecialPropertyNames.contains(parentPropertyName)) {
+                if (isDomainClass && parentPropertyName in DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT &&
+                        !(parentPropertyName in parentExplicitlyBindableSpecialPropertyNames)) {
                     continue
                 }
                 bindablePropertyNames.add(parentPropertyName)
@@ -269,20 +270,20 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                     final Map<String, Expression> mapEntryExpressions = constraintConfig.getValue()
                     for (Map.Entry<String, Expression> entry in mapEntryExpressions.entrySet()) {
                         final String constraintName = entry.getKey()
-                        if (BINDABLE_CONSTRAINT_NAME.equals(constraintName)) {
+                        if (constraintName == BINDABLE_CONSTRAINT_NAME) {
                             final Expression valueExpression = entry.getValue()
                             Boolean bindableValue = null
                             if (valueExpression instanceof ConstantExpression) {
-                                final Object constantValue = ((ConstantExpression) valueExpression).getValue()
+                                final Object constantValue = valueExpression.getValue()
                                 if (constantValue instanceof Boolean) {
-                                    bindableValue = (Boolean) constantValue
+                                    bindableValue = constantValue
                                 }
                             }
                             if (bindableValue != null) {
-                                if (Boolean.TRUE.equals(bindableValue)) {
+                                if (Boolean.TRUE == bindableValue) {
                                     unbindablePropertyNames.remove(propertyName)
                                     bindablePropertyNames.add(propertyName)
-                                    if (DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(propertyName)) {
+                                    if (propertyName in DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT) {
                                         explicitlyBindableSpecialPropertyNames.add(propertyName)
                                     }
                                 } else {
@@ -291,9 +292,10 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                                     explicitlyBindableSpecialPropertyNames.remove(propertyName)
                                 }
                             } else {
-                                GrailsASTUtils.warning(sourceUnit, valueExpression, 'The bindable constraint for property [' +
-                                        propertyName + '] in class [' + classNode.getName() +
-                                        '] has a value which is not a boolean literal and will be ignored.')
+                                GrailsASTUtils.warning(sourceUnit, valueExpression,
+                                        "The bindable constraint for property [$propertyName] in class " +
+                                                "[${classNode.getName()}] has a value which is not a boolean " +
+                                                'literal and will be ignored.')
                             }
                         }
                     }
@@ -307,8 +309,8 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         final List<FieldNode> fields = classNode.getFields()
         for (FieldNode fieldNode in fields) {
             final String fieldName = fieldNode.getName()
-            if ((!unbindablePropertyNames.contains(fieldName)) &&
-                    (bindablePropertyNames.contains(fieldName) || shouldFieldBeInWhiteList(fieldNode, fieldsInTransientsList, isDomainClass))) {
+            if (!(fieldName in unbindablePropertyNames) &&
+                    (fieldName in bindablePropertyNames || shouldFieldBeInWhiteList(fieldNode, fieldsInTransientsList, isDomainClass))) {
                 propertyNamesToIncludeInWhiteList.add(fieldName)
             }
         }
@@ -316,18 +318,18 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         final Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap()
         for (Map.Entry<String, MethodNode> methodEntry in declaredMethodsMap.entrySet()) {
             final MethodNode value = methodEntry.getValue()
-            if (classNode.equals(value.getDeclaringClass())) {
+            if (classNode == value.getDeclaringClass()) {
                 Parameter[] parameters = value.getParameters()
                 if (parameters != null && parameters.length == 1) {
                     final String methodName = value.getName()
                     if (methodName.startsWith('set')) {
                         final Parameter parameter = parameters[0]
                         final ClassNode paramType = parameter.getType()
-                        if (!paramType.equals(new ClassNode(Object))) {
+                        if (paramType != new ClassNode(Object)) {
                             final String restOfMethodName = methodName.substring(3)
                             final String propertyName = GrailsNameUtils.getPropertyName(restOfMethodName)
-                            if (!unbindablePropertyNames.contains(propertyName) &&
-                                    (!isDomainClass || !DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(propertyName))) {
+                            if (!(propertyName in unbindablePropertyNames) &&
+                                    (!isDomainClass || !(propertyName in DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT))) {
                                 propertyNamesToIncludeInWhiteList.add(propertyName)
                             }
                         }
@@ -335,10 +337,10 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 }
             }
         }
-        CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList)
+        CLASS_NODE_TO_LEGACY_WHITE_LIST_PROPERTY_NAMES[classNode] = propertyNamesToIncludeInWhiteList
         Map<String, ClassNode> allAssociationMap = GrailsASTUtils.getAllAssociationMap(classNode)
         for (String associationName in allAssociationMap.keySet()) {
-            if (!propertyNamesToIncludeInWhiteList.contains(associationName) && !unbindablePropertyNames.contains(associationName)) {
+            if (!(associationName in propertyNamesToIncludeInWhiteList) && !(associationName in unbindablePropertyNames)) {
                 propertyNamesToIncludeInWhiteList.add(associationName)
             }
         }
@@ -351,11 +353,11 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         final String fieldName = fieldNode.getName()
         if ((modifiers & Modifier.STATIC) != 0 ||
                 (modifiers & Modifier.TRANSIENT) != 0 ||
-                fieldsInTransientsList.contains(fieldName) ||
-                (fieldNode.getType().equals(new ClassNode(Object)) && !fieldNode.getType().isUsingGenerics())) {
+                fieldName in fieldsInTransientsList ||
+                (fieldNode.getType() == new ClassNode(Object) && !fieldNode.getType().isUsingGenerics())) {
             shouldInclude = false
         } else if (isDomainClass) {
-            if (DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(fieldName)) {
+            if (fieldName in DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT) {
                 shouldInclude = false
             }
         }
@@ -363,19 +365,19 @@ class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     }
 
     private Set<String> getPropertyNamesExpressedInTransientsList(final ClassNode classNode) {
-        final Set<String> transientFields = new HashSet<>()
+        final Set<String> transientFields = [] as Set
         final FieldNode transientsField = classNode.getField('transients')
         if (transientsField != null && transientsField.isStatic()) {
             final Expression initialValueExpression = transientsField.getInitialValueExpression()
             if (initialValueExpression instanceof ListExpression) {
-                final ListExpression le = (ListExpression) initialValueExpression
+                final ListExpression le = initialValueExpression
                 final List<Expression> expressions = le.getExpressions()
                 for (Expression expr in expressions) {
                     if (expr instanceof ConstantExpression) {
-                        final ConstantExpression ce = (ConstantExpression) expr
+                        final ConstantExpression ce = expr
                         final Object contantValue = ce.getValue()
                         if (contantValue instanceof String) {
-                            transientFields.add((String) contantValue)
+                            transientFields.add(contantValue)
                         }
                     }
                 }
