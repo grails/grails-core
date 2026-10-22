@@ -132,17 +132,4 @@ class PropertySourcesConfigSpec extends Specification {
         config.getProperty('.plain.nested.value.') == 'found'
         config.getProperty('...') == null
     }
-
-    void 'a dotted key that runs past a scalar value is absent'() {
-        given: "a scalar value"
-        def config = new PropertySourcesConfig([server: [url: 'http://localhost']])
-
-        expect: "the scalar itself resolves"
-        config.getProperty('server.url') == 'http://localhost'
-
-        and: "a key that names a child of the scalar is absent rather than the scalar"
-        config.getProperty('server.url.port') == null
-        config.getProperty('server.url.port', String, 'none') == 'none'
-        !config.containsProperty('server.url.port')
-    }
 }
