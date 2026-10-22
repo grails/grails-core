@@ -1173,3 +1173,25 @@ has used since Grails 3: the context path is compared case-insensitively althoug
 RFC 9110 section 4.2.3 define paths as case-sensitive, and during a `RequestDispatcher` include the included path is
 matched. Interceptors and the Spring Security plugin follow dispatch on both points because a matcher that disagrees
 with dispatch lets a request reach a controller without its interceptors or restrictions.
+
+==== 19. Only Tenants.withoutId runs without a tenant with DISCRIMINATOR multi-tenancy
+
+With `DISCRIMINATOR` multi-tenancy, only `Tenants.withoutId` and `@WithoutTenant` run without a tenant. A tenant id of `DEFAULT` is a tenant id like any other, whether a `TenantResolver` returns it or it is passed to `Tenants.withId`. Queries return the instances of the tenant `DEFAULT`, and a saved instance gets the tenant id `DEFAULT`.
+
+* Code that relied on a resolver returning `DEFAULT` to work with every tenant has to run inside `Tenants.withoutId` or in a method annotated with `@WithoutTenant`. Examples are `SubDomainTenantResolver` on `localhost` during development, and `new FixedTenantResolver()`.
+* With GORM for MongoDB and GORM's in-memory datastore, queries inside `Tenants.withoutId` still return only the instances of the tenant `DEFAULT`. There, `Tenants.withoutId` only lets a saved instance keep the tenant id that is set on it.
+* With a tenant id property that isn't a `String`, such as a `Long`, a tenant id of `DEFAULT` now fails. A save throws a `TenantException`, and a query with GORM for Hibernate throws an `IllegalArgumentException`. Have the resolver return a tenant id of the property's type.
+* Inside `Tenants.withoutId`, `Tenants.currentId()` returns `DEFAULT`, and `Tenants.withCurrent` and `@CurrentTenant` keep running without a tenant. `Tenants.isWithoutId()` tells whether the current code runs without a tenant id.
+* GORM for Hibernate also restricts a collection of a multi-tenant entity to the current tenant when it is loaded lazily or fetched by join, also when it is a many-to-many collection or a query fetches it by join through another association, and `load` and `proxy` of a multi-tenant entity run a query, as `get` does. Like `get`, they return `null` when no instance is found, instead of a proxy that fails when it is used. A collection of a multi-tenant entity that is mapped with `fetch: 'join'` is loaded eagerly with a select of its own instead, and loading one lazily without a current tenant, outside `Tenants.withoutId`, throws `TenantNotFoundException`.
+* Before a query on an entity that isn't multi-tenant but has a collection of a multi-tenant entity, directly or through its associations, GORM for Hibernate now calls the `TenantResolver` and activates the filter for the current tenant, so that a collection the query fetches by join is restricted. When there is no current tenant, because the resolver throws a `TenantNotFoundException` or returns `null`, such a query runs as before. Any other exception from the resolver fails the query. A query that the resolver runs on an entity that isn't multi-tenant while GORM resolves the tenant does not call the resolver again. A query on a multi-tenant entity does, so a resolver must not run one.
+* A `TenantResolver` that returns `null` now causes a `TenantNotFoundException`, as a resolver that finds no tenant does, in every multi-tenancy mode.
+* The `DATABASE` and `SCHEMA` modes are otherwise unchanged.
+
+==== 20. Lookups by id are restricted to the current tenant with DISCRIMINATOR multi-tenancy
+
+With `DISCRIMINATOR` multi-tenancy, GORM for MongoDB and GORM's in-memory datastore used by unit tests now restrict `get`, `read`, `exists`, `getAll`, `load` and `proxy` to the current tenant, as queries and dynamic finders already were. Previously these methods looked an instance up by its id alone, so they returned an instance that belongs to another tenant. GORM for Hibernate is unchanged: it already restricts `get`, `read`, `exists` and `getAll` to the current tenant, and `load` and `proxy` since the previous note.
+
+* The id of another tenant's instance is treated like an id that does not exist: `get` and `read` return `null`, `exists` returns `false`, `getAll` returns `null` in its place, and the proxy returned by `load` or `proxy` throws when it is initialized.
+* Without a current tenant, these methods throw `TenantNotFoundException`, as a query does. `getAll` without ids still returns an empty list.
+* Inside `Tenants.withoutId { }` a lookup by id is still not restricted to a tenant, and neither is a proxy returned by `load` or `proxy` that is initialized there. As the previous note says, only `withoutId` lifts the restriction: a tenant id of `DEFAULT` restricts a lookup by id to that tenant as it restricts a query.
+* A lookup by id still finds an instance that the session holds for the current tenant, including one that has been saved but not flushed, and it does not flush the session.

@@ -30,6 +30,7 @@ import org.grails.datastore.mapping.multitenancy.AllTenantsResolver
 import org.grails.datastore.mapping.multitenancy.MultiTenancySettings
 import org.grails.datastore.mapping.multitenancy.MultiTenantCapableDatastore
 import org.grails.datastore.mapping.multitenancy.TenantResolver
+import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException
 
 /**
  * Helper methods for working with multi tenancy
@@ -79,10 +80,13 @@ class Tenants {
     }
 
     /**
-     * The current id for the given datastore
+     * The current id for the given datastore. Inside {@link #withoutId(Closure)} it is
+     * {@link ConnectionSource#DEFAULT}.
      *
      * @param multiTenantCapableDatastore The multi tenant capable datastore
      * @return The current id
+     * @throws TenantNotFoundException if no current tenant is found, including when the tenant resolver returns
+     * {@code null}
      */
     static Serializable currentId(MultiTenantCapableDatastore multiTenantCapableDatastore) {
         def tenantId = CurrentTenant.get()
@@ -93,6 +97,9 @@ class Tenants {
             TenantResolver tenantResolver = multiTenantCapableDatastore.getTenantResolver()
             Serializable tenantIdentifier = tenantResolver.resolveTenantIdentifier()
             log.debug('Resolved tenant id [{}] from resolver [{}]', tenantIdentifier, tenantResolver.getClass().simpleName)
+            if (tenantIdentifier == null) {
+                throw new TenantNotFoundException("Tenant resolver [${tenantResolver.getClass().name}] resolved no tenant id")
+            }
             return tenantIdentifier
         }
     }
@@ -105,22 +112,38 @@ class Tenants {
     static Serializable currentId(Class<? extends Datastore> datastoreClass) {
         Datastore datastore = GormEnhancer.findDatastoreByType(datastoreClass)
         if (datastore instanceof MultiTenantCapableDatastore) {
-            MultiTenantCapableDatastore multiTenantCapableDatastore = (MultiTenantCapableDatastore) datastore
-            def tenantId = CurrentTenant.get()
-            if (tenantId != null) {
-                log.debug('Found tenant id [{}] bound to thread local', tenantId)
-                return tenantId
-            }
-            else {
-                TenantResolver tenantResolver = multiTenantCapableDatastore.getTenantResolver()
-                def tenantIdentifier = tenantResolver.resolveTenantIdentifier()
-                log.debug('Resolved tenant id [{}] from resolver [{}]', tenantIdentifier, tenantResolver.getClass().simpleName)
-                return tenantIdentifier
-            }
+            return currentId((MultiTenantCapableDatastore) datastore)
         }
         else {
             throw new UnsupportedOperationException('Datastore implementation does not support multi-tenancy')
         }
+    }
+
+    /**
+     * Whether the current thread runs without a tenant id, as it does inside {@link #withoutId(Closure)} and in a
+     * method annotated with {@link WithoutTenant}. A tenant id that a {@link TenantResolver} returns or that is
+     * passed to {@link #withId(Serializable, Closure)} never counts, even if it is the name of the default connection
+     * source, {@link ConnectionSource#DEFAULT}.
+     *
+     * @return Whether the current thread runs without a tenant id
+     * @since 7.0.18
+     */
+    static boolean isWithoutId() {
+        CurrentTenant.isWithoutTenant()
+    }
+
+    /**
+     * Whether the current thread runs without a tenant id for the given datastore, as it does inside
+     * {@link #withoutId(MultiTenantCapableDatastore, Closure)}. A tenant id that a {@link TenantResolver} returns or
+     * that is passed to {@code withId} never counts, even if it is the name of the default connection source,
+     * {@link ConnectionSource#DEFAULT}.
+     *
+     * @param datastore The datastore
+     * @return Whether the current thread runs without a tenant id for the datastore
+     * @since 7.0.18
+     */
+    static boolean isWithoutId(Datastore datastore) {
+        CurrentTenant.isWithoutTenant()
     }
 
     /**
@@ -147,11 +170,9 @@ class Tenants {
      * @return The result of the closure
      */
     static <T> T withCurrent(Closure<T> callable) {
-        Serializable tenantIdentifier = currentId()
         Datastore datastore = GormEnhancer.findSingleDatastore()
         if (datastore instanceof MultiTenantCapableDatastore) {
-            MultiTenantCapableDatastore multiTenantCapableDatastore = (MultiTenantCapableDatastore) datastore
-            return withId(multiTenantCapableDatastore, tenantIdentifier, callable)
+            return withCurrent((MultiTenantCapableDatastore) datastore, callable)
         }
         else {
             throw new UnsupportedOperationException('Datastore implementation does not support multi-tenancy')
@@ -166,15 +187,32 @@ class Tenants {
      * @return The result of the closure
      */
     static <T> T withCurrent(Class<? extends Datastore> datastoreClass, Closure<T> callable) {
-        Serializable tenantIdentifier = currentId(datastoreClass)
         Datastore datastore = GormEnhancer.findDatastoreByType(datastoreClass)
         if (datastore instanceof MultiTenantCapableDatastore) {
-            MultiTenantCapableDatastore multiTenantCapableDatastore = (MultiTenantCapableDatastore) datastore
-            return withId(multiTenantCapableDatastore, tenantIdentifier, callable)
+            return withCurrent((MultiTenantCapableDatastore) datastore, callable)
         }
         else {
             throw new UnsupportedOperationException('Datastore implementation does not support multi-tenancy')
         }
+    }
+
+    /**
+     * Execute the given closure with the current tenant for the given datastore. Inside
+     * {@link #withoutId(MultiTenantCapableDatastore, Closure)} it runs without a tenant id, and a closure that takes
+     * the tenant id gets {@link ConnectionSource#DEFAULT}.
+     *
+     * @param multiTenantCapableDatastore The multi tenant capable datastore
+     * @param callable The closure
+     * @return The result of the closure
+     * @since 7.0.18
+     */
+    static <T> T withCurrent(MultiTenantCapableDatastore multiTenantCapableDatastore, Closure<T> callable) {
+        if (isWithoutId(multiTenantCapableDatastore)) {
+            return CurrentTenant.withoutTenant {
+                callWithTenantId(multiTenantCapableDatastore, ConnectionSource.DEFAULT, callable)
+            } as T
+        }
+        return withId(multiTenantCapableDatastore, currentId(multiTenantCapableDatastore), callable)
     }
 
     /**
@@ -255,45 +293,49 @@ class Tenants {
      */
     static <T> T withId(MultiTenantCapableDatastore multiTenantCapableDatastore, Serializable tenantId, Closure<T> callable) {
         return CurrentTenant.withTenant(tenantId) {
-            if (multiTenantCapableDatastore.getMultiTenancyMode().isSharedConnection()) {
-                def i = callable.parameterTypes.length
-                if (i == 2) {
-                    return multiTenantCapableDatastore.withSession { session ->
-                        return callable.call(tenantId, session)
-                    }
-                }
-                else {
-                    switch (i) {
-                        case 0:
-                            return callable.call()
-                            break
-                        case 1:
-                            return callable.call(tenantId)
-                            break
-                        default:
-                            throw new IllegalArgumentException('Provided closure accepts too many arguments')
-                    }
+            callWithTenantId(multiTenantCapableDatastore, tenantId, callable)
+        } as T
+    }
+
+    private static Object callWithTenantId(MultiTenantCapableDatastore multiTenantCapableDatastore, Serializable tenantId, Closure callable) {
+        if (multiTenantCapableDatastore.getMultiTenancyMode().isSharedConnection()) {
+            def i = callable.parameterTypes.length
+            if (i == 2) {
+                return multiTenantCapableDatastore.withSession { session ->
+                    return callable.call(tenantId, session)
                 }
             }
             else {
-                return multiTenantCapableDatastore.withNewSession(tenantId) { session ->
-                    def i = callable.parameterTypes.length
-                    switch (i) {
-                        case 0:
-                            return callable.call()
-                            break
-                        case 1:
-                            return callable.call(tenantId)
-                            break
-                        case 2:
-                            return callable.call(tenantId, session)
-                        default:
-                            throw new IllegalArgumentException('Provided closure accepts too many arguments')
-                    }
-
+                switch (i) {
+                    case 0:
+                        return callable.call()
+                        break
+                    case 1:
+                        return callable.call(tenantId)
+                        break
+                    default:
+                        throw new IllegalArgumentException('Provided closure accepts too many arguments')
                 }
             }
-        } as T
+        }
+        else {
+            return multiTenantCapableDatastore.withNewSession(tenantId) { session ->
+                def i = callable.parameterTypes.length
+                switch (i) {
+                    case 0:
+                        return callable.call()
+                        break
+                    case 1:
+                        return callable.call(tenantId)
+                        break
+                    case 2:
+                        return callable.call(tenantId, session)
+                    default:
+                        throw new IllegalArgumentException('Provided closure accepts too many arguments')
+                }
+
+            }
+        }
     }
 
     /**
@@ -347,10 +389,25 @@ class Tenants {
         private static final ThreadLocal<Serializable> currentTenantThreadLocal = new ThreadLocal<>()
 
         /**
-         * @return Obtain the current tenant
+         * The tenant id bound by {@link #withoutTenant(Closure)}. It is an instance of its own, so that running
+         * without a tenant id can be told apart from a tenant id that only equals {@link ConnectionSource#DEFAULT}.
+         * It never leaves this class: {@link #get()} returns {@link ConnectionSource#DEFAULT} in its place.
+         */
+        private static final String WITHOUT_TENANT = new String(ConnectionSource.DEFAULT)
+
+        /**
+         * @return Obtain the current tenant, {@link ConnectionSource#DEFAULT} inside {@link #withoutTenant(Closure)}
          */
         static Serializable get() {
-            currentTenantThreadLocal.get()
+            Serializable tenantId = currentTenantThreadLocal.get()
+            tenantId.is(WITHOUT_TENANT) ? ConnectionSource.DEFAULT : tenantId
+        }
+
+        /**
+         * @return Whether the current thread runs inside {@link #withoutTenant(Closure)}
+         */
+        static boolean isWithoutTenant() {
+            currentTenantThreadLocal.get().is(WITHOUT_TENANT)
         }
 
         /**
@@ -373,7 +430,7 @@ class Tenants {
          * @return The result of the closure
          */
         static <T> T withTenant(Serializable tenantId, Closure<T> callable) {
-            def previous = get()
+            def previous = currentTenantThreadLocal.get()
             try {
                 set(tenantId)
                 callable.call(tenantId)
@@ -394,9 +451,9 @@ class Tenants {
          * @return The result of the closure
          */
         static <T> T withoutTenant(Closure<T> callable) {
-            def previous = get()
+            def previous = currentTenantThreadLocal.get()
             try {
-                set(ConnectionSource.DEFAULT)
+                set(WITHOUT_TENANT)
                 callable.call()
             } finally {
                 if (previous == null) {
