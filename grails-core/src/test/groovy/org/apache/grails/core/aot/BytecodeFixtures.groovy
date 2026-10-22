@@ -18,6 +18,7 @@
  */
 package org.apache.grails.core.aot
 
+import java.util.function.IntUnaryOperator
 import java.util.stream.IntStream
 
 import groovy.transform.CompileStatic
@@ -47,6 +48,19 @@ class ClosureCoercionFixture {
 
     static int sum(int upTo) {
         IntStream.range(0, upTo).reduce(0) { int left, int right -> left + right }
+    }
+}
+
+/**
+ * A closure turned into an interface with {@code as} in a dynamically compiled class, as a plugin's
+ * {@code beanRegistrar()} often is. Groovy compiles it to a call to {@code asType}, not to a cast.
+ * {@code IntUnaryOperator} because nothing in the framework coerces a closure to it, so finding it proves
+ * this class was read.
+ */
+class DynamicCoercionFixture {
+
+    static IntUnaryOperator doubling() {
+        { int operand -> operand * 2 } as IntUnaryOperator
     }
 }
 

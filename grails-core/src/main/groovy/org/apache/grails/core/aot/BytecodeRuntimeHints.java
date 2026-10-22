@@ -44,6 +44,7 @@ import org.springframework.asm.ClassReader;
 import org.springframework.asm.ClassVisitor;
 import org.springframework.asm.FieldVisitor;
 import org.springframework.asm.Handle;
+import org.springframework.asm.Label;
 import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.SpringAsmInfo;
 import org.springframework.asm.Type;
@@ -65,10 +66,14 @@ import org.apache.grails.common.aot.RegistrableTypes;
  * one, so its constructors have to be visible. {@code grails.util.Environment} is one, and it is the first
  * thing an application touches: without this an image fails before Spring has started, with "Could not
  * find matching constructor".</li>
- * <li>A closure passed where a method takes an interface -- {@code removeIf}, {@code forEach},
- * {@code computeIfAbsent}, a plugin's {@code BeanRegistrar} -- is turned into that interface by a JDK proxy
- * created as the call is made. An image creates a proxy only for an interface it was told about, and
- * refuses the rest with {@code MissingReflectionRegistrationError}.</li>
+ * <li>A closure turned into an interface -- passed where a method takes one, such as {@code removeIf},
+ * {@code forEach} or {@code computeIfAbsent}, or coerced with {@code as}, as a plugin's
+ * {@code BeanRegistrar} often is -- becomes it through a JDK proxy created as the call is made. An image
+ * creates a proxy only for an interface it was told about, and refuses the rest with
+ * {@code MissingReflectionRegistrationError}. Only a coercion that names the interface is found: any in
+ * statically compiled code, and an {@code as} with a class literal in dynamically compiled code. A closure
+ * that dynamically compiled code passes to a method is an ordinary call with a {@code Closure} argument,
+ * which does not say what it will become, so it is not found.</li>
  * <li>A class implementing a trait initializes it from its constructor by calling the trait's helper class
  * through {@code ScriptBytecodeAdapter.invokeMethodN}, a dynamic call. The framework's traits are on the
  * application class, the controllers, the tag libraries and the domain classes, so without this none of
@@ -89,7 +94,8 @@ import org.apache.grails.common.aot.RegistrableTypes;
  *
  * <p>All of it is found by reading the bytecode while the hints are written, which happens during the build
  * on an ordinary JVM with the full classpath: an enum is a class extending {@code Enum} that implements
- * {@code GroovyObject}, a coercion is an invokedynamic {@code cast} from {@code Closure} to an interface, a
+ * {@code GroovyObject}, a coercion is an invokedynamic {@code cast} from {@code Closure} to an interface or
+ * a dynamic call to {@code asType} taking a {@code Closure} right after a class literal naming one, a
  * trait's helpers are the classes Groovy names {@code $Trait$Helper}, {@code $Trait$FieldHelper} and
  * {@code $Trait$StaticFieldHelper}, an injected member carries its annotation, and a Groovy class is one
  * that implements {@code GroovyObject}, directly or through a superclass. The framework compiles
@@ -117,7 +123,13 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
 
     private static final String CAST = "cast";
 
+    private static final String INVOKE = "invoke";
+
+    private static final String AS_TYPE = "asType";
+
     private static final String CLOSURE = "Lgroovy/lang/Closure;";
+
+    private static final String CLASS = "Ljava/lang/Class;";
 
     /** How Groovy names the classes that carry a trait's methods and fields. */
     private static final String[] TRAIT_HELPER_SUFFIXES = {
@@ -282,8 +294,8 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
     }
 
     /**
-     * Collects whether a class is a Groovy enum or a trait's helper, the interfaces its closures are cast to,
-     * and the members it has annotated for Spring.
+     * Collects whether a class is a Groovy enum or a trait's helper and the fields it has annotated for Spring,
+     * and reads each of its methods with a {@link FindingMethodVisitor}.
      */
     private static final class FindingClassVisitor extends ClassVisitor {
 
@@ -330,36 +342,139 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
         @Override
         public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
                 String[] exceptions) {
-            return new MethodVisitor(SpringAsmInfo.ASM_VERSION) {
-                @Override
-                public AnnotationVisitor visitAnnotation(String annotation, boolean visible) {
-                    if (SPRING_ANNOTATIONS.contains(annotation)) {
-                        List<TypeReference> parameterTypes = new ArrayList<>();
-                        for (Type parameter : Type.getArgumentTypes(descriptor)) {
-                            parameterTypes.add(TypeReference.of(parameter.getClassName()));
-                        }
-                        findings.invokedMethods.computeIfAbsent(className, type -> new LinkedHashSet<>())
-                                .add(new MethodSignature(name, parameterTypes));
-                    }
-                    return null;
-                }
-
-                @Override
-                public void visitInvokeDynamicInsn(String methodName, String methodDescriptor, Handle bootstrap,
-                        Object... bootstrapArguments) {
-                    if (!CAST.equals(methodName) || !INDY_INTERFACE.equals(bootstrap.getOwner())) {
-                        return;
-                    }
-                    Type[] arguments = Type.getArgumentTypes(methodDescriptor);
-                    Type target = Type.getReturnType(methodDescriptor);
-                    if (arguments.length == 1 && CLOSURE.equals(arguments[0].getDescriptor()) &&
-                            target.getSort() == Type.OBJECT) {
-                        findings.coercedTo.add(target.getClassName());
-                    }
-                }
-            };
+            return new FindingMethodVisitor(findings, className, name, descriptor);
         }
 
+    }
+
+    /**
+     * Collects the members a method has annotated for Spring and the interfaces its closures are turned into.
+     */
+    private static final class FindingMethodVisitor extends MethodVisitor {
+
+        private final Findings findings;
+
+        private final String className;
+
+        private final String name;
+
+        private final String descriptor;
+
+        /** The class the previous instruction named with a literal, which {@code as} takes its target from. */
+        @Nullable
+        private Type classLiteral;
+
+        private FindingMethodVisitor(Findings findings, String className, String name, String descriptor) {
+            super(SpringAsmInfo.ASM_VERSION);
+            this.findings = findings;
+            this.className = className;
+            this.name = name;
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public AnnotationVisitor visitAnnotation(String annotation, boolean visible) {
+            if (SPRING_ANNOTATIONS.contains(annotation)) {
+                List<TypeReference> parameterTypes = new ArrayList<>();
+                for (Type parameter : Type.getArgumentTypes(descriptor)) {
+                    parameterTypes.add(TypeReference.of(parameter.getClassName()));
+                }
+                findings.invokedMethods.computeIfAbsent(className, type -> new LinkedHashSet<>())
+                        .add(new MethodSignature(name, parameterTypes));
+            }
+            return null;
+        }
+
+        /**
+         * Finds the two ways a closure is turned into an interface that name the interface: a cast, which
+         * statically compiled code and a typed assignment make, and {@code as} with a class literal, which
+         * dynamically compiled code makes as a call to {@code asType} right after the literal.
+         */
+        @Override
+        public void visitInvokeDynamicInsn(String methodName, String methodDescriptor, Handle bootstrap,
+                Object... bootstrapArguments) {
+            Type named = classLiteral;
+            classLiteral = null;
+            if (!INDY_INTERFACE.equals(bootstrap.getOwner())) {
+                return;
+            }
+            Type[] arguments = Type.getArgumentTypes(methodDescriptor);
+            if (arguments.length == 0 || !CLOSURE.equals(arguments[0].getDescriptor())) {
+                return;
+            }
+            if (CAST.equals(methodName) && arguments.length == 1) {
+                Type target = Type.getReturnType(methodDescriptor);
+                if (target.getSort() == Type.OBJECT) {
+                    findings.coercedTo.add(target.getClassName());
+                }
+            }
+            else if (INVOKE.equals(methodName) && arguments.length == 2 &&
+                    CLASS.equals(arguments[1].getDescriptor()) && bootstrapArguments.length > 0 &&
+                    AS_TYPE.equals(bootstrapArguments[0]) && named != null) {
+                findings.coercedTo.add(named.getClassName());
+            }
+        }
+
+        @Override
+        public void visitLdcInsn(Object value) {
+            classLiteral = (value instanceof Type type && type.getSort() == Type.OBJECT) ? type : null;
+        }
+
+        @Override
+        public void visitInsn(int opcode) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitIntInsn(int opcode, int operand) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitVarInsn(int opcode, int varIndex) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitTypeInsn(int opcode, String type) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitFieldInsn(int opcode, String owner, String fieldName, String fieldDescriptor) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String methodName, String methodDescriptor,
+                boolean isInterface) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitJumpInsn(int opcode, Label label) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitIincInsn(int varIndex, int increment) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+            classLiteral = null;
+        }
+
+        @Override
+        public void visitMultiANewArrayInsn(String arrayDescriptor, int dimensions) {
+            classLiteral = null;
+        }
     }
 
 }

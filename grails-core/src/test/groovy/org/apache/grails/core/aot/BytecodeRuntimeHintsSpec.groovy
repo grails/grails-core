@@ -18,7 +18,9 @@
  */
 package org.apache.grails.core.aot
 
+import java.lang.reflect.Proxy
 import java.util.function.IntBinaryOperator
+import java.util.function.IntUnaryOperator
 
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
@@ -64,6 +66,11 @@ class BytecodeRuntimeHintsSpec extends Specification {
     void 'an interface a closure is coerced to can be proxied'() {
         expect: 'the closure becomes the interface through a JDK proxy created as the call is made'
             RuntimeHintsPredicates.proxies().forInterfaces(IntBinaryOperator).test(hints)
+    }
+
+    void 'an interface a dynamically compiled class coerces a closure to with as can be proxied'() {
+        expect: 'dynamic code makes the coercion a call to asType right after naming the interface, not a cast'
+            RuntimeHintsPredicates.proxies().forInterfaces(IntUnaryOperator).test(hints)
     }
 
     void 'a trait can be initialized by the classes implementing it'() {
@@ -115,6 +122,15 @@ class BytecodeRuntimeHintsSpec extends Specification {
     void 'the coercion still works'() {
         expect: 'the fixture is the code the hint is for, so it has to do what it says'
             ClosureCoercionFixture.sum(4) == 6
+    }
+
+    void 'the dynamic coercion still makes a JDK proxy'() {
+        when:
+            def doubling = DynamicCoercionFixture.doubling()
+
+        then: 'the fixture is the code the hint is for, so it has to do what it says'
+            Proxy.isProxyClass(doubling.getClass())
+            doubling.applyAsInt(21) == 42
     }
 
     void 'the trait still initializes'() {
