@@ -19,22 +19,43 @@ on:
     branches:
       - '[0-9]+.[0-9]+.x'
   pull_request:
-    # CHANGEME FOR ACCEPTANCE: PR triggers disabled on this stacked branch; revert before merge
-    branches: ['CHANGEME-FOR-ACCEPTANCE']
+    # ready_for_review is not a default type: a draft runs nothing until it is ready or labelled "run ci".
+    types: [ opened, synchronize, reopened, ready_for_review ]
   workflow_dispatch:
-# Queue jobs - cancel in-progress PR runs when new commits pushed, but allow branch builds to complete
+    inputs:
+      run-tests:
+        description: "Run the test jobs where the branch rule would skip them (a release branch below the default); a [skip tests] head commit still skips them"
+        type: boolean
+        default: false
+# A new commit on the same pull request or branch cancels the build and test jobs of the run in flight: their
+# results would be for a superseded commit, and the run that replaces it publishes the newer one. The publish
+# jobs (publishGradle, publish, publishForge, verifyWrapper, docs) run on always() with explicit result checks
+# instead, so a publish that has started completes: an interrupted upload would leave the snapshot repository
+# with modules from two commits. Nothing of the cancelled commit is published when the cancel arrives before
+# publish starts, because a cancelled test job fails the explicit checks. The replacing run is pending until
+# the cancelled run has finished every job, so two publishes of the same branch never overlap.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 jobs:
+  policy:
+    name: "CI policy"
+    # A pull request labelled "no ci", or a draft without the "run ci" label, skips this job; every other
+    # job needs it, so nothing runs for such a pull request.
+    if: >-
+      github.event_name != 'pull_request'
+      || (!contains(github.event.pull_request.labels.*.name, 'no ci')
+          && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'run ci')))
+    uses: ./.github/workflows/ci-policy.yml
   validateDependencies:
     name: 'Validate Dependency Versions'
+    needs: [ policy ]
     runs-on: ubuntu-24.04
     steps:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -65,12 +86,13 @@ jobs:
           --stacktrace
   validateBomProperties:
     name: 'Validate BOM Properties'
+    needs: [ policy ]
     runs-on: ubuntu-24.04
     steps:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -96,6 +118,7 @@ jobs:
           --stacktrace
   validateGithubBranch:
     name: 'Validate githubBranch'
+    needs: [ policy ]
     runs-on: ubuntu-24.04
     steps:
       - name: "📥 Checkout repository"
@@ -120,6 +143,7 @@ jobs:
           echo "✅ gradle.properties sets githubBranch=${BRANCH}"
   buildGradle:
     name: 'Build Gradle Plugins'
+    needs: [ policy ]
     strategy:
       fail-fast: false
       matrix:
@@ -131,7 +155,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -147,7 +171,7 @@ jobs:
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
       - name: "🔨 Build project without tests"
-        if: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests != 'true' }}
         working-directory: 'grails-gradle'
         run: >
           ./gradlew build
@@ -156,7 +180,7 @@ jobs:
           -PskipCodeStyle
           -PskipTests
       - name: "🔨 Build project with tests"
-        if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests == 'true' }}
         working-directory: 'grails-gradle'
         run: >
           ./gradlew build
@@ -167,6 +191,7 @@ jobs:
   buildLogic:
     # The build logic is an included build: the root build uses its plugins but never runs its tests
     name: 'Build Logic'
+    needs: [ policy ]
     runs-on: ubuntu-24.04
     steps:
       - name: "Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -174,7 +199,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -190,15 +215,16 @@ jobs:
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
       - name: "🔨 Build and test the build logic"
-        if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests == 'true' }}
         working-directory: 'build-logic'
         run: >
           ./gradlew check
           --continue
           --stacktrace
   build:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
     name: 'Build Grails-Core (${{ matrix.job_name }})'
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -249,7 +275,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -277,8 +303,9 @@ jobs:
           ${{ matrix.shard_arguments }}
           ${{ matrix.runner_arguments }}
   buildRerunTasks:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
     name: 'Build Grails-Core Rerunning all Tasks (${{ matrix.job_name }})'
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -310,7 +337,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -336,6 +363,7 @@ jobs:
           ${{ matrix.extra_arguments }}
   buildForge:
     name: "Build Grails Forge (Java ${{ matrix.java }}, indy=${{ matrix.indy }})"
+    needs: [ policy ]
     strategy:
       fail-fast: false
       matrix:
@@ -351,7 +379,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: 'liberica'
           java-version: ${{ matrix.java }}
@@ -367,7 +395,7 @@ jobs:
       - name: "🔍 Setup TestLens"
         uses: testlens-app/setup-testlens@d29a2be31512b3aeda3adcef09fbe0d55af90c51 # v1.9.4
       - name: "🔨 Build project without tests"
-        if: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests != 'true' }}
         working-directory: 'grails-forge'
         run: >
           ./gradlew build
@@ -377,7 +405,7 @@ jobs:
           -PskipCodeStyle
           -PskipTests
       - name: "🔨 Build project with tests"
-        if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+        if: ${{ needs.policy.outputs.run-tests == 'true' }}
         working-directory: 'grails-forge'
         run: >
           ./gradlew build
@@ -407,7 +435,8 @@ jobs:
   # the half hour. Without a limit, a test JVM that never exits holds its job for GitHub's six-hour default.
   functional:
     name: "Functional Tests (${{ matrix.job_name }})"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     # 8.0.x history: shard 1 is 22-34 min, indy=true shard 0 is 48-55.
     # On Groovy 6, shard 1 tests finish around 31 min then Gradle hangs in
     # worker teardown. The init script exits after buildFinished so that hang
@@ -460,7 +489,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -541,7 +570,8 @@ jobs:
           if-no-files-found: ignore
   security:
     name: "Spring Security Tests (${{ matrix.job_name }})"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     timeout-minutes: 150 # slowest run: 71 min
     strategy:
       fail-fast: false
@@ -565,7 +595,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -591,7 +621,8 @@ jobs:
           ${{ matrix.shard_arguments }}
   securityConfig:
     name: "Spring Security Config Functional Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     timeout-minutes: 90 # slowest run: 39 min
     strategy:
       fail-fast: false
@@ -609,7 +640,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -635,7 +666,8 @@ jobs:
           -PskipCodeStyle
   casSecurityConfig:
     name: "Spring Security CAS Functional Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     timeout-minutes: 90 # slowest run: 35 min
     strategy:
       fail-fast: false
@@ -655,7 +687,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -681,7 +713,8 @@ jobs:
           -PskipCodeStyle
   redis:
     name: "Redis Tests"
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     timeout-minutes: 180 # slowest run: 86 min
     runs-on: ubuntu-24.04
     strategy:
@@ -695,7 +728,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -720,7 +753,8 @@ jobs:
           -PredisContainerVersion=${{ matrix.redis-version }}
           -PskipCodeStyle
   mongodbFunctional:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: "Mongodb Functional Tests (Java ${{ matrix.java }}, MongoDB ${{ matrix.mongodb-version }}, indy=${{ matrix.indy }})"
     timeout-minutes: 150 # slowest run: 70 min
     # ubuntu-22.04 while https://github.com/actions/runner-images/issues/15005 is open: the ubuntu-24.04 image 20261018.339
@@ -744,7 +778,7 @@ jobs:
       - name: "📥 Checkout the repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -790,7 +824,8 @@ jobs:
           path: ~/.embedmongo
           key: ${{ steps.embedmongo-cache.outputs.cache-primary-key }}
   hibernate5Functional:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: "Hibernate5 Functional Tests (Java ${{ matrix.java }}, indy=${{ matrix.indy }})"
     timeout-minutes: 120 # slowest run: 58 min
     runs-on: ubuntu-24.04
@@ -808,7 +843,7 @@ jobs:
       - name: "📥 Checkout the repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -833,7 +868,8 @@ jobs:
           -PonlyHibernate5Tests
           -PskipCodeStyle
   hibernate7Functional:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: "Hibernate7 Functional Tests (${{ matrix.job_name }})"
     timeout-minutes: 210 # slowest run: 104 min, which failed; the slowest that passed took 86
     runs-on: ubuntu-24.04
@@ -882,7 +918,7 @@ jobs:
       - name: "📥 Checkout the repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -908,7 +944,8 @@ jobs:
           -PskipCodeStyle
           ${{ matrix.shard_arguments }}
   neo4jFunctional:
-    if: ${{ !contains(github.event.head_commit.message, '[skip tests]') }}
+    needs: [ policy ]
+    if: ${{ needs.policy.outputs.run-tests == 'true' }}
     name: "Neo4j Functional Tests (Java ${{ matrix.java }}, indy=${{ matrix.indy }})"
     timeout-minutes: 180 # slowest run: 90 min
     runs-on: ubuntu-24.04
@@ -926,7 +963,7 @@ jobs:
       - name: "📥 Checkout the repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: ${{ matrix.java }}
@@ -946,7 +983,13 @@ jobs:
           python3 .github/tests/test_ci_run_neo4j.py
           bash .github/ci-run-neo4j-tests.sh -PgrailsIndy=${{ matrix.indy }}
   publishGradle:
-    if: github.repository_owner == 'apache' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # always() with an explicit result check, see the concurrency comment at the top.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+          needs.buildGradle.result == 'success'
+      }}
     needs: [ buildGradle ]
     runs-on: ubuntu-24.04
     steps:
@@ -955,7 +998,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -993,6 +1036,10 @@ jobs:
           path: grails-gradle/build/grails-gradle-artifacts.txt
   publish:
     needs: [ publishGradle, build, functional, security, securityConfig, redis, hibernate5Functional, hibernate7Functional, mongodbFunctional, neo4jFunctional ]
+    # always() with explicit result checks, see the concurrency comment at the top. The results are checked
+    # explicitly because the implicit success() check also covers the skipped test jobs upstream, which would
+    # skip this job on a build-only run, and because a cancelled test job must not be published: nothing of a
+    # commit whose run was cancelled before this job started reaches the snapshot repository.
     if: >-
       ${{ always() &&
           github.repository_owner == 'apache' &&
@@ -1015,7 +1062,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -1065,7 +1112,17 @@ jobs:
           name: apache-grails-wrapper-SNAPSHOT-bin
           path: build/tmp/wrapper
   publishForge:
-    if: github.repository_owner == 'apache' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # The implicit success() check also covers the skipped test jobs upstream of publish, which skipped this job
+    # on every build-only push although its own needs had succeeded; check them explicitly, as publish does.
+    # always() for the same reason as publish.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+          needs.buildForge.result == 'success' &&
+          needs.publishGradle.result == 'success' &&
+          needs.publish.result == 'success'
+      }}
     needs: [ buildForge, publishGradle, publish ]
     runs-on: ubuntu-24.04
     steps:
@@ -1074,7 +1131,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -1114,7 +1171,14 @@ jobs:
     name: "Verify grails-wrapper"
     # Verifies the wrapper works end-to-end. Must run after publishForge so that
     # grails-cli (which the wrapper resolves at runtime) is available in Nexus.
-    if: github.repository_owner == 'apache' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # Explicit results and always() for the same reason as publishForge.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+          needs.publish.result == 'success' &&
+          needs.publishForge.result == 'success'
+      }}
     needs: [ publish, publishForge ]
     runs-on: ubuntu-24.04
     steps:
@@ -1123,7 +1187,7 @@ jobs:
       - name: "📥 Checkout repository"
         uses: actions/checkout@v7.0.1
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
@@ -1145,7 +1209,13 @@ jobs:
           chmod +x ./wrapper/grailsw
           ./wrapper/grailsw --version
   docs:
-    if: github.repository_owner == 'apache' && github.event_name == 'push'
+    # Explicit results and always() for the same reason as publishForge.
+    if: >-
+      ${{ always() &&
+          github.repository_owner == 'apache' &&
+          github.event_name == 'push' &&
+          needs.publish.result == 'success'
+      }}
     needs: [ publish ]
     runs-on: ubuntu-24.04
     steps:
@@ -1178,7 +1248,7 @@ jobs:
           echo "NOW=${NOW}" >> $GITHUB_ENV
           echo "Current date: ${NOW}"
       - name: "☕️ Setup JDK"
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@v6.1.0
         with:
           distribution: liberica
           java-version: 21
