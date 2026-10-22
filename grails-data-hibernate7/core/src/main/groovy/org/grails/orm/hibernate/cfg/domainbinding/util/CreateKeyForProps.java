@@ -19,12 +19,14 @@
 package org.grails.orm.hibernate.cfg.domainbinding.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.MappingException;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 
+import org.grails.orm.hibernate.cfg.ColumnConfig;
 import org.grails.orm.hibernate.cfg.PropertyConfig;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
@@ -70,9 +72,15 @@ public class CreateKeyForProps {
                     throw new MappingException(
                             owner.getJavaClass().getName() + " references an unknown property " + propertyName);
                 }
-                String otherColumnName =
-                        columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(otherProp, path, null);
-                keyList.add(new Column(otherColumnName));
+                List<ColumnConfig> columns = otherProp.getHibernateMappedForm().getColumns();
+                if (columns.isEmpty()) {
+                    columns = Collections.singletonList(null);
+                }
+                for (ColumnConfig column : columns) {
+                    String otherColumnName =
+                            columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(otherProp, path, column);
+                    keyList.add(new Column(otherColumnName));
+                }
             }
 
             uniqueKeyForColumnsCreator.createUniqueKeyForColumns(table, keyList);
