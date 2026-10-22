@@ -166,7 +166,7 @@ public record HqlQueryContext(
      * property, a joined alias or a function, or {@code Object[].class} for multiple projections.
      */
     static Class<?> getTarget(CharSequence hql, Class<?> clazz) {
-        String normalized = normalizeNonAliasedSelect(hql == null ? null : hql.toString());
+        String normalized = normalizeNonAliasedSelect(unwrapRootQuery(hql == null ? null : hql.toString()));
         return switch (countHqlProjections(normalized)) {
             case 0 -> clazz;
             case 1 -> {
@@ -182,6 +182,42 @@ public record HqlQueryContext(
             }
             default -> Object[].class;
         };
+    }
+
+    /** Unwraps only parentheses enclosing the whole query for analysis, without changing the executed HQL. */
+    private static @Nullable String unwrapRootQuery(@Nullable String hql) {
+        if (hql == null) return null;
+        String s = hql.trim();
+        while (s.startsWith("(") && s.endsWith(")")) {
+            int depth = 0;
+            int closing = -1;
+            int i = 0;
+            while (i < s.length()) {
+                char c = s.charAt(i);
+                if (c == '\'' || c == '"' || c == '`') {
+                    i = SqlRestriction.skipQuoted(s, i, c);
+                    continue;
+                }
+                if (s.startsWith("/*", i)) {
+                    int commentEnd = s.indexOf("*/", i + 2);
+                    i = commentEnd < 0 ? s.length() : commentEnd + 2;
+                    continue;
+                }
+                if (c == '(') {
+                    depth++;
+                } else if (c == ')') {
+                    depth--;
+                    if (depth == 0) {
+                        closing = i;
+                        break;
+                    }
+                }
+                i++;
+            }
+            if (closing != s.length() - 1) return s;
+            s = s.substring(1, closing).trim();
+        }
+        return s;
     }
 
     static @Nullable String getSingleProjectionClause(CharSequence hql) {
