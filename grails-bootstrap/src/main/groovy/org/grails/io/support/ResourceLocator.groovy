@@ -41,8 +41,8 @@ class ResourceLocator {
     protected static final Resource NULL_RESOURCE = new ByteArrayResource('null'.getBytes())
 
     protected PathMatchingResourcePatternResolver patchMatchingResolver
-    protected List<String> classSearchDirectories = new ArrayList<>()
-    protected List<String> resourceSearchDirectories = new ArrayList<>()
+    protected List<String> classSearchDirectories = []
+    protected List<String> resourceSearchDirectories = []
     protected Map<String, Resource> classNameToResourceCache = new ConcurrentHashMap<>()
     protected Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<>()
     protected ResourceLoader defaultResourceLoader = new FileSystemResourceLoader()
@@ -68,33 +68,30 @@ class ResourceLocator {
     private void initializeForSearchLocation(String searchLocation) {
         String searchLocationPlusSlash = searchLocation.endsWith('/') ? searchLocation : searchLocation + FILE_SEPARATOR
         try {
-            File[] directories = new File(searchLocationPlusSlash + GrailsResourceUtils.GRAILS_APP_DIR).listFiles(new FileFilter() {
-                boolean accept(File file) {
-                    return file.isDirectory() && !file.isHidden()
-                }
-            })
+            File[] directories = new File(searchLocationPlusSlash + GrailsResourceUtils.GRAILS_APP_DIR).listFiles(
+                    { File file -> file.isDirectory() && !file.isHidden() } as FileFilter)
             if (directories != null) {
                 for (File directory in directories) {
-                    classSearchDirectories.add(directory.getCanonicalPath())
+                    classSearchDirectories << directory.canonicalPath
                 }
             }
         } catch (IOException ignored) {
             // ignore
         }
 
-        classSearchDirectories.add(searchLocationPlusSlash + 'src/main/java')
-        classSearchDirectories.add(searchLocationPlusSlash + 'src/main/groovy')
-        resourceSearchDirectories.add(searchLocationPlusSlash)
+        classSearchDirectories << (searchLocationPlusSlash + 'src/main/java')
+        classSearchDirectories << (searchLocationPlusSlash + 'src/main/groovy')
+        resourceSearchDirectories << searchLocationPlusSlash
     }
 
     Resource findResourceForURI(String uri) {
-        Resource resource = uriToResourceCache.get(uri)
+        Resource resource = uriToResourceCache[uri]
         if (resource == null) {
 
             PluginResourceInfo info = inferPluginNameFromURI(uri)
             if (warDeployed) {
                 Resource defaultResource = defaultResourceLoader.getResource(uri)
-                if (defaultResource != null && defaultResource.exists()) {
+                if (defaultResource?.exists()) {
                     resource = defaultResource
                 }
             }
@@ -109,8 +106,8 @@ class ResourceLocator {
                     else if (!warDeployed) {
                         Resource dir = resolveExceptionSafe(resourceSearchDirectory)
                         if (dir.exists() && info != null) {
-                            String filename = dir.getFilename()
-                            if (filename != null && filename.equals(info.pluginName)) {
+                            String filename = dir.filename
+                            if (filename == info.pluginName) {
                                 Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri)
                                 if (pluginFile.exists()) {
                                     resource = pluginFile
@@ -122,8 +119,8 @@ class ResourceLocator {
             }
 
             if (resource == null || !resource.exists()) {
-                Resource tmp = defaultResourceLoader != null ? defaultResourceLoader.getResource(uri) : null
-                if (tmp != null && tmp.exists()) {
+                Resource tmp = defaultResourceLoader?.getResource(uri)
+                if (tmp?.exists()) {
                     resource = tmp
                 }
             }
@@ -135,7 +132,7 @@ class ResourceLocator {
                 uriToResourceCache.put(uri, NULL_RESOURCE)
             }
         }
-        return resource == NULL_RESOURCE ? null : resource
+        return NULL_RESOURCE.is(resource) ? null : resource
     }
 
     private PluginResourceInfo inferPluginNameFromURI(String uri) {
@@ -157,12 +154,12 @@ class ResourceLocator {
         if (className.contains(CLOSURE_MARKER)) {
             className = className.substring(0, className.indexOf(CLOSURE_MARKER))
         }
-        Resource resource = classNameToResourceCache.get(className)
+        Resource resource = classNameToResourceCache[className]
         if (resource == null) {
             String classNameWithPathSeparator = className.replace('.', FILE_SEPARATOR)
             for (String pathPattern in getSearchPatternForExtension(classNameWithPathSeparator, '.groovy', '.java')) {
                 resource = resolveExceptionSafe(pathPattern)
-                if (resource != null && resource.exists()) {
+                if (resource?.exists()) {
                     classNameToResourceCache.put(className, resource)
                     break
                 }
@@ -170,23 +167,23 @@ class ResourceLocator {
             if (resource == null || !resource.exists()) {
                 for (String ext in ['.groovy', '.java'] as String[]) {
                     resource = resolveExceptionSafe(GrailsResourceUtils.DOMAIN_DIR_PATH + '**/' + className + ext)
-                    if (resource != null && resource.exists()) {
+                    if (resource?.exists()) {
                         classNameToResourceCache.put(className, resource)
                         break
                     }
                 }
             }
         }
-        return resource != null && resource.exists() ? resource : null
+        return resource?.exists() ? resource : null
     }
 
     private List<String> getSearchPatternForExtension(String classNameWithPathSeparator, String... extensions) {
 
-        List<String> searchPatterns = new ArrayList<>()
+        List<String> searchPatterns = []
         for (String extension in extensions) {
             String filename = classNameWithPathSeparator + extension
             for (String classSearchDirectory in classSearchDirectories) {
-                searchPatterns.add(classSearchDirectory + FILE_SEPARATOR + filename)
+                searchPatterns << (classSearchDirectory + FILE_SEPARATOR + filename)
             }
         }
 
@@ -196,7 +193,7 @@ class ResourceLocator {
     private Resource resolveExceptionSafe(String pathPattern) {
         try {
             Resource[] resources = patchMatchingResolver.getResources('file:' + pathPattern)
-            if (resources != null && resources.length > 0) {
+            if (resources) {
                 return resources[0]
             }
         } catch (IOException e) {

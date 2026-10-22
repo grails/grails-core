@@ -43,7 +43,7 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
      */
     public static final Log STACK_LOG = LogFactory.getLog(STACK_LOG_NAME)
 
-    private static final String[] DEFAULT_INTERNAL_PACKAGES = new String[] {
+    private static final String[] DEFAULT_INTERNAL_PACKAGES = [
         'org.codehaus.groovy.runtime.',
         'org.codehaus.groovy.reflection.',
         'org.codehaus.groovy.ast.',
@@ -61,9 +61,9 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
         'org.springsource.loaded.',
         'com.opensymphony.',
         'jakarta.servlet.'
-    }
+    ] as String[]
 
-    private List<String> packagesToFilter = new ArrayList<>()
+    private List<String> packagesToFilter = []
     private boolean shouldFilter
     private String cutOffPackage = null
     private boolean logFullStackTraceOnFilter = true
@@ -74,7 +74,7 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
 
     DefaultStackTraceFilterer(boolean shouldFilter) {
         this.shouldFilter = shouldFilter
-        packagesToFilter.addAll(Arrays.asList(DEFAULT_INTERNAL_PACKAGES))
+        packagesToFilter.addAll(DEFAULT_INTERNAL_PACKAGES)
     }
 
     void addInternalPackage(String name) {
@@ -100,9 +100,9 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
     Throwable filter(Throwable source, boolean recursive) {
         if (recursive) {
             Throwable current = source
-            while (current != null) {
+            while (current) {
                 filter(current)
-                current = current.getCause()
+                current = current.cause
             }
             return source
         }
@@ -113,7 +113,7 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
         if (!shouldFilter) {
             return source
         }
-        StackTraceElement[] trace = source.getStackTrace()
+        StackTraceElement[] trace = source.stackTrace
         List<StackTraceElement> newTrace = filterTraceWithCutOff(trace, cutOffPackage)
 
         if (newTrace.isEmpty()) {
@@ -131,24 +131,24 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
             }
             StackTraceElement[] clean = new StackTraceElement[newTrace.size()]
             newTrace.toArray(clean)
-            source.setStackTrace(clean)
+            source.stackTrace = clean
         }
         return source
     }
 
     private List<StackTraceElement> filterTraceWithCutOff(StackTraceElement[] trace, String endPackage) {
-        List<StackTraceElement> newTrace = new ArrayList<>()
+        List<StackTraceElement> newTrace = []
         boolean foundGroovy = false
         for (StackTraceElement stackTraceElement in trace) {
-            String className = stackTraceElement.getClassName()
-            String fileName = stackTraceElement.getFileName()
+            String className = stackTraceElement.className
+            String fileName = stackTraceElement.fileName
             if (!foundGroovy && fileName != null && fileName.endsWith('.groovy')) {
                 foundGroovy = true
             }
             if (endPackage != null && className.startsWith(endPackage) && foundGroovy) break
             if (isApplicationClass(className)) {
-                if (stackTraceElement.getLineNumber() > -1) {
-                    newTrace.add(stackTraceElement)
+                if (stackTraceElement.lineNumber > -1) {
+                    newTrace << stackTraceElement
                 }
             }
         }
@@ -161,10 +161,7 @@ class DefaultStackTraceFilterer implements StackTraceFilterer {
      * @return true if is internal
      */
     protected boolean isApplicationClass(String className) {
-        for (String packageName in packagesToFilter) {
-            if (className.startsWith(packageName)) return false
-        }
-        return true
+        return !packagesToFilter.any { className.startsWith(it) }
     }
 
     void setShouldFilter(boolean shouldFilter) {

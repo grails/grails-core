@@ -48,7 +48,7 @@ class PollingDirectoryWatcher extends AbstractDirectoryWatcher {
             Set<File> files = lastModifiedMap.keySet()
             for (File file in files) {
                 long currentLastModified = file.lastModified()
-                Long cachedTime = lastModifiedMap.get(file)
+                Long cachedTime = lastModifiedMap[file]
                 if (currentLastModified > cachedTime) {
                     lastModifiedMap.put(file, currentLastModified)
                     fireOnChange(file)
@@ -82,7 +82,7 @@ class PollingDirectoryWatcher extends AbstractDirectoryWatcher {
     }
 
     private void trackDirectoryExtensions(File dir, List<String> fileExtensions) {
-        Collection<String> existingExtensions = directoryToExtensionsMap.get(dir)
+        Collection<String> existingExtensions = directoryToExtensionsMap[dir]
         if (existingExtensions == null) {
             directoryToExtensionsMap.put(dir, new ArrayList<>(fileExtensions))
         }
@@ -93,10 +93,10 @@ class PollingDirectoryWatcher extends AbstractDirectoryWatcher {
 
     private void checkForNewFiles() {
         for (File directory in directoryWatch.keySet()) {
-            final Long currentTimestamp = directoryWatch.get(directory)
+            final Long currentTimestamp = directoryWatch[directory]
 
             if (currentTimestamp < directory.lastModified()) {
-                Collection<String> extensions = directoryToExtensionsMap.get(directory)
+                Collection<String> extensions = directoryToExtensionsMap[directory]
                 if (extensions == null) {
                     extensions = this.extensions
                 }
@@ -119,7 +119,7 @@ class PollingDirectoryWatcher extends AbstractDirectoryWatcher {
                 cacheFilesForDirectory(file, fileExtensions, fireEvent)
             }
             else if (isValidFileToMonitor(file, fileExtensions)) {
-                if (!lastModifiedMap.containsKey(file) && fireEvent) {
+                if (!(file in lastModifiedMap) && fireEvent) {
                     fireOnNew(file)
                 }
                 lastModifiedMap.put(file, file.lastModified())
@@ -130,8 +130,8 @@ class PollingDirectoryWatcher extends AbstractDirectoryWatcher {
     private void addExtensions(Collection<String> toAdd) {
         for (String extension in toAdd) {
             extension = removeStartingDotIfPresent(extension)
-            if (!extensions.contains(extension)) {
-                extensions.add(extension)
+            if (!(extension in extensions)) {
+                extensions << extension
             }
         }
     }

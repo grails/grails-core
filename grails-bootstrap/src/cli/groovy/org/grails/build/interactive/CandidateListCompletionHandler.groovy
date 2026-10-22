@@ -47,9 +47,7 @@ class CandidateListCompletionHandler implements Completer {
 
     @Override
     void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
-        if (delegate != null) {
-            delegate.complete(reader, line, candidates)
-        }
+        delegate?.complete(reader, line, candidates)
     }
 
     /**
@@ -60,14 +58,14 @@ class CandidateListCompletionHandler implements Completer {
      * method will return <i>foob</i>.
      */
     static String getUnambiguousCompletions(final List<Candidate> candidates) {
-        if (candidates == null || candidates.isEmpty()) {
+        if (!candidates) {
             return null
         }
 
         // convert to an array for speed
         String[] strings = new String[candidates.size()]
         for (int i = 0; i < candidates.size(); i++) {
-            strings[i] = candidates.get(i).value()
+            strings[i] = candidates[i].value()
         }
 
         String first = strings[0]
@@ -89,13 +87,7 @@ class CandidateListCompletionHandler implements Completer {
      *         start with <i>starts</i>
      */
     private static boolean startsWith(final String starts, final String[] candidates) {
-        for (int i = 0; i < candidates.length; i++) {
-            if (!candidates[i].startsWith(starts)) {
-                return false
-            }
-        }
-
-        return true
+        return candidates.every { it.startsWith(starts) }
     }
 
 }

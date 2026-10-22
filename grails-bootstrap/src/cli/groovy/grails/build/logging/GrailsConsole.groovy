@@ -133,7 +133,7 @@ class GrailsConsole implements ConsoleLogger {
     /**
      * List of completers to be aggregated for tab completion
      */
-    private final List<Completer> completers = new java.util.ArrayList<>()
+    private final List<Completer> completers = []
 
     /**
      * The category of the current output
@@ -240,10 +240,10 @@ class GrailsConsole implements ConsoleLogger {
 
     private PrintStream unwrapPrintStream(PrintStream printStream) {
         if (printStream instanceof GrailsConsolePrintStream) {
-            return ((GrailsConsolePrintStream) printStream).getTargetOut()
+            return printStream.targetOut
         }
         if (printStream instanceof GrailsConsoleErrorPrintStream) {
-            return ((GrailsConsoleErrorPrintStream) printStream).getTargetOut()
+            return printStream.targetOut
         }
         return printStream
     }
@@ -542,7 +542,7 @@ class GrailsConsole implements ConsoleLogger {
         verifySystemOut()
         progressIndicatorActive = true
         if (isAnsiEnabled()) {
-            if (lastMessage != null && lastMessage.length() > 0) {
+            if (lastMessage) {
                 if (!lastMessage.contains(maxIndicatorString)) {
                     updateStatus(lastMessage + indicator)
                 }
@@ -628,7 +628,7 @@ class GrailsConsole implements ConsoleLogger {
 
     private void outputMessage(String msg, int replaceCount) {
         verifySystemOut()
-        if (msg == null || msg.trim().length() == 0) return
+        if (msg == null || msg.trim().isEmpty()) return
         try {
             if (isAnsiEnabled()) {
                 if (replaceCount > 0) {
@@ -641,7 +641,7 @@ class GrailsConsole implements ConsoleLogger {
                     cursorMove = replaceCount
                 }
             } else {
-                if (lastMessage != null && lastMessage.equals(msg)) return
+                if (lastMessage == msg) return
 
                 if (progressIndicatorActive) {
                     out.println()

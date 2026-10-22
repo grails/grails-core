@@ -56,21 +56,21 @@ class GrailsConsoleAntBuilder extends AntBuilder {
 
         final ProjectHelper helper = ProjectHelper.getProjectHelper()
         project.addReference(MagicNames.REFID_PROJECT_HELPER, helper)
-        helper.getImportStack().addElement('AntBuilder') // import checks that stack is not empty
+        helper.importStack.addElement('AntBuilder') // import checks that stack is not empty
 
         addGrailsConsoleBuildListener(project)
 
         project.init()
-        project.getBaseDir()
+        project.baseDir
         return project
     }
 
     static void addGrailsConsoleBuildListener(Project project) {
         final BuildLogger logger = new GrailsConsoleLogger()
 
-        logger.setMessageOutputLevel(Project.MSG_INFO)
-        logger.setOutputPrintStream(System.out)
-        logger.setErrorPrintStream(System.err)
+        logger.messageOutputLevel = Project.MSG_INFO
+        logger.outputPrintStream = System.out
+        logger.errorPrintStream = System.err
 
         project.addBuildListener(logger)
 
@@ -78,9 +78,9 @@ class GrailsConsoleAntBuilder extends AntBuilder {
         project.addBuildListener(new GrailsConsoleBuildListener(instance))
 
         if (!instance.isVerbose()) {
-            for (Object buildListener in project.getBuildListeners()) {
+            for (Object buildListener in project.buildListeners) {
                 if (buildListener instanceof BuildLogger) {
-                    ((BuildLogger) buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel())
+                    buildListener.messageOutputLevel = LogLevel.ERR.level
                 }
             }
         }
@@ -106,7 +106,7 @@ class GrailsConsoleAntBuilder extends AntBuilder {
          */
         @Override
         void targetStarted(BuildEvent event) {
-            targetName = event.getTarget().getName()
+            targetName = event.target.name
         }
 
         /**
@@ -130,13 +130,13 @@ class GrailsConsoleAntBuilder extends AntBuilder {
          */
         @Override
         void messageLogged(BuildEvent event) {
-            if (event.getPriority() > msgOutputLevel ||
-                    null == event.getMessage() ||
-                    ''.equals(event.getMessage().trim())) {
+            if (event.priority > msgOutputLevel ||
+                    event.message == null ||
+                    event.message.trim().isEmpty()) {
                 return
             }
 
-            if (null != targetName) {
+            if (targetName != null) {
                 console.verbose(System.lineSeparator() + targetName + ':')
                 targetName = null
             }

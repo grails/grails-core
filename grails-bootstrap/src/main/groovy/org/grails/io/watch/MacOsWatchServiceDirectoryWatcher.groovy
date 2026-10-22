@@ -50,7 +50,7 @@ class MacOsWatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(MacOsWatchServiceDirectoryWatcher)
     private Map<WatchKey, List<String>> watchKeyToExtensionsMap = new ConcurrentHashMap<>()
-    private Set<Path> individualWatchedFiles = new HashSet<>()
+    private Set<Path> individualWatchedFiles = [] as Set
 
     private final WatchService watchService
 
@@ -87,7 +87,7 @@ class MacOsWatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
                     WatchEvent<Path> pathWatchEvent = cast(watchEvent)
                     Path child = pathWatchEvent.context()
                     File childFile = child.toFile()
-                    if (individualWatchedFiles.contains(child) || individualWatchedFiles.contains(child.normalize())) {
+                    if (child in individualWatchedFiles || child.normalize() in individualWatchedFiles) {
                         if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
                             fireOnNew(childFile)
                         } else if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
@@ -96,7 +96,7 @@ class MacOsWatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
                             // do nothing... there's no way to communicate deletions
                         }
                     } else {
-                        List<String> fileExtensions = watchKeyToExtensionsMap.get(watchKey)
+                        List<String> fileExtensions = watchKeyToExtensionsMap[watchKey]
                         if (fileExtensions == null) {
                             // this event didn't match a file in individualWatchedFiles so it's a not an individual file we're interested in
                             // this event also didn't match a directory that we're interested in (if it did, fileExtentions wouldn't be null)
@@ -150,11 +150,11 @@ class MacOsWatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 
     @Override
     void addWatchFile(File fileToWatch) {
-        if (!isValidFileToMonitor(fileToWatch, Arrays.asList('*'))) return
+        if (!isValidFileToMonitor(fileToWatch, ['*'])) return
         try {
             if (!fileToWatch.exists()) return
             Path pathToWatch = fileToWatch.toPath().toAbsolutePath()
-            individualWatchedFiles.add(pathToWatch)
+            individualWatchedFiles << pathToWatch
             WatchablePath watchPath = new WatchablePath(pathToWatch)
             Kind[] events = [StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY] as Kind[]
             watchPath.register(watchService, events)
@@ -185,7 +185,7 @@ class MacOsWatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
                     WatchablePath watchPath = new WatchablePath(subDir)
                     Kind[] events = [StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY] as Kind[]
                     WatchKey watchKey = watchPath.register(watchService, events)
-                    final List<String> originalFileExtensions = watchKeyToExtensionsMap.get(watchKey)
+                    final List<String> originalFileExtensions = watchKeyToExtensionsMap[watchKey]
                     if (originalFileExtensions == null) {
                         watchKeyToExtensionsMap.put(watchKey, fileExtensions)
                     } else {

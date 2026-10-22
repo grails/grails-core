@@ -32,7 +32,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 abstract class AbstractDirectoryWatcher implements Runnable {
 
-    private List<DirectoryWatcher.FileChangeListener> listeners = new ArrayList<>()
+    private List<DirectoryWatcher.FileChangeListener> listeners = []
     volatile protected boolean active = true //must be volatile as it's read by multiple threads and the value should be reflected in all of them
     protected long sleepTime = 1000
 
@@ -60,7 +60,7 @@ abstract class AbstractDirectoryWatcher implements Runnable {
      * @param listener The file listener
      */
     void addListener(DirectoryWatcher.FileChangeListener listener) {
-        listeners.add(listener)
+        listeners << listener
     }
 
     /**
@@ -89,30 +89,30 @@ abstract class AbstractDirectoryWatcher implements Runnable {
     abstract void addWatchDirectory(File dir, List<String> fileExtensions)
 
     protected void fireOnChange(File file) {
-        for (DirectoryWatcher.FileChangeListener listener : listeners) {
+        for (DirectoryWatcher.FileChangeListener listener in listeners) {
             listener.onChange(file)
         }
     }
 
     protected void fireOnNew(File file) {
-        for (DirectoryWatcher.FileChangeListener listener : listeners) {
+        for (DirectoryWatcher.FileChangeListener listener in listeners) {
             listener.onNew(file)
         }
     }
 
     protected boolean isValidDirectoryToMonitor(File file) {
-        return file.isDirectory() && !file.isHidden() && !file.getName().startsWith('.')
+        return file.isDirectory() && !file.isHidden() && !file.name.startsWith('.')
     }
 
     protected boolean isValidFileToMonitor(File file, Collection<String> fileExtensions) {
-        String name = file.getName()
-        String path = file.getAbsolutePath()
+        String name = file.name
+        String path = file.absolutePath
         boolean isSvnFile = path.indexOf(File.separator + DirectoryWatcher.SVN_DIR_NAME + File.separator) > 0
         return !isSvnFile &&
                 !file.isDirectory() &&
                 !file.isHidden() &&
-                !file.getName().startsWith('.') &&
-                (fileExtensions.contains('*') || fileExtensions.contains(getFilenameExtension(name)))
+                !file.name.startsWith('.') &&
+                ('*' in fileExtensions || getFilenameExtension(name) in fileExtensions)
     }
 
     /**

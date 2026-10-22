@@ -46,14 +46,8 @@ class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
     static MetaClassRegistryCleaner createAndRegister() {
 
         MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry()
-        MetaClassRegistryChangeEventListener[] listeners = metaClassRegistry.getMetaClassRegistryChangeEventListeners()
-        boolean registered = false
-        for (MetaClassRegistryChangeEventListener listener in listeners) {
-            if (listener == INSTANCE) {
-                registered = true; break
-            }
-        }
-        if (!registered) {
+        MetaClassRegistryChangeEventListener[] listeners = metaClassRegistry.metaClassRegistryChangeEventListeners
+        if (!listeners.any { INSTANCE.is(it) }) {
             GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(INSTANCE)
         }
         return INSTANCE
@@ -70,10 +64,10 @@ class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
 
     void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
         if (!cleaning) {
-            MetaClass oldMetaClass = cmcu.getOldMetaClass()
-            Class classToUpdate = cmcu.getClassToUpdate()
-            Object instanceToUpdate = cmcu.getInstance()
-            if (instanceToUpdate == null && (cmcu.getNewMetaClass() instanceof ExpandoMetaClass)) {
+            MetaClass oldMetaClass = cmcu.oldMetaClass
+            Class classToUpdate = cmcu.classToUpdate
+            Object instanceToUpdate = cmcu.instance
+            if (instanceToUpdate == null && (cmcu.newMetaClass instanceof ExpandoMetaClass)) {
                 updateMetaClassOfClass(oldMetaClass, classToUpdate)
             } else if (instanceToUpdate != null) {
                 updateMetaClassOfInstance(oldMetaClass, instanceToUpdate)
@@ -84,8 +78,8 @@ class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
     private void updateMetaClassOfInstance(MetaClass oldMetaClass, Object instanceToUpdate) {
         IdentityWeakReference key = new IdentityWeakReference(instanceToUpdate)
         if (oldMetaClass != null) {
-            Object current = alteredInstances.get(key)
-            if (current == null || current == NO_CUSTOM_METACLASS) {
+            Object current = alteredInstances[key]
+            if (current == null || NO_CUSTOM_METACLASS.is(current)) {
                 alteredInstances.put(key, oldMetaClass)
             }
         } else {
@@ -94,8 +88,8 @@ class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
     }
 
     private void updateMetaClassOfClass(MetaClass oldMetaClass, Class classToUpdate) {
-        if (oldMetaClass != null && !(oldMetaClass.getClass().getName().equals('groovy.mock.interceptor.MockProxyMetaClass'))) {
-            Object current = alteredClasses.get(classToUpdate)
+        if (oldMetaClass != null && oldMetaClass.getClass().name != 'groovy.mock.interceptor.MockProxyMetaClass') {
+            Object current = alteredClasses[classToUpdate]
             if (current == null) {
                 alteredClasses.put(classToUpdate, oldMetaClass)
             }
@@ -121,8 +115,8 @@ class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
         for (IdentityWeakReference key in keys) {
             Object instance = key.get()
             if (instance != null) {
-                Object alteredMetaClass = alteredInstances.get(key)
-                if (alteredMetaClass == NO_CUSTOM_METACLASS) {
+                Object alteredMetaClass = alteredInstances[key]
+                if (NO_CUSTOM_METACLASS.is(alteredMetaClass)) {
                     alteredMetaClass = null
                 }
                 registry.setMetaClass(instance, (MetaClass) alteredMetaClass)
@@ -134,8 +128,8 @@ class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
     private void cleanMetaClassOfClass(MetaClassRegistryImpl registry) {
         Set<Class> classes = new HashSet<>(alteredClasses.keySet())
         for (Class aClass in classes) {
-            Object alteredMetaClass = alteredClasses.get(aClass)
-            if (alteredMetaClass == NO_CUSTOM_METACLASS) {
+            Object alteredMetaClass = alteredClasses[aClass]
+            if (NO_CUSTOM_METACLASS.is(alteredMetaClass)) {
                 registry.removeMetaClass(aClass)
             }
             else {

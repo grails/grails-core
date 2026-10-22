@@ -185,7 +185,7 @@ class PathMatchingResourcePatternResolver {
      * (never <code>null</code>).
      */
     ClassLoader getClassLoader() {
-        return getResourceLoader().getClassLoader()
+        return getResourceLoader().classLoader
     }
 
     /**
@@ -245,9 +245,9 @@ class PathMatchingResourcePatternResolver {
         Set<Resource> result = new LinkedHashSet<>(16)
         while (resourceUrls.hasMoreElements()) {
             URL url = resourceUrls.nextElement()
-            result.add(convertClassLoaderURL(url))
+            result << convertClassLoaderURL(url)
         }
-        return result.toArray(new Resource[result.size()])
+        return result as Resource[]
     }
 
     /**
@@ -285,7 +285,7 @@ class PathMatchingResourcePatternResolver {
                 result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern))
             }
         }
-        return result.toArray(new Resource[result.size()])
+        return result as Resource[]
     }
 
     /**
@@ -336,7 +336,7 @@ class PathMatchingResourcePatternResolver {
      * @see #doFindPathMatchingJarResources
      */
     protected boolean isJarResource(Resource resource) throws IOException {
-        return GrailsResourceUtils.isJarURL(resource.getURL())
+        return GrailsResourceUtils.isJarURL(resource.URL)
     }
 
     /**
@@ -351,7 +351,7 @@ class PathMatchingResourcePatternResolver {
     protected Set<Resource> doFindPathMatchingJarResources(Resource rootDirResource, String subPattern)
             throws IOException {
 
-        URLConnection con = rootDirResource.getURL().openConnection()
+        URLConnection con = rootDirResource.URL.openConnection()
         JarFile jarFile
         String jarFileUrl
         String rootEntryPath
@@ -359,19 +359,19 @@ class PathMatchingResourcePatternResolver {
 
         if (con instanceof JarURLConnection) {
             // Should usually be the case for traditional JAR files.
-            JarURLConnection jarCon = (JarURLConnection) con
+            JarURLConnection jarCon = con
             GrailsResourceUtils.useCachesIfNecessary(jarCon)
-            jarFile = jarCon.getJarFile()
-            jarFileUrl = jarCon.getJarFileURL().toExternalForm()
-            JarEntry jarEntry = jarCon.getJarEntry()
-            rootEntryPath = (jarEntry != null ? jarEntry.getName() : '')
+            jarFile = jarCon.jarFile
+            jarFileUrl = jarCon.jarFileURL.toExternalForm()
+            JarEntry jarEntry = jarCon.jarEntry
+            rootEntryPath = jarEntry != null ? jarEntry.name : ''
         }
         else {
             // No JarURLConnection -> need to resort to URL file parsing.
             // We'll assume URLs of the format "jar:path!/entry", with the protocol
             // being arbitrary as long as following the entry format.
             // We'll also handle paths with and without leading "file:" prefix.
-            String urlFile = rootDirResource.getURL().getFile()
+            String urlFile = rootDirResource.URL.file
             int separatorIndex = urlFile.indexOf(GrailsResourceUtils.JAR_URL_SEPARATOR)
             if (separatorIndex != -1) {
                 jarFileUrl = urlFile.substring(0, separatorIndex)
@@ -387,7 +387,7 @@ class PathMatchingResourcePatternResolver {
         }
 
         try {
-            if (!''.equals(rootEntryPath) && !rootEntryPath.endsWith('/')) {
+            if (!rootEntryPath.isEmpty() && !rootEntryPath.endsWith('/')) {
                 // Root entry path must end with slash to allow for proper matching.
                 // The Sun JRE does not return a slash here, but BEA JRockit does.
                 rootEntryPath = rootEntryPath + '/'
@@ -395,11 +395,11 @@ class PathMatchingResourcePatternResolver {
             Set<Resource> result = new LinkedHashSet<>(8)
             for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
                 JarEntry entry = entries.nextElement()
-                String entryPath = entry.getName()
+                String entryPath = entry.name
                 if (entryPath.startsWith(rootEntryPath)) {
                     String relativePath = entryPath.substring(rootEntryPath.length())
                     if (getPathMatcher().match(subPattern, relativePath)) {
-                        result.add(rootDirResource.createRelative(relativePath))
+                        result << rootDirResource.createRelative(relativePath)
                     }
                 }
             }
@@ -420,7 +420,7 @@ class PathMatchingResourcePatternResolver {
     protected JarFile getJarFile(String jarFileUrl) throws IOException {
         if (jarFileUrl.startsWith(GrailsResourceUtils.FILE_URL_PREFIX)) {
             try {
-                return new JarFile(GrailsResourceUtils.toURI(jarFileUrl).getSchemeSpecificPart())
+                return new JarFile(GrailsResourceUtils.toURI(jarFileUrl).schemeSpecificPart)
             }
             catch (URISyntaxException ex) {
                 // Fallback for URLs that are not valid URIs (should hardly ever happen).
@@ -444,7 +444,7 @@ class PathMatchingResourcePatternResolver {
 
         File rootDir
         try {
-            rootDir = rootDirResource.getFile().getAbsoluteFile()
+            rootDir = rootDirResource.file.absoluteFile
         }
         catch (IOException ex) {
             return Collections.emptySet()
@@ -465,7 +465,7 @@ class PathMatchingResourcePatternResolver {
         Set<File> matchingFiles = retrieveMatchingFiles(rootDir, subPattern)
         Set<Resource> result = new LinkedHashSet<>(matchingFiles.size())
         for (File file in matchingFiles) {
-            result.add(new FileSystemResource(file))
+            result << new FileSystemResource(file)
         }
         return result
     }
@@ -491,7 +491,7 @@ class PathMatchingResourcePatternResolver {
         if (!rootDir.canRead()) {
             return Collections.emptySet()
         }
-        String fullPattern = rootDir.getAbsolutePath().replace(File.separator, '/')
+        String fullPattern = rootDir.absolutePath.replace(File.separator, '/')
         if (!pattern.startsWith('/')) {
             fullPattern += '/'
         }
@@ -516,14 +516,14 @@ class PathMatchingResourcePatternResolver {
             return
         }
         for (File content in dirContents) {
-            String currPath = content.getAbsolutePath().replace(File.separator, '/')
+            String currPath = content.absolutePath.replace(File.separator, '/')
             if (content.isDirectory() && getPathMatcher().matchStart(fullPattern, currPath + '/')) {
                 if (content.canRead()) {
                     doRetrieveMatchingFiles(fullPattern, content, result)
                 }
             }
             if (getPathMatcher().match(fullPattern, currPath)) {
-                result.add(content)
+                result << content
             }
         }
     }

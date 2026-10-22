@@ -40,7 +40,7 @@ class StaticResourceLoader implements ResourceLoader {
     }
 
     ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader()
+        return Thread.currentThread().contextClassLoader
     }
 
 }
