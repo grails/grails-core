@@ -19,6 +19,7 @@
 package org.grails.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -395,14 +396,16 @@ public abstract class NavigableMapConfig implements Config {
 
     /**
      * The process environment as it stood when this config was created, indexed so that a key no
-     * variable can match is answered with one hash lookup.
+     * variable can match is answered without allocating.
      * <p>
      * A key matches a variable in any of the spellings Spring's {@code SystemEnvironmentPropertySource}
      * accepts: as written, with dots replaced by underscores, with hyphens replaced by underscores,
      * with both replaced, and the upper-cased form of each. Every one of those spellings has the same
      * canonical name, so a key whose canonical name belongs to no variable cannot match and is
-     * rejected without probing. Only a key whose canonical name is present runs the spelling-by-spelling
-     * resolution, which keeps the precedence between spellings as it was.
+     * rejected without probing: the hash of its canonical name is computed over its characters and
+     * looked up among the hashes of the variables' canonical names. Only a key whose hash is present
+     * builds the canonical name for the exact check and then runs the spelling-by-spelling resolution,
+     * which keeps the precedence between spellings as it was.
      * <p>
      * The environment of a running JVM cannot change, so one snapshot per config instance is exact;
      * {@link #refreshSystemEnvironment()} takes a new one for a test that installs variables
@@ -419,21 +422,46 @@ public abstract class NavigableMapConfig implements Config {
 
         private final Map<String, String> variables;
         private final Set<String> canonicalNames;
+        private final int[] canonicalHashes;
 
         SystemEnvironmentIndex(Map<String, String> environment) {
-            this.variables = IS_WINDOWS ? new TreeMap<>(String.CASE_INSENSITIVE_ORDER) : new HashMap<>();
+            this.variables = IS_WINDOWS ? new TreeMap<>(String.CASE_INSENSITIVE_ORDER) : HashMap.newHashMap(environment.size());
             this.variables.putAll(environment);
-            this.canonicalNames = new HashSet<>();
+            this.canonicalNames = HashSet.newHashSet(variables.size());
             for (String name : variables.keySet()) {
                 canonicalNames.add(canonicalName(name));
             }
+            this.canonicalHashes = canonicalNames.stream().mapToInt(String::hashCode).sorted().toArray();
         }
 
         String get(String key) {
-            if (key == null || !canonicalNames.contains(canonicalName(key))) {
+            if (key == null || !mayMatch(key)) {
                 return null;
             }
             return variables.get(resolvePropertyName(key));
+        }
+
+        /**
+         * Whether the canonical name of the key belongs to a variable. The name's hash is computed
+         * over the key's characters without building the name, and only a key whose hash is present
+         * builds it for the exact check. A character above ASCII can upper-case to more than one
+         * character, as {@code ß} does, so a key that contains one takes the exact check directly.
+         */
+        private boolean mayMatch(String key) {
+            int hash = 0;
+            for (int i = 0, length = key.length(); i < length; i++) {
+                char c = key.charAt(i);
+                if (c > 127) {
+                    return canonicalNames.contains(canonicalName(key));
+                }
+                if (c == '.' || c == '-') {
+                    c = '_';
+                } else if (c >= 'a' && c <= 'z') {
+                    c = (char) (c - ('a' - 'A'));
+                }
+                hash = 31 * hash + c;
+            }
+            return Arrays.binarySearch(canonicalHashes, hash) >= 0 && canonicalNames.contains(canonicalName(key));
         }
 
         private static String canonicalName(String name) {
