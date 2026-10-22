@@ -172,9 +172,11 @@ property-with_mixed.symbols: from-yml
     }
 
     void 'a property that has already been read still reflects later configuration changes'() {
-        given: 'a property that has been read once'
+        given: 'a configured property'
         def config = configFor('some.nested.value: original')
-        assert config.getProperty('some.nested.value') == 'original'
+
+        expect: 'it resolves to the configured value'
+        config.getProperty('some.nested.value') == 'original'
 
         when: 'the configuration is changed'
         config.merge(['some.nested.value': 'updated'])
@@ -186,7 +188,9 @@ property-with_mixed.symbols: from-yml
     void 'each config observes the environment as it stands when the config is created'() {
         given: 'a config created before the variable exists'
         def before = configFor('late.bound.property: from-yml')
-        assert before.getProperty('late.bound.property') == 'from-yml'
+
+        expect: 'it resolves to the configured value'
+        before.getProperty('late.bound.property') == 'from-yml'
 
         when: 'the variable is installed and a new config is created'
         modifiableSystemEnvironment.put('LATE_BOUND_PROPERTY', 'from-env')
