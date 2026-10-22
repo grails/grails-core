@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.bootstrap.ConfigurableBootstrapContext;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -147,12 +149,10 @@ public class I18nEnvironmentPostProcessor implements EnvironmentPostProcessor, O
     }
 
     private List<String> declaredBasenames(ConfigurableEnvironment environment) {
-        String declared = environment.getProperty(BASENAME_PROPERTY);
-        if (declared == null || declared.isBlank()) {
-            return List.of();
-        }
+        List<String> declared = Binder.get(environment).bind(BASENAME_PROPERTY, Bindable.listOf(String.class))
+                .orElseGet(List::of);
         List<String> basenames = new ArrayList<>();
-        for (String basename : declared.split(",")) {
+        for (String basename : declared) {
             String trimmed = basename.trim();
             if (!trimmed.isEmpty()) {
                 basenames.add(trimmed);
