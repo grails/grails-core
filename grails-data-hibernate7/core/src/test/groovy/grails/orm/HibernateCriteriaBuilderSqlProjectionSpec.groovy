@@ -32,6 +32,8 @@ import spock.lang.Specification
 
 import grails.gorm.annotation.Entity
 import grails.gorm.transactions.Rollback
+import org.grails.orm.hibernate.query.PredicateGenerator
+import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.orm.hibernate.HibernateDatastore
 import org.grails.orm.hibernate.cfg.Settings
@@ -123,6 +125,31 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
 
         then:
         rows*.toList().sort { it[0] } == [[2, 3L, 24L], [4, 1L, 9L]]
+    }
+
+    @Rollback
+    void 'an order handler orders by the expression a SQL projection records under its alias'() {
+        given: "a handler that orders by the selection an alias stands for, descending"
+        saveBoxes()
+        PredicateGenerator.registerOrderHandler(SqlProjectionAliasOrder) { query, root, cb, order, context ->
+            cb.desc(context.getSelectionAlias(order.property))
+        }
+
+        when:
+        List rows = SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as scaled', 'scaled', INTEGER
+            }
+            order(new SqlProjectionAliasOrder('scaled'))
+        }
+
+        then: "the rows come in descending order of the projection, and the SQL orders by the select item, not by a column"
+        rows == rows.sort(false).reverse()
+        rows.size() == SqlProjectionBox.count()
+        sqlCapture.statements.any { it.contains('select width * 10 from') && it.contains('order by 1 desc') }
+
+        cleanup:
+        PredicateGenerator.clearCustomOrderHandlers()
     }
 
     @Rollback
@@ -511,4 +538,12 @@ class SqlProjectionBox {
     Integer height
     Date packedAt
     SqlProjectionShelf shelf
+}
+
+/** An order that a registered handler converts, naming the column alias of a SQL projection. */
+class SqlProjectionAliasOrder extends Query.Order {
+
+    SqlProjectionAliasOrder(String alias) {
+        super(alias)
+    }
 }

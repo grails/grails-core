@@ -424,7 +424,8 @@ The handlers convert them. A criterion handler is given the query, its root, the
 criterion and the query's `QueryPathContext`. Through the context, `getFullyQualifiedPath` resolves a property path
 the way the built-in criteria do: `alias.property`, for an alias created with `createAlias`, or `association.property`
 becomes a path on the join GORM created for that association, so a custom criterion and a built-in one on the
-same association restrict the same row rather than each joining the association again. An order handler is given
+same association restrict the same row rather than each joining the association again, and `getSelectionAlias`
+returns the expression a `sqlProjection` records under its column alias, so an order can sort by a projected value. An order handler is given
 the query, its root, the criteria builder, the order and the context, and returns the JPA order, or `null` to leave
 the order out. A query whose result is a count leaves every order out by itself, so no handler runs for it:
 
