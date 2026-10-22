@@ -21,6 +21,8 @@ package grails.gorm.services
 import grails.gorm.annotation.Entity
 import org.grails.datastore.gorm.services.Implemented
 import org.grails.datastore.gorm.services.implementers.DeleteImplementer
+import org.grails.datastore.gorm.services.implementers.FindAllPropertyProjectionImplementer
+import org.grails.datastore.gorm.services.implementers.FindOneByInterfaceProjectionImplementer
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import rx.Single
 import spock.lang.AutoCleanup
@@ -162,6 +164,43 @@ class RxServiceImplSpec extends Specification {
         then:
         author == "Stephen King"
     }
+
+    void "test property projection that returns an observable"() {
+        given:
+        new Book(title: "Along Came a Spider", author: "James Patterson").save(flush:true)
+        new Book(title: "The Stand", author: "Stephen King").save(flush:true)
+        new Book(title: "The Stand", author: "Richard Bachman").save(flush:true)
+        BookProjectionService bookService = datastore.getService(BookProjectionService)
+
+        when:
+        def implementer = bookService.getClass().getMethod("findBookAuthor", String).getAnnotation(Implemented).by()
+        List<String> authors = bookService.findBookAuthor("The Stand").toList().toBlocking().single()
+
+        then:"every projected value is emitted"
+        implementer == FindAllPropertyProjectionImplementer
+        authors.sort() == ["Richard Bachman", "Stephen King"]
+
+        when:
+        List<String> none = bookService.findBookAuthor("Nothing").toList().toBlocking().single()
+
+        then:"an observable without a match completes empty"
+        none.empty
+    }
+
+    void "test interface projection that returns a single"() {
+        given:
+        new Book(title: "The Stand", author: "Stephen King").save(flush:true)
+        BookProjectionService bookService = datastore.getService(BookProjectionService)
+
+        when:
+        def implementer = bookService.getClass().getMethod("findByTitle", String).getAnnotation(Implemented).by()
+        BookInfo info = bookService.findByTitle("The Stand").toBlocking().value()
+
+        then:"a single result implementer is chosen, not the iterable one"
+        implementer == FindOneByInterfaceProjectionImplementer
+        info.title == "The Stand"
+        info.author == "Stephen King"
+    }
 }
 
 @Entity
@@ -208,4 +247,17 @@ interface BookService {
     rx.Observable<Book> findByTitleLike(String pattern)
 
     Single<Book> findOne(String title)
+}
+
+interface BookInfo {
+    String getTitle()
+    String getAuthor()
+}
+
+@Service(value = Book)
+interface BookProjectionService {
+
+    rx.Observable<String> findBookAuthor(String title)
+
+    Single<BookInfo> findByTitle(String title)
 }
