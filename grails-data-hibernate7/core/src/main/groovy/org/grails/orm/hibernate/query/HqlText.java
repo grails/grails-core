@@ -20,7 +20,6 @@
 package org.grails.orm.hibernate.query;
 
 import java.util.Locale;
-import java.util.Set;
 
 import jakarta.annotation.Nullable;
 
@@ -35,23 +34,13 @@ import jakarta.annotation.Nullable;
  */
 final class HqlText {
 
-    private static final String SELECT = HibernateQueryArgument.HQL_SELECT.value();
-    private static final String FROM = HibernateQueryArgument.HQL_FROM.value();
-    private static final String DISTINCT = HibernateQueryArgument.HQL_DISTINCT.value();
-    private static final String ALL = HibernateQueryArgument.HQL_ALL.value();
-    private static final String AS = HibernateQueryArgument.HQL_AS.value();
-    private static final String NEW = HibernateQueryArgument.HQL_NEW.value();
+    private static final String SELECT = HqlKeyword.SELECT.text();
+    private static final String FROM = HqlKeyword.FROM.text();
+    private static final String DISTINCT = HqlKeyword.DISTINCT.text();
+    private static final String ALL = HqlKeyword.ALL.text();
+    private static final String AS = HqlKeyword.AS.text();
+    private static final String NEW = HqlKeyword.NEW.text();
     private static final String SYNTHETIC_ALIAS = "e";
-    private static final Set<String> CLAUSE_KEYWORDS = Set.of(
-            HibernateQueryArgument.HQL_WHERE.value(),
-            HibernateQueryArgument.HQL_JOIN.value(),
-            HibernateQueryArgument.HQL_LEFT.value(),
-            HibernateQueryArgument.HQL_RIGHT.value(),
-            HibernateQueryArgument.HQL_INNER.value(),
-            HibernateQueryArgument.HQL_OUTER.value(),
-            HibernateQueryArgument.HQL_GROUP.value(),
-            HibernateQueryArgument.HQL_ORDER.value(),
-            HibernateQueryArgument.HQL_HAVING.value());
 
     private final String text;
     private final int selectIndex;
@@ -187,8 +176,8 @@ final class HqlText {
      * follows the entity.
      */
     static boolean isClauseAlias(String hql, int from, int to) {
-        String token = hql.substring(from, to).toLowerCase(Locale.ROOT);
-        return !token.isEmpty() && !CLAUSE_KEYWORDS.contains(token);
+        String token = hql.substring(from, to);
+        return !token.isEmpty() && !HqlKeyword.startsClause(token);
     }
 
     /** Whether the root entity ending at {@code entityEnd} is followed by an alias of the user's, with or without {@code as}. */
