@@ -50,7 +50,6 @@ dependencies {
     api project(':grails-services')
 
     api project(':grails-gsp')
-    api "org.codehaus.gpars:gpars:$gparsVersion"
     api "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:$concurrentlinkedhashmapLruVersion"
 
     compileOnly project(':grails-domain-class')

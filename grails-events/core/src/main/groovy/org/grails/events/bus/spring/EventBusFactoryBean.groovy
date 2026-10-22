@@ -69,7 +69,7 @@ class EventBusFactoryBean extends EventBusBuilder implements FactoryBean<EventBu
 
     /**
      * Closes the event bus with the application context when the implementation owns resources,
-     * such as the actor loop behind the Groovy and GPars event buses.
+     * such as the actor loop behind the Groovy event bus.
      */
     @Override
     void destroy() throws Exception {

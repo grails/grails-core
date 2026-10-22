@@ -26,7 +26,6 @@ group = 'this.will.be.overridden'
 def publishedProjects = [
         'grails-async',
         'grails-async-core',
-        'grails-async-gpars',
         'grails-async-groovy-concurrent',
         'grails-async-rxjava',
         'grails-async-rxjava2',
@@ -58,7 +57,6 @@ def publishedProjects = [
         'grails-events',
         'grails-events-compat',
         'grails-events-core',
-        'grails-events-gpars',
         'grails-events-groovy-concurrent',
         'grails-events-rxjava',
         'grails-events-rxjava2',
