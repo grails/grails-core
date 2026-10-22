@@ -32,9 +32,15 @@ class ManyToOneValuesBinder {
         PropertyConfig config = property.hibernateMappedForm
 
         FetchMode fetchMode = config.fetchMode != null ? config.fetchMode : FetchMode.DEFAULT
+        boolean lazy = property.isLazy()
+        // Hibernate resolves DEFAULT to a JOIN for an associated entity it cannot proxy, and then
+        // logs HHH000510 for a lazy association. SELECT is the fetch mode that matches lazy loading.
+        if (lazy && fetchMode == FetchMode.DEFAULT) {
+            fetchMode = FetchMode.SELECT
+        }
         manyToOne.fetchMode = fetchMode
 
-        manyToOne.lazy = property.isLazy()
+        manyToOne.lazy = lazy
 
         manyToOne.ignoreNotFound = config.ignoreNotFound
 
