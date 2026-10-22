@@ -88,6 +88,18 @@ property-with_mixed.symbols: from-yml
         Locale.setDefault(defaultLocale)
     }
 
+    void 'a key with a character above ASCII is matched through its upper-cased form'() {
+        given: 'a variable that is the upper-cased key, in which the sharp s has become two letters'
+        modifiableSystemEnvironment.put('STRASSE_X', 'from-env')
+        def config = configFor('stra\u00dfe.x: from-yml')
+
+        expect: 'the variable overrides the configured value'
+        config.getProperty('stra\u00dfe.x') == 'from-env'
+
+        cleanup:
+        modifiableSystemEnvironment.remove('STRASSE_X')
+    }
+
     void 'a null key resolves to the default value'() {
         given: 'any configuration'
         def config = configFor(YAML)
