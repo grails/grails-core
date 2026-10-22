@@ -133,6 +133,62 @@ class PropertySourcesConfigSpec extends Specification {
         config.getProperty('...') == null
     }
 
+    void 'the flat key is read before the nested maps are walked'() {
+        given: "a merged value, which exists as a flat key and as a nested entry"
+        def config = new PropertySourcesConfig()
+        config.merge([a: [b: 'merged']])
+
+        expect: "every read agrees"
+        config.getProperty('a.b') == 'merged'
+        config['a.b'] == 'merged'
+        config.a.b == 'merged'
+
+        when: "the flat key is written directly"
+        config.put('a.b', 'flat')
+
+        then: "getProperty answers with it, as config['a.b'] does"
+        config.getProperty('a.b') == 'flat'
+        config['a.b'] == 'flat'
+
+        when: "the nested entry is written directly"
+        config.a.put('b', 'nested')
+
+        then: "getProperty keeps the flat key, while dot navigation reads the nested entry"
+        config.getProperty('a.b') == 'flat'
+        config.a.b == 'nested'
+
+        when: "the value is assigned through dot notation, which writes both"
+        config.a.b = 'assigned'
+
+        then: "every read agrees again"
+        config.getProperty('a.b') == 'assigned'
+        config['a.b'] == 'assigned'
+        config.a.b == 'assigned'
+    }
+
+    void 'a flat key that a merge left behind is read rather than the scalar that replaced its parent'() {
+        given: "a nested block merged first and a scalar merged over its parent, as a higher-precedence source does"
+        def config = new PropertySourcesConfig()
+        config.merge(['server.url.port': 'y', 'server.url': 'x'])
+
+        expect: "the parent is the scalar"
+        config.getProperty('server.url') == 'x'
+
+        and: "the child answers with the flat key the first merge wrote"
+        config.getProperty('server.url.port') == 'y'
+    }
+
+    void 'a dotted key written directly is read even when its parent is a scalar'() {
+        given: "a scalar and a dotted key below it, both written directly"
+        def config = new PropertySourcesConfig()
+        config.put('a', 'scalar')
+        config.put('a.b', 1)
+
+        expect: "each answers with what was written"
+        config.getProperty('a') == 'scalar'
+        config.getProperty('a.b', Integer) == 1
+    }
+
     void 'a dotted key that runs past a value that is not a map is absent'() {
         given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
         def constraints = { nullable true }

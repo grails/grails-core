@@ -234,10 +234,12 @@ public abstract class NavigableMapConfig implements Config {
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         Object value = systemEnvironment.get(key);
         if (value == null) {
-            value = getValueWithDotNotatedKeySupport(configMap, key);
+            // merge and dot-notation assignment write the flat key as well as the nested entry, so the flat
+            // key answers nearly every lookup without a walk; where the two disagree the flat key wins.
+            value = configMap.get(key);
         }
         if (value == null) {
-            value = configMap.get(key);
+            value = getValueWithDotNotatedKeySupport(configMap, key);
         }
 
         return convertValueIfNecessary(value, targetType, defaultValue);
