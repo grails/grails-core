@@ -198,7 +198,7 @@ published in its existing descriptor format; `grails-xml` concerns application H
 Each JSON and XML path keeps its Grails 8 output by default in Grails 9, and has a setting that opts into the
 Jackson-based one. A `ProblemDetail` is the exception: `respond` writes it as Spring MVC writes it, whatever the
 settings, with the exceptions section 11 lists. The smaller changes that apply whatever the settings, such as `Accept`
-headers matched whatever their case, are in sections 3, 6, 8, 10, 12, 13 and 15, and in this section, where `grails-converters`
+headers matched whatever their case, are in sections 4, 7, 9, 11, 13, 14 and 16, and in this section, where `grails-converters`
 now brings Boot's `JsonMapper`, which Spring MVC's JSON converter then writes with.
 
 [cols="2,3,1,2", options="header"]
@@ -318,7 +318,7 @@ persistent properties and the id, associated instances as references of their id
 `grails.converters.json.default.deep`, the version and class name with the `grails.converters.json.domain.*`
 settings, and what Jackson applies to a bean, such as `@JsonIgnore`, `@JsonInclude` and the naming strategy.
 Per-response `includes` and `excludes` apply to domain classes too. On top of that serializer, the converter applies what
-sections 6 and 7 describe, which the mapper does not, such as the marshallers registered with `JSON.registerObjectMarshaller(...)`
+sections 7 and 8 describe, which the mapper does not, such as the marshallers registered with `JSON.registerObjectMarshaller(...)`
 or an `ObjectMarshallerRegisterer`, subclasses of `DomainClassMarshaller`, enums written by their names, and strings escaped
 for an HTML `<script>` element. Ordinary non-domain beans retain Jackson's property rules. Application-provided converter
 subclasses and per-type mapper registrations keep their configured behavior and precedence.
