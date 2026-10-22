@@ -16,6 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.plugins;
 
 import grails.plugins.GrailsPlugin;
@@ -26,14 +27,14 @@ import org.grails.commons.test.AbstractGrailsMockTests;
 import grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 
-import java.io.File;
-
 /**
  * Test for the DefaultGrailsPlugin class
  *
  * @author Graeme Rocher
  */
-public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 
     private Class<?> versioned;
     private Class<?> versioned2;
@@ -46,78 +47,55 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 
     @Override
     protected void onSetUp() {
-        versioned = gcl.parseClass("class MyGrailsPlugin {\n" +
-                        "def version = 1.1;" +
-                        "def watchedResources = [\"file:./grails-app/taglib/**/*TagLib.groovy\", \"./grails-app/controller/**/*.groovy\", \"file:/absolutePath/**/*.gsp\" ]\n" +
-                        "def doWithSpring = {" +
-                        "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
-                        "}\n" +
-                        "def doWithApplicationContext = { ctx ->" +
-                        "assert ctx != null" +
-                        "}\n" +
-                        "def onChange = { event ->" +
-                        "assert event != null" +
-                        "}" +
-                        "}");
-        versioned2 = gcl.parseClass("class MyTwoGrailsPlugin extends grails.plugins.Plugin {\n" +
-                "def version = 1.1;" +
-                "Closure doWithSpring() { {->" +
-                "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
-                "}}\n" +
-                "}");
-        versioned3 = gcl.parseClass("class MyThreeGrailsPlugin extends grails.plugins.Plugin {\n" +
-                "def version = 1.1;" +
-                "Object invokeMethod(String name, Object args) {" +
-                "true" +
-                "}\n" +
-                "Closure doWithSpring() { {->" +
-                "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
-                "}}\n" +
-                "}");
-        notVersion = gcl.parseClass("class AnotherGrailsPlugin {\n" +
-                        "}");
-        notPluginClass = gcl.parseClass("class SomeOtherPlugin {\n" +
-                                        "def version = 1.4;" +
-                                        "}");
+        versioned = gcl.parseClass("""class MyGrailsPlugin {
+def version = 1.1;def watchedResources = ["file:./grails-app/taglib/**/*TagLib.groovy", "./grails-app/controller/**/*.groovy", "file:/absolutePath/**/*.gsp" ]
+def doWithSpring = {classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)}
+def doWithApplicationContext = { ctx ->assert ctx != null}
+def onChange = { event ->assert event != null}}""");
+        versioned2 = gcl.parseClass("""class MyTwoGrailsPlugin extends grails.plugins.Plugin {
+def version = 1.1;Closure doWithSpring() { {->classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)}}
+}""");
+        versioned3 = gcl.parseClass("""class MyThreeGrailsPlugin extends grails.plugins.Plugin {
+def version = 1.1;Object invokeMethod(String name, Object args) {true}
+Closure doWithSpring() { {->classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)}}
+}""");
+        notVersion = gcl.parseClass('''class AnotherGrailsPlugin {
+}''');
+        notPluginClass = gcl.parseClass('''class SomeOtherPlugin {
+def version = 1.4;
+}''');
 
-        disabled = gcl.parseClass("class DisabledGrailsPlugin {" +
-                                  "def version = 1.1; " +
-                                  "def status = 'disabled'; }");
+        disabled = gcl.parseClass("class DisabledGrailsPlugin {def version = 1.1; def status = 'disabled'; }");
 
-        observed = gcl.parseClass("class ObservingGrailsPlugin {" +
-                                  "def observe = ['another'];" +
-                                  "def version = 1.1; " +
-                                  "def status = 'disabled'; }");
+        observed = gcl.parseClass("class ObservingGrailsPlugin {def observe = ['another'];def version = 1.1; def status = 'disabled'; }");
 
-        camelCased = gcl.parseClass("class CamelCasedGrailsPlugin {" +
-                                    "def version = 2.1; " +
-                                    "def status = 'disabled'; }");
+        camelCased = gcl.parseClass("class CamelCasedGrailsPlugin {def version = 2.1; def status = 'disabled'; }");
     }
 
-    public void testDefaultGrailsPlugin() {
-        @SuppressWarnings("unused")
+    void testDefaultGrailsPlugin() {
+        @SuppressWarnings('unused')
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
 
         try {
-            @SuppressWarnings("unused")
+            @SuppressWarnings('unused')
             GrailsPlugin notVersionPlugin = new DefaultGrailsPlugin(notVersion, ga);
             fail("Should have thrown IllegalArgumentException for unversioned plugin");
         }
-        catch (PluginException e) {
+        catch (PluginException ignored) {
             // expected
         }
 
         try {
-            @SuppressWarnings("unused")
+            @SuppressWarnings('unused')
             GrailsPlugin notPlugin = new DefaultGrailsPlugin(notPluginClass, ga);
             fail("Should have thrown an exception for invalid plugin");
         }
-        catch (IllegalArgumentException e) {
+        catch (IllegalArgumentException ignored) {
             // expected
         }
     }
 
-    public void testGetPluginPath() {
+    void testGetPluginPath() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
         assertEquals("/plugins/my-1.1", versionPlugin.getPluginPath());
 
@@ -125,7 +103,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals("/plugins/camel-cased-2.1", camelCasedPlugin.getPluginPath());
     }
 
-    public void testDisabledPlugin() {
+    void testDisabledPlugin() {
         GrailsPlugin disabledPlugin = new DefaultGrailsPlugin(disabled, ga);
         GrailsPlugin enabledPlugin = new DefaultGrailsPlugin(versioned, ga);
 
@@ -133,7 +111,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         assertTrue(enabledPlugin.isEnabled());
     }
 
-    public void testDoWithApplicationContext() {
+    void testDoWithApplicationContext() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
 
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
@@ -146,7 +124,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         versionPlugin.doWithApplicationContext(ctx);
     }
 
-    public void testDoWithRuntimeConfiguration() {
+    void testDoWithRuntimeConfiguration() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
 
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
@@ -177,17 +155,17 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         assertTrue(ctx3.containsBean("classEditor"));
     }
 
-    public void testGetName() {
+    void testGetName() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
         assertEquals("my", versionPlugin.getName());
     }
 
-    public void testGetVersion() {
+    void testGetVersion() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
         assertEquals("1.1", versionPlugin.getVersion());
     }
 
-    public void testObservers() {
+    void testObservers() {
 
         GrailsPlugin observingPlugin = new DefaultGrailsPlugin(observed, ga);
 
@@ -195,7 +173,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals("another", observingPlugin.getObservedPluginNames()[0]);
     }
 
-    public void testWatchedResources() {
+    void testWatchedResources() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
         assertEquals(versionPlugin.getWatchedResourcePatterns().get(0).getDirectory().getPath(), "./grails-app/taglib".replace("/", File.separator));
         assertEquals(versionPlugin.getWatchedResourcePatterns().get(1).getDirectory().getPath(), "./grails-app/controller".replace("/", File.separator));

@@ -16,15 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package grails.util;
 
 import groovy.test.GroovyTestCase;
 import groovy.util.ObjectGraphBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class DomainBuilderTests extends GroovyTestCase {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+class DomainBuilderTests extends GroovyTestCase {
 
     private DomainBuilder builder;
     private ObjectGraphBuilder.ChildPropertySetter childPropertySetter;
@@ -39,8 +39,8 @@ public class DomainBuilderTests extends GroovyTestCase {
         employer.setName("Spacely Space Sprockets");
     }
 
-    @SuppressWarnings("rawtypes")
-    public void testChildIsCollection() throws Exception {
+    @SuppressWarnings('rawtypes')
+    void testChildIsCollection() throws Exception {
         Employee one = new Employee();
         one.setName("Cosmo");
 
@@ -59,7 +59,7 @@ public class DomainBuilderTests extends GroovyTestCase {
         assertEquals(two.getName(), ((Employee)employees.get(1)).getName());
     }
 
-    public void testChildIsNotCollection() throws Exception {
+    void testChildIsNotCollection() throws Exception {
         Address address = new Address();
         address.setStreet("Park Pl.");
 
@@ -72,46 +72,46 @@ public class DomainBuilderTests extends GroovyTestCase {
         assertEquals(0, employer.getEmployees().size());
     }
 
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public static class Employer {
+    @SuppressWarnings(['unchecked', 'rawtypes'])
+    static class Employer {
         private String name = null;
         private Address address = null;
         private List employees = new ArrayList();
 
-        public void addToEmployees(Employee employee) {
+        void addToEmployees(Employee employee) {
             employees.add(employee);
         }
 
-        public List getEmployees() {
+        List getEmployees() {
             return employees;
         }
 
-        public void setAddress(Address a) {
+        void setAddress(Address a) {
             address = a;
         }
 
-        public Address getAddress() {
+        Address getAddress() {
             return address;
         }
 
-        public void setName(String n) {
+        void setName(String n) {
             name = n;
         }
 
-        public String getName() {
+        String getName() {
             return name;
         }
     }
 
-    public static class Employee {
+    static class Employee {
         private String name;
-        public void setName(String n) { name = n; }
-        public String getName() { return name; }
+        void setName(String n) { name = n; }
+        String getName() { return name; }
     }
 
-    public static class Address {
+    static class Address {
         private String street;
-        public void setStreet(String s) { street = s; }
-        public String getStreet() { return street; }
+        void setStreet(String s) { street = s; }
+        String getStreet() { return street; }
     }
 }

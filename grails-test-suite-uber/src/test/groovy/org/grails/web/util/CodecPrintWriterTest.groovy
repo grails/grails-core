@@ -17,16 +17,13 @@
  *  under the License.
  */
 
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.web.util;
 
 import static org.junit.Assert.assertEquals;
 
 import grails.config.Config;
 import grails.util.Metadata;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import grails.core.ArtefactHandler;
 import grails.core.ArtefactInfo;
@@ -52,7 +49,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 
-public class CodecPrintWriterTest {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+class CodecPrintWriterTest {
     EncodingStateRegistry registry=new DefaultEncodingStateRegistry();
 
     private Encoder getEncoder(GrailsApplication grailsApplication, Class<?> codecClass) {
@@ -65,7 +64,7 @@ public class CodecPrintWriterTest {
     }
 
     @Test
-    public void testPrintString() {
+    void testPrintString() {
         FastStringWriter stringwriter=new FastStringWriter();
         CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
         writer.print("&&");
@@ -74,7 +73,7 @@ public class CodecPrintWriterTest {
     }
 
     @Test
-    public void testPrintStringWithClosure() {
+    void testPrintStringWithClosure() {
         FastStringWriter stringwriter=new FastStringWriter();
         CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
         writer.print("hello");
@@ -83,7 +82,7 @@ public class CodecPrintWriterTest {
     }
 
     @Test
-    public void testPrintStreamCharBuffer() throws IOException {
+    void testPrintStreamCharBuffer() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
         CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
         StreamCharBuffer buf=new StreamCharBuffer();
@@ -94,7 +93,7 @@ public class CodecPrintWriterTest {
     }
 
     @Test
-    public void testPrintStreamCharBufferWithClosure() throws IOException {
+    void testPrintStreamCharBufferWithClosure() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
         CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
         StreamCharBuffer buf=new StreamCharBuffer();
@@ -105,7 +104,7 @@ public class CodecPrintWriterTest {
     }
 
     @Test
-    public void testCodecAndNoCodecGRAILS8405() throws IOException {
+    void testCodecAndNoCodecGRAILS8405() throws IOException {
         FastStringWriter target = new FastStringWriter();
 
         GrailsWebRequest webRequest = bindMockHttpRequest();
@@ -165,7 +164,7 @@ public class CodecPrintWriterTest {
     }
 }
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings(['rawtypes', 'unchecked', 'UnnecessarySemicolon'])
 class MockGrailsApplication implements GrailsApplication {
 
     private Map<String, DefaultGrailsCodecClass> mockCodecArtefacts = new HashMap<String, DefaultGrailsCodecClass>();
@@ -179,157 +178,157 @@ class MockGrailsApplication implements GrailsApplication {
         mockCodecArtefacts.put(CodecWithClosureProperties.class.getName(), codecWithClosureProperties);
     }
 
-    public GrailsClass getArtefact(String artefactType, String name) {
+    GrailsClass getArtefact(String artefactType, String name) {
         return mockCodecArtefacts.get(name);
     }
 
-    public void setApplicationContext(ApplicationContext ctx) {
+    void setApplicationContext(ApplicationContext ctx) {
         throw new UnsupportedOperationException();
     }
 
-    public Config getConfig() {
+    Config getConfig() {
         throw new UnsupportedOperationException();
     }
 
-    public Map getFlatConfig() {
+    Map getFlatConfig() {
         throw new UnsupportedOperationException();
     }
 
-    public ClassLoader getClassLoader() {
+    ClassLoader getClassLoader() {
         throw new UnsupportedOperationException();
     }
 
-    public Class[] getAllClasses() {
+    Class[] getAllClasses() {
         throw new UnsupportedOperationException();
     }
 
-    public Class[] getAllArtefacts() {
+    Class[] getAllArtefacts() {
         throw new UnsupportedOperationException();
     }
 
-    public ApplicationContext getMainContext() {
+    ApplicationContext getMainContext() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public MappingContext getMappingContext() {
+    MappingContext getMappingContext() {
         return null;
     }
 
-    public void setMainContext(ApplicationContext context) {
+    void setMainContext(ApplicationContext context) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setMappingContext(MappingContext mappingContext) {
+    void setMappingContext(MappingContext mappingContext) {
 
     }
 
-    public ApplicationContext getParentContext() {
+    ApplicationContext getParentContext() {
         throw new UnsupportedOperationException();
     }
 
-    public Class getClassForName(String className) {
+    Class getClassForName(String className) {
         throw new UnsupportedOperationException();
     }
 
-    public void refreshConstraints() {
+    void refreshConstraints() {
         throw new UnsupportedOperationException();
     }
 
-    public void refresh() {
+    void refresh() {
         throw new UnsupportedOperationException();
     }
 
-    public void rebuild() {
+    void rebuild() {
         throw new UnsupportedOperationException();
     }
 
-    public Resource getResourceForClass(Class theClazz) {
+    Resource getResourceForClass(Class theClazz) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isArtefact(Class theClazz) {
+    boolean isArtefact(Class theClazz) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isArtefactOfType(String artefactType, Class theClazz) {
+    boolean isArtefactOfType(String artefactType, Class theClazz) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isArtefactOfType(String artefactType, String className) {
+    boolean isArtefactOfType(String artefactType, String className) {
         throw new UnsupportedOperationException();
     }
 
-    public ArtefactHandler getArtefactType(Class theClass) {
+    ArtefactHandler getArtefactType(Class theClass) {
         throw new UnsupportedOperationException();
     }
 
-    public ArtefactInfo getArtefactInfo(String artefactType) {
+    ArtefactInfo getArtefactInfo(String artefactType) {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass[] getArtefacts(String artefactType) {
+    GrailsClass[] getArtefacts(String artefactType) {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
+    GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass addArtefact(String artefactType, Class artefactClass) {
+    GrailsClass addArtefact(String artefactType, Class artefactClass) {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass addArtefact(String artefactType, GrailsClass gc) {
+    GrailsClass addArtefact(String artefactType, GrailsClass gc) {
         throw new UnsupportedOperationException();
     }
 
-    public void registerArtefactHandler(ArtefactHandler handler) {
+    void registerArtefactHandler(ArtefactHandler handler) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean hasArtefactHandler(String type) {
+    boolean hasArtefactHandler(String type) {
         throw new UnsupportedOperationException();
     }
 
-    public ArtefactHandler[] getArtefactHandlers() {
+    ArtefactHandler[] getArtefactHandlers() {
         throw new UnsupportedOperationException();
     }
 
-    public void initialise() {
+    void initialise() {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isInitialised() {
+    boolean isInitialised() {
         throw new UnsupportedOperationException();
     }
 
-    public Metadata getMetadata() {
+    Metadata getMetadata() {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
+    GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
         throw new UnsupportedOperationException();
     }
 
-    public void addArtefact(Class artefact) {
+    void addArtefact(Class artefact) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isWarDeployed() {
+    boolean isWarDeployed() {
         throw new UnsupportedOperationException();
     }
 
-    public void addOverridableArtefact(Class artefact) {
+    void addOverridableArtefact(Class artefact) {
         throw new UnsupportedOperationException();
     }
 
-    public void configChanged() {
+    void configChanged() {
         throw new UnsupportedOperationException();
     }
 
-    public ArtefactHandler getArtefactHandler(String type) {
+    ArtefactHandler getArtefactHandler(String type) {
         throw new UnsupportedOperationException();
     }
 }

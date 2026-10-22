@@ -16,6 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.commons;
 
 import grails.core.ArtefactHandler;
@@ -29,38 +30,44 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Marc Palmer
  */
-public class CodecArtefactHandlerTests {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+class CodecArtefactHandlerTests {
 
     @Test
-    public void testIsCodecClass() {
+    void testIsCodecClass() {
 
         ArtefactHandler handler = new CodecArtefactHandler();
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        Class<?> fullCodecClass = gcl.parseClass("class FullCodec {\n" +
-                "static def encode = { str -> }\n" +
-                "static def decode = { str -> }\n" +
-                "}\n");
+        Class<?> fullCodecClass = gcl.parseClass('''class FullCodec {
+static def encode = { str -> }
+static def decode = { str -> }
+}
+''');
         assertTrue(handler.isArtefact(fullCodecClass), "class was an encoder/decoder");
 
-        Class<?> decodeOnlyCodecClass = gcl.parseClass("class DecodeOnlyCodec {\n" +
-                "static def decode = { str -> }\n" +
-                "}\n");
+        Class<?> decodeOnlyCodecClass = gcl.parseClass('''class DecodeOnlyCodec {
+static def decode = { str -> }
+}
+''');
         assertTrue(handler.isArtefact(decodeOnlyCodecClass), "class was a decoder");
 
-        Class<?> encodeOnlyCodecClass = gcl.parseClass("class EncodeOnlyCodec {\n" +
-                "static def encode = { str -> }\n" +
-                "}\n");
+        Class<?> encodeOnlyCodecClass = gcl.parseClass('''class EncodeOnlyCodec {
+static def encode = { str -> }
+}
+''');
         assertTrue(handler.isArtefact(encodeOnlyCodecClass), "class was an encoder");
 
-        Class<?> nonCodecClass = gcl.parseClass("class SomeFoo {\n" +
-                "static def encode = { str -> }\n" +
-                "}\n");
+        Class<?> nonCodecClass = gcl.parseClass('''class SomeFoo {
+static def encode = { str -> }
+}
+''');
         assertFalse(handler.isArtefact(nonCodecClass), "class was not a codec");
     }
 
     @Test
-    public void testDomainClassWithNameEndingInCodecIsNotACodec() {
+    void testDomainClassWithNameEndingInCodecIsNotACodec() {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class<?> c = gcl.parseClass("@grails.persistence.Entity\nclass MySpecialCodec { Long id;Long version;}\n");
 

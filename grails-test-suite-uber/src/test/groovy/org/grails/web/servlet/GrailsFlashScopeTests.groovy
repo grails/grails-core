@@ -16,6 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.web.servlet;
 
 import grails.util.GrailsWebMockUtil;
@@ -24,21 +25,21 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Graeme Rocher
  */
-@SuppressWarnings({"unchecked","rawtypes"})
-public class GrailsFlashScopeTests {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['unchecked', 'rawtypes', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+class GrailsFlashScopeTests {
 
     private static final String ERRORS_PROPERTY = "errors";
 
     @Test
-    public void testPutNull() {
+    void testPutNull() {
         GrailsWebMockUtil.bindMockWebRequest();
 
         FlashScope fs = new GrailsFlashScope();
@@ -46,7 +47,7 @@ public class GrailsFlashScopeTests {
     }
 
     @Test
-    public void testNextState() {
+    void testNextState() {
 
         GrailsWebMockUtil.bindMockWebRequest();
 
@@ -85,7 +86,7 @@ public class GrailsFlashScopeTests {
      * Bug: GRAILS-3083
      */
     @Test
-    public void testPutMap() {
+    void testPutMap() {
 
         GrailsWebMockUtil.bindMockWebRequest();
 
@@ -126,22 +127,22 @@ public class GrailsFlashScopeTests {
         private String value;
         private Object errors;
 
-        public StringWithError(String value) {
+        StringWithError(String value) {
             this.value = value;
         }
 
-        @SuppressWarnings("unused")
-        public Object getErrors() {
+        @SuppressWarnings('unused')
+        Object getErrors() {
             return errors;
         }
 
-        @SuppressWarnings("unused")
-        public void setErrors(Object errors) {
+        @SuppressWarnings('unused')
+        void setErrors(Object errors) {
             this.errors = errors;
         }
 
         @Override
-        public boolean equals(Object obj) {
+        boolean equals(Object obj) {
             if (value == null) {
                 return (obj == null);
             }
@@ -150,12 +151,12 @@ public class GrailsFlashScopeTests {
         }
 
         @Override
-        public int hashCode() {
+        int hashCode() {
             return value.hashCode();
         }
 
         @Override
-        public String toString() {
+        String toString() {
             return value;
         }
     }

@@ -16,6 +16,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.commons;
 
 import grails.util.GrailsClassUtils;
@@ -27,15 +28,20 @@ import spock.lang.Issue;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Graeme Rocher
  */
-public class GrailsClassUtilsTests {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+class GrailsClassUtilsTests {
 
     @Test
-    public void testFindPropertyNameForValue() {
+    void testFindPropertyNameForValue() {
         TestBean testBean = new TestBean();
 
         assertEquals("userName", GrailsClassUtils.findPropertyNameForValue(testBean, testBean.getUserName()));
@@ -43,145 +49,145 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testBooleanMatchesboolean() {
+    void testBooleanMatchesboolean() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Boolean.class, boolean.class));
     }
 
     @Test
-    public void testbooleanMatchesBoolean() {
+    void testbooleanMatchesBoolean() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(boolean.class, Boolean.class));
     }
 
     @Test
-    public void testIntegerMatchesint() {
+    void testIntegerMatchesint() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Integer.class, int.class));
     }
 
     @Test
-    public void testintMatchesInteger() {
+    void testintMatchesInteger() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(int.class, Integer.class));
     }
 
     @Test
-    public void testShortMatchesshort() {
+    void testShortMatchesshort() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Short.class, short.class));
     }
 
     @Test
-    public void testshortMatchesShort() {
+    void testshortMatchesShort() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(short.class, Short.class));
     }
 
     @Test
-    public void testByteMatchesbyte() {
+    void testByteMatchesbyte() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Byte.class, byte.class));
     }
 
     @Test
-    public void testbyteMatchesByte() {
+    void testbyteMatchesByte() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(byte.class, Byte.class));
     }
 
     @Test
-    public void testCharacterMatcheschar() {
+    void testCharacterMatcheschar() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Character.class, char.class));
     }
 
     @Test
-    public void testcharMatchesCharacter() {
+    void testcharMatchesCharacter() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(char.class, Character.class));
     }
 
     @Test
-    public void testLongMatcheslong() {
+    void testLongMatcheslong() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Long.class, long.class));
     }
 
     @Test
-    public void testlongMatchesLong() {
+    void testlongMatchesLong() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(long.class, Long.class));
     }
 
     @Test
-    public void testFloatMatchesfloat() {
+    void testFloatMatchesfloat() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Float.class, float.class));
     }
 
     @Test
-    public void testfloatMatchesFloat() {
+    void testfloatMatchesFloat() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(float.class, Float.class));
     }
 
     @Test
-    public void testDoubleMatchesdouble() {
+    void testDoubleMatchesdouble() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(Double.class, double.class));
     }
 
     @Test
-    public void testdoubleMatchesDouble() {
+    void testdoubleMatchesDouble() {
         assertTrue(GrailsClassUtils.isMatchBetweenPrimitiveAndWrapperTypes(double.class, Double.class));
     }
 
     @Test
-    public void testAssignableFromOrPrimitiveCompatible() {
+    void testAssignableFromOrPrimitiveCompatible() {
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(double.class, Double.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Integer.class, int.class));
         assertTrue(GrailsClassUtils.isGroovyAssignableFrom(Number.class, int.class));
     }
 
     @Test
-    public void testGetterNames() {
+    void testGetterNames() {
         assertEquals("getConstraints", GrailsClassUtils.getGetterName("constraints"));
         assertEquals("getURL", GrailsClassUtils.getGetterName("URL"));
         assertEquals("getUrl", GrailsClassUtils.getGetterName("Url"));
     }
 
     @Test
-    public void testIsGetterOrSetter() {
-        assertTrue(GrailsClassUtils.isSetter("setSomething", new Class[] { String.class }));
+    void testIsGetterOrSetter() {
+        assertTrue(GrailsClassUtils.isSetter("setSomething", [String.class] as Class[]));
         assertTrue(GrailsNameUtils.isGetter("getSomething", new Class[0]));
         assertTrue(GrailsNameUtils.isGetter("isSomething", new Class[0]));
-        assertTrue(GrailsClassUtils.isSetter("setURL", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isSetter("setURL", [String.class] as Class[]));
         assertTrue(GrailsNameUtils.isGetter("getURL", new Class[0]));
         assertTrue(GrailsNameUtils.isGetter("isURL", new Class[0]));
-        assertTrue(GrailsClassUtils.isSetter("setaProp", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isSetter("setaProp", [String.class] as Class[]));
         assertTrue(GrailsNameUtils.isGetter("getaProp", new Class[0]));
         assertTrue(GrailsNameUtils.isGetter("isaProp", new Class[0]));
-        assertTrue(GrailsClassUtils.isSetter("setX", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isSetter("setX", [String.class] as Class[]));
         assertTrue(GrailsNameUtils.isGetter("getX", new Class[0]));
         assertTrue(GrailsNameUtils.isGetter("isX", new Class[0]));
-        assertTrue(GrailsClassUtils.isSetter("setX2", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isSetter("setX2", [String.class] as Class[]));
         assertTrue(GrailsNameUtils.isGetter("getX2", new Class[0]));
         assertTrue(GrailsNameUtils.isGetter("isX2", new Class[0]));
 
-        assertFalse(GrailsNameUtils.isGetter("something", new Class[] { String.class }));
+        assertFalse(GrailsNameUtils.isGetter("something", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("get", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("set", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("set", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("somethingElse", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("setSomething", new Class[] { String.class, Object.class }));
-        assertFalse(GrailsNameUtils.isGetter("getSomething", new Class[] { Object.class }));
+        assertFalse(GrailsClassUtils.isSetter("setSomething", [String.class, Object.class] as Class[]));
+        assertFalse(GrailsNameUtils.isGetter("getSomething", [Object.class] as Class[]));
 
         assertFalse(GrailsNameUtils.isGetter("getsomething", new Class[0]));
         assertFalse(GrailsNameUtils.isGetter("issomething", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("setsomething", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("setsomething", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("get0", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("set0", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("set0", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("get2other", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("set2other", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("set2other", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("getq3", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("setq3", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("setq3", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("get5A", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("set5A", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("set5A", [String.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("", new Class[0]));
-        assertFalse(GrailsClassUtils.isSetter("", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isSetter("", [String.class] as Class[]));
 
-        assertFalse(GrailsNameUtils.isGetter(null, new Class[] { Object.class }));
+        assertFalse(GrailsNameUtils.isGetter(null, [Object.class] as Class[]));
         assertFalse(GrailsNameUtils.isGetter("getSomething", null));
         assertFalse(GrailsNameUtils.isGetter(null, null));
     }
 
     @Test
-    public void testGetPropertyForGetter() {
+    void testGetPropertyForGetter() {
         assertEquals("something", GrailsNameUtils.getPropertyForGetter("getSomething"));
         assertEquals("URL", GrailsNameUtils.getPropertyForGetter("getURL"));
         assertEquals("p", GrailsNameUtils.getPropertyForGetter("getP"));
@@ -204,7 +210,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testGetStaticField() {
+    void testGetStaticField() {
         assertEquals("SomeFieldValue",
                 GrailsClassUtils.getStaticFieldValue(ClassWithStaticFieldAndStaticPropertyWithSameName.class, "name"));
         assertEquals("SomePropertyValue",
@@ -212,7 +218,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testGetStaticProperty() {
+    void testGetStaticProperty() {
         assertEquals(HttpServletRequest.BASIC_AUTH,
                 GrailsClassUtils.getStaticPropertyValue(HttpServletRequest.class, "BASIC_AUTH"));
 
@@ -220,7 +226,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testIsPublicStatic() throws Exception {
+    void testIsPublicStatic() throws Exception {
         assertTrue(GrailsClassUtils.isPublicStatic(HttpServletRequest.class.getDeclaredField("BASIC_AUTH")));
 
         assertFalse(GrailsClassUtils.isPublicStatic(String.class.getDeclaredField("serialVersionUID")));
@@ -229,7 +235,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testGetPropertyOrStatic() {
+    void testGetPropertyOrStatic() {
         TestBean bean = new TestBean();
         assertEquals("hello", GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(bean, "welcomeMessage"));
         assertEquals("marc", GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(bean, "userName"));
@@ -238,7 +244,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testGetFieldValue() {
+    void testGetFieldValue() {
         TestBean bean = new TestBean();
 
         assertTrue(GrailsClassUtils.isPublicField(bean, "favouriteArtist"));
@@ -247,7 +253,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testIsAssignableOrConvertibleFrom() {
+    void testIsAssignableOrConvertibleFrom() {
 
         // test number
         assertTrue(GrailsClassUtils.isAssignableOrConvertibleFrom(Number.class, int.class));
@@ -380,7 +386,7 @@ public class GrailsClassUtilsTests {
     }
 
     @Test
-    public void testIsPropertyGetter() throws Exception {
+    void testIsPropertyGetter() throws Exception {
         assertTrue(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getName")));
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("setName")));
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getSurname")));
@@ -391,7 +397,7 @@ public class GrailsClassUtilsTests {
 
     @Test
     @Issue("https://github.com/apache/grails-core/issues/10343")
-    public void testPropertiesBeginningWithSingleLowerCaseLetter() throws Exception {
+    void testPropertiesBeginningWithSingleLowerCaseLetter() throws Exception {
         assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getaString")));
         assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isaBoolean")));
         assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getS")));
@@ -399,24 +405,26 @@ public class GrailsClassUtilsTests {
     }
 }
 
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class ClassWithStaticFieldAndStaticPropertyWithSameName {
     public static String name = "SomeFieldValue";
 
-    public static String getName() {
+    static String getName() {
         return "SomePropertyValue";
     }
 }
 
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
 class ClassHavingPropertyGetters {
-    public String getName() { return ""; }
+    String getName() { return ""; }
 
-    public void setName() {  }
+    void setName() {  }
 
     protected String getSurname() { return ""; }
 
     private Date getNewYear() { return null; }
 
-    public String getFilename(String prefix) { return ""; }
+    String getFilename(String prefix) { return ""; }
 
-    public static String getTitle() { return ""; }
+    static String getTitle() { return ""; }
 }

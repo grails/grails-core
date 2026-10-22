@@ -16,15 +16,20 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.web.util;
 
 import org.grails.buffer.StreamByteBuffer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,9 +39,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamByteBufferTest {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+class StreamByteBufferTest {
     private static final int TESTROUNDS = 10000;
-    private static final String TEST_STRING = "Hello \u00f6\u00e4\u00e5\u00d6\u00c4\u00c5";
+    private static final String TEST_STRING = "Hello öäåÖÄÅ";
 
     static byte[] testbuffer = new byte[256 * TESTROUNDS];
 
@@ -52,14 +59,14 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testToByteArray() throws IOException {
+    void testToByteArray() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         byte[] result = byteBuffer.readAsByteArray();
         assertTrue(Arrays.equals(testbuffer, result));
     }
 
     @Test
-    public void testToString() throws IOException {
+    void testToString() throws IOException {
         StreamByteBuffer byteBuffer = new StreamByteBuffer();
         PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
         pw.print(TEST_STRING);
@@ -68,7 +75,7 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testToStringRetain() throws IOException {
+    void testToStringRetain() throws IOException {
         StreamByteBuffer byteBuffer = new StreamByteBuffer(1024, StreamByteBuffer.ReadMode.RETAIN_AFTER_READING);
         PrintWriter pw=new PrintWriter(new OutputStreamWriter(byteBuffer.getOutputStream(),"UTF-8"));
         pw.print(TEST_STRING);
@@ -80,7 +87,7 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testToInputStream() throws IOException {
+    void testToInputStream() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         InputStream input = byteBuffer.getInputStream();
         ByteArrayOutputStream bytesOut = new ByteArrayOutputStream(byteBuffer
@@ -91,7 +98,7 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testStreamByteBuffer() throws Exception {
+    void testStreamByteBuffer() throws Exception {
         StreamByteBuffer streamBuf=new StreamByteBuffer(32000);
         OutputStream output=streamBuf.getOutputStream();
         output.write(1);
@@ -109,10 +116,10 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testStreamByteBuffer2() throws Exception {
+    void testStreamByteBuffer2() throws Exception {
         StreamByteBuffer streamBuf=new StreamByteBuffer(32000);
         OutputStream output=streamBuf.getOutputStream();
-        byte[] bytes=new byte[]{(byte)1,(byte)2,(byte)3};
+        byte[] bytes = [(byte) 1, (byte) 2, (byte) 3] as byte[];
         output.write(bytes);
         output.close();
         InputStream input=streamBuf.getInputStream();
@@ -124,7 +131,7 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testStreamByteBuffer3() throws Exception {
+    void testStreamByteBuffer3() throws Exception {
         bufferTest(10000,10000);
         bufferTest(1,10000);
         bufferTest(2,10000);
@@ -180,7 +187,7 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testWriteTo() throws IOException {
+    void testWriteTo() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         ByteArrayOutputStream bytesOut = new ByteArrayOutputStream(byteBuffer.totalBytesUnread());
         byteBuffer.writeTo(bytesOut);
@@ -189,7 +196,7 @@ public class StreamByteBufferTest {
     }
 
     @Test
-    public void testToInputStreamOneByOne() throws IOException {
+    void testToInputStreamOneByOne() throws IOException {
         StreamByteBuffer byteBuffer = createTestInstance();
         InputStream input = byteBuffer.getInputStream();
         ByteArrayOutputStream bytesOut = new ByteArrayOutputStream(byteBuffer.totalBytesUnread());

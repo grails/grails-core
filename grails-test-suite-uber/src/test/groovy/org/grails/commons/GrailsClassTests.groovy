@@ -16,10 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.commons;
 
 import grails.core.GrailsClass;
 import groovy.lang.GroovyClassLoader;
+import groovy.transform.CompileStatic;
 import org.grails.core.AbstractGrailsClass;
 import org.junit.jupiter.api.Test;
 
@@ -29,10 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * @author Steven Devijver
  */
-public class GrailsClassTests {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class GrailsClassTests {
 
     @Test
-    public void testAbstractGrailsClassNoPackage() throws Exception {
+    void testAbstractGrailsClassNoPackage() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("class TestService { }");
         GrailsClass grailsClass = new AbstractGrailsClass(clazz, "Service") {/*empty*/};
@@ -43,7 +48,7 @@ public class GrailsClassTests {
     }
 
     @Test
-    public void testAbstractGrailsClassPackage() throws Exception {
+    void testAbstractGrailsClassPackage() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("package test.casey; class TestService { }");
         GrailsClass grailsClass = new AbstractGrailsClass(clazz, "Service") {/*empty*/};
@@ -54,7 +59,7 @@ public class GrailsClassTests {
     }
 
     @Test
-    public void testGrailsClassNonPublicConstructor() throws Exception {
+    void testGrailsClassNonPublicConstructor() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("class ProtectedConstructor { protected ProtectedConstructor() {}}");
         GrailsClass grailsClass = new AbstractGrailsClass(clazz, "ProtectedConstructor") {/*empty*/};
