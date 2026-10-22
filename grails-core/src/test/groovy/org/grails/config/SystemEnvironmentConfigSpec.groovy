@@ -72,20 +72,22 @@ property-with_mixed.symbols: from-yml
     }
 
     void 'a key is matched to its upper-cased variable under any default locale'() {
-        given: 'a default locale whose upper-case i is not I'
+        given: 'the default locale, restored afterwards'
         Locale defaultLocale = Locale.getDefault()
-        Locale.setDefault(Locale.forLanguageTag('tr-TR'))
 
         and: 'a variable that is the upper-cased key'
         modifiableSystemEnvironment.put('PROPERTY_WITH_ID', 'from-env')
         def config = configFor('property.with.id: from-yml')
 
+        and: 'a default locale whose upper-case i is not I'
+        Locale.setDefault(Locale.forLanguageTag('tr-TR'))
+
         expect: 'the variable overrides the configured value'
         config.getProperty('property.with.id') == 'from-env'
 
         cleanup:
-        modifiableSystemEnvironment.remove('PROPERTY_WITH_ID')
         Locale.setDefault(defaultLocale)
+        modifiableSystemEnvironment.remove('PROPERTY_WITH_ID')
     }
 
     void 'a key with a character above ASCII is matched through its upper-cased form'() {
