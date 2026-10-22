@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 import groovy.util.ConfigObject;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -402,11 +403,18 @@ public abstract class NavigableMapConfig implements Config {
      */
     private static final class SystemEnvironmentIndex {
 
+        /**
+         * {@code System.getenv(String)} matches a variable name case-insensitively on Windows, where
+         * the operating system does, and exactly everywhere else. The snapshot keeps that contract.
+         */
+        private static final boolean IS_WINDOWS = System.getProperty("os.name", "").startsWith("Windows");
+
         private final Map<String, String> variables;
         private final Set<String> canonicalNames;
 
         SystemEnvironmentIndex(Map<String, String> environment) {
-            this.variables = new HashMap<>(environment);
+            this.variables = IS_WINDOWS ? new TreeMap<>(String.CASE_INSENSITIVE_ORDER) : new HashMap<>();
+            this.variables.putAll(environment);
             this.canonicalNames = new HashSet<>();
             for (String name : variables.keySet()) {
                 canonicalNames.add(canonicalName(name));

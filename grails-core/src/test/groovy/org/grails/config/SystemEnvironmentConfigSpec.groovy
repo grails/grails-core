@@ -21,7 +21,9 @@ package org.grails.config
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.env.MutablePropertySources
 import org.springframework.core.io.ByteArrayResource
+import spock.lang.IgnoreIf
 import spock.lang.Issue
+import spock.lang.Requires
 import spock.lang.Specification
 
 import java.lang.reflect.Field
@@ -80,6 +82,7 @@ property-with_mixed.symbols: from-yml
         config.getProperty('property.nobody.set', String, 'fallback') == 'fallback'
     }
 
+    @IgnoreIf(value = { os.windows }, reason = 'Windows matches variable names regardless of case')
     void 'a variable that matches the key in none of the probed spellings does not override it'() {
         given: 'a lower-case variable for a mixed-case key'
         modifiableSystemEnvironment.put('property_with_period', 'from-env')
@@ -92,6 +95,20 @@ property-with_mixed.symbols: from-yml
         modifiableSystemEnvironment.remove('property_with_period')
     }
 
+    @Requires({ os.windows })
+    void 'on Windows a variable matches the key in any case, as System.getenv does there'() {
+        given: 'a mixed-case variable for a lower-case key'
+        modifiableSystemEnvironment.put('Property_With_Period', 'from-env')
+        def config = configFor(YAML)
+
+        expect: 'the variable overrides the configured value'
+        config.getProperty('property.with.period') == 'from-env'
+
+        cleanup:
+        modifiableSystemEnvironment.remove('Property_With_Period')
+    }
+
+    @IgnoreIf(value = { os.windows }, reason = 'the spellings that differ only in case are one variable on Windows')
     void 'when several variables match a key the first probed spelling wins'() {
         given: 'two variables that both match the key'
         modifiableSystemEnvironment.put(winner, 'from-winner')
@@ -187,7 +204,8 @@ property-with_mixed.symbols: from-yml
             }
         }
 
-        // for windows
+        // for windows: System.getenv(String) reads a case-insensitive copy of the environment while
+        // System.getenv() exposes the original, so a variable installed for a test has to go into both
         Class<?> processEnvironmentClass;
         try {
             processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
@@ -196,32 +214,53 @@ property-with_mixed.symbols: from-yml
             throw new IllegalStateException(ex);
         }
 
-        try {
-            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
-            Object obj = theCaseInsensitiveEnvironmentField.get(null);
-            return (Map<String, String>) obj;
+        Map<String, String> caseInsensitiveEnvironment = staticMapField(processEnvironmentClass, 'theCaseInsensitiveEnvironment')
+        Map<String, String> environment = staticMapField(processEnvironmentClass, 'theEnvironment')
+        if (caseInsensitiveEnvironment != null && environment != null) {
+            return new BothEnvironments(caseInsensitiveEnvironment, environment)
         }
-        catch (NoSuchFieldException ex) {
-            // do nothing
+        if (environment != null) {
+            return environment
+        }
+        throw new IllegalStateException()
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> staticMapField(Class<?> owner, String name) {
+        try {
+            Field field = owner.getDeclaredField(name)
+            field.setAccessible(true)
+            return (Map<String, String>) field.get(null)
+        }
+        catch (NoSuchFieldException ignored) {
+            return null
         }
         catch (Exception ex) {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException(ex)
+        }
+    }
+
+    private static class BothEnvironments implements Map<String, String> {
+
+        @Delegate
+        final Map<String, String> primary
+        final Map<String, String> secondary
+
+        BothEnvironments(Map<String, String> primary, Map<String, String> secondary) {
+            this.primary = primary
+            this.secondary = secondary
         }
 
-        try {
-            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
-            Object obj = theEnvironmentField.get(null);
-            return (Map<String, String>) obj;
-        }
-        catch (NoSuchFieldException ex) {
-            // do nothing
-        }
-        catch (Exception ex) {
-            throw new IllegalStateException(ex);
+        @Override
+        String put(String key, String value) {
+            secondary.put(key, value)
+            primary.put(key, value)
         }
 
-        throw new IllegalStateException();
+        @Override
+        String remove(Object key) {
+            secondary.remove(key)
+            primary.remove(key)
+        }
     }
 }
