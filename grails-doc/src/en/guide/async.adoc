@@ -23,7 +23,6 @@ Popular asynchronous libraries include:
 
 * RxJava - https://reactivex.io
 * Groovy `groovy.concurrent` - link:{groovyapi}groovy/concurrent/package-summary.html[groovy.concurrent]
-* GPars (deprecated) - https://gpars.org/
 * Reactor - https://projectreactor.io
 
 By building on top of these various libraries the Async features of Grails aim to simplify concurrent programming within the framework, include the concept of Promises, and a unified event model.

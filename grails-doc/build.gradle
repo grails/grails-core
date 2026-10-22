@@ -675,7 +675,6 @@ publishGuideTask.configure { PublishGuideTask publish ->
                 'spockDocs'                : "https://spockframework.org/spock/docs/${spockVersionForURL}/",
                 'testingSupportVersion'    : getVersion("grails-testing-support-core"),
                 'grailsGradlePluginVersion': getVersion("grails-gradle-plugins"),
-                'gparsdocs'                : "https://gpars.org/$gparsVersion/groovydoc",
                 'rxjavadocs'               : 'https://reactivex.io/RxJava/1.x/javadoc',
                 'rxjava2docs'              : 'https://reactivex.io/RxJava/2.x/javadoc',
                 'gspTagsRef'               : gspTagsRef,

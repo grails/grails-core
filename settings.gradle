@@ -142,7 +142,6 @@ include(
         // events
         'grails-events-core',
         'grails-events-transforms',
-        'grails-events-gpars',
         'grails-events-groovy-concurrent',
         'grails-events-spring',
         'grails-events-rxjava',
@@ -152,7 +151,6 @@ include(
 
         // async
         'grails-async-core',
-        'grails-async-gpars',
         'grails-async-groovy-concurrent',
         'grails-async-rxjava',
         'grails-async-rxjava2',
@@ -250,7 +248,6 @@ project(':grails-neo4j-bom').projectDir = file('grails-bom/neo4j')
 // (Preserve the parent directory name as part of the nested project name)
 project(':grails-events-core').projectDir = file('grails-events/core')
 project(':grails-events-transforms').projectDir = file('grails-events/transforms')
-project(':grails-events-gpars').projectDir = file('grails-events/gpars')
 project(':grails-events-groovy-concurrent').projectDir = file('grails-events/groovy-concurrent')
 project(':grails-events-spring').projectDir = file('grails-events/spring')
 project(':grails-events-rxjava').projectDir = file('grails-events/rxjava')
@@ -259,7 +256,6 @@ project(':grails-events-rxjava3').projectDir = file('grails-events/rxjava3')
 project(':grails-events').projectDir = file('grails-events/plugin')
 
 project(':grails-async-core').projectDir = file('grails-async/core')
-project(':grails-async-gpars').projectDir = file('grails-async/gpars')
 project(':grails-async-groovy-concurrent').projectDir = file('grails-async/groovy-concurrent')
 project(':grails-async-rxjava').projectDir = file('grails-async/rxjava')
 project(':grails-async-rxjava2').projectDir = file('grails-async/rxjava2')
