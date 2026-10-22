@@ -72,27 +72,30 @@ public class CreateKeyForProps {
      * type, when the property is unique: one key across all of its columns and, when it is unique within a group,
      * the columns of the other properties of the group. None of the columns is unique on its own, since two
      * different values of the property can share the value of one of them, so a property that is unique on its
-     * own needs the key as well.
+     * own needs the key as well. The key holds the bound columns themselves, so it keeps their quoting and case.
      *
      * @param grailsProp the property
      * @param path the path of the property within its entity
      * @param table the table that holds the columns
-     * @param columnNames the names of the columns of the property
+     * @param columns the bound columns of the property
      */
     public void createKeyForColumns(
-            HibernatePersistentProperty grailsProp, String path, Table table, List<String> columnNames) {
+            HibernatePersistentProperty grailsProp, String path, Table table, List<Column> columns) {
         PropertyConfig mappedForm = grailsProp.getMappedForm();
-        if (!mappedForm.isUnique() || columnNames.isEmpty()) {
+        if (!mappedForm.isUnique() || columns.isEmpty()) {
             return;
         }
-        List<Column> keyList = new ArrayList<>(columnNames.size());
-        columnNames.forEach(name -> keyList.add(new Column(name)));
+        List<Column> keyList = new ArrayList<>(columns);
         if (mappedForm.isUniqueWithinGroup()) {
             addGroupColumns(grailsProp, mappedForm, path, keyList);
         }
         uniqueKeyForColumnsCreator.createUniqueKeyForColumns(table, keyList);
     }
 
+    /**
+     * Adds the columns of the other properties of the uniqueness group of the property. A property of the group
+     * that spans several columns, such as one mapped with a composite user type, contributes all of them.
+     */
     private void addGroupColumns(
             HibernatePersistentProperty grailsProp, PropertyConfig mappedForm, String path, List<Column> keyList) {
         GrailsHibernatePersistentEntity owner = grailsProp.getHibernateOwner();
@@ -102,9 +105,10 @@ public class CreateKeyForProps {
                 throw new MappingException(
                         owner.getJavaClass().getName() + " references an unknown property " + propertyName);
             }
-            String otherColumnName =
-                    columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(otherProp, path, null);
-            keyList.add(new Column(otherColumnName));
+            for (String otherColumnName :
+                    columnNameForPropertyAndPathFetcher.getColumnNamesForPropertyAndPath(otherProp, path)) {
+                keyList.add(new Column(otherColumnName));
+            }
         }
     }
 }

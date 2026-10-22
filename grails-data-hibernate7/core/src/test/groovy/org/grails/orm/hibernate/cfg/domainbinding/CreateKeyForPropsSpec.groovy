@@ -23,6 +23,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersi
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
 import org.hibernate.MappingException
+import org.hibernate.mapping.Column
 import org.hibernate.mapping.Table
 import spock.lang.Specification
 
@@ -59,8 +60,8 @@ class CreateKeyForPropsSpec extends Specification {
         def table = new Table("t")
         String baseColumnName = "base_col"
 
-        columnNameFetcher.getColumnNameForPropertyAndPath(otherProp1, path, null) >> "col1"
-        columnNameFetcher.getColumnNameForPropertyAndPath(otherProp2, path, null) >> "col2"
+        columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp1, path) >> ["col1"]
+        columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp2, path) >> ["col2"]
 
         when:
         subject.createKeyForProps(grailsProp, path, table, baseColumnName)
@@ -73,9 +74,38 @@ class CreateKeyForPropsSpec extends Specification {
         1 * mappedForm.getUniquenessGroup() >> ["p1", "p2"]
         1 * owner.getHibernatePropertyByName("p1") >> otherProp1
         1 * owner.getHibernatePropertyByName("p2") >> otherProp2
-        1 * columnNameFetcher.getColumnNameForPropertyAndPath(otherProp1, path, null)
-        1 * columnNameFetcher.getColumnNameForPropertyAndPath(otherProp2, path, null)
-        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, _ as List)
+        1 * columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp1, path) >> ["col1"]
+        1 * columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp2, path) >> ["col2"]
+        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, { List cols -> cols*.name == ["base_col", "col1", "col2"] })
+    }
+
+    def "a group property that spans several columns contributes all of them to the key"() {
+        given:
+        def columnNameFetcher = Mock(ColumnNameForPropertyAndPathFetcher)
+        def uniqueKeyCreator = Mock(UniqueKeyForColumnsCreator)
+        def subject = new CreateKeyForProps(columnNameFetcher, uniqueKeyCreator)
+        def owner = Mock(GrailsHibernatePersistentEntity)
+        def compositeProp = Mock(HibernatePersistentProperty)
+        def mappedForm = Mock(org.grails.orm.hibernate.cfg.PropertyConfig) {
+            isUnique() >> true
+            isUniqueWithinGroup() >> true
+            getUniquenessGroup() >> ["amount"]
+        }
+        def grailsProp = Mock(HibernatePersistentProperty) {
+            getMappedForm() >> mappedForm
+            getHibernateOwner() >> owner
+        }
+        owner.getHibernatePropertyByName("amount") >> compositeProp
+        columnNameFetcher.getColumnNamesForPropertyAndPath(compositeProp, "") >> ["amount_amount", "`Currency`"]
+        def table = new Table("t")
+
+        when:
+        subject.createKeyForProps(grailsProp, "", table, "reference")
+
+        then: "the key spans the column of the property and every column of the group property, quoted as named"
+        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, { List<Column> cols ->
+            cols*.name == ["reference", "amount_amount", "Currency"] && cols*.quoted == [false, false, true]
+        })
     }
 
     def "does nothing when property is not unique within group"() {
@@ -177,7 +207,7 @@ class CreateKeyForPropsSpec extends Specification {
             getHibernateOwner() >> owner
         }
         owner.getHibernatePropertyByName("x") >> otherProp
-        columnNameFetcher.getColumnNameForPropertyAndPath(otherProp, "", null) >> "x_col"
+        columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp, "") >> ["x_col"]
         def table = new Table("owner")
 
         when:
@@ -200,12 +230,16 @@ class CreateKeyForPropsSpec extends Specification {
             getMappedForm() >> mappedForm
         }
         def table = new Table("t")
+        def amount = new Column("`Amount`")
+        def currency = new Column("amount_currency")
 
         when:
-        subject.createKeyForColumns(grailsProp, "", table, ["amount_amount", "amount_currency"])
+        subject.createKeyForColumns(grailsProp, "", table, [amount, currency])
 
-        then:
-        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, { List cols -> cols*.name == ["amount_amount", "amount_currency"] })
+        then: "the key holds the bound columns themselves, so it keeps their quoting"
+        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, { List<Column> cols ->
+            cols.size() == 2 && cols[0].is(amount) && cols[1].is(currency) && cols[0].quoted
+        })
         0 * columnNameFetcher._
         0 * grailsProp.getHibernateOwner()
     }
@@ -227,15 +261,49 @@ class CreateKeyForPropsSpec extends Specification {
             getHibernateOwner() >> owner
         }
         owner.getHibernatePropertyByName("reference") >> otherProp
-        columnNameFetcher.getColumnNameForPropertyAndPath(otherProp, "", null) >> "reference"
+        columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp, "") >> ["reference"]
+        def table = new Table("t")
+        def columns = [new Column("amount_amount"), new Column("amount_currency")]
+
+        when:
+        subject.createKeyForColumns(grailsProp, "", table, columns)
+
+        then:
+        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, { List<Column> cols ->
+            cols*.name == ["amount_amount", "amount_currency", "reference"] && cols[0].is(columns[0]) && cols[1].is(columns[1])
+        })
+
+        and: "the columns of the property are left as they were"
+        columns*.name == ["amount_amount", "amount_currency"]
+    }
+
+    def "a group property of a property that spans several columns contributes all of its own columns"() {
+        given:
+        def columnNameFetcher = Mock(ColumnNameForPropertyAndPathFetcher)
+        def uniqueKeyCreator = Mock(UniqueKeyForColumnsCreator)
+        def subject = new CreateKeyForProps(columnNameFetcher, uniqueKeyCreator)
+        def owner = Mock(GrailsHibernatePersistentEntity)
+        def feeProp = Mock(HibernatePersistentProperty)
+        def mappedForm = Mock(org.grails.orm.hibernate.cfg.PropertyConfig) {
+            isUnique() >> true
+            isUniqueWithinGroup() >> true
+            getUniquenessGroup() >> ["fee"]
+        }
+        def grailsProp = Mock(HibernatePersistentProperty) {
+            getMappedForm() >> mappedForm
+            getHibernateOwner() >> owner
+        }
+        owner.getHibernatePropertyByName("fee") >> feeProp
+        columnNameFetcher.getColumnNamesForPropertyAndPath(feeProp, "") >> ["fee_value", "fee_currency"]
         def table = new Table("t")
 
         when:
-        subject.createKeyForColumns(grailsProp, "", table, ["amount_amount", "amount_currency"])
+        subject.createKeyForColumns(grailsProp, "", table, [new Column("amount_amount"), new Column("amount_currency")])
 
         then:
-        1 * uniqueKeyCreator.createUniqueKeyForColumns(
-                table, { List cols -> cols*.name == ["amount_amount", "amount_currency", "reference"] })
+        1 * uniqueKeyCreator.createUniqueKeyForColumns(table, { List<Column> cols ->
+            cols*.name == ["amount_amount", "amount_currency", "fee_value", "fee_currency"]
+        })
     }
 
     def "creates no key for a property that spans several columns when it is not unique, or has no columns"() {
@@ -252,15 +320,15 @@ class CreateKeyForPropsSpec extends Specification {
         }
 
         when:
-        subject.createKeyForColumns(grailsProp, "", new Table("t"), columnNames)
+        subject.createKeyForColumns(grailsProp, "", new Table("t"), columns)
 
         then:
         0 * uniqueKeyCreator._
         0 * columnNameFetcher._
 
         where:
-        unique | columnNames
-        false  | ["amount_amount", "amount_currency"]
+        unique | columns
+        false  | [new Column("amount_amount"), new Column("amount_currency")]
         true   | []
     }
 
@@ -284,7 +352,7 @@ class CreateKeyForPropsSpec extends Specification {
         }
 
         when:
-        subject.createKeyForColumns(grailsProp, "", new Table("t"), ["amount_amount", "amount_currency"])
+        subject.createKeyForColumns(grailsProp, "", new Table("t"), [new Column("amount_amount"), new Column("amount_currency")])
 
         then:
         MappingException e = thrown()
@@ -311,7 +379,7 @@ class CreateKeyForPropsSpec extends Specification {
             getHibernateOwner() >> owner
         }
         owner.getHibernatePropertyByName("x") >> otherProp
-        columnNameFetcher.getColumnNameForPropertyAndPath(otherProp, "", null) >> "x_col"
+        columnNameFetcher.getColumnNamesForPropertyAndPath(otherProp, "") >> ["x_col"]
         def table = new Table("owner")
 
         when:

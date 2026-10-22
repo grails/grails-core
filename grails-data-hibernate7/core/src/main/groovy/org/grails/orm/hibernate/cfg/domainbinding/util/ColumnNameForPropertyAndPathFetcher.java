@@ -18,6 +18,8 @@
  */
 package org.grails.orm.hibernate.cfg.domainbinding.util;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.grails.orm.hibernate.cfg.ColumnConfig;
@@ -31,14 +33,25 @@ public class ColumnNameForPropertyAndPathFetcher {
     private final PersistentEntityNamingStrategy namingStrategy;
     private final DefaultColumnNameFetcher defaultColumnNameFetcher;
     private final BackticksRemover backticksRemover;
+    private final CompositeUserTypeColumns compositeUserTypeColumns;
 
     public ColumnNameForPropertyAndPathFetcher(
             PersistentEntityNamingStrategy namingStrategy,
             DefaultColumnNameFetcher defaultColumnNameFetcher,
             BackticksRemover backticksRemover) {
+        this(namingStrategy, defaultColumnNameFetcher, backticksRemover,
+                new CompositeUserTypeColumns(namingStrategy, backticksRemover));
+    }
+
+    protected ColumnNameForPropertyAndPathFetcher(
+            PersistentEntityNamingStrategy namingStrategy,
+            DefaultColumnNameFetcher defaultColumnNameFetcher,
+            BackticksRemover backticksRemover,
+            CompositeUserTypeColumns compositeUserTypeColumns) {
         this.namingStrategy = namingStrategy;
         this.defaultColumnNameFetcher = defaultColumnNameFetcher;
         this.backticksRemover = backticksRemover;
+        this.compositeUserTypeColumns = compositeUserTypeColumns;
     }
 
     public String getColumnNameForPropertyAndPath(
@@ -52,5 +65,23 @@ public class ColumnNameForPropertyAndPathFetcher {
                             backticksRemover.apply(suffix))
                     .orElse(suffix);
         });
+    }
+
+    /**
+     * The names of all the columns of the property: the one name {@link #getColumnNameForPropertyAndPath} resolves
+     * without a column configuration for a property that has one column, or one name per attribute of the
+     * embeddable class for a property mapped with a composite user type, which spans one column per attribute and
+     * has no single column name.
+     *
+     * @param grailsProp the property
+     * @param path the path of the property within its entity
+     * @return the column names, in column order
+     * @since 8.0.1
+     */
+    public List<String> getColumnNamesForPropertyAndPath(HibernatePersistentProperty grailsProp, String path) {
+        if (grailsProp.getCompositeUserType() != null) {
+            return compositeUserTypeColumns.columnNamesOf(grailsProp, path);
+        }
+        return Collections.singletonList(getColumnNameForPropertyAndPath(grailsProp, path, null));
     }
 }

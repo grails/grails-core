@@ -32,6 +32,7 @@ import org.hibernate.MappingException
 import org.hibernate.mapping.BasicValue
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.Component
+import org.hibernate.mapping.Table
 import org.hibernate.mapping.Value
 import org.hibernate.metamodel.spi.ValueAccess
 import org.hibernate.usertype.CompositeUserType
@@ -297,6 +298,89 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
+    void "the unique key of a composite user type property keeps the quoting and the case of its columns"() {
+        given: 'a unique composite user type property whose columns are quoted: one mixed-case, one a reserved word'
+        HibernateDatastore datastore = createDatastore('compositeUserTypeUniqueQuoted', {}, CompositeUserTypeUniqueQuoted)
+
+        expect: 'the key holds the bound columns themselves, quoted, rather than copies named after them'
+        Table table = datastore.metadata.getEntityBinding(CompositeUserTypeUniqueQuoted.name).table
+        table.uniqueKeys.size() == 1
+        List<Column> keyColumns = table.uniqueKeys.values().first().columns
+        keyColumns*.name.toSet() == ['Amount', 'order'] as Set
+        keyColumns.every { Column column -> column.quoted && table.getColumn(column).is(column) }
+
+        and: 'the schema has the key on those names'
+        schemaUniqueKeyColumns(datastore, 'COMPOSITE_USER_TYPE_UNIQUE_QUOTED') == [['Amount', 'order'] as Set]
+
+        when: 'values that share one attribute are saved'
+        CompositeUserTypeUniqueQuoted.withTransaction {
+            new CompositeUserTypeUniqueQuoted(amount: new CompositeMoney(amount: 10, currency: 'EUR')).save(flush: true, failOnError: true)
+            new CompositeUserTypeUniqueQuoted(amount: new CompositeMoney(amount: 20, currency: 'EUR')).save(flush: true, failOnError: true)
+        }
+
+        then: 'they are accepted'
+        CompositeUserTypeUniqueQuoted.withTransaction { CompositeUserTypeUniqueQuoted.count() } == 2
+
+        when: 'an equal complete value is saved without validation'
+        CompositeUserTypeUniqueQuoted.withTransaction {
+            new CompositeUserTypeUniqueQuoted(amount: new CompositeMoney(amount: 10, currency: 'EUR')).save(flush: true, validate: false)
+        }
+
+        then: 'the database rejects it'
+        thrown(DataIntegrityViolationException)
+
+        cleanup:
+        datastore?.close()
+    }
+
+    void "a uniqueness group that names a composite user type property spans all of its columns"() {
+        given: 'a composite property unique within another composite property, and a plain property unique within a composite one'
+        HibernateDatastore datastore = createDatastore('compositeUserTypeUniqueComposites', {}, CompositeUserTypeUniqueComposites)
+        Set<Set<String>> keys = [
+                ['amount_amount', 'amount_currency', 'fee_value', 'fee_currency'] as Set,
+                ['reference', 'amount_amount', 'amount_currency'] as Set
+        ] as Set
+
+        expect: 'each key holds every column of the composite properties of its group, mapped explicitly or by default'
+        uniqueKeyColumns(datastore, CompositeUserTypeUniqueComposites).toSet() == keys
+        schemaUniqueKeyColumns(datastore, 'COMPOSITE_USER_TYPE_UNIQUE_COMPOSITES')
+                .collect { Set<String> columns -> columns*.toLowerCase() as Set }.toSet() == keys
+
+        when: 'rows that differ in the fee, or in the reference, are saved'
+        CompositeUserTypeUniqueComposites.withTransaction {
+            new CompositeUserTypeUniqueComposites(reference: 'a', amount: new CompositeMoney(amount: 10, currency: 'EUR'),
+                    fee: new CompositeMoney(amount: 1, currency: 'EUR')).save(flush: true, failOnError: true)
+            new CompositeUserTypeUniqueComposites(reference: 'b', amount: new CompositeMoney(amount: 10, currency: 'EUR'),
+                    fee: new CompositeMoney(amount: 2, currency: 'EUR')).save(flush: true, failOnError: true)
+            new CompositeUserTypeUniqueComposites(reference: 'a', amount: new CompositeMoney(amount: 20, currency: 'EUR'),
+                    fee: new CompositeMoney(amount: 1, currency: 'EUR')).save(flush: true, failOnError: true)
+        }
+
+        then: 'they are accepted'
+        CompositeUserTypeUniqueComposites.withTransaction { CompositeUserTypeUniqueComposites.count() } == 3
+
+        when: 'the same amount and fee are saved under another reference, without validation'
+        CompositeUserTypeUniqueComposites.withTransaction {
+            new CompositeUserTypeUniqueComposites(reference: 'c', amount: new CompositeMoney(amount: 10, currency: 'EUR'),
+                    fee: new CompositeMoney(amount: 1, currency: 'EUR')).save(flush: true, validate: false)
+        }
+
+        then: 'the database rejects them'
+        thrown(DataIntegrityViolationException)
+
+        when: 'the same reference and amount are saved with another fee, without validation'
+        CompositeUserTypeUniqueComposites.withTransaction {
+            new CompositeUserTypeUniqueComposites(reference: 'a', amount: new CompositeMoney(amount: 10, currency: 'EUR'),
+                    fee: new CompositeMoney(amount: 3, currency: 'EUR')).save(flush: true, validate: false)
+        }
+
+        then: 'the database rejects them'
+        thrown(DataIntegrityViolationException)
+
+        cleanup:
+        datastore?.close()
+    }
+
     void "a composite user type takes its attributes from its embeddable class when that differs from the value class"() {
         given: 'a composite user type whose embeddable class is a record describing the value class'
         HibernateDatastore datastore = createDatastore('compositeUserTypeTemplate', {}, CompositeUserTypeTemplated)
@@ -437,6 +521,25 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore.metadata.getEntityBinding(entity.name).table.uniqueKeys.values().collect { it.columns*.name.toSet() }
     }
 
+    /** The unique constraints of the table in the schema, each as the set of the names of its columns. */
+    private static List<Set<String>> schemaUniqueKeyColumns(HibernateDatastore datastore, String table) {
+        Map<String, Set<String>> keys = [:].withDefault { [] as Set<String> }
+        datastore.dataSource.connection.withCloseable { conn ->
+            conn.prepareStatement('select tc.constraint_name, ccu.column_name from information_schema.table_constraints tc ' +
+                    'join information_schema.constraint_column_usage ccu on ccu.constraint_schema = tc.constraint_schema ' +
+                    "and ccu.constraint_name = tc.constraint_name where tc.table_name = ? and tc.constraint_type = 'UNIQUE'")
+                    .withCloseable { stmt ->
+                        stmt.setString(1, table)
+                        stmt.executeQuery().withCloseable { rs ->
+                            while (rs.next()) {
+                                keys[rs.getString('constraint_name')] << rs.getString('column_name')
+                            }
+                        }
+                    }
+        }
+        keys.values().toList()
+    }
+
     private static Map<String, Object> storedRow(HibernateDatastore datastore, Long id) {
         Map<String, Object> row = [:]
         datastore.dataSource.connection.withCloseable { conn ->
@@ -559,6 +662,42 @@ class CompositeUserTypeUniqueGroup implements HibernateEntity<CompositeUserTypeU
 
     static mapping = {
         amount type: CompositeMoneyType
+    }
+}
+
+@Entity
+class CompositeUserTypeUniqueQuoted implements HibernateEntity<CompositeUserTypeUniqueQuoted> {
+    CompositeMoney amount
+
+    static constraints = {
+        amount unique: true
+    }
+
+    static mapping = {
+        amount type: CompositeMoneyType, {
+            column name: '`Amount`'
+            column name: '`order`'
+        }
+    }
+}
+
+@Entity
+class CompositeUserTypeUniqueComposites implements HibernateEntity<CompositeUserTypeUniqueComposites> {
+    String reference
+    CompositeMoney amount
+    CompositeMoney fee
+
+    static constraints = {
+        amount unique: 'fee'
+        reference unique: 'amount'
+    }
+
+    static mapping = {
+        amount type: CompositeMoneyType
+        fee type: CompositeMoneyType, {
+            column name: 'fee_value'
+            column name: 'fee_currency'
+        }
     }
 }
 

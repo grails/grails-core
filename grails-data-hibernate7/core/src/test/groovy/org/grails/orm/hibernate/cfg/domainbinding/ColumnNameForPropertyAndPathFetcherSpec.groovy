@@ -22,11 +22,13 @@ package org.grails.orm.hibernate.cfg.domainbinding
 import org.grails.orm.hibernate.cfg.ColumnConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy
+import org.hibernate.usertype.CompositeUserType
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
+import org.grails.orm.hibernate.cfg.domainbinding.util.CompositeUserTypeColumns
 import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher
 
 class ColumnNameForPropertyAndPathFetcherSpec extends Specification {
@@ -104,5 +106,54 @@ class ColumnNameForPropertyAndPathFetcherSpec extends Specification {
 
         then:
         result == "only_default"
+    }
+
+    def "the column names of a property with one column are that column name, resolved without a column configuration"() {
+        given:
+        def namingStrategy = Mock(PersistentEntityNamingStrategy)
+        def defaultColumnFetcher = Mock(DefaultColumnNameFetcher)
+        def compositeUserTypeColumns = Mock(CompositeUserTypeColumns)
+        def fetcher = new ColumnNameForPropertyAndPathFetcher(
+                namingStrategy,
+                defaultColumnFetcher,
+                backticksRemover,
+                compositeUserTypeColumns
+        )
+        def grailsProp = Mock(HibernatePersistentProperty) {
+            getCompositeUserType() >> null
+            getColumnName(null) >> "`explicit_col`"
+        }
+
+        when:
+        def result = fetcher.getColumnNamesForPropertyAndPath(grailsProp, "somePath")
+
+        then:
+        result == ["`explicit_col`"]
+        0 * compositeUserTypeColumns._
+    }
+
+    def "the column names of a property mapped with a composite user type are the names of its attribute columns"() {
+        given:
+        def namingStrategy = Mock(PersistentEntityNamingStrategy)
+        def defaultColumnFetcher = Mock(DefaultColumnNameFetcher)
+        def compositeUserTypeColumns = Mock(CompositeUserTypeColumns)
+        def fetcher = new ColumnNameForPropertyAndPathFetcher(
+                namingStrategy,
+                defaultColumnFetcher,
+                backticksRemover,
+                compositeUserTypeColumns
+        )
+        def grailsProp = Mock(HibernatePersistentProperty) {
+            getCompositeUserType() >> CompositeUserType
+        }
+        compositeUserTypeColumns.columnNamesOf(grailsProp, "somePath") >> ["amount_amount", "amount_currency"]
+
+        when:
+        def result = fetcher.getColumnNamesForPropertyAndPath(grailsProp, "somePath")
+
+        then: "the property is not treated as a single column"
+        result == ["amount_amount", "amount_currency"]
+        0 * grailsProp.getColumnName(_)
+        0 * defaultColumnFetcher._
     }
 }

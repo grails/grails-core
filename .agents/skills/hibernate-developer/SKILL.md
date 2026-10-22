@@ -66,7 +66,7 @@ This skill is for the Grails framework's Hibernate 7 integration module, not for
 - `SimpleValueBinder`: binds simple properties.
 - `SimpleValueColumnBinder`: binds columns to simple values.
 - `ComponentBinder`, `ComponentPropertyBinder`: embedded/component binding.
-- `CompositeUserTypeBinder`: binds a property mapped with a Hibernate `CompositeUserType` as a `Component` (one column per attribute of the user type's `embeddable()` class, in alphabetical attribute order, with `returnedClass()` as the component class); a `BasicValue` cannot carry a composite user type. Its columns are bound with `ColumnBinder.bindColumnWithoutUniqueness` and its uniqueness with one `CreateKeyForProps.createKeyForColumns` key across all of them, never a unique key per column.
+- `CompositeUserTypeBinder`: binds a property mapped with a Hibernate `CompositeUserType` as a `Component` (one column per attribute of the user type's `embeddable()` class, in alphabetical attribute order, with `returnedClass()` as the component class); a `BasicValue` cannot carry a composite user type. The attributes and the column of each one come from `CompositeUserTypeColumns` (in `domainbinding.util`), which `ColumnNameForPropertyAndPathFetcher.getColumnNamesForPropertyAndPath` also uses, so a uniqueness group that names such a property spans all of its columns. Its columns are bound with `ColumnBinder.bindColumnWithoutUniqueness` and its uniqueness with one `CreateKeyForProps.createKeyForColumns` key across the bound `Column` objects themselves (which keeps their quoting), never a unique key per column.
 - `EnumTypeBinder`: enum mapping.
 
 ### Generators
