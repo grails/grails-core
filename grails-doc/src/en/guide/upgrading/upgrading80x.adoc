@@ -4869,7 +4869,7 @@ Tune `-XX:MaxMetaspaceSize` from a measured baseline: run the application under 
 
 The `-XX:+/-UseCompressedClassPointers` flag is deprecated in Java 25 and will be removed in a future release.
 
-* If your startup scripts pass `-XX:+UseCompressedClassPointers` (the default), remove it — it is superfluous.
-* If they pass `-XX:-UseCompressedClassPointers` to disable compressed class pointers, remove it.
+* If your startup scripts pass `-XX:+UseCompressedClassPointers`, remove it because it is the default.
+* If they pass `-XX:-UseCompressedClassPointers` to disable compressed class pointers, note that dropping it changes the memory layout and has to be checked against the measured class-space use.
 
 See <<java25-memory,Java 25 Memory Considerations>> in the deployment guide for full details, including systemd service unit examples and guidance on the metaspace free-ratio flags.
