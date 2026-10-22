@@ -23,6 +23,7 @@ import org.hibernate.MappingException
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.Table
 
+import org.grails.orm.hibernate.cfg.ColumnConfig
 import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
@@ -69,9 +70,17 @@ class CreateKeyForProps {
                     throw new MappingException(
                             "${owner.javaClass.name} references an unknown property ${propertyName}".toString())
                 }
-                String otherColumnName =
-                        columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(otherProp, path, null)
-                keyList.add(new Column(otherColumnName))
+                // every configured column of the member joins the key: a to-one association mapped to more than one
+                // column has no single column name to ask for; a member without explicit columns keeps the fallback
+                List<ColumnConfig> columns = otherProp.hibernateMappedForm.columns
+                if (columns.isEmpty()) {
+                    columns = [null]
+                }
+                for (ColumnConfig column : columns) {
+                    String otherColumnName =
+                            columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(otherProp, path, column)
+                    keyList.add(new Column(otherColumnName))
+                }
             }
 
             uniqueKeyForColumnsCreator.createUniqueKeyForColumns(table, keyList)
