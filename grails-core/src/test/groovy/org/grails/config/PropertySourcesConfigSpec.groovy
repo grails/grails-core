@@ -131,22 +131,30 @@ class PropertySourcesConfigSpec extends Specification {
         config.getProperty('plain..nested.value') == 'found'
         config.getProperty('.plain.nested.value.') == 'found'
         config.getProperty('...') == null
-
-        and: "a key that runs past a scalar answers with that scalar, as it always has"
-        config.getProperty('plain.nested.value.deeper') == 'found'
-        config.containsProperty('plain.nested.value.deeper')
     }
 
-    void 'a dotted key that runs past a scalar value is absent'() {
-        given: "a scalar value"
-        def config = new PropertySourcesConfig([server: [url: 'http://localhost']])
+    void 'a dotted key that runs past a value that is not a map is absent'() {
+        given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
+        def constraints = { nullable true }
+        def config = new PropertySourcesConfig([
+                server: [url: 'http://localhost', ports: [8080, 8443]],
+                grails: [gorm: ['default': [constraints: constraints]]]
+        ])
 
-        expect: "the scalar itself resolves"
+        expect: "each value resolves itself"
         config.getProperty('server.url') == 'http://localhost'
+        config.getProperty('server.ports', List) == [8080, 8443]
+        config.getProperty('grails.gorm.default.constraints', Closure).is(constraints)
 
-        and: "a key that names a child of the scalar is absent rather than the scalar"
+        and: "a key that names a child of any of them is absent rather than the value"
         config.getProperty('server.url.port') == null
         config.getProperty('server.url.port', String, 'none') == 'none'
+        config.getProperty('server.ports.0') == null
+        config.getProperty('grails.gorm.default.constraints.nullable') == null
+
+        and: "containsProperty agrees"
         !config.containsProperty('server.url.port')
+        !config.containsProperty('server.ports.0')
+        !config.containsProperty('grails.gorm.default.constraints.nullable')
     }
 }
