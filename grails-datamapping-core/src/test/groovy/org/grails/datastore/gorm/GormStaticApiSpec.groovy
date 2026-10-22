@@ -1081,7 +1081,44 @@ class GormStaticApiSpec extends Specification {
         api.withId(ConnectionSource.DEFAULT) { Session session -> 'ran' } == 'ran'
     }
 
-    void "withoutId delegates to withId with the DEFAULT connection"() {
+    void "withoutId runs without a tenant id for a multi-tenant datastore"() {
+        given:
+        def mappingContext = datastore.mappingContext
+        def multiTenantDs = Stub(MultiTenantCapableDatastore) {
+            getMappingContext() >> mappingContext
+            getMultiTenancyMode() >> MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR
+        }
+        def registry = new GormRegistry()
+        registry.registerEntityDatastore(GormStaticApiThing.name, ConnectionSource.DEFAULT, multiTenantDs)
+        def api = new GormStaticApi(GormStaticApiThing, mappingContext, [], null, ConnectionSource.DEFAULT, registry)
+
+        expect:
+        api.withoutId { Tenants.isWithoutId(multiTenantDs) }
+        !Tenants.isWithoutId(multiTenantDs)
+    }
+
+    void "withoutId passes a closure with parameters the tenant id and the session, as withId does"() {
+        given:
+        def mappingContext = datastore.mappingContext
+        def session = Stub(Session)
+        def multiTenantDs = Stub(MultiTenantCapableDatastore) {
+            getMappingContext() >> mappingContext
+            getMultiTenancyMode() >> MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR
+            withSession(_) >> { Closure body -> body.call(session) }
+        }
+        def registry = new GormRegistry()
+        registry.registerEntityDatastore(GormStaticApiThing.name, ConnectionSource.DEFAULT, multiTenantDs)
+        def api = new GormStaticApi(GormStaticApiThing, mappingContext, [], null, ConnectionSource.DEFAULT, registry)
+
+        expect:
+        api.withoutId { Serializable tenantId -> [tenantId, Tenants.isWithoutId(multiTenantDs)] } ==
+                [ConnectionSource.DEFAULT, true]
+        api.withoutId { Serializable tenantId, Session s -> [tenantId, s, Tenants.isWithoutId(multiTenantDs)] } ==
+                [ConnectionSource.DEFAULT, session, true]
+        !Tenants.isWithoutId(multiTenantDs)
+    }
+
+    void "withoutId delegates to withId with the DEFAULT connection for a datastore that is not multi-tenant"() {
         given:
         def mappingContext = datastore.mappingContext
         def plainDs = Stub(Datastore) {
