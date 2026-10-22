@@ -17,6 +17,7 @@ org.apache.grails.core.aot.PropertyEditorRuntimeHints
 
 org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
 org.apache.grails.core.aot.AutowireModeBeanRegistrationAotProcessor,\
+org.apache.grails.core.aot.GeneratedInjectionBeanRegistrationAotProcessor,\
 org.apache.grails.core.aot.VarargsBeanRegistrationAotProcessor
 
 org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=\
