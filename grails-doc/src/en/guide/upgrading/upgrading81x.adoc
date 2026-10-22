@@ -54,7 +54,7 @@ Default projects consistently include Mockito with Spock. When both Grails Data 
 
 ==== 4. Environment Variables Are Read Once Per Configuration
 
-`grailsApplication.config` resolves every property against the process environment before it consults the configuration, so that a variable such as `GRAILS_SERVERURL` overrides `grails.serverURL`. Grails 8.0 probed `System.getenv` with up to eight spellings of the key on every lookup. Grails 8.1 reads the environment once, when the configuration is created, and indexes the variable names, so a lookup that no variable can match is answered without touching the environment.
+`getProperty` on `grailsApplication.config` resolves a property against the process environment before it consults the configuration, so that a variable such as `GRAILS_SERVERURL` overrides `grails.serverURL`. Grails 8.0 probed `System.getenv` with up to eight spellings of the key on every lookup. Grails 8.1 reads the environment once, when the configuration is created, and indexes the variable names, so a lookup that no variable can match is answered without touching the environment.
 
 ===== Required Actions
 
@@ -66,5 +66,7 @@ A test that installs environment variables reflectively, with a library such as 
 ----
 grailsApplication.config.refresh()
 ----
+
+`refresh()` is a method of the configuration implementation rather than of the `Config` interface, so it is a call for dynamically compiled test code. It reads the environment again and merges the property sources again, which replaces a value the test set on the configuration directly wherever a property source defines the same key. Call it again once the variables are removed: the configuration keeps the environment it last read.
 
 Two smaller differences: variable names are upper-cased with `Locale.ROOT`, as Spring does, so a key containing `i` matches its upper-cased variable under a Turkish default locale too; and `getProperty(null)` returns the default value instead of throwing a `NullPointerException`.
