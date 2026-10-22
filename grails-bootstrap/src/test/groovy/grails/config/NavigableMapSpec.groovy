@@ -18,6 +18,7 @@
  */
 package grails.config
 
+import org.grails.config.CodeGenConfig
 import org.grails.config.NavigableMap
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -171,5 +172,20 @@ class NavigableMapSpec extends Specification {
         output['app.groups'] == [['a', 'b'], ['c']]
         output['app.groups[1][0]'] == 'c'
         output.navigate('app', 'groups') == [['a', 'b'], ['c']]
+    }
+
+    def "navigate stops at a value that is not a map"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([app: [name: 'demo', ports: [8080, 8443]]], true)
+
+        expect: 'a path that ends on the value answers with it'
+        output.navigate('app', 'name') == 'demo'
+        output.navigate('app', 'ports') == [8080, 8443]
+
+        and: 'a path that continues past it is absent rather than the value'
+        output.navigate('app', 'name', 'deeper') == null
+        output.navigate('app', 'ports', '0') == null
+        new CodeGenConfig(output).navigate(String, 'app', 'name', 'deeper') == null
     }
 }

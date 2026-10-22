@@ -262,7 +262,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             if (submap instanceof Map) {
                 return navigateMap((Map<String, Object>) submap, path.tail())
             }
-            return submap
+            return null
         }
     }
 
