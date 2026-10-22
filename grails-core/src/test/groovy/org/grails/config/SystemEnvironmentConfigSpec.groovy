@@ -55,19 +55,47 @@ property-with_mixed.symbols: from-yml
         modifiableSystemEnvironment.remove(systemProperty)
 
         where:
-        propertyToFind                | systemProperty                | value
-        'property.with.period'        | 'property.with.period'        | 'from-env'
-        'property.with.period'        | 'property_with_period'        | 'from-env'
-        'property.with.period'        | 'PROPERTY_WITH_PERIOD'        | 'from-env'
-        'property_with_underscore'    | 'property_with_underscore'    | 'from-env'
-        'property_with_underscore'    | 'PROPERTY_WITH_UNDERSCORE'    | 'from-env'
-        'property-with-hyphen'        | 'property-with-hyphen'        | 'from-env'
-        'property-with-hyphen'        | 'PROPERTY-WITH-HYPHEN'        | 'from-env'
-        'property-with-hyphen'        | 'PROPERTY_WITH_HYPHEN'        | 'from-env'
-        'property-with_mixed.symbols' | 'property-with_mixed.symbols' | 'from-env'
-        'property-with_mixed.symbols' | 'property_with_mixed_symbols' | 'from-env'
-        'property-with_mixed.symbols' | 'PROPERTY-WITH_MIXED.SYMBOLS' | 'from-env'
-        'property-with_mixed.symbols' | 'PROPERTY_WITH_MIXED_SYMBOLS' | 'from-env'
+        propertyToFind                | systemProperty
+        'property.with.period'        | 'property.with.period'
+        'property.with.period'        | 'property_with_period'
+        'property.with.period'        | 'PROPERTY_WITH_PERIOD'
+        'property_with_underscore'    | 'property_with_underscore'
+        'property_with_underscore'    | 'PROPERTY_WITH_UNDERSCORE'
+        'property-with-hyphen'        | 'property-with-hyphen'
+        'property-with-hyphen'        | 'PROPERTY-WITH-HYPHEN'
+        'property-with-hyphen'        | 'PROPERTY_WITH_HYPHEN'
+        'property-with_mixed.symbols' | 'property-with_mixed.symbols'
+        'property-with_mixed.symbols' | 'property_with_mixed_symbols'
+        'property-with_mixed.symbols' | 'PROPERTY-WITH_MIXED.SYMBOLS'
+        'property-with_mixed.symbols' | 'PROPERTY_WITH_MIXED_SYMBOLS'
+        value = 'from-' + systemProperty
+    }
+
+    void 'a key is matched to its upper-cased variable under any default locale'() {
+        given: 'a default locale whose upper-case i is not I'
+        Locale defaultLocale = Locale.getDefault()
+        Locale.setDefault(Locale.forLanguageTag('tr-TR'))
+
+        and: 'a variable that is the upper-cased key'
+        modifiableSystemEnvironment.put('PROPERTY_WITH_ID', 'from-env')
+        def config = configFor('property.with.id: from-yml')
+
+        expect: 'the variable overrides the configured value'
+        config.getProperty('property.with.id') == 'from-env'
+
+        cleanup:
+        modifiableSystemEnvironment.remove('PROPERTY_WITH_ID')
+        Locale.setDefault(defaultLocale)
+    }
+
+    void 'a null key resolves to the default value'() {
+        given: 'any configuration'
+        def config = configFor(YAML)
+
+        expect: 'a null key is absent rather than an error from the environment probe'
+        config.getProperty(null) == null
+        config.getProperty(null, String, 'dflt') == 'dflt'
+        !config.containsProperty(null)
     }
 
     void 'a key that no environment variable can match resolves from configuration'() {
