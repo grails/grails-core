@@ -230,6 +230,20 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
+    void 'a bracket inside an array literal does not hide the string literal or the next column'() {
+        given:
+        saveBoxes()
+
+        expect:
+        SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection "cardinality(ARRAY['[']) as n, height as height", ['n', 'height'], [INTEGER, INTEGER]
+            }
+            order('height')
+        }*.toList() == [[1, 7], [1, 8], [1, 9], [1, 9]]
+    }
+
+    @Rollback
     void 'the type may be a StandardBasicTypes constant or a Java class'() {
         given:
         saveBoxes()

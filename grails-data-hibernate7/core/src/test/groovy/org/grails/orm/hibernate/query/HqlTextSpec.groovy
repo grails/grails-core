@@ -44,6 +44,7 @@ class HqlTextSpec extends Specification {
         'from Book'                                            | 0     | null          | null  | 'from Book'                                             | Book
         'from Book b'                                          | 0     | null          | 'b'   | 'from Book b'                                           | Book
         'select b from Book b'                                 | 1     | 'b'           | 'b'   | 'select b from Book b'                                  | Book
+        "select b, 'İİ' from Book b"                           | 2     | "b, 'ii'"     | 'b'   | "select b, 'İİ' from Book b"                            | Object[]
         'select Book from Book'                                | 1     | 'book'        | null  | 'select e from Book e'                                  | Book
         'select name from Book'                                | 1     | 'name'        | null  | 'select e.name from Book e'                             | Object
         'select distinct name from Book'                       | 1     | 'name'        | null  | 'select distinct e.name from Book e'                    | Object

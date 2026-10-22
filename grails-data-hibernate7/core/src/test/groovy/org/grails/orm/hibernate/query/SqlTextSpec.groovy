@@ -45,6 +45,8 @@ class SqlTextSpec extends Specification {
         'sum(height) as [total (cm)], c'          | ['sum(height) as [total (cm)]', 'c']
         'sum(height) as [a]]b], c'                | ['sum(height) as [a]]b]', 'c']
         'arr[f(a, b)], ARRAY[ARRAY[1, 2]], c'     | ['arr[f(a, b)]', 'ARRAY[ARRAY[1, 2]]', 'c']
+        "ARRAY['['], height"                      | ["ARRAY['[']", 'height']
+        "ARRAY[']', ','], [a,b]"                  | ["ARRAY[']', ',']", '[a,b]']
         'a /* b, c */, d'                         | ['a /* b, c */', 'd']
         'a -- b, c\n, d'                          | ['a -- b, c', 'd']
         '$$a,b$$, c'                              | ['$$a,b$$', 'c']
@@ -53,9 +55,11 @@ class SqlTextSpec extends Specification {
         'concat(a, concat(b, c)), d'              | ['concat(a, concat(b, c))', 'd']
     }
 
-    void "HQL has no bracket identifiers or dollar quotes, so they are plain text there"() {
+    void "HQL has no bracket identifiers or dollar quotes: brackets group an index expression, the rest is plain"() {
         expect:
-        SqlText.hql('a[1, 2], b').splitTopLevel(',' as char) == ['a[1', '2]', 'b']
+        SqlText.hql('a[f(1, 2)], b').splitTopLevel(',' as char) == ['a[f(1, 2)]', 'b']
+        SqlText.hql("[a'b], c").splitTopLevel(',' as char) == ["[a'b], c"]
+        SqlText.sql("[a'b], c").splitTopLevel(',' as char) == ["[a'b]", 'c']
         SqlText.hql('$$a,b$$, c').splitTopLevel(',' as char) == ['$$a', 'b$$', 'c']
     }
 
@@ -118,6 +122,8 @@ class SqlTextSpec extends Specification {
         'a = ? /* ? */ and b = ?'             | [4, 22]
         'a = ? -- ?\nand b = ?'               | [4, 19]
         'a = [?] and b = ?'                   | [16]
+        'id = ANY(ARRAY[?, ?])'               | [15, 18]
+        "a = ARRAY['?', ?][1]"                | [15]
         'a = $$?$$ and b = ?'                 | [18]
         'a = (?)'                             | [5]
     }

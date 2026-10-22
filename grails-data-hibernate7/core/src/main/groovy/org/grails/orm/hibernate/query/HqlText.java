@@ -56,7 +56,7 @@ final class HqlText {
 
     private HqlText(String hql) {
         text = hql.trim();
-        String lower = text.toLowerCase(Locale.ROOT);
+        String lower = lowerCaseKeepingLength(text);
         SqlText scan = SqlText.hql(lower);
         selectIndex = scan.indexOfTopLevel(SELECT + " ", 0);
         fromIndex = scan.indexOfTopLevel(" " + FROM + " ", Math.max(selectIndex, 0));
@@ -99,13 +99,26 @@ final class HqlText {
                 String adjusted = qualify(clauseLower, entityName, clauseOriginal);
                 rewritten = text.substring(0, selectIndex) + SELECT + " " + prefix + adjusted + " " +
                         FROM + " " + entityName + " " + SYNTHETIC_ALIAS + text.substring(entityEnd);
-                rewrittenClause = adjusted.toLowerCase(Locale.ROOT);
+                rewrittenClause = lowerCaseKeepingLength(adjusted);
                 rewrittenRootAlias = SYNTHETIC_ALIAS;
             }
         }
         normalized = rewritten;
         normalizedClause = rewrittenClause;
         normalizedRootAlias = rewrittenRootAlias;
+    }
+
+    /**
+     * Lowercases the text character by character, so that every index of the lowercase text is the same index of
+     * the original: {@code String.toLowerCase} can lengthen a text, as it does for the dotted capital I of a
+     * literal, and the reader indexes the original with positions found in the lowercase text.
+     */
+    private static String lowerCaseKeepingLength(String text) {
+        char[] chars = text.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = Character.toLowerCase(chars[i]);
+        }
+        return new String(chars);
     }
 
     /** Reads the HQL once; {@code null} reads as an empty query. */

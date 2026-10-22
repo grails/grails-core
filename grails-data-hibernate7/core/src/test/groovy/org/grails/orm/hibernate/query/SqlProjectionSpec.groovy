@@ -41,6 +41,7 @@ class SqlProjectionSpec extends Specification {
         'sum(height) as [total (cm)], c'                | ['sum(height) as [total (cm)]', 'c']
         'sum(height) as [a]]b], c'                      | ['sum(height) as [a]]b]', 'c']
         'arr[f(a, b)], ARRAY[ARRAY[1, 2]], c'           | ['arr[f(a, b)]', 'ARRAY[ARRAY[1, 2]]', 'c']
+        "ARRAY['['], height"                            | ["ARRAY['[']", 'height']
         'a /* b, c */, d'                               | ['a /* b, c */', 'd']
         'a -- b, c\n, d'                                | ['a -- b, c', 'd']
         '$$a,b$$, c'                                    | ['$$a,b$$', 'c']

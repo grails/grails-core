@@ -115,11 +115,11 @@ public record HqlQueryContext(
         String resolved = positionalParamsCopy.isEmpty() ?
                 resolveHql(queryCharseq, namedParamsCopy) :
                 resolveHql(queryCharseq, isNative, positionalParamsCopy);
-        // the query is read once: its normalized form and its result type come from the same reading
-        HqlText reading = HqlText.of(resolved);
-        // the result type of a native query or an update is not read from its select, so it is run as written
-        var hql = Optional.of(isNative || isUpdate ? reading.text() : reading.normalized())
-            .filter(s -> !s.trim().isEmpty())
+        // native SQL is not HQL and is never read as such; an HQL query is read once, and its normalized form and
+        // its result type come from that reading, except an update, which runs as written
+        HqlText reading = isNative ? null : HqlText.of(resolved);
+        var hql = Optional.of(isNative ? resolved.trim() : isUpdate ? reading.text() : reading.normalized())
+            .filter(s -> !s.isEmpty())
             .orElseGet(() -> "from %s".formatted(entity.getName()));
 
         namedParamsCopy.replaceAll((k, v) -> convertValue(v));

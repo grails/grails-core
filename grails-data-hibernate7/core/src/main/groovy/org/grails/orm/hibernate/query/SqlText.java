@@ -81,10 +81,10 @@ final class SqlText {
                 continue;
             }
             char c = text.charAt(i);
-            if (c == '(') {
+            if (c == '(' || c == '[') {
                 d++;
                 depth[i] = d;
-            } else if (c == ')') {
+            } else if (c == ')' || c == ']') {
                 depth[i] = d;
                 if (d > 0) {
                     d--;
@@ -259,7 +259,7 @@ final class SqlText {
             return end == -1 ? text.length() : end + 2;
         }
         if (dialect == Dialect.SQL) {
-            if (c == '[') {
+            if (c == '[' && startsBracketIdentifier(index)) {
                 return skipBracketIdentifier(index);
             }
             if (c == '$') {
@@ -293,6 +293,20 @@ final class SqlText {
             i++;
         }
         return i;
+    }
+
+    /**
+     * Returns whether the {@code [} at {@code index} opens a bracket identifier such as {@code [box's width]}, which
+     * it does where nothing to subscript precedes it. After an identifier, a closing parenthesis or a closing
+     * bracket it is structure: the subscript of {@code arr[1]} or the literal of {@code ARRAY['[']}, whose string
+     * literals and placeholders stay visible.
+     */
+    private boolean startsBracketIdentifier(int index) {
+        if (index == 0) {
+            return true;
+        }
+        char previous = text.charAt(index - 1);
+        return !Character.isJavaIdentifierPart(previous) && previous != ')' && previous != ']';
     }
 
     /**

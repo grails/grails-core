@@ -172,6 +172,20 @@ class HibernateCriteriaBuilderSqlRestrictionSpec extends Specification {
     }
 
     @Rollback
+    void 'placeholders inside an array literal are bound'() {
+        given:
+        saveBooks()
+
+        expect: "the two placeholders inside the array are placeholders, so the values bind"
+        SqlRestrictionBook.createCriteria().list {
+            sqlRestriction('{alias}.pages = ANY(ARRAY[CAST(? AS INTEGER), CAST(? AS INTEGER)])', [412, 120])
+        }*.title.sort() == ['Dune', 'Ulysses']
+        SqlRestrictionBook.createCriteria().list {
+            sqlRestriction('{alias}.pages = ANY(ARRAY[CAST(? AS INTEGER), CAST(? AS INTEGER)])', [1, 2])
+        }.isEmpty()
+    }
+
+    @Rollback
     void 'an association block inside a junction'() {
         given:
         saveBooks()

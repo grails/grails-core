@@ -117,13 +117,15 @@ class HqlQueryContextSpec extends Specification {
         when:
         def ctx = HqlQueryContext.prepare(bookEntity, sql, [:], null, [:], [:], true, false)
 
-        then:
+        then: "and the SQL is not read as HQL: it runs as written, whatever its literals lowercase to"
         ctx.targetClass() == HqlQueryContextSpecBook
+        ctx.hql() == sql
 
         where:
         sql << ['select * from hql_query_context_spec_book order by title',
                 'select b.* from hql_query_context_spec_book b',
-                'select * from hql_query_context_spec_book b where b.title = :title']
+                'select * from hql_query_context_spec_book b where b.title = :title',
+                "select b.*, 'İİ' from hql_query_context_spec_book b"]
     }
 
     @Unroll
