@@ -45,7 +45,6 @@ public class SqlProjection extends Query.Projection {
     private static final Pattern QUOTED = Pattern.compile("(?s)" + QUOTED_IDENTIFIER);
     private static final Pattern TRAILING_ALIAS = Pattern.compile(
             "(?is)^(.*?)\\s+as\\s+(" + QUOTED_IDENTIFIER + "|[\\w$]+)\\s*$");
-    private static final Pattern DOLLAR_QUOTE_TAG = Pattern.compile("\\$(?:[A-Za-z_][A-Za-z0-9_]*)?\\$");
 
     private final String sql;
     private final String columnAlias;
@@ -151,98 +150,20 @@ public class SqlProjection extends Query.Projection {
     }
 
     /**
-     * Splits SQL at the commas that separate its columns: those outside parentheses, square brackets, string
-     * literals, dollar-quoted strings, quoted identifiers and comments. Inside square brackets, which quote an
-     * identifier or hold an array subscript, parentheses are not counted, and a doubled closing bracket of the
-     * outermost ones stands for the bracket itself, so {@code [total (cm)]} and {@code [a]]b]} are identifiers.
+     * Splits SQL at the commas that separate its columns: those outside parentheses, bracket identifiers, string
+     * literals, dollar-quoted strings, quoted identifiers and comments. Inside brackets, which quote an identifier or
+     * hold an array subscript, only brackets count, so {@code [box's width]}, {@code [total (cm)]} and {@code [a]]b]}
+     * are each one identifier.
      */
     static List<String> splitColumns(String sql) {
-        List<String> columns = new ArrayList<>();
-        int length = sql.length();
-        int depth = 0;
-        int brackets = 0;
-        int start = 0;
-        int i = 0;
-        while (i < length) {
-            char c = sql.charAt(i);
-            if (c == '\'' || c == '"' || c == '`') {
-                i = SqlRestriction.skipQuoted(sql, i, c);
-            } else if (c == '$') {
-                i = skipDollarQuoted(sql, i);
-            } else if (c == '-' && sql.startsWith("--", i)) {
-                i = SqlRestriction.endOfLine(sql, i);
-            } else if (c == '/' && sql.startsWith("/*", i)) {
-                int end = sql.indexOf("*/", i + 2);
-                i = end == -1 ? length : end + 2;
-            } else {
-                if (brackets > 0) {
-                    if (c == '[') {
-                        brackets++;
-                    } else if (c == ']' && brackets == 1 && sql.startsWith("]]", i)) {
-                        i++;
-                    } else if (c == ']') {
-                        brackets--;
-                    }
-                } else if (c == '[') {
-                    brackets++;
-                } else if (c == '(') {
-                    depth++;
-                } else if (c == ')') {
-                    depth--;
-                } else if (c == ',' && depth == 0) {
-                    columns.add(sql.substring(start, i).trim());
-                    start = i + 1;
-                }
-                i++;
-            }
-        }
-        columns.add(sql.substring(start).trim());
-        return columns;
-    }
-
-    /**
-     * Returns the index after the dollar-quoted string starting at {@code start}, such as {@code $$a,b$$} or
-     * {@code $tag$a,b$tag$}, or the index after the {@code $} if none starts there, as in the identifier
-     * {@code a$b} or the parameter {@code $1}.
-     */
-    private static int skipDollarQuoted(String sql, int start) {
-        char previous = start > 0 ? sql.charAt(start - 1) : ' ';
-        Matcher tag = DOLLAR_QUOTE_TAG.matcher(sql).region(start, sql.length());
-        if (Character.isLetterOrDigit(previous) || previous == '_' || previous == '$' || !tag.lookingAt()) {
-            return start + 1;
-        }
-        int end = sql.indexOf(tag.group(), tag.end());
-        return end == -1 ? sql.length() : end + tag.group().length();
+        return SqlText.sql(sql).splitTopLevel(',');
     }
 
     /**
      * Returns the SQL without the comments and whitespace it ends with.
      */
     private static String withoutTrailingComments(String sql) {
-        int length = sql.length();
-        int end = 0;
-        int i = 0;
-        while (i < length) {
-            char c = sql.charAt(i);
-            if (c == '-' && sql.startsWith("--", i)) {
-                i = SqlRestriction.endOfLine(sql, i);
-            } else if (c == '/' && sql.startsWith("/*", i)) {
-                int close = sql.indexOf("*/", i + 2);
-                i = close == -1 ? length : close + 2;
-            } else {
-                if (c == '\'' || c == '"' || c == '`') {
-                    i = SqlRestriction.skipQuoted(sql, i, c);
-                } else if (c == '$') {
-                    i = skipDollarQuoted(sql, i);
-                } else {
-                    i++;
-                }
-                if (!Character.isWhitespace(c)) {
-                    end = i;
-                }
-            }
-        }
-        return sql.substring(0, end);
+        return SqlText.sql(sql).withoutTrailingComments();
     }
 
     /**

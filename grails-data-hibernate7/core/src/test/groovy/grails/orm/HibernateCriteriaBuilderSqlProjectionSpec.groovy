@@ -126,6 +126,23 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
+    void 'a count over a SQL projection keeps a column alias with a space, since the derived table uses generated aliases'() {
+        given:
+        saveBoxes()
+
+        when: "the count selects over the projection, so the projection becomes a derived table"
+        Number boxes = SqlProjectionBox.createCriteria().count {
+            projections {
+                sqlProjection 'width * 10 as "box width"', 'box width', INTEGER
+            }
+        }
+
+        then: "the derived table names its column with a generated alias, not the caller's, which holds a space"
+        boxes == SqlProjectionBox.count()
+        sqlCapture.statements.any { it.contains('derived1_0(col_0)') }
+    }
+
+    @Rollback
     void 'the results are ordered by the alias of a SQL projection'() {
         given:
         saveBoxes()

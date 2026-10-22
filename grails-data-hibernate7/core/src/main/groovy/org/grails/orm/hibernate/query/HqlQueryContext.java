@@ -187,9 +187,10 @@ public record HqlQueryContext(
     static @Nullable String getSingleProjectionClause(CharSequence hql) {
         if (hql == null) return null;
         String s = hql.toString().toLowerCase(Locale.ROOT).trim();
-        int selectIdx = indexOfSelect(s);
+        SqlText lower = SqlText.hql(s);
+        int selectIdx = indexOfSelect(lower);
         if (selectIdx < 0) return null;
-        int fromIdx = indexOfFrom(s, selectIdx);
+        int fromIdx = indexOfFrom(lower, selectIdx);
         return extractSelectClause(s, selectIdx, fromIdx);
     }
 
@@ -214,124 +215,40 @@ public record HqlQueryContext(
      * for a single projection (including DISTINCT x or NEW map(…)), 2 for two or more comma-separated
      * top-level projections.
      *
-     * <p>Commas inside parentheses or string literals are ignored.
+     * <p>Commas inside parentheses, string literals, quoted identifiers and comments are ignored.
      */
     static int countHqlProjections(CharSequence hql) {
         if (hql == null || hql.isEmpty()) return 0;
         String s = hql.toString().trim();
-        String lower = s.toLowerCase(Locale.ROOT);
+        SqlText lower = SqlText.hql(s.toLowerCase(Locale.ROOT));
         int selectIdx = indexOfSelect(lower);
         if (selectIdx < 0) return 0;
 
         int fromIdx = indexOfFrom(lower, selectIdx);
-        String sel = s.substring(
-                        selectIdx + HibernateQueryArgument.HQL_SELECT.value().length(),
-                        fromIdx < 0 ? s.length() : fromIdx)
-                .trim();
-        if (sel.isEmpty()) return 0;
+        int selStart = selectIdx + HibernateQueryArgument.HQL_SELECT.value().length();
+        int selEnd = fromIdx < 0 ? s.length() : fromIdx;
+        if (s.substring(selStart, selEnd).isBlank()) return 0;
 
-        // Strip leading DISTINCT/ALL
-        String selLower = sel.toLowerCase(Locale.ROOT);
-        if (selLower.startsWith(HibernateQueryArgument.HQL_DISTINCT.value() + " "))
-            sel = sel.substring(HibernateQueryArgument.HQL_DISTINCT.value().length() + 1)
-                    .trim();
-        else if (selLower.startsWith(HibernateQueryArgument.HQL_ALL.value() + " "))
-            sel = sel.substring(HibernateQueryArgument.HQL_ALL.value().length() + 1)
-                    .trim();
-
-        // Count top-level commas, ignoring those inside parens or string literals
-        int commas = getCommas(sel);
+        // Count the top-level commas of the select clause in place: a leading DISTINCT or ALL holds none
+        int commas = lower.countTopLevel(',', selStart, selEnd);
         return commas == 0 ? 1 : 2;
     }
 
     static int getCommas(String sel) {
-        int depth = 0;
-        int commas = 0;
-        boolean inSingle = false;
-        boolean inDouble = false;
-        int i = 0;
-        while (i < sel.length()) {
-            char c = sel.charAt(i);
-            if (!inDouble && c == '\'') {
-                if (inSingle && i + 1 < sel.length() && sel.charAt(i + 1) == '\'') {
-                    // escaped '' — skip next
-                    i++;
-                } else {
-                    inSingle = !inSingle;
-                }
-            } else if (!inSingle && c == '"') {
-                inDouble = !inDouble;
-            } else if (!inSingle && !inDouble) {
-                if (c == '(') {
-                    depth++;
-                } else if (c == ')' && depth > 0) {
-                    depth--;
-                } else if (c == ',' && depth == 0) {
-                    commas++;
-                }
-            }
-            i++;
-        }
-        return commas;
+        return SqlText.hql(sel).countTopLevel(',');
     }
 
     /** Returns the index of the {@code select} of the query itself, not of a subquery, or -1 if it has none. */
-    private static int indexOfSelect(String lowerHql) {
-        return indexOfTopLevel(lowerHql, HibernateQueryArgument.HQL_SELECT.value() + " ", 0);
+    private static int indexOfSelect(SqlText lowerHql) {
+        return lowerHql.indexOfTopLevel(HibernateQueryArgument.HQL_SELECT.value() + " ", 0);
     }
 
     /**
      * Returns the index of the space before the {@code from} of the query itself, not of a subquery, at or after
      * {@code fromIndex}, or -1 if it has none.
      */
-    private static int indexOfFrom(String lowerHql, int fromIndex) {
-        return indexOfTopLevel(lowerHql, " " + HibernateQueryArgument.HQL_FROM.value() + " ", fromIndex);
-    }
-
-    /**
-     * Returns the index of {@code keyword} in the HQL at or after {@code fromIndex}, outside string literals, quoted
-     * identifiers, comments and parentheses. Inside parentheses is a subquery or the arguments of a function, and the
-     * {@code select} and {@code from} of a subquery are not those of the query. The keyword is matched as written, so
-     * the HQL is passed in lower case.
-     *
-     * @return the index, or -1 if the keyword is not at the top level of the HQL
-     */
-    private static int indexOfTopLevel(String hql, String keyword, int fromIndex) {
-        int depth = 0;
-        int i = 0;
-        while (i < hql.length()) {
-            char c = hql.charAt(i);
-            if (c == '\'' || c == '"' || c == '`') {
-                i = SqlRestriction.skipQuoted(hql, i, c);
-                continue;
-            }
-            if (hql.startsWith("/*", i)) {
-                int commentEnd = hql.indexOf("*/", i + 2);
-                i = commentEnd < 0 ? hql.length() : commentEnd + 2;
-                continue;
-            }
-            if (c == '(') {
-                depth++;
-            } else if (c == ')' && depth > 0) {
-                depth--;
-            } else if (depth == 0 && i >= fromIndex && hql.startsWith(keyword, i) && startsWord(hql, i)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
-
-    /**
-     * Returns whether a keyword at {@code index} starts a word, so that {@code select} in {@code preselect = 1} or in
-     * {@code b.select} is a part of a name and not the keyword. A keyword that starts with a space starts a word.
-     */
-    private static boolean startsWord(String hql, int index) {
-        if (index == 0 || hql.charAt(index) == ' ') {
-            return true;
-        }
-        char previous = hql.charAt(index - 1);
-        return !Character.isJavaIdentifierPart(previous) && previous != '.';
+    private static int indexOfFrom(SqlText lowerHql, int fromIndex) {
+        return lowerHql.indexOfTopLevel(" " + HibernateQueryArgument.HQL_FROM.value() + " ", fromIndex);
     }
 
     // ─── HQL normalization ────────────────────────────────────────────────────
@@ -351,10 +268,11 @@ public record HqlQueryContext(
         if (s.isEmpty()) return s;
 
         String lower = s.toLowerCase();
-        int selectIdx = indexOfSelect(lower);
+        SqlText lowerText = SqlText.hql(lower);
+        int selectIdx = indexOfSelect(lowerText);
         if (selectIdx < 0) return s; // no SELECT clause — nothing to normalize
 
-        int fromIdx = indexOfFrom(lower, selectIdx);
+        int fromIdx = indexOfFrom(lowerText, selectIdx);
         if (fromIdx < 0) return s; // malformed — leave as-is
 
         int selectStart = selectIdx + HibernateQueryArgument.HQL_SELECT.value().length() + 1;
@@ -453,7 +371,7 @@ public record HqlQueryContext(
     static @Nullable String getRootAlias(@Nullable String hql) {
         if (hql == null) return null;
         String s = hql.trim();
-        String lower = s.toLowerCase(Locale.ROOT);
+        SqlText lower = SqlText.hql(s.toLowerCase(Locale.ROOT));
         int fromIdx = indexOfFrom(lower, Math.max(indexOfSelect(lower), 0));
         if (fromIdx < 0) return null;
         int cur = fromIdx + HibernateQueryArgument.HQL_FROM.value().length() + 2;

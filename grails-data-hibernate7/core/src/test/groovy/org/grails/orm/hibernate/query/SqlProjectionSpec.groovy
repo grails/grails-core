@@ -46,6 +46,8 @@ class SqlProjectionSpec extends Specification {
         '$$a,b$$, c'                                    | ['$$a,b$$', 'c']
         '$tag$a,$$,b$tag$, c'                           | ['$tag$a,$$,b$tag$', 'c']
         'a$b, $1'                                       | ['a$b', '$1']
+        "width as [box's width], height as total"       | ["width as [box's width]", 'height as total']
+        'width as [a"b], c'                             | ['width as [a"b]', 'c']
     }
 
     @Unroll

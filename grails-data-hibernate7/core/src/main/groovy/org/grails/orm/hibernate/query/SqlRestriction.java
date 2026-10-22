@@ -63,9 +63,7 @@ public record SqlRestriction(String sql, List<?> values) implements Query.Criter
      * identifier, a line comment or a block comment is not a placeholder.
      */
     static List<Integer> placeholderIndexes(String sql) {
-        List<Integer> placeholders = new ArrayList<>();
-        scan(sql, placeholders);
-        return placeholders;
+        return SqlText.sql(sql).plainIndexes('?');
     }
 
     /**
@@ -73,61 +71,6 @@ public record SqlRestriction(String sql, List<?> values) implements Query.Criter
      * line.
      */
     static boolean endsInLineComment(String sql) {
-        return scan(sql, new ArrayList<>());
-    }
-
-    private static boolean scan(String sql, List<Integer> placeholders) {
-        int length = sql.length();
-        int i = 0;
-        while (i < length) {
-            char c = sql.charAt(i);
-            if (c == '\'' || c == '"' || c == '`') {
-                i = skipQuoted(sql, i, c);
-            } else if (c == '-' && sql.startsWith("--", i)) {
-                int end = endOfLine(sql, i);
-                if (end == length) {
-                    return true;
-                }
-                i = end;
-            } else if (c == '/' && sql.startsWith("/*", i)) {
-                int end = sql.indexOf("*/", i + 2);
-                i = end == -1 ? length : end + 2;
-            } else {
-                if (c == '?') {
-                    placeholders.add(i);
-                }
-                i++;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns the index after the quoted text starting at {@code start}, where a doubled quote stands for the quote
-     * itself.
-     */
-    static int skipQuoted(String sql, int start, char quote) {
-        int i = start + 1;
-        while (i < sql.length()) {
-            if (sql.charAt(i) == quote) {
-                if (i + 1 < sql.length() && sql.charAt(i + 1) == quote) {
-                    i += 2;
-                    continue;
-                }
-                return i + 1;
-            }
-            i++;
-        }
-        return i;
-    }
-
-    static int endOfLine(String sql, int start) {
-        for (int i = start; i < sql.length(); i++) {
-            char c = sql.charAt(i);
-            if (c == '\n' || c == '\r') {
-                return i;
-            }
-        }
-        return sql.length();
+        return SqlText.sql(sql).endsInLineComment();
     }
 }

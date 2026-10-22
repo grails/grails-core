@@ -64,7 +64,10 @@ public class JpaProjectionAdapter {
         for (Query.Projection p : projections) {
             Selection<?> selection = translator.translate(p);
             if (selection != null) {
-                if (query instanceof Subquery && selection.getAlias() == null) {
+                if (query instanceof Subquery) {
+                    // nothing reads a subquery's selections by alias: a count selects over the derived table and a
+                    // criterion compares a single expression. A generated alias replaces the caller's, which may
+                    // hold characters, such as a space, that the derived table's column list cannot carry unquoted
                     selection.alias("col_" + (i++));
                 }
                 selections.add(selection);

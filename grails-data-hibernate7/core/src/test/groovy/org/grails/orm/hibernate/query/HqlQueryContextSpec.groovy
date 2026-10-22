@@ -210,6 +210,9 @@ class HqlQueryContextSpec extends Specification {
         "func(a, b), c"                     | 1
         "'a, b', c"                         | 1
         "\"a, b\", c"                       | 1
+        "`a, b`, c"                         | 1
+        "a /* , */, b"                      | 1
+        "a -- ,\n, b"                       | 1
         "a"                                 | 0
     }
 
