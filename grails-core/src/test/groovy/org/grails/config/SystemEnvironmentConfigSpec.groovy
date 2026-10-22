@@ -43,7 +43,7 @@ property-with_mixed.symbols: from-yml
     @Issue('#10670')
     void 'configuration properties defined in SystemEnvironment take precedence'() {
         given: 'a value in the system environment'
-        modifiableSystemEnvironment.put(systemProperty, value)
+        installVariable(systemProperty, value)
 
         and: 'default configuration in application-yml'
         def config = configFor(YAML)
@@ -52,7 +52,7 @@ property-with_mixed.symbols: from-yml
         config.getProperty(propertyToFind) == value
 
         cleanup:
-        modifiableSystemEnvironment.remove(systemProperty)
+        removeVariable(systemProperty)
 
         where:
         propertyToFind                | systemProperty
@@ -76,7 +76,7 @@ property-with_mixed.symbols: from-yml
         Locale defaultLocale = Locale.getDefault()
 
         and: 'a variable that is the upper-cased key'
-        modifiableSystemEnvironment.put('PROPERTY_WITH_ID', 'from-env')
+        installVariable('PROPERTY_WITH_ID', 'from-env')
         def config = configFor('property.with.id: from-yml')
 
         and: 'a default locale whose upper-case i is not I'
@@ -87,19 +87,19 @@ property-with_mixed.symbols: from-yml
 
         cleanup:
         Locale.setDefault(defaultLocale)
-        modifiableSystemEnvironment.remove('PROPERTY_WITH_ID')
+        removeVariable('PROPERTY_WITH_ID')
     }
 
     void 'a key with a character above ASCII is matched through its upper-cased form'() {
         given: 'a variable that is the upper-cased key, in which the sharp s has become two letters'
-        modifiableSystemEnvironment.put('STRASSE_X', 'from-env')
+        installVariable('STRASSE_X', 'from-env')
         def config = configFor('stra\u00dfe.x: from-yml')
 
         expect: 'the variable overrides the configured value'
         config.getProperty('stra\u00dfe.x') == 'from-env'
 
         cleanup:
-        modifiableSystemEnvironment.remove('STRASSE_X')
+        removeVariable('STRASSE_X')
     }
 
     void 'a null key resolves to the default value'() {
@@ -127,42 +127,42 @@ property-with_mixed.symbols: from-yml
     @IgnoreIf(value = { os.windows }, reason = 'Windows matches variable names regardless of case')
     void 'a variable that matches the key in none of the probed spellings does not override it'() {
         given: 'a lower-case variable for a mixed-case key'
-        modifiableSystemEnvironment.put('property_with_period', 'from-env')
+        installVariable('property_with_period', 'from-env')
         def config = configFor('Property.With.Period: from-yml')
 
         expect: 'only the key as written and its upper-cased form are probed, as Spring does'
         config.getProperty('Property.With.Period') == 'from-yml'
 
         cleanup:
-        modifiableSystemEnvironment.remove('property_with_period')
+        removeVariable('property_with_period')
     }
 
     @Requires({ os.windows })
     void 'on Windows a variable matches the key in any case, as System.getenv does there'() {
         given: 'a mixed-case variable for a lower-case key'
-        modifiableSystemEnvironment.put('Property_With_Period', 'from-env')
+        installVariable('Property_With_Period', 'from-env')
         def config = configFor(YAML)
 
         expect: 'the variable overrides the configured value'
         config.getProperty('property.with.period') == 'from-env'
 
         cleanup:
-        modifiableSystemEnvironment.remove('Property_With_Period')
+        removeVariable('Property_With_Period')
     }
 
     @IgnoreIf(value = { os.windows }, reason = 'the spellings that differ only in case are one variable on Windows')
     void 'when several variables match a key the first probed spelling wins'() {
         given: 'two variables that both match the key'
-        modifiableSystemEnvironment.put(winner, 'from-winner')
-        modifiableSystemEnvironment.put(loser, 'from-loser')
+        installVariable(winner, 'from-winner')
+        installVariable(loser, 'from-loser')
         def config = configFor(YAML)
 
         expect: 'the value of the spelling that is probed first is returned'
         config.getProperty('property.with.period') == 'from-winner'
 
         cleanup:
-        modifiableSystemEnvironment.remove(winner)
-        modifiableSystemEnvironment.remove(loser)
+        removeVariable(winner)
+        removeVariable(loser)
 
         where:
         winner                 | loser
@@ -173,7 +173,7 @@ property-with_mixed.symbols: from-yml
 
     void 'a property read more than once keeps resolving to the system environment value'() {
         given: 'configuration that is overridden by the environment'
-        modifiableSystemEnvironment.put('PROPERTY_WITH_PERIOD', 'from-env')
+        installVariable('PROPERTY_WITH_PERIOD', 'from-env')
         def config = configFor(YAML)
 
         expect: 'every read resolves to the environment value, not just the first'
@@ -182,7 +182,7 @@ property-with_mixed.symbols: from-yml
         config.getProperty('property.with.period') == 'from-env'
 
         cleanup:
-        modifiableSystemEnvironment.remove('PROPERTY_WITH_PERIOD')
+        removeVariable('PROPERTY_WITH_PERIOD')
     }
 
     void 'a property that has already been read still reflects later configuration changes'() {
@@ -207,7 +207,7 @@ property-with_mixed.symbols: from-yml
         before.getProperty('late.bound.property') == 'from-yml'
 
         when: 'the variable is installed and a new config is created'
-        modifiableSystemEnvironment.put('LATE_BOUND_PROPERTY', 'from-env')
+        installVariable('LATE_BOUND_PROPERTY', 'from-env')
         def after = configFor('late.bound.property: from-yml')
 
         then: 'the new config resolves to the environment value'
@@ -217,7 +217,7 @@ property-with_mixed.symbols: from-yml
         before.getProperty('late.bound.property') == 'from-yml'
 
         cleanup:
-        modifiableSystemEnvironment.remove('LATE_BOUND_PROPERTY')
+        removeVariable('LATE_BOUND_PROPERTY')
     }
 
     void 'a variable installed after the config exists is seen once the config is refreshed'() {
@@ -225,7 +225,7 @@ property-with_mixed.symbols: from-yml
         def config = configFor('late.bound.property: from-yml')
 
         when: 'the variable is installed'
-        modifiableSystemEnvironment.put('LATE_BOUND_PROPERTY', 'from-env')
+        installVariable('LATE_BOUND_PROPERTY', 'from-env')
 
         then: 'the config keeps the environment it was created with'
         config.getProperty('late.bound.property') == 'from-yml'
@@ -237,7 +237,7 @@ property-with_mixed.symbols: from-yml
         config.getProperty('late.bound.property') == 'from-env'
 
         cleanup:
-        modifiableSystemEnvironment.remove('LATE_BOUND_PROPERTY')
+        removeVariable('LATE_BOUND_PROPERTY')
     }
 
     private static PropertySourcesConfig configFor(String yaml) {
@@ -248,9 +248,28 @@ property-with_mixed.symbols: from-yml
         new PropertySourcesConfig(propertySources)
     }
 
-    // From https://github.com/spring-projects/spring-framework/blob/4.3.x/spring-core/src/test/java/org/springframework/core/env/StandardEnvironmentTests.java#L492
+    private static void installVariable(String name, String value) {
+        for (def map : systemEnvironmentMaps()) {
+            map.put(name, value)
+        }
+    }
+
+    private static void removeVariable(String name) {
+        for (def map : systemEnvironmentMaps()) {
+            map.remove(name)
+        }
+    }
+
+    /**
+     * The maps behind System.getenv() and System.getenv(String), which a variable installed for a test
+     * has to reach. On Unix both read one map. On Windows System.getenv(String) reads a case-insensitive
+     * copy while System.getenv() exposes the original, so the variable goes into both. A wrapper that
+     * overrode put and remove to do that was compiled by Groovy 6 with the @Delegate-generated put
+     * instead of the override, so the maps are written one by one here.
+     */
     @SuppressWarnings("unchecked")
-    static Map<String, String> getModifiableSystemEnvironment() {
+    private static List<Map<String, String>> systemEnvironmentMaps() {
+        // From https://github.com/spring-projects/spring-framework/blob/4.3.x/spring-core/src/test/java/org/springframework/core/env/StandardEnvironmentTests.java#L492
         // for os x / linux
         Class<?>[] classes = Collections.class.getDeclaredClasses();
         Map<String, String> env = System.getenv();
@@ -261,7 +280,7 @@ property-with_mixed.symbols: from-yml
                     field.setAccessible(true);
                     Object obj = field.get(env);
                     if (obj != null && obj.getClass().getName().equals('java.lang.ProcessEnvironment$StringEnvironment')) {
-                        return (Map<String, String>) obj;
+                        return [(Map<String, String>) obj]
                     }
                 }
                 catch (Exception ex) {
@@ -270,8 +289,7 @@ property-with_mixed.symbols: from-yml
             }
         }
 
-        // for windows: System.getenv(String) reads a case-insensitive copy of the environment while
-        // System.getenv() exposes the original, so a variable installed for a test has to go into both
+        // for windows
         Class<?> processEnvironmentClass;
         try {
             processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
@@ -280,15 +298,14 @@ property-with_mixed.symbols: from-yml
             throw new IllegalStateException(ex);
         }
 
-        Map<String, String> caseInsensitiveEnvironment = staticMapField(processEnvironmentClass, 'theCaseInsensitiveEnvironment')
-        Map<String, String> environment = staticMapField(processEnvironmentClass, 'theEnvironment')
-        if (caseInsensitiveEnvironment != null && environment != null) {
-            return new BothEnvironments(caseInsensitiveEnvironment, environment)
+        List<Map<String, String>> maps = [
+                staticMapField(processEnvironmentClass, 'theCaseInsensitiveEnvironment'),
+                staticMapField(processEnvironmentClass, 'theEnvironment')
+        ].findAll()
+        if (maps) {
+            return maps
         }
-        if (environment != null) {
-            return environment
-        }
-        throw new IllegalStateException()
+        throw new IllegalStateException('The process environment could not be opened')
     }
 
     @SuppressWarnings("unchecked")
@@ -303,30 +320,6 @@ property-with_mixed.symbols: from-yml
         }
         catch (Exception ex) {
             throw new IllegalStateException(ex)
-        }
-    }
-
-    private static class BothEnvironments implements Map<String, String> {
-
-        @Delegate
-        final Map<String, String> primary
-        final Map<String, String> secondary
-
-        BothEnvironments(Map<String, String> primary, Map<String, String> secondary) {
-            this.primary = primary
-            this.secondary = secondary
-        }
-
-        @Override
-        String put(String key, String value) {
-            secondary.put(key, value)
-            primary.put(key, value)
-        }
-
-        @Override
-        String remove(Object key) {
-            secondary.remove(key)
-            primary.remove(key)
         }
     }
 }
