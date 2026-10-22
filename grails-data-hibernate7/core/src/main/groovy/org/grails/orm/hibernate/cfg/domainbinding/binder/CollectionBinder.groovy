@@ -24,7 +24,10 @@ import org.hibernate.boot.spi.InFlightMetadataCollector
 import org.hibernate.boot.spi.MetadataBuildingContext
 import org.hibernate.mapping.Collection
 import org.hibernate.mapping.OneToMany
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
+import org.grails.datastore.mapping.model.types.Association
 import org.grails.orm.hibernate.cfg.ColumnConfig
 import org.grails.orm.hibernate.cfg.JoinTable
 import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy
@@ -66,6 +69,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.TableForManyCalculator
 @CompileStatic
 @SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class CollectionBinder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CollectionBinder)
 
     private final MetadataBuildingContext metadataBuildingContext
     private final CollectionHolder collectionHolder
@@ -215,6 +220,40 @@ class CollectionBinder {
         collection.collectionTable =
                 mappings.addTable(schemaName, catalogName, tableName, null, false, metadataBuildingContext, false)
         collection.inverse = property.isBidirectional() && !property.isOwningSide()
+        if (collection.isInverse()) {
+            warnIfManyToManyHasNoOwningSide(property)
+        }
+    }
+
+    /**
+     * A bidirectional many-to-many is written by its owning side, which {@code belongsTo} designates. When neither
+     * side declares {@code belongsTo}, both sides are inverse and the relationship is never stored, so warn about it
+     * once per relationship. A Map-valued side is never inverse once its second pass has run, because
+     * {@code MapSecondPassBinder} makes it write the join table, so a relationship with a Map on either side is
+     * stored and gets no warning. A circular many-to-many, whose two properties are on the same class, is warned about
+     * as well, because it loses data the same way; its two sides tie on the owner name, so the property names decide
+     * which side warns.
+     */
+    private void warnIfManyToManyHasNoOwningSide(HibernateToManyProperty property) {
+        if (!(property instanceof HibernateManyToManyProperty) || !property.isBidirectional()) {
+            return
+        }
+        HibernateManyToManyProperty manyToMany = (HibernateManyToManyProperty) property
+        Association<?> otherSide = manyToMany.getInverseSide()
+        if (otherSide == null || otherSide.isOwningSide() ||
+                Map.isAssignableFrom(manyToMany.getType()) || Map.isAssignableFrom(otherSide.getType())) {
+            return
+        }
+        int byOwner = manyToMany.getOwner().getName().compareTo(otherSide.getOwner().getName())
+        if (byOwner > 0 || byOwner == 0 && manyToMany.getName().compareTo(otherSide.getName()) > 0) {
+            return
+        }
+        LOG.warn('Neither side of the many-to-many between [{}.{}] and [{}.{}] declares belongsTo, so the relationship ' +
+                'is not stored. Declare belongsTo on the owned side, for example in {}: static belongsTo = {}',
+                manyToMany.getOwner().getName(), manyToMany.getName(),
+                otherSide.getOwner().getName(), otherSide.getName(),
+                otherSide.getOwner().getJavaClass().getSimpleName(),
+                manyToMany.getOwner().getJavaClass().getSimpleName())
     }
 
     private void registerSecondPass(HibernateToManyProperty property, Collection collection) {

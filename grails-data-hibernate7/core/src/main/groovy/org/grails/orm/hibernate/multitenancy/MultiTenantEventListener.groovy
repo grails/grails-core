@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationEvent;
 import grails.gorm.multitenancy.Tenants;
 import org.grails.datastore.gorm.GormEnhancer;
 import org.grails.datastore.mapping.core.Datastore;
-import org.grails.datastore.mapping.core.connections.ConnectionSource;
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent;
 import org.grails.datastore.mapping.engine.event.PersistenceEventListener;
 import org.grails.datastore.mapping.engine.event.PreInsertEvent;
@@ -70,11 +69,9 @@ class MultiTenantEventListener implements PersistenceEventListener {
                 Query query = ((PreQueryEvent) event).getQuery();
 
                 PersistentEntity entity = query.getEntity();
-                if (entity.isMultiTenant()) {
-                    Datastore ds = (datastore != null) ? datastore : GormEnhancer.findDatastore(entity.getJavaClass());
-                    if (ds instanceof HibernateDatastore) {
-                        ((HibernateDatastore) ds).enableMultiTenancyFilter();
-                    }
+                Datastore ds = (datastore != null) ? datastore : GormEnhancer.findDatastore(entity.getJavaClass());
+                if (ds instanceof HibernateDatastore) {
+                    ((HibernateDatastore) ds).enableMultiTenancyFilter(entity);
                 }
             } else if (event instanceof AbstractPersistenceEvent &&
                     (event instanceof ValidationEvent ||
@@ -90,8 +87,9 @@ class MultiTenantEventListener implements PersistenceEventListener {
                         Serializable currentId = Tenants.currentId(hibernateDatastore);
                         if (currentId != null) {
                             try {
-                                if (ConnectionSource.DEFAULT.equals(currentId)) {
-                                    currentId = (Serializable) persistenceEvent.getEntityAccess().getProperty(tenantId.getName());
+                                if (Tenants.isWithoutId(hibernateDatastore)) {
+                                    currentId = (Serializable)
+                                            persistenceEvent.getEntityAccess().getProperty(tenantId.getName());
                                 }
                                 persistenceEvent.getEntityAccess().setProperty(tenantId.getName(), currentId);
                             } catch (Exception e) {
