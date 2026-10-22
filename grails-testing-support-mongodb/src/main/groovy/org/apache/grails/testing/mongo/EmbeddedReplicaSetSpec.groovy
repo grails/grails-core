@@ -90,12 +90,12 @@ abstract class EmbeddedReplicaSetSpec extends Specification {
      * The server the rest of the suite is run against, named the way the embedded server names
      * versions. A build asks for one with -PmongodbContainerVersion, and this answers the same
      * request, so a specification served from a container and one served from here are never
-     * quietly run against different servers.
+     * quietly run against different servers - unless flapdoodle does not run the one asked for
+     * yet, in which case the newest it does run is the closest there is; see
+     * {@link EmbeddedMongoVersions#lineFor(String)}.
      */
     private static String serverVersion() {
-        // '7.0.19' and '8.0' alike name the line the embedded server takes: V7_0, V8_0
-        List<String> parts = AbstractMongoGrailsExtension.desiredMongoVersion.tokenize('.')
-        "V${parts[0]}_${parts.size() > 1 ? parts[1] : '0'}".toString()
+        EmbeddedMongoVersions.lineFor(AbstractMongoGrailsExtension.desiredMongoVersion)
     }
 
     void cleanupSpec() {
