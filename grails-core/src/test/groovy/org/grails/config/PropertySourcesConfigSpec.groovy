@@ -168,6 +168,18 @@ class PropertySourcesConfigSpec extends Specification {
         config.a.b == 'assigned'
     }
 
+    void 'a dotted key inside a nested map does not overwrite the root key it resembles'() {
+        given: "a root key and a nested map whose dotted key spells the same path"
+        def config = new PropertySourcesConfig()
+        config.merge([a: [b: 'root'], x: ['a.b': 'nested']])
+
+        expect: "each key answers with its own value"
+        config.getProperty('a.b') == 'root'
+        config.navigate('a', 'b') == 'root'
+        config.getProperty('x.a.b') == 'nested'
+        config.navigate('x', 'a', 'b') == 'nested'
+    }
+
     void 'a flat key that a merge left behind is read rather than the scalar that replaced its parent'() {
         given: "a nested block merged first and a scalar merged over its parent, as a higher-precedence source does"
         def config = new PropertySourcesConfig()

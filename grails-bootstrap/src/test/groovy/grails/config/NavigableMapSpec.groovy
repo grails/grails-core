@@ -174,6 +174,22 @@ class NavigableMapSpec extends Specification {
         output.navigate('app', 'groups') == [['a', 'b'], ['c']]
     }
 
+    def "a dotted key inside a nested map is flattened under its parent"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: [b: 'root'], x: ['a.b': 'nested']], true)
+
+        then: 'the dotted key is written under its parent in both representations'
+        output['x.a.b'] == 'nested'
+        output.navigate('x', 'a', 'b') == 'nested'
+
+        and: 'the root key it resembles keeps its value in both representations'
+        output['a.b'] == 'root'
+        output.navigate('a', 'b') == 'root'
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()
