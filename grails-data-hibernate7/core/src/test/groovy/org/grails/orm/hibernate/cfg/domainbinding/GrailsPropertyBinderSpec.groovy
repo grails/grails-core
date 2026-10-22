@@ -21,6 +21,8 @@ package org.grails.orm.hibernate.cfg.domainbinding
 
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.HibernateGormDatastoreSpec
+import org.grails.orm.hibernate.CompositeMoney
+import org.grails.orm.hibernate.CompositeMoneyType
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.*
 import org.grails.orm.hibernate.cfg.domainbinding.binder.*
 
@@ -64,6 +66,7 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
         ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher = new ColumnNameForPropertyAndPathFetcher(namingStrategy, defaultColumnNameFetcher, backticksRemover)
         
         SimpleValueBinder simpleValueBinder = new SimpleValueBinder(metadataBuildingContext, namingStrategy, jdbcEnvironment)
+        CompositeUserTypeBinder compositeUserTypeBinder = new CompositeUserTypeBinder(metadataBuildingContext, namingStrategy, jdbcEnvironment)
         EnumTypeBinder enumTypeBinderToUse = new EnumTypeBinder(metadataBuildingContext, columnNameForPropertyAndPathFetcher, namingStrategy)
         SimpleValueColumnFetcher simpleValueColumnFetcher = new SimpleValueColumnFetcher()
         CompositeIdentifierToManyToOneBinder compositeIdentifierToManyToOneBinder = new CompositeIdentifierToManyToOneBinder(
@@ -103,6 +106,7 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
                 componentBinder,
                 collectionBinder,
                 simpleValueBinder,
+                compositeUserTypeBinder,
                 oneToOneBinder,
                 manyToOneBinder,
                 foreignKeyOneToOneBinder
@@ -130,6 +134,7 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
             PropertyBinderSpecSerializableEntity,
             PropertyBinderSpecCustomEntity,
             PropertyBinderSpecCustomUserTypeCollection,
+            PropertyBinderSpecCompositeUserTypeEntity,
             PropertyBinderSpecHasOneOwner,
             PropertyBinderSpecHasOneProfile,
             PropertyBinderSpecFKOwner,
@@ -285,6 +290,32 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
         !(dataProp instanceof HibernateCustomProperty)
         dataProp.isUserButNotCollectionType()
         value instanceof BasicValue
+    }
+
+    void "Test bind composite user type property"() {
+        given:
+        def binder = getGrailsDomainBinder()
+        def propertyBinder = getBinders(binder).propertyBinder
+        def persistentEntity = getPersistentEntity(PropertyBinderSpecCompositeUserTypeEntity) as GrailsHibernatePersistentEntity
+        def rootClass = new RootClass(binder.getMetadataBuildingContext())
+        rootClass.setTable(new Table("COMPOSITE_USER_TYPE_ENTITY"))
+        persistentEntity.setPersistentClass(rootClass)
+
+        when:
+        def priceProp = persistentEntity.getPropertyByName("price") as HibernatePersistentProperty
+        Value value = propertyBinder.bindProperty(priceProp, null, EMPTY_PATH)
+
+        then: "a type: mapping naming a CompositeUserType is bound as a component of that type, not as a basic value"
+        priceProp.getCompositeUserType() == CompositeMoneyType
+        priceProp.isUserButNotCollectionType()
+        value instanceof Component
+        (value as Component).typeName == CompositeMoneyType.name
+        (value as Component).componentClassName == CompositeMoney.name
+
+        and: "the component has one property per attribute of the embeddable class, in alphabetical order"
+        (value as Component).properties*.name == ['amount', 'currency']
+        (value as Component).properties.collect { it.value.columns.first().name } == ['price_value', 'price_currency']
+        rootClass.table.columns*.name == ['price_value', 'price_currency']
     }
 
     void "Test bind a genuine HibernateCustomProperty (GORM-detected custom type marshaller, no type: mapping)"() {
@@ -460,6 +491,18 @@ class PropertyBinderSpecCustomEntity {
     String data
     static mapping = {
         data type: 'org.hibernate.type.YesNoConverter'
+    }
+}
+
+@Entity
+class PropertyBinderSpecCompositeUserTypeEntity {
+    Long id
+    CompositeMoney price
+    static mapping = {
+        price type: CompositeMoneyType, {
+            column name: 'price_value'
+            column name: 'price_currency'
+        }
     }
 }
 
