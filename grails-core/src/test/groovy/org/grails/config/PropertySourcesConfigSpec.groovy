@@ -131,5 +131,9 @@ class PropertySourcesConfigSpec extends Specification {
         config.getProperty('plain..nested.value') == 'found'
         config.getProperty('.plain.nested.value.') == 'found'
         config.getProperty('...') == null
+
+        and: "a key that runs past a scalar answers with that scalar, as it always has"
+        config.getProperty('plain.nested.value.deeper') == 'found'
+        config.containsProperty('plain.nested.value.deeper')
     }
 }
