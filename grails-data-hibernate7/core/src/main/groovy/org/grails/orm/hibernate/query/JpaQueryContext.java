@@ -34,7 +34,7 @@ import jakarta.persistence.criteria.Path;
  *
  * @since 8.0
  */
-public class JpaQueryContext implements Cloneable {
+public class JpaQueryContext implements Cloneable, QueryPathContext {
 
     private final AliasRegistry aliasRegistry;
     private final JoinTracker joinTracker;
@@ -110,6 +110,7 @@ public class JpaQueryContext implements Cloneable {
         this.parent = parent;
     }
 
+    @Override
     public From<?, ?> getRoot() {
         return joinTracker.getRoot();
     }
@@ -173,6 +174,7 @@ public class JpaQueryContext implements Cloneable {
         return expr;
     }
 
+    @Override
     public Expression<?> getFullyQualifiedExpression(String path) {
         if (parent != null) {
             if ("{alias}".equals(path)) {
@@ -185,6 +187,7 @@ public class JpaQueryContext implements Cloneable {
         return resolver.resolve(path);
     }
 
+    @Override
     public Path<?> getFullyQualifiedPath(String path) {
         if (parent != null) {
             if ("{alias}".equals(path)) {
