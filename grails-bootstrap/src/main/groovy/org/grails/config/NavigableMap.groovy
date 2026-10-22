@@ -216,7 +216,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 targetMap.remove(sourceKey)
             } else {
                 if (path) {
-                    rootMap.put("${path}.${sourceKey}".toString(), newValue)
+                    mergeMapEntry(rootMap, "${path}.${sourceKey}".toString(), newValue)
                 }
                 mergeMapEntry(targetMap, sourceKey, newValue)
             }

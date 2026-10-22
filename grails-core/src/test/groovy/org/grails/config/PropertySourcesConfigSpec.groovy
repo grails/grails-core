@@ -18,8 +18,10 @@
  */
 package org.grails.config
 
+import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+import org.springframework.core.io.ByteArrayResource
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -187,6 +189,22 @@ class PropertySourcesConfigSpec extends Specification {
         expect: "each answers with what was written"
         config.getProperty('a') == 'scalar'
         config.getProperty('a.b', Integer) == 1
+    }
+
+    void 'a placeholder in a nested value is resolved in the flat key as well as in the nested entry'() {
+        given: "a yaml value that refers to another"
+        def yaml = '''
+name: Hello
+hello:
+    evaluatedName: '${name}, world'
+'''
+        def yamlSource = new YamlPropertySourceLoader().load('application.yml', new ByteArrayResource(yaml.bytes, 'test.yml'), null)
+        def config = new PropertySourcesConfig(yamlSource.first())
+
+        expect: "every read sees the resolved value"
+        config.getProperty('hello.evaluatedName') == 'Hello, world'
+        config['hello.evaluatedName'] == 'Hello, world'
+        config.hello.evaluatedName == 'Hello, world'
     }
 
     void 'a dotted key that runs past a value that is not a map is absent'() {
