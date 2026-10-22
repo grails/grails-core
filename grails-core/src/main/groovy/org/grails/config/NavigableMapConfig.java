@@ -376,7 +376,8 @@ public abstract class NavigableMapConfig implements Config {
                 } else if (value instanceof Map) {
                     value = ((Map<?, ?>) value).get(segment);
                 } else {
-                    break;
+                    // The key names a child of a scalar, which does not exist whatever the scalar is.
+                    return null;
                 }
             }
             start = end + 1;
