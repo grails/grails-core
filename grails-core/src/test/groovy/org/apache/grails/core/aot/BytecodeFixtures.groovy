@@ -98,3 +98,43 @@ class AnnotatedMembersFixture {
     void close() {
     }
 }
+
+/** A class an application without an optional dependency does not have. */
+class OptionalDependencyFixture {
+}
+
+/**
+ * A Groovy enum naming {@link OptionalDependencyFixture} only in a method body, so it loads without it, as a
+ * class compiled against an optional integration does.
+ */
+enum OptionalDependencyEnumFixture {
+    ONLY
+
+    Object dependency() {
+        new OptionalDependencyFixture()
+    }
+}
+
+/** A trait naming {@link OptionalDependencyFixture} in a method, which its helper then carries. */
+trait OptionalDependencyTraitFixture {
+
+    Object dependency() {
+        new OptionalDependencyFixture()
+    }
+}
+
+/** A bean with a member Spring injects, naming {@link OptionalDependencyFixture} only in a method body. */
+class OptionalDependencyBeanFixture {
+
+    @Autowired
+    private Object collaborator
+
+    Object dependency() {
+        new OptionalDependencyFixture()
+    }
+}
+
+/** A Groovy enum whose class file a scan finds, but which the application cannot load. */
+enum UnloadableFixture {
+    ONLY
+}

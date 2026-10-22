@@ -99,8 +99,8 @@ import org.apache.grails.common.aot.RegistrableTypes;
  * trait's helpers are the classes Groovy names {@code $Trait$Helper}, {@code $Trait$FieldHelper} and
  * {@code $Trait$StaticFieldHelper}, an injected member carries its annotation, and a Groovy class is one
  * that implements {@code GroovyObject}, directly or through a superclass. The framework compiles
- * against optional integrations, so a class that cannot be loaded here is skipped rather than registered,
- * as {@link GrailsClosureRuntimeHints} does for closures.</p>
+ * against optional integrations, so a class that cannot be loaded here, or whose bytecode names one that
+ * cannot, is skipped rather than registered, as {@link GrailsClosureRuntimeHints} does for closures.</p>
  *
  * @since 9.0
  */
@@ -218,6 +218,18 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
         if (type == null || type.isInterface() || !GroovyObject.class.isAssignableFrom(type)) {
             return false;
         }
+        return referencesLoad(resource, loader);
+    }
+
+    /**
+     * Whether a class the scan read can be registered: it loads here, and its bytecode names nothing absent
+     * here. Loading resolves signatures and not bodies, so a class loads without what its methods name.
+     */
+    private static boolean isRegistrable(String className, @Nullable Resource resource, ClassLoader loader) {
+        return resource != null && load(className, loader) != null && referencesLoad(resource, loader);
+    }
+
+    private static boolean referencesLoad(Resource resource, ClassLoader loader) {
         try {
             return RegistrableTypes.referencesLoad(resource.getInputStream(), loader);
         }
@@ -248,12 +260,12 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
 
         private final Map<String, Set<MethodSignature>> invokedMethods = new LinkedHashMap<>();
 
-        /** Every class read, with where it was read from, to be asked whether it is a Groovy class. */
+        /** Every class read, with where it was read from, to be asked whether it can be registered. */
         private final Map<String, Resource> classes = new LinkedHashMap<>();
 
         private void register(RuntimeHints hints, ClassLoader loader) {
             for (String type : enums) {
-                if (load(type, loader) != null) {
+                if (isRegistrable(type, classes.get(type), loader)) {
                     hints.reflection().registerType(TypeReference.of(type), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
                 }
             }
@@ -264,17 +276,17 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
                 }
             }
             for (String type : traitHelpers) {
-                if (load(type, loader) != null) {
+                if (isRegistrable(type, classes.get(type), loader)) {
                     hints.reflection().registerType(TypeReference.of(type), MemberCategory.INVOKE_DECLARED_METHODS);
                 }
             }
             injectedFields.forEach((type, fields) -> {
-                if (load(type, loader) != null) {
+                if (isRegistrable(type, classes.get(type), loader)) {
                     hints.reflection().registerType(TypeReference.of(type), builder -> fields.forEach(builder::withField));
                 }
             });
             invokedMethods.forEach((type, methods) -> {
-                if (load(type, loader) != null) {
+                if (isRegistrable(type, classes.get(type), loader)) {
                     hints.reflection().registerType(TypeReference.of(type), builder -> methods.forEach(method ->
                             builder.withMethod(method.name(), method.parameterTypes(), ExecutableMode.INVOKE)));
                 }

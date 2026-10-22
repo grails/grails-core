@@ -41,8 +41,27 @@ class BytecodeRuntimeHintsSpec extends Specification {
     @Shared
     RuntimeHints hints = new RuntimeHints()
 
+    @Shared
+    RuntimeHints hintsWithoutOptionalClasses = new RuntimeHints()
+
     void setupSpec() {
         new BytecodeRuntimeHints().registerHints(hints, getClass().classLoader)
+        new BytecodeRuntimeHints().registerHints(hintsWithoutOptionalClasses,
+                without(OptionalDependencyFixture, UnloadableFixture))
+    }
+
+    /** A loader that cannot load the given classes, as an application without an optional dependency cannot. */
+    private ClassLoader without(Class<?>... absent) {
+        Set<String> names = absent*.name as Set<String>
+        new ClassLoader(getClass().classLoader) {
+            @Override
+            protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                if (name in names) {
+                    throw new ClassNotFoundException(name)
+                }
+                super.loadClass(name, resolve)
+            }
+        }
     }
 
     void 'a Groovy enum can have its constants created'() {
@@ -117,6 +136,31 @@ class BytecodeRuntimeHintsSpec extends Specification {
     void 'a class that is not a Groovy class is not registered for that'() {
         expect: 'a Java class in a scanned package, which no Groovy dispatch asks about'
             !RuntimeHintsPredicates.reflection().onType(CaffeineRuntimeHints).test(hints)
+    }
+
+    void 'a #kind whose bytecode names a class the application does not have is not registered'() {
+        expect: 'it loads, since only a method body names the absent class, but registering it in any way -- ' +
+                'as a type, or for its constructors, methods or fields -- would fail the image build, which ' +
+                'parses what it is asked to keep'
+            hintsWithoutOptionalClasses.reflection().typeHints().noneMatch { it.type.name == className }
+
+        and: 'it is registered where the class is there'
+            hints.reflection().typeHints().anyMatch { it.type.name == className }
+
+        where:
+            kind                                | className
+            'Groovy enum'                       | OptionalDependencyEnumFixture.name
+            'trait helper'                      | OptionalDependencyTraitFixture.name + '$Trait$Helper'
+            'class with members Spring injects' | OptionalDependencyBeanFixture.name
+    }
+
+    void 'a class the scan finds but the application cannot load is not registered'() {
+        expect: 'its class file is read like any other'
+            hintsWithoutOptionalClasses.reflection().typeHints().noneMatch { it.type.name == UnloadableFixture.name }
+
+        and: 'it is registered, as a type and for its constructors, where it loads'
+            RuntimeHintsPredicates.reflection().onType(UnloadableFixture)
+                    .withMemberCategories(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS).test(hints)
     }
 
     void 'the coercion still works'() {
