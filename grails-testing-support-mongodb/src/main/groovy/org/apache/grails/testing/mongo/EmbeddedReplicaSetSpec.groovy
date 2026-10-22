@@ -57,9 +57,11 @@ abstract class EmbeddedReplicaSetSpec extends Specification {
     private static final int START_ATTEMPTS = 3
 
     void setupSpec() {
+        // Asked once, so a start retried on a lost port does not announce a stand-in line again.
+        String version = serverVersion()
         IllegalStateException portLost = null
         for (int attempt = 0; attempt < START_ATTEMPTS; attempt++) {
-            GenericApplicationContext context = contextOnPort(freePort())
+            GenericApplicationContext context = contextOnPort(freePort(), version)
             try {
                 new EmbeddedMongoInitializer().initialize(context)
             }
@@ -75,12 +77,12 @@ abstract class EmbeddedReplicaSetSpec extends Specification {
         throw portLost
     }
 
-    private static GenericApplicationContext contextOnPort(int port) {
+    private static GenericApplicationContext contextOnPort(int port, String version) {
         GenericApplicationContext context = new GenericApplicationContext()
         context.environment.propertySources.addFirst(new MapPropertySource('embeddedMongoTest', [
                 (EmbeddedMongoInitializer.BACKEND): FlapdoodleMongoBackend.NAME,
                 (EmbeddedMongoInitializer.REPLICA_SET): 'rs0',
-                (EmbeddedMongoInitializer.VERSION): serverVersion(),
+                (EmbeddedMongoInitializer.VERSION): version,
                 'grails.mongodb.url': "mongodb://${EmbeddedMongoInitializer.EMBEDDED_HOST}:${port}/myDb".toString(),
         ]))
         context
@@ -91,8 +93,8 @@ abstract class EmbeddedReplicaSetSpec extends Specification {
      * versions. A build asks for one with -PmongodbContainerVersion, and this answers the same
      * request, so a specification served from a container and one served from here are never
      * quietly run against different servers - unless flapdoodle does not run the one asked for
-     * yet, in which case the newest it does run is the closest there is; see
-     * {@link EmbeddedMongoVersions#lineFor(String)}.
+     * yet, in which case the newest it does run is the closest there is, and standard error says
+     * so; see {@link EmbeddedMongoVersions#lineFor(String)}.
      */
     private static String serverVersion() {
         EmbeddedMongoVersions.lineFor(AbstractMongoGrailsExtension.desiredMongoVersion)

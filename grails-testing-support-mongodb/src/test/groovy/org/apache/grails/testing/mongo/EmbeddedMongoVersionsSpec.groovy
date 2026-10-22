@@ -24,10 +24,25 @@ import spock.lang.Unroll
 
 class EmbeddedMongoVersionsSpec extends Specification {
 
+    PrintStream standardError
+    ByteArrayOutputStream writtenToStandardError = new ByteArrayOutputStream()
+
+    void setup() {
+        standardError = System.err
+        System.setErr(new PrintStream(writtenToStandardError, true, 'UTF-8'))
+    }
+
+    void cleanup() {
+        System.setErr(standardError)
+    }
+
     @Unroll
-    void 'the container tag #tag names the line #line, which flapdoodle has'() {
+    void 'the container tag #tag names the line #line, which flapdoodle has, and nothing is announced'() {
         expect: 'the line the tag names'
         EmbeddedMongoVersions.lineFor(tag) == line
+
+        and: 'nothing on standard error'
+        writtenToStandardError.size() == 0
 
         where:
         tag         || line
@@ -41,9 +56,17 @@ class EmbeddedMongoVersionsSpec extends Specification {
     }
 
     @Unroll
-    void 'the tag #tag names a line flapdoodle does not have, so the newest line below it, #line, is used'() {
+    void 'the tag #tag names a line flapdoodle does not have, so the newest line below it, #line, is used and announced'() {
         expect: 'the newest line below the tag'
         EmbeddedMongoVersions.lineFor(tag) == line
+
+        and: 'one line on standard error naming the version asked for and the line that runs instead'
+        with(writtenToStandardError.toString('UTF-8')) {
+            startsWith(EmbeddedMongoVersions.NOTICE)
+            contains(" MongoDB $tag line ")
+            endsWith(" runs $line${System.lineSeparator()}")
+            readLines().size() == 1
+        }
 
         where:
         tag   || line
@@ -63,6 +86,10 @@ class EmbeddedMongoVersionsSpec extends Specification {
 
         and: 'it is 9.0 itself or an older line'
         served[0] < 9 || (served[0] == 9 && served[1] == 0)
+
+        and: 'standard error names the older line exactly when one stands in'
+        (line == 'V9_0') == (writtenToStandardError.size() == 0)
+        line == 'V9_0' || writtenToStandardError.toString('UTF-8').contains("MongoDB 9.0 line yet, so the embedded server runs $line")
     }
 
     void 'a version below every line flapdoodle has is refused, naming the lines it does have'() {

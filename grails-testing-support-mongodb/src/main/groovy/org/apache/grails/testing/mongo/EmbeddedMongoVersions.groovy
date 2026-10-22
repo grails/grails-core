@@ -21,7 +21,7 @@ package org.apache.grails.testing.mongo
 import java.util.regex.Pattern
 
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
+import groovy.transform.PackageScope
 
 import de.flapdoodle.embed.mongo.distribution.Version
 
@@ -38,8 +38,14 @@ import de.flapdoodle.embed.mongo.distribution.Version
  * @since 8.0
  */
 @CompileStatic
-@Slf4j
 class EmbeddedMongoVersions {
+
+    /**
+     * Starts the line written to standard error when an older line stands in. The MongoDB test
+     * tasks of the Grails build match it to copy that line onto the build log.
+     */
+    @PackageScope
+    static final String NOTICE = 'Embedded MongoDB: '
 
     /** A line of releases, as flapdoodle names one: a major and a minor, nothing else. */
     private static final Pattern LINE = ~/^V(\d+)_(\d+)$/
@@ -52,6 +58,10 @@ class EmbeddedMongoVersions {
 
     /**
      * The name of the flapdoodle release line the embedded server should run for a MongoDB version.
+     *
+     * <p>When an older line stands in for the one the version names, a line on standard error says
+     * so. It is written there rather than logged so that it reaches the test output whatever SLF4J
+     * binding the tests run with, {@code slf4j-nop} or none at all included.
      *
      * @param mongoVersion a MongoDB version, as a container image tag such as {@code 8.0} or {@code 7.0.19}
      * @return the name of the line, such as {@code V8_0}: the line the version names when flapdoodle
@@ -79,8 +89,8 @@ class EmbeddedMongoVersions {
                     "the flapdoodle library on the class path has ${lines()}")
         }
         if (newestCode != wanted) {
-            log.warn('The flapdoodle library on the class path has no MongoDB {} line yet, so the embedded server runs {}',
-                    mongoVersion, newest)
+            System.err.println("${NOTICE}the flapdoodle library on the class path has no MongoDB $mongoVersion line yet, " +
+                    "so the embedded server runs $newest")
         }
         newest
     }

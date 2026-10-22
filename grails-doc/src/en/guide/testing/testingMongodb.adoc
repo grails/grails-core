@@ -84,4 +84,4 @@ testImplementation "org.apache.grails:grails-data-mongodb-embedded"
 testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.33.0"
 ----
 
-The embedded server runs the release line that `mongodbContainerVersion` names, `V8_0` for `8.0` for example, so a container-backed specification and a replica-set one run against the same MongoDB release. When flapdoodle does not run that line yet, the newest line it does run is used instead. `org.apache.grails.testing.mongo.EmbeddedMongoVersions.lineFor(String)` answers which line a version maps to.
+The embedded server runs the release line that `mongodbContainerVersion` names, `V8_0` for `8.0` for example, so a container-backed specification and a replica-set one run against the same MongoDB release. When flapdoodle does not run that line yet, the newest line it does run is used instead, and a line on standard error, starting `Embedded MongoDB:`, names both. It is written there rather than logged, so it appears in the test output whatever SLF4J binding the tests use. `org.apache.grails.testing.mongo.EmbeddedMongoVersions.lineFor(String)` answers which line a version maps to.
