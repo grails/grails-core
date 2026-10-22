@@ -47,4 +47,11 @@ interface QueryPathContext {
      */
     Expression<?> getFullyQualifiedExpression(String path)
 
+    /**
+     * @param alias the column alias of a {@code sqlProjection} of the query
+     * @return the projected expression recorded under that alias, so that a handler can order by it, or {@code null}
+     *     when no projection of the query carries the alias
+     */
+    Expression<?> getSelectionAlias(String alias)
+
 }
