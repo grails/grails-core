@@ -200,7 +200,7 @@ interface HibernatePersistentProperty extends PersistentProperty<PropertyConfig>
     @Override
     default boolean isLazyAble() {
         return this instanceof HibernateAssociation ||
-                !(this instanceof Embedded) && !this.equals(this.getOwner().getIdentity())
+                !(this instanceof Embedded) && this != this.getOwner().getIdentity()
     }
 
     /**
@@ -322,9 +322,9 @@ interface HibernatePersistentProperty extends PersistentProperty<PropertyConfig>
         if (typeParams == null || typeParams.isEmpty()) {
             return Optional.<HibernateSimpleIdentity>empty()
         }
-        Map<String, String> params = new LinkedHashMap<>()
+        Map<String, String> params = [:]
         for (Map.Entry<Object, Object> entry : typeParams.entrySet()) {
-            params.put(entry.getKey().toString(), entry.getValue().toString())
+            params.put(entry.key.toString(), entry.value.toString())
         }
         HibernateSimpleIdentity identity = new HibernateSimpleIdentity()
         identity.setName(getName())

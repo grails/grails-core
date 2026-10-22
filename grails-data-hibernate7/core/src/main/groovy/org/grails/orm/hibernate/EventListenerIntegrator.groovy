@@ -188,7 +188,7 @@ class EventListenerIntegrator implements Integrator {
      */
     @SuppressWarnings('unchecked')
     private <T> List<T> grailsOwnedListeners(EventListenerGroup<T> group, T replacement) {
-        List<T> retained = new ArrayList<>()
+        List<T> retained = []
         if (group == null || group.listeners() == null) {
             return retained
         }

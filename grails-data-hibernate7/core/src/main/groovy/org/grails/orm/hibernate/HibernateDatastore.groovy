@@ -218,7 +218,7 @@ class HibernateDatastore extends AbstractDatastore
     protected final GrailsHibernateTransactionManager transactionManager
     protected final ConfigurableApplicationEventPublisher eventPublisher
     protected final HibernateGormEnhancer gormEnhancer
-    protected final Map<String, HibernateDatastore> datastoresByConnectionSource = Collections.synchronizedMap(new LinkedHashMap<>())
+    protected final Map<String, HibernateDatastore> datastoresByConnectionSource = Collections.synchronizedMap([:])
     private final List<ConnectionSource<SessionFactory, HibernateConnectionSourceSettings>> schemaTenantConnectionSources = new CopyOnWriteArrayList<>()
     private final Map<PersistentEntity, Boolean> multiTenantCollections = new ConcurrentHashMap<>()
     protected final Metadata metadata
@@ -605,7 +605,7 @@ class HibernateDatastore extends AbstractDatastore
             super.setApplicationContext(applicationContext)
 
             for (HibernateDatastore hibernateDatastore : datastoresByConnectionSource.values()) {
-                if (!Objects.equals(hibernateDatastore, this)) {
+                if (hibernateDatastore != this) {
                     hibernateDatastore.setApplicationContext(applicationContext)
                 }
             }
@@ -649,7 +649,7 @@ class HibernateDatastore extends AbstractDatastore
                 previousMode = session.hibernateFlushMode
                 session.setHibernateFlushMode(flushMode)
             }
-            reset = !Boolean.FALSE.equals(callable.call())
+            reset = callable.call() != Boolean.FALSE
         } catch (Exception e) {
             ReflectionUtils.rethrowRuntimeException(e)
         } finally {
@@ -830,7 +830,7 @@ class HibernateDatastore extends AbstractDatastore
                 schemaHandler.useDefaultSchema(connection)
             } catch (SQLException e) {
                 throw new DatastoreConfigurationException(
-                        String.format('Failed to create schema for name [%s]', schemaName), e)
+                        "Failed to create schema for name [${schemaName}]".toString(), e)
             }
         }
 

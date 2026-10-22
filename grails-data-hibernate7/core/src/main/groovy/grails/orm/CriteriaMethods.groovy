@@ -66,7 +66,7 @@ enum CriteriaMethods {
     SINGLE_RESULT('singleResult'),
     CREATE_ALIAS('createAlias')
 
-    private final String name
+    final String name
 
     CriteriaMethods(String name) {
         this.name = name
@@ -82,7 +82,7 @@ enum CriteriaMethods {
      * @throws groovy.lang.MissingMethodException if the method name is not recognized
      */
     static CriteriaMethods fromName(String name, Class<?> targetClass, Object... args) {
-        for (CriteriaMethods m : values()) {
+        for (CriteriaMethods m in values()) {
             if (m.name == name) {
                 return m
             }
@@ -99,16 +99,12 @@ enum CriteriaMethods {
      * @return The corresponding CriteriaMethods enum or null if not found
      */
     static CriteriaMethods fromName(String name) {
-        for (CriteriaMethods m : values()) {
+        for (CriteriaMethods m in values()) {
             if (m.name == name) {
                 return m
             }
         }
         return null
-    }
-
-    String getName() {
-        return name
     }
 
 }

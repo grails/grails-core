@@ -48,7 +48,7 @@ class ManyToManyOwnerValidator {
         if (!(property instanceof HibernateManyToManyProperty)) {
             return
         }
-        HibernateManyToManyProperty manyToMany = (HibernateManyToManyProperty) property
+        HibernateManyToManyProperty manyToMany = property
         if (!manyToMany.isBidirectional() || manyToMany.isOwningSide()) {
             return
         }

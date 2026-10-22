@@ -75,8 +75,8 @@ class HibernateBasicEnumProperty extends HibernateBasicProperty implements Hiber
     @Override
     Table getTable() {
         Collection collection = hibernateCollection
-        Table collectionTable = collection != null ? collection.collectionTable : null
-        return collectionTable != null ? collectionTable : persistentClass.table
+        Table collectionTable = collection?.collectionTable
+        return collectionTable ?: persistentClass.table
     }
 
 }

@@ -59,7 +59,7 @@ class StringColumnConstraintsBinder {
             return Optional.empty()
         }
         Integer max = null
-        for (String value : inList) {
+        for (String value in inList) {
             Integer parsed = parseInt(value)
             if (parsed != null && (max == null || parsed > max)) {
                 max = parsed

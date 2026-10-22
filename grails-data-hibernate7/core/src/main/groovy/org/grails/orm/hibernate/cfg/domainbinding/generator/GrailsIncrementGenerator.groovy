@@ -63,6 +63,8 @@ class GrailsIncrementGenerator extends IncrementGenerator {
             params.putAll(mappedIdProps)
         }
 
+        // Properties.putAt() does not resolve statically under @CompileStatic (falls back to a dynamic
+        // invokeMethodN call); keep the explicit put() so this stays fully statically dispatched.
         params.put(TABLES, domainClass.getTableName(namingStrategy))
         params.put(COLUMN, resolveColumnName(context, mappedId))
 

@@ -32,7 +32,7 @@ interface HibernateToManyEntityProperty extends HibernateToManyProperty {
     HibernatePersistentEntity getHibernateAssociatedEntity()
 
     default PersistentClass getAssociatedClass() {
-        PersistentClass associatedClass = getHibernateAssociatedEntity().persistentClass
+        PersistentClass associatedClass = hibernateAssociatedEntity.persistentClass
         if (associatedClass == null) {
             throw new MappingException("Association [${name}] has no associated class")
         }

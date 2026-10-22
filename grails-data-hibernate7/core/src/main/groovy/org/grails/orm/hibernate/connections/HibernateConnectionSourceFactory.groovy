@@ -223,7 +223,7 @@ class HibernateConnectionSourceFactory
         configuration.setHibernateMappingContext(mappingContext)
         configuration.setDataSourceName(name)
         configuration.setSessionFactoryBeanName(
-                ConnectionSource.DEFAULT.equals(name) ? 'sessionFactory' : "sessionFactory_${name}")
+                ConnectionSource.DEFAULT == name ? 'sessionFactory' : "sessionFactory_${name}")
         configuration.addProperties(settings.toProperties())
         return configuration
     }
@@ -249,7 +249,7 @@ class HibernateConnectionSourceFactory
             HibernateMappingContextConfiguration configuration,
             ConnectionSource<DataSource, DataSourceSettings> dataSourceConnectionSource) {
         String dsName = dataSourceConnectionSource.name
-        String beanName = ConnectionSource.DEFAULT.equals(dsName) ? 'dataSource' : "dataSource_${dsName}"
+        String beanName = ConnectionSource.DEFAULT == dsName ? 'dataSource' : "dataSource_${dsName}"
         if (applicationContext != null && applicationContext.containsBean(beanName)) {
             configuration.setApplicationContext(applicationContext)
         }

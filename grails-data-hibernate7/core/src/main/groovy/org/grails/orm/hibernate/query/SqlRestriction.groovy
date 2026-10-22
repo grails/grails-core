@@ -64,7 +64,7 @@ record SqlRestriction(String sql, List<?> values) implements Query.Criterion {
      */
     @PackageScope
     static List<Integer> placeholderIndexes(String sql) {
-        List<Integer> placeholders = new ArrayList<>()
+        List<Integer> placeholders = []
         scan(sql, placeholders)
         return placeholders
     }
@@ -75,7 +75,7 @@ record SqlRestriction(String sql, List<?> values) implements Query.Criterion {
      */
     @PackageScope
     static boolean endsInLineComment(String sql) {
-        return scan(sql, new ArrayList<Integer>())
+        return scan(sql, [])
     }
 
     private static boolean scan(String sql, List<Integer> placeholders) {

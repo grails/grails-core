@@ -26,7 +26,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersi
 @CompileStatic
 class MappingCacheHolder {
 
-    private final Map<Class<?>, Mapping> mappingCache = new HashMap<>()
+    private final Map<Class<?>, Mapping> mappingCache = [:]
 
     /**
      * Obtains a mapping object for the given domain class nam

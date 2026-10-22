@@ -35,7 +35,7 @@ class DetachedAssociationFunction implements Function<Query.Criterion, List<Deta
             return List.of((DetachedAssociationCriteria<?>) o)
         } else if (o instanceof Query.Junction) {
             Query.Junction junction = (Query.Junction) o
-            List<DetachedAssociationCriteria<?>> result = new ArrayList<>()
+            List<DetachedAssociationCriteria<?>> result = []
             for (Query.Criterion criterion : junction.criteria) {
                 result.addAll(apply(criterion))
             }
