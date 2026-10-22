@@ -46,6 +46,17 @@ This skill is for the Grails framework's Hibernate 7 integration module, not for
 - `GrailsPropertyBinder`: main coordinator for converting persistent properties into Hibernate `Value` instances.
 - `PropertyFromValueCreator`: shared utility for creating Hibernate `Property` instances from a bound `Value`.
 
+### Native Domain Binding (`domainbinding.jpa`)
+
+With `hibernate.generatedDomainClasses` on, Hibernate's annotation binder binds classes generated from the GORM mapping instead of `GrailsDomainBinder` building the boot model by hand. Read the package in the order the binding runs:
+
+- `HibernateConnectionSourceSettings.generatedDomainClasses` → `HibernateMappingContextConfiguration` creates a `GeneratedDomainClassBinder` and gives it to `GrailsDomainBinder`, which hands the entities to it.
+- `GeneratedDomainClassBinder.contribute`: the entry point; has `GrailsDomainGenerator.generateAll` generate an annotated class per entity and gives them to Hibernate. `getSessionFactoryBuilder` runs once the metadata is complete and points the bound entities at the real classes.
+- `GrailsDomainGenerator`: every mapping decision. Reads a `GrailsHibernatePersistentEntity` into the records of `domainbinding.jpa.facets` (what to state) and writes them as annotations with ByteBuddy. `supports` / `unsupportedReason` name what it refuses before Hibernate boots.
+- `GeneratedDomainClassLoader` resolves domain class names to the generated classes while Hibernate binds; `GeneratedDomainClassLoaderService` switches those names to the real classes afterwards.
+- `GrailsIdGenerator`: marker carrying the GORM id generator the binder installs on a generated identifier.
+- Tests: `grails.gorm.tests.generated.*` (both bindings), the two differential specs in the `jpa` test package against the classic oracle in `src/test/resources/classic-oracle` (frozen; refreeze with `-Pgrails.test.refreezeClassicOracle=true`).
+
 ### Identifier and Version Binding
 
 - `IdentityBinder`: coordinates identifier binding.
@@ -67,6 +78,7 @@ This skill is for the Grails framework's Hibernate 7 integration module, not for
 - `SimpleValueColumnBinder`: binds columns to simple values.
 - `ComponentBinder`, `ComponentPropertyBinder`: embedded/component binding.
 - `CompositeUserTypeBinder`: binds a property mapped with a Hibernate `CompositeUserType` as a `Component` (one column per attribute of the user type's `embeddable()` class, in alphabetical attribute order); a `BasicValue` cannot carry a composite user type.
+- `GrailsDomainGenerator.compositeUserTypeFacets` / `defineCompositeUserTypeField`: the native binding's counterpart of `CompositeUserTypeBinder`. A property mapped with a `CompositeUserType` becomes an `@Embedded` field of the value class with `@CompositeType` and one `@AttributeOverride` per attribute of the user type's `embeddable()` class, in the same alphabetical order and with the same column rule, so the two bindings create the same schema.
 - `EnumTypeBinder`: enum mapping.
 
 ### Generators
