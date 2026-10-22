@@ -21,7 +21,6 @@ package org.grails.config
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.env.MutablePropertySources
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.core.io.Resource
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -32,24 +31,20 @@ import java.lang.reflect.Field
  */
 class SystemEnvironmentConfigSpec extends Specification {
 
-    @Issue('#10670')
-    void 'configuration properties defined in SystemEnvironment take precedence'() {
-        given: 'default configuration in application-yml'
-        Resource resource1 = new ByteArrayResource('''
+    private static final String YAML = '''
 property.with.period: from-yml
 property_with_underscore: from-yml
 property-with-hyphen: from-yml
 property-with_mixed.symbols: from-yml
-'''.bytes, 'test.yml')
+'''
 
-        def propertySourceLoader = new YamlPropertySourceLoader()
-        def yamlPropertiesSource = propertySourceLoader.load('application.yml', resource1, null)
-        def propertySources = new MutablePropertySources()
-        propertySources.addFirst(yamlPropertiesSource.first())
-        def config = new PropertySourcesConfig(propertySources)
-
-        and: 'overriding value with system environment variable'
+    @Issue('#10670')
+    void 'configuration properties defined in SystemEnvironment take precedence'() {
+        given: 'a value in the system environment'
         modifiableSystemEnvironment.put(systemProperty, value)
+
+        and: 'default configuration in application-yml'
+        def config = configFor(YAML)
 
         expect:
         config.getProperty(propertyToFind) == value
@@ -73,10 +68,54 @@ property-with_mixed.symbols: from-yml
         'property-with_mixed.symbols' | 'PROPERTY_WITH_MIXED_SYMBOLS' | 'from-env'
     }
 
+    void 'a key that no environment variable can match resolves from configuration'() {
+        given: 'configuration with no matching variable in the environment'
+        def config = configFor(YAML)
+
+        expect: 'the configured value is returned'
+        config.getProperty('property.with.period') == 'from-yml'
+        config.getProperty('property-with-hyphen') == 'from-yml'
+
+        and: 'a key that is configured nowhere falls back to the default'
+        config.getProperty('property.nobody.set', String, 'fallback') == 'fallback'
+    }
+
+    void 'a variable that matches the key in none of the probed spellings does not override it'() {
+        given: 'a lower-case variable for a mixed-case key'
+        modifiableSystemEnvironment.put('property_with_period', 'from-env')
+        def config = configFor('Property.With.Period: from-yml')
+
+        expect: 'only the key as written and its upper-cased form are probed, as Spring does'
+        config.getProperty('Property.With.Period') == 'from-yml'
+
+        cleanup:
+        modifiableSystemEnvironment.remove('property_with_period')
+    }
+
+    void 'when several variables match a key the first probed spelling wins'() {
+        given: 'two variables that both match the key'
+        modifiableSystemEnvironment.put(winner, 'from-winner')
+        modifiableSystemEnvironment.put(loser, 'from-loser')
+        def config = configFor(YAML)
+
+        expect: 'the value of the spelling that is probed first is returned'
+        config.getProperty('property.with.period') == 'from-winner'
+
+        cleanup:
+        modifiableSystemEnvironment.remove(winner)
+        modifiableSystemEnvironment.remove(loser)
+
+        where:
+        winner                 | loser
+        'property.with.period' | 'PROPERTY_WITH_PERIOD'
+        'property_with_period' | 'PROPERTY_WITH_PERIOD'
+        'property_with_period' | 'PROPERTY.WITH.PERIOD'
+    }
+
     void 'a property read more than once keeps resolving to the system environment value'() {
         given: 'configuration that is overridden by the environment'
-        def config = configFor('property.with.period: from-yml')
         modifiableSystemEnvironment.put('PROPERTY_WITH_PERIOD', 'from-env')
+        def config = configFor(YAML)
 
         expect: 'every read resolves to the environment value, not just the first'
         config.getProperty('property.with.period') == 'from-env'
@@ -99,8 +138,8 @@ property-with_mixed.symbols: from-yml
         config.getProperty('some.nested.value') == 'updated'
     }
 
-    void 'a config created after an environment variable is installed observes it'() {
-        given: 'a config created and read before the variable exists'
+    void 'each config observes the environment as it stands when the config is created'() {
+        given: 'a config created before the variable exists'
         def before = configFor('late.bound.property: from-yml')
         assert before.getProperty('late.bound.property') == 'from-yml'
 
@@ -110,6 +149,9 @@ property-with_mixed.symbols: from-yml
 
         then: 'the new config resolves to the environment value'
         after.getProperty('late.bound.property') == 'from-env'
+
+        and: 'the earlier config keeps the environment it was created with'
+        before.getProperty('late.bound.property') == 'from-yml'
 
         cleanup:
         modifiableSystemEnvironment.remove('LATE_BOUND_PROPERTY')

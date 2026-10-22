@@ -20,17 +20,16 @@ package org.grails.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 
 import groovy.util.ConfigObject;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -56,17 +55,9 @@ import org.grails.core.exceptions.GrailsConfigurationException;
 @Deprecated
 public abstract class NavigableMapConfig implements Config {
     protected static final Logger LOG = LoggerFactory.getLogger(NavigableMapConfig.class);
-
-    /**
-     * Upper bound on each key-derived cache. Configuration keys come from a small fixed set of source
-     * literals; the bound only guards against a caller synthesising unbounded key strings at runtime.
-     */
-    private static final int MAX_CACHED_KEYS = 2048;
-
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     protected ConfigurableConversionService conversionService = new DefaultConversionService();
-    private final ConcurrentHashMap<String, Optional<String>> systemEnvironmentCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, List<String>> dotNotatedKeyCache = new ConcurrentHashMap<>();
+    private final SystemEnvironmentIndex systemEnvironment = new SystemEnvironmentIndex(System.getenv());
     protected NavigableMap configMap = new NavigableMap() {
         @Override
         protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, Object newValue) {
@@ -231,7 +222,7 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        Object value = findInSystemEnvironment(key);
+        Object value = systemEnvironment.get(key);
         if (value == null) {
             value = getValueWithDotNotatedKeySupport(configMap, key);
         }
@@ -240,72 +231,6 @@ public abstract class NavigableMapConfig implements Config {
         }
 
         return convertValueIfNecessary(value, targetType, defaultValue);
-    }
-
-    private Object findInSystemEnvironment(String key) {
-        if (key == null) {
-            return null;
-        }
-        Optional<String> cached = systemEnvironmentCache.get(key);
-        if (cached != null) {
-            return cached.orElse(null);
-        }
-        String propertyName = resolvePropertyName(key);
-        String value = propertyName != null ? System.getenv(propertyName) : null;
-        // Resolving a key to its environment value depends only on the key and on the process
-        // environment, which is fixed for the lifetime of this config, so the result is memoized per
-        // instance. Without this, every getProperty() call spends up to eight System.getenv() probes
-        // and six string allocations in resolvePropertyName()/checkPropertyName() re-deriving a
-        // constant answer. The cache is deliberately per-instance rather than static: tests that
-        // install environment variables reflectively build a fresh config afterwards and must observe
-        // the environment as it stands then.
-        if (systemEnvironmentCache.size() < MAX_CACHED_KEYS) {
-            systemEnvironmentCache.put(key, Optional.ofNullable(value));
-        }
-        return value;
-    }
-
-    private String resolvePropertyName(String name) {
-        String resolvedName = checkPropertyName(name);
-        if (resolvedName != null) {
-            return resolvedName;
-        }
-        String uppercasedName = name.toUpperCase();
-        if (!name.equals(uppercasedName)) {
-            resolvedName = checkPropertyName(uppercasedName);
-            if (resolvedName != null) {
-                return resolvedName;
-            }
-        }
-        return name;
-    }
-
-    private String checkPropertyName(String name) {
-        // Check name as-is
-        if (containsKey(name)) {
-            return name;
-        }
-        // Check name with just dots replaced
-        String noDotName = name.replace('.', '_');
-        if (!name.equals(noDotName) && containsKey(noDotName)) {
-            return noDotName;
-        }
-        // Check name with just hyphens replaced
-        String noHyphenName = name.replace('-', '_');
-        if (!name.equals(noHyphenName) && containsKey(noHyphenName)) {
-            return noHyphenName;
-        }
-        // Check name with dots and hyphens replaced
-        String noDotNoHyphenName = noDotName.replace('-', '_');
-        if (!noDotName.equals(noDotNoHyphenName) && containsKey(noDotNoHyphenName)) {
-            return noDotNoHyphenName;
-        }
-        // Give up
-        return null;
-    }
-
-    private boolean containsKey(String name) {
-        return System.getenv(name) != null;
     }
 
     private Map<Object, Object> convertToMap(NavigableMap from, IdentityHashMap<NavigableMap, Map<Object, Object>> cache) {
@@ -434,36 +359,107 @@ public abstract class NavigableMapConfig implements Config {
             return null;
         }
 
-        List<String> keys = dotNotatedKeyCache.get(key);
-        if (keys == null) {
-            keys = convertTokensIntoArrayList(new StringTokenizer(key, "."));
-            // Splitting a dotted key is a pure function of the key, and configuration keys come from a
-            // small fixed set of source literals, so the token list is cached rather than rebuilt (with
-            // a fresh StringTokenizer and ArrayList) on every lookup.
-            if (dotNotatedKeyCache.size() < MAX_CACHED_KEYS) {
-                dotNotatedKeyCache.put(key, keys);
-            }
-        }
-        if (keys.isEmpty()) {
-            return null;
-        }
-
         Object value = null;
-        for (int i = 0; i < keys.size(); i++) {
-            if (i == 0) {
-                value = configMap.get(keys.get(i));
-            } else if (value instanceof Map) {
-                value = ((Map) value).get(keys.get(i));
+        boolean first = true;
+        int length = key.length();
+        int start = 0;
+        while (start < length) {
+            int end = key.indexOf('.', start);
+            if (end < 0) {
+                end = length;
             }
+            if (end > start) {
+                String segment = key.substring(start, end);
+                if (first) {
+                    value = configMap.get(segment);
+                    first = false;
+                } else if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(segment);
+                } else {
+                    break;
+                }
+            }
+            start = end + 1;
         }
         return value;
     }
 
-    private List<String> convertTokensIntoArrayList(StringTokenizer st) {
-        List<String> elements = new ArrayList<>(st.countTokens());
-        while (st.hasMoreTokens()) {
-            elements.add(st.nextToken());
+    /**
+     * The process environment as it stood when this config was created, indexed so that a key no
+     * variable can match is answered with one hash lookup.
+     * <p>
+     * A key matches a variable in any of the spellings Spring's {@code SystemEnvironmentPropertySource}
+     * accepts: as written, with dots replaced by underscores, with hyphens replaced by underscores,
+     * with both replaced, and the upper-cased form of each. Every one of those spellings has the same
+     * canonical name, so a key whose canonical name belongs to no variable cannot match and is
+     * rejected without probing. Only a key whose canonical name is present runs the spelling-by-spelling
+     * resolution, which keeps the precedence between spellings as it was.
+     * <p>
+     * The environment of a running JVM cannot change, so one snapshot per config instance is exact.
+     * The memory it takes is proportional to the number of environment variables, not to the size of
+     * the configuration or to the number of keys looked up.
+     */
+    private static final class SystemEnvironmentIndex {
+
+        private final Map<String, String> variables;
+        private final Set<String> canonicalNames;
+
+        SystemEnvironmentIndex(Map<String, String> environment) {
+            this.variables = new HashMap<>(environment);
+            this.canonicalNames = new HashSet<>();
+            for (String name : variables.keySet()) {
+                canonicalNames.add(canonicalName(name));
+            }
         }
-        return Collections.unmodifiableList(elements);
+
+        String get(String key) {
+            if (key == null || !canonicalNames.contains(canonicalName(key))) {
+                return null;
+            }
+            return variables.get(resolvePropertyName(key));
+        }
+
+        private static String canonicalName(String name) {
+            return name.toUpperCase(Locale.ROOT).replace('.', '_').replace('-', '_');
+        }
+
+        private String resolvePropertyName(String name) {
+            String resolvedName = checkPropertyName(name);
+            if (resolvedName != null) {
+                return resolvedName;
+            }
+            String uppercasedName = name.toUpperCase(Locale.ROOT);
+            if (!name.equals(uppercasedName)) {
+                resolvedName = checkPropertyName(uppercasedName);
+                if (resolvedName != null) {
+                    return resolvedName;
+                }
+            }
+            return name;
+        }
+
+        private String checkPropertyName(String name) {
+            // Check name as-is
+            if (variables.containsKey(name)) {
+                return name;
+            }
+            // Check name with just dots replaced
+            String noDotName = name.replace('.', '_');
+            if (!name.equals(noDotName) && variables.containsKey(noDotName)) {
+                return noDotName;
+            }
+            // Check name with just hyphens replaced
+            String noHyphenName = name.replace('-', '_');
+            if (!name.equals(noHyphenName) && variables.containsKey(noHyphenName)) {
+                return noHyphenName;
+            }
+            // Check name with dots and hyphens replaced
+            String noDotNoHyphenName = noDotName.replace('-', '_');
+            if (!noDotName.equals(noDotNoHyphenName) && variables.containsKey(noDotNoHyphenName)) {
+                return noDotNoHyphenName;
+            }
+            // Give up
+            return null;
+        }
     }
 }
