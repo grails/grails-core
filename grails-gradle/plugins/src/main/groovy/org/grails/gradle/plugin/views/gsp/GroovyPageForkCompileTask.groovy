@@ -36,8 +36,8 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.LocalState
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
@@ -46,16 +46,26 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 
+import grails.util.BuildSettings
 import org.grails.gradle.plugin.views.ViewCompileOptions
 
 /**
  * Abstract Gradle task for compiling templates, using GroovyPageForkedCompiler
  * This Task is a Forked Java Task that is configurable with fork options provided
  * by {@link ViewCompileOptions}
+ *
+ * <p>Cacheable. What a page compiles to depends on the Groovy that compiles it, the Java it is
+ * compiled for and the classes it is compiled against, and each of them is part of the key. The
+ * compiler runs from {@link #getClasspath()}, which {@code AbstractCompile} declares a classpath
+ * input, fingerprinted by content, so a build that resolves another Groovy is not handed this one's
+ * pages; {@link #getJavaLauncher()} and the target compatibility say which Java. The pages are
+ * fingerprinted by their path under the source, so a checkout in another directory reuses what
+ * this one compiled.</p>
  *
  * @author David Estes
  * @since 4.0
@@ -72,8 +82,13 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
     @PathSensitive(PathSensitivity.RELATIVE)
     final ConfigurableFileCollection grailsConfigurationPaths
 
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
+    /**
+     * The directory of the pages, which the compiler names them under. Internal rather than an input
+     * directory: its pages are fingerprinted as part of {@link #getSource()}, and it need not exist -
+     * a project whose only pages are generated, a plugin that scaffolds controllers and has no views
+     * of its own, has none, and an input directory that does not exist fails validation.
+     */
+    @Internal
     final DirectoryProperty srcDir
 
     @Nested
@@ -86,7 +101,57 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
     @Optional
     final Property<String> serverpath
 
+    /**
+     * Whether the pages this task compiles are compiled statically.
+     *
+     * <p>Stated to the forked compiler as the {@code grails.views.gsp.compileStatic} system property,
+     * which is the same setting {@code grails-app/conf/application.yml} carries and the same one the
+     * running application reads, so that a page compiled here compiles the same way there.</p>
+     */
+    @Input
+    final Property<Boolean> compileStatic
+
+    /** Whether the pages this task compiles are held to the names they declare. See {@link #compileStatic}. */
+    @Input
+    final Property<Boolean> compileStaticStrict
+
+    /**
+     * Files that each name, one per line, pages of the source that are optional, as paths relative
+     * to it. An optional page that does not compile is left out with a warning rather than failing
+     * the build: a page generated from a template a dependency supplies is an optimisation, and
+     * without it the page is produced when it is first rendered.
+     */
+    @InputFiles
+    @Optional
+    @PathSensitive(PathSensitivity.RELATIVE)
+    final ConfigurableFileCollection optionalPages
+
+    /**
+     * Directories of pages the build generated, compiled in the same compilation as the source, each
+     * page named by its path under the directory holding it, as though it were in the source, where a
+     * page at the same path takes precedence. Part of {@link #getSource()}, so a project whose only
+     * pages are generated compiles them. One compilation rather than two, because each would write a
+     * {@code gsp/views.properties} and an archive keeps only the first.
+     */
+    @Internal
+    final ConfigurableFileCollection generatedViews
+
     private ExecOperations execOperations
+
+    /**
+     * The Java runtime the pages are compiled by.
+     *
+     * <p>Compilation is forked, and a forked process runs whatever JVM it is given rather than the
+     * one the project asked for. Left to itself it inherits the JVM running Gradle, so a project
+     * declaring a toolchain gets its pages compiled by a different Java than everything else it
+     * builds -- which shows up as an {@code UnsupportedClassVersionError} at the moment a page is
+     * first rendered, long after the build called itself successful.</p>
+     *
+     * <p>Nested rather than internal because the Java that did the compiling is part of what the
+     * result is: pages built by one are not left standing when the build asks for another.</p>
+     */
+    @Nested
+    abstract Property<JavaLauncher> getJavaLauncher()
 
     @OutputDirectory
     final DirectoryProperty destinationDirectory
@@ -98,6 +163,10 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
         srcDir = objectFactory.directoryProperty()
         compileOptions = objectFactory.newInstance(ViewCompileOptions)
         serverpath = objectFactory.property(String)
+        compileStatic = objectFactory.property(Boolean).convention(false)
+        compileStaticStrict = objectFactory.property(Boolean).convention(false)
+        optionalPages = objectFactory.fileCollection()
+        generatedViews = objectFactory.fileCollection()
         grailsConfigurationPaths = objectFactory.fileCollection()
         grailsConfigurationPaths.from(
                 project.layout.projectDirectory.file('grails-app/conf/application.yml'),
@@ -109,7 +178,7 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
     @Override
     @PathSensitive(PathSensitivity.RELATIVE)
     FileTree getSource() {
-        return super.getSource()
+        return super.getSource().plus(generatedViews.asFileTree)
     }
 
     @Override
@@ -143,6 +212,7 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
                     @Override
                     @CompileDynamic
                     void execute(JavaExecSpec javaExecSpec) {
+                        javaExecSpec.executable = javaLauncher.get().executablePath.asFile.absolutePath
                         javaExecSpec.mainClass.set(getCompilerName())
                         javaExecSpec.setClasspath(getClasspath())
 
@@ -153,6 +223,21 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
                         javaExecSpec.setMaxHeapSize(compileOptions.forkOptions.memoryMaximumSize)
                         javaExecSpec.setMinHeapSize(compileOptions.forkOptions.memoryInitialSize)
 
+                        if (!generatedViews.isEmpty()) {
+                            javaExecSpec.systemProperty(BuildSettings.GENERATED_GSP_VIEW_DIRECTORIES,
+                                    generatedViews.files*.absolutePath.join(File.pathSeparator))
+                        }
+                        if (!optionalPages.isEmpty()) {
+                            javaExecSpec.systemProperty(BuildSettings.OPTIONAL_GSP_PAGES,
+                                    optionalPages.files*.absolutePath.join(File.pathSeparator))
+                        }
+                        if (compileStatic.get()) {
+                            javaExecSpec.systemProperty(BuildSettings.COMPILE_STATIC_GSP, 'true')
+                            if (compileStaticStrict.get()) {
+                                javaExecSpec.systemProperty(BuildSettings.COMPILE_STATIC_GSP_STRICT, 'true')
+                            }
+                        }
+
                         String configFiles = grailsConfigurationPaths.files.collect { it.canonicalPath }.join(',')
 
                         Path path = Paths.get(tmpDirPath)
@@ -161,7 +246,9 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
                                 srcDir.get().asFile.canonicalPath,
                                 destinationDirectory.get().asFile.canonicalPath,
                                 tmp.canonicalPath,
-                                targetCompatibility,
+                                // What a page is compiled for follows what it is compiled by,
+                                // unless the build has said otherwise for itself.
+                                targetCompatibility ?: javaLauncher.get().metadata.languageVersion.toString(),
                                 packageName.get() as String,
                                 serverpath.getOrNull() as String,
                                 configFiles,
