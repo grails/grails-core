@@ -31,9 +31,15 @@ on:
 # results would be for a superseded commit, and the run that replaces it publishes the newer one. The publish
 # jobs (publishGradle, publish, publishForge, verifyWrapper, docs) run on always() with explicit result checks
 # instead, so a publish that has started completes: an interrupted upload would leave the snapshot repository
-# with modules from two commits. Nothing of the cancelled commit is published when the cancel arrives before
-# publish starts, because a cancelled test job fails the explicit checks. The replacing run is pending until
-# the cancelled run has finished every job, so two publishes of the same branch never overlap.
+# with modules from two commits. publishGradle waits for every build job (buildGradle, buildForge and
+# validateDependencies), so nothing of the cancelled commit is published when the cancel arrives before the
+# builds have finished. A later cancel lets the publish jobs whose needs have already succeeded or been skipped
+# run: on a run without tests that is the whole chain, and on a run whose tests are still running only
+# publishGradle, because a cancelled test job fails the explicit checks of publish and of everything after it.
+# A cancel after every test has passed lets the whole chain run as well. The replacing run is pending until the
+# cancelled run has finished every job, so two publishes of the same branch never overlap, and it then publishes
+# the newer commit over whatever the cancelled run published. A normal cancel does not stop a running always()
+# job either; the CI policy section of AGENTS.md says how to force one.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -536,14 +542,18 @@ jobs:
           -PonlyHibernate5Tests
           -PskipCodeStyle
   publishGradle:
-    # always() with an explicit result check, see the concurrency comment at the top.
+    # always() with explicit result checks, see the concurrency comment at the top. It waits for every build job,
+    # not only buildGradle, so that a run cancelled before its builds have finished publishes nothing, and a
+    # commit whose Forge build or dependency validation failed is not published.
     if: >-
       ${{ always() &&
           github.repository_owner == 'apache' &&
           (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
-          needs.buildGradle.result == 'success'
+          needs.buildGradle.result == 'success' &&
+          needs.buildForge.result == 'success' &&
+          needs.validateDependencies.result == 'success'
       }}
-    needs: [ buildGradle ]
+    needs: [ buildGradle, buildForge, validateDependencies ]
     runs-on: ubuntu-24.04
     steps:
       - name: "Output Agent IP" # in the event RAO blocks this agent, this can be used to debug it
@@ -591,8 +601,8 @@ jobs:
     needs: [ publishGradle, build, functional, security, securityConfig, redis, hibernate5Functional, mongodbFunctional ]
     # always() with explicit result checks, see the concurrency comment at the top. The results are checked
     # explicitly because the implicit success() check also covers the skipped test jobs upstream, which would
-    # skip this job on a build-only run, and because a cancelled test job must not be published: nothing of a
-    # commit whose run was cancelled before this job started reaches the snapshot repository.
+    # skip this job on a build-only run, and because a cancelled test job must not be published: the core of a
+    # commit whose tests were cancelled never reaches the snapshot repository, although its Gradle plugins may.
     if: >-
       ${{ always() &&
           github.repository_owner == 'apache' &&
