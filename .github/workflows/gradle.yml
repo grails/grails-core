@@ -598,17 +598,19 @@ jobs:
           name: grails-gradle-artifacts.txt
           path: grails-gradle/build/grails-gradle-artifacts.txt
   publish:
-    needs: [ publishGradle, build, functional, security, securityConfig, redis, hibernate5Functional, mongodbFunctional ]
+    needs: [ publishGradle, build, buildRerunTasks, functional, security, securityConfig, redis, hibernate5Functional, mongodbFunctional ]
     # always() with explicit result checks, see the concurrency comment at the top. The results are checked
     # explicitly because the implicit success() check also covers the skipped test jobs upstream, which would
     # skip this job on a build-only run, and because a cancelled test job must not be published: the core of a
     # commit whose tests were cancelled never reaches the snapshot repository, although its Gradle plugins may.
+    # Every test job of this workflow belongs in these needs.
     if: >-
       ${{ always() &&
           github.repository_owner == 'apache' &&
           (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
           needs.publishGradle.result == 'success' &&
           (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+          (needs.buildRerunTasks.result == 'success' || needs.buildRerunTasks.result == 'skipped') &&
           (needs.functional.result == 'success' || needs.functional.result == 'skipped') &&
           (needs.security.result == 'success' || needs.security.result == 'skipped') &&
           (needs.securityConfig.result == 'success' || needs.securityConfig.result == 'skipped') &&
