@@ -118,7 +118,7 @@ Starting an application needs reflection the framework does on its own behalf, a
 * what Groovy does reflectively even for statically compiled classes, in the framework and in the application's own packages: creating a Groovy enum's constants, initializing a trait from a class that implements it, and turning a closure into the interface a method takes;
 * the build information that says which environment the application was packaged for, and the default validation messages.
 
-What remains the application's is the reflection its own dynamically compiled code does. A call written without static compilation is resolved where it is made, against whatever it is made on, and only a run shows what that is. Compile such code statically, as a generated application's `Application` class is, or record what it does as described below.
+The list covers starting the application. What a request reaches is still recorded, as described below, and that covers two things: the framework's own reflection along the request's path, and the reflection the application's own dynamically compiled code does. A call written without static compilation is resolved where it is made, against whatever it is made on, and only a run shows what that is. Compiling the application's code statically, as a generated application's `Application` class is, takes its own calls out of what has to be recorded, but not the framework's reflection on a request's path.
 
 ==== Recording reflection for a native image
 
