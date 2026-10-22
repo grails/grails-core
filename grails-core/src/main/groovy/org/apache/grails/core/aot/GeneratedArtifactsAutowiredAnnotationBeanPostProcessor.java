@@ -26,7 +26,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
-import org.springframework.util.ClassUtils;
 
 /**
  * Injects through {@code @Autowired}, {@code @Value} and {@code @Inject} what the code generated ahead of time
@@ -78,7 +77,8 @@ public class GeneratedArtifactsAutowiredAnnotationBeanPostProcessor extends Auto
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) throws BeansException {
         if (GeneratedBeanDefinitions.isAnotherInstanceOfGeneratedBean(beanFactory, beanName, bean)) {
-            Class<?> beanClass = ClassUtils.getUserClass(bean);
+            // The class of the instance itself, a CGLIB subclass included: the injection looks the members up by it.
+            Class<?> beanClass = bean.getClass();
             RootBeanDefinition processedInOrder = new RootBeanDefinition(beanClass);
             commonProcessor.postProcessMergedBeanDefinition(processedInOrder, beanClass, "");
             generatingProcessor.postProcessMergedBeanDefinition(processedInOrder, beanClass, beanName);

@@ -37,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.support.RootBeanDefinition
+import org.springframework.cglib.proxy.Enhancer
+import org.springframework.cglib.proxy.NoOp
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.aot.ApplicationContextAotGenerator
@@ -225,7 +227,7 @@ class GeneratedArtifactsInjectionSpec extends Specification {
             configured.calls.shutdown == 1
     }
 
-    void 'another instance with members annotated for both processors is injected once each, with the resource they name'() {
+    void '#kind with members annotated for both processors is injected once each, with the resource they name'() {
         given: 'two more collaborators, the one autowiring by type would choose being primary'
             startFromGeneratedCode({
                 registerBeanDefinition('named', new RootBeanDefinition(CollaboratorFixture))
@@ -234,7 +236,7 @@ class GeneratedArtifactsInjectionSpec extends Specification {
             }, {}, {
                 registerBeanDefinition('declaredLater', new RootBeanDefinition(DualAnnotatedFixture))
             })
-            def another = new DualAnnotatedFixture()
+            def another = instance.call()
             def named = context.getBean('named')
 
         when:
@@ -251,6 +253,11 @@ class GeneratedArtifactsInjectionSpec extends Specification {
                 wired.is(named)
                 calls == [wire: 1]
             }
+
+        where:
+            kind                                  | instance
+            'another instance'                    | { new DualAnnotatedFixture() }
+            'another instance of a CGLIB subclass' | { new Enhancer(superclass: DualAnnotatedFixture, callback: NoOp.INSTANCE).create() }
     }
 
     void 'another instance initialized under the name of a generated bean is injected, initialized and destroyed once'() {
