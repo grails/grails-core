@@ -1161,6 +1161,8 @@ Grails 9 also reads the flat key that `merge` writes for every nested value befo
 - A dotted key written directly, with `config.put('a.b', value)` or `config['a.b'] = value`, is now read by `getProperty('a.b')`, as it always was by `config['a.b']`.
 - A value written directly into a nested map, with `config.a.put('b', value)` or `config.a['b'] = value`, is no longer read by `getProperty('a.b')`; dot navigation, `config.a.b`, still reads it.
 
+A dotted key inside a nested block, such as `org.springframework` under `logging.level`, used to be written a second time as a key at the root, where it could overwrite a real `org.springframework` property; it is now written only under its parent, as `logging.level.org.springframework`.
+
 ===== Required Actions
 
 Code that reads a child of a string, a list or a closure and relied on being answered with the parent reads the parent instead. Code that writes directly into a nested map and reads the value back through `getProperty` assigns through dot notation instead, which writes both representations.
