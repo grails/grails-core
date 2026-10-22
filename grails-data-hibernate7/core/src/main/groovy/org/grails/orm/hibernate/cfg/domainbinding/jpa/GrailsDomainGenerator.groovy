@@ -165,7 +165,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEmbeddedPro
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateEnumProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToManyProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToOneProperty
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToManyProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToOneProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateSimpleIdentityProperty
@@ -2123,8 +2122,18 @@ class GrailsDomainGenerator {
                         null, null, null, null, null)
             }
         }
-        String condition = property instanceof HibernateOneToManyProperty && target.isMultiTenant() ?
-                target.getMultiTenantFilterCondition(defaultColumnNames) : null
+        // a collection of a multi-tenant entity is filtered by the current tenant, whether the association is a one-to-many
+        // or a many-to-many; on a collection with a join table Hibernate applies @Filter to the element rows, which is the
+        // classic binder's many-to-many filter
+        String condition = target.isMultiTenant() ? target.getMultiTenantFilterCondition(defaultColumnNames) : null
+        boolean lazy = property.isLazy()
+        FetchMode fetchMode = FetchMode.JOIN == mapped.fetchMode ? FetchMode.JOIN : FetchMode.SELECT
+        if (condition != null && fetchMode == FetchMode.JOIN) {
+            // Hibernate does not apply the tenant filter to a collection that it fetches by join with an instance loaded
+            // by id, so the collection is loaded eagerly with a select of its own instead
+            fetchMode = FetchMode.SELECT
+            lazy = false
+        }
         if (qualifier != null && table != null && mappedBy == null) {
             table = qualifiedTableName(property, qualifier)
             keys = qualifiedKeys(keys != null ? keys : [key], keys != null ? collectionKeyReferencedColumns(property) : [], qualifier)
@@ -2141,9 +2150,9 @@ class GrailsDomainGenerator {
                 key,
                 element,
                 collectionIndexFacets(property, kind),
-                property.isLazy(),
+                lazy,
                 property.getLazy() == Boolean.TRUE,
-                FetchMode.JOIN == mapped.fetchMode ? FetchMode.JOIN : FetchMode.SELECT,
+                fetchMode,
                 Math.max(property.batchSize, 0),
                 property.cacheUsage,
                 cascadeFacets(property),
