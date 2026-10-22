@@ -1144,7 +1144,34 @@ grails:
         responseBody: true
 ----
 
-==== 17. RxGORM Runs on RxJava 3
+==== 17. Generated GORM Identity and Version Properties Stay Within Domain Classes
+
+Grails 9 no longer adds generated `id` and `version` properties to a non-domain superclass of a domain class.
+Previously, these properties could be added to a shared abstract base class, causing command objects extending that same base class to inherit persistence properties and fail validation for `id` and `version`.
+Generated properties now remain within the domain-class hierarchy. Domain subclasses still inherit them from domain superclasses, and explicitly declared `id` and `version` properties on a superclass are still inherited normally.
+
+This affects any plain base class compiled alongside a domain subclass, even if the base is not shared with a command object.
+Review the following compatibility changes before upgrading:
+
+* *Statically compiled base-class methods:* A plain base annotated with `@CompileStatic` can no longer refer to generated `id` or `version` as its own properties. For example, an `isNew()` method whose body is `id == null` could compile in Grails 8 when the fields were generated on the base, but now fails with `[Static type checking] - The variable [id] is undeclared.` Move persistence-dependent methods to the domain class, or give the base an explicit property or accessor contract implemented by its subclasses. A dynamically compiled base method can still resolve these properties at runtime when invoked on a domain instance; this does not make them available on plain instances or command objects.
+* *String representation and equality:* `@ToString` and `@EqualsAndHashCode` on a plain base no longer have generated `id` and `version` among that base's declared properties. Review any explicit property lists and any hand-written `equals` or `hashCode` implementation that assumes these fields are declared on the base. Move persistence-dependent behavior to the domain class or adapt it to an explicit contract. Dynamic property access on a domain instance can still resolve inherited or subclass properties, but the base itself no longer declares the generated fields.
+* *Stale compiled classes:* A previously compiled base `.class` can retain `id` and `version` until it is rebuilt. An incremental build can therefore hide the new behavior or leave subclasses inheriting stale fields. Clean and rebuild the application and any affected plugins.
+
+When upgrading an affected application:
+
+* Keep a superclass shared by domain classes and command objects in `src/main/groovy`, outside `grails-app/domain`, and do not annotate it as an entity.
+* Remove constraints or other workarounds on command objects that existed only to accommodate the accidentally inherited `id` and `version` properties.
+* Update code that relied on a non-domain superclass having generated persistence properties to access them through a domain class instead. If non-domain classes genuinely need these properties, declare them explicitly; such declarations remain inherited by all subclasses.
+* Perform a clean build of the application and any affected plugins to remove previously compiled classes containing the generated properties:
+
+[,console]
+----
+./gradlew clean build
+----
+
+See xref:theWebLayer#commandObjects[Command Objects] for a trait-based alternative to sharing a non-domain superclass with a domain class.
+
+==== 18. RxGORM Runs on RxJava 3
 
 RxGORM, the reactive variant of GORM in `org.apache.grails.data:grails-datamapping-rx`, is built on RxJava 3 instead of RxJava 1.
 Its dependency is now `io.reactivex.rxjava3:rxjava`, and the RxJava 1 artifact `io.reactivex:rxjava` is no longer on the classpath of an application that only uses RxGORM.
@@ -1193,7 +1220,7 @@ A datastore implementation of RxGORM built for Grails 8 or earlier, such as the 
 The `RxEntity` domain model has had no datastore implementation for several releases and its removal is under discussion for Grails 9, so an application that implements `RxEntity` should plan to move to `GormEntity` with the RxJava data services, which work on every GORM datastore. The import and blocking-call changes above apply to both.
 The `rx-mongodb` profile feature is removed, because the `org.grails.plugins:rx-mongodb` plugin it added has had no release since GORM 6.1 and has never been published to Maven Central, so an application generated with it could not resolve its dependencies.
 
-==== 18. RxJava 1 and RxJava 2 Async and Events Modules Are Deprecated
+==== 19. RxJava 1 and RxJava 2 Async and Events Modules Are Deprecated
 
 The RxJava 1 and RxJava 2 implementations of the Grails promise and event bus APIs, `grails-async-rxjava`, `grails-async-rxjava2`, `grails-events-rxjava` and `grails-events-rxjava2`, are deprecated for removal.
 They keep working in Grails 9 and log a warning when their promise factory or event bus is created.

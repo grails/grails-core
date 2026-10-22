@@ -134,7 +134,7 @@ an action annotated `@ResponseBody`, a `CompletableFuture` it returns included. 
 selects the properties `respond` writes through Spring MVC. See
 xref:theWebLayer#springResponses[Returning Spring MVC Responses].
 
-See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 3 to 10 and 12 to 15.
+See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 4 to 11 and 13 to 16.
 
 ==== Hibernate 7 Application Generation
 
