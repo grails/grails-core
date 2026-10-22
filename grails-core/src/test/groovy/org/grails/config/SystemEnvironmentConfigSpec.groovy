@@ -174,6 +174,26 @@ property-with_mixed.symbols: from-yml
         modifiableSystemEnvironment.remove('LATE_BOUND_PROPERTY')
     }
 
+    void 'a variable installed after the config exists is seen once the config is refreshed'() {
+        given: 'a config created before the variable exists'
+        def config = configFor('late.bound.property: from-yml')
+
+        when: 'the variable is installed'
+        modifiableSystemEnvironment.put('LATE_BOUND_PROPERTY', 'from-env')
+
+        then: 'the config keeps the environment it was created with'
+        config.getProperty('late.bound.property') == 'from-yml'
+
+        when: 'the config is refreshed'
+        config.refresh()
+
+        then: 'the variable overrides the configured value'
+        config.getProperty('late.bound.property') == 'from-env'
+
+        cleanup:
+        modifiableSystemEnvironment.remove('LATE_BOUND_PROPERTY')
+    }
+
     private static PropertySourcesConfig configFor(String yaml) {
         def yamlPropertiesSource = new YamlPropertySourceLoader()
                 .load('application.yml', new ByteArrayResource(yaml.bytes, 'test.yml'), null)

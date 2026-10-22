@@ -58,7 +58,7 @@ public abstract class NavigableMapConfig implements Config {
     protected static final Logger LOG = LoggerFactory.getLogger(NavigableMapConfig.class);
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     protected ConfigurableConversionService conversionService = new DefaultConversionService();
-    private final SystemEnvironmentIndex systemEnvironment = new SystemEnvironmentIndex(System.getenv());
+    private volatile SystemEnvironmentIndex systemEnvironment = new SystemEnvironmentIndex(System.getenv());
     protected NavigableMap configMap = new NavigableMap() {
         @Override
         protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, Object newValue) {
@@ -219,6 +219,14 @@ public abstract class NavigableMapConfig implements Config {
             throw new GrailsConfigurationException("Invalid configuration value [$value] for key [${key}]. Possible values $allowedValues");
         }
         return value;
+    }
+
+    /**
+     * Reads the process environment again, so that a variable installed after this config was
+     * created, as a test can do reflectively, is seen by the lookups that follow.
+     */
+    protected void refreshSystemEnvironment() {
+        systemEnvironment = new SystemEnvironmentIndex(System.getenv());
     }
 
     @Override
@@ -396,9 +404,10 @@ public abstract class NavigableMapConfig implements Config {
      * rejected without probing. Only a key whose canonical name is present runs the spelling-by-spelling
      * resolution, which keeps the precedence between spellings as it was.
      * <p>
-     * The environment of a running JVM cannot change, so one snapshot per config instance is exact.
-     * The memory it takes is proportional to the number of environment variables, not to the size of
-     * the configuration or to the number of keys looked up.
+     * The environment of a running JVM cannot change, so one snapshot per config instance is exact;
+     * {@link #refreshSystemEnvironment()} takes a new one for a test that installs variables
+     * reflectively. The memory it takes is proportional to the number of environment variables, not
+     * to the size of the configuration or to the number of keys looked up.
      */
     private static final class SystemEnvironmentIndex {
 
