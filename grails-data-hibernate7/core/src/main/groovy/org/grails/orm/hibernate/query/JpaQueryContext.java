@@ -186,8 +186,7 @@ public class JpaQueryContext implements Cloneable, QueryPathContext {
                 return parent.getFullyQualifiedExpression("root." + path.substring(8));
             }
         }
-        Expression<?> resolved = resolver.resolve(path);
-        return resolved != null ? resolved : selectionAliases.get(path);
+        return resolver.resolve(path);
     }
 
     @Override

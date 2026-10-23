@@ -153,14 +153,13 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
-    void 'getFullyQualifiedExpression returns the projection a sqlProjection alias stands for, while a property of that name stays a property'() {
-        given: "a handler that orders by whatever getFullyQualifiedExpression returns for the alias, and one that records it"
+    void 'an order handler asks the selection alias first and the path second, and a criterion handler asks the path alone'() {
+        given: "an order handler that orders as the built-in order does, and a criterion handler that restricts as eq does"
         saveBoxes()
-        List<Class> resolved = []
+        List<Object> resolvedAsPath = []
         PredicateGenerator.registerOrderHandler(SqlProjectionAliasOrder) { query, root, cb, order, context ->
-            def expression = context.getFullyQualifiedExpression(order.property)
-            resolved << expression?.getClass()
-            cb.desc(expression)
+            resolvedAsPath << context.getFullyQualifiedExpression(order.property)
+            cb.desc(context.getSelectionAlias(order.property) ?: context.getFullyQualifiedExpression(order.property))
         }
 
         when: "the alias names no property"
@@ -171,23 +170,38 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
             order(new SqlProjectionAliasOrder('scaled'))
         }
 
-        then: "the order uses the projected expression, as it does through getSelectionAlias"
+        then: "the path does not resolve it, the selection alias does, and the rows come in descending order of the projection"
+        resolvedAsPath == [null]
         rows == rows.sort(false).reverse()
-        resolved.every { it != null }
         sqlCapture.statements.any { it.contains('select width * 10 from') && it.contains('order by 1 desc') }
 
-        when: "the alias is the name of a property: the property wins, since a restriction on it must still restrict the property"
-        resolved.clear()
+        when: "the alias is the name of a property"
+        resolvedAsPath.clear()
+        sqlCapture.statements.clear()
         SqlProjectionBox.createCriteria().list {
             projections {
-                sqlProjection 'width * 10 as width', 'width', INTEGER
+                sqlProjection 'width * 10 as height', 'height', INTEGER
             }
-            order(new SqlProjectionAliasOrder('width'))
+            order(new SqlProjectionAliasOrder('height'))
         }
 
-        then:
-        resolved.size() == 1
-        sqlCapture.statements.last().contains('order by')
+        then: "the path resolves the property, and the handler still orders by the projection, as order(alias) does"
+        resolvedAsPath.size() == 1
+        resolvedAsPath[0] != null
+        sqlCapture.statements.any { it.contains('order by 1 desc') }
+
+        when: "a restriction on that name goes through the path"
+        sqlCapture.statements.clear()
+        List restricted = SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as height', 'height', INTEGER
+            }
+            eq('height', 9)
+        }
+
+        then: "it restricts the property, not the projection, as in SQL"
+        restricted.size() == 2
+        sqlCapture.statements.any { it.contains('.height=?') }
 
         cleanup:
         PredicateGenerator.clearCustomOrderHandlers()

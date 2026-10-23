@@ -45,16 +45,25 @@ public interface QueryPathContext {
     Path<?> getFullyQualifiedPath(String path);
 
     /**
-     * @param path a property path, or the alias of a projection
-     * @return the expression for it: a path, or, when no property resolves, the projected expression the alias of a
-     *     {@code sqlProjection} stands for. A property takes precedence over an alias of the same name, since a
-     *     restriction on that property must still restrict the property; {@link #getSelectionAlias(String)} asks for
-     *     the alias alone
+     * Resolves a path the way the built-in criteria resolve the property of a restriction, so a restriction on
+     * {@code height} restricts the property whatever a projection is called.
+     *
+     * @param path a property path, or an alias that the translator registers for an association or a projection of
+     *     the query's own, such as a function
+     * @return the expression for it: a path, or the expression such an alias stands for; {@code null} when nothing
+     *     resolves. The column alias of a {@code sqlProjection} or {@code sqlGroupProjection} is not resolved here,
+     *     as SQL scopes a select alias to the order by and never to the where: ask {@link #getSelectionAlias(String)}
+     *     for it
      */
     Expression<?> getFullyQualifiedExpression(String path);
 
     /**
-     * @param alias the column alias of a {@code sqlProjection} of the query
+     * Returns the projection a column alias stands for, which is what the built-in {@code order(alias)} sorts by: an
+     * order handler that sorts by a column alias checks this first and {@link #getFullyQualifiedExpression(String)}
+     * second, and so orders by the projection when an alias and a property have the same name, as {@code order(alias)}
+     * does.
+     *
+     * @param alias the column alias of a {@code sqlProjection} or {@code sqlGroupProjection} of the query
      * @return the projected expression recorded under that alias, so that a handler can order by it, or {@code null}
      *     when no projection of the query carries the alias
      */
