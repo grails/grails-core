@@ -248,6 +248,11 @@ public class JpaCriteriaQueryCreator<T> {
 
     @SuppressWarnings("unchecked")
     private void assignOrderBy(CriteriaQuery<?> cq, JpaQueryContext context) {
+        if (isCountOnly()) {
+            // a count returns one row whatever the order, and an ORDER BY on a column that is not aggregated fails
+            // on H2 and most other databases, so a count query leaves the criteria's orders out
+            return;
+        }
         List<Query.Order> orders = detachedCriteria.getOrders();
         if (!orders.isEmpty()) {
             var jpaOrders = orders.stream()
@@ -270,6 +275,51 @@ public class JpaCriteriaQueryCreator<T> {
                     .toArray(jakarta.persistence.criteria.Order[]::new);
             cq.orderBy(jpaOrders);
         }
+    }
+
+    /**
+     * Whether the query selects nothing but counts, as {@code count()} and {@code countDistinct()} do: such a query
+     * has one row, so the criteria's orders do not apply to it. A query that groups and counts keeps its orders.
+     */
+    private boolean isCountOnly() {
+        List<Query.Projection> projectionList = projections.getProjectionList();
+        return !projectionList.isEmpty() && projectionList.stream()
+                .allMatch(projection -> projection instanceof Query.CountProjection ||
+                        projection instanceof Query.CountDistinctProjection);
+    }
+
+    private void discoverAliases(List<Query.Criterion> criteria, JpaQueryContext context) {
+        if (criteria == null) return;
+        for (Query.Criterion criterion : criteria) {
+            if (criterion instanceof HibernateAlias ha) {
+                // If the alias is already defined in parent and materialized, just link it
+                if (!context.hasAlias(ha.alias())) {
+                    context.registerAlias(ha.alias(), ha);
+                }
+            } else if (criterion instanceof DetachedAssociationCriteria<?> dac) {
+                if (dac.getAlias() != null) {
+                    context.registerAlias(dac.getAlias(), new HibernateAlias(dac.getAssociationPath(), dac.getAlias()));
+                }
+                discoverAliases(dac.getCriteria(), context);
+            } else if (criterion instanceof Query.PropertyNameCriterion pnc) {
+                String propertyName = pnc.getProperty();
+                if (propertyName.contains(".")) {
+                    String alias = propertyName.substring(0, propertyName.indexOf("."));
+                    // Only register if not already known in this or parent context
+                    if (!context.hasAlias(alias)) {
+                        context.registerAlias(alias, new HibernateAlias(alias, alias));
+                    }
+                }
+            } else if (criterion instanceof Query.Junction junction) {
+                discoverAliases(junction.getCriteria(), context);
+            }
+        }
+    }
+
+    private void registerDetachedJoins(JpaQueryContext context) {
+        detachedCriteria.getJoinTypes().forEach((path, joinType) ->
+                context.registerAlias(path, new HibernateAlias(path, path, joinType))
+        );
     }
 
     private void assignCriteria(
