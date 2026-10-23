@@ -198,7 +198,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 mergeMaps(rootMap, newPath , subMap, (Map) sourceValue, parseFlatKeys)
                 newValue = subMap
             } else {
-                newValue = sourceValue
+                newValue = mergedValue(sourceValue)
             }
             if (isNestedSet && newValue == null) {
                 if (path) {
@@ -222,6 +222,15 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 mergeMapEntry(targetMap, sourceKey, newValue)
             }
         }
+    }
+
+    /**
+     * The value a merge stores for an entry that is not a map, in the nested entry and in the flat key
+     * alike. A config resolves placeholders here, so that a value such as {@code ${random.uuid}} is
+     * resolved once and both representations hold the same result.
+     */
+    protected Object mergedValue(Object value) {
+        value
     }
 
     protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, newValue) {

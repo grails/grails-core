@@ -62,11 +62,11 @@ public abstract class NavigableMapConfig implements Config {
     private volatile SystemEnvironmentIndex systemEnvironment = new SystemEnvironmentIndex(System.getenv());
     protected NavigableMap configMap = new NavigableMap() {
         @Override
-        protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, Object newValue) {
-            if (newValue instanceof CharSequence) {
-                newValue = resolvePlaceholders(newValue.toString());
+        protected Object mergedValue(Object value) {
+            if (value instanceof CharSequence) {
+                return resolvePlaceholders(value.toString());
             }
-            return super.mergeMapEntry(targetMap, sourceKey, newValue);
+            return value;
         }
     };
 

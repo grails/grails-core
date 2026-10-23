@@ -21,6 +21,7 @@ package org.grails.config
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+import org.springframework.core.env.PropertySource
 import org.springframework.core.io.ByteArrayResource
 import spock.lang.Ignore
 import spock.lang.Issue
@@ -103,6 +104,24 @@ class PropertySourcesConfigSpec extends Specification {
       test pass.
 
      */
+    private static class ChangingPropertySource extends PropertySource<Object> {
+
+        int reads
+
+        ChangingPropertySource() {
+            super('changing', new Object())
+        }
+
+        @Override
+        Object getProperty(String name) {
+            name == 'counter' ? "value-${++reads}".toString() : null
+        }
+
+        int readCount() {
+            reads
+        }
+    }
+
     @Ignore("Cannot set property 'bar' on null object")
     @Issue('apache/grails-core#10188')
     void 'test replacing nested property values'() {
@@ -241,6 +260,25 @@ hello:
         config.getProperty('hello.evaluatedName') == 'Hello, world'
         config['hello.evaluatedName'] == 'Hello, world'
         config.hello.evaluatedName == 'Hello, world'
+    }
+
+    void 'a placeholder in a merged value is resolved once for both representations'() {
+        given: "a property source whose value changes on every read, as random.uuid does"
+        def changing = new ChangingPropertySource()
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(changing)
+        def config = new PropertySourcesConfig(propertySources)
+
+        when: "a value with a placeholder is merged"
+        config.merge([auth: [secret: '${counter}']])
+
+        then: "the flat key and the nested entry hold the same resolved value"
+        config.getProperty('auth.secret') == 'value-1'
+        config.getProperty('auth', Map).secret == 'value-1'
+        config['auth.secret'] == 'value-1'
+
+        and: "the placeholder was resolved once"
+        changing.readCount() == 1
     }
 
     void 'a dotted key that runs past a value that is not a map is absent'() {
