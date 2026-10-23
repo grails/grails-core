@@ -394,4 +394,9 @@ class SqlTextSpec extends Specification {
         SqlText.of('[total', TRANSACT_SQL).unquoted() == '[total'
         SqlText.of('[total]', SQL).unquoted() == '[total]'
     }
+
+    void "a string in single quotes is a literal, not an identifier, in every SQL syntax"() {
+        expect:
+        NATIVE.every { SqlText.of("'total'", it).unquoted() == "'total'" }
+    }
 }

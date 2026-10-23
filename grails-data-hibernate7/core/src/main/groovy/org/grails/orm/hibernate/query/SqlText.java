@@ -183,7 +183,7 @@ final class SqlText {
     String withoutTrailingAlias(String alias) {
         int end = endOfContent();
         int aliasStart = startOfTrailingIdentifier(end);
-        if (aliasStart < 0 || !alias.equalsIgnoreCase(unquoted(aliasStart, end))) {
+        if (aliasStart < 0 || !alias.equalsIgnoreCase(unquoted(aliasStart, end, true))) {
             return text;
         }
         int asEnd = startOfSeparator(aliasStart);
@@ -207,14 +207,18 @@ final class SqlText {
 
     /**
      * Returns the text without the quotes that make all of it one identifier, in which a doubled closing quote
-     * stands for the quote; or the text as it is when it is not one quoted identifier, a string literal included.
+     * stands for the quote; or the text as it is when it is not one quoted identifier, a string literal included,
+     * whatever the syntax: only the alias after an {@code as} may be written as a string.
      */
     String unquoted() {
-        return unquoted(0, text.length());
+        return unquoted(0, text.length(), false);
     }
 
-    /** Returns the text between {@code start} and {@code end} without the quotes that make all of it one identifier. */
-    private String unquoted(int start, int end) {
+    /**
+     * Returns the text between {@code start} and {@code end} without the quotes that make all of it one identifier;
+     * a string in single quotes is one only for an alias, in the syntaxes that allow it.
+     */
+    private String unquoted(int start, int end, boolean alias) {
         if (end - start < 2 || kind[start] != QUOTED || unitEnd(start) != end) {
             return text.substring(start, end);
         }
@@ -222,7 +226,7 @@ final class SqlText {
         char closing = opening == '[' ? ']' : opening;
         boolean identifier = opening == '"' || opening == '`' ||
                 (opening == '[' && syntax.has(SqlSyntax.Feature.BRACKET_IDENTIFIERS)) ||
-                (opening == '\'' && syntax.has(SqlSyntax.Feature.STRING_ALIASES));
+                (alias && opening == '\'' && syntax.has(SqlSyntax.Feature.STRING_ALIASES));
         if (!identifier || text.charAt(end - 1) != closing) {
             return text.substring(start, end);
         }
