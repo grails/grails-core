@@ -19,6 +19,8 @@
 package org.grails.orm.hibernate.proxy
 
 import groovy.transform.CompileStatic
+import groovy.transform.RecordOptions
+import groovy.transform.TupleConstructor
 import org.codehaus.groovy.runtime.HandleMetaClass
 import org.codehaus.groovy.runtime.InvokerHelper
 
@@ -126,6 +128,10 @@ class GroovyProxyInterceptorLogic {
         return null
     }
 
+    // CodeNarc reads the components of an annotated nested record as fields and reports their indentation
+    @SuppressWarnings('Indentation')
+    @RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+    @TupleConstructor(defaults = false, namedVariant = false)
     record InterceptorState(String entityName, Class<?> persistentClass, Object identifier, boolean lazyToString) {
 
         InterceptorState(String entityName, Class<?> persistentClass, Object identifier) {

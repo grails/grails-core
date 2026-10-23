@@ -20,6 +20,8 @@ package liquibase.ext.hibernate.snapshot
 
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import groovy.transform.RecordOptions
+import groovy.transform.TupleConstructor
 import liquibase.Scope
 import org.hibernate.boot.model.naming.Identifier
 import org.hibernate.boot.model.relational.QualifiedName
@@ -63,6 +65,10 @@ final class IdentifierGeneratorSupport {
         return identifier == null ? null : identifier.getCanonicalName()
     }
 
+    // CodeNarc reads the components of an annotated nested record as fields and reports their indentation
+    @SuppressWarnings('Indentation')
+    @RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+    @TupleConstructor(defaults = false, namedVariant = false)
     record SequenceKey(String catalog, String schema, String name) {
     }
 
