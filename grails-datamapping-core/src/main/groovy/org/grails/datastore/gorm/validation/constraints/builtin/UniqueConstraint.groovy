@@ -89,7 +89,8 @@ class UniqueConstraint extends AbstractConstraint {
         if (constraintParameter instanceof Map) {
             Map options = (Map) constraintParameter
             Object groupOption = options.get(GROUP)
-            boolean knownKeys = options.keySet().every { it == GROUP || it == NULLS }
+            // an empty map is falsy, so the constraint would validate nothing without a word
+            boolean knownKeys = !options.isEmpty() && options.keySet().every { it == GROUP || it == NULLS }
             boolean validGroup = groupOption == null || groupOption instanceof Iterable || groupOption instanceof CharSequence
             if (!knownKeys || !validGroup) {
                 throw new IllegalArgumentException("The unique constraint of [${constraintOwningClass.name}.${constraintPropertyName}] takes a map with a '${GROUP}' (a property name or a list of them) and a '${NULLS}' option, not ${options}")

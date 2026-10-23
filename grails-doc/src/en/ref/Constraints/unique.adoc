@@ -85,23 +85,36 @@ A property of the key can be `null`: a `country` that is optional in `language u
 |In the group, leaves its property out of the lookup, so it matches every row: `('en', null)` conflicts with `('en', 'US')`. A `null` constrained property is not checked.
 |===
 
-With rows `('en', 'US')` and `('en', null)`, a new `('en', null)` is a duplicate under `value` and `wildcard` and is valid under `skip`; a new `(null, 'US')` is a duplicate only under `value`.
+With the rows `('en', 'US')`, `('en', null)`, `(null, 'US')` and `(null, null)`, a new `('en', null)` is a duplicate under `value` and `wildcard` and is valid under `skip`; a new `(null, 'US')` is a duplicate only under `value`, where it matches the stored `(null, 'US')`.
 
-The unique index Hibernate creates for the group treats `null` values as follows, which is what `database` reads:
+The unique index Hibernate creates for the group treats `null` values as follows, which is what `database` reads. The two Hibernate versions render the index differently for SQL Server, so the table says which version each row describes:
 
-[cols="2,1,3"]
+[cols="2,1,1,3"]
 |===
-|Database |Reading |Why
+|Database |Hibernate |Reading |Why
 
 |H2, PostgreSQL, MySQL, MariaDB
+|5 and 7
 |`skip`
 |`null` values are distinct in a unique index.
 
-|SQL Server, DB2
+|SQL Server
+|7
 |`skip`
-|Hibernate creates the index over nullable columns as a filtered unique index that leaves the rows with a `null` out.
+|Hibernate 7 creates the index over nullable columns as a filtered unique index that leaves the rows with a `null` out.
+
+|DB2
+|5 and 7
+|`skip`
+|The index is created with `exclude null keys` (`DB2UniqueDelegate` in Hibernate 5, a filtered index in Hibernate 7), which leaves the rows with a `null` out.
+
+|SQL Server, Sybase
+|5
+|`value`
+|Hibernate 5 has no filtered-index delegate, so these dialects get a plain unique constraint, which compares `null` values: `('en', null)` twice is a violation.
 
 |Oracle
+|5 and 7
 |`value`
 |A row with a `null` in some of the key columns is indexed, and its other columns are compared, so `('en', null)` twice is a violation.
 |===

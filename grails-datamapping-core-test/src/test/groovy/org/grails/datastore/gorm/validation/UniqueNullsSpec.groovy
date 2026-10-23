@@ -195,6 +195,7 @@ class UniqueNullsSpec extends Specification {
         [nulls: 'sometimes']                    || "'sometimes'"
         [group: 'country', null: 'skip']        || "takes a map with a 'group'"
         [group: 7]                              || "takes a map with a 'group'"
+        [:]                                     || "takes a map with a 'group'"
     }
 
     private static final List<List> PROBES = [['en', 'US'], ['en', null], ['en', 'FR'], [null, 'US'], [null, null], ['fr', null]]
