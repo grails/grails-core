@@ -118,10 +118,10 @@ ext {
             // Not managed by spring-boot-dependencies. springdoc 3.x is the Spring Boot 4 /
             // Spring Framework 7 line; the grails-openapi module compiles against its
             // OpenApiCustomizer SPI and apps add the webmvc-ui starter for Swagger UI.
-            'springdoc-openapi.version'     : '3.1.0',
-            // Not managed by spring-boot-dependencies. Kept at the version springdoc-openapi
+            'springdoc-openapi.version'     : '3.1.1',
+            // Not managed by spring-boot-dependencies. Kept at the version springdoc-openapi 3.1.1
             // resolves, which grails-openapi compiles against without requiring springdoc.
-            'swagger.version'               : '2.2.52',
+            'swagger.version'               : '2.2.55',
             'starter-sitemesh.version'      : '3.3.0',
             'spring-webmvc-sitemesh.version': '3.3.0',
             // Spring Boot 4 no longer manages spring-retry; pin it here so the
@@ -132,9 +132,9 @@ ext {
             // removed its Undertow support before GA. Servlet 6.1 support ships as
             // undertow-core 2.4.x plus the io.undertow.ee servlet/websockets artifacts,
             // consumed by the vendored grails-undertow-spring-boot module.
-            'undertow.version'              : '2.4.3.Final',
-            'undertow-servlet.version'      : '2.0.2.Final',
-            'undertow-websockets.version'   : '2.0.2.Final',
+            'undertow.version'              : '2.4.4.Final',
+            'undertow-servlet.version'      : '2.0.3.Final',
+            'undertow-websockets.version'   : '2.0.3.Final',
     ]
 
     // Note: the name of the dependency must be the prefix of the property name so properties in the pom are resolved correctly
@@ -259,8 +259,12 @@ ext {
             'gradle-groovy.version',
     ]
     bomRedundantVersionExemptions = [
-            // Kept equal to Spring Boot's on purpose - see graphql-java.version
+            // Drift tripwire for extended-scalars compatibility on later Boot graphql-java bumps,
+            // not an equal-version upgrade of extended-scalars - see graphql-java.version.
             'graphql-java.version',
+            // The Hibernate 7 BOM strictly re-declares the version so enforcedPlatform consumers are
+            // forced to it, so the pin stays even when it matches the version Spring Boot manages.
+            'hibernate.version',
     ]
 
     // Defaults for per-BOM overrides; populated in the if/else blocks below
@@ -274,7 +278,7 @@ ext {
     if (project.name in ['grails-bom', 'grails-hibernate5-bom'] || project.name.startsWith('grails-data-hibernate5')) {
         customBomVersions = [
                 'liquibase-hibernate.version': '4.27.0',
-                'liquibase.version'          : '4.27.0',
+                'liquibase.version'          : '4.27.0', // liquibase-hibernate5 stops at 4.27.0, and Spring Boot's Liquibase 5.0.4 is a new major.
                 'hibernate.version'          : '5.6.15.Final',
         ]
         combinedVersions += customBomVersions
@@ -317,13 +321,15 @@ ext {
                 'cache-ri-impl.version'         : '1.1.1',
                 'derby.version'                 : '10.17.1.0',
                 // Spring Boot 4.2 can select Hibernate ORM 7.4.x through Spring Dependency
-                // Management, and Hibernate ORM 7.4.x requires hibernate-models 1.1.x.
+                // Management, and Hibernate ORM 7.4.x requires hibernate-models 1.1.x. This BOM
+                // strictly re-declares the version so enforcedPlatform consumers are forced to it; a
+                // platform() import is not enforced.
                 'hibernate-models.version'      : '1.1.2',
                 'hibernate-tools.version'       : '7.3.13.Final',
-                'hibernate.version'             : '7.4.10.Final',
+                'hibernate.version'             : '7.4.13.Final',
                 'jandex.version'                : '3.6.0',
                 'liquibase-test-harness.version': '1.0.11',
-                'liquibase.version'             : '4.27.0',
+                'liquibase.version'             : '4.27.0', // liquibase-hibernate5 stops at 4.27.0, and Spring Boot's Liquibase 5.0.4 is a new major.
                 'mockito-inline.version'        : '5.2.0',
         ]
         combinedVersions += customBomVersions

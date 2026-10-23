@@ -136,7 +136,7 @@ an action annotated `@ResponseBody`, a `CompletableFuture` it returns included. 
 selects the properties `respond` writes through Spring MVC. See
 xref:theWebLayer#springResponses[Returning Spring MVC Responses].
 
-See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 3 to 10 and 12 to 15.
+See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 4 to 11 and 13 to 16.
 
 ==== Hibernate 7 Application Generation
 
@@ -177,6 +177,33 @@ A controller action can return a Reactive Streams `Publisher`, such as a Reactor
 Items are rendered as text or JSON, or through a `StreamItemRenderer` bean for a type of its own, which is how `grails-spring-ai` streams the chat responses of a model.
 Such an action streams instead of rendering its view as it did before; set `grails.async.streaming.enabled` to `false` to keep the previous behaviour. A publisher that emits at most one item, such as a Reactor `Mono`, is not streamed but resolved, its value being the action's result as a returned `Promise`'s value is. See xref:upgrading#upgrading81x[the upgrade guide].
 See xref:async#asyncStreaming[Streaming Responses].
+
+==== RxJava Data Services on RxJava 3
+
+`grails-datamapping-rx` is built on RxJava 3 instead of the unmaintained RxJava 1, so a GORM data service
+method can declare `io.reactivex.rxjava3.core.Observable` or `io.reactivex.rxjava3.core.Single` and GORM
+implements it over any GORM datastore. The `RxEntity` reactive domain model in the same module is also
+ported, but still has no datastore implementation behind it and is proposed for removal in 9.0; see the
+xref:upgrading#upgrading90x[upgrade guide] for the import and blocking-call changes an application that
+uses either needs. See <<rxjava,RxJava Support>>.
+
+==== RxJava 1 and RxJava 2 Modules Deprecated
+
+The RxJava 1 and RxJava 2 implementations of the Grails promise and event bus APIs, `grails-async-rxjava`,
+`grails-async-rxjava2`, `grails-events-rxjava` and `grails-events-rxjava2`, are deprecated for removal
+since Grails 9.0. Both RxJava versions are no longer maintained. The implementations keep working, and they
+log a warning when their promise factory or event bus is created. The RxJava 3 implementations,
+`grails-async-rxjava3` and `grails-events-rxjava3`, remain supported and are the replacements:
+
+[source,groovy]
+.build.gradle
+----
+runtimeOnly 'org.apache.grails.async:grails-async-rxjava3'
+runtimeOnly 'org.apache.grails.events:grails-events-rxjava3'
+----
+
+The `Promise` and `EventBus` APIs an application uses are the same, so an application that only uses the
+Grails APIs needs no code change. See <<asyncPromises,Promises>> and <<events,Events>>.
 
 ==== Plugin Beans Register Before Spring Boot Auto-Configuration
 
@@ -567,7 +594,7 @@ generated it. See the xref:security[Security] section of the user guide.
 
 ==== Agent Skills Published with Grails
 
-Grails now publishes its app-facing https://agentskills.io[Agent Skills] with every release: `org.apache.grails.skills:grails-developer`, for building Grails applications, and `org.apache.grails.skills:grails-8-upgrade`, for upgrading an application from Grails 7. The jars use the https://www.skillsjars.com[SkillsJars] layout and the Grails BOM manages them, so an application applies the SkillsJars Gradle plugin, declares the skills without a version, and runs `./gradlew extractSkillsJars` to write the skills for its Grails version to the directory its AI coding agent reads. See xref:gettingStarted#agentSkills[Agent Skills].
+Grails now publishes its app-facing https://agentskills.io[Agent Skills] with every release: `org.apache.grails.skills:grails-developer`, for building Grails applications, `org.apache.grails.skills:grails-8-upgrade`, for upgrading an application from Grails 7, and `org.apache.grails.skills:grails-9-upgrade`, for upgrading an application from Grails 8. The jars use the https://www.skillsjars.com[SkillsJars] layout and the Grails BOM manages them, so an application applies the SkillsJars Gradle plugin, declares the skills without a version, and runs `./gradlew extractSkillsJars` to write the skills for its Grails version to the directory its AI coding agent reads. See xref:gettingStarted#agentSkills[Agent Skills].
 
 ==== Test HTTP Client Form Requests
 
