@@ -320,6 +320,25 @@ hello:
         config.getProperty('a.b.d', Integer) == 2
     }
 
+    void 'setting a nested property to null leaves its siblings readable'() {
+        given: "two blocks under one parent"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.b.c': 1, 'a.e.f': 3])
+
+        when: "one of them is set to null"
+        config.a.e = null
+
+        then: "it is gone through every read"
+        config.getProperty('a.e', Map) == null
+        !config.containsProperty('a.e.f')
+        config.getProperty('a', Map) == [b: [c: 1]]
+
+        and: "its sibling is still there through every read"
+        config['a.b.c'] == 1
+        config.getProperty('a.b.c', Integer) == 1
+        config.getProperty('a.b', Map) == [c: 1]
+    }
+
     void 'a dotted key that runs past a value that is not a map is absent'() {
         given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
         def constraints = { nullable true }

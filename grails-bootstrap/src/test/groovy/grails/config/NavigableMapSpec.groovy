@@ -289,6 +289,44 @@ class NavigableMapSpec extends Specification {
         output.navigate('x', 'a') == [b: 'new']
     }
 
+    def "setting a nested property to null removes its flat keys and no others"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.b.c': 1, 'a.e.f': 3, 'a.e.g[0]': 4], true)
+
+        when:
+        output.a.e = null
+
+        then: 'the flat keys of the removed property are gone'
+        !output.containsKey('a.e')
+        !output.containsKey('a.e.f')
+        !output.containsKey('a.e.g')
+        !output.containsKey('a.e.g[0]')
+        output.navigate('a', 'e') == null
+
+        and: 'those of its siblings stay'
+        output['a.b'] == [c: 1]
+        output['a.b.c'] == 1
+        output.navigate('a', 'b', 'c') == 1
+    }
+
+    def "setting a root property to null removes the flat keys below it"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.b.c': 1, 'a.e': 2, 'x.y': 3], true)
+
+        when:
+        output.a = null
+
+        then:
+        !output.containsKey('a')
+        !output.containsKey('a.b')
+        !output.containsKey('a.b.c')
+        !output.containsKey('a.e')
+        output['x.y'] == 3
+        output.navigate('x', 'y') == 3
+    }
+
     def "a merge into a clone of an empty map leaves the original empty"() {
         given:
         NavigableMap original = new NavigableMap()

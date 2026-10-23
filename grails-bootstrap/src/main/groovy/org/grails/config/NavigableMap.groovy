@@ -229,18 +229,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 newValue = mergedValue(sourceValue)
             }
             if (isNestedSet && newValue == null) {
-                if (path) {
-
-                    def subMap = rootMap.get(path)
-                    if (subMap instanceof Map) {
-                        subMap.remove(sourceKey)
-                    }
-                    def keysToRemove = rootMap.keySet().findAll() { String key ->
-                        key.startsWith("${path}.")
-                    }
-                    for (key in keysToRemove) {
-                        rootMap.remove(key)
-                    }
+                // the flat key of the removed property, those below it and its indexed aliases go with it;
+                // the flat keys of its siblings stay
+                String removedKey = path ? "${path}.${sourceKey}".toString() : sourceKey
+                List<String> keysToRemove = rootMap.keySet().findAll { String key ->
+                    key == removedKey || key.startsWith(removedKey + '.') || key.startsWith(removedKey + '[')
+                } as List<String>
+                for (String key in keysToRemove) {
+                    rootMap.remove(key)
                 }
                 targetMap.remove(sourceKey)
             } else {
