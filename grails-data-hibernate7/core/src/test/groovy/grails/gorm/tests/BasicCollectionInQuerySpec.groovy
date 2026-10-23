@@ -124,7 +124,7 @@ class BasicCollectionInQuerySpec extends Specification {
         results.unique().sort() == ['dave@test.com', 'eve@test.com', 'frank@test.com']
     }
 
-    def "in query on #restrictedPath preserves an explicitly requested basic collection join"() {
+    def "in query on #restrictedPath returns each matching student once with a basic collection alias"() {
         given:
         def s1 = new BcStudent(name: "Grace", email: "grace@test.com")
         s1.addToSchools("Yale")
@@ -148,12 +148,12 @@ class BasicCollectionInQuerySpec extends Specification {
             }
         }
 
-        then: "collection membership leaves the alias independent, while an alias restriction filters its elements"
+        then: "an unused alias does not multiply collection membership results"
         results.sort() == expectedEmails
 
         where:
         restrictedPath | expectedEmails
-        'schools'      | ['grace@test.com', 'grace@test.com', 'hank@test.com']
+        'schools'      | ['grace@test.com', 'hank@test.com']
         'sch'          | ['grace@test.com', 'hank@test.com']
     }
 }

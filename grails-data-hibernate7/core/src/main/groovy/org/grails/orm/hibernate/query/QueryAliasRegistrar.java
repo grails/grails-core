@@ -27,6 +27,7 @@ import jakarta.persistence.criteria.Root;
 import grails.gorm.DetachedCriteria;
 import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria;
 import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.model.types.Basic;
 import org.grails.datastore.mapping.query.Query;
 
 /**
@@ -55,11 +56,11 @@ final class QueryAliasRegistrar {
 
     /**
      * Creates the context a query or subquery is built against, registers every alias the criteria declare,
-     * and materializes explicitly requested joins even when no expression references their aliases.
+     * and materializes explicitly requested entity association joins even when no expression references their aliases.
      *
      * @param parent the context of the enclosing query, or {@code null} for a top level query
      * @param root the root of the query
-     * @return the context, with its aliases registered and explicit joins materialized
+     * @return the context, with its aliases registered and explicit entity association joins materialized
      */
     JpaQueryContext createContext(JpaQueryContext parent, Root<?> root) {
         List<HibernateAlias> aliases = explicitAliases();
@@ -67,7 +68,9 @@ final class QueryAliasRegistrar {
         registerDetachedJoins(context);
         discover(detachedCriteria.getCriteria(), context);
         for (HibernateAlias alias : aliases) {
-            context.getFullyQualifiedExpression(alias.alias());
+            if (!(detachedCriteria.getPersistentEntity().getPropertyByName(alias.path()) instanceof Basic)) {
+                context.getFullyQualifiedExpression(alias.alias());
+            }
         }
         return context;
     }
