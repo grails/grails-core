@@ -31,13 +31,15 @@ import org.gradle.api.Action
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.file.FileTree
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.LocalState
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
@@ -46,16 +48,30 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 
+import grails.util.Environment
+import org.grails.gradle.plugin.views.ViewCompileDestination
+import org.grails.gradle.plugin.views.ViewCompileEnvironment
 import org.grails.gradle.plugin.views.ViewCompileOptions
 
 /**
  * Abstract Gradle task for compiling templates, using GroovyPageForkedCompiler
  * This Task is a Forked Java Task that is configurable with fork options provided
  * by {@link ViewCompileOptions}
+ *
+ * <p>Cacheable. What a page compiles to depends on the Groovy that compiles it and the classes it
+ * is compiled against, which {@code AbstractCompile} declares as the classpath input, on the Java it
+ * is compiled for, and on the Grails environment whose configuration it is compiled with, which is
+ * {@link #getGrailsEnvironment()}.</p>
+ *
+ * <p>Compiles every page, from an empty destination, each time it runs; see
+ * {@link ViewCompileDestination}. The compiler's own economy, of leaving a page alone whose class is
+ * newer than its source, would otherwise carry pages of another environment, classpath or
+ * configuration, or pages that no longer exist, into the archive and the build cache.</p>
  *
  * @author David Estes
  * @since 4.0
@@ -72,8 +88,13 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
     @PathSensitive(PathSensitivity.RELATIVE)
     final ConfigurableFileCollection grailsConfigurationPaths
 
-    @InputDirectory
-    @PathSensitive(PathSensitivity.RELATIVE)
+    /**
+     * The directory of the pages, which the compiler names them under and finds them by. Internal
+     * rather than an input directory, which has to exist, where a project without
+     * {@code src/main/webapp} has none for its webapp pages; the pages beneath it are the input, as
+     * {@link #getAllPages()}.
+     */
+    @Internal
     final DirectoryProperty srcDir
 
     @Nested
@@ -86,8 +107,33 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
     @Optional
     final Property<String> serverpath
 
+    /**
+     * The Grails environment the pages are compiled for, by name.
+     *
+     * <p>A page is compiled against the configuration of one environment: the forked compiler merges
+     * that environment's block of {@code application.yml} and {@code application.groovy} over the rest
+     * before it reads the codecs and the other settings a page carries once compiled. The environment
+     * is therefore part of what the pages are, and part of the cache key, so pages compiled for one
+     * environment are not restored into a build for another.</p>
+     *
+     * <p>Defaults as {@link ViewCompileEnvironment#defaultFor} says: to an environment the fork
+     * options of {@link #getCompileOptions()} already name, else to the one the build runs with, else
+     * to {@code development}. Read as {@link #getStatedEnvironment()}, which is the input.</p>
+     *
+     * @since 7.0.18
+     */
+    @Internal
+    final Property<String> grailsEnvironment
+
     private ExecOperations execOperations
 
+    /** The build directory, which {@link #getDestinationDirectory()} has to be within. */
+    private final DirectoryProperty buildDirectory
+
+    /**
+     * Where the pages are compiled to. Emptied before each compilation, so a directory of the task's
+     * own, within the build directory; see {@link ViewCompileDestination}.
+     */
     @OutputDirectory
     final DirectoryProperty destinationDirectory
 
@@ -98,18 +144,57 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
         srcDir = objectFactory.directoryProperty()
         compileOptions = objectFactory.newInstance(ViewCompileOptions)
         serverpath = objectFactory.property(String)
+        grailsEnvironment = objectFactory.property(String).convention(ViewCompileEnvironment.defaultFor(project.providers, compileOptions))
+        // the input is what the compiler gets: a change to it once the input is read would be compiled but not keyed
+        grailsEnvironment.finalizeValueOnRead()
         grailsConfigurationPaths = objectFactory.fileCollection()
         grailsConfigurationPaths.from(
                 project.layout.projectDirectory.file('grails-app/conf/application.yml'),
                 project.layout.projectDirectory.file('grails-app/conf/application.groovy')
         )
-        destinationDirectory = objectFactory.directoryProperty().convention(project.layout.buildDirectory.dir('gsp-classes/main'))
+        buildDirectory = project.layout.buildDirectory
+        destinationDirectory = objectFactory.directoryProperty().convention(buildDirectory.dir('gsp-classes/main'))
+    }
+
+    /**
+     * The environment stated to the forked compiler, as the {@code grails.env} system property in
+     * place of any the fork options name, so that nothing the compiler inherits decides:
+     * {@link #getGrailsEnvironment()} by the environment's full name, which is what the pages are
+     * compiled for and so what the cache key holds. A blank {@code grailsEnvironment} fails the build
+     * here, before anything is compiled or removed.
+     *
+     * @since 7.0.18
+     */
+    @Input
+    String getStatedEnvironment() {
+        ViewCompileEnvironment.forCompiler(grailsEnvironment, path)
+    }
+
+    /** Gradle's file operations, which empty the destination; Gradle supplies them to the task it generates. */
+    @Inject
+    protected FileSystemOperations getFileSystemOperations() {
+        throw new UnsupportedOperationException()
     }
 
     @Override
     @PathSensitive(PathSensitivity.RELATIVE)
     FileTree getSource() {
         return super.getSource()
+    }
+
+    /**
+     * Every page beneath {@link #getSrcDir()}, as the compiler reads them: it finds the pages by the
+     * directory and compiles them all, so a page the task's own filters leave out of
+     * {@link #getSource()} is compiled all the same, and is an input all the same. Fingerprinted by
+     * path under the directory, so a checkout elsewhere reuses what this one compiled.
+     *
+     * @since 7.0.18
+     */
+    @InputFiles
+    @IgnoreEmptyDirectories
+    @PathSensitive(PathSensitivity.RELATIVE)
+    FileTree getAllPages() {
+        srcDir.asFileTree.matching { PatternFilterable pages -> pages.include('**/*.' + fileExtension) }
     }
 
     @Override
@@ -138,6 +223,9 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
     }
 
     protected void compile() {
+        String environment = statedEnvironment
+        logger.info('Compiling the pages for the {} environment', environment)
+        ViewCompileDestination.empty(fileSystemOperations, destinationDirectory.get().asFile, buildDirectory.get().asFile, classpath.files, path)
         ExecResult result = execOperations.javaexec(
                 new Action<JavaExecSpec>() {
                     @Override
@@ -146,12 +234,13 @@ abstract class GroovyPageForkCompileTask extends AbstractCompile {
                         javaExecSpec.mainClass.set(getCompilerName())
                         javaExecSpec.setClasspath(getClasspath())
 
-                        def jvmArgs = compileOptions.forkOptions.jvmArgs
+                        List<String> jvmArgs = ViewCompileEnvironment.withoutStated(compileOptions.forkOptions.jvmArgs)
                         if (jvmArgs) {
                             javaExecSpec.jvmArgs(jvmArgs)
                         }
                         javaExecSpec.setMaxHeapSize(compileOptions.forkOptions.memoryMaximumSize)
                         javaExecSpec.setMinHeapSize(compileOptions.forkOptions.memoryInitialSize)
+                        javaExecSpec.systemProperty(Environment.KEY, environment)
 
                         String configFiles = grailsConfigurationPaths.files.collect { it.canonicalPath }.join(',')
 
