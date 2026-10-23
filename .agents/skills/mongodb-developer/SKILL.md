@@ -50,7 +50,7 @@ There is no single `GrailsDomainBinder`-equivalent class — the responsibility 
 
 - `MongoMappingContext` (`core/.../mongo/config/MongoMappingContext.java`) — owns the private inner `MongoDocumentMappingFactory extends AbstractGormMappingFactory<MongoCollection, MongoAttribute>`, which is the actual binder: forces the `_id` field name, applies the global `stringIdDefaultStoredAs` default, wires codec-registry-backed custom types, and registers all GeoJSON custom types.
 - `MongoCollection` (`core/.../config/MongoCollection.groovy`) — entity-level mapping (collection name, database, `writeConcern`, indices, sort).
-- `MongoAttribute` (`core/.../config/MongoAttribute.groovy`) — property-level mapping (`reference` for DBRef vs. embed, `field`, `geoIndex`, `index`, `indexAttributes`).
+- `MongoAttribute` (`core/.../config/MongoAttribute.groovy`) — property-level mapping (`reference` for DBRef vs. plain identifier, `field`, `geoIndex`, `index`, `indexAttributes`).
 - `MappingBuilder.document { ... }` (`core/.../grails/mongodb/mapping/MappingBuilder.groovy`) — the programmatic DSL entry point.
 
 ### Codec pipeline (the runtime read/write engine)
@@ -66,7 +66,7 @@ There is no single `GrailsDomainBinder`-equivalent class — the responsibility 
 - **Embedded documents & embedded collections** — `Embedded`/`EmbeddedCollection` property kinds, with dedicated in-place `$set`/`$unset` update logic distinct from top-level property updates.
 - **GeoJSON types** — `grails.mongodb.geo.{Point,LineString,Polygon,MultiPoint,MultiLineString,MultiPolygon,GeometryCollection,Box,Circle,Sphere,Shape}`, each with a custom-type marshaller. Query support: `near`, `nearSphere`, `withinCircle`, `withinBox`, `withinPolygon`, `geoWithin`, `geoIntersects`. Legacy `2d`/`2dsphere` indexes via `MongoAttribute.geoIndex(String)`.
 - **TTL indexes** — property-level `indexAttributes: [expireAfterSeconds: N]` materializes a MongoDB TTL index, reconciled in place via `collMod` rather than drop/rebuild (see Pitfalls).
-- **DBRef vs. embedding** — `MongoAttribute.reference` toggles whether a `ToOne`/`ToMany` association is inline-embedded or a `com.mongodb.DBRef`.
+- **DBRef vs. plain identifier** — `MongoAttribute.reference` selects how a `ToOne`/`ToMany` association is stored: `true` writes a `com.mongodb.DBRef`, `false` (the default) writes the associated identifier. It does not embed; embedding is `static embedded = [...]`, a different property kind (see the first bullet). An agent that sets `reference: false` to embed a document will store an id instead.
 - **Schemaless/dynamic attributes** — `DynamicAttributes` trait support baked into `BsonPersistentEntityCodec` and `MongoEntity`.
 - **Change streams** — `MongoExtensions.watch(...)`, a thin Groovy-extension wrapper over the driver's native `watch()`, not a GORM-level abstraction.
 - **Multi-document transactions** — opt-in via `grails.mongodb.transactional`, gated on cluster topology (`REPLICA_SET`/`SHARDED`/`LOAD_BALANCED` supported; `STANDALONE` falls back with a one-time warning).
@@ -81,7 +81,7 @@ There is no single `GrailsDomainBinder`-equivalent class — the responsibility 
 
 The module's own tests use a real MongoDB via Testcontainers; the `embedded` subproject is a runtime feature for applications, not a test fallback. Docker or Podman must be running on the host.
 
-- **`GrailsDataTckSpec<GrailsDataMongoTckManager>`** is the dominant pattern (111+ specs) — the same shared TCK harness the Hibernate modules use (`grails-datamapping-tck`), parameterized with `GrailsDataMongoTckManager` (`core/src/test/groovy/.../GrailsDataMongoTckManager.groovy`), which starts a real `MongoDBContainer` in `setupSpec()`/stops it in `cleanupSpec()`, and drops all non-system databases after each test.
+- **`GrailsDataTckSpec<GrailsDataMongoTckManager>`** is the dominant pattern (111+ specs) — the same shared TCK harness the Hibernate modules use (`grails-datamapping-tck`), parameterized with `GrailsDataMongoTckManager` (`core/src/test/groovy/.../GrailsDataMongoTckManager.groovy`), which starts a real `MongoDBContainer` in `setupSpec()`/stops it in `cleanupSpec()`. Its `destroy()` after each feature deletes the documents of every non-system database but keeps the collections and their indexes, so a later feature in the same fork can inherit an index an earlier one created; a spec that creates an index has to drop it itself.
   ```groovy
   class DocumentMappingSpec extends GrailsDataTckSpec<GrailsDataMongoTckManager> {
       void setupSpec() {
