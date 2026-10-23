@@ -161,6 +161,13 @@ class SqlProjectionHibernate7Spec extends HibernateGormDatastoreSpec {
         constants*.getAt(2) == [3L, 1L]
         constants*.getAt(3) == [false, true]
 
+        and: 'a string in single quotes in the group by clause is a literal, not the alias of the projection'
+        db != 'MySQL' || SqlProjectionDbBox.createCriteria().list {
+            projections {
+                sqlGroupProjection 'sum(height) as total', "'total'", ['total'], [INTEGER]
+            }
+        } == [33]
+
         and: 'a paged list counts the total'
         SqlProjectionDbBox.createCriteria().list(max: 2) {
             projections {
