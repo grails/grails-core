@@ -28,7 +28,6 @@ import org.grails.orm.hibernate.cfg.ColumnConfig
 import org.grails.orm.hibernate.cfg.PropertyConfig
 
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class NumericColumnConstraintsBinder {
 
     private final Dialect dialect

@@ -77,7 +77,7 @@ import javax.sql.DataSource
  *
  * @since 5.0
  */
-@SuppressWarnings(['rawtypes', 'PMD.UseProperClassLoader', 'PMD.DataflowAnomalyAnalysis', 'PMD.CloseResource'])
+@SuppressWarnings('rawtypes')
 @CompileStatic
 class HibernateMappingContextConfiguration extends Configuration
         implements ApplicationContextAware, Serializable {

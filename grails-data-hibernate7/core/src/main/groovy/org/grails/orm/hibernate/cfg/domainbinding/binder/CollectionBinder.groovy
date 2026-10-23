@@ -67,7 +67,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.TableForManyCalculator
  * @since 8.0
  */
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class CollectionBinder {
 
     private static final Logger LOG = LoggerFactory.getLogger(CollectionBinder)
@@ -119,7 +118,7 @@ class CollectionBinder {
                         new ColumnConfigToColumnBinder()))
         this.collectionSecondPassBinder = new CollectionSecondPassBinder(
                 new CollectionKeyColumnUpdater(new CollectionKeyBinder(
-                        new BidirectionalOneToManyLinker(grailsPropertyResolver),
+                        new BidirectionalOneToManyLinker(grailsPropertyResolver, compositeIdentifierToManyToOneBinder),
                         new DependentKeyValueBinder(simpleValueBinder, compositeIdentifierToManyToOneBinder),
                         simpleValueColumnBinder,
                         new PrimaryKeyValueCreator(metadataBuildingContext))),

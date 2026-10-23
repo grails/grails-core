@@ -56,10 +56,8 @@ import javax.sql.DataSource
 /**
  * Constructs {@link SessionFactory} instances from a {@link HibernateMappingContext}
  *
- * @author Graeme Rocher
  * @since 6.0
  */
-@SuppressWarnings(['PMD.CloseResource', 'PMD.AvoidCatchingThrowable', 'PMD.DataflowAnomalyAnalysis'])
 @CompileStatic
 class HibernateConnectionSourceFactory
         extends AbstractConnectionSourceFactory<SessionFactory, HibernateConnectionSourceSettings>

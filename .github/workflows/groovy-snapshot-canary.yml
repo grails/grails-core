@@ -138,7 +138,10 @@ jobs:
             gradle_task: testShard
           - shard_index: 2
             gradle_task: testShard
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 for the reason gradle.yml's mongodbFunctional job gives: this job runs the MongoDB specifications
+    # against mongo:8.0, and ubuntu-latest is now the ubuntu-26.04 image, whose 7.0.0-1017-azure kernel MongoDB 8.0
+    # refuses to start on (https://github.com/actions/runner-images/issues/15005). Move back with that job.
+    runs-on: ubuntu-22.04
     steps:
       - name: "⚙️ Maximize build space"
         run: |

@@ -20,6 +20,8 @@ package org.grails.orm.hibernate.query
 
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import groovy.transform.RecordOptions
+import groovy.transform.TupleConstructor
 
 import org.grails.datastore.mapping.query.Query
 
@@ -33,18 +35,20 @@ import org.grails.datastore.mapping.query.Query
  * @param values the values of the {@code ?} placeholders, in order
  * @since 8.0.0
  */
+// CodeNarc reads the components of an annotated record as fields and reports their indentation
+@SuppressWarnings('Indentation')
 @CompileStatic
+@RecordOptions(getAt = false, toList = false, toMap = false, size = false)
+@TupleConstructor(defaults = false, namedVariant = false)
 record SqlRestriction(String sql, List<?> values) implements Query.Criterion {
 
-    SqlRestriction {
+    SqlRestriction(String sql, List<?> values) {
         if (sql == null) {
             throw new IllegalArgumentException('The SQL of a sqlRestriction must not be null')
         }
-        if (values == null) {
-            values = List.of()
-        }
-        List<Object> copy = new ArrayList<>(values.size())
-        for (Object value : values) {
+        List<?> given = values == null ? List.of() : values
+        List<Object> copy = new ArrayList<>(given.size())
+        for (Object value : given) {
             if (value == null) {
                 throw new IllegalArgumentException("The values of a sqlRestriction must not be null: ${sql}".toString())
             }
@@ -55,7 +59,8 @@ record SqlRestriction(String sql, List<?> values) implements Query.Criterion {
             throw new IllegalArgumentException(
                     "The SQL of a sqlRestriction has ${placeholders} ? placeholders but ${copy.size()} values: ${sql}".toString())
         }
-        values = Collections.unmodifiableList(copy)
+        this.sql = sql
+        this.values = Collections.unmodifiableList(copy)
     }
 
     /**

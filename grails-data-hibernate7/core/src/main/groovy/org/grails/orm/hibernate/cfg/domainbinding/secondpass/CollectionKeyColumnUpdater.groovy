@@ -21,7 +21,6 @@ package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 import groovy.transform.CompileStatic
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.DependantValue
-import org.hibernate.mapping.Table
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyCollectionProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
@@ -45,22 +44,18 @@ class CollectionKeyColumnUpdater {
                 column.nullable = true
             }
         }
-        Table collectionTable = property.collection.collectionTable
         long unidirectionalCount = 0
         for (def p : property.hibernateOwner.persistentPropertiesToBind) {
-            if (HibernateToManyProperty.isBoundAsCollection(p) && !((HibernateToManyProperty) p).isBidirectional() &&
-                    Objects.equals(((HibernateToManyProperty) p).collection.collectionTable, collectionTable)) {
+            if (p instanceof HibernateToManyProperty && !((HibernateToManyProperty) p).isBidirectional()) {
                 unidirectionalCount++
             }
         }
 
         // Collections of basic values or enums (HibernateToManyCollectionProperty) always keep an updatable key: they
         // have no inverse side, and Hibernate writes no rows for a collection whose key is not updatable.
-        // For entity collections (HibernateToManyEntityProperty) the key is non-updatable only when the owner has
-        // two or more unidirectional to-many properties that share this collection's join table, the rule for issue
-        // 10811. Unidirectional collections with join tables of their own keep an updatable key, as they have no
-        // second key column to leave null. A to-many that is not bound as a collection (a serializable or user type)
-        // has no join table and no Hibernate collection, so it is neither counted nor asked for one.
+        // For entity collections (HibernateToManyEntityProperty) the key is non-updatable when the owner has two or
+        // more unidirectional to-many properties (counting every unidirectional HibernateToManyProperty of the owner),
+        // the existing rule for issue 10811.
         key.updateable = property instanceof HibernateToManyCollectionProperty || unidirectionalCount <= 1
     }
 

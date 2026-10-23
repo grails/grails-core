@@ -89,6 +89,55 @@ Jackson `JsonMapper`, so a Grails application and a Spring Boot application retu
 render. See the Date and Time Rendering sections of the REST and JSON Views guides, and the upgrade guide for the
 types that render differently than in Grails 7.
 
+==== JSON Responses Through Spring Boot's Jackson Mapper, and RFC 9457 Problems
+
+With `grails.web.rendering.json.spring: true`, `respond` writes JSON through Spring MVC's message converters, with a
+mapper Grails derives from Spring Boot's Jackson `JsonMapper`, so the `spring.jackson.*` settings and the application's
+Jackson modules apply to its responses as they do in a Spring Boot application. `render json: value` writes with the
+same mapper, and `grails.converters.json.legacy: false` makes `grails.converters.JSON` write through Spring Boot's
+mapper as well. Grails 9 keeps Grails 8's JSON by default.
+
+Named Jackson configurations, registered with the `NamedJsonConfigurationRegistry` bean, are selected for each response,
+in place of the thread-local `JSON.use(...)`. Every registry has a `deep` configuration, which writes the associations of
+domain class instances in full:
+
+[source,groovy]
+----
+respond book, jsonConfiguration: 'catalog'
+render json: book, jsonConfiguration: 'deep', excludes: ['isbn']
+----
+
+`respond` writes a Spring `ProblemDetail` as Spring MVC writes one that a handler method returns, with the handler of
+Spring MVC's handler adapter, so the application's `ResponseBodyAdvice` and `ErrorResponse.Interceptor` beans apply to
+it: as `application/problem+json`, or as `application/problem+xml` for a request that asks for a problem in XML where
+the action responds in XML and `jackson-dataformat-xml` is present, with the status the problem carries unless `respond`
+is given one, as a `ResponseEntity` is in Spring MVC. A Spring `ErrorResponse`, such as an `ErrorResponseException`,
+is answered the same way, with its status and headers. `ValidationProblemDetailFactory` creates a problem for
+validation errors.
+
+With `grails.databinding.json.jackson: true`, JSON request bodies are bound as Spring Boot's mapper parses them, with its
+`spring.jackson.*` parser settings, in place of Groovy's `JsonSlurper`.
+
+XML conversion, binding and renderers move to the `grails-xml` module, which the Grails 9 web starter and
+`grails-web-boot` still bring, and which a JSON-only application can exclude. Grails reads the `Accept` and
+`Content-Type` headers with Spring's media type parser, so media type names match whatever their case.
+
+With `grails.exceptionresolver.springHandlers: true`, which Grails 10 makes the default, an exception a controller
+action throws is resolved first as Spring MVC resolves one a handler method throws: by the `@ExceptionHandler` methods
+of the controller and of the `@ControllerAdvice` beans that apply to it, Spring Boot's handler of
+`spring.mvc.problemdetails.enabled` among them, which answers the exceptions of Spring MVC with RFC 9457 problems. See
+xref:theWebLayer#controllerExceptionHandling[Declarative Controller Exception Handling].
+
+An action can return what a Spring MVC handler method returns to write the response, such as a `ResponseEntity`, a
+`ProblemDetail` or a `StreamingResponseBody`, and Spring MVC writes it with the return value handlers of its handler
+adapter, the `ResponseBodyAdvice` beans that apply to the controller, and the action's `@JsonView` and
+`@ResponseStatus`. With `grails.controllers.responseBody: true`, which Grails 10 makes the default, so does any value of
+an action annotated `@ResponseBody`, a `CompletableFuture` it returns included. The `@JsonView` of an action also
+selects the properties `respond` writes through Spring MVC. See
+xref:theWebLayer#springResponses[Returning Spring MVC Responses].
+
+See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 4 to 11 and 13 to 16.
+
 ==== Hibernate 7 Criteria Queries Can Be Extended
 
 A plugin or an application can add its own criteria and orders to the Hibernate 7 criteria builder. A criterion
@@ -138,6 +187,33 @@ A controller action can return a Reactive Streams `Publisher`, such as a Reactor
 Items are rendered as text or JSON, or through a `StreamItemRenderer` bean for a type of its own, which is how `grails-spring-ai` streams the chat responses of a model.
 Such an action streams instead of rendering its view as it did before; set `grails.async.streaming.enabled` to `false` to keep the previous behaviour. A publisher that emits at most one item, such as a Reactor `Mono`, is not streamed but resolved, its value being the action's result as a returned `Promise`'s value is. See xref:upgrading#upgrading81x[the upgrade guide].
 See xref:async#asyncStreaming[Streaming Responses].
+
+==== RxJava Data Services on RxJava 3
+
+`grails-datamapping-rx` is built on RxJava 3 instead of the unmaintained RxJava 1, so a GORM data service
+method can declare `io.reactivex.rxjava3.core.Observable` or `io.reactivex.rxjava3.core.Single` and GORM
+implements it over any GORM datastore. The `RxEntity` reactive domain model in the same module is also
+ported, but still has no datastore implementation behind it and is proposed for removal in 9.0; see the
+xref:upgrading#upgrading90x[upgrade guide] for the import and blocking-call changes an application that
+uses either needs. See <<rxjava,RxJava Support>>.
+
+==== RxJava 1 and RxJava 2 Modules Deprecated
+
+The RxJava 1 and RxJava 2 implementations of the Grails promise and event bus APIs, `grails-async-rxjava`,
+`grails-async-rxjava2`, `grails-events-rxjava` and `grails-events-rxjava2`, are deprecated for removal
+since Grails 9.0. Both RxJava versions are no longer maintained. The implementations keep working, and they
+log a warning when their promise factory or event bus is created. The RxJava 3 implementations,
+`grails-async-rxjava3` and `grails-events-rxjava3`, remain supported and are the replacements:
+
+[source,groovy]
+.build.gradle
+----
+runtimeOnly 'org.apache.grails.async:grails-async-rxjava3'
+runtimeOnly 'org.apache.grails.events:grails-events-rxjava3'
+----
+
+The `Promise` and `EventBus` APIs an application uses are the same, so an application that only uses the
+Grails APIs needs no code change. See <<asyncPromises,Promises>> and <<events,Events>>.
 
 ==== Plugin Beans Register Before Spring Boot Auto-Configuration
 
@@ -506,7 +582,7 @@ the xref:upgrading#upgrading80x[upgrade guide] for details.
 
 ==== Agent Skills Published with Grails
 
-Grails now publishes its app-facing https://agentskills.io[Agent Skills] with every release: `org.apache.grails.skills:grails-developer`, for building Grails applications, and `org.apache.grails.skills:grails-8-upgrade`, for upgrading an application from Grails 7. The jars use the https://www.skillsjars.com[SkillsJars] layout and the Grails BOM manages them, so an application applies the SkillsJars Gradle plugin, declares the skills without a version, and runs `./gradlew extractSkillsJars` to write the skills for its Grails version to the directory its AI coding agent reads. See xref:gettingStarted#agentSkills[Agent Skills].
+Grails now publishes its app-facing https://agentskills.io[Agent Skills] with every release: `org.apache.grails.skills:grails-developer`, for building Grails applications, `org.apache.grails.skills:grails-8-upgrade`, for upgrading an application from Grails 7, and `org.apache.grails.skills:grails-9-upgrade`, for upgrading an application from Grails 8. The jars use the https://www.skillsjars.com[SkillsJars] layout and the Grails BOM manages them, so an application applies the SkillsJars Gradle plugin, declares the skills without a version, and runs `./gradlew extractSkillsJars` to write the skills for its Grails version to the directory its AI coding agent reads. See xref:gettingStarted#agentSkills[Agent Skills].
 
 ==== Test HTTP Client Form Requests
 
