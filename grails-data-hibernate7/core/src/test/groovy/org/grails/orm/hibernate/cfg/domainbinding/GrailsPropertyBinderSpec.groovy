@@ -23,6 +23,8 @@ import grails.gorm.annotation.Entity
 import grails.gorm.tests.HibernateGormDatastoreSpec
 import org.grails.orm.hibernate.CompositeMoney
 import org.grails.orm.hibernate.CompositeMoneyType
+import org.grails.orm.hibernate.CompositeTier
+import org.grails.orm.hibernate.CompositeTierType
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.*
 import org.grails.orm.hibernate.cfg.domainbinding.binder.*
 
@@ -146,6 +148,7 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
             PropertyBinderSpecCustomEntity,
             PropertyBinderSpecCustomUserTypeCollection,
             PropertyBinderSpecCompositeUserTypeEntity,
+            PropertyBinderSpecCompositeEnumEntity,
             PropertyBinderSpecHasOneOwner,
             PropertyBinderSpecHasOneProfile,
             PropertyBinderSpecFKOwner,
@@ -327,6 +330,29 @@ class GrailsPropertyBinderSpec extends HibernateGormDatastoreSpec {
         (value as Component).properties*.name == ['amount', 'currency']
         (value as Component).properties.collect { it.value.columns.first().name } == ['price_value', 'price_currency']
         rootClass.table.columns*.name == ['price_value', 'price_currency']
+    }
+
+    void "Test bind enum property mapped with a composite user type"() {
+        given:
+        def binder = getGrailsDomainBinder()
+        def propertyBinder = getBinders(binder).propertyBinder
+        def persistentEntity = getPersistentEntity(PropertyBinderSpecCompositeEnumEntity) as GrailsHibernatePersistentEntity
+        def rootClass = new RootClass(binder.getMetadataBuildingContext())
+        rootClass.setTable(new Table("COMPOSITE_ENUM_ENTITY"))
+        persistentEntity.setPersistentClass(rootClass)
+
+        when:
+        def tierProp = persistentEntity.getPropertyByName("tier") as HibernatePersistentProperty
+        Value value = propertyBinder.bindProperty(tierProp, null, EMPTY_PATH)
+
+        then: "the enum property is bound as a component of its composite user type, not as an enum column"
+        tierProp instanceof HibernateEnumProperty
+        tierProp.getCompositeUserType() == CompositeTierType
+        value instanceof Component
+        (value as Component).typeName == CompositeTierType.name
+        (value as Component).componentClassName == CompositeTier.name
+        (value as Component).properties*.name == ['code', 'rank']
+        rootClass.table.columns*.name == ['tier_code', 'tier_rank']
     }
 
     void "Test a property binder created without a composite user type binder binds other properties and rejects a composite user type"() {
@@ -542,6 +568,18 @@ class PropertyBinderSpecCompositeUserTypeEntity {
         price type: CompositeMoneyType, {
             column name: 'price_value'
             column name: 'price_currency'
+        }
+    }
+}
+
+@Entity
+class PropertyBinderSpecCompositeEnumEntity {
+    Long id
+    CompositeTier tier
+    static mapping = {
+        tier type: CompositeTierType, {
+            column name: 'tier_code'
+            column name: 'tier_rank'
         }
     }
 }

@@ -131,8 +131,8 @@ public class GrailsDomainBinder implements AdditionalMappingContributor, TypeCon
         var jdbcEnvironment = getJdbcEnvironment();
         var defaultColumnNameFetcher =
                 new DefaultColumnNameFetcher(namingStrategy, backticksRemover);
-        var columnNameForPropertyAndPathFetcher =
-                new ColumnNameForPropertyAndPathFetcher(namingStrategy, defaultColumnNameFetcher, backticksRemover);
+        var columnNameForPropertyAndPathFetcher = new ColumnNameForPropertyAndPathFetcher(
+                namingStrategy, defaultColumnNameFetcher, backticksRemover, metadataBuildingContext);
         var simpleValueBinder =
                 new SimpleValueBinder(metadataBuildingContext, namingStrategy, jdbcEnvironment);
         var compositeUserTypeBinder =

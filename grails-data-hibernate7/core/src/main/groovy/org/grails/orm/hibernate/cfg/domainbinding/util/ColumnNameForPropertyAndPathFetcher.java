@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.boot.spi.MetadataBuildingContext;
+
 import org.grails.orm.hibernate.cfg.ColumnConfig;
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy;
@@ -35,12 +37,42 @@ public class ColumnNameForPropertyAndPathFetcher {
     private final BackticksRemover backticksRemover;
     private final CompositeUserTypeColumns compositeUserTypeColumns;
 
+    /**
+     * Creates a fetcher that instantiates a composite user type through its default constructor when it names
+     * the columns of a property mapped with one, as Hibernate does outside a CDI container.
+     *
+     * @param namingStrategy the naming strategy of the default column names
+     * @param defaultColumnNameFetcher the fetcher of the default column name of a property
+     * @param backticksRemover the remover of the backticks of a quoted name
+     * @see #ColumnNameForPropertyAndPathFetcher(PersistentEntityNamingStrategy, DefaultColumnNameFetcher,
+     * BackticksRemover, MetadataBuildingContext)
+     */
     public ColumnNameForPropertyAndPathFetcher(
             PersistentEntityNamingStrategy namingStrategy,
             DefaultColumnNameFetcher defaultColumnNameFetcher,
             BackticksRemover backticksRemover) {
+        this(namingStrategy, defaultColumnNameFetcher, backticksRemover, (MetadataBuildingContext) null);
+    }
+
+    /**
+     * Creates a fetcher that instantiates a composite user type as the binder of its property does when it names
+     * the columns of a property mapped with one: as a managed bean when the building options allow extensions in
+     * CDI, through its default constructor otherwise.
+     *
+     * @param namingStrategy the naming strategy of the default column names
+     * @param defaultColumnNameFetcher the fetcher of the default column name of a property
+     * @param backticksRemover the remover of the backticks of a quoted name
+     * @param metadataBuildingContext the context of the binding, or {@code null} to instantiate every composite
+     * user type through its default constructor
+     * @since 8.0.1
+     */
+    public ColumnNameForPropertyAndPathFetcher(
+            PersistentEntityNamingStrategy namingStrategy,
+            DefaultColumnNameFetcher defaultColumnNameFetcher,
+            BackticksRemover backticksRemover,
+            MetadataBuildingContext metadataBuildingContext) {
         this(namingStrategy, defaultColumnNameFetcher, backticksRemover,
-                new CompositeUserTypeColumns(namingStrategy, backticksRemover));
+                new CompositeUserTypeColumns(namingStrategy, backticksRemover, metadataBuildingContext));
     }
 
     protected ColumnNameForPropertyAndPathFetcher(

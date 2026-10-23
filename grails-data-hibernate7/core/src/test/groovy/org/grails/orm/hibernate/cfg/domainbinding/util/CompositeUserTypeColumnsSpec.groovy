@@ -27,8 +27,14 @@ import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.hibernate.HibernateException
 import org.hibernate.MappingException
+import org.hibernate.boot.spi.BootstrapContext
+import org.hibernate.boot.spi.MetadataBuildingContext
+import org.hibernate.boot.spi.MetadataBuildingOptions
 import org.hibernate.metamodel.spi.ValueAccess
+import org.hibernate.resource.beans.spi.ManagedBean
+import org.hibernate.resource.beans.spi.ManagedBeanRegistry
 import org.hibernate.usertype.CompositeUserType
+import org.springframework.beans.BeanInstantiationException
 import spock.lang.Specification
 
 import java.lang.reflect.Type
@@ -57,6 +63,64 @@ class CompositeUserTypeColumnsSpec extends Specification {
     void "the attributes of a class without accessors are its private fields"() {
         expect:
         CompositeUserTypeColumns.attributesOf(UtilMoneyFields)*.name == ['amount', 'currency']
+    }
+
+    void "the class of an attribute is its type, or the raw class of a parameterized type"() {
+        expect:
+        new CompositeUserTypeColumns.Attribute('amount', long).rawType() == long
+        new CompositeUserTypeColumns.Attribute('currency', String).rawType() == String
+        new CompositeUserTypeColumns.Attribute('tags', UtilAttributeTypes.getDeclaredField('tags').genericType).rawType() == List
+    }
+
+    void "a composite user type is instantiated through its default constructor without a building context"() {
+        expect:
+        subject.userTypeOf(property('fee', [])) instanceof UtilMoneyType
+    }
+
+    void "a composite user type is a managed bean of the bean registry when the building options allow extensions in CDI"() {
+        given: 'a building context that allows extensions in CDI, whose bean registry holds a user type without a default constructor'
+        UtilCdiMoneyType managed = new UtilCdiMoneyType('cdi')
+        ManagedBeanRegistry registry = Mock(ManagedBeanRegistry)
+        CompositeUserTypeColumns cdiSubject = new CompositeUserTypeColumns(
+                namingStrategy, new BackticksRemover(), buildingContext(true, registry))
+        HibernatePersistentProperty property = property('fee', [], UtilCdiMoneyType)
+
+        when:
+        CompositeUserType<?> userType = cdiSubject.userTypeOf(property)
+
+        then: 'the registry supplies the instance'
+        1 * registry.getBean(UtilCdiMoneyType) >> Stub(ManagedBean) { getBeanInstance() >> managed }
+        userType.is(managed)
+
+        when: 'the columns of the property are named'
+        List<String> names = cdiSubject.columnNamesOf(property, '')
+
+        then: 'the embeddable class of that instance names them'
+        1 * registry.getBean(UtilCdiMoneyType) >> Stub(ManagedBean) { getBeanInstance() >> managed }
+        names == ['fee_amount', 'fee_currency']
+    }
+
+    void "a composite user type is instantiated through its default constructor when the building options do not allow extensions in CDI"() {
+        given:
+        ManagedBeanRegistry registry = Mock(ManagedBeanRegistry)
+        CompositeUserTypeColumns plainSubject = new CompositeUserTypeColumns(
+                namingStrategy, new BackticksRemover(), buildingContext(false, registry))
+
+        when:
+        CompositeUserType<?> userType = plainSubject.userTypeOf(property('fee', []))
+
+        then:
+        userType instanceof UtilMoneyType
+        0 * registry._
+    }
+
+    void "a composite user type without a default constructor is an instantiation error without a bean container"() {
+        when:
+        subject.userTypeOf(property('fee', [], UtilCdiMoneyType))
+
+        then:
+        BeanInstantiationException e = thrown()
+        e.message.contains(UtilCdiMoneyType.name)
     }
 
     void "a configured column keeps its configuration and an attribute without one is named after the property and the attribute"() {
@@ -132,7 +196,7 @@ class CompositeUserTypeColumnsSpec extends Specification {
         []                             | 'cost' || ['cost_fee_amount', 'cost_fee_currency']
     }
 
-    void "the column names of a property that is not mapped with a composite user type are a mapping error"() {
+    void "the user type and the column names of a property that is not mapped with a composite user type are a mapping error"() {
         given:
         HibernatePersistentProperty property = Mock(HibernatePersistentProperty) {
             getName() >> 'reference'
@@ -147,16 +211,37 @@ class CompositeUserTypeColumnsSpec extends Specification {
         MappingException e = thrown()
         e.message.contains('reference')
         e.message.contains('util.UtilPayment')
+
+        when:
+        subject.userTypeOf(property)
+
+        then:
+        MappingException userTypeError = thrown()
+        userTypeError.message == e.message
     }
 
-    private HibernatePersistentProperty property(String name, List<ColumnConfig> columns) {
+    private HibernatePersistentProperty property(
+            String name, List<ColumnConfig> columns, Class<? extends CompositeUserType<?>> userType = UtilMoneyType) {
         PropertyConfig config = new PropertyConfig()
         config.columns = columns
         Mock(HibernatePersistentProperty) {
             getName() >> name
             getOwner() >> owner()
             getHibernateMappedForm() >> config
-            getCompositeUserType() >> UtilMoneyType
+            getCompositeUserType() >> userType
+        }
+    }
+
+    private MetadataBuildingContext buildingContext(boolean allowExtensionsInCdi, ManagedBeanRegistry registry) {
+        MetadataBuildingOptions options = Stub(MetadataBuildingOptions) {
+            isAllowExtensionsInCdi() >> allowExtensionsInCdi
+        }
+        BootstrapContext bootstrapContext = Stub(BootstrapContext) {
+            getManagedBeanRegistry() >> registry
+        }
+        Stub(MetadataBuildingContext) {
+            getBuildingOptions() >> options
+            getBootstrapContext() >> bootstrapContext
         }
     }
 
@@ -200,6 +285,23 @@ class UtilMoneyBean implements Serializable {
 class UtilMoneyFields {
     private long amount
     private String currency
+}
+
+/** A holder of attribute types: a parameterized one resolves to its raw class. */
+@CompileStatic
+class UtilAttributeTypes {
+    List<String> tags
+}
+
+/** The same user type without a default constructor, which only a bean container can create. */
+@CompileStatic
+class UtilCdiMoneyType extends UtilMoneyType {
+
+    final String label
+
+    UtilCdiMoneyType(String label) {
+        this.label = label
+    }
 }
 
 /** A composite user type with a default constructor, whose embeddable class is {@link UtilMoneyRecord}. */

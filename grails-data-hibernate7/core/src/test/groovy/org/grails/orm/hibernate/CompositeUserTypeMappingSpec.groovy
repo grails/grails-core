@@ -29,13 +29,19 @@ import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.orm.hibernate.cfg.Settings
 import org.hibernate.HibernateException
 import org.hibernate.MappingException
+import org.hibernate.dialect.H2Dialect
 import org.hibernate.mapping.BasicValue
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.Component
 import org.hibernate.mapping.Table
 import org.hibernate.mapping.Value
 import org.hibernate.metamodel.spi.ValueAccess
+import org.hibernate.resource.beans.container.spi.BeanContainer
+import org.hibernate.resource.beans.container.spi.ContainedBean
+import org.hibernate.resource.beans.container.spi.FallbackContainedBean
+import org.hibernate.resource.beans.spi.BeanInstanceProducer
 import org.hibernate.usertype.CompositeUserType
+import org.springframework.beans.BeanInstantiationException
 import org.springframework.dao.DataIntegrityViolationException
 import spock.lang.Specification
 
@@ -480,6 +486,121 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
+    void "a composite user type whose value is a number defines each attribute column from its own configuration"() {
+        given: 'a BigDecimal property stored as its scale and its unscaled value, with a column list and without one'
+        HibernateDatastore datastore = createDatastore('compositeUserTypeDecimal', {}, CompositeUserTypeDecimal)
+
+        expect: 'the property is a component rather than one numeric column'
+        Component price = componentOf(datastore, CompositeUserTypeDecimal, 'price')
+        price.componentClassName == BigDecimal.name
+        price.properties*.name == ['scale', 'unscaledValue']
+        columnNamesOf(price) == ['price_scale', 'price_unscaled']
+        columnNamesOf(componentOf(datastore, CompositeUserTypeDecimal, 'discount')) == ['discount_scale', 'discount_unscaled_value']
+
+        and: 'a numeric attribute column takes the precision of its own configuration, or the default precision of the dialect'
+        columnsOf(price).last().precision == 20
+        schemaNumericColumn(datastore, 'COMPOSITE_USER_TYPE_DECIMAL', 'PRICE_UNSCALED') == [type: 'NUMERIC', precision: 20, scale: 0]
+        schemaNumericColumn(datastore, 'COMPOSITE_USER_TYPE_DECIMAL', 'DISCOUNT_UNSCALED_VALUE') ==
+                [type: 'NUMERIC', precision: new H2Dialect().defaultDecimalPrecision, scale: 0]
+        schemaNumericColumn(datastore, 'COMPOSITE_USER_TYPE_DECIMAL', 'PRICE_SCALE').type == 'INTEGER'
+
+        when:
+        Long id = CompositeUserTypeDecimal.withTransaction {
+            new CompositeUserTypeDecimal(price: new BigDecimal('1234.5678'), discount: new BigDecimal('0.5'))
+                    .save(flush: true, failOnError: true).id
+        }
+
+        then: 'the scale and the unscaled value are written to their columns'
+        rowOf(datastore, 'composite_user_type_decimal', ['price_scale', 'price_unscaled', 'discount_scale', 'discount_unscaled_value'], id) ==
+                [price_scale: 4L, price_unscaled: 12345678L, discount_scale: 1L, discount_unscaled_value: 5L]
+
+        and: 'the value is read back with its scale'
+        CompositeUserTypeDecimal.withTransaction {
+            CompositeUserTypeDecimal found = CompositeUserTypeDecimal.get(id)
+            found.price == new BigDecimal('1234.5678') && found.price.scale() == 4 && found.discount == new BigDecimal('0.5')
+        }
+
+        cleanup:
+        datastore?.close()
+    }
+
+    void "an enum property mapped with a composite user type is bound as a component rather than as an enum column"() {
+        given:
+        HibernateDatastore datastore = createDatastore('compositeUserTypeEnum', {}, CompositeUserTypeEnumValued)
+
+        expect: 'the property is a component of the user type whose class is the enum'
+        Component tier = componentOf(datastore, CompositeUserTypeEnumValued, 'tier')
+        tier.typeName == CompositeTierType.name
+        tier.componentClassName == CompositeTier.name
+        tier.properties*.name == ['code', 'rank']
+        columnNamesOf(tier) == ['tier_code', 'tier_rank']
+        datastore.sessionFactory.metamodel.entity(CompositeUserTypeEnumValued).getAttribute('tier').javaType == CompositeTier
+        tableColumnNames(datastore, CompositeUserTypeEnumValued).sort() == ['id', 'tier_code', 'tier_rank', 'version']
+
+        when:
+        Long id = CompositeUserTypeEnumValued.withTransaction {
+            new CompositeUserTypeEnumValued(tier: CompositeTier.SILVER).save(flush: true, failOnError: true).id
+        }
+
+        then: 'the user type writes the attributes of the constant and reads the constant back'
+        rowOf(datastore, 'composite_user_type_enum_valued', ['tier_code', 'tier_rank'], id) == [tier_code: 'S', tier_rank: 2L]
+        CompositeUserTypeEnumValued.withTransaction {
+            CompositeUserTypeEnumValued.get(id).tier == CompositeTier.SILVER
+        }
+
+        and: 'the constant is queried as a whole value and by attribute'
+        CompositeUserTypeEnumValued.withTransaction {
+            CompositeUserTypeEnumValued.findAllByTier(CompositeTier.SILVER)*.id == [id] &&
+                    CompositeUserTypeEnumValued.countByTier(CompositeTier.GOLD) == 0 &&
+                    CompositeUserTypeEnumValued.executeQuery(
+                            'select e.id from CompositeUserTypeEnumValued e where e.tier.rank > :rank', [rank: 1]) == [id]
+        }
+
+        cleanup:
+        datastore?.close()
+    }
+
+    void "a composite user type that only a bean container creates is resolved through it for its property and for a group that names it"() {
+        given: 'a user type without a default constructor, the bean container that creates it, and a plain property unique within the composite one'
+        CompositeUserTypeBeanContainer.created.clear()
+        HibernateDatastore datastore = createDatastore(
+                ['hibernate.cdi.extensions': 'true', 'hibernate.resource.beans.container': CompositeUserTypeBeanContainer.name],
+                'compositeUserTypeManagedBean', {}, CompositeUserTypeManagedBean)
+
+        expect: 'the property is a component of the user type the container created'
+        Component amount = componentOf(datastore, CompositeUserTypeManagedBean, 'amount')
+        amount.typeName == CompositeManagedMoneyType.name
+        columnNamesOf(amount) == ['amount_amount', 'amount_currency']
+
+        and: 'the group of the plain property spans the columns of the composite one, through the one instance the container created'
+        uniqueKeyColumns(datastore, CompositeUserTypeManagedBean) == [['reference', 'amount_amount', 'amount_currency'] as Set]
+        CompositeUserTypeBeanContainer.created*.label == ['managed']
+
+        when:
+        Long id = CompositeUserTypeManagedBean.withTransaction {
+            new CompositeUserTypeManagedBean(reference: 'a', amount: new CompositeMoney(amount: 10, currency: 'EUR'))
+                    .save(flush: true, failOnError: true).id
+        }
+
+        then: 'that instance reads and writes the value'
+        CompositeUserTypeManagedBean.withTransaction {
+            CompositeUserTypeManagedBean.get(id).amount == new CompositeMoney(amount: 10, currency: 'EUR')
+        }
+
+        cleanup:
+        datastore?.close()
+        CompositeUserTypeBeanContainer.created.clear()
+    }
+
+    void "a composite user type without a default constructor is a startup error without a bean container"() {
+        when:
+        createDatastore('compositeUserTypeNoContainer', {}, CompositeUserTypeManagedBean)
+
+        then:
+        Throwable thrown = thrown()
+        causeChain(thrown).find { it instanceof BeanInstantiationException }.message.contains(CompositeManagedMoneyType.name)
+    }
+
     void "more columns than the embeddable class has attributes is a mapping error"() {
         when:
         createDatastore('compositeUserTypeTooManyColumns', {}, CompositeUserTypeTooManyColumns)
@@ -494,11 +615,16 @@ class CompositeUserTypeMappingSpec extends Specification {
     }
 
     private static HibernateDatastore createDatastore(String databaseName, Closure defaultMapping, Class... entities) {
-        new HibernateDatastore(DatastoreUtils.createPropertyResolver(
+        createDatastore([:], databaseName, defaultMapping, entities)
+    }
+
+    private static HibernateDatastore createDatastore(
+            Map<String, Object> settings, String databaseName, Closure defaultMapping, Class... entities) {
+        new HibernateDatastore(DatastoreUtils.createPropertyResolver([
                 (Settings.SETTING_DB_CREATE): 'create-drop',
-                'dataSource.url': "jdbc:h2:mem:${databaseName};LOCK_TIMEOUT=10000",
+                'dataSource.url': "jdbc:h2:mem:${databaseName};LOCK_TIMEOUT=10000".toString(),
                 'grails.gorm.default.mapping': defaultMapping
-        ), entities)
+        ] + settings), entities)
     }
 
     private static Component componentOf(HibernateDatastore datastore, Class entity, String property) {
@@ -556,6 +682,43 @@ class CompositeUserTypeMappingSpec extends Specification {
                     }
         }
         row
+    }
+
+    /** The columns of the row of the entity, numbers as longs. */
+    private static Map<String, Object> rowOf(HibernateDatastore datastore, String table, List<String> columns, Long id) {
+        Map<String, Object> row = [:]
+        datastore.dataSource.connection.withCloseable { conn ->
+            conn.prepareStatement("select ${columns.join(', ')} from ${table} where id = ?".toString()).withCloseable { stmt ->
+                stmt.setLong(1, id)
+                stmt.executeQuery().withCloseable { rs ->
+                    assert rs.next()
+                    columns.each { String column ->
+                        Object value = rs.getObject(column)
+                        row[column] = value instanceof Number ? ((Number) value).longValue() : value
+                    }
+                }
+            }
+        }
+        row
+    }
+
+    /** The data type, the precision and the scale of a numeric column in the schema. */
+    private static Map<String, Object> schemaNumericColumn(HibernateDatastore datastore, String table, String column) {
+        Map<String, Object> description = [:]
+        datastore.dataSource.connection.withCloseable { conn ->
+            conn.prepareStatement('select data_type, numeric_precision, numeric_scale from information_schema.columns ' +
+                    'where table_name = ? and column_name = ?').withCloseable { stmt ->
+                stmt.setString(1, table)
+                stmt.setString(2, column)
+                stmt.executeQuery().withCloseable { rs ->
+                    assert rs.next()
+                    description.type = rs.getString('data_type')
+                    description.precision = rs.getObject('numeric_precision')?.with { ((Number) it).intValue() }
+                    description.scale = rs.getObject('numeric_scale')?.with { ((Number) it).intValue() }
+                }
+            }
+        }
+        description
     }
 
     private static Map<String, Object> schemaColumn(HibernateDatastore datastore, String table, String column) {
@@ -729,6 +892,46 @@ class CompositeUserTypeFieldsTemplated implements HibernateEntity<CompositeUserT
 }
 
 @Entity
+class CompositeUserTypeDecimal implements HibernateEntity<CompositeUserTypeDecimal> {
+    BigDecimal price
+    BigDecimal discount
+
+    static mapping = {
+        price type: CompositeScaledDecimalType, {
+            column name: 'price_scale'
+            column name: 'price_unscaled', precision: 20
+        }
+        discount type: CompositeScaledDecimalType
+    }
+}
+
+@Entity
+class CompositeUserTypeEnumValued implements HibernateEntity<CompositeUserTypeEnumValued> {
+    CompositeTier tier
+
+    static mapping = {
+        tier type: CompositeTierType, {
+            column name: 'tier_code', sqlType: 'char(1)'
+            column name: 'tier_rank'
+        }
+    }
+}
+
+@Entity
+class CompositeUserTypeManagedBean implements HibernateEntity<CompositeUserTypeManagedBean> {
+    String reference
+    CompositeMoney amount
+
+    static constraints = {
+        reference unique: 'amount'
+    }
+
+    static mapping = {
+        amount type: CompositeManagedMoneyType
+    }
+}
+
+@Entity
 class CompositeUserTypeTooManyColumns implements HibernateEntity<CompositeUserTypeTooManyColumns> {
     CompositeMoney amount
 
@@ -850,6 +1053,225 @@ class CompositeMoneyType implements CompositeUserType<CompositeMoney> {
 
     @Override
     CompositeMoney replace(CompositeMoney detached, CompositeMoney managed, Object owner) {
+        detached
+    }
+}
+
+/** The same mapping by a user type without a default constructor, which only a bean container can create. */
+@CompileStatic
+class CompositeManagedMoneyType extends CompositeMoneyType {
+
+    final String label
+
+    CompositeManagedMoneyType(String label) {
+        this.label = label
+    }
+}
+
+/**
+ * A Hibernate bean container that creates {@link CompositeManagedMoneyType} and leaves every other bean to the
+ * fallback producer. Hibernate instantiates the container itself, from its class name.
+ */
+@CompileStatic
+class CompositeUserTypeBeanContainer implements BeanContainer {
+
+    static final List<CompositeManagedMoneyType> created = Collections.synchronizedList([])
+
+    @Override
+    <B> ContainedBean<B> getBean(
+            Class<B> beanType, BeanContainer.LifecycleOptions lifecycleOptions, BeanInstanceProducer fallbackProducer) {
+        if (beanType == CompositeManagedMoneyType) {
+            CompositeManagedMoneyType userType = new CompositeManagedMoneyType('managed')
+            created << userType
+            return new CompositeContainedBean<B>(beanType, beanType.cast(userType))
+        }
+        new FallbackContainedBean<B>(beanType, fallbackProducer)
+    }
+
+    @Override
+    <B> ContainedBean<B> getBean(
+            String name, Class<B> beanType, BeanContainer.LifecycleOptions lifecycleOptions, BeanInstanceProducer fallbackProducer) {
+        getBean(beanType, lifecycleOptions, fallbackProducer)
+    }
+
+    @Override
+    void stop() {
+    }
+}
+
+/** A bean the container created. */
+@CompileStatic
+class CompositeContainedBean<B> implements ContainedBean<B> {
+
+    final Class<B> beanClass
+    final B beanInstance
+
+    CompositeContainedBean(Class<B> beanClass, B beanInstance) {
+        this.beanClass = beanClass
+        this.beanInstance = beanInstance
+    }
+}
+
+/** The embeddable class of {@link CompositeScaledDecimalType}: the scale and the unscaled value of a decimal. */
+record CompositeScaledDecimal(BigInteger unscaledValue, int scale) {}
+
+/**
+ * Stores a {@link BigDecimal} as its scale and its unscaled value: {@code scale} is index 0 and
+ * {@code unscaledValue} is 1, in the alphabetical order of the attributes.
+ */
+@CompileStatic
+class CompositeScaledDecimalType implements CompositeUserType<BigDecimal> {
+
+    @Override
+    Object getPropertyValue(BigDecimal component, int property) {
+        switch (property) {
+            case 0:
+                return component.scale()
+            case 1:
+                return component.unscaledValue()
+            default:
+                throw new HibernateException("Unknown property index ${property}")
+        }
+    }
+
+    @Override
+    BigDecimal instantiate(ValueAccess values) {
+        Integer scale = values.getValue(0, Integer)
+        BigInteger unscaledValue = values.getValue(1, BigInteger)
+        unscaledValue == null ? null : new BigDecimal(unscaledValue, scale ?: 0)
+    }
+
+    @Override
+    Class<?> embeddable() {
+        CompositeScaledDecimal
+    }
+
+    @Override
+    Class<BigDecimal> returnedClass() {
+        BigDecimal
+    }
+
+    @Override
+    boolean equals(BigDecimal x, BigDecimal y) {
+        Objects.equals(x, y)
+    }
+
+    @Override
+    int hashCode(BigDecimal x) {
+        x == null ? 0 : x.hashCode()
+    }
+
+    @Override
+    BigDecimal deepCopy(BigDecimal value) {
+        value
+    }
+
+    @Override
+    boolean isMutable() {
+        false
+    }
+
+    @Override
+    Serializable disassemble(BigDecimal value) {
+        value
+    }
+
+    @Override
+    BigDecimal assemble(Serializable cached, Object owner) {
+        (BigDecimal) cached
+    }
+
+    @Override
+    BigDecimal replace(BigDecimal detached, BigDecimal managed, Object owner) {
+        detached
+    }
+}
+
+/** An enum persisted as two columns: its code and its rank. */
+@CompileStatic
+enum CompositeTier {
+    BRONZE('B', 1), SILVER('S', 2), GOLD('G', 3)
+
+    final String code
+    final int rank
+
+    CompositeTier(String code, int rank) {
+        this.code = code
+        this.rank = rank
+    }
+
+    static CompositeTier ofCode(String code) {
+        values().find { CompositeTier tier -> tier.code == code }
+    }
+}
+
+/** The embeddable class of {@link CompositeTierType}: {@code code} is index 0 and {@code rank} is 1. */
+record CompositeTierTemplate(String code, int rank) {}
+
+/** Maps {@link CompositeTier} to its code and its rank, and reads the constant back from the code. */
+@CompileStatic
+class CompositeTierType implements CompositeUserType<CompositeTier> {
+
+    @Override
+    Object getPropertyValue(CompositeTier component, int property) {
+        switch (property) {
+            case 0:
+                return component.code
+            case 1:
+                return component.rank
+            default:
+                throw new HibernateException("Unknown property index ${property}")
+        }
+    }
+
+    @Override
+    CompositeTier instantiate(ValueAccess values) {
+        String code = values.getValue(0, String)
+        code == null ? null : CompositeTier.ofCode(code)
+    }
+
+    @Override
+    Class<?> embeddable() {
+        CompositeTierTemplate
+    }
+
+    @Override
+    Class<CompositeTier> returnedClass() {
+        CompositeTier
+    }
+
+    @Override
+    boolean equals(CompositeTier x, CompositeTier y) {
+        x == y
+    }
+
+    @Override
+    int hashCode(CompositeTier x) {
+        x == null ? 0 : x.hashCode()
+    }
+
+    @Override
+    CompositeTier deepCopy(CompositeTier value) {
+        value
+    }
+
+    @Override
+    boolean isMutable() {
+        false
+    }
+
+    @Override
+    Serializable disassemble(CompositeTier value) {
+        value
+    }
+
+    @Override
+    CompositeTier assemble(Serializable cached, Object owner) {
+        (CompositeTier) cached
+    }
+
+    @Override
+    CompositeTier replace(CompositeTier detached, CompositeTier managed, Object owner) {
         detached
     }
 }

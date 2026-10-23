@@ -19,9 +19,16 @@
 
 package org.grails.orm.hibernate.cfg.domainbinding
 
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.orm.hibernate.cfg.ColumnConfig
+import org.grails.orm.hibernate.cfg.PropertyConfig
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy
+import org.hibernate.boot.spi.BootstrapContext
+import org.hibernate.boot.spi.MetadataBuildingContext
+import org.hibernate.boot.spi.MetadataBuildingOptions
+import org.hibernate.resource.beans.spi.ManagedBean
+import org.hibernate.resource.beans.spi.ManagedBeanRegistry
 import org.hibernate.usertype.CompositeUserType
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -30,6 +37,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
 import org.grails.orm.hibernate.cfg.domainbinding.util.CompositeUserTypeColumns
 import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher
+import org.grails.orm.hibernate.cfg.domainbinding.util.UtilCdiMoneyType
 
 class ColumnNameForPropertyAndPathFetcherSpec extends Specification {
 
@@ -155,5 +163,43 @@ class ColumnNameForPropertyAndPathFetcherSpec extends Specification {
         result == ["amount_amount", "amount_currency"]
         0 * grailsProp.getColumnName(_)
         0 * defaultColumnFetcher._
+    }
+
+    def "a fetcher built with a building context resolves a composite user type as the binder of its property does"() {
+        given: "a building context that allows extensions in CDI, whose bean registry creates a user type without a default constructor"
+        UtilCdiMoneyType managed = new UtilCdiMoneyType('cdi')
+        ManagedBeanRegistry registry = Mock(ManagedBeanRegistry)
+        MetadataBuildingOptions options = Stub(MetadataBuildingOptions) {
+            isAllowExtensionsInCdi() >> true
+        }
+        BootstrapContext bootstrapContext = Stub(BootstrapContext) {
+            getManagedBeanRegistry() >> registry
+        }
+        MetadataBuildingContext buildingContext = Stub(MetadataBuildingContext) {
+            getBuildingOptions() >> options
+            getBootstrapContext() >> bootstrapContext
+        }
+        def namingStrategy = Stub(PersistentEntityNamingStrategy) {
+            resolveColumnName(_ as String) >> { String name -> name }
+        }
+        def fetcher = new ColumnNameForPropertyAndPathFetcher(
+                namingStrategy,
+                new DefaultColumnNameFetcher(namingStrategy, backticksRemover),
+                backticksRemover,
+                buildingContext
+        )
+        def grailsProp = Mock(HibernatePersistentProperty) {
+            getName() >> 'fee'
+            getOwner() >> Stub(PersistentEntity)
+            getHibernateMappedForm() >> new PropertyConfig()
+            getCompositeUserType() >> UtilCdiMoneyType
+        }
+
+        when:
+        def result = fetcher.getColumnNamesForPropertyAndPath(grailsProp, "")
+
+        then: "the registry supplies the user type whose embeddable class names the columns"
+        1 * registry.getBean(UtilCdiMoneyType) >> Stub(ManagedBean) { getBeanInstance() >> managed }
+        result == ["fee_amount", "fee_currency"]
     }
 }

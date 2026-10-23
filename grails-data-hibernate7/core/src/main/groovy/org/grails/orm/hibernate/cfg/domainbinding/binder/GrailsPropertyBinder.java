@@ -106,17 +106,18 @@ public class GrailsPropertyBinder {
 
         Value value;
 
-        if (currentGrailsProp instanceof HibernateEnumProperty hibernateEnumProperty &&
+        if (currentGrailsProp.getCompositeUserType() != null) {
+            // A composite user type spans one column per attribute of its embeddable class, so it is a
+            // component of that type rather than a basic value: Hibernate resolves the type of a basic value
+            // as a BasicType or a UserType only. This comes before the enum branch, since an enum property
+            // mapped with a composite user type is such a component too, not an enum column.
+            value = bindCompositeUserType(currentGrailsProp, parentProperty, path);
+        } else if (currentGrailsProp instanceof HibernateEnumProperty hibernateEnumProperty &&
                 !hibernateEnumProperty.isCollectionElement()) {
             // A hasMany-of-enum property is also a HibernateEnumProperty, but it must still go
             // through collectionBinder.bindCollection() below so its join table gets created;
             // EnumTypeBinder only binds its element column, from BasicCollectionElementBinder.
             value = enumTypeBinder.bindEnumType(hibernateEnumProperty, path);
-        } else if (currentGrailsProp.getCompositeUserType() != null) {
-            // A composite user type spans one column per attribute of its embeddable class, so it is a
-            // component of that type rather than a basic value: Hibernate resolves the type of a basic value
-            // as a BasicType or a UserType only.
-            value = bindCompositeUserType(currentGrailsProp, parentProperty, path);
         } else if (currentGrailsProp.isUserButNotCollectionType()) {
             value = simpleValueBinder.bindBasicValue(currentGrailsProp, parentProperty, path);
         } else if (currentGrailsProp instanceof HibernateOneToOneProperty oneToOne &&

@@ -33,9 +33,11 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import org.hibernate.MappingException;
+import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.usertype.CompositeUserType;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.ResolvableType;
 import org.springframework.util.ReflectionUtils;
 
 import org.grails.datastore.mapping.model.config.GormProperties;
@@ -54,6 +56,11 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentP
  * the property are assigned to the attributes in that order, and an attribute without a configured column, or
  * whose column has no name, is named after the property and the attribute. The binder of such a property binds
  * these columns, and a uniqueness group that names the property spans all of them.
+ * <p>
+ * The user type is {@linkplain #userTypeOf instantiated here}, for the binder of the property and for the
+ * uniqueness groups that name the property alike, the way Hibernate instantiates it when it resolves the type of
+ * a component: as a managed bean when the building options allow extensions in CDI, through its default
+ * constructor otherwise.
  *
  * @since 8.0.1
  */
@@ -63,10 +70,34 @@ public class CompositeUserTypeColumns {
 
     private final PersistentEntityNamingStrategy namingStrategy;
     private final BackticksRemover backticksRemover;
+    private final MetadataBuildingContext metadataBuildingContext;
 
+    /**
+     * Creates the columns of a binding that has no {@link MetadataBuildingContext}: a composite user type is then
+     * instantiated through its default constructor, as Hibernate does outside a CDI container.
+     *
+     * @param namingStrategy the naming strategy of the default column names
+     * @param backticksRemover the remover of the backticks of a quoted name
+     * @see #CompositeUserTypeColumns(PersistentEntityNamingStrategy, BackticksRemover, MetadataBuildingContext)
+     */
     public CompositeUserTypeColumns(PersistentEntityNamingStrategy namingStrategy, BackticksRemover backticksRemover) {
+        this(namingStrategy, backticksRemover, null);
+    }
+
+    /**
+     * @param namingStrategy the naming strategy of the default column names
+     * @param backticksRemover the remover of the backticks of a quoted name
+     * @param metadataBuildingContext the context of the binding, whose options decide whether a composite user
+     * type is a managed bean of the {@linkplain org.hibernate.boot.spi.BootstrapContext#getManagedBeanRegistry()
+     * bean registry}; {@code null} instantiates every user type through its default constructor
+     */
+    public CompositeUserTypeColumns(
+            PersistentEntityNamingStrategy namingStrategy,
+            BackticksRemover backticksRemover,
+            MetadataBuildingContext metadataBuildingContext) {
         this.namingStrategy = namingStrategy;
         this.backticksRemover = backticksRemover;
+        this.metadataBuildingContext = metadataBuildingContext;
     }
 
     /**
@@ -110,6 +141,35 @@ public class CompositeUserTypeColumns {
     }
 
     /**
+     * The composite user type of the property, instantiated the way Hibernate instantiates it when it resolves
+     * the type of a component: as a managed bean of the bean registry when the building options allow extensions
+     * in CDI, through its default constructor otherwise. The binder of the property and the uniqueness groups
+     * that name the property both resolve the user type here, so a type that only a bean container can create
+     * is created the same way wherever the binding needs it.
+     *
+     * @param property the property, mapped with a composite user type
+     * @return an instance of the user type of the property
+     * @throws MappingException when the property is not mapped with a composite user type
+     * @throws org.springframework.beans.BeanInstantiationException when the user type has no default constructor
+     * and no bean container creates it
+     */
+    public CompositeUserType<?> userTypeOf(HibernatePersistentProperty property) {
+        Class<? extends CompositeUserType<?>> userTypeClass = property.getCompositeUserType();
+        if (userTypeClass == null) {
+            throw new MappingException("Property [" + property.getName() + "] of class [" +
+                    property.getOwner().getName() + "] is not mapped with a " +
+                    CompositeUserType.class.getSimpleName());
+        }
+        if (metadataBuildingContext != null && metadataBuildingContext.getBuildingOptions().isAllowExtensionsInCdi()) {
+            return metadataBuildingContext.getBootstrapContext()
+                    .getManagedBeanRegistry()
+                    .getBean(userTypeClass)
+                    .getBeanInstance();
+        }
+        return BeanUtils.instantiateClass(userTypeClass);
+    }
+
+    /**
      * The column configuration of each attribute of the property, in attribute order: the configured column when
      * it names its column, otherwise a copy of it, or a new configuration, named after the property and the
      * attribute.
@@ -143,9 +203,8 @@ public class CompositeUserTypeColumns {
     }
 
     /**
-     * The names of the columns of the property, in attribute order, as {@link #columnConfigsOf} names them. The
-     * user type is instantiated through its default constructor to read its embeddable class, as Hibernate does
-     * when it resolves the attributes of a composite type outside a CDI container.
+     * The names of the columns of the property, in attribute order, as {@link #columnConfigsOf} names them, from
+     * the embeddable class of the {@linkplain #userTypeOf user type of the property}.
      *
      * @param property the property, mapped with a composite user type
      * @param path the path of the property within its entity
@@ -154,13 +213,7 @@ public class CompositeUserTypeColumns {
      * than its embeddable class has attributes
      */
     public List<String> columnNamesOf(HibernatePersistentProperty property, String path) {
-        Class<? extends CompositeUserType<?>> userTypeClass = property.getCompositeUserType();
-        if (userTypeClass == null) {
-            throw new MappingException("Property [" + property.getName() + "] of class [" +
-                    property.getOwner().getName() + "] is not mapped with a " +
-                    CompositeUserType.class.getSimpleName());
-        }
-        Class<?> embeddable = BeanUtils.instantiateClass(userTypeClass).embeddable();
+        Class<?> embeddable = userTypeOf(property).embeddable();
         return columnConfigsOf(property, path, embeddable, attributesOf(embeddable)).stream()
                 .map(ColumnConfig::getName)
                 .toList();
@@ -208,5 +261,15 @@ public class CompositeUserTypeColumns {
 
     /** A persistent attribute of the embeddable class of a composite user type: its name and its Java type. */
     public record Attribute(String name, Type type) {
+
+        /**
+         * The class of the attribute: the type itself when it is a class, the raw class of a parameterized type,
+         * and {@code Object} for a type that resolves to no class, such as a type variable.
+         *
+         * @return the class of the attribute
+         */
+        public Class<?> rawType() {
+            return ResolvableType.forType(type).toClass();
+        }
     }
 }

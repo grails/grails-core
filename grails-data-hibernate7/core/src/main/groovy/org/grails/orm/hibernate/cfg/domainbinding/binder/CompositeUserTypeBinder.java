@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.hibernate.MappingException;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.mapping.BasicValue;
@@ -38,8 +37,6 @@ import org.hibernate.usertype.CompositeUserType;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.BeanUtils;
 
 import org.grails.orm.hibernate.cfg.ColumnConfig;
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -67,7 +64,12 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher;
  * order, and a name made of the property and the attribute for an attribute without a configured column. The
  * component class is the {@linkplain CompositeUserType#returnedClass() value class} of the user type, not its
  * embeddable class. A unique property has one unique key across all of its columns, together with the columns
- * of its uniqueness group, rather than a unique key per column.
+ * of its uniqueness group, rather than a unique key per column. The constraints of the property describe the
+ * whole value, so each column is defined from its own configuration and the type of its attribute: a numeric
+ * attribute without a configured precision gets the default precision of the dialect, as a numeric property
+ * without constraints does. The value class may be an enum. The user type is instantiated through
+ * {@link CompositeUserTypeColumns#userTypeOf}, as it is for a uniqueness group that names the property: as a
+ * managed bean when the building options allow extensions in CDI, through its default constructor otherwise.
  *
  * @since 8.0.1
  */
@@ -89,10 +91,11 @@ public class CompositeUserTypeBinder {
         this(
                 metadataBuildingContext,
                 new ColumnConfigToColumnBinder(),
-                new ColumnBinder(namingStrategy, jdbcEnvironment.getDialect()),
+                new ColumnBinder(metadataBuildingContext, namingStrategy, jdbcEnvironment.getDialect()),
                 new CreateKeyForProps(new ColumnNameForPropertyAndPathFetcher(
-                        namingStrategy, new DefaultColumnNameFetcher(namingStrategy), new BackticksRemover())),
-                new CompositeUserTypeColumns(namingStrategy, new BackticksRemover()));
+                        namingStrategy, new DefaultColumnNameFetcher(namingStrategy), new BackticksRemover(),
+                        metadataBuildingContext)),
+                new CompositeUserTypeColumns(namingStrategy, new BackticksRemover(), metadataBuildingContext));
     }
 
     protected CompositeUserTypeBinder(
@@ -115,19 +118,16 @@ public class CompositeUserTypeBinder {
      * @param parentProperty the embedded property that holds the property, or {@code null}
      * @param path the path of the property within its entity
      * @return the component
-     * @throws MappingException when the property maps more columns than its embeddable class has attributes
+     * @throws org.hibernate.MappingException when the property is not mapped with a composite user type, or maps
+     * more columns than its embeddable class has attributes
      */
     public Component bindCompositeUserType(
             @NonNull HibernatePersistentProperty property,
             HibernatePersistentProperty parentProperty,
             String path) {
         PersistentClass owner = property.getPersistentClass();
+        CompositeUserType<?> userType = compositeUserTypeColumns.userTypeOf(property);
         Class<? extends CompositeUserType<?>> userTypeClass = property.getCompositeUserType();
-        if (userTypeClass == null) {
-            throw new MappingException("Property [" + property.getName() + "] of class [" + owner.getClassName() +
-                    "] is not mapped with a " + CompositeUserType.class.getSimpleName());
-        }
-        CompositeUserType<?> userType = instantiate(userTypeClass);
         Class<?> embeddable = userType.embeddable();
         PropertyConfig propertyConfig = property.getHibernateMappedForm();
         Table table = property.getTable();
@@ -163,8 +163,10 @@ public class CompositeUserTypeBinder {
 
             Column column = new Column();
             columnConfigToColumnBinder.bindColumnConfigToColumn(column, columnConfig, propertyConfig);
-            columnBinder.bindColumnWithoutUniqueness(
-                    property, parentProperty, column, columnConfig, path, table, userTypeClass.getName());
+            // The column holds the attribute, so its constraints come from its own configuration and the type of
+            // the attribute, not from the constraints of the property, which describe the whole value
+            columnBinder.bindColumnWithoutUniqueness(property, parentProperty, column, columnConfig, path, table,
+                    userTypeClass.getName(), attribute.rawType());
             if (table != null) {
                 table.addColumn(column);
             }
@@ -187,19 +189,5 @@ public class CompositeUserTypeBinder {
         }
         component.sortProperties();
         return component;
-    }
-
-    /**
-     * Instantiates the user type the way Hibernate does when it resolves the component type: as a managed
-     * bean when CDI extensions are allowed, through its default constructor otherwise.
-     */
-    private CompositeUserType<?> instantiate(Class<? extends CompositeUserType<?>> userTypeClass) {
-        if (metadataBuildingContext.getBuildingOptions().isAllowExtensionsInCdi()) {
-            return metadataBuildingContext.getBootstrapContext()
-                    .getManagedBeanRegistry()
-                    .getBean(userTypeClass)
-                    .getBeanInstance();
-        }
-        return BeanUtils.instantiateClass(userTypeClass);
     }
 }
