@@ -339,7 +339,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 currentMap.put(pathElement, newMap)
 
                 def fullPath = accumulatedPath.toString()
-                if (!rootMap.containsKey(fullPath)) {
+                if (!(rootMap.get(fullPath) instanceof Map)) {
                     rootMap.put(fullPath, newMap)
                 }
                 currentMap = newMap

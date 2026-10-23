@@ -190,6 +190,20 @@ class NavigableMapSpec extends Specification {
         output.navigate('a', 'b') == 'root'
     }
 
+    def "a block merged over a scalar replaces it in both representations"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['server.url': 'x'], true)
+
+        when:
+        output.merge(['server.url.port': 'y'], true)
+
+        then: 'the flat key holds the block, as the nested entry does'
+        output['server.url'] == [port: 'y']
+        output.navigate('server', 'url') == [port: 'y']
+        output['server.url.port'] == 'y'
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()

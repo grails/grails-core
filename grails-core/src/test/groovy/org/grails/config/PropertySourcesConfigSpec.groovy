@@ -168,6 +168,22 @@ class PropertySourcesConfigSpec extends Specification {
         config.a.b == 'assigned'
     }
 
+    void 'a block merged over a scalar is read as the block'() {
+        given: "a scalar merged first and a block under it merged second, as a higher-precedence source does"
+        def config = new PropertySourcesConfig()
+        config.merge(['server.url': 'x'])
+        config.merge(['server.url.port': 'y'])
+
+        expect: "every read sees the block"
+        config.getProperty('server.url', Map) == [port: 'y']
+        config.navigate('server', 'url') == [port: 'y']
+        config.getProperty('server.url.port') == 'y'
+
+        and: "a String read of the block is the default, as it always was"
+        config.getProperty('server.url') == null
+        config.getProperty('server.url', String, 'none') == 'none'
+    }
+
     void 'a dotted key inside a nested map does not overwrite the root key it resembles'() {
         given: "a root key and a nested map whose dotted key spells the same path"
         def config = new PropertySourcesConfig()
