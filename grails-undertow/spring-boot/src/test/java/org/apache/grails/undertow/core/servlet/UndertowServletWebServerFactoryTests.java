@@ -20,12 +20,15 @@ package org.apache.grails.undertow.core.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.ssl.SSLContext;
 
 import io.undertow.Undertow.Builder;
+import io.undertow.servlet.api.Deployment;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -141,6 +144,40 @@ class UndertowServletWebServerFactoryTests {
         this.webServer.start();
         assertThat(getHttpsResponse("https://localhost:" + this.webServer.getPort() + "/hello"))
             .isEqualTo("Hello World");
+    }
+
+    @Test
+    void temporaryDirectoriesAreDeletedWhenTheServerStops() throws Exception {
+        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory(0);
+        UndertowServletWebServer webServer = (UndertowServletWebServer) factory
+            .getWebServer(helloWorldServletRegistration());
+        this.webServer = webServer;
+        webServer.start();
+        Deployment deployment = webServer.getDeploymentManager().getDeployment();
+        Path tempDir = deployment.getDeploymentInfo().getTempDir().toPath();
+        Path documentRoot = Path.of(deployment.getServletContext().getRealPath("/"));
+        Files.writeString(tempDir.resolve("upload.tmp"), "upload");
+        assertThat(tempDir).isDirectory();
+        assertThat(documentRoot).isDirectory();
+        webServer.stop();
+        assertThat(tempDir).doesNotExist();
+        assertThat(documentRoot).doesNotExist();
+    }
+
+    @Test
+    void aConfiguredDocumentRootIsKeptWhenTheServerStops(@TempDir File documentRoot) throws Exception {
+        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory(0);
+        factory.setDocumentRoot(documentRoot);
+        Files.writeString(documentRoot.toPath().resolve("index.html"), "Hello World");
+        UndertowServletWebServer webServer = (UndertowServletWebServer) factory
+            .getWebServer(helloWorldServletRegistration());
+        this.webServer = webServer;
+        webServer.start();
+        Path tempDir = webServer.getDeploymentManager().getDeployment().getDeploymentInfo().getTempDir().toPath();
+        assertThat(getResponse("http://localhost:" + webServer.getPort() + "/index.html")).isEqualTo("Hello World");
+        webServer.stop();
+        assertThat(tempDir).doesNotExist();
+        assertThat(documentRoot.toPath().resolve("index.html")).hasContent("Hello World");
     }
 
     private ServletRegistrationBean<HttpServlet> helloWorldServletRegistration() {
