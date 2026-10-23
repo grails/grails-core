@@ -102,13 +102,13 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
     }
 
     @Unroll
-    void "bind leaves the #property of a list or a map alone on #dialect.class.simpleName, whose elements repeat by design"() {
-        given: 'the join table of a list is keyed by (owner, index) and the one of a map by (owner, key)'
+    void "bind leaves the #property of a list, a map or a bag alone on #dialect.class.simpleName, whose elements repeat by design"() {
+        given: 'the join table of a list is keyed by (owner, index), the one of a map by (owner, key), and a bag has no key'
         Collection collection = collectionOf(SjtListOwner, property)
         SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(Stub(MetadataBuildingContext), dialect)
 
-        expect: 'the table has no unique key of its own: the primary key is what makes its rows unique'
-        collection.collectionTable.hasPrimaryKey()
+        expect: 'the table has no unique key of its own: the primary key, where there is one, is what makes its rows unique'
+        collection.collectionTable.hasPrimaryKey() == hasPrimaryKey
         uniqueKeyColumns(collection.collectionTable).isEmpty()
 
         when:
@@ -119,11 +119,19 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
         collection.collectionTable.indexes.isEmpty()
 
         where:
-        property | dialect
-        'names'  | new H2Dialect()
-        'names'  | new OracleDialect()
-        'labels' | new H2Dialect()
-        'labels' | new OracleDialect()
+        property    | hasPrimaryKey | dialect
+        'nicknames' | true          | new H2Dialect()
+        'nicknames' | true          | new OracleDialect()
+        'roleList'  | true          | new H2Dialect()
+        'roleList'  | true          | new OracleDialect()
+        'attrs'     | true          | new H2Dialect()
+        'attrs'     | true          | new OracleDialect()
+        'roleMap'   | true          | new H2Dialect()
+        'roleMap'   | true          | new OracleDialect()
+        'labels'    | false         | new H2Dialect()
+        'labels'    | false         | new OracleDialect()
+        'bagRoles'  | false         | new H2Dialect()
+        'bagRoles'  | false         | new OracleDialect()
     }
 
     void "bind leaves a collection whose key the other side owns alone"() {
@@ -290,7 +298,16 @@ class SjtChild {
 @Entity
 class SjtListOwner {
     Long id
-    List<String> names
-    Map<String, String> labels
-    static hasMany = [names: String, labels: String]
+    List<String> nicknames
+    List<SjtRole> roleList
+    Map<String, String> attrs
+    Map<String, SjtRole> roleMap
+    java.util.Collection<String> labels
+    java.util.Collection<SjtRole> bagRoles
+    static hasMany = [nicknames: String, roleList: SjtRole, attrs: String, roleMap: SjtRole, labels: String, bagRoles: SjtRole]
+    static mapping = {
+        roleList joinTable: 'sjt_list_owner_role_list'
+        roleMap joinTable: 'sjt_list_owner_role_map'
+        bagRoles joinTable: 'sjt_list_owner_bag_roles'
+    }
 }

@@ -115,16 +115,20 @@ class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
         then: 'the second row is rejected by the constraint of that association'
         thrown(DataIntegrityViolationException)
 
-        when: 'a list repeats an element and a map holds one value under two keys'
+        when: 'a list, a map and a bag each repeat an element'
         Long ownerId = SjtListOwner.withNewTransaction {
-            new SjtListOwner(names: ['x', 'x'], labels: [a: 'v', b: 'v']).save(flush: true).id
+            SjtMember member = new SjtMember(name: 'repeated member').save(flush: true)
+            new SjtListOwner(nicknames: ['x', 'x'], roleList: [member, member], attrs: [a: 'v', b: 'v'],
+                    roleMap: [a: member, b: member], labels: ['y', 'y'], bagRoles: [member, member]).save(flush: true).id
         }
 
-        then: 'both are written and read back as they were'
+        then: 'all of them are written and read back as they were'
         SjtListOwner.withNewSession {
             SjtListOwner.withNewTransaction {
                 SjtListOwner owner = SjtListOwner.get(ownerId)
-                owner.names == ['x', 'x'] && owner.labels == [a: 'v', b: 'v']
+                owner.nicknames == ['x', 'x'] && owner.roleList*.name == ['repeated member', 'repeated member'] &&
+                        owner.attrs == [a: 'v', b: 'v'] && owner.roleMap.values()*.name == ['repeated member', 'repeated member'] &&
+                        owner.labels.sort() == ['y', 'y'] && owner.bagRoles*.name == ['repeated member', 'repeated member']
             }
         }
 
@@ -157,10 +161,17 @@ class SjtMember {
 @Entity
 class SjtListOwner {
     Long id
-    List<String> names
-    Map<String, String> labels
-    static hasMany = [names: String, labels: String]
+    List<String> nicknames
+    List<SjtMember> roleList
+    Map<String, String> attrs
+    Map<String, SjtMember> roleMap
+    Collection<String> labels
+    Collection<SjtMember> bagRoles
+    static hasMany = [nicknames: String, roleList: SjtMember, attrs: String, roleMap: SjtMember, labels: String, bagRoles: SjtMember]
     static mapping = {
         version false
+        roleList joinTable: 'sjt_list_owner_role_list'
+        roleMap joinTable: 'sjt_list_owner_role_map'
+        bagRoles joinTable: 'sjt_list_owner_bag_roles'
     }
 }

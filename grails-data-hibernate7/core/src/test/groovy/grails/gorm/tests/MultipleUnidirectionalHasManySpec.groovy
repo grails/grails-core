@@ -29,7 +29,7 @@ import grails.gorm.annotation.Entity
 class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote, MuhGroup, MuhSharedAccount)
+        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote, MuhGroup, MuhSharedAccount, MuhRepeats)
     }
 
     void cleanup() {
@@ -37,6 +37,7 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
             MuhItem.executeUpdate('delete from MuhItem', [:])
             MuhAccount.executeUpdate('delete from MuhAccount', [:])
             MuhSharedAccount.executeUpdate('delete from MuhSharedAccount', [:])
+            MuhRepeats.executeUpdate('delete from MuhRepeats', [:])
             MuhNote.executeUpdate('delete from MuhNote', [:])
             MuhGroup.executeUpdate('delete from MuhGroup', [:])
             MuhRole.executeUpdate('delete from MuhRole', [:])
@@ -155,6 +156,44 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         MuhSharedAccount.get(account.id).denyRoles*.authority.sort() == ['ROLE_DENY', 'ROLE_DENY_2']
     }
 
+    void "the same member twice in one association of a shared join table is refused, while the other association takes it"() {
+        given: "an account whose allow and deny roles share a join table, and a role already allowed"
+        def account = new MuhSharedAccount(name: 'Strict account').save(flush: true)
+        def role = new MuhRole(authority: 'ROLE_ONCE').save(flush: true)
+        String allow = "insert into muh_shared_account_roles (account_id, role_id, deny_role_id) values (${account.id}, ${role.id}, null)"
+        String deny = "insert into muh_shared_account_roles (account_id, role_id, deny_role_id) values (${account.id}, null, ${role.id})"
+        MuhSharedAccount.withSession { it.createNativeMutationQuery(allow.toString()).executeUpdate() }
+
+        expect: "the same role denied by the same account is accepted: it is another association"
+        MuhSharedAccount.withSession { it.createNativeMutationQuery(deny.toString()).executeUpdate() } == 1
+
+        when: "the same role is allowed a second time"
+        MuhSharedAccount.withSession { it.createNativeMutationQuery(allow.toString()).executeUpdate() }
+
+        then: "the shared table refuses it"
+        Exception e = thrown()
+        e instanceof org.springframework.dao.DataIntegrityViolationException
+    }
+
+    void "a list, a map and a bag keep an element that repeats"() {
+        given: "a role and an owner with a repeated element in each kind of collection"
+        def role = new MuhRole(authority: 'ROLE_REPEATED').save(flush: true)
+        def owner = new MuhRepeats(name: 'Repeats', nicknames: ['a', 'a'], roleList: [role, role], attrs: [k1: 'v', k2: 'v'],
+                roleMap: [a: role, b: role], labels: ['x', 'x'], bagRoles: [role, role]).save(flush: true)
+        MuhRepeats.withSession { it.clear() }
+
+        when:
+        def found = MuhRepeats.get(owner.id)
+
+        then: "every collection reads back with its repeated element"
+        found.nicknames == ['a', 'a']
+        found.roleList*.authority == ['ROLE_REPEATED', 'ROLE_REPEATED']
+        found.attrs == [k1: 'v', k2: 'v']
+        found.roleMap.values()*.authority == ['ROLE_REPEATED', 'ROLE_REPEATED']
+        found.labels.sort() == ['x', 'x']
+        found.bagRoles*.authority == ['ROLE_REPEATED', 'ROLE_REPEATED']
+    }
+
     void "a unidirectional hasMany next to a serializable to-many is written to its join table"() {
         given: "a persisted note whose tags are a serializable column, not a collection"
         def note = new MuhNote(name: 'Example note', tags: ['tag-a', 'tag-b'] as Set).save(flush: true)
@@ -234,5 +273,23 @@ class MuhSharedAccount {
     static mapping = {
         roles joinTable: [name: 'muh_shared_account_roles', key: 'account_id', column: 'role_id']
         denyRoles joinTable: [name: 'muh_shared_account_roles', key: 'account_id', column: 'deny_role_id']
+    }
+}
+
+@Entity
+class MuhRepeats {
+    Long id
+    String name
+    List<String> nicknames
+    List<MuhRole> roleList
+    Map<String, String> attrs
+    Map<String, MuhRole> roleMap
+    Collection<String> labels
+    Collection<MuhRole> bagRoles
+    static hasMany = [nicknames: String, roleList: MuhRole, attrs: String, roleMap: MuhRole, labels: String, bagRoles: MuhRole]
+    static mapping = {
+        roleList joinTable: 'muh_repeats_role_list'
+        roleMap joinTable: 'muh_repeats_role_map'
+        bagRoles joinTable: 'muh_repeats_bag_roles'
     }
 }

@@ -68,12 +68,12 @@ public class SharedJoinTableUniqueKeyBinder {
 
     /**
      * Gives a set the uniqueness constraint over its key columns and its element on its join table. A list or a map
-     * is keyed by its index, which its table has as part of the primary key, and its elements repeat by design, so
-     * they are left as Hibernate bound them.
+     * is keyed by its index, which its table has as part of the primary key, and a bag has no key at all; their
+     * elements repeat by design, so they are left as Hibernate bound them.
      */
     public void bind(Collection collection) {
         Table table = collection.getCollectionTable();
-        if (!(collection instanceof org.hibernate.mapping.Set) || table == null || collection.isInverse() ||
+        if (!collection.isSet() || table == null || collection.isInverse() ||
                 collection.isOneToMany() || collection.getKey() == null) {
             return;
         }
