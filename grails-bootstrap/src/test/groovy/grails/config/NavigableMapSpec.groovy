@@ -217,6 +217,20 @@ class NavigableMapSpec extends Specification {
         output.navigate('a', 'b') == 'assigned'
     }
 
+    def "a nested subscript merge keeps the flat alias of the list on the same list"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['app.items[0]': 'old'], true)
+
+        when:
+        output.merge([app: ['items[0]': 'new']], true)
+
+        then:
+        output['app.items'] == ['new']
+        output.navigate('app', 'items') == ['new']
+        output['app.items[0]'] == 'new'
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()

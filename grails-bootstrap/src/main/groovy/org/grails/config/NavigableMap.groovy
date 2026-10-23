@@ -172,9 +172,16 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 String k = sourceKey[0..<subscriptStart]
                 String index = sourceKey[subscriptStart + 1..<subscriptEnd]
                 String rest = sourceKey.substring(subscriptEnd + 1)
-                targetMap.put(k, setSubscriptValue(targetMap.get(k), index, rest, sourceValue))
+                Object container = setSubscriptValue(targetMap.get(k), index, rest, sourceValue)
+                targetMap.put(k, container)
+                if (path) {
+                    mergeMapEntry(rootMap, "${path}.${k}".toString(), container)
+                }
                 if (isSubscriptChain(rest)) {
                     targetMap.put(sourceKey, sourceValue)
+                    if (path) {
+                        mergeMapEntry(rootMap, "${path}.${sourceKey}".toString(), sourceValue)
+                    }
                 }
             }
         } else {

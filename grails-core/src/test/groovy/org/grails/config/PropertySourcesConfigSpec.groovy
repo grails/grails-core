@@ -281,6 +281,17 @@ hello:
         changing.readCount() == 1
     }
 
+    void 'an indexed list merged under its parent is read as the updated list'() {
+        given: "a list written by index, then an element of it merged under the parent"
+        def config = new PropertySourcesConfig()
+        config.merge(['app.items[0]': 'old'])
+        config.merge([app: ['items[0]': 'new']])
+
+        expect: "the flat key and the nested list agree"
+        config.getProperty('app.items', List) == ['new']
+        config.navigate('app', 'items') == ['new']
+    }
+
     void 'a dotted key that runs past a value that is not a map is absent'() {
         given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
         def constraints = { nullable true }
