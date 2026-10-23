@@ -34,7 +34,7 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
         manager.grailsConfig.hibernate.session_factory.statement_inspector = sqlCapture
-        manager.registerDomainClasses(CreateAliasTeam, CreateAliasLike, CreateAliasStudent)
+        manager.registerDomainClasses(CreateAliasTeam, CreateAliasLike, CreateAliasStudent, CreateAliasTag)
     }
 
     void setup() {
@@ -72,6 +72,44 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
 
         where:
         alias << ['l', 'likes']
+    }
+
+    void 'detached to-many aliases do not multiply counts or paginated total counts'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        new CreateAliasTeam(name: 'both').addToLikes(first).addToLikes(second).save(failOnError: true)
+        new CreateAliasTeam(name: 'first only').addToLikes(first).save(failOnError: true)
+        new CreateAliasTeam(name: 'second only').addToLikes(second).save(flush: true, failOnError: true)
+        def criteria = new DetachedCriteria(CreateAliasTeam).build {
+            createAlias('likes', 'l')
+            eq('l.label', 'first')
+        }
+
+        expect:
+        criteria.count() == 2
+        criteria.list(max: 1).totalCount == 2
+    }
+
+    void 'nested association paths do not reuse a same-named root association join'() {
+        given:
+        def a = new CreateAliasTag(name: 'a').save(failOnError: true)
+        def b = new CreateAliasTag(name: 'b').save(failOnError: true)
+        def likeA = new CreateAliasLike(label: 'a', tag: a).save(failOnError: true)
+        def likeB = new CreateAliasLike(label: 'b', tag: b).save(failOnError: true)
+        def matching = new CreateAliasTeam(name: 'matching', tag: a)
+                .addToLikes(likeB).save(failOnError: true)
+        new CreateAliasTeam(name: 'wrong like tag', tag: a).addToLikes(likeA).save(failOnError: true)
+        new CreateAliasTeam(name: 'wrong team tag', tag: b).addToLikes(likeB).save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            tag { eq('name', 'a') }
+            likes { eq('tag.name', 'b') }
+        }
+
+        then:
+        rows*.id == [matching.id]
     }
 
     void 'an entity collection alias preserves size restrictions without multiplying rows'() {
@@ -515,6 +553,57 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         explicitInner << [false, true]
     }
 
+    void 'unused basic collection aliases preserve rows and counts with join type #joinType and membership #restrictMembership'() {
+        given:
+        new CreateAliasStudent(name: 'grace').addToSchools('Yale').addToSchools('Princeton').save(failOnError: true)
+        new CreateAliasStudent(name: 'hank').addToSchools('Princeton').save(failOnError: true)
+        new CreateAliasStudent(name: 'none').save(flush: true, failOnError: true)
+
+        when:
+        def names = CreateAliasStudent.withCriteria {
+            createAlias('schools', 's', joinType)
+            if (restrictMembership) {
+                inList('schools', ['Princeton'])
+            }
+            projections { property('name') }
+            order('name', 'asc')
+        }
+
+        then:
+        names == expectedNames
+
+        when:
+        def count = CreateAliasStudent.createCriteria().count {
+            createAlias('schools', 's', joinType)
+            if (restrictMembership) {
+                inList('schools', ['Princeton'])
+            }
+        }
+
+        then:
+        count == expectedNames.size()
+
+        when:
+        def rows = CreateAliasStudent.createCriteria().list(max: 1) {
+            createAlias('schools', 's', joinType)
+            if (restrictMembership) {
+                inList('schools', ['Princeton'])
+            }
+            order('name', 'asc')
+        }
+
+        then:
+        rows*.name == ['grace']
+        rows.totalCount == expectedNames.size()
+
+        where:
+        joinType | restrictMembership | expectedNames
+        0        | false              | ['grace', 'hank', 'none']
+        1        | false              | ['grace', 'hank', 'none']
+        0        | true               | ['grace', 'hank']
+        1        | true               | ['grace', 'hank']
+    }
+
     void 'basic collection membership remains independent of an element alias'() {
         given:
         new CreateAliasStudent(name: 'both schools')
@@ -939,17 +1028,29 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
 class CreateAliasTeam {
     String name
     CreateAliasLike favorite
+    CreateAliasTag tag
 
     static hasMany = [likes: CreateAliasLike]
 
     static constraints = {
         favorite nullable: true
+        tag nullable: true
     }
 }
 
 @Entity
 class CreateAliasLike {
     String label
+    CreateAliasTag tag
+
+    static constraints = {
+        tag nullable: true
+    }
+}
+
+@Entity
+class CreateAliasTag {
+    String name
 }
 
 @Entity
