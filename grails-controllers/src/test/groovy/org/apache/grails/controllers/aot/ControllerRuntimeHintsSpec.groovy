@@ -25,6 +25,8 @@ import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.TypeReference
 import spock.lang.Specification
 
+import org.grails.plugins.web.controllers.GrailsSecurityHeadersFilter
+
 /**
  * Covers the controller API surviving into an ahead-of-time image. Without these hints the methods
  * are stripped and dispatch fails on the request that first takes the path, which for the method
@@ -62,6 +64,12 @@ class ControllerRuntimeHintsSpec extends Specification {
             registered(grails.artefact.controller.support.ResponseRenderer)
             registered(grails.artefact.controller.support.ResponseRedirector)
             registered(grails.artefact.controller.support.RequestForwarder)
+    }
+
+    void 'the nonce of a nonce-based Content-Security-Policy is registered, whichever filter generated it'() {
+        expect: 'the cspNonce tag reads it as request._csp.nonce, and the security headers filter reads Spring Security\'s'
+            registered(GrailsSecurityHeadersFilter.ContentSecurityPolicyNonce)
+            registered(TypeReference.of('org.springframework.security.web.header.ContentSecurityPolicyNonce'))
     }
 
     void 'a type from a module that is absent is skipped rather than failing the build'() {
