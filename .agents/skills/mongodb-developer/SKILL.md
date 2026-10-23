@@ -34,12 +34,12 @@ Nine Gradle projects live under this directory, mapped to real Gradle project na
 |---|---|---|
 | `core/` | `:grails-data-mongodb-core` | The actual GORM-for-MongoDB implementation: `MongoDatastore`, `MongoMappingContext`, `MongoQuery`, GeoJSON types |
 | `bson/` | `:grails-data-mongodb-bson` | Low-level, GORM-independent BSON codec machinery (`BsonPersistentEntityCodec`, per-type property codecs, hand-rolled JSON tokenizer) |
-| `ext/` | `:grails-data-mongodb-ext` | A single file, Groovy extension methods on the raw MongoDB driver (`distinct`, `watch`/change streams, `deleteMany`) |
+| `ext/` | `:grails-data-mongodb-ext` | A single file, Groovy extension methods on the raw MongoDB driver (`distinct`, `watch`/change streams, `deleteMany`, `createAndGetCollection` with driver collection options) |
 | `boot-plugin/` | `:grails-data-mongodb-spring-boot` | Spring Boot auto-configuration (`MongoDbGormAutoConfiguration`) |
 | `spring-data/` | `:grails-data-mongodb-spring-data` | Lets GORM-for-MongoDB and Spring Data MongoDB share a `MongoClient`/codecs/transaction |
 | `grails-plugin/` | `:grails-data-mongodb` (note: not `-grails-plugin` suffixed) | Classic Grails plugin descriptor (`MongodbGrailsPlugin`); also ships the app-facing `grails.test.mongodb.MongoSpec` test base via `testFixtures` |
 | `gson-templates/` | `:grails-data-mongodb-gson-templates` | JSON Views (`.gson`) for `ObjectId` and GeoJSON types |
-| `embedded/` | `:grails-data-mongodb-embedded` | Starts a real `mongod` (Flapdoodle, a `compileOnly` dependency the application adds itself) before the application context refreshes and publishes its URL into the configured properties; for applications, not for this module's own tests |
+| `embedded/` | `:grails-data-mongodb-embedded` | Starts an embedded MongoDB server before the application context refreshes and publishes its URL into the configured properties; for applications, not for this module's own tests. Two backends: `InMemoryMongoBackend` over `de.bwaldvogel:mongo-java-server` (an `api` dependency, so it ships with the module) and `FlapdoodleMongoBackend` for a real `mongod` (`compileOnly`; the application adds Flapdoodle itself). `EmbeddedMongoInitializer` picks Flapdoodle when it is on the classpath and the in-memory backend otherwise; `embedded.mongodb.backend` (`in-memory` or `flapdoodle`) selects one explicitly |
 | `docs/` | `:grails-data-mongodb-docs` | Asciidoc manual + groovydoc aggregation only, no source |
 
 ## Key Classes and Responsibilities
@@ -70,12 +70,12 @@ There is no single `GrailsDomainBinder`-equivalent class — the responsibility 
 - **Schemaless/dynamic attributes** — `DynamicAttributes` trait support baked into `BsonPersistentEntityCodec` and `MongoEntity`.
 - **Change streams** — `MongoExtensions.watch(...)`, a thin Groovy-extension wrapper over the driver's native `watch()`, not a GORM-level abstraction.
 - **Multi-document transactions** — opt-in via `grails.mongodb.transactional`, gated on cluster topology (`REPLICA_SET`/`SHARDED`/`LOAD_BALANCED` supported; `STANDALONE` falls back with a one-time warning).
-- **Multi-tenancy / multiple named connections** — supported (discriminator-based multi-tenancy, `grails.mongodb.connections`).
+- **Multi-tenancy / multiple named connections** — supported in all three modes: `DATABASE` (`MongoDatastore.getDatastoreForTenantId` routes to the per-connection datastore), `SCHEMA` (the tenant resolver is wrapped in an `AllTenantsResolver`, and the collection lookup honours it) and `DISCRIMINATOR`; plus `grails.mongodb.connections`. The module's `multiTenancy/configuration.adoc` uses `mode: DATABASE` as its example, and `grails-test-examples/mongodb/database-per-tenant` exercises it.
 
 ### Not implemented — do not document or rely on these
 
 - **`shard "name"` in the mapping DSL is a no-op.** There is no `shard` method on `Collection`/`MongoCollection`. The call silently falls through to the generic `Entity.methodMissing` catch-all, which just records it as an ad hoc property config — it never issues a MongoDB `shardCollection` command. Verified: zero `shardCollection` calls anywhere in `core/src/main`. If you see `shard "..."` in a mapping block, treat it as dead syntax, not a real feature.
-- **Capped collections** — not implemented anywhere in this module.
+- **Capped collections in the mapping DSL** — there is no option for them on `MongoCollection`. `MongoExtensions.createAndGetCollection(db, name, options)` in `ext/` does map its options onto the driver's `CreateCollectionOptions`, so `[capped: true, sizeInBytes: n]` creates a capped collection on the raw driver (`MongoExtensionsSpec` covers it); a domain class cannot ask for one.
 
 ## Testing Rules
 
@@ -91,23 +91,23 @@ The module's own tests use a real MongoDB via Testcontainers; the `embedded` sub
   }
   ```
   Domain classes are top-level classes in the same spec file, registered via `manager.registerDomainClasses(...)` in `setupSpec()` — same convention as `HibernateGormDatastoreSpec`.
-- **`AutoStartedMongoSpec`** (`grails-testing-support-mongodb`) — a lighter-weight base used by a handful of specs; a Spock global extension auto-injects `@Shared MongoDBContainer dbContainer` and auto-constructs a `@Shared MongoDatastore` field if present.
+- **`AutoStartedMongoSpec`** (`grails-testing-support-mongodb`) — a lighter-weight base used by 44 specs (41 in `core`, roughly a quarter of its specs, and 3 in `boot-plugin`); a Spock global extension auto-injects `@Shared MongoDBContainer dbContainer` and auto-constructs a `@Shared MongoDatastore` field if present.
 - **`grails.test.mongodb.MongoSpec`** — a separate, *app-facing* base class shipped via `testFixtures` in `grails-plugin/`, for Grails-application-level Mongo integration tests. Don't confuse it with the two internal patterns above — a spec being both a `MongoSpec` and an `AutoStartedMongoSpec` is explicitly forbidden.
 - The MongoDB image version comes from `-PmongodbContainerVersion`, which CI always passes; see `gradle/mongodb-forked-test-config.gradle`.
 - `core` applies `gradle/mongodb-forked-test-config.gradle` (`maxParallelForks = rootProject.ext.configuredTestParallel`, the forked, parallel layout); every other subproject (`bson`, `ext`, `embedded`, `spring-data`, `boot-plugin`, `grails-plugin`, `gson-templates`) applies `gradle/mongodb-test-config.gradle`, which runs serially (`maxParallelForks = 1`). Check which file a subproject applies before changing its parallelism.
-- `-PskipMongodbTests` / `-PonlyMongodbTests` gate these tests at the root, matching the `Container missing` row in root `AGENTS.md`'s Common Issues table — use `-PskipMongodbTests` when Docker isn't available.
+- `-PskipMongodbTests` / `-PonlyMongodbTests` gate these tests at the root. The `Container missing` row in root `AGENTS.md`'s Common Issues table says `-PskipTests`; `-PskipMongodbTests` is the narrower switch that skips only the MongoDB tests, for when Docker isn't available.
 
 ## Change Workflow
 
 1. Identify which layer owns the behavior: mapping (`MongoMappingContext`/`MongoCollection`/`MongoAttribute`) vs. codec/runtime (`BsonPersistentEntityCodec`/`PersistentEntityCodec`) vs. datastore-level (`MongoDatastore`, index/transaction handling).
 2. Check whether the change affects the general `bson/` codec machinery (used by any BSON-backed consumer) or is genuinely Mongo-specific (`core/`) — don't put Mongo-only logic in `bson/`.
 3. Update or add specs via `GrailsDataTckSpec<GrailsDataMongoTckManager>`, registering any new domain classes as top-level classes in the same spec file.
-4. Run the affected subproject's tests with Docker/Podman running; expect `core` tests to run serially.
+4. Run the affected subproject's tests with Docker/Podman running; expect `core` tests to run in parallel forks, each starting its own container (`-PmaxTestParallel=1` makes them serial).
 
 ## Pitfalls to Avoid
 
 - Do not treat `shard "name"` as a functioning DSL keyword — it's a documented no-op (see above). Don't build new features assuming it works, and flag it if you're asked to "fix" sharding — the DSL surface exists but the implementation doesn't.
-- Do not change a subproject's test parallelism without reading the test config file it applies; the serial ones share one container.
+- Do not change a subproject's test parallelism without reading the test config file it applies. The subprojects on `mongodb-test-config.gradle` run serially but do not share one container: `bson`, `ext` and `grails-plugin` extend plain `Specification` and start nothing; `embedded` and `spring-data` start an embedded server, not a Testcontainers one; only `boot-plugin`'s three `AutoStartedMongoSpec` specs get a container, from `MongoContainerHolder`, one per thread.
 - TTL index changes go through `collMod`, not drop/rebuild — a single-field `expireAfterSeconds` change should reconcile in place. MongoDB silently ignores the TTL option on a compound index; don't declare one there.
 - The global `stringIds.defaultStoredAs` setting must be read by `MongoMappingContext` **before** `initialize(classes)` runs (`createIdentity` is invoked during entity registration and depends on it) — if you touch mapping-context initialization order, this dependency is easy to break silently.
 - Known unaddressed gaps (real `// TODO`s in the encode/decode path, not exhaustive but worth checking before assuming behavior): unprocessed `OneToMany` associations in `encodeUpdate` (`PersistentEntityCodec.groovy`), `Map` handling in the embedded-collection update path, and embedded-collection support in the base `BsonPersistentEntityCodec.encodeUpdate` (only the Mongo subclass handles it).
@@ -115,7 +115,7 @@ The module's own tests use a real MongoDB via Testcontainers; the `embedded` sub
 ## Known Status and Constraints
 
 - Multi-document transactions require positive cluster-topology detection (`REPLICA_SET`/`SHARDED`/`LOAD_BALANCED`); a `STANDALONE` cluster falls back to legacy client-side flush behavior with a one-time warning, not a hard failure.
-- `MongoDbGormAutoConfiguration` only closes a `MongoClient` it created itself, not one supplied as an external bean — preserve that ownership tracking if you touch auto-configuration shutdown logic.
+- A `MongoClient` is closed only by whoever created it, not when it was supplied as an external bean. The tracking is `MongoDatastore.ownsClient()`, which `close()` consults. In `MongoDbGormAutoConfiguration` it is carried by the two nested configurations: `ApplicationClientConfiguration` (`@ConditionalOnBean(MongoClient)`, the application's client is used as is) and `GormClientConfiguration` (`@ConditionalOnMissingBean`, whose `mongo` bean has `destroyMethod = ''` so Spring does not close the datastore's client a second time). Preserve both if you touch shutdown logic.
 
 ## Source of Truth
 

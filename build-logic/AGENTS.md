@@ -35,8 +35,8 @@ Run from inside `build-logic/`:
 
 1. **Use plain `@CompileStatic`, not `@GrailsCompileStatic`.** Nothing here is a Grails artefact; no source under this directory uses `@GrailsCompileStatic`.
 2. **`javax.inject.Inject` is correct here.** Gradle's constructor injection uses JSR-330's `javax.inject`, which is unrelated to the Jakarta EE migration. Do not change it to `jakarta.*`.
-3. **Versions are not pinned here.** `plugins/build.gradle` and `docs-core/build.gradle` apply the root's `dependencies.gradle`; do not hardcode a version in this build.
-4. **There is no dedicated CI job for this build.** Every other build includes it and exercises the plugins through its own CI runs, so a missing job is not a sign of neglect.
+3. **Versions come from the root's `dependencies.gradle`.** `plugins/build.gradle`, `docs-core/build.gradle` and `vulnerability-scan/build.gradle` apply it; do not add a new hardcoded version. The exceptions are literal today: `docs-core/build.gradle` pins `grails-gdoc-engine`, `snakeyaml` and the JUnit 5.12.2 / Platform 1.12.2 coordinates, and `settings.gradle` pins its three settings plugins. Leave them as they are; moving them into `dependencies.gradle` is a separate change.
+4. **Three CI jobs cover this build.** `gradle.yml` has a `buildLogic` job ("Build and test the build logic") that runs `./gradlew check --continue` in `build-logic` whenever the policy enables tests, and its `build` matrix runs `:build-logic-root:vulnerability-scan:check` through the root build on every entry; `build-health.yml` runs `:build-logic-root:buildHealth`. Do not add a duplicate job, and do not ignore one of these when it fails.
 
 ## Project Structure
 
@@ -51,6 +51,6 @@ platforms and the Gradle 9 task-configuration rules; read it before changing a p
 
 ## Keep Other Documents In Step
 
-Root `AGENTS.md` and the `hibernate-developer` and `violation-fixer` skills describe behaviour implemented by plugins in
+Root `AGENTS.md` and the `gradle-developer` and `violation-fixer` skills describe behaviour implemented by plugins in
 this build: the code-analysis and violation reports, the repository-conventions check, JaCoCo aggregation. When a plugin's
 behaviour changes, update those documents in the same change.

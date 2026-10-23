@@ -37,7 +37,7 @@ Run from inside `grails-gradle/`:
 1. **Use plain `@CompileStatic`, not `@GrailsCompileStatic`.** The plugins are Gradle code, not Grails artefacts; the only `@GrailsCompileStatic` mentions in this build are documentation of what a plugin configures for an application.
 2. **`javax.inject.Inject` and `javax.xml.*` are correct here.** They are JSR-330 and JDK APIs, not Jakarta EE packages. The `jakarta.*` references in this build configure a downstream application's dependencies.
 3. **Versions are not pinned here.** `gradle.properties` holds daemon and cache settings only; `build.gradle` applies the root's `dependencies.gradle`. Bump versions in the root file.
-4. **Tests are Gradle TestKit tests.** Plugin specs extend `GradleSpecification` (`plugins/src/test/groovy/org/grails/gradle/plugin/core/GradleSpecification.groovy`) and run a real Gradle build against a generated project, not a mocked Grails application.
+4. **Specs that need a real build run it under TestKit.** Those extend `GradleSpecification` (`plugins/src/test/groovy/org/grails/gradle/plugin/core/GradleSpecification.groovy`, 23 specs, all in `plugins`) and run a generated project; the rest, in `plugins`, `model` and `common`, are ordinary Spock unit specs.
 
 ## Project Structure
 
@@ -48,8 +48,14 @@ Run from inside `grails-gradle/`:
 | `model/` | `:grails-gradle-model` | The subset of Grails runtime classes the plugins need at build time, before the framework is on the classpath |
 | `plugins/` | `:grails-gradle-plugins` | The `Plugin<Project>` implementations |
 | `tasks/` | `:grails-gradle-tasks` | The task classes |
+| `buildSrc/` | none (its own `settings.gradle`) | The build conventions of this build; applies `org.apache.grails.buildsrc.properties` and the root's `dependencies.gradle`. The one part of this build that is not an included project |
 
 ## CI
 
-The build-health, code-style, code-analysis, coverage and release workflows under `.github/workflows` each have a job
-with `working-directory: grails-gradle`, so this build is checked on its own on every push and pull request.
+`.github/workflows/gradle.yml` is where this build is built and tested, so look there first when a plugin change
+breaks. Its `buildGradle` job runs `./gradlew build` in `grails-gradle` on JDK 21 and 25, with `--rerun-tasks` when the
+CI policy enables tests and `-PskipTests` otherwise; `validateDependencies` runs `validateDependencyVersions` and
+`validateBomProperties` has a step for it too, both in `grails-gradle`; `publishGradle` publishes it. `end-to-end.yml`
+publishes it to a local repository that its tests resolve from. The build-health, code-style, code-analysis, coverage and release workflows under
+`.github/workflows` each have a job with `working-directory: grails-gradle` as well, so this build is checked on its own
+on every push and pull request.
