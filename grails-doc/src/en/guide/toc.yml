@@ -275,7 +275,6 @@ async:
   asyncGorm: Asynchronous GORM
   rxjava:
     title: RxJava Support
-    asyncServerSentEvents: Server Sent Events
     asyncRxGorm: RxGORM
   asyncRequests: Asynchronous Request Handling
   asyncStreaming: Streaming Responses

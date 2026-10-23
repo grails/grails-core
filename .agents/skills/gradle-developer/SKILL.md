@@ -37,6 +37,7 @@ Related skills (do not substitute this one):
 | Failing tests / aggregate reports | `test-fixer` |
 | Merging an external plugin repo into the monorepo | `mono-repo-integration` |
 | App-facing Grails 8 upgrade guidance | `grails-8-upgrade` |
+| App-facing Grails 9 upgrade guidance | `grails-9-upgrade` |
 
 ---
 
