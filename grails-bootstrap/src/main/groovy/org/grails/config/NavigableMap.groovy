@@ -348,13 +348,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 newPathList.addAll(currentMap.getPath())
                 newPathList.add(pathElement)
 
-                NavigableMap newMap = new NavigableMap(currentMap.getRootConfig(), newPathList.asImmutable())
+                NavigableMap root = currentMap.getRootConfig()
+                NavigableMap newMap = new NavigableMap(root, newPathList.asImmutable())
                 currentMap.put(pathElement, newMap)
 
                 // the flat alias of a new block lives at the configuration root under the block's full path,
-                // whichever map the walk started on; a scalar an earlier merge left there is replaced
-                NavigableMap root = currentMap.getRootConfig()
-                if (!(root.get(newMap.dottedPath) instanceof Map)) {
+                // whichever map the walk started on; what an earlier merge left there, a scalar or the block
+                // a scalar has since replaced, is stale and is replaced, as a block merged as a map value is
+                if (!currentMap.is(root)) {
                     mergeMapEntry(root, newMap.dottedPath, newMap)
                 }
                 currentMap = newMap

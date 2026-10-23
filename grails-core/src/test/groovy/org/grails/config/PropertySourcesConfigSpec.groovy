@@ -307,6 +307,19 @@ hello:
         config.getProperty('x.a') == null
     }
 
+    void 'a block recreated after a scalar replaced it is read as the new block'() {
+        given: "a block, a scalar merged over it, and a block merged under the scalar again"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.b.c': 1])
+        config.merge([a: 'scalar'])
+        config.merge(['a.b.d': 2])
+
+        expect: "every read sees the recreated block"
+        config.getProperty('a.b', Map) == [d: 2]
+        config.navigate('a', 'b') == [d: 2]
+        config.getProperty('a.b.d', Integer) == 2
+    }
+
     void 'a dotted key that runs past a value that is not a map is absent'() {
         given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
         def constraints = { nullable true }

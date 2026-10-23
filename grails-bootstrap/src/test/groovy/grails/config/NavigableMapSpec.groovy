@@ -260,6 +260,21 @@ class NavigableMapSpec extends Specification {
         output.navigate('x', 'a', 'b') == [c: 'new']
     }
 
+    def "a block recreated after a scalar replaced it moves the flat alias to the new block"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.b.c': 1], true)
+        output.merge([a: 'scalar'], true)
+
+        when:
+        output.merge(['a.b.d': 2], true)
+
+        then: 'the root alias holds the recreated block, as the nested entry does'
+        output['a.b'] == [d: 2]
+        output.navigate('a', 'b') == [d: 2]
+        output['a.b.d'] == 2
+    }
+
     def "a property write below an existing block writes the flat alias of the new block at the root"() {
         given:
         NavigableMap output = new NavigableMap()
