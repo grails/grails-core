@@ -86,6 +86,18 @@ class BookApiSpec extends Specification {
 }
 ----
 
+* *A problem detail no longer gets the request path as its `instance`.*
+RFC 9457 defines `instance` as a URI that identifies the specific occurrence of a problem, so Spring Framework 7.1 no longer sets it to the request path when a handler method returns a `ProblemDetail` or an `ErrorResponse`.
+`respond` follows it: a `ProblemDetail` or `ErrorResponse` it writes, and the problem it writes for validation errors, no longer get one either.
+A client that reads `instance` gets it only where the application sets it: in a `ResponseEntityExceptionHandler` for Spring MVC controllers, and on the problem an action responds with, including one `validationProblemDetailFactory.create(errors)` makes for validation errors:
++
+[source,groovy]
+----
+ProblemDetail problem = validationProblemDetailFactory.create(book.errors)
+problem.instance = URI.create("urn:uuid:${UUID.randomUUID()}")
+respond problem
+----
+
 * *Spring MVC no longer detects the JAXB XML converter.*
 Spring Framework 7.1 stops auto-detecting the JAXB message converter for server applications.
 Grails `render` and `respond` write XML through Grails' own converters and are unaffected.
@@ -95,6 +107,13 @@ A Spring MVC `@RestController` that returns JAXB-annotated objects needs the con
 The Spring TestContext Framework used to ignore such a class unless its class hierarchy declared `@ContextConfiguration`, and now adds it to the test's application context.
 Grails 8 already logs a warning for each one it ignores, so a test run on Grails 8 shows the affected tests.
 Remove the `@Configuration` annotation, or move the class to a top-level class, if the test should not load it.
+
+[TIP]
+====
+The Spring Boot properties migrator, described in the link:upgrading.html#upgrading80x[Grails 8 upgrade guide], finds the configuration properties Spring Boot 4.2 renames, such as `server.tomcat.use-relative-redirects`.
+Spring Boot 4.2 can also make the application fail to start while such a property is left: set `spring.properties.migrator.fail` to `on-warning` to fail on renamed and removed properties, or to `on-error` to fail on removed ones only.
+The default, `never`, only logs them.
+====
 
 ==== 3. graphql-java 26 for GraphQL Applications
 
@@ -991,9 +1010,10 @@ Applications can also inject the factory when they need to create or customize t
 When `respond` receives a `ProblemDetail`, it hands it to the handler Spring MVC's handler adapter writes a
 `ResponseEntity` with, so the problem is written as a Spring MVC controller method that returns it is written: the
 application's `ResponseBodyAdvice` beans apply to it as to a method of the controller, and its
-`ErrorResponse.Interceptor` beans see it. The response has the status the problem carries, and an absent `instance` is
-set to the current resource path. A `status` argument decides the status instead, as the status of a `ResponseEntity`
-does in Spring MVC: a problem that carries another keeps its own, and Spring MVC logs a warning. A Spring
+`ErrorResponse.Interceptor` beans see it. The response has the status the problem carries, and a problem without an
+`instance` is written without one, as Spring MVC writes it. A `status` argument decides the status instead, as the
+status of a `ResponseEntity` does in Spring MVC: a problem that carries another keeps its own, and Spring MVC logs a
+warning. A Spring
 `ErrorResponse`, such as an `ErrorResponseException`, is answered with its problem, whose message codes are resolved with
 the application's messages as Spring MVC's `ResponseEntityExceptionHandler` resolves them, and with its status and
 headers, where Grails 8 wrote it as a bean with a 200. Spring MVC's content

@@ -570,6 +570,29 @@ deployment whose reverse proxy already sends these headers can set `grails.secur
 only explicitly configured headers on proxied requests. See the xref:security[Security] section of the user guide and
 the xref:upgrading#upgrading80x[upgrade guide] for details.
 
+==== Nonce-based Content Security Policy
+
+`grails.security.headers.content-security-policy.value` can name a per-request nonce with the `+{nonce}+` placeholder
+that Spring Security 7.2 introduced, so a policy can allow an inline script or style by nonce rather than with
+`'unsafe-inline'`:
+
+[source,yaml]
+.grails-app/conf/application.yml
+----
+grails:
+    security:
+        headers:
+            content-security-policy:
+                enabled: true
+                value: "script-src 'self' 'nonce-{nonce}'"
+----
+
+A view renders the request's nonce with the new `<g:cspNonce/>` tag, as in `<script nonce="${g.cspNonce()}">`, and the
+`<g:javascript>` tag adds it to the inline script it writes. A controller or a service reads it with
+`grails.web.http.ContentSecurityPolicyNonce.nonceOf(request)`. The nonce is carried in the `_csp` request attribute,
+which Spring Security's nonce filter uses as well, so the header and the page carry the same nonce whichever
+generated it. See the xref:security[Security] section of the user guide.
+
 ==== Agent Skills Published with Grails
 
 Grails now publishes its app-facing https://agentskills.io[Agent Skills] with every release: `org.apache.grails.skills:grails-developer`, for building Grails applications, `org.apache.grails.skills:grails-8-upgrade`, for upgrading an application from Grails 7, and `org.apache.grails.skills:grails-9-upgrade`, for upgrading an application from Grails 8. The jars use the https://www.skillsjars.com[SkillsJars] layout and the Grails BOM manages them, so an application applies the SkillsJars Gradle plugin, declares the skills without a version, and runs `./gradlew extractSkillsJars` to write the skills for its Grails version to the directory its AI coding agent reads. See xref:gettingStarted#agentSkills[Agent Skills].
@@ -718,6 +741,9 @@ grails {
     }
 }
 ----
+
+An application that applies the `war` plugin, as a generated application does, is trained against the executable
+war it ships, `src/main/webapp` included, which Spring Boot 4.2 can extract.
 
 See the <<deploymentAotCache,Ahead-of-Time Caching>> section, which includes measured figures and the
 conditions under which a JVM will decline a cache.

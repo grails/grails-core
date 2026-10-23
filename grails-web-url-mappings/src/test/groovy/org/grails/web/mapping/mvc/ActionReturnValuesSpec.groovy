@@ -143,7 +143,9 @@ class ActionReturnValuesSpec extends AbstractUrlMappingsSpec {
         response.status == 422
         response.contentType == MediaType.APPLICATION_PROBLEM_JSON_VALUE
         json().detail == 'invalid'
-        json().instance == '/returnValues/action'
+
+        and: 'Spring MVC does not give it an instance'
+        !json().containsKey('instance')
     }
 
     void 'a ProblemDetail an action of an error page returns is written, whatever the status of the response'() {
