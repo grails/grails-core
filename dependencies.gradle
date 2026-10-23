@@ -97,10 +97,6 @@ ext {
             // line Grails 8 and 9.0 manage back to 3.1.
             'jackson-bom.version'           : '3.2.3',
             'jquery.version'                : '4.0.0',
-            // Security: overrides the 1.6.3 Spring Boot 4.2 manages. 1.6.3 strips slashes from MDC
-            // values before SiftingAppender uses them as discriminating keys (CVE-2026-19880), and
-            // 1.6.5 completes that fix (CVE-2026-104721). The 1.6.x line keeps SLF4J 2.0.x and JDK 11.
-            'logback.version'               : '1.6.5',
             'nimbus-jose-jwt.version'       : '10.10',
             // Includes the follow-up logout redirect and direct-client CSRF fixes on the 6.5.x line.
             'pac4j.version'                 : '6.5.9',
@@ -204,9 +200,6 @@ ext {
             'jackson-bom-core'         : "tools.jackson.core:jackson-core:${bomDependencyVersions['jackson-bom.version']}",
             'jackson-bom-databind'     : "tools.jackson.core:jackson-databind:${bomDependencyVersions['jackson-bom.version']}",
             'jquery'                   : "org.webjars.npm:jquery:${bomDependencyVersions['jquery.version']}",
-            // Security override of the 1.6.3 Spring Boot 4.2 manages - see logback.version
-            'logback-classic'          : "ch.qos.logback:logback-classic:${bomDependencyVersions['logback.version']}",
-            'logback-core'             : "ch.qos.logback:logback-core:${bomDependencyVersions['logback.version']}",
             // Security override of the transitive 3.5.1 - see plexus-utils.version
             'plexus-utils'                : "org.codehaus.plexus:plexus-utils:${bomDependencyVersions['plexus-utils.version']}",
             // Required alongside plexus-utils 4.x - see plexus-xml.version
