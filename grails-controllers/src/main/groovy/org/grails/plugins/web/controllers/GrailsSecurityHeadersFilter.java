@@ -192,10 +192,10 @@ public class GrailsSecurityHeadersFilter extends OncePerRequestFilter {
             URI base = URI.create(request.getScheme() + "://localhost");
             ForwardedHeaderUtils.ForwardedInfo forwarded;
             if (StringUtils.hasText(headers.getFirst(FORWARDED))) {
-                forwarded = ForwardedHeaderUtils.parseStandardHeader(base, headers, null, null);
+                forwarded = ForwardedHeaderUtils.parseStandardHeader(base, headers);
             }
             else {
-                forwarded = ForwardedHeaderUtils.parseXForwardedHeaders(base, headers, null, null);
+                forwarded = ForwardedHeaderUtils.parseXForwardedHeaders(base, headers);
             }
             String scheme = forwarded.uriComponentsBuilder().build().getScheme();
             return HTTPS.equalsIgnoreCase(scheme);
