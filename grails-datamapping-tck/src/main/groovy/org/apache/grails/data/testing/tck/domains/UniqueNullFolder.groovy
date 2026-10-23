@@ -33,7 +33,7 @@ class UniqueNullFolder implements Serializable {
     UniqueNullFolder parent
 
     static constraints = {
-        name(unique: 'parent')
+        name(unique: [group: 'parent', nulls: 'value'])
         parent(nullable: true)
     }
 }

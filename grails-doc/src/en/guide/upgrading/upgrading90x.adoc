@@ -1152,21 +1152,33 @@ When upgrading an affected application:
 
 See xref:theWebLayer#commandObjects[Command Objects] for a trait-based alternative to sharing a non-domain superclass with a domain class.
 
-==== 17. A Null Value in the Group of a Unique Constraint Is Compared as a Value
+==== 17. A Null in a Unique Constraint's Composite Key Follows the Database
 
 A `unique` constraint that names other properties, such as `url unique: 'httpMethod'`, validates the constrained property together with the properties of its group.
 Before Grails 9, a group property whose value was `null` was left out of the query that looks for a conflicting row.
 The constraint then checked the constrained property alone, so `new Language(language: 'en')` was rejected when a `Language` with `language: 'en'` and `country: 'US'` existed, although the two rows differ in `country`.
+That was stricter than any reading of `null`: in SQL a `null` never conflicts, and where `null` is a value it conflicts only with another `null`.
 
-In Grails 9 a `null` group value is compared as a value: only a row whose value of that group property is also `null` conflicts.
-With `language unique: 'country'`, `('en', null)` no longer conflicts with `('en', 'US')`, and a second `('en', null)` still does.
-The same holds for a nullable association in the group, so a folder with `name unique: 'parent'` may share its name with a folder under a parent, while two top level folders with the same name still conflict.
+In Grails 9 the constraint reads a `null` in its key, in the group and in the constrained property, as the unique index of the database does, so that the validation and the index agree:
 
-A group with several properties compares every one of them, so `('A', null, 'web')` conflicts only with a row that has code `A`, no region and channel `web`.
+* `skip` on H2, PostgreSQL, MySQL, MariaDB, SQL Server and DB2, whose index leaves a row with a `null` out: `('en', null)` is never a duplicate.
+* `value` on Oracle, and on a datastore with no such index such as MongoDB: a `null` conflicts only with another `null`.
 
-Applications that relied on the old behaviour are affected: a save that was rejected because a `null` group value matched every row of the constrained property now succeeds when the rows differ in that group property.
-The old behaviour was a defect and has no replacement.
-To keep a rule such as "the name is unique whatever the value of `parent`", declare the constraint on the one property, `name unique: true`.
-If the database must also reject the second `('en', null)` row, remember that most databases do not treat `null` values of a unique index as equal; the validation does, the index does not.
+Applications that relied on a `null` group value matching every row of the constrained property are affected: their saves are no longer rejected when the rows differ in that group property. To keep the previous behavior for a constraint, ask for the `wildcard` reading:
 
-The constraints reference describes the rule under the `unique` constraint.
+[source,groovy]
+----
+url unique: [group: 'httpMethod', nulls: 'wildcard']
+----
+
+To select a reading for the whole application, set `grails.gorm.unique.nulls` to `database` (the default), `skip`, `value` or `wildcard`:
+
+[source,yaml]
+----
+grails:
+    gorm:
+        unique:
+            nulls: wildcard
+----
+
+`name unique: true` is not a replacement for `wildcard`, since it makes the name unique across every parent. The constraints reference describes the four readings and the reading each database gets under `database`.

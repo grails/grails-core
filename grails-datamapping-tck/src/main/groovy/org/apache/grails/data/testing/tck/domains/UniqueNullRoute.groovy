@@ -34,7 +34,7 @@ class UniqueNullRoute implements Serializable {
     String httpMethod
 
     static constraints = {
-        url(unique: 'httpMethod')
+        url(unique: [group: 'httpMethod', nulls: 'value'])
         httpMethod(nullable: true)
     }
 }

@@ -34,7 +34,7 @@ class UniqueNullMulti implements Serializable {
     String channel
 
     static constraints = {
-        code(unique: ['region', 'channel'])
+        code(unique: [group: ['region', 'channel'], nulls: 'value'])
         region(nullable: true)
         channel(nullable: true)
     }

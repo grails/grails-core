@@ -33,7 +33,7 @@ class UniqueNullLanguage implements Serializable {
     String country
 
     static constraints = {
-        language(unique: 'country')
+        language(unique: [group: 'country', nulls: 'value'])
         country(nullable: true)
     }
 }
