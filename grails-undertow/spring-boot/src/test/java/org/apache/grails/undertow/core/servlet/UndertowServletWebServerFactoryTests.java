@@ -56,11 +56,13 @@ import org.apache.grails.undertow.core.UndertowBuilderCustomizer;
 
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.server.WebServer;
+import org.springframework.boot.web.server.WebServerException;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.util.FileCopyUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests for {@link UndertowServletWebServerFactory}.
@@ -218,6 +220,35 @@ class UndertowServletWebServerFactoryTests {
         webServer.stop();
         assertThat(tempDirExisted).as("the temporary directory while the application's listener is destroyed")
             .isTrue();
+        assertThat(tempDir).doesNotExist();
+    }
+
+    @Test
+    void aServerWhoseHandlersFailedToBuildIsUndeployedWhenItIsDestroyed(@TempDir File parent) throws Exception {
+        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory(0);
+        File regularFile = new File(parent, "file");
+        Files.writeString(regularFile.toPath(), "not a directory");
+        factory.setAccessLogEnabled(true);
+        factory.setAccessLogDirectory(new File(regularFile, "logs"));
+        AtomicBoolean contextDestroyed = new AtomicBoolean();
+        ServletContextInitializer listenerRegistration = (servletContext) -> servletContext
+            .addListener(new ServletContextListener() {
+
+                @Override
+                public void contextDestroyed(ServletContextEvent event) {
+                    contextDestroyed.set(true);
+                }
+
+            });
+        UndertowServletWebServer webServer = (UndertowServletWebServer) factory
+            .getWebServer(helloWorldServletRegistration(), listenerRegistration);
+        this.webServer = webServer;
+        Path tempDir = webServer.getDeploymentManager().getDeployment().getDeploymentInfo().getTempDir().toPath();
+        assertThatExceptionOfType(WebServerException.class).isThrownBy(webServer::start);
+        // what Spring Boot does with a server that failed to start
+        webServer.stop();
+        webServer.destroy();
+        assertThat(contextDestroyed).isTrue();
         assertThat(tempDir).doesNotExist();
     }
 
