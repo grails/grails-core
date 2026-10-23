@@ -139,7 +139,8 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
 
         then: "the derived table names its column with a generated alias, not the caller's, which holds a space"
         boxes == SqlProjectionBox.count()
-        sqlCapture.statements.any { it.contains('derived1_0(col_0)') }
+        sqlCapture.statements.any { it ==~ /(?s).*derived1_0\((col_0|c0)\).*/ }
+        sqlCapture.statements.every { !it.contains('box width') }
     }
 
     @Rollback
