@@ -49,7 +49,7 @@ class CloseSuppressingInvocationHandler implements InvocationHandler {
         switch (method.name) {
             case 'equals':
                 // Only consider equal when proxies are identical.
-                return Objects.equals(proxy, args[0])
+                return proxy == args[0]
             case 'hashCode':
                 // Use hashCode of Session proxy.
                 return System.identityHashCode(proxy)

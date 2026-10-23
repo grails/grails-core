@@ -126,7 +126,7 @@ class GeneratedDomainClassBinder implements SessionFactoryBuilderFactory {
     private final String dataSourceName
     private final GeneratedDomainClassLoader classLoader
     private final PropertyAccessorName propertyAccessorName = new PropertyAccessorName()
-    private final Map<String, Generated> generatedByName = new HashMap<String, Generated>()
+    private final Map<String, Generated> generatedByName = [:]
     private final MultiTenantFilterDefinitionBinder filterDefinitionBinder = new MultiTenantFilterDefinitionBinder()
     private final UniqueNameGenerator uniqueNameGenerator = new UniqueNameGenerator()
     private PersistentEntityNamingStrategy namingStrategy
@@ -227,7 +227,7 @@ class GeneratedDomainClassBinder implements SessionFactoryBuilderFactory {
         // the mappings are bound: from here on the domain class names resolve to the real classes
         classLoaderService?.useRealClasses()
         for (PersistentClass persistentClass : new ArrayList<PersistentClass>(metadata.entityBindings)) {
-            Generated generated = generatedByName.get(persistentClass.className)
+            Generated generated = generatedByName[persistentClass.className]
             if (generated != null) {
                 align(persistentClass, generated, metadata)
             }
@@ -514,8 +514,8 @@ class GeneratedDomainClassBinder implements SessionFactoryBuilderFactory {
      */
     private void alignCompositeForeignKeys(MetadataImplementor metadata) {
         for (PersistentClass persistentClass : new ArrayList<PersistentClass>(metadata.entityBindings)) {
-            if (generatedByName.containsKey(persistentClass.entityName)) {
-                List<Value> values = new ArrayList<Value>()
+            if (persistentClass.entityName in generatedByName) {
+                List<Value> values = []
                 collectValues(persistentClass, values)
                 for (Value value : values) {
                     if (value instanceof ManyToOne) {
@@ -548,7 +548,7 @@ class GeneratedDomainClassBinder implements SessionFactoryBuilderFactory {
     }
 
     private void alignCompositeForeignKey(ManyToOne value) {
-        Generated target = generatedByName.get(value.referencedEntityName)
+        Generated target = generatedByName[value.referencedEntityName]
         if (target == null || target.entity().compositeIdentity == null) {
             return
         }

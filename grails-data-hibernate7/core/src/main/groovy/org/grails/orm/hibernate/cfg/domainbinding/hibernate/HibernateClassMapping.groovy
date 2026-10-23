@@ -40,7 +40,7 @@ class HibernateClassMapping extends AbstractClassMapping<Mapping> {
     HibernateClassMapping(PersistentEntity entity, MappingContext context) {
         super(entity, context)
         this.mappedForm = (Mapping) context.mappingFactory.createMappedForm(entity)
-        for (PropertyConfig propConf : mappedForm.propertyConfigs.values()) {
+        for (PropertyConfig propConf in mappedForm.propertyConfigs.values()) {
             if (propConf != null && propConf.cascade != null) {
                 propConf.explicitSaveUpdateCascade = CascadeBehavior.isSaveUpdate(propConf.cascade)
             }

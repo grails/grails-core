@@ -60,8 +60,8 @@ class CreateKeyForProps {
 
         if (mappedForm.isUnique() && mappedForm.isUniqueWithinGroup()) {
 
-            List<Column> keyList = new ArrayList<>()
-            keyList.add(new Column(columnName))
+            List<Column> keyList = []
+            keyList << new Column(columnName)
             List<String> propertyNames = mappedForm.uniquenessGroup
             GrailsHibernatePersistentEntity owner = grailsProp.hibernateOwner
             for (String propertyName : propertyNames) {

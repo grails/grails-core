@@ -106,8 +106,8 @@ interface GrailsHibernatePersistentEntity extends PersistentEntity {
 
         String quotedDiscriminator = quote + discriminatorValue + quote
 
-        Set<String> result = new LinkedHashSet<>()
-        result.add(quotedDiscriminator)
+        Set<String> result = [] as Set
+        result << quotedDiscriminator
         for (GrailsHibernatePersistentEntity child : childEntities) {
             result.addAll(child.buildDiscriminatorSet())
         }

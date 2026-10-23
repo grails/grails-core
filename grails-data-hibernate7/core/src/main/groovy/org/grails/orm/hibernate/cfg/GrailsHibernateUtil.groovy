@@ -184,7 +184,7 @@ class GrailsHibernateUtil extends HibernateRuntimeUtils {
      */
     static void ensureCorrectGroovyMetaClass(Object target, Class<?> persistentClass) {
         if (target instanceof GroovyObject) {
-            if (!target.metaClass.theClass.equals(persistentClass)) {
+            if (target.metaClass.theClass != persistentClass) {
                 target.metaClass = GroovySystem.metaClassRegistry.getMetaClass(persistentClass)
             }
         }

@@ -101,7 +101,7 @@ class HibernateMappingContextConfiguration extends Configuration
     // dependency of this module
     private static final String ENVERS_DO_NOT_AUDIT_OPTIMISTIC_LOCKING_FIELD = 'org.hibernate.envers.do_not_audit_optimistic_locking_field'
     private final Class<? extends CurrentSessionContext> currentSessionContext = GrailsSessionContext
-    private final Set<Class> additionalClasses = new HashSet<>()
+    private final Set<Class> additionalClasses = [] as Set
     protected String sessionFactoryBeanName = 'sessionFactory'
     protected String dataSourceName = ConnectionSource.DEFAULT
     protected transient HibernateMappingContext hibernateMappingContext
@@ -135,7 +135,7 @@ class HibernateMappingContextConfiguration extends Configuration
     @Override
     void setApplicationContext(@Nullable ApplicationContext applicationContext) throws BeansException {
         resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(applicationContext)
-        String dsName = ConnectionSource.DEFAULT.equals(dataSourceName) ? 'dataSource' : "dataSource_${dataSourceName}"
+        String dsName = ConnectionSource.DEFAULT == dataSourceName ? 'dataSource' : "dataSource_${dataSourceName}"
         Properties properties = getProperties()
 
         if (applicationContext != null) {
@@ -299,7 +299,7 @@ class HibernateMappingContextConfiguration extends Configuration
 
         ConfigurationHelper.resolvePlaceHolders(properties)
 
-        List<Class> annotatedClasses = new ArrayList<>()
+        List<Class> annotatedClasses = []
         for (PersistentEntity persistentEntity : hibernateMappingContext.persistentEntities) {
             Class<?> javaClass = persistentEntity.javaClass
             if (javaClass.isAnnotationPresent(Entity)) {

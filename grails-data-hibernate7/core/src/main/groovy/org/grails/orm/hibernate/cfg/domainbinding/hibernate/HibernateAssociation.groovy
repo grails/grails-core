@@ -41,8 +41,6 @@ import org.grails.orm.hibernate.cfg.PropertyConfig
 @CompileStatic
 interface HibernateAssociation extends HibernatePersistentProperty {
 
-    // --- Association contract (satisfied by the class hierarchy of all implementors) ---
-
     PersistentProperty<?> getInverseSide()
 
     PersistentEntity getAssociatedEntity()
@@ -62,8 +60,6 @@ interface HibernateAssociation extends HibernatePersistentProperty {
     default boolean isAssociationColumnNullable() {
         return true
     }
-
-    // --- Hibernate-typed overrides, removing instanceof guards ---
 
     /** Returns the inverse side as a {@link HibernateAssociation}, eliminating cast at call sites. */
     @Override

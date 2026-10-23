@@ -37,14 +37,10 @@ enum CollectionKind {
     MAP(Map),
     SORTED_SET(SortedSet)
 
-    private final Class<?> javaType
+    final Class<?> javaType
 
     CollectionKind(Class<?> javaType) {
         this.javaType = javaType
-    }
-
-    Class<?> getJavaType() {
-        return javaType
     }
 
     /** @return the kind for the exact declared type, or {@code null} when the binder has no collection for it */

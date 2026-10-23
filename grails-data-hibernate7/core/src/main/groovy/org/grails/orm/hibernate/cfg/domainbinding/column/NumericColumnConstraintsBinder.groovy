@@ -74,10 +74,10 @@ class NumericColumnConstraintsBinder {
     }
 
     private boolean isApproximateFloatingPoint(Class<?> propertyType) {
-        return Float.equals(propertyType) ||
-                float.class.equals(propertyType) ||
-                Double.equals(propertyType) ||
-                double.class.equals(propertyType)
+        return Float == propertyType ||
+                float.class == propertyType ||
+                Double == propertyType ||
+                double.class == propertyType
     }
 
     private int getConstraintValueLength(Comparable<?> min, int scale) {

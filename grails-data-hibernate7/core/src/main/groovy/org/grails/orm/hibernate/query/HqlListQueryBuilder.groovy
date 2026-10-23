@@ -52,7 +52,7 @@ class HqlListQueryBuilder {
         if (fetchObj instanceof Map) {
             Map<String, Object> fetchMap = (Map<String, Object>) fetchObj
             for (Map.Entry<String, Object> entry : fetchMap.entrySet()) {
-                if (HibernateQueryArgument.JOIN.value().equals(entry.value) || HibernateQueryArgument.EAGER.value().equals(entry.value)) {
+                if (HibernateQueryArgument.JOIN.value() == entry.value || HibernateQueryArgument.EAGER.value() == entry.value) {
                     requireMappedProperty(entry.key, HibernateQueryArgument.FETCH.value())
                     hql.append(' join fetch e.').append(entry.key)
                 }

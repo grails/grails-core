@@ -242,10 +242,10 @@ class GrailsDomainGenerator {
     private final ForeignKeyColumnCountCalculator foreignKeyColumnCount = new ForeignKeyColumnCountCalculator()
 
     /** The collections of embedded types that more than one embedded property reaches, as {@code <embedded class>#<collection>}. */
-    private Set<String> sharedEmbeddedCollections = new HashSet<String>()
+    private Set<String> sharedEmbeddedCollections = [] as Set
 
     /** For each such collection, the qualifier of the embedded properties that do not keep the binder's names, by {@link #embeddedUseKey}. */
-    private Map<String, String> embeddedCollectionQualifiers = new HashMap<String, String>()
+    private Map<String, String> embeddedCollectionQualifiers = [:]
 
     GrailsDomainGenerator(
             PersistentEntityNamingStrategy namingStrategy,
@@ -359,7 +359,7 @@ class GrailsDomainGenerator {
      * qualified with the table of their owner and the path of their embedded property ({@link #embeddedCollectionQualifier}).</p>
      */
     private void assignEmbeddedCollectionQualifiers(Collection<GrailsHibernatePersistentEntity> entities) {
-        Map<String, List<EmbeddedUse>> uses = new LinkedHashMap<String, List<EmbeddedUse>>()
+        Map<String, List<EmbeddedUse>> uses = [:]
         for (GrailsHibernatePersistentEntity entity : entities) {
             for (HibernatePersistentProperty property : entity.persistentPropertiesToBind) {
                 if (isComponent(property)) {
@@ -367,8 +367,8 @@ class GrailsDomainGenerator {
                 }
             }
         }
-        Set<String> shared = new HashSet<String>()
-        Map<String, String> qualifiers = new HashMap<String, String>()
+        Set<String> shared = [] as Set
+        Map<String, String> qualifiers = [:]
         for (Map.Entry<String, List<EmbeddedUse>> entry : uses.entrySet()) {
             // an embedded type that is an entity too has a collection of its own, bound under the binder's names, so every embedded use is qualified
             String typeName = entry.key.substring(0, entry.key.indexOf('#'))
@@ -405,7 +405,7 @@ class GrailsDomainGenerator {
      *     first of those that reach it. Known after {@link #generateAll} has run.
      */
     String embeddedCollectionQualifier(GrailsHibernatePersistentEntity owner, String path, String collection) {
-        return embeddedCollectionQualifiers.get(embeddedUseKey(owner, path, collection))
+        return embeddedCollectionQualifiers[embeddedUseKey(owner, path, collection)]
     }
 
     private static void collectCollectionUses(
@@ -615,7 +615,7 @@ class GrailsDomainGenerator {
      *     identifier (a part that refers to an entity with a composite identifier makes the foreign key columns depend on the
      *     order {@code Component.sortProperties} gave the referenced key), and the entity must have no subclasses
      */
-    private String compositeIdProblem(GrailsHibernatePersistentEntity entity, Set<String> visiting = new HashSet<String>()) {
+    private String compositeIdProblem(GrailsHibernatePersistentEntity entity, Set<String> visiting = [] as Set) {
         if (!visiting.add(entity.name)) {
             return "Entity [${entity.name}] has a composite identifier that refers to itself"
         }
@@ -1342,13 +1342,13 @@ class GrailsDomainGenerator {
         Map<String, String> parameters = [:]
         if (isEnum) {
             // the classic enum binder replaces the configured type parameters with the enum class
-            parameters[IdentityEnumType.PARAM_ENUM_CLASS] = type.name
+            parameters.put(IdentityEnumType.PARAM_ENUM_CLASS, type.name)
         } else if (!element) {
             // the binder gives a collection element its type name only, never the type parameters
             Properties typeParams = property.hibernateMappedForm.typeParams
             if (typeParams != null) {
                 for (String key : new TreeSet<String>(typeParams.stringPropertyNames())) {
-                    parameters[key] = typeParams.getProperty(key)
+                    parameters.put(key, typeParams.getProperty(key))
                 }
             }
         }
@@ -1485,7 +1485,7 @@ class GrailsDomainGenerator {
         Properties properties = mappedId?.properties
         if (properties != null) {
             for (String key : new TreeSet<String>(properties.stringPropertyNames())) {
-                parameters[key] = properties.getProperty(key)
+                parameters.put(key, properties.getProperty(key))
             }
         }
         return new IdFacets(strategy, generatorClass(strategy), parameters)

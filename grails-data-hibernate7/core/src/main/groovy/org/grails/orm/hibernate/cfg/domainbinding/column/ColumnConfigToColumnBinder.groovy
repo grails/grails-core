@@ -49,10 +49,12 @@ class ColumnConfigToColumnBinder {
             column.scale = columnConfig.scale
         }
         String sqlType = columnConfig.sqlType
-        if (sqlType != null && !sqlType.isEmpty()) {
+        if (sqlType) {
             column.sqlType = sqlType
         }
-        if (mappedForm != null && !mappedForm.isUniqueWithinGroup()) {
+        if (mappedForm != null && !mappedForm.uniqueWithinGroup) {
+            // columnConfig.unique is a bare `def` property; its auto-generated getUnique() differs
+            // from isUnique()'s coercion logic (handles non-Boolean values). Keep the explicit call.
             column.unique = columnConfig.isUnique()
         }
     }

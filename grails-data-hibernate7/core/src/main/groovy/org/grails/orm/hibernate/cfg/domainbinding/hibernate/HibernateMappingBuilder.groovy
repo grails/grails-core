@@ -302,13 +302,13 @@ class HibernateMappingBuilder implements MappingConfigurationBuilder<Mapping, Pr
      */
     protected void handlePropertyInternal(String name, Map<String, Object> namedArgs, Closure subClosure) {
         PropertyConfig newConfig = new PropertyConfig()
-        if (defaultConstraints != null && namedArgs.containsKey('shared')) {
-            PropertyConfig sharedConstraints = mapping.columns.get(namedArgs.shared.toString())
+        if (defaultConstraints != null && 'shared' in namedArgs) {
+            PropertyConfig sharedConstraints = mapping.columns[namedArgs.shared.toString()]
             if (sharedConstraints != null) {
                 newConfig = (PropertyConfig) sharedConstraints.clone()
             }
-        } else if (mapping.columns.containsKey('*')) {
-            PropertyConfig globalConstraints = mapping.columns.get('*')
+        } else if ('*' in mapping.columns) {
+            PropertyConfig globalConstraints = mapping.columns['*']
             if (globalConstraints != null) {
                 newConfig = (PropertyConfig) globalConstraints.clone()
             }
@@ -343,6 +343,8 @@ class HibernateMappingBuilder implements MappingConfigurationBuilder<Mapping, Pr
         if (namedArgs.ignoreNotFound instanceof Boolean) property.ignoreNotFound = (Boolean) namedArgs.ignoreNotFound
         if (namedArgs.params instanceof Map) {
             Properties typeProps = new Properties()
+            // Properties.putAt() does not resolve statically under @CompileStatic (falls back to a
+            // dynamic invokeMethodN call); keep the explicit put() so this stays fully statically dispatched.
             ((Map<Object, Object>) namedArgs.params).each { Object k, Object v -> typeProps.put(k, v) }
             property.typeParams = typeProps
         }
@@ -471,8 +473,8 @@ class HibernateMappingBuilder implements MappingConfigurationBuilder<Mapping, Pr
     }
 
     void methodMissing(String name, Object args) {
-        if (methodMissingIncludes != null && !methodMissingIncludes.contains(name)) return
-        if (methodMissingExcludes.contains(name)) return
+        if (methodMissingIncludes != null && !(name in methodMissingIncludes)) return
+        if (name in methodMissingExcludes) return
 
         Object[] argsArray = (Object[]) args
         int argc = argsArray.length
@@ -492,8 +494,8 @@ class HibernateMappingBuilder implements MappingConfigurationBuilder<Mapping, Pr
                 try {
                     if (lastArg instanceof Map) {
                         Map<String, Object> argMap = (Map<String, Object>) lastArg
-                        Object includes = argMap.get(INCLUDE_PARAM)
-                        Object excludes = argMap.get(EXCLUDE_PARAM)
+                        Object includes = argMap[INCLUDE_PARAM]
+                        Object excludes = argMap[EXCLUDE_PARAM]
                         if (includes instanceof List) methodMissingIncludes = (List<String>) includes
                         if (excludes instanceof List) methodMissingExcludes = (List<String>) excludes
                     }

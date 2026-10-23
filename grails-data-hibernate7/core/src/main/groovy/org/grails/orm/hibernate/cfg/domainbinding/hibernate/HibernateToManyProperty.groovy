@@ -94,7 +94,7 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
         PropertyConfig mapped = hibernateMappedForm
         CacheConfig cache = mapped?.cache
         Object usage = cache?.usage
-        return usage != null ? usage.toString() : null
+        return usage?.toString()
     }
 
     default boolean isBasic() {
@@ -172,7 +172,7 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
         if (mapped != null && mapped.indexColumn != null) {
             PropertyConfig indexColConfig = mapped.indexColumn
             if (!indexColConfig.columns.isEmpty()) {
-                String name = indexColConfig.columns.get(0).name
+                String name = indexColConfig.columns[0].name
                 if (StringUtils.hasText(name)) {
                     return name
                 }
@@ -185,12 +185,12 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
                     IndexedCollection.DEFAULT_INDEX_COLUMN_NAME
         }
 
-        ColumnConfig primaryCol = mapped.columns.get(0)
+        ColumnConfig primaryCol = mapped.columns[0]
         Object rawIndex = primaryCol.index
         if (rawIndex instanceof groovy.lang.Closure) {
             PropertyConfig indexColConfig = PropertyConfig.configureNew((groovy.lang.Closure<?>) rawIndex)
             if (!indexColConfig.columns.isEmpty()) {
-                String name = indexColConfig.columns.get(0).name
+                String name = indexColConfig.columns[0].name
                 if (StringUtils.hasText(name)) {
                     return name
                 }
@@ -199,7 +199,7 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
 
         try {
             Map<String, String> indexMap = primaryCol.indexAsMap
-            String colName = indexMap.get('column')
+            String colName = indexMap['column']
 
             if (StringUtils.hasText(colName)) {
                 return colName
@@ -226,7 +226,7 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
             return defaultType
         }
 
-        ColumnConfig primaryCol = mapped.columns.get(0)
+        ColumnConfig primaryCol = mapped.columns[0]
         Object rawIndex = primaryCol.index
         if (rawIndex instanceof groovy.lang.Closure) {
             PropertyConfig indexColConfig = PropertyConfig.configureNew((groovy.lang.Closure<?>) rawIndex)
@@ -237,7 +237,7 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
 
         try {
             Map<String, String> indexMap = primaryCol.indexAsMap
-            String typeName = indexMap.get('type')
+            String typeName = indexMap['type']
 
             if (StringUtils.hasText(typeName)) {
                 return typeName
@@ -312,13 +312,13 @@ interface HibernateToManyProperty extends PropertyWithMapping<PropertyConfig>, H
     @NonNull
     default Optional<ColumnConfig> getColumnConfigOptional() {
         PropertyConfig mapped = hibernateMappedForm
-        return Optional.ofNullable(mapped != null ? mapped.joinTableColumnConfig : null)
+        return Optional.ofNullable(mapped?.joinTableColumnConfig)
     }
 
     @Override
     default boolean isEnum() {
         Class<?> compType = componentType
-        return compType != null && compType.isEnum()
+        return compType?.isEnum() ?: false
     }
 
     /**

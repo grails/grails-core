@@ -49,14 +49,10 @@ enum GrailsSequenceGeneratorEnum {
     HILO('hilo'),
     NATIVE('native')
 
-    private final String name
+    final String name
 
     GrailsSequenceGeneratorEnum(String name) {
         this.name = name
-    }
-
-    String getName() {
-        return name
     }
 
     @Override
@@ -93,7 +89,7 @@ enum GrailsSequenceGeneratorEnum {
             case INCREMENT:
                 return new GrailsIncrementGenerator(context, mappedId, domainClass, namingStrategy)
             case [UUID, UUID2]:
-                return new UuidGenerator(context.getType().getReturnedClass())
+                return new UuidGenerator(context.type.returnedClass)
             case ASSIGNED:
                 return new Assigned()
             case [TABLE, ENHANCED_TABLE]:

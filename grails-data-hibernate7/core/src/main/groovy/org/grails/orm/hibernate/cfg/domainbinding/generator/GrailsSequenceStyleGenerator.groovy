@@ -51,23 +51,23 @@ class GrailsSequenceStyleGenerator extends SequenceStyleGenerator {
             generatorProps.putIfAbsent(PersistentIdentifierGenerator.TABLE, context.rootClass.table.name)
         }
 
-        this.configure(context, generatorProps)
+        configure(context, generatorProps)
 
         if (jdbcEnvironment != null) {
             def database = context.database
             if (databaseStructure != null) {
-                this.registerExportables(database)
+                registerExportables(database)
             }
 
             def physicalName = database.defaultNamespace.physicalName
 
-            String catalog = physicalName.catalog() != null ? physicalName.catalog().canonicalName : null
-            String schema = physicalName.schema() != null ? physicalName.schema().canonicalName : null
+            String catalog = physicalName.catalog()?.canonicalName
+            String schema = physicalName.schema()?.canonicalName
 
             if (databaseStructure != null) {
                 SqlStringGenerationContext sqlContext =
                         SqlStringGenerationContextImpl.fromExplicit(jdbcEnvironment, database, catalog, schema)
-                this.initialize(sqlContext)
+                initialize(sqlContext)
             }
         }
     }
@@ -78,9 +78,9 @@ class GrailsSequenceStyleGenerator extends SequenceStyleGenerator {
      * at all. Anything the generator would treat as unnamed still needs the target table to derive one.
      */
     private static boolean hasExplicitSequenceName(Properties generatorProps) {
-        Object sequenceName = generatorProps.get(SEQUENCE_PARAM)
+        Object sequenceName = generatorProps[SEQUENCE_PARAM]
         if (sequenceName == null) {
-            sequenceName = generatorProps.get(ALT_SEQUENCE_PARAM)
+            sequenceName = generatorProps[ALT_SEQUENCE_PARAM]
         }
         return sequenceName != null && !sequenceName.toString().isEmpty()
     }
