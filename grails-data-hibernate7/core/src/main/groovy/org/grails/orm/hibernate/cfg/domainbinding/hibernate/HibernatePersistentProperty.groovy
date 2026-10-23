@@ -25,7 +25,6 @@ import org.hibernate.mapping.Property
 import org.hibernate.mapping.SimpleValue
 import org.hibernate.mapping.Table
 import org.hibernate.mapping.ToOne
-import org.hibernate.usertype.CompositeUserType
 import org.hibernate.usertype.UserCollectionType
 import org.jspecify.annotations.Nullable
 
@@ -55,14 +54,6 @@ interface HibernatePersistentProperty extends PersistentProperty<PropertyConfig>
     @Nullable
     private static String getClassName(Class<?> propertyClass) {
         return propertyClass != null && !propertyClass.isEnum() ? propertyClass.getName() : null
-    }
-
-    private static @Nullable Class<?> classForName(String className) {
-        try {
-            return Class.forName(className, true, Thread.currentThread().getContextClassLoader())
-        } catch (ClassNotFoundException ignored) {
-            return null
-        }
     }
 
     default boolean isBidirectionalManyToOneWithListMapping(Property prop) {
@@ -126,39 +117,18 @@ interface HibernatePersistentProperty extends PersistentProperty<PropertyConfig>
             return null
         }
         Object typeObj = config.getType()
+        Class<?> userType = null
         if (typeObj instanceof Class) {
-            return (Class<?>) typeObj
+            userType = (Class<?>) typeObj
+        } else if (typeObj != null) {
+            String typeName = typeObj.toString()
+            try {
+                userType = Class.forName(typeName, true, Thread.currentThread().getContextClassLoader())
+            } catch (ClassNotFoundException ignored) {
+                // ignore
+            }
         }
-        return typeObj == null ? null : classForName(typeObj.toString())
-    }
-
-    /**
-     * The {@link CompositeUserType} the property is mapped with: the {@code type} of its own mapping, or
-     * the {@code user-type} registered for its class in the mapping of its owner, when that class
-     * implements the interface. A composite user type spans one column per attribute of its
-     * {@linkplain CompositeUserType#embeddable() embeddable class} and is bound as a component.
-     *
-     * @return The composite user type, or {@code null} when the property is not mapped with one
-     */
-    @SuppressWarnings('unchecked')
-    default @Nullable Class<? extends CompositeUserType<?>> getCompositeUserType() {
-        Class<?> userType = getUserType()
-        if (userType == null) {
-            userType = getRegisteredUserType()
-        }
-        return userType != null && CompositeUserType.isAssignableFrom(userType) ?
-                (Class<? extends CompositeUserType<?>>) userType :
-                null
-    }
-
-    /**
-     * @return The {@code user-type} registered for the class of the property in the mapping of its owner,
-     * or {@code null} when there is none
-     */
-    private @Nullable Class<?> getRegisteredUserType() {
-        Mapping mapping = getHibernateOwner() == null ? null : getHibernateOwner().getMappedForm()
-        String typeName = mapping == null ? null : mapping.getTypeName(getType())
-        return typeName == null ? null : classForName(typeName)
+        return userType
     }
 
     default boolean isUserButNotCollectionType() {

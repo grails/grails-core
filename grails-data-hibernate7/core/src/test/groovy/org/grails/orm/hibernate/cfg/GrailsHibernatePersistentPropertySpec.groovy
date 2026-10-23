@@ -22,10 +22,6 @@ package org.grails.orm.hibernate.cfg
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.HibernateGormDatastoreSpec
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.orm.hibernate.CompositeMoney
-import org.grails.orm.hibernate.CompositeMoneyTemplateType
-import org.grails.orm.hibernate.CompositeMoneyType
-import org.grails.orm.hibernate.YesNoBooleanUserType
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 import org.grails.orm.hibernate.cfg.domainbinding.util.NamingStrategyWrapper
 import spock.lang.Unroll
@@ -75,23 +71,6 @@ class GrailsHibernatePersistentPropertySpec extends HibernateGormDatastoreSpec {
         
         expect:
         !property.isUserButNotCollectionType()
-    }
-
-    @Unroll
-    void 'test getCompositeUserType for property #propertyName'() {
-        given:
-        PersistentEntity entity = createPersistentEntity(TestEntityWithCompositeUserType)
-        HibernatePersistentProperty property = (HibernatePersistentProperty) entity.getPropertyByName(propertyName)
-
-        expect:
-        property.getCompositeUserType() == expected
-
-        where:
-        propertyName | expected
-        'mapped'     | CompositeMoneyTemplateType
-        'registered' | CompositeMoneyType
-        'flag'       | null
-        'name'       | null
     }
 
     void 'test isSerializableType'() {
@@ -295,21 +274,6 @@ class TestEntityWithEnum {
     Long id
     String name
     TestEnum myEnum
-}
-
-@Entity
-class TestEntityWithCompositeUserType {
-    Long id
-    String name
-    CompositeMoney mapped
-    CompositeMoney registered
-    Boolean flag
-
-    static mapping = {
-        'user-type'(type: CompositeMoneyType, 'class': CompositeMoney)
-        mapped type: CompositeMoneyTemplateType
-        flag type: YesNoBooleanUserType
-    }
 }
 
 @Entity
