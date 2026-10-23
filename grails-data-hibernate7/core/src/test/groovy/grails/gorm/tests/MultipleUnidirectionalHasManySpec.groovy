@@ -29,13 +29,14 @@ import grails.gorm.annotation.Entity
 class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote)
+        manager.registerDomainClasses(MuhItem, MuhRole, MuhTag, MuhAccount, MuhNote, MuhSharedAccount)
     }
 
     void cleanup() {
         MuhItem.withNewTransaction {
             MuhItem.executeUpdate('delete from MuhItem', [:])
             MuhAccount.executeUpdate('delete from MuhAccount', [:])
+            MuhSharedAccount.executeUpdate('delete from MuhSharedAccount', [:])
             MuhNote.executeUpdate('delete from MuhNote', [:])
             MuhRole.executeUpdate('delete from MuhRole', [:])
             MuhTag.executeUpdate('delete from MuhTag', [:])
@@ -86,6 +87,40 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         MuhAccount.get(account.id).denyRoles*.authority == ['ROLE_DENY']
     }
 
+    void "two unidirectional hasMany associations sharing one join table keep their rows across a flush of the owner"() {
+        given: "a persisted account whose allow and deny roles share one join table, with a row for each in that table"
+        def account = new MuhSharedAccount(name: 'Shared account').save(flush: true)
+        def allow = new MuhRole(authority: 'ROLE_ALLOW').save(flush: true)
+        def deny = new MuhRole(authority: 'ROLE_DENY').save(flush: true)
+        MuhSharedAccount.withSession { session ->
+            session.createNativeMutationQuery(
+                    "insert into muh_shared_account_roles (account_id, role_id, deny_role_id) values (${account.id}, ${allow.id}, null)".toString()
+            ).executeUpdate()
+            session.createNativeMutationQuery(
+                    "insert into muh_shared_account_roles (account_id, role_id, deny_role_id) values (${account.id}, null, ${deny.id})".toString()
+            ).executeUpdate()
+            session.clear()
+        }
+
+        expect: "each association of the reloaded account reads the row with its own key column"
+        MuhSharedAccount.get(account.id).roles*.authority == ['ROLE_ALLOW']
+        MuhSharedAccount.get(account.id).denyRoles*.authority == ['ROLE_DENY']
+
+        when: "the account changes, gains a deny role and is flushed, then the session is cleared"
+        MuhSharedAccount account1 = MuhSharedAccount.get(account.id)
+        account1.name = 'Renamed account'
+        account1.addToDenyRoles(new MuhRole(authority: 'ROLE_DENY_2'))
+        account1.save(flush: true)
+        MuhSharedAccount.withSession { it.clear() }
+
+        then: "the shared table keeps both rows: the non-updatable key stops one association from deleting or nulling the other's"
+        sharedRows() == [[account.id, allow.id, null], [account.id, null, deny.id]]
+        MuhSharedAccount.get(account.id).roles*.authority == ['ROLE_ALLOW']
+
+        and: "an element added to an association sharing its join table is not written, which is issue 10811 and not changed here"
+        MuhSharedAccount.get(account.id).denyRoles*.authority == ['ROLE_DENY']
+    }
+
     void "a unidirectional hasMany next to a serializable to-many is written to its join table"() {
         given: "a persisted note whose tags are a serializable column, not a collection"
         def note = new MuhNote(name: 'Example note', tags: ['tag-a', 'tag-b'] as Set).save(flush: true)
@@ -98,6 +133,13 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         then: "the role is found through the reloaded note and the serializable tags are intact"
         MuhNote.get(note.id).roles*.authority == ['ROLE_NOTE']
         MuhNote.get(note.id).tags == ['tag-a', 'tag-b'] as Set
+    }
+    private static List<List> sharedRows() {
+        MuhSharedAccount.withSession { session ->
+            session.createNativeQuery(
+                    'select account_id, role_id, deny_role_id from muh_shared_account_roles order by role_id nulls last', Object[]
+            ).list()*.toList()
+        }
     }
 }
 
@@ -139,5 +181,16 @@ class MuhNote {
     static hasMany = [roles: MuhRole, tags: String]
     static mapping = {
         tags type: 'serializable'
+    }
+}
+
+@Entity
+class MuhSharedAccount {
+    Long id
+    String name
+    static hasMany = [roles: MuhRole, denyRoles: MuhRole]
+    static mapping = {
+        roles joinTable: [name: 'muh_shared_account_roles', key: 'account_id', column: 'role_id']
+        denyRoles joinTable: [name: 'muh_shared_account_roles', key: 'account_id', column: 'deny_role_id']
     }
 }
