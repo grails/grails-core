@@ -31,7 +31,6 @@ import grails.artefact.controller.support.AllowedMethodsHelper;
 import grails.artefact.controller.support.RequestForwarder;
 import grails.artefact.controller.support.ResponseRedirector;
 import grails.artefact.controller.support.ResponseRenderer;
-import org.grails.plugins.web.controllers.GrailsSecurityHeadersFilter;
 
 /**
  * Registers the controller API a request is dispatched through.
@@ -70,10 +69,7 @@ public class ControllerRuntimeHints implements RuntimeHintsRegistrar {
         ResponseRenderer.class,
         // a view asking who is logged in reaches the request's principal, and Groovy makes that
         // call on the interface rather than the implementation the container supplies
-        Principal.class,
-        // the cspNonce tag and a controller read the nonce of a nonce-based Content-Security-Policy
-        // as request._csp.nonce
-        GrailsSecurityHeadersFilter.ContentSecurityPolicyNonce.class
+        Principal.class
     };
 
     /**
@@ -81,10 +77,7 @@ public class ControllerRuntimeHints implements RuntimeHintsRegistrar {
      * only when present, so this stays correct for an application that does not use every plugin.
      */
     private static final String[] OPTIONAL_DISPATCHED_TYPES = {
-        "grails.artefact.controller.RestResponder",
-        // the nonce Spring Security's nonce filter sets, which the cspNonce tag renders and the
-        // security headers filter reads through this interface
-        "org.springframework.security.web.header.ContentSecurityPolicyNonce"
+        "grails.artefact.controller.RestResponder"
     };
 
     @Override

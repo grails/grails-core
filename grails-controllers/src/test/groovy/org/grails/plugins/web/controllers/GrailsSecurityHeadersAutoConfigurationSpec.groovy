@@ -44,6 +44,7 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter
 import org.springframework.web.filter.CharacterEncodingFilter
 
+import grails.web.http.ContentSecurityPolicyNonce
 import org.grails.web.config.http.GrailsFilters
 
 import spock.lang.Specification
@@ -286,7 +287,7 @@ class GrailsSecurityHeadersAutoConfigurationSpec extends Specification {
         def properties = cspProperties("script-src 'self' 'nonce-{nonce}'; style-src 'nonce-{nonce}'")
         String rendered = null
         FilterChain view = { viewRequest, viewResponse ->
-            rendered = viewRequest.getAttribute('_csp').nonce
+            rendered = ContentSecurityPolicyNonce.nonceOf(viewRequest as HttpServletRequest)
         } as FilterChain
 
         when:
@@ -344,7 +345,7 @@ class GrailsSecurityHeadersAutoConfigurationSpec extends Specification {
         def filter = new GrailsSecurityHeadersFilter(cspProperties("script-src 'nonce-{nonce}'"))
         def original = new MockHttpServletResponse()
         filter.doFilter(request, original, new MockFilterChain())
-        String rendered = request.getAttribute('_csp').nonce
+        String rendered = ContentSecurityPolicyNonce.nonceOf(request)
 
         when: 'the container dispatches the same request to its error page'
         request.dispatcherType = DispatcherType.ERROR
@@ -437,7 +438,7 @@ class GrailsSecurityHeadersAutoConfigurationSpec extends Specification {
                     def request = new MockHttpServletRequest('GET', '/')
                     def response = new MockHttpServletResponse()
                     context.getBean(GrailsSecurityHeadersFilter).doFilter(request, response, new MockFilterChain())
-                    String nonce = request.getAttribute('_csp').nonce
+                    String nonce = ContentSecurityPolicyNonce.nonceOf(request)
                     assert nonce ==~ /[A-Za-z0-9+\/]{22}/
                     assert response.getHeader('Content-Security-Policy') == "script-src 'self' 'nonce-${nonce}'"
                 }
@@ -1415,7 +1416,7 @@ class GrailsSecurityHeadersAutoConfigurationSpec extends Specification {
 
         @Override
         protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-            response.writer.write(request.getAttribute('_csp').nonce as String)
+            response.writer.write(ContentSecurityPolicyNonce.nonceOf(request))
         }
     }
 

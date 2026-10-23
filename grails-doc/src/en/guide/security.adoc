@@ -196,5 +196,5 @@ Spring Security's header is written first, and the Grails policy is not sent.
 The `cspNonce` and `javascript` tags read the nonce from `_csp`.
 If Spring Security's header configuration names another attribute with `nonceAttributeName`, render the nonce from that attribute instead.
 
-If the `_csp` attribute holds something that has no nonce, the policy is not sent, since a policy without the nonce would block every inline script the view gave one.
+If the `_csp` attribute holds anything other than a Grails or Spring Security nonce, the policy is not sent, since a policy without the nonce would block every inline script the view gave one.
 Grails logs a warning the first time that happens.

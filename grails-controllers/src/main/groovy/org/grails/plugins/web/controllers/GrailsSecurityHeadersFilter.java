@@ -19,15 +19,11 @@
 package org.grails.plugins.web.controllers;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import jakarta.servlet.FilterChain;
@@ -40,12 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.util.function.SingletonSupplier;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ForwardedHeaderUtils;
+
+import grails.web.http.ContentSecurityPolicyNonce;
 
 /**
  * Applies baseline browser hardening response headers.
@@ -67,12 +62,12 @@ import org.springframework.web.util.ForwardedHeaderUtils;
  *
  * <p>A {@code Content-Security-Policy} value may contain the {@code {nonce}} placeholder that
  * Spring Security 7.2 introduced, for example {@code script-src 'self' 'nonce-{nonce}'}. The
- * request then carries a nonce under the {@value #NONCE_ATTRIBUTE} request attribute, which a page
- * renders into the {@code nonce} attribute of an inline script or style with the {@code cspNonce}
- * tag, and every placeholder is replaced with that nonce when the header is written. The attribute
- * is the one Spring Security's {@code ContentSecurityPolicyNonceGeneratingFilter} sets by
- * default, so a request that already carries Spring Security's nonce keeps it, and the header
- * and the view agree on one nonce whichever generated it.</p>
+ * request then carries a {@link ContentSecurityPolicyNonce}, which a page renders into the
+ * {@code nonce} attribute of an inline script or style with the {@code cspNonce} tag, and every
+ * placeholder is replaced with that nonce when the header is written. The request attribute it is
+ * carried under is the one Spring Security's {@code ContentSecurityPolicyNonceGeneratingFilter}
+ * sets by default, so a request that already carries Spring Security's nonce keeps it, and the
+ * header and the view agree on one nonce whichever generated it.</p>
  *
  * <p>When {@link GrailsSecurityHeadersProperties#isEnabled()} is {@code false} the filter
  * passes every request through untouched. The auto-configuration does not register the
@@ -89,13 +84,6 @@ public class GrailsSecurityHeadersFilter extends OncePerRequestFilter {
      */
     static final List<String> REVERSE_PROXY_REQUEST_HEADERS = List.of(
             "Forwarded", "X-Forwarded-For", "X-Forwarded-Proto", "X-Forwarded-Host", "Via", "X-Real-IP");
-
-    /**
-     * The request attribute that carries the nonce of a policy using the {@code {nonce}}
-     * placeholder: the name Spring Security's {@code ContentSecurityPolicyNonceGeneratingFilter}
-     * gives it by default.
-     */
-    public static final String NONCE_ATTRIBUTE = "_csp";
 
     static final String NONCE_PLACEHOLDER = "{nonce}";
 
@@ -146,8 +134,8 @@ public class GrailsSecurityHeadersFilter extends OncePerRequestFilter {
         // Left alone when the request already has one: a nonce this filter set on an earlier
         // dispatch of the same request, or the one Spring Security's nonce filter set when its
         // chain runs ahead of this filter. Either is what a view of this request renders.
-        if (usesNonce() && request.getAttribute(NONCE_ATTRIBUTE) == null) {
-            request.setAttribute(NONCE_ATTRIBUTE, new ContentSecurityPolicyNonce());
+        if (usesNonce() && request.getAttribute(ContentSecurityPolicyNonce.ATTRIBUTE) == null) {
+            request.setAttribute(ContentSecurityPolicyNonce.ATTRIBUTE, new ContentSecurityPolicyNonce());
         }
         SecurityHeadersResponseWrapper wrapped = new SecurityHeadersResponseWrapper(response,
                 () -> writeHeaders(request, response, applyDefaults, secure));
@@ -186,41 +174,21 @@ public class GrailsSecurityHeadersFilter extends OncePerRequestFilter {
         if (!policy.contains(NONCE_PLACEHOLDER)) {
             return policy;
         }
-        String nonce = nonceOf(request);
+        if (request.getAttribute(ContentSecurityPolicyNonce.ATTRIBUTE) == null) {
+            // Removed after this filter set it, so the header gets one of its own.
+            request.setAttribute(ContentSecurityPolicyNonce.ATTRIBUTE, new ContentSecurityPolicyNonce());
+        }
+        String nonce = ContentSecurityPolicyNonce.nonceOf(request);
         if (nonce == null) {
             if (this.unreadableNonceLogged.compareAndSet(false, true)) {
                 logger.warn("The Content-Security-Policy uses {} but the {} request attribute holds a {}, which " +
-                        "has no nonce to read, so the header is not sent.", NONCE_PLACEHOLDER, NONCE_ATTRIBUTE,
-                        request.getAttribute(NONCE_ATTRIBUTE).getClass().getName());
+                        "is neither a Grails nor a Spring Security nonce, so the header is not sent.",
+                        NONCE_PLACEHOLDER, ContentSecurityPolicyNonce.ATTRIBUTE,
+                        request.getAttribute(ContentSecurityPolicyNonce.ATTRIBUTE).getClass().getName());
             }
             return null;
         }
         return policy.replace(NONCE_PLACEHOLDER, nonce);
-    }
-
-    /**
-     * The nonce the request carries: the one this filter generated, or the one Spring Security's
-     * {@code ContentSecurityPolicyNonceGeneratingFilter} set, whose {@code getNonce()} is read
-     * through Spring Security's public interface since this module does not depend on it.
-     */
-    private static String nonceOf(HttpServletRequest request) {
-        Object holder = request.getAttribute(NONCE_ATTRIBUTE);
-        if (holder == null) {
-            // Removed after this filter set it, so the header gets one of its own.
-            ContentSecurityPolicyNonce nonce = new ContentSecurityPolicyNonce();
-            request.setAttribute(NONCE_ATTRIBUTE, nonce);
-            return nonce.getNonce();
-        }
-        if (holder instanceof ContentSecurityPolicyNonce nonce) {
-            return nonce.getNonce();
-        }
-        Method getNonce = ClassUtils.getMethodIfAvailable(holder.getClass(), "getNonce");
-        if (getNonce == null || getNonce.getReturnType() != String.class) {
-            return null;
-        }
-        Object nonce = ReflectionUtils.invokeMethod(
-                ClassUtils.getPubliclyAccessibleMethodIfPossible(getNonce, holder.getClass()), holder);
-        return (nonce instanceof String value && StringUtils.hasText(value)) ? value : null;
     }
 
     private boolean shouldApplyDefaults(HttpServletRequest request) {
@@ -321,34 +289,6 @@ public class GrailsSecurityHeadersFilter extends OncePerRequestFilter {
             if (value != null) {
                 response.setHeader(name, value);
             }
-        }
-    }
-
-    /**
-     * The nonce of one request, generated the first time it is read: 128 bits from a
-     * {@link SecureRandom}, Base64-encoded without padding, as Spring Security generates one.
-     * A page renders it with the {@code cspNonce} tag, and a controller reads it as
-     * {@code request._csp.nonce}.
-     */
-    public static final class ContentSecurityPolicyNonce {
-
-        private static final SecureRandom RANDOM = new SecureRandom();
-
-        private static final int NONCE_BYTES = 16;
-
-        private final Supplier<String> nonce = SingletonSupplier.of(ContentSecurityPolicyNonce::generate);
-
-        ContentSecurityPolicyNonce() {
-        }
-
-        public String getNonce() {
-            return this.nonce.get();
-        }
-
-        private static String generate() {
-            byte[] bytes = new byte[NONCE_BYTES];
-            RANDOM.nextBytes(bytes);
-            return Base64.getEncoder().withoutPadding().encodeToString(bytes);
         }
     }
 }
