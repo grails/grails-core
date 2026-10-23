@@ -48,7 +48,7 @@ class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
             .withStartupTimeout(Duration.ofMinutes(3))
 
     void setupSpec() {
-        manager.registerDomainClasses(SjtGroup, SjtMember)
+        manager.registerDomainClasses(SjtGroup, SjtMember, SjtListOwner)
     }
 
     void "on #db a shared join table is unique per association"() {
@@ -115,6 +115,19 @@ class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
         then: 'the second row is rejected by the constraint of that association'
         thrown(DataIntegrityViolationException)
 
+        when: 'a list repeats an element and a map holds one value under two keys'
+        Long ownerId = SjtListOwner.withNewTransaction {
+            new SjtListOwner(names: ['x', 'x'], labels: [a: 'v', b: 'v']).save(flush: true).id
+        }
+
+        then: 'both are written and read back as they were'
+        SjtListOwner.withNewSession {
+            SjtListOwner.withNewTransaction {
+                SjtListOwner owner = SjtListOwner.get(ownerId)
+                owner.names == ['x', 'x'] && owner.labels == [a: 'v', b: 'v']
+            }
+        }
+
         where:
         db         | container
         'H2'       | null
@@ -139,4 +152,15 @@ class SjtGroup {
 class SjtMember {
     Long id
     String name
+}
+
+@Entity
+class SjtListOwner {
+    Long id
+    List<String> names
+    Map<String, String> labels
+    static hasMany = [names: String, labels: String]
+    static mapping = {
+        version false
+    }
 }

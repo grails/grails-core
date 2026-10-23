@@ -48,7 +48,7 @@ import spock.lang.Unroll
 class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(SjtOwner, SjtSeparateOwner, SjtParent, SjtChild, SjtRole)
+        manager.registerDomainClasses(SjtOwner, SjtSeparateOwner, SjtParent, SjtChild, SjtRole, SjtListOwner)
     }
 
     private Collection collectionOf(Class owner, String property) {
@@ -101,6 +101,31 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
         children.collectionTable.uniqueKeys.isEmpty()
     }
 
+    @Unroll
+    void "bind leaves the #property of a list or a map alone on #dialect.class.simpleName, whose elements repeat by design"() {
+        given: 'the join table of a list is keyed by (owner, index) and the one of a map by (owner, key)'
+        Collection collection = collectionOf(SjtListOwner, property)
+        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(Stub(MetadataBuildingContext), dialect)
+
+        expect: 'the table has no unique key of its own: the primary key is what makes its rows unique'
+        collection.collectionTable.hasPrimaryKey()
+        uniqueKeyColumns(collection.collectionTable).isEmpty()
+
+        when:
+        binder.bind(collection)
+
+        then: 'no unique key over the owner and the element is added'
+        uniqueKeyColumns(collection.collectionTable).isEmpty()
+        collection.collectionTable.indexes.isEmpty()
+
+        where:
+        property | dialect
+        'names'  | new H2Dialect()
+        'names'  | new OracleDialect()
+        'labels' | new H2Dialect()
+        'labels' | new OracleDialect()
+    }
+
     void "bind leaves a collection whose key the other side owns alone"() {
         given: 'the bidirectional collection, whose key column lives in the child table'
         Collection children = collectionOf(SjtParent, 'children')
@@ -121,13 +146,13 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
 
         where:
         dialect                   | expected
-        new H2Dialect()           | SharedJoinTableUniqueness.DEFAULT
-        new PostgreSQLDialect()   | SharedJoinTableUniqueness.DEFAULT
-        new MySQLDialect()        | SharedJoinTableUniqueness.DEFAULT
-        new MariaDBDialect()      | SharedJoinTableUniqueness.DEFAULT
-        new SQLServerDialect()    | SharedJoinTableUniqueness.DEFAULT
-        new DB2Dialect()          | SharedJoinTableUniqueness.DEFAULT
-        new OracleDialect()       | SharedJoinTableUniqueness.ORACLE
+        new H2Dialect()           | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new PostgreSQLDialect()   | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new MySQLDialect()        | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new MariaDBDialect()      | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new SQLServerDialect()    | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new DB2Dialect()          | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new OracleDialect()       | SharedJoinTableUniqueness.ONE_KEY_FOR_ALL_COLLECTIONS
     }
 
     @Unroll
@@ -188,7 +213,7 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
         table.addUniqueKey(first)
 
         when:
-        SharedJoinTableUniqueness.ORACLE.apply(table, [roles], [role], Stub(SharedJoinTableUniqueness.Naming))
+        SharedJoinTableUniqueness.ONE_KEY_FOR_ALL_COLLECTIONS.apply(table, [roles], [role], Stub(SharedJoinTableUniqueness.Naming))
 
         then:
         table.uniqueKeys.keySet() == ['uk_roles_id_role_id'] as Set
@@ -260,4 +285,12 @@ class SjtChild {
     Long id
     String name
     static belongsTo = [parent: SjtParent]
+}
+
+@Entity
+class SjtListOwner {
+    Long id
+    List<String> names
+    Map<String, String> labels
+    static hasMany = [names: String, labels: String]
 }

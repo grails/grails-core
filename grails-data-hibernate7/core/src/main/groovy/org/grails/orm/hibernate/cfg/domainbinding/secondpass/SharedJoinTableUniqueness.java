@@ -25,10 +25,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.OracleDialect;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
+
+import org.grails.orm.hibernate.dialect.UniqueIndexNulls;
 
 /**
  * How a join table that several collections of one owner share keeps the rows of each collection unique, by
@@ -38,27 +39,26 @@ import org.hibernate.mapping.UniqueKey;
  * the other collections null. A row is unique by the key column of its own collection and the element, so each
  * collection needs a constraint of its own over those two; one constraint over all key columns would hold a null in
  * every row and reject nothing on a database that treats nulls as distinct. What that per-collection constraint has
- * to look like depends on how the database compares a null in a unique key:</p>
+ * to look like depends on how the unique index of the database treats a null in its key
+ * ({@link UniqueIndexNulls}):</p>
  * <ul>
- * <li>{@link #DEFAULT}: a unique key over the key column and the element. H2, PostgreSQL, MySQL and MariaDB treat
- * nulls as distinct, so the rows of the other collections, null in this key column, never collide. SQL Server and
- * DB2 compare nulls as equal, but Hibernate's unique delegate for them renders a unique key over nullable columns as
- * a filtered unique index that leaves null rows out, which comes to the same.</li>
- * <li>{@link #ORACLE}: Oracle compares the non-null columns of a partially null row, so a unique key per
+ * <li>{@link #KEY_PER_COLLECTION}, for {@link UniqueIndexNulls#DISTINCT}: a unique key over the key column and the
+ * element. The rows of the other collections, null in this key column, never collide.</li>
+ * <li>{@link #ONE_KEY_FOR_ALL_COLLECTIONS}, for {@link UniqueIndexNulls#COMPARED}: Oracle compares the non-null columns of a partially null row, so a unique key per
  * collection would reject the rows of the other collections, null in that key column and equal in the element.
  * One unique key over the key columns of every collection and the element is right there: a row collides only
  * with a row that is non-null in the same key column, that is a row of its own collection, for the same element.
  * Hibernate renders that key as a plain constraint on Oracle, where it is what is wanted; on a database that treats
- * nulls as distinct the same key would hold a null in every row and reject nothing, which is why it is Oracle's
- * alone.</li>
+ * nulls as distinct the same key would hold a null in every row and reject nothing, which is why it is for
+ * {@code COMPARED} alone.</li>
  * </ul>
  *
  * @since 8.0.1
  */
 public enum SharedJoinTableUniqueness {
 
-    /** Oracle: one unique key over the key columns of every collection sharing the table and the element. */
-    ORACLE(OracleDialect.class) {
+    /** Where nulls are compared: one unique key over the key columns of every collection sharing the table and the element. */
+    ONE_KEY_FOR_ALL_COLLECTIONS(UniqueIndexNulls.COMPARED) {
         @Override
         void apply(Table table, List<Column> keyColumns, List<Column> elementColumns, Naming naming) {
             List<Column> own = concat(keyColumns, elementColumns);
@@ -82,8 +82,8 @@ public enum SharedJoinTableUniqueness {
         }
     },
 
-    /** Every other database: a unique key per collection over its key column and the element. */
-    DEFAULT(Dialect.class) {
+    /** Where nulls are distinct: a unique key per collection over its key column and the element. */
+    KEY_PER_COLLECTION(UniqueIndexNulls.DISTINCT) {
         @Override
         void apply(Table table, List<Column> keyColumns, List<Column> elementColumns, Naming naming) {
             List<Column> own = concat(keyColumns, elementColumns);
@@ -113,18 +113,16 @@ public enum SharedJoinTableUniqueness {
         String indexName(List<Column> columns);
     }
 
-    private final Class<? extends Dialect> dialectClass;
+    private final UniqueIndexNulls indexNulls;
 
-    SharedJoinTableUniqueness(Class<? extends Dialect> dialectClass) {
-        this.dialectClass = dialectClass;
+    SharedJoinTableUniqueness(UniqueIndexNulls indexNulls) {
+        this.indexNulls = indexNulls;
     }
 
-    /** The uniqueness that fits the dialect, {@link #DEFAULT} unless the dialect is listed. */
+    /** The uniqueness that fits how the unique index of the dialect's database treats a null in its key. */
     public static SharedJoinTableUniqueness forDialect(Dialect dialect) {
-        return Arrays.stream(values())
-                .filter(uniqueness -> uniqueness != DEFAULT && uniqueness.dialectClass.isInstance(dialect))
-                .findFirst()
-                .orElse(DEFAULT);
+        UniqueIndexNulls nulls = UniqueIndexNulls.forDialect(dialect);
+        return Arrays.stream(values()).filter(uniqueness -> uniqueness.indexNulls == nulls).findFirst().orElseThrow();
     }
 
     /**
