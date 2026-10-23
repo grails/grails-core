@@ -231,6 +231,49 @@ class NavigableMapSpec extends Specification {
         output['app.items[0]'] == 'new'
     }
 
+    def "a nested dotted merge over a scalar moves the flat alias to the new block"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['x.a': 'old'], true)
+
+        when:
+        output.merge([x: ['a.b': 'new']], true)
+
+        then: 'the root alias holds the block, as the nested entry does'
+        output['x.a'] == [b: 'new']
+        output.navigate('x', 'a') == [b: 'new']
+        output['x.a.b'] == 'new'
+    }
+
+    def "a nested dotted merge writes the flat alias of every block it creates at the root"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([x: [y: 1]], true)
+
+        when:
+        output.merge([x: ['a.b.c': 'new']], true)
+
+        then:
+        output['x.a'] == [b: [c: 'new']]
+        output['x.a.b'] == [c: 'new']
+        output['x.a.b.c'] == 'new'
+        output.navigate('x', 'a', 'b') == [c: 'new']
+    }
+
+    def "a property write below an existing block writes the flat alias of the new block at the root"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([x: [y: 1]], true)
+
+        when:
+        output.x.a.b = 'new'
+
+        then:
+        output['x.a'] == [b: 'new']
+        output['x.a.b'] == 'new'
+        output.navigate('x', 'a') == [b: 'new']
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()

@@ -338,19 +338,8 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     NavigableMap navigateSubMap(List<String> path, boolean createMissing) {
-        NavigableMap rootMap = this
         NavigableMap currentMap = this
-        StringBuilder accumulatedPath = new StringBuilder()
-        boolean isFirst = true
         for (String pathElement : path) {
-            if (!isFirst) {
-                accumulatedPath.append('.').append(pathElement)
-            }
-            else {
-                isFirst = false
-                accumulatedPath.append(pathElement)
-            }
-
             Object currentItem = currentMap.get(pathElement)
             if (currentItem instanceof NavigableMap) {
                 currentMap = (NavigableMap) currentItem
@@ -359,12 +348,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 newPathList.addAll(currentMap.getPath())
                 newPathList.add(pathElement)
 
-                Map<String, Object> newMap = new NavigableMap(currentMap.getRootConfig(), newPathList.asImmutable())
+                NavigableMap newMap = new NavigableMap(currentMap.getRootConfig(), newPathList.asImmutable())
                 currentMap.put(pathElement, newMap)
 
-                def fullPath = accumulatedPath.toString()
-                if (!(rootMap.get(fullPath) instanceof Map)) {
-                    rootMap.put(fullPath, newMap)
+                // the flat alias of a new block lives at the configuration root under the block's full path,
+                // whichever map the walk started on; a scalar an earlier merge left there is replaced
+                NavigableMap root = currentMap.getRootConfig()
+                if (!(root.get(newMap.dottedPath) instanceof Map)) {
+                    mergeMapEntry(root, newMap.dottedPath, newMap)
                 }
                 currentMap = newMap
             } else {

@@ -292,6 +292,21 @@ hello:
         config.navigate('app', 'items') == ['new']
     }
 
+    void 'a nested dotted merge over a scalar is read as the block'() {
+        given: "a scalar merged first and a block merged over it second through a dotted key inside a nested map"
+        def config = new PropertySourcesConfig()
+        config.merge(['x.a': 'old'])
+        config.merge([x: ['a.b': 'new']])
+
+        expect: "every read sees the block"
+        config.getProperty('x.a', Map) == [b: 'new']
+        config.navigate('x', 'a') == [b: 'new']
+        config.getProperty('x.a.b') == 'new'
+
+        and: "a String read of the block is the default"
+        config.getProperty('x.a') == null
+    }
+
     void 'a dotted key that runs past a value that is not a map is absent'() {
         given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
         def constraints = { nullable true }
