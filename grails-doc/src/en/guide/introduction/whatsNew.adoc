@@ -692,6 +692,9 @@ grails {
 }
 ----
 
+An application that applies the `war` plugin, as a generated application does, is trained against the executable
+war it ships, `src/main/webapp` included, which Spring Boot 4.2 can extract.
+
 See the <<deploymentAotCache,Ahead-of-Time Caching>> section, which includes measured figures and the
 conditions under which a JVM will decline a cache.
 
