@@ -184,7 +184,8 @@ A view gives the nonce to each inline script and style with the link:{gspTagsRef
 ----
 
 The link:{gspTagsRef}javascript.html[javascript] tag adds the nonce to the inline script it writes.
-A controller can read the nonce as `request._csp?.nonce`.
+Code outside a view, such as a controller or a service, reads the nonce with `ContentSecurityPolicyNonce.nonceOf(request)` from the `grails.web.http` package, which returns `null` when the request carries none.
+It compiles under `@GrailsCompileStatic` as well as in dynamic code, and it reads the nonce whichever of Grails or Spring Security generated it.
 A script or stylesheet loaded from the application's own origin, such as an asset, is allowed by `'self'` and needs no nonce.
 
 `_csp` is also the attribute Spring Security's `ContentSecurityPolicyNonceGeneratingFilter` sets by default, so a view renders the right nonce whichever of the two generated it, and the header carries the same nonce:

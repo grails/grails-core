@@ -588,7 +588,8 @@ grails:
 ----
 
 A view renders the request's nonce with the new `<g:cspNonce/>` tag, as in `<script nonce="${g.cspNonce()}">`, and the
-`<g:javascript>` tag adds it to the inline script it writes. The nonce is carried in the `_csp` request attribute,
+`<g:javascript>` tag adds it to the inline script it writes. A controller or a service reads it with
+`grails.web.http.ContentSecurityPolicyNonce.nonceOf(request)`. The nonce is carried in the `_csp` request attribute,
 which Spring Security's nonce filter uses as well, so the header and the page carry the same nonce whichever
 generated it. See the xref:security[Security] section of the user guide.
 

@@ -54,4 +54,4 @@ The tag renders the nonce Spring Security's `ContentSecurityPolicyNonceGeneratin
 
 It renders nothing when the request carries no nonce.
 
-The tag works in a statically compiled page as well as a dynamic one. A controller, or a dynamically compiled page, can read the nonce as `request._csp?.nonce`.
+The tag works in a statically compiled page as well as a dynamic one. Code outside a view, such as a controller, reads the nonce with `ContentSecurityPolicyNonce.nonceOf(request)` from the `grails.web.http` package.
