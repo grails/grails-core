@@ -51,21 +51,42 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         delegateMap = new LinkedHashMap<>()
     }
 
-    private NavigableMap(NavigableMap rootConfig, List<String> path, Map<String, Object> delegateMap) {
-        this.rootConfig = rootConfig
-        this.path = path
-        dottedPath = path.join('.')
-        this.delegateMap = delegateMap
-    }
-
     @Override
     String toString() {
         delegateMap.toString()
     }
 
+    /**
+     * A copy whose nested maps are copies as well. The copy of a root is the root of its own configuration,
+     * so a write through the copy, by merge, dot notation or subscript, never reaches the original; the copy
+     * of a nested map stays under the root of the original. A map the original holds twice, as the nested
+     * entry and the flat alias of a block, is copied once, so the copy keeps both representations on one map.
+     */
     @Override
     NavigableMap clone() {
-        new NavigableMap(getRootConfig(), getPath(), new LinkedHashMap<>(getDelegateMap()))
+        Map<NavigableMap, NavigableMap> copies = new IdentityHashMap<>()
+        NavigableMap copy = getRootConfig().is(this) ? new NavigableMap() : new NavigableMap(getRootConfig(), getPath())
+        copies.put(this, copy)
+        copyEntries(copy, copies)
+        copy
+    }
+
+    private NavigableMap cloneUnder(NavigableMap root, Map<NavigableMap, NavigableMap> copies) {
+        NavigableMap copy = copies.get(this)
+        if (copy == null) {
+            copy = new NavigableMap(root, getPath())
+            copies.put(this, copy)
+            copyEntries(copy, copies)
+        }
+        copy
+    }
+
+    private void copyEntries(NavigableMap copy, Map<NavigableMap, NavigableMap> copies) {
+        NavigableMap root = copy.getRootConfig()
+        for (Map.Entry<String, Object> entry in getDelegateMap().entrySet()) {
+            Object value = entry.value
+            copy.getDelegateMap().put(entry.key, value instanceof NavigableMap ? ((NavigableMap) value).cloneUnder(root, copies) : value)
+        }
     }
 
     @Override

@@ -289,6 +289,53 @@ class NavigableMapSpec extends Specification {
         output.navigate('x', 'a') == [b: 'new']
     }
 
+    def "a merge into a clone of an empty map leaves the original empty"() {
+        given:
+        NavigableMap original = new NavigableMap()
+        NavigableMap copy = original.clone()
+
+        when:
+        copy.merge(['new.block.value': 1], true)
+
+        then:
+        original.isEmpty()
+        copy['new.block'] == [value: 1]
+        copy.navigate('new', 'block') == [value: 1]
+    }
+
+    def "a clone is a configuration of its own"() {
+        given:
+        NavigableMap original = new NavigableMap()
+        original.merge([a: [b: [c: 1]]], true)
+
+        when:
+        NavigableMap copy = original.clone()
+
+        then: 'the copy holds the same entries'
+        copy == original
+        !copy.is(original)
+
+        when: 'the copy is written through every path'
+        copy.a.b.d = 2
+        copy.merge(['a.e.f': 3], true)
+        copy.put('g', 4)
+
+        then: 'the copy sees the writes in both representations, on one map'
+        copy['a.b'] == [c: 1, d: 2]
+        copy['a.b'].is(copy.navigate('a', 'b'))
+        copy['a.e'] == [f: 3]
+        copy.navigate('a', 'e') == [f: 3]
+        copy['g'] == 4
+
+        and: 'the original sees none of them'
+        original['a.b'] == [c: 1]
+        original.navigate('a', 'b') == [c: 1]
+        !original.containsKey('a.b.d')
+        !original.containsKey('a.e')
+        !original.containsKey('g')
+        original.navigate('a', 'e') == null
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()
