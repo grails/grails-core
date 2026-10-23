@@ -29,6 +29,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateManyToManyP
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToManyProperty
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyEntityProperty
 
+import org.hibernate.boot.spi.MetadataBuildingContext
+import org.hibernate.mapping.Collection
 import org.hibernate.mapping.ManyToOne
 
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -43,6 +45,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.binder.SimpleValueColumnBinder
 import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
 
 class CollectionSecondPassBinderSpec extends HibernateGormDatastoreSpec {
+
+    SharedJoinTableUniqueKeyBinder sharedJoinTableUniqueKeyBinder = Mock()
 
     CollectionSecondPassBinder binder
     BidirectionalMapElementBinder mockBidirectionalMapElementBinder = Mock(BidirectionalMapElementBinder)
@@ -73,7 +77,8 @@ class CollectionSecondPassBinderSpec extends HibernateGormDatastoreSpec {
                 mockBidirectionalMapElementBinder,
                 new ManyToOneElementBinder(mtob, cfpcb),
                 new HibernateToManyEntityOrderByBinder(),
-                new ToManyEntityMultiTenantFilterBinder(dcnf)
+                new ToManyEntityMultiTenantFilterBinder(dcnf),
+                sharedJoinTableUniqueKeyBinder
         )
     }
 
@@ -297,6 +302,22 @@ class CollectionSecondPassBinderSpec extends HibernateGormDatastoreSpec {
         1 * mockComponentBinder.bindEmbeddedCollectionComponent(embeddedProperty) >> mockComponent
         bag.element == mockComponent
     }
+
+    void "createCollectionKeys creates the keys of the collection and then gives a shared join table its uniqueness"() {
+        given: 'a set, mocked over its constructor as the mapping classes have no default one'
+        Collection collection = Mock(org.hibernate.mapping.Set, constructorArgs: [Stub(MetadataBuildingContext), null])
+        HibernateToManyProperty property = Stub() { getCollection() >> collection }
+
+        when:
+        binder.createCollectionKeys(property)
+
+        then: 'the keys first, as the uniqueness is read from them'
+        1 * collection.createAllKeys()
+
+        then:
+        1 * sharedJoinTableUniqueKeyBinder.bind(collection)
+    }
+
 }
 
 @Entity
@@ -387,4 +408,5 @@ class CSPBMapItem implements HibernateEntity<CSPBMapItem> {
     Long id
     CSPBMapOwner owner
     static belongsTo = [owner: CSPBMapOwner]
+
 }

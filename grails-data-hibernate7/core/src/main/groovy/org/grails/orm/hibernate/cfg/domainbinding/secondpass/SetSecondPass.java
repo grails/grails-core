@@ -32,7 +32,7 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyPrope
  * @author Graeme
  */
 @SuppressWarnings("PMD.NonSerializableClass")
-public class SetSecondPass implements org.hibernate.boot.spi.SecondPass, GrailsSecondPass, java.io.Serializable {
+public class SetSecondPass implements org.hibernate.boot.spi.SecondPass, java.io.Serializable {
 
     @Serial
     private static final long serialVersionUID = -5540526942092611348L;
@@ -60,7 +60,6 @@ public class SetSecondPass implements org.hibernate.boot.spi.SecondPass, GrailsS
         if (collection != null) {
             property.setHibernateCollection(collection);
         }
-        collectionSecondPassBinder.bindCollectionSecondPass(property);
-        createCollectionKeys(property.getCollection());
+        collectionSecondPassBinder.bindSetSecondPass(property);
     }
 }

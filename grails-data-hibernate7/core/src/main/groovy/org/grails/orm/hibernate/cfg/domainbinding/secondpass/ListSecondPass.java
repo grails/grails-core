@@ -26,7 +26,7 @@ import org.hibernate.MappingException;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty;
 
 @SuppressWarnings("PMD.NonSerializableClass")
-public class ListSecondPass implements org.hibernate.boot.spi.SecondPass, GrailsSecondPass, java.io.Serializable {
+public class ListSecondPass implements org.hibernate.boot.spi.SecondPass, java.io.Serializable {
 
     @Serial
     private static final long serialVersionUID = -3024674993774205193L;
@@ -55,6 +55,5 @@ public class ListSecondPass implements org.hibernate.boot.spi.SecondPass, Grails
             property.setHibernateCollection(collection);
         }
         listSecondPassBinder.bindListSecondPass(property);
-        createCollectionKeys(property.getCollection());
     }
 }

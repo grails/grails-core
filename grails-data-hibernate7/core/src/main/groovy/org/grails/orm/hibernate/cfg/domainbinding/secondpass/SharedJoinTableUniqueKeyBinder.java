@@ -21,31 +21,52 @@ package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.boot.model.naming.ImplicitIndexNameSource;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.ImplicitUniqueKeyNameSource;
+import org.hibernate.boot.spi.MetadataBuildingContext;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.mapping.Table;
-import org.hibernate.mapping.UniqueKey;
 
 /**
- * Completes the implicit unique key of a join table that several collections of one owner share.
+ * Gives every collection with a join table a uniqueness constraint of its own over its key column and the element,
+ * so that a join table several collections of one owner share stays unique per collection.
  *
- * <p>Two unidirectional {@code hasMany} to the same class without a {@code joinTable} mapping share one join table, with a
- * key column for each of them and one element column. Hibernate creates the table's unique key when it creates the keys of
- * the first collection, over that collection's key column and the element column, and creates none for the others, as the
- * table has a unique key already ({@code Set.createPrimaryKey}). A row of a later collection leaves the first key column
- * null, so on a database that treats nulls as equal in a unique constraint two of its rows for the same element, from two
- * owners, are duplicates. This binder adds the key columns of every collection to that unique key once the collection's
- * keys are created, so a row is unique by the key column of its own collection and the element.</p>
- *
- * <p>A unique key the mapping declares explicitly is left alone, and so is a collection without a join table or whose
- * key the other side owns.</p>
+ * <p>Two unidirectional {@code hasMany} to the same class without a {@code joinTable} mapping share one join table,
+ * with a key column for each of them and one element column. Hibernate creates the table's implicit unique key when
+ * it creates the keys of the first collection, over that collection's key column and the element column, and creates
+ * none for the others, as the table has a unique key already ({@code Set.createPrimaryKey}). This binder runs after
+ * the keys of each collection are created and completes what is missing, in the shape the database needs
+ * ({@link SharedJoinTableUniqueness}). A collection whose table is its own already has its constraint and is left as
+ * Hibernate bound it, and so is a collection without a join table or whose key the other side owns.</p>
  *
  * @since 8.0.1
  */
 public class SharedJoinTableUniqueKeyBinder {
 
-    /** Adds the key columns of the collection to the implicit unique key of its join table that covers its element. */
+    private final MetadataBuildingContext metadataBuildingContext;
+    private final SharedJoinTableUniqueness uniqueness;
+
+    /** Resolves the uniqueness for the dialect of the metadata being built. */
+    public SharedJoinTableUniqueKeyBinder(MetadataBuildingContext metadataBuildingContext) {
+        this(metadataBuildingContext, metadataBuildingContext.getMetadataCollector().getDatabase().getDialect());
+    }
+
+    SharedJoinTableUniqueKeyBinder(MetadataBuildingContext metadataBuildingContext, Dialect dialect) {
+        this.metadataBuildingContext = metadataBuildingContext;
+        this.uniqueness = SharedJoinTableUniqueness.forDialect(dialect);
+    }
+
+    /** The uniqueness this binder applies. */
+    public SharedJoinTableUniqueness getUniqueness() {
+        return uniqueness;
+    }
+
+    /** Gives the collection a uniqueness constraint over its key columns and its element on its join table. */
     public void bind(Collection collection) {
         Table table = collection.getCollectionTable();
         if (table == null || collection.isInverse() || collection.isOneToMany() || collection.getKey() == null) {
@@ -56,16 +77,7 @@ public class SharedJoinTableUniqueKeyBinder {
         if (keyColumns.isEmpty() || elementColumns.isEmpty()) {
             return;
         }
-        for (UniqueKey uniqueKey : table.getUniqueKeys().values()) {
-            if (uniqueKey.isExplicit() || !elementColumns.stream().allMatch(uniqueKey::containsColumn)) {
-                continue;
-            }
-            for (Column column : keyColumns) {
-                if (!uniqueKey.containsColumn(column)) {
-                    uniqueKey.addColumn(column);
-                }
-            }
-        }
+        uniqueness.apply(table, keyColumns, elementColumns, new ImplicitNaming(table));
     }
 
     private static List<Column> columnsOf(Collection collection) {
@@ -80,4 +92,79 @@ public class SharedJoinTableUniqueKeyBinder {
         return columns;
     }
 
+    /** Names constraints and indexes with the implicit naming strategy, as Hibernate names the ones it creates. */
+    private final class ImplicitNaming implements SharedJoinTableUniqueness.Naming {
+
+        private final Table table;
+
+        private ImplicitNaming(Table table) {
+            this.table = table;
+        }
+
+        @Override
+        public String uniqueKeyName(List<Column> columns) {
+            return strategy().determineUniqueKeyName(new ImplicitUniqueKeyNameSource() {
+                @Override
+                public Identifier getTableName() {
+                    return table.getNameIdentifier();
+                }
+
+                @Override
+                public List<Identifier> getColumnNames() {
+                    return identifiers(columns);
+                }
+
+                @Override
+                public Identifier getUserProvidedIdentifier() {
+                    return null;
+                }
+
+                @Override
+                public MetadataBuildingContext getBuildingContext() {
+                    return metadataBuildingContext;
+                }
+            }).render(dialect());
+        }
+
+        @Override
+        public String indexName(List<Column> columns) {
+            return strategy().determineIndexName(new ImplicitIndexNameSource() {
+                @Override
+                public Identifier getTableName() {
+                    return table.getNameIdentifier();
+                }
+
+                @Override
+                public List<Identifier> getColumnNames() {
+                    return identifiers(columns);
+                }
+
+                @Override
+                public Identifier getUserProvidedIdentifier() {
+                    return null;
+                }
+
+                @Override
+                public MetadataBuildingContext getBuildingContext() {
+                    return metadataBuildingContext;
+                }
+            }).render(dialect());
+        }
+
+        private List<Identifier> identifiers(List<Column> columns) {
+            List<Identifier> names = new ArrayList<>();
+            for (Column column : columns) {
+                names.add(column.getNameIdentifier(metadataBuildingContext));
+            }
+            return names;
+        }
+
+        private ImplicitNamingStrategy strategy() {
+            return metadataBuildingContext.getBuildingOptions().getImplicitNamingStrategy();
+        }
+
+        private Dialect dialect() {
+            return metadataBuildingContext.getMetadataCollector().getDatabase().getDialect();
+        }
+    }
 }

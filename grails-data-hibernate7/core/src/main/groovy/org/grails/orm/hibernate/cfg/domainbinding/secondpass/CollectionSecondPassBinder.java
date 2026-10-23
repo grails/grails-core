@@ -48,6 +48,7 @@ public class CollectionSecondPassBinder {
     private final ManyToOneElementBinder manyToManyElementBinder;
     private final UnidirectionalOneToManyBinder unidirectionalOneToManyBinder;
     private final CollectionWithJoinTableBinder collectionWithJoinTableBinder;
+    private final SharedJoinTableUniqueKeyBinder sharedJoinTableUniqueKeyBinder;
     private ComponentBinder componentBinder;
 
     public CollectionSecondPassBinder(
@@ -57,7 +58,8 @@ public class CollectionSecondPassBinder {
             BidirectionalMapElementBinder bidirectionalMapElementBinder,
             ManyToOneElementBinder manyToManyElementBinder,
             HibernateToManyEntityOrderByBinder hibernateToManyEntityOrderByBinder,
-            ToManyEntityMultiTenantFilterBinder hibernateToManyEntityMultiTenantFilterBinder) {
+            ToManyEntityMultiTenantFilterBinder hibernateToManyEntityMultiTenantFilterBinder,
+            SharedJoinTableUniqueKeyBinder sharedJoinTableUniqueKeyBinder) {
         this.collectionKeyColumnUpdater = collectionKeyColumnUpdater;
         this.unidirectionalOneToManyBinder = unidirectionalOneToManyBinder;
         this.collectionWithJoinTableBinder = collectionWithJoinTableBinder;
@@ -65,6 +67,7 @@ public class CollectionSecondPassBinder {
         this.manyToManyElementBinder = manyToManyElementBinder;
         this.hibernateToManyEntityOrderByBinder = hibernateToManyEntityOrderByBinder;
         this.hibernateToManyEntityMultiTenantFilterBinder = hibernateToManyEntityMultiTenantFilterBinder;
+        this.sharedJoinTableUniqueKeyBinder = sharedJoinTableUniqueKeyBinder;
     }
 
     public void setComponentBinder(ComponentBinder componentBinder) {
@@ -96,5 +99,22 @@ public class CollectionSecondPassBinder {
         Collection collection = property.getCollection();
         collection.setSorted(property.isSorted());
         collection.setCacheConcurrencyStrategy(property.getCacheUsage());
+    }
+
+    /** Binds a set in its second pass: the collection, then its keys. */
+    public void bindSetSecondPass(@Nonnull HibernateToManyProperty property) {
+        bindCollectionSecondPass(property);
+        createCollectionKeys(property);
+    }
+
+    /**
+     * Creates the keys of the collection of the property and gives it a uniqueness constraint of its own on a join
+     * table it shares. Runs last in a second pass, once the collection has its element and, for a list or a map, its
+     * index.
+     */
+    public void createCollectionKeys(@Nonnull HibernateToManyProperty property) {
+        Collection collection = property.getCollection();
+        collection.createAllKeys();
+        sharedJoinTableUniqueKeyBinder.bind(collection);
     }
 }
