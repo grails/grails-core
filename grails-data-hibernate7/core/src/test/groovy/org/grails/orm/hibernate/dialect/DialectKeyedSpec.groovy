@@ -47,7 +47,7 @@ class DialectKeyedSpec extends Specification {
         dialectName = dialect.class.simpleName
     }
 
-    void 'the first constant listing a dialect wins, so a subclass is listed before its superclass'() {
+    void 'a constant for a dialect class is chosen over the default whatever the order, and the default only when none is listed'() {
         expect:
         DialectKeyed.forDialect(Ordered, new SQLServerDialect()) == Ordered.SQL_SERVER
         DialectKeyed.forDialect(Ordered, new Dialect(DatabaseVersion.make(1)) { }) == Ordered.ANY

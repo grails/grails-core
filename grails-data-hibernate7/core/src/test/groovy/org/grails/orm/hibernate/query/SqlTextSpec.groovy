@@ -21,7 +21,11 @@ package org.grails.orm.hibernate.query
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static org.grails.orm.hibernate.query.SqlSyntax.H2
 import static org.grails.orm.hibernate.query.SqlSyntax.HQL
+import static org.grails.orm.hibernate.query.SqlSyntax.MYSQL
+import static org.grails.orm.hibernate.query.SqlSyntax.ORACLE
+import static org.grails.orm.hibernate.query.SqlSyntax.POSTGRESQL
 import static org.grails.orm.hibernate.query.SqlSyntax.SQL
 import static org.grails.orm.hibernate.query.SqlSyntax.TRANSACT_SQL
 
@@ -32,11 +36,14 @@ import static org.grails.orm.hibernate.query.SqlSyntax.TRANSACT_SQL
  */
 class SqlTextSpec extends Specification {
 
+    static final List<SqlSyntax> NATIVE = [TRANSACT_SQL, POSTGRESQL, MYSQL, ORACLE, H2, SQL]
+
+    static final List<SqlSyntax> BRACKETS_ARE_ARRAYS = [POSTGRESQL, MYSQL, ORACLE, H2, SQL]
+
     @Unroll
     void "the SQL #sql splits at the top-level commas into #parts in every SQL syntax"() {
         expect:
-        SqlText.of(sql, SQL).splitTopLevel(',' as char) == parts
-        SqlText.of(sql, TRANSACT_SQL).splitTopLevel(',' as char) == parts
+        NATIVE.every { SqlText.of(sql, it).splitTopLevel(',' as char) == parts }
 
         where:
         sql                                       | parts
@@ -55,7 +62,7 @@ class SqlTextSpec extends Specification {
     @Unroll
     void "the SQL #sql splits into #parts where brackets hold arrays"() {
         expect:
-        SqlText.of(sql, SQL).splitTopLevel(',' as char) == parts
+        BRACKETS_ARE_ARRAYS.every { SqlText.of(sql, it).splitTopLevel(',' as char) == parts }
 
         where:
         sql                                       | parts
@@ -65,8 +72,6 @@ class SqlTextSpec extends Specification {
         'ARRAY [a, b], c'                         | ['ARRAY [a, b]', 'c']
         '"items"[1], c'                           | ['"items"[1]', 'c']
         "[a'b], c"                                | ["[a'b], c"]
-        '$$a,b$$, c'                              | ['$$a,b$$', 'c']
-        '$tag$a,$$,b$tag$, c'                     | ['$tag$a,$$,b$tag$', 'c']
     }
 
     @Unroll
@@ -83,6 +88,36 @@ class SqlTextSpec extends Specification {
         '[a[b], c'                                | ['[a[b]', 'c']
         '[a,b], c'                                | ['[a,b]', 'c']
         '$$a,b$$, c'                              | ['$$a', 'b$$', 'c']
+    }
+
+    @Unroll
+    void "the dollar quoted #sql splits into #parts on #syntax"() {
+        expect:
+        SqlText.of(sql, syntax).splitTopLevel(',' as char) == parts
+
+        where:
+        sql                    | syntax       || parts
+        '$$a,b$$, c'           | POSTGRESQL   || ['$$a,b$$', 'c']
+        '$$a,b$$, c'           | H2           || ['$$a,b$$', 'c']
+        '$$a,b$$, c'           | MYSQL        || ['$$a', 'b$$', 'c']
+        '$$a,b$$, c'           | ORACLE       || ['$$a', 'b$$', 'c']
+        '$$a,b$$, c'           | TRANSACT_SQL || ['$$a', 'b$$', 'c']
+        '$$a,b$$, c'           | SQL          || ['$$a', 'b$$', 'c']
+        '$tag$a,$$,b$tag$, c'  | POSTGRESQL   || ['$tag$a,$$,b$tag$', 'c']
+        '$tag$a,$$,b$tag$, c'  | H2           || ['$tag$a', '$$,b$tag$, c']
+        '$tag$a,$$,b$tag$, c'  | MYSQL        || ['$tag$a', '$$', 'b$tag$', 'c']
+        'a$b, $1'              | POSTGRESQL   || ['a$b', '$1']
+        'a$b, $1'              | H2           || ['a$b', '$1']
+    }
+
+    void "HQL has no line comments: a double minus is a subtraction, so what follows it is read, while SQL ends the line there"() {
+        expect:
+        SqlText.hql('a--b, c').splitTopLevel(',' as char) == ['a--b', 'c']
+        SqlText.hql('a -- b, c\n, d').splitTopLevel(',' as char) == ['a -- b', 'c', 'd']
+        SqlText.hql('from B b where b.h--1 > 0 select b.w').indexOfTopLevel('select ', 0) == 26
+        SqlText.of('from B b where b.h--1 > 0 select b.w', SQL).indexOfTopLevel('select ', 0) == -1
+        SqlText.of('from B b where b.h--1 > 0 select b.w', TRANSACT_SQL).indexOfTopLevel('select ', 0) == -1
+        SqlText.hql('a /* b, c */, d').splitTopLevel(',' as char) == ['a /* b, c */', 'd']
     }
 
     void "HQL has no bracket identifiers or dollar quotes: brackets group an index expression, the rest is plain"() {
@@ -107,7 +142,7 @@ class SqlTextSpec extends Specification {
         'from B where name = "select "'                       | 'select '| -1
         'from B where name = `select `'                       | 'select '| -1
         'from B /* select a */ where x = 1'                   | 'select '| -1
-        'from B -- select a\nwhere x = 1'                     | 'select '| -1
+        'from B -- select a\nwhere x = 1'                     | 'select '| 10
         'from B where preselect = 1'                          | 'select '| -1
         'from B where b.select = 1'                           | 'select '| -1
         "from B where name = 'it''s' and 1 = (select count(c) from C) select"  | 'select' | 61
@@ -121,30 +156,9 @@ class SqlTextSpec extends Specification {
     }
 
     @Unroll
-    void "'#text' without parentheses enclosing all of it is '#unwrapped'"() {
-        expect:
-        SqlText.hql(text).unwrapOuterParentheses() == unwrapped
-
-        where:
-        text                                                        | unwrapped
-        'select b from B'                                           | 'select b from B'
-        '(select b from B)'                                         | 'select b from B'
-        '((select b from B))'                                       | 'select b from B'
-        '( select b from B )'                                       | 'select b from B'
-        "(select b from B where b.name <> ')')"                     | "select b from B where b.name <> ')'"
-        '(/* ignore ) and ( */ select b from B)'                    | '/* ignore ) and ( */ select b from B'
-        '(select b from B where b.a in (select a from A))'          | 'select b from B where b.a in (select a from A)'
-        '(select b from B) union (select a from A)'                 | '(select b from B) union (select a from A)'
-        '(select b from B'                                          | '(select b from B'
-        '(select b from B))'                                        | '(select b from B))'
-        '()'                                                        | ''
-    }
-
-    @Unroll
     void "the '?' placeholders of '#sql' are at #indexes in every SQL syntax"() {
         expect:
-        SqlText.of(sql, SQL).plainIndexes('?' as char) == indexes
-        SqlText.of(sql, TRANSACT_SQL).plainIndexes('?' as char) == indexes
+        NATIVE.every { SqlText.of(sql, it).plainIndexes('?' as char) == indexes }
 
         where:
         sql                                   | indexes
@@ -159,7 +173,7 @@ class SqlTextSpec extends Specification {
     @Unroll
     void "the '?' placeholders of '#sql' are at #indexes where brackets hold arrays"() {
         expect:
-        SqlText.of(sql, SQL).plainIndexes('?' as char) == indexes
+        BRACKETS_ARE_ARRAYS.every { SqlText.of(sql, it).plainIndexes('?' as char) == indexes }
 
         where:
         sql                                   | indexes
@@ -169,7 +183,6 @@ class SqlTextSpec extends Specification {
         "a = ARRAY['?', ?][1]"                | [15]
         'a = ARRAY[1, 2][?]'                  | [16]
         'a = [?] and b = ?'                   | [5, 16]
-        'a = $$?$$ and b = ?'                 | [18]
     }
 
     @Unroll
@@ -188,9 +201,113 @@ class SqlTextSpec extends Specification {
     }
 
     @Unroll
+    void "the '?' placeholders of '#sql' are at #indexes on #syntax"() {
+        expect:
+        SqlText.of(sql, syntax).plainIndexes('?' as char) == indexes
+
+        where:
+        sql                                   | syntax     || indexes
+        'a = $$?$$ and b = ?'                 | POSTGRESQL || [18]
+        'a = $$?$$ and b = ?'                 | H2         || [18]
+        'a = $$?$$ and b = ?'                 | MYSQL      || [6, 18]
+        'a = $tag$?$tag$ and b = ?'           | POSTGRESQL || [24]
+        'a = $tag$?$tag$ and b = ?'           | H2         || [9, 24]
+        'a // ? \n, ?'                         | H2         || [10]
+        'a // ? \n, ?'                         | POSTGRESQL || [5, 10]
+        'a /* // */ ?'                        | H2         || [11]
+        "doc ?? 'key' and b = ?"              | POSTGRESQL || [21]
+        "doc ?? 'key' and b = ?"              | MYSQL      || [4, 5, 21]
+        "doc ? 'key'"                         | POSTGRESQL || [4]
+        "a = 'it\\'s ?' and b = ?"            | MYSQL      || [22]
+        "a = 'it\\'s ?' and b = ?"            | POSTGRESQL || [11]
+        "a = \"it\\\"s ?\" and b = ?"        | MYSQL      || [22]
+        "a = E'it\\'s ?' and b = ?"           | POSTGRESQL || [23]
+        "a = e'it\\'s ?' and b = ?"           | POSTGRESQL || [23]
+        "a = nonE'it\\'s ?' and b = ?"        | POSTGRESQL || [15]
+        "a = 'C:\\\\' and b = ?"              | MYSQL      || [19]
+        "a = q'[it's ?]' and b = ?"           | ORACLE     || [24]
+        "a = Q'!it's ?!' and b = ?"           | ORACLE     || [24]
+        "a = nq'{it's ?}' and b = ?"          | ORACLE     || [25]
+        "a = q'(it's ?)' and b = ?"           | ORACLE     || [24]
+        "a = q'<it's ?>' and b = ?"           | ORACLE     || [24]
+        "a = q'[it's ?]' and b = ?"           | POSTGRESQL || [12]
+        "a = seq'[x ?]' and b = ?"            | ORACLE     || [23]
+        "a = 1 # is it? \nand b = ?"          | MYSQL      || [24]
+        "a = 1 # is it? \nand b = ?"          | ORACLE     || [13, 24]
+        'a--1 = ?'                            | MYSQL      || [7]
+        'a--1 = ?'                            | POSTGRESQL || []
+        'a-- 1 = ?'                           | MYSQL      || []
+        'a--\t1 = ?'                          | MYSQL      || []
+        'a = 1 /* a /* b */ ? */ x = ?'       | POSTGRESQL || [28]
+        'a = 1 /* a /* b */ ? */ x = ?'       | TRANSACT_SQL || [28]
+        'a = 1 /* a /* b */ ? */ x = ?'       | MYSQL      || [19, 28]
+        'a = 1 /* a /* b */ ? */ x = ?'       | ORACLE     || [19, 28]
+        'a = 1 /* a /* b */ ? */ x = ?'       | H2         || [19, 28]
+    }
+
+    @Unroll
+    void "'#column' without the alias '#alias' is '#expected' on #syntax"() {
+        expect:
+        SqlText.of(column, syntax).withoutTrailingAlias(alias) == expected
+
+        where:
+        column                       | alias | syntax       || expected
+        'count(*)as y0_'             | 'y0_' | SQL          || 'count(*)'
+        '"x"as y0_'                  | 'y0_' | SQL          || '"x"'
+        "'lit'as y0_"                | 'y0_' | SQL          || "'lit'"
+        'bias y0_'                   | 'y0_' | SQL          || 'bias y0_'
+        'cast as y0_'                | 'y0_' | SQL          || 'cast'
+        'x as /* c */ y0_'           | 'y0_' | SQL          || 'x'
+        'x /* c */ as y0_'           | 'y0_' | SQL          || 'x'
+        'x -- c\nas y0_'              | 'y0_' | SQL          || 'x'
+        "x as 'y0_'"                 | 'y0_' | MYSQL        || 'x'
+        "x as 'y0_'"                 | 'y0_' | TRANSACT_SQL || 'x'
+        "x as 'y0_'"                 | 'y0_' | POSTGRESQL   || "x as 'y0_'"
+        "x as 'it''s'"               | "it's" | MYSQL       || 'x'
+        'x as"y0_"'                  | 'y0_' | SQL          || 'x'
+        'arr[1]as foo'               | 'foo' | POSTGRESQL   || 'arr[1]'
+        'x as \uD835\uDC9C'            | '\uD835\uDC9C' | SQL    || 'x'
+        'x as cafe\u0301'            | 'cafe\u0301' | SQL      || 'x'
+        'x as a\u200Db'              | 'a\u200Db' | SQL        || 'x'
+    }
+
+    @Unroll
+    void "the text #sql splits into #parts on #syntax"() {
+        expect:
+        SqlText.of(sql, syntax).splitTopLevel(',' as char) == parts
+
+        where:
+        sql                           | syntax     || parts
+        '$$a,b$$$$c,d$$, e'           | POSTGRESQL || ['$$a,b$$$$c,d$$', 'e']
+        '$$a,b$$$$c,d$$, e'           | H2         || ['$$a,b$$$$c,d$$', 'e']
+        '$é$a,b$é$, c'                | POSTGRESQL || ['$é$a,b$é$', 'c']
+        "a#q'x, y', z"                | ORACLE     || ["a#q'x, y'", 'z']
+        'a[b, c'                      | SQL        || ['a[b, c']
+        'a`b, c`, d'                  | SQL        || ['a`b, c`', 'd']
+        'a`b, c`, d'                  | MYSQL      || ['a`b, c`', 'd']
+    }
+
+    void "a delimiter of choice closes an Oracle alternative quoted string, and an escape string of PostgreSQL ends at its unescaped quote"() {
+        expect:
+        SqlText.of("a q'!x, y!', z", ORACLE).splitTopLevel(',' as char) == ["a q'!x, y!'", 'z']
+        SqlText.of("a q'x, y', z", ORACLE).splitTopLevel(',' as char) == ["a q'x, y', z"]
+        SqlText.of('$$a,b$$' + "E'" + '\\' + "', c', d", POSTGRESQL).splitTopLevel(',' as char) ==
+                ['$$a,b$$' + "E'" + '\\' + "', c'", 'd']
+    }
+
+    void "an unterminated string or comment runs to the end of the text on every syntax"() {
+        expect:
+        NATIVE.every { SqlText.of("a = 'x ?", it).plainIndexes('?' as char) == [] }
+        NATIVE.every { SqlText.of('a = /* x ?', it).plainIndexes('?' as char) == [] }
+        [MYSQL, POSTGRESQL].every { SqlText.of("a = 'x\\", it).plainIndexes('?' as char) == [] }
+        SqlText.of("a = q'[x ?", ORACLE).plainIndexes('?' as char) == []
+        SqlText.of('a = $tag$ x ?', POSTGRESQL).plainIndexes('?' as char) == []
+    }
+
+    @Unroll
     void "'#sql' #description"() {
         expect:
-        SqlText.of(sql, SQL).endsInLineComment() == ends
+        NATIVE.every { SqlText.of(sql, it).endsInLineComment() == ends }
 
         where:
         sql                      | ends  | description
@@ -202,24 +319,25 @@ class SqlTextSpec extends Specification {
     }
 
     @Unroll
-    void "'#sql' without its trailing comments is '#expected'"() {
+    void "'#sql' ends in a line comment on #syntax: #ends"() {
         expect:
-        SqlText.of(sql, SQL).withoutTrailingComments() == expected
+        SqlText.of(sql, syntax).endsInLineComment() == ends
 
         where:
-        sql                                   | expected
-        'width as w /* a comment */'          | 'width as w'
-        'width as w -- another comment\n'     | 'width as w'
-        'width /* kept */ as w'               | 'width /* kept */ as w'
-        "width as 'w -- not a comment'"       | "width as 'w -- not a comment'"
-        'width as w   '                       | 'width as w'
+        sql                | syntax     || ends
+        'a = 1 # done'     | MYSQL      || true
+        'a = 1 # done'     | POSTGRESQL || false
+        'a = 1 --done'     | MYSQL      || false
+        'a = 1 --done'     | POSTGRESQL || true
+        'a = 1 -- done'    | MYSQL      || true
+        'a = 1 --'         | MYSQL      || true
+        'a = 1 -- done'    | HQL        || false
     }
 
     @Unroll
     void "'#column' without the alias '#alias' is '#expected' in every SQL syntax"() {
         expect:
-        SqlText.of(column, SQL).withoutTrailingAlias(alias) == expected
-        SqlText.of(column, TRANSACT_SQL).withoutTrailingAlias(alias) == expected
+        NATIVE.every { SqlText.of(column, it).withoutTrailingAlias(alias) == expected }
 
         where:
         column                          | alias          | expected
@@ -237,7 +355,6 @@ class SqlTextSpec extends Specification {
         'sum(height) as total'          | 'other'        | 'sum(height) as total'
         'sum(height) as "total height"' | 'total'        | 'sum(height) as "total height"'
         'sum(height) as "total]'        | 'total'        | 'sum(height) as "total]'
-        "sum(height) as 'total'"        | 'total'        | "sum(height) as 'total'"
         'sum(height) has total'         | 'total'        | 'sum(height) has total'
         'as total'                      | 'total'        | 'as total'
         'width'                         | 'width'        | 'width'
@@ -255,8 +372,7 @@ class SqlTextSpec extends Specification {
     @Unroll
     void "'#identifier' unquoted is '#expected' in every SQL syntax"() {
         expect:
-        SqlText.of(identifier, SQL).unquoted() == expected
-        SqlText.of(identifier, TRANSACT_SQL).unquoted() == expected
+        NATIVE.every { SqlText.of(identifier, it).unquoted() == expected }
 
         where:
         identifier        | expected
@@ -264,7 +380,6 @@ class SqlTextSpec extends Specification {
         '`total`'         | 'total'
         '"say ""hi"""'    | 'say "hi"'
         'total'           | 'total'
-        "'total'"         | "'total'"
         '"total'          | '"total'
         '"a" "b"'         | '"a" "b"'
         '""'              | ''

@@ -169,6 +169,16 @@ class HibernateCriteriaBuilderSqlRestrictionSpec extends Specification {
         SqlRestrictionBook.createCriteria().list {
             sqlRestriction('{alias}."PAGES" > ? /* why? */ and {alias}.title <> ? -- who?', [50, 'Why?'])
         }*.title == ["It's?"]
+
+        and: 'H2 also ends a line at //, so a question mark after it is no placeholder'
+        SqlRestrictionBook.createCriteria().list {
+            sqlRestriction('{alias}."PAGES" > ? // why? \n and {alias}.title <> ?', [50, 'Why?'])
+        }*.title == ["It's?"]
+
+        and: 'H2 reads $$..$$ as a string and not $tag$..$tag$'
+        SqlRestrictionBook.createCriteria().list {
+            sqlRestriction('{alias}.title = $$Who?$$ and {alias}.pages > ?', [50])
+        }*.title == []
     }
 
     @Rollback

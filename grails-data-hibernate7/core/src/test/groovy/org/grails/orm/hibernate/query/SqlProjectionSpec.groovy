@@ -22,15 +22,21 @@ import org.hibernate.type.StandardBasicTypes
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static org.grails.orm.hibernate.query.SqlSyntax.H2
+import static org.grails.orm.hibernate.query.SqlSyntax.MYSQL
+import static org.grails.orm.hibernate.query.SqlSyntax.ORACLE
+import static org.grails.orm.hibernate.query.SqlSyntax.POSTGRESQL
 import static org.grails.orm.hibernate.query.SqlSyntax.SQL
 import static org.grails.orm.hibernate.query.SqlSyntax.TRANSACT_SQL
 
 class SqlProjectionSpec extends Specification {
 
+    static final List<SqlSyntax> NATIVE = [TRANSACT_SQL, POSTGRESQL, MYSQL, ORACLE, H2, SQL]
+
     @Unroll
     void 'the SQL #sql is split into the columns #columns in every SQL syntax'() {
         expect:
-        [SQL, TRANSACT_SQL].every { SqlSyntax syntax ->
+        NATIVE.every { SqlSyntax syntax ->
             SqlGroupProjection.of(sql, syntax)*.sql == columns &&
                     SqlProjection.of(sql, columns.collect { null }, columns.collect { null }, syntax)*.sql == columns
         }
@@ -58,8 +64,34 @@ class SqlProjectionSpec extends Specification {
         'arr[f(a, b)], ARRAY[ARRAY[1, 2]], c'           | ['arr[f(a, b)]', 'ARRAY[ARRAY[1, 2]]', 'c']
         'ARRAY [a, b], "items"[1]'                      | ['ARRAY [a, b]', '"items"[1]']
         "ARRAY['['], height"                            | ["ARRAY['[']", 'height']
-        '$$a,b$$, c'                                    | ['$$a,b$$', 'c']
-        '$tag$a,$$,b$tag$, c'                           | ['$tag$a,$$,b$tag$', 'c']
+    }
+
+    @Unroll
+    void 'the SQL #sql is split into the columns #columns on #syntax, by its dollar quoted strings'() {
+        expect:
+        SqlGroupProjection.of(sql, syntax)*.sql == columns
+
+        where:
+        sql                      | syntax     || columns
+        '$$a,b$$, c'             | POSTGRESQL || ['$$a,b$$', 'c']
+        '$$a,b$$, c'             | H2         || ['$$a,b$$', 'c']
+        '$tag$a,$$,b$tag$, c'    | POSTGRESQL || ['$tag$a,$$,b$tag$', 'c']
+        '$tag$a,$$,b$tag$, c'    | H2         || ['$tag$a', '$$,b$tag$, c']
+    }
+
+    @Unroll
+    void 'the SQL #sql is split into the columns #columns on #syntax'() {
+        expect:
+        SqlGroupProjection.of(sql, syntax)*.sql == columns
+
+        where:
+        sql                              | syntax || columns
+        "concat('it\\'s, ', b), c"       | MYSQL  || ["concat('it\\'s, ', b)", 'c']
+        "concat('it\\'s, ', b), c"       | H2     || ["concat('it\\'s, ', b), c"]
+        "q'[it's, ]' as a, c"            | ORACLE || ["q'[it's, ]' as a", 'c']
+        'a # one, two\n, c'              | MYSQL  || ['a # one, two', 'c']
+        'a /* /* x, y */ z, */, c'       | POSTGRESQL || ['a /* /* x, y */ z, */', 'c']
+        'a /* /* x, y */ z, */, c'       | TRANSACT_SQL || ['a /* /* x, y */ z, */', 'c']
     }
 
     @Unroll
@@ -80,8 +112,7 @@ class SqlProjectionSpec extends Specification {
     @Unroll
     void 'the alias #alias is removed from #column in every SQL syntax'() {
         expect:
-        SqlProjection.of(column, [alias], [null], SQL)*.sql == [expected]
-        SqlProjection.of(column, [alias], [null], TRANSACT_SQL)*.sql == [expected]
+        NATIVE.every { SqlProjection.of(column, [alias], [null], it)*.sql == [expected] }
 
         where:
         column                          | alias          | expected

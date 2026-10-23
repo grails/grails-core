@@ -54,7 +54,8 @@ class HqlTextSpec extends Specification {
         'select b from Book as b where b.name = \'x, y\''      | 1     | 'b'           | 'b'   | 'select b from Book as b where b.name = \'x, y\''      | Book
         'from Book b where b.author in (select a from Author a)' | 0   | null          | 'b'   | 'from Book b where b.author in (select a from Author a)' | Book
         'select b from Book b /* , not a projection */'        | 1     | 'b'           | 'b'   | 'select b from Book b /* , not a projection */'         | Book
-        'select b from Book b -- select ignored\n'             | 1     | 'b'           | 'b'   | 'select b from Book b -- select ignored'                | Book
+        'select m[1], b from Book b'                           | 2     | 'm[1], b'     | 'b'   | 'select m[1], b from Book b'                            | Object[]
+        'from Book b where b.height--1 > 0 select b.width'     | 1     | 'b.width'     | 'b'   | 'from Book b where b.height--1 > 0 select b.width'      | Object
         ''                                                     | 0     | null          | null  | ''                                                      | Book
     }
 

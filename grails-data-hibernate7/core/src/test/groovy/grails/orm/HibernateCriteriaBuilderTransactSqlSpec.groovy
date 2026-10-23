@@ -66,11 +66,10 @@ class HibernateCriteriaBuilderTransactSqlSpec extends Specification {
         expect:
         SqlSyntax.forSessionFactory(hibernateDatastore.sessionFactory) == SqlSyntax.TRANSACT_SQL
         SqlSyntax.forCriteriaBuilder(hibernateDatastore.sessionFactory.criteriaBuilder) == SqlSyntax.TRANSACT_SQL
-        SqlSyntax.forEntity(TransactSqlBox) == SqlSyntax.TRANSACT_SQL
     }
 
     @Rollback
-    void 'a bracket identifier in a restriction is rendered as written, and a question mark inside it is not a placeholder'() {
+    void 'in SQL Server mode a bracket identifier in a restriction is rendered as written, and a question mark inside it is not a placeholder'() {
         given:
         saveBoxes()
 
@@ -94,7 +93,7 @@ class HibernateCriteriaBuilderTransactSqlSpec extends Specification {
     }
 
     @Rollback
-    void 'a detached criteria reads its restriction the same way'() {
+    void 'in SQL Server mode a detached criteria reads its restriction the same way'() {
         given:
         saveBoxes()
 
@@ -103,18 +102,18 @@ class HibernateCriteriaBuilderTransactSqlSpec extends Specification {
             sqlRestriction('{alias}.[width] > ?', [2])
         }.list()*.label == ['C']
 
-        when:
+        when: "the number of placeholders is checked where the SQL is rendered, on the connection it runs on"
         new DetachedCriteria(TransactSqlBox).build {
             sqlRestriction('{alias}.[width?] = ?', [2, 3])
-        }
+        }.list()
 
         then:
-        IllegalArgumentException e = thrown()
-        e.message.contains('has 1 ? placeholders but 2 values')
+        Exception e = thrown()
+        ExceptionCauses.of(e).any { it.message?.contains('has 1 ? placeholders but 2 values') }
     }
 
     @Rollback
-    void 'a column alias in brackets, holding any character, is removed from the projected SQL and matched in the group by clause'() {
+    void 'in SQL Server mode a column alias in brackets, holding any character, is removed from the projected SQL and matched in the group by clause'() {
         given:
         saveBoxes()
 

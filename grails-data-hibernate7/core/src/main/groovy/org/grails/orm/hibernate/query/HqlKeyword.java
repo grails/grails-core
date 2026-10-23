@@ -65,11 +65,6 @@ enum HqlKeyword {
         return text;
     }
 
-    /** Whether the keyword starts a clause that may follow the root entity, such as {@code where} or {@code join}. */
-    boolean startsClause() {
-        return startsClause;
-    }
-
     /** Whether a token, in any case, is a keyword that starts a clause. */
     static boolean startsClause(String token) {
         HqlKeyword keyword = BY_TEXT.get(token.toLowerCase(Locale.ROOT));

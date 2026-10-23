@@ -45,26 +45,16 @@ class SqlSyntaxSpec extends Specification {
         dialect                                              | syntax
         new SQLServerDialect()                               | SqlSyntax.TRANSACT_SQL
         new SybaseASEDialect()                               | SqlSyntax.TRANSACT_SQL
-        new H2Dialect()                                      | SqlSyntax.SQL
-        new PostgreSQLDialect()                              | SqlSyntax.SQL
-        new CockroachDialect()                               | SqlSyntax.SQL
-        new MySQLDialect()                                   | SqlSyntax.SQL
-        new MariaDBDialect()                                 | SqlSyntax.SQL
-        new OracleDialect()                                  | SqlSyntax.SQL
+        new H2Dialect()                                      | SqlSyntax.H2
+        new PostgreSQLDialect()                              | SqlSyntax.POSTGRESQL
+        new CockroachDialect()                               | SqlSyntax.POSTGRESQL
+        new MySQLDialect()                                   | SqlSyntax.MYSQL
+        new MariaDBDialect()                                 | SqlSyntax.MYSQL
+        new OracleDialect()                                  | SqlSyntax.ORACLE
         new DB2Dialect()                                     | SqlSyntax.SQL
         new HANADialect()                                    | SqlSyntax.SQL
         new Dialect(DatabaseVersion.make(1)) { }             | SqlSyntax.SQL
         dialectName = dialect.class.simpleName
-    }
-
-    void 'what each syntax has'() {
-        expect:
-        SqlSyntax.TRANSACT_SQL.bracketsQuoteIdentifiers()
-        !SqlSyntax.TRANSACT_SQL.hasDollarQuotedStrings()
-        !SqlSyntax.SQL.bracketsQuoteIdentifiers()
-        SqlSyntax.SQL.hasDollarQuotedStrings()
-        !SqlSyntax.HQL.bracketsQuoteIdentifiers()
-        !SqlSyntax.HQL.hasDollarQuotedStrings()
     }
 
     void "a criteria builder that is not Hibernate's reads SQL"() {

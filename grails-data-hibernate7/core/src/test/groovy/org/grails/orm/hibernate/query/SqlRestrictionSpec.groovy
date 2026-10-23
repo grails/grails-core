@@ -47,6 +47,13 @@ class SqlRestrictionSpec extends Specification {
         '[a[b] = ?'                              | [1]        | TRANSACT_SQL
         'a = [?] and b = ?'                      | [1]        | TRANSACT_SQL
         'a = 1'                                  | []         | SQL
+        'a = $$?$$ and b = ?'                    | [1]        | SqlSyntax.POSTGRESQL
+        'a = $$?$$ and b = ?'                    | [1]        | SqlSyntax.H2
+        'a = $$?$$ and b = ?'                    | [1, 2]     | SqlSyntax.MYSQL
+        "a = 'it\\'s ?' and b = ?"               | [1]        | SqlSyntax.MYSQL
+        "a = q'[it's ?]' and b = ?"              | [1]        | SqlSyntax.ORACLE
+        "doc ?? 'key' and b = ?"                 | [1]        | SqlSyntax.POSTGRESQL
+        'a = 1 # is it? \nand b = ?'             | [1]        | SqlSyntax.MYSQL
         'a = 1'                                  | null       | SQL
     }
 
@@ -65,6 +72,30 @@ class SqlRestrictionSpec extends Specification {
         '[a?b] = ?'                              | 1     | SQL          | 2
         'a = [?] and b = ?'                      | 2     | TRANSACT_SQL | 1
         '"items"[?] = ?'                         | 2     | TRANSACT_SQL | 1
+    }
+
+    void 'the constructor does not count the placeholders, which depend on the database, and the rendering does'() {
+        expect: 'a mismatch is accepted where no connection is known'
+        new SqlRestriction('a = ?', []).values() == []
+        new SqlRestriction('a = 1', [1]).values() == [1]
+
+        when: 'the null checks still apply'
+        new SqlRestriction('a = ?', [null])
+
+        then:
+        thrown(IllegalArgumentException)
+    }
+
+    void 'the restriction function of 8.0.0, built without a syntax, reads SQL'() {
+        given:
+        def typeConfiguration = Stub(org.hibernate.type.spi.TypeConfiguration) {
+            getBasicTypeRegistry() >> Stub(org.hibernate.type.BasicTypeRegistry) {
+                resolve(org.hibernate.type.StandardBasicTypes.BOOLEAN) >> Stub(org.hibernate.type.BasicType)
+            }
+        }
+
+        expect:
+        new GrailsSqlRestrictionFunction(typeConfiguration).name == GrailsSqlRestrictionFunction.NAME
     }
 
     void 'the SQL and the values must not be null'() {

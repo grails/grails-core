@@ -51,6 +51,16 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
 
     /**
      * @param typeConfiguration the type configuration of the session factory
+     * @deprecated since 8.0.1, the SQL is read in the syntax of the database: use
+     *     {@link #GrailsSqlRestrictionFunction(TypeConfiguration, SqlSyntax)}, which this reads as {@link SqlSyntax#SQL}
+     */
+    @Deprecated
+    public GrailsSqlRestrictionFunction(TypeConfiguration typeConfiguration) {
+        this(typeConfiguration, SqlSyntax.SQL);
+    }
+
+    /**
+     * @param typeConfiguration the type configuration of the session factory
      * @param syntax the syntax of the native SQL of the database the session factory connects to
      */
     public GrailsSqlRestrictionFunction(TypeConfiguration typeConfiguration, SqlSyntax syntax) {

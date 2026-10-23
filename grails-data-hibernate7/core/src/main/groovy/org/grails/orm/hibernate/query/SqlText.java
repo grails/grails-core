@@ -26,10 +26,10 @@ import java.util.regex.Pattern;
 
 /**
  * Lexical reading of SQL or HQL text, so that every scanner of this package skips the same things the same way:
- * string literals and quoted identifiers, where a doubled quote stands for the quote itself; comments; and, as the
- * {@link SqlSyntax} of the text has them, {@code [bracket identifiers]}, where {@code ]]} stands for a bracket, and
- * {@code $tag$...$tag$} strings. Parentheses, and the square brackets of a syntax without bracket identifiers,
- * nest. The text is read once, when the instance is created: each character is classified as plain text, quoted
+ * string literals and quoted identifiers, where a doubled quote stands for the quote itself; block comments; and, as
+ * the {@link SqlSyntax} of the text has them, line comments, {@code [bracket identifiers]}, where {@code ]]} stands for
+ * a bracket, {@code $tag$...$tag$} and {@code q'[...]'} strings, backslash escapes and nested block comments.
+ * Parentheses, and the square brackets of a syntax without bracket identifiers, nest. The text is read once, when the instance is created: each character is classified as plain text, quoted
  * text or comment, and each plain character carries its nesting depth, so every question asked afterwards walks
  * those two arrays and never rescans the text. The text is scanned, never parsed: this answers where something is,
  * not what it means.
@@ -43,7 +43,7 @@ final class SqlText {
     private static final byte BLOCK_COMMENT = 2;
     private static final byte LINE_COMMENT = 3;
 
-    private static final Pattern DOLLAR_QUOTE_TAG = Pattern.compile("\\$(?:[A-Za-z_][A-Za-z0-9_]*)?\\$");
+    private static final Pattern DOLLAR_QUOTE_TAG = Pattern.compile("\\$(?:[\\p{L}_][\\p{L}\\p{N}_]*)?\\$");
 
     private final String text;
     private final SqlSyntax syntax;
@@ -100,19 +100,6 @@ final class SqlText {
         return new SqlText(text, SqlSyntax.HQL);
     }
 
-    String text() {
-        return text;
-    }
-
-    int length() {
-        return text.length();
-    }
-
-    /** Returns whether the character at {@code index} is plain text: outside every literal, identifier and comment. */
-    boolean isPlain(int index) {
-        return kind[index] == PLAIN;
-    }
-
     /**
      * Returns the index of {@code keyword} at or after {@code fromIndex}, outside string literals, quoted identifiers,
      * comments and parentheses, where it starts a word: {@code select} in {@code preselect} or in {@code b.select} is
@@ -163,58 +150,23 @@ final class SqlText {
         return count;
     }
 
-    /** Returns the indexes of {@code c} outside string literals, quoted identifiers and comments, at any depth. */
+    /**
+     * Returns the indexes of {@code c} outside string literals, quoted identifiers and comments, at any depth. Where
+     * the syntax reads {@code ??} as a literal question mark, a pair of them is not a placeholder.
+     */
     List<Integer> plainIndexes(char c) {
         List<Integer> indexes = new ArrayList<>();
+        boolean pairEscaped = c == '?' && syntax.has(SqlSyntax.Feature.DOUBLE_QUESTION_MARK_ESCAPE);
         for (int i = 0; i < text.length(); i++) {
             if (kind[i] == PLAIN && text.charAt(i) == c) {
+                if (pairEscaped && i + 1 < text.length() && kind[i + 1] == PLAIN && text.charAt(i + 1) == c) {
+                    i++;
+                    continue;
+                }
                 indexes.add(i);
             }
         }
         return indexes;
-    }
-
-    /**
-     * Returns the text without parentheses that enclose all of it, however many times they are nested, and without
-     * the whitespace around it. A text whose first parenthesis closes before its end, such as the parenthesized
-     * branches of a union, is returned as it is, trimmed.
-     */
-    String unwrapOuterParentheses() {
-        int start = 0;
-        int end = text.length() - 1;
-        while (true) {
-            while (start <= end && Character.isWhitespace(text.charAt(start))) {
-                start++;
-            }
-            while (end >= start && Character.isWhitespace(text.charAt(end))) {
-                end--;
-            }
-            if (start > end || text.charAt(start) != '(' || kind[start] != PLAIN || closingParenthesisOf(start) != end) {
-                break;
-            }
-            start++;
-            end--;
-        }
-        return start > end ? "" : text.substring(start, end + 1);
-    }
-
-    /**
-     * Returns the index of the parenthesis closing the one at {@code open}, outside string literals, quoted
-     * identifiers and comments, or -1 when it is not closed.
-     */
-    int closingParenthesisOf(int open) {
-        int target = depth[open];
-        for (int i = open + 1; i < text.length(); i++) {
-            if (kind[i] == PLAIN && text.charAt(i) == ')' && depth[i] == target) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /** Returns the text without the comments and whitespace it ends with. */
-    String withoutTrailingComments() {
-        return text.substring(0, endOfContent());
     }
 
     /** Returns whether the text ends in a line comment, which would comment out anything appended on the same line. */
@@ -234,16 +186,23 @@ final class SqlText {
         if (aliasStart < 0 || !alias.equalsIgnoreCase(unquoted(aliasStart, end))) {
             return text;
         }
-        int asEnd = startOfWhitespace(aliasStart);
-        if (asEnd == aliasStart || asEnd < 2 || kind[asEnd - 2] != PLAIN || kind[asEnd - 1] != PLAIN ||
-                !text.regionMatches(true, asEnd - 2, "as", 0, 2)) {
+        int asEnd = startOfSeparator(aliasStart);
+        if ((asEnd == aliasStart && kind[aliasStart] != QUOTED) || asEnd < 2 || kind[asEnd - 2] != PLAIN ||
+                kind[asEnd - 1] != PLAIN || !text.regionMatches(true, asEnd - 2, "as", 0, 2)) {
             return text;
         }
-        int expressionEnd = startOfWhitespace(asEnd - 2);
-        if (expressionEnd == asEnd - 2 || expressionEnd == 0) {
+        int asStart = asEnd - 2;
+        int expressionEnd = startOfSeparator(asStart);
+        // the as is a word of its own: after whitespace or a comment, or right after a closing parenthesis or quote
+        if (expressionEnd == 0 || (expressionEnd == asStart && !closesOperand(asStart - 1))) {
             return text;
         }
         return text.substring(0, expressionEnd);
+    }
+
+    /** Returns whether the character at {@code index} closes an operand: a parenthesis or bracket, or the end of a quoted text. */
+    private boolean closesOperand(int index) {
+        return kind[index] == QUOTED || (kind[index] == PLAIN && (text.charAt(index) == ')' || text.charAt(index) == ']'));
     }
 
     /**
@@ -261,7 +220,9 @@ final class SqlText {
         }
         char opening = text.charAt(start);
         char closing = opening == '[' ? ']' : opening;
-        boolean identifier = opening == '"' || opening == '`' || (opening == '[' && syntax.bracketsQuoteIdentifiers());
+        boolean identifier = opening == '"' || opening == '`' ||
+                (opening == '[' && syntax.has(SqlSyntax.Feature.BRACKET_IDENTIFIERS)) ||
+                (opening == '\'' && syntax.has(SqlSyntax.Feature.STRING_ALIASES));
         if (!identifier || text.charAt(end - 1) != closing) {
             return text.substring(start, end);
         }
@@ -299,17 +260,29 @@ final class SqlText {
         return start == end ? -1 : start;
     }
 
-    /** Returns the index at which the plain whitespace ending at {@code end} starts, or {@code end} without any. */
-    private int startOfWhitespace(int end) {
+    /**
+     * Returns the index at which the whitespace and comments ending at {@code end} start, or {@code end} without any.
+     */
+    private int startOfSeparator(int end) {
         int start = end;
-        while (start > 0 && kind[start - 1] == PLAIN && Character.isWhitespace(text.charAt(start - 1))) {
+        while (start > 0 && (kind[start - 1] >= BLOCK_COMMENT ||
+                (kind[start - 1] == PLAIN && Character.isWhitespace(text.charAt(start - 1))))) {
             start--;
         }
         return start;
     }
 
-    private static boolean isIdentifierPart(char c) {
-        return Character.isLetterOrDigit(c) || c == '_' || c == '$';
+    /**
+     * Returns whether the character can be part of a name: a letter or digit, a surrogate half of one outside the
+     * basic plane, a combining mark, a joiner, {@code _} or {@code $}, and {@code #} where it does not start a comment.
+     */
+    private boolean isIdentifierPart(char c) {
+        if (Character.isLetterOrDigit(c) || Character.isSurrogate(c) || c == '_' || c == '$' || c == '\u200C' || c == '\u200D') {
+            return true;
+        }
+        int type = Character.getType(c);
+        return type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK ||
+                type == Character.ENCLOSING_MARK || (c == '#' && !syntax.has(SqlSyntax.Feature.HASH_COMMENTS));
     }
 
     private boolean isTopLevel(int index, char c) {
@@ -330,27 +303,84 @@ final class SqlText {
      */
     private int unitEnd(int index) {
         char c = text.charAt(index);
-        if (c == '\'' || c == '"' || c == '`') {
-            return skipQuoted(index, c);
+        if (c == '\'') {
+            if (syntax.has(SqlSyntax.Feature.ALTERNATIVE_QUOTES) && startsAlternativeQuote(index)) {
+                return skipAlternativeQuoted(index);
+            }
+            boolean backslash = syntax.has(SqlSyntax.Feature.BACKSLASH_ESCAPES) ||
+                    (syntax.has(SqlSyntax.Feature.ESCAPE_STRINGS) && startsEscapeString(index));
+            return skipQuoted(index, c, backslash);
         }
-        if (c == '-' && text.startsWith("--", index)) {
+        if (c == '"') {
+            return skipQuoted(index, c, syntax.has(SqlSyntax.Feature.BACKSLASH_ESCAPES));
+        }
+        if (c == '`') {
+            return skipQuoted(index, c, false);
+        }
+        if (c == '-' && startsLineComment(index)) {
+            return endOfLine(index);
+        }
+        if (c == '#' && syntax.has(SqlSyntax.Feature.HASH_COMMENTS)) {
+            return endOfLine(index);
+        }
+        if (c == '/' && syntax.has(SqlSyntax.Feature.DOUBLE_SLASH_COMMENTS) && text.startsWith("//", index)) {
             return endOfLine(index);
         }
         if (c == '/' && text.startsWith("/*", index)) {
-            int end = text.indexOf("*/", index + 2);
-            return end == -1 ? text.length() : end + 2;
+            return skipBlockComment(index);
         }
-        if (c == '[' && syntax.bracketsQuoteIdentifiers()) {
+        if (c == '[' && syntax.has(SqlSyntax.Feature.BRACKET_IDENTIFIERS)) {
             return skipBracketIdentifier(index);
         }
-        if (c == '$' && syntax.hasDollarQuotedStrings()) {
+        if (c == '$' && (syntax.has(SqlSyntax.Feature.DOLLAR_QUOTES) || syntax.has(SqlSyntax.Feature.UNTAGGED_DOLLAR_QUOTES))) {
             return skipDollarQuoted(index);
         }
         return index;
     }
 
+    /**
+     * Returns whether the {@code --} at {@code index} starts a comment: where the syntax has line comments, and, where
+     * it needs one, with whitespace or a control character after it.
+     */
+    private boolean startsLineComment(int index) {
+        if (!syntax.has(SqlSyntax.Feature.LINE_COMMENTS) || !text.startsWith("--", index)) {
+            return false;
+        }
+        if (!syntax.has(SqlSyntax.Feature.DASH_COMMENT_NEEDS_SPACE)) {
+            return true;
+        }
+        return index + 2 >= text.length() || Character.isWhitespace(text.charAt(index + 2)) ||
+                Character.isISOControl(text.charAt(index + 2));
+    }
+
+    /** Returns whether the quote at {@code index} follows an {@code E} that is not part of a longer word. */
+    private boolean startsEscapeString(int index) {
+        return index > 0 && (text.charAt(index - 1) == 'E' || text.charAt(index - 1) == 'e') && !isWordBefore(index - 1);
+    }
+
+    /** Returns whether the quote at {@code index} follows {@code q}, or {@code nq}, standing alone, with a delimiter after it. */
+    private boolean startsAlternativeQuote(int index) {
+        if (index == 0 || index + 1 >= text.length() || Character.isWhitespace(text.charAt(index + 1))) {
+            return false;
+        }
+        char q = text.charAt(index - 1);
+        if (q != 'q' && q != 'Q') {
+            return false;
+        }
+        int before = index - 2;
+        if (before >= 0 && (text.charAt(before) == 'n' || text.charAt(before) == 'N')) {
+            before--;
+        }
+        return before < 0 || kind[before] != PLAIN || !isIdentifierPart(text.charAt(before));
+    }
+
+    /** Returns whether the character before {@code index} is part of a word, so the character at it is not a prefix. */
+    private boolean isWordBefore(int index) {
+        return index > 0 && kind[index - 1] == PLAIN && isIdentifierPart(text.charAt(index - 1));
+    }
+
     private byte unitKind(int index) {
-        if (text.startsWith("--", index)) {
+        if (text.charAt(index) == '#' || text.startsWith("--", index) || text.startsWith("//", index)) {
             return LINE_COMMENT;
         }
         if (text.startsWith("/*", index)) {
@@ -359,11 +389,19 @@ final class SqlText {
         return QUOTED;
     }
 
-    /** Returns the index after the quoted text starting at {@code start}, where a doubled quote stands for the quote. */
-    private int skipQuoted(int start, char quote) {
+    /**
+     * Returns the index after the quoted text starting at {@code start}, where a doubled quote stands for the quote
+     * and, where the syntax escapes with a backslash, a backslash stands for the character after it.
+     */
+    private int skipQuoted(int start, char quote, boolean backslash) {
         int i = start + 1;
         while (i < text.length()) {
-            if (text.charAt(i) == quote) {
+            char c = text.charAt(i);
+            if (backslash && c == '\\') {
+                i += 2;
+                continue;
+            }
+            if (c == quote) {
                 if (i + 1 < text.length() && text.charAt(i + 1) == quote) {
                     i += 2;
                     continue;
@@ -372,7 +410,49 @@ final class SqlText {
             }
             i++;
         }
-        return i;
+        return text.length();
+    }
+
+    /**
+     * Returns the index after the block comment starting at {@code start}; where the syntax nests block comments, after
+     * the {@code *}{@code /} that closes the outermost one.
+     */
+    private int skipBlockComment(int start) {
+        boolean nested = syntax.has(SqlSyntax.Feature.NESTED_BLOCK_COMMENTS);
+        int level = 1;
+        int i = start + 2;
+        while (i < text.length()) {
+            if (text.startsWith("*/", i)) {
+                level--;
+                i += 2;
+                if (level == 0) {
+                    return i;
+                }
+            } else if (nested && text.startsWith("/*", i)) {
+                level++;
+                i += 2;
+            } else {
+                i++;
+            }
+        }
+        return text.length();
+    }
+
+    /**
+     * Returns the index after the Oracle alternative quoted string whose quote is at {@code quote}, such as
+     * {@code q'[it's]'}: the delimiter after the quote, with a closing bracket for an opening one, then a quote.
+     */
+    private int skipAlternativeQuoted(int quote) {
+        char opening = text.charAt(quote + 1);
+        char closing = switch (opening) {
+            case '[' -> ']';
+            case '{' -> '}';
+            case '(' -> ')';
+            case '<' -> '>';
+            default -> opening;
+        };
+        int end = text.indexOf(String.valueOf(closing) + '\'', quote + 2);
+        return end == -1 ? text.length() : end + 2;
     }
 
     /**
@@ -403,7 +483,11 @@ final class SqlText {
     private int skipDollarQuoted(int start) {
         char previous = start > 0 ? text.charAt(start - 1) : ' ';
         Matcher tag = DOLLAR_QUOTE_TAG.matcher(text).region(start, text.length());
-        if (Character.isLetterOrDigit(previous) || previous == '_' || previous == '$' || !tag.lookingAt()) {
+        boolean afterWord = start > 0 && kind[start - 1] == PLAIN && isIdentifierPart(previous);
+        if (afterWord || !tag.lookingAt()) {
+            return start;
+        }
+        if (!syntax.has(SqlSyntax.Feature.DOLLAR_QUOTES) && !"$$".equals(tag.group())) {
             return start;
         }
         int end = text.indexOf(tag.group(), tag.end());

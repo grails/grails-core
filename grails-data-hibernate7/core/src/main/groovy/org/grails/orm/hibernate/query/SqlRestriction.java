@@ -31,6 +31,11 @@ import org.grails.datastore.mapping.query.Query;
  * as parameters. The SQL is read in the {@link SqlSyntax} of the database: {@link #of} checks the placeholders
  * against the values when the restriction is created, and the query that renders it checks them again.
  *
+ * <p>The canonical constructor checks that the SQL and the values are not {@code null} and copies the values, but does
+ * not count the placeholders, because the count depends on the syntax of the database, which a restriction built
+ * without a connection does not know. The count is checked where the SQL is rendered, on the connection the query
+ * runs on, and earlier by {@link #of(String, List, SqlSyntax)} where the connection is known.</p>
+ *
  * @param sql the SQL condition
  * @param values the values of the {@code ?} placeholders, in order
  * @since 8.0.0
