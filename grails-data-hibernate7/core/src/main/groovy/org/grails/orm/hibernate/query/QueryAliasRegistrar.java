@@ -26,6 +26,7 @@ import jakarta.persistence.criteria.Root;
 
 import grails.gorm.DetachedCriteria;
 import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria;
+import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.query.Query;
 
 /**
@@ -122,19 +123,26 @@ final class QueryAliasRegistrar {
                 discover(dac.getCriteria(), context);
             }
             else if (criterion instanceof Query.PropertyNameCriterion pnc) {
-                String propertyName = pnc.getProperty();
-                if (propertyName.contains(".")) {
-                    String alias = propertyName.substring(0, propertyName.indexOf('.'));
-                    AliasRegistry registry = context.getAliasRegistry();
-                    HibernateAlias inherited = registry.getDefinition(alias);
-                    boolean inheritedPath = !registry.isOwnDefined(alias) && inherited != null && !inherited.explicit();
-                    if (!context.hasAlias(alias) || inheritedPath) {
-                        context.registerAlias(alias, new HibernateAlias(alias, alias, JoinType.INNER, false));
-                    }
+                discoverProperty(pnc.getProperty(), context);
+                if (pnc instanceof Query.PropertyComparisonCriterion comparison) {
+                    discoverProperty(comparison.getOtherProperty(), context);
                 }
             }
             else if (criterion instanceof Query.Junction junction) {
                 discover(junction.getCriteria(), context);
+            }
+        }
+    }
+
+    private void discoverProperty(String propertyName, JpaQueryContext context) {
+        if (propertyName.contains(".")) {
+            String alias = propertyName.substring(0, propertyName.indexOf('.'));
+            AliasRegistry registry = context.getAliasRegistry();
+            HibernateAlias inherited = registry.getDefinition(alias);
+            boolean inheritedPath = !registry.isOwnDefined(alias) && inherited != null && !inherited.explicit();
+            if ((!context.hasAlias(alias) || inheritedPath) &&
+                    detachedCriteria.getPersistentEntity().getPropertyByName(alias) instanceof Association) {
+                context.registerAlias(alias, new HibernateAlias(alias, alias, JoinType.INNER, false));
             }
         }
     }

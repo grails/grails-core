@@ -149,6 +149,80 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         'other'    | 'likes'     | true
     }
 
+    void 'an inner entity alias does not inherit the later left alias join type'() {
+        given:
+        def like = new CreateAliasLike(label: 'first').save(failOnError: true)
+        new CreateAliasTeam(name: 'with likes').addToLikes(like).save(failOnError: true)
+        new CreateAliasTeam(name: 'without likes').save(flush: true, failOnError: true)
+
+        when:
+        def names = CreateAliasTeam.withCriteria {
+            createAlias('likes', 'a')
+            createAlias('likes', 'b', 1)
+            isNull('a.label')
+            projections { property('name') }
+        }
+
+        then:
+        names == []
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
+        !(sqlCapture.statements.last() =~ /(?i)\bleft join create_alias_team_create_alias_like\b/)
+    }
+
+    void 'entity aliases retain mixed join types with left first #leftFirst and projected aliases #projectAliases'() {
+        given:
+        def like = new CreateAliasLike(label: 'first').save(failOnError: true)
+        new CreateAliasTeam(name: 'with likes').addToLikes(like).save(failOnError: true)
+        new CreateAliasTeam(name: 'without likes').save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            if (leftFirst) {
+                createAlias('likes', 'a', 1)
+                createAlias('likes', 'b')
+            } else {
+                createAlias('likes', 'a')
+                createAlias('likes', 'b', 1)
+            }
+            or {
+                isNull('a.label')
+                eq('a.label', 'first')
+            }
+            or {
+                isNull('b.label')
+                eq('b.label', 'first')
+            }
+            projections {
+                property('name')
+                if (projectAliases) {
+                    property('a.label')
+                    property('b.label')
+                }
+            }
+            if (projectAliases) {
+                order('b.label', 'asc')
+                order('a.label', 'asc')
+            }
+        }
+
+        then:
+        if (projectAliases) {
+            assert rows*.toList() == [['with likes', 'first', 'first']]
+        } else {
+            assert rows == ['with likes']
+        }
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 2
+        sqlCapture.statements.last().findAll(/(?i)\bleft join create_alias_team_create_alias_like\b/).size() == 1
+        sqlCapture.statements.last().findAll(/(?i)\bleft join create_alias_like\b/).size() == 1
+
+        where:
+        leftFirst | projectAliases
+        false     | false
+        true      | false
+        false     | true
+        true      | true
+    }
+
     void 'entity collection aliases survive pagination counts with offset #offset'() {
         given:
         def first = new CreateAliasLike(label: 'first').save(failOnError: true)
@@ -357,7 +431,7 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         projectAlias << [true, false]
     }
 
-    void 'distinct aliases of a basic collection match different elements'() {
+    void 'distinct aliases of a basic collection match different elements using explicit inner join #explicitInner'() {
         given:
         def student = new CreateAliasStudent(name: 'both schools')
                 .addToSchools('MIT').addToSchools('Harvard').save(failOnError: true)
@@ -366,7 +440,11 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
 
         when:
         def rows = CreateAliasStudent.withCriteria {
-            createAlias('schools', 'm')
+            if (explicitInner) {
+                createAlias('schools', 'm', 0)
+            } else {
+                createAlias('schools', 'm')
+            }
             createAlias('schools', 'h')
             inList('m', ['MIT'])
             inList('h', ['Harvard'])
@@ -375,6 +453,9 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         then:
         rows*.id == [student.id]
         sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_student_schools\b/).size() == 2
+
+        where:
+        explicitInner << [false, true]
     }
 
     void 'basic collection membership remains independent of an element alias'() {
@@ -614,7 +695,53 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         nestedJunction << [false, true]
     }
 
-    void 'exists subqueries can deliberately reference an outer association alias'() {
+    void 'subquery property comparisons use local paths with reversed operands #reverseOperands nested junction #nestedJunction and outer alias #outerAlias'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        def teamA = new CreateAliasTeam(name: 'A', favorite: first).save(failOnError: true)
+        new CreateAliasTeam(name: 'second', favorite: second).save(flush: true, failOnError: true)
+        String leftProperty = reverseOperands ? 'favorite.label' : 'name'
+        String rightProperty = reverseOperands ? 'name' : 'favorite.label'
+        def ownNameIsOwnFavorite = new DetachedCriteria(CreateAliasTeam).build {
+            if (nestedJunction) {
+                and {
+                    or {
+                        eqProperty(leftProperty, rightProperty)
+                    }
+                }
+            } else {
+                eqProperty(leftProperty, rightProperty)
+            }
+        }
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            if (outerAlias) {
+                createAlias('favorite', 'outside')
+                eq('outside.label', 'first')
+            } else {
+                eq('favorite.label', 'first')
+            }
+            exists(ownNameIsOwnFavorite)
+        }
+
+        then:
+        rows*.id == [teamA.id]
+
+        where:
+        reverseOperands | nestedJunction | outerAlias
+        false           | false          | true
+        false           | true           | true
+        true            | false          | true
+        true            | true           | true
+        false           | false          | false
+        false           | true           | false
+        true            | false          | false
+        true            | true           | false
+    }
+
+    void 'exists subqueries can deliberately reference an outer association alias with reversed operands #reverseOperands'() {
         given:
         def first = new CreateAliasLike(label: 'first').save(failOnError: true)
         def second = new CreateAliasLike(label: 'second').save(failOnError: true)
@@ -622,7 +749,11 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         new CreateAliasTeam(name: 'B', favorite: second).save(flush: true, failOnError: true)
         def matchingFavorite = new DetachedCriteria(CreateAliasLike).build {
             eq('label', 'first')
-            eqProperty('label', 'outside.label')
+            if (reverseOperands) {
+                eqProperty('outside.label', 'label')
+            } else {
+                eqProperty('label', 'outside.label')
+            }
         }
 
         when:
@@ -634,6 +765,9 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
 
         then:
         rows*.id == [teamA.id]
+
+        where:
+        reverseOperands << [false, true]
     }
 
     void 'detached aliases preserve the configured left join in lists and subqueries'() {

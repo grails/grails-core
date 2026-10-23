@@ -149,6 +149,40 @@ def results = c.list {
 Here we find all accounts that have either performed transactions in the last 10 days OR have been recently created in the last 10 days.
 
 
+[[criteriaAssociationAliases]]
+==== Association Aliases
+
+`createAlias('association', 'alias')` creates an inner join. Restrictions, projections, and ordering on `alias.property` reuse that association join rather than adding another join. The three-argument overload accepts `0` for an inner join, `1` for a left outer join, or `2` for a right outer join. Hibernate 7 does not support full joins through this overload; other values produce an inner join.
+
+An explicitly declared alias takes precedence over an association path with the same name. For example, after `createAlias('favorite', 'f')` and `createAlias('likes', 'favorite')`, `f.label` refers to the favorite entity, while `favorite.label` refers to an element of `likes`. This applies independently to restrictions, projections, and ordering; using `f.label` only in a projection or an order does not change which association `favorite.label` restricts.
+
+===== Collection Aliases
+
+Declaring two different aliases for the same entity-valued collection in `createCriteria()` or `withCriteria` creates independent joins, so restrictions on those aliases can match different associated entities:
+
+[source,groovy]
+----
+def teams = Team.withCriteria {
+    createAlias('likes', 'a')
+    createAlias('likes', 'b')
+    eq('a.label', 'first')
+    eq('b.label', 'second')
+}
+----
+
+Each alias retains its own join type: `createAlias('likes', 'a')` followed by `createAlias('likes', 'b', 1)` leaves `a` as an inner join rather than changing it to a left join. In particular, `isNull('a.label')` does not match an entity with no likes. This also applies when an explicitly declared alias has the same name as the association path, for example `createAlias('likes', 'likes')` followed by `createAlias('likes', 'other')`. Repeated restrictions, projections, and ordering on one alias still reuse that alias's join.
+
+For a collection of basic values, such as `static hasMany = [schools: String]`, each explicit alias represents an independent element join with its own join type. For example, restrictions on two aliases can match different elements of the same collection. The collection property itself remains available for collection restrictions such as `sizeEq('schools', 2)`, even when an alias is used to restrict an individual element.
+
+These aliases are also preserved when calculating a paged criteria result's `totalCount` and when calling `count { ... }` with projections. This includes multiple aliases of an entity collection and aliases of basic-value collections. The total count uses the alias restrictions without applying the page's `max` or `offset`.
+
+===== Aliases in Subqueries
+
+An association alias declared in a detached subquery joins from the subquery's own root, even if its name matches an association path or alias in the outer query. A locally declared alias takes precedence. Referencing an outer query's alias explicitly, without redeclaring it in the subquery, can still correlate the subquery with the outer query.
+
+A plain dotted association path in a detached subquery, such as `eq('favorite.label', 'second')`, also resolves from the subquery's own root rather than reusing an outer query's implicit association join. This applies to either operand of a property comparison, including `eqProperty('name', 'favorite.label')`, and to comparisons inside nested junctions. To correlate with the outer query, give its association a distinct alias and reference that alias explicitly in the subquery, for example `eqProperty('label', 'outside.label')`.
+
+
 ==== Querying with Projections
 
 

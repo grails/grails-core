@@ -34,7 +34,6 @@ class AliasRegistrySpec extends Specification {
 
         then:
         registry.isDefined("f")
-        registry.isOwnDefined('f')
         registry.getDefinition("f") == definition
         !registry.hasRealized("f")
     }
@@ -63,7 +62,6 @@ class AliasRegistrySpec extends Specification {
 
         then:
         child.isDefined("f")
-        !child.isOwnDefined('f')
         child.getDefinition("f") == definition
     }
 
@@ -78,7 +76,6 @@ class AliasRegistrySpec extends Specification {
 
         then:
         child.hasRealized("f")
-        !child.isOwnDefined('f')
         child.getRealized("f") == expression
     }
 
@@ -96,6 +93,31 @@ class AliasRegistrySpec extends Specification {
         then:
         child.getRealized("f") == childExpr
         parent.getRealized("f") == parentExpr
+    }
+
+    def 'a local definition shadows an inherited realized alias until it is realized locally'() {
+        given:
+        def parent = new AliasRegistry()
+        def child = new AliasRegistry(parent)
+        def parentExpression = Mock(Expression)
+        def childExpression = Mock(Expression)
+        parent.realize('f', parentExpression)
+
+        when:
+        child.define('f', new HibernateAlias('face', 'f'))
+
+        then:
+        child.isDefined('f')
+        !child.hasRealized('f')
+        child.getRealized('f') == null
+        parent.getRealized('f') == parentExpression
+
+        when:
+        child.realize('f', childExpression)
+
+        then:
+        child.getRealized('f') == childExpression
+        parent.getRealized('f') == parentExpression
     }
 
     def 'association alias selection follows local declaration order, not alias spelling'() {

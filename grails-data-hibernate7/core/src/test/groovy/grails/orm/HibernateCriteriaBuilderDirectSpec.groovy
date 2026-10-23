@@ -257,6 +257,7 @@ class HibernateCriteriaBuilderDirectSpec extends HibernateGormDatastoreSpec {
 
         expect:
         c.list { createAlias("children", "ch"); eq("ch.name", "c1") }*.name == ["A"]
+        c.list { createAlias('children', 'ch', 0); eq('ch.name', 'c1') }*.name == ['A']
         c.list { createAlias("children", "chLeft", 1); eq("chLeft.name", "c2") }*.name == ["B"]
         c.list { createAlias("children", "chRight", 2); eq("chRight.name", "c2") }*.name == ["B"]
         c.list {

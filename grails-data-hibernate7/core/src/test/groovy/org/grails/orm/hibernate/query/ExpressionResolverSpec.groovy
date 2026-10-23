@@ -135,8 +135,8 @@ class ExpressionResolverSpec extends Specification {
         0 * favoriteJoin.get('label')
         result == labelPath
         resolver.resolve('favorite') == likesJoin
-        joinTracker.getOwnJoin('favorite') == favoriteJoin
-        joinTracker.getOwnJoin('likes') == likesJoin
+        joinTracker.getJoin('favorite') == favoriteJoin
+        joinTracker.getJoin('likes') == likesJoin
     }
 
     def "test resolve with parent context (correlated subquery)"() {

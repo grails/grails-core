@@ -60,7 +60,7 @@ public class AliasRegistry {
     /**
      * Whether this query declares the alias, independently of any enclosing query.
      */
-    public boolean isOwnDefined(String alias) {
+    boolean isOwnDefined(String alias) {
         return definitions.containsKey(alias);
     }
 
