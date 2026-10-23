@@ -431,18 +431,18 @@ the order out. A query whose result is a count leaves every order out by itself,
 
 [source,groovy]
 ----
-PredicateGenerator.registerCriterionHandler(NumberLikeCriterion, { query, root, cb, criterion, context ->
+PredicateGenerator.registerCriterionHandler(NumberLikeCriterion) { query, root, cb, criterion, context ->
     def c = criterion as NumberLikeCriterion
     cb.like(cb.cast(context.getFullyQualifiedPath(c.property) as JpaExpression, String), c.value as String)
-} as PredicateGenerator.ContextualCriterionHandler)
+}
 
 PredicateGenerator.registerOrderHandler(ByRandom) { query, root, cb, order, context ->
     cb.asc(cb.function('random', Double))
 }
 ----
 
-A criterion handler that does not need the context takes four parameters and is coerced to
-`PredicateGenerator.CriterionHandler`. Handlers are registered for the exact class of the criterion or order, and
+A closure with five parameters is registered as a handler that receives the context; a closure with four parameters
+is registered as a handler that does not, so both shapes work without `as`. Handlers are registered for the exact class of the criterion or order, and
 a registered handler wins over the built-in handling, so a handler for `Query.Like` replaces how `like` is built.
 
 A plugin registers its handlers without any code in the application by implementing

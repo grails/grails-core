@@ -144,7 +144,8 @@ public class JpaQueryContext implements Cloneable, QueryPathContext {
     }
 
     /**
-     * Returns the selection recorded under an alias by {@link #registerSelectionAlias(String, Expression)}.
+     * Returns the selection recorded under an alias by {@link #registerSelectionAlias(String, Expression)}. Unlike
+     * {@link #getFullyQualifiedExpression(String)}, which resolves a property first, this asks for the alias alone.
      *
      * @param alias the alias of the selection
      * @return the selection, or {@code null} if no selection of this query has the alias
@@ -185,7 +186,8 @@ public class JpaQueryContext implements Cloneable, QueryPathContext {
                 return parent.getFullyQualifiedExpression("root." + path.substring(8));
             }
         }
-        return resolver.resolve(path);
+        Expression<?> resolved = resolver.resolve(path);
+        return resolved != null ? resolved : selectionAliases.get(path);
     }
 
     @Override

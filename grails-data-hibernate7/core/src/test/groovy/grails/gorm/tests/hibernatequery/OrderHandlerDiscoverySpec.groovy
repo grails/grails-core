@@ -108,7 +108,12 @@ class OrderHandlerDiscoveryProvider implements PredicateGenerator.OrderHandlerPr
     @Override
     PredicateGenerator.OrderHandler orderHandler() {
         entered.countDown()
-        gate.await()
+        try {
+            gate.await()
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt()
+            throw new IllegalStateException('Interrupted while the test held the provider', e)
+        }
         return { query, root, cb, order, context -> null } as PredicateGenerator.OrderHandler
     }
 

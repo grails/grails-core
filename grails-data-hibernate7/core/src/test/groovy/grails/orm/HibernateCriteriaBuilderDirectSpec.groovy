@@ -457,6 +457,61 @@ class HibernateCriteriaBuilderDirectSpec extends HibernateGormDatastoreSpec {
         PredicateGenerator.clearCustomCriterionHandlers()
     }
 
+    void "a contextual criterion handler resolves the alias of createAlias to the join GORM created for it"() {
+        given: "a parent with two children, and the same handler as above"
+        var parent = CriteriaTestEntity.findByName('A')
+        parent.addToChildren(new CriteriaTestChild(name: 'Kid'))
+        parent.addToChildren(new CriteriaTestChild(name: 'Other')).save(flush: true)
+        PredicateGenerator.registerCriterionHandler(CriteriaTestPathLike) { query, root, cb, criterion, context ->
+            def c = criterion as CriteriaTestPathLike
+            cb.like(context.getFullyQualifiedPath(c.property) as Expression<String>, c.value as String)
+        }
+
+        when: "a createAlias alias is restricted by a GORM criterion and by the custom criterion"
+        List<CriteriaTestEntity> both = new DetachedCriteria(CriteriaTestEntity).build {
+            createAlias('children', 'ch')
+            eq('ch.name', 'Kid')
+            add(new CriteriaTestPathLike('ch.name', 'K%'))
+        }.list()
+        List<CriteriaTestEntity> different = new DetachedCriteria(CriteriaTestEntity).build {
+            createAlias('children', 'ch')
+            eq('ch.name', 'Kid')
+            add(new CriteriaTestPathLike('ch.name', 'O%'))
+        }.list()
+        List<CriteriaTestEntity> inBuilder = c.list {
+            createAlias('children', 'ch')
+            eq('ch.name', 'Kid')
+            hibernateQuery.add(new CriteriaTestPathLike('ch.name', 'O%'))
+        }
+
+        then: "the alias shares the join, in a detached criteria and in the builder"
+        both*.name == ['A']
+        different.empty
+        inBuilder.empty
+
+        cleanup:
+        PredicateGenerator.clearCustomCriterionHandlers()
+    }
+
+    void "a closure registered as a criterion handler is a contextual handler with five parameters and a plain one otherwise"() {
+        given: "one criterion handled by a four parameter closure and one by a five parameter closure, with no as"
+        PredicateGenerator.registerCriterionHandler(CriteriaTestPathLike) { query, root, cb, criterion ->
+            def c = criterion as CriteriaTestPathLike
+            cb.like(root.get(c.property) as Expression<String>, c.value as String)
+        }
+        PredicateGenerator.registerCriterionHandler(CriteriaTestContextLike) { query, root, cb, criterion, context ->
+            def c = criterion as CriteriaTestContextLike
+            cb.like(context.getFullyQualifiedPath(c.property) as Expression<String>, c.value as String)
+        }
+
+        expect:
+        new DetachedCriteria(CriteriaTestEntity).build { add(new CriteriaTestPathLike('name', 'A%')) }.list()*.name == ['A']
+        new DetachedCriteria(CriteriaTestEntity).build { add(new CriteriaTestContextLike('name', 'B%')) }.list()*.name == ['B']
+
+        cleanup:
+        PredicateGenerator.clearCustomCriterionHandlers()
+    }
+
     void "an order handler converts a Query.Order subclass in its place among the orders"() {
         given: "a handler that orders by the remainder of the amount modulo 15, descending"
         PredicateGenerator.registerOrderHandler(CriteriaTestRemainderOrder) { query, root, cb, order, context ->
@@ -503,6 +558,14 @@ class HibernateCriteriaBuilderDirectSpec extends HibernateGormDatastoreSpec {
 class CriteriaTestPathLike extends Query.PropertyCriterion {
 
     CriteriaTestPathLike(String property, String value) {
+        super(property, value)
+    }
+}
+
+/** A criterion that a five parameter closure converts. */
+class CriteriaTestContextLike extends Query.PropertyCriterion {
+
+    CriteriaTestContextLike(String property, String value) {
         super(property, value)
     }
 }

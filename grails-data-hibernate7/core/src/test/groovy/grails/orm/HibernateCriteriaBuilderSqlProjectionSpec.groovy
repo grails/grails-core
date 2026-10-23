@@ -153,6 +153,47 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
+    void 'getFullyQualifiedExpression returns the projection a sqlProjection alias stands for, while a property of that name stays a property'() {
+        given: "a handler that orders by whatever getFullyQualifiedExpression returns for the alias, and one that records it"
+        saveBoxes()
+        List<Class> resolved = []
+        PredicateGenerator.registerOrderHandler(SqlProjectionAliasOrder) { query, root, cb, order, context ->
+            def expression = context.getFullyQualifiedExpression(order.property)
+            resolved << expression?.getClass()
+            cb.desc(expression)
+        }
+
+        when: "the alias names no property"
+        List rows = SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as scaled', 'scaled', INTEGER
+            }
+            order(new SqlProjectionAliasOrder('scaled'))
+        }
+
+        then: "the order uses the projected expression, as it does through getSelectionAlias"
+        rows == rows.sort(false).reverse()
+        resolved.every { it != null }
+        sqlCapture.statements.any { it.contains('select width * 10 from') && it.contains('order by 1 desc') }
+
+        when: "the alias is the name of a property: the property wins, since a restriction on it must still restrict the property"
+        resolved.clear()
+        SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as width', 'width', INTEGER
+            }
+            order(new SqlProjectionAliasOrder('width'))
+        }
+
+        then:
+        resolved.size() == 1
+        sqlCapture.statements.last().contains('order by')
+
+        cleanup:
+        PredicateGenerator.clearCustomOrderHandlers()
+    }
+
+    @Rollback
     void 'the results are ordered by the alias of a SQL projection'() {
         given:
         saveBoxes()
