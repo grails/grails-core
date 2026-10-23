@@ -92,4 +92,17 @@ public class UndertowServletWebServer extends UndertowWebServer {
         return this.manager;
     }
 
+    /**
+     * Stops the server, which undeploys the deployment of a server that started, and
+     * undeploys the deployment of a server that never started, so that the listeners of
+     * its servlet context are destroyed and its temporary directories deleted.
+     */
+    @Override
+    public void destroy() {
+        super.destroy();
+        if (this.manager != null && this.manager.getState() == DeploymentManager.State.DEPLOYED) {
+            this.manager.undeploy();
+        }
+    }
+
 }

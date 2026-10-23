@@ -30,6 +30,8 @@ import javax.net.ssl.SSLContext;
 import io.undertow.Undertow.Builder;
 import io.undertow.servlet.api.Deployment;
 
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -53,6 +55,7 @@ import org.apache.grails.undertow.core.UndertowBuilderCustomizer;
 
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.server.WebServer;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.util.FileCopyUtils;
 
@@ -160,6 +163,34 @@ class UndertowServletWebServerFactoryTests {
         assertThat(tempDir).isDirectory();
         assertThat(documentRoot).isDirectory();
         webServer.stop();
+        assertThat(tempDir).doesNotExist();
+        assertThat(documentRoot).doesNotExist();
+    }
+
+    @Test
+    void aServerThatNeverStartedIsUndeployedWhenItIsDestroyed() {
+        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory(-1);
+        AtomicBoolean contextDestroyed = new AtomicBoolean();
+        ServletContextInitializer listenerRegistration = (servletContext) -> servletContext
+            .addListener(new ServletContextListener() {
+
+                @Override
+                public void contextDestroyed(ServletContextEvent event) {
+                    contextDestroyed.set(true);
+                }
+
+            });
+        UndertowServletWebServer webServer = (UndertowServletWebServer) factory
+            .getWebServer(helloWorldServletRegistration(), listenerRegistration);
+        this.webServer = webServer;
+        webServer.start();
+        Deployment deployment = webServer.getDeploymentManager().getDeployment();
+        Path tempDir = deployment.getDeploymentInfo().getTempDir().toPath();
+        Path documentRoot = Path.of(deployment.getServletContext().getRealPath("/"));
+        assertThat(tempDir).isDirectory();
+        assertThat(documentRoot).isDirectory();
+        webServer.destroy();
+        assertThat(contextDestroyed).isTrue();
         assertThat(tempDir).doesNotExist();
         assertThat(documentRoot).doesNotExist();
     }
