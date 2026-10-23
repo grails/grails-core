@@ -54,16 +54,21 @@ final class QueryAliasRegistrar {
     }
 
     /**
-     * Creates the context a query or subquery is built against and registers every alias the criteria declare.
+     * Creates the context a query or subquery is built against, registers every alias the criteria declare,
+     * and materializes explicitly requested joins even when no expression references their aliases.
      *
      * @param parent the context of the enclosing query, or {@code null} for a top level query
      * @param root the root of the query
-     * @return the context, with its aliases registered
+     * @return the context, with its aliases registered and explicit joins materialized
      */
     JpaQueryContext createContext(JpaQueryContext parent, Root<?> root) {
-        JpaQueryContext context = JpaQueryContext.forSubquery(parent, explicitAliases(), root);
+        List<HibernateAlias> aliases = explicitAliases();
+        JpaQueryContext context = JpaQueryContext.forSubquery(parent, aliases, root);
         registerDetachedJoins(context);
         discover(detachedCriteria.getCriteria(), context);
+        for (HibernateAlias alias : aliases) {
+            context.getFullyQualifiedExpression(alias.alias());
+        }
         return context;
     }
 

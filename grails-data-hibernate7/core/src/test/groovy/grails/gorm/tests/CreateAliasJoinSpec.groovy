@@ -149,6 +149,63 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         'other'    | 'likes'     | true
     }
 
+    void 'unreferenced to-one aliases retain the inner join with left first #leftFirst and projection #projectNames'() {
+        given:
+        def favorite = new CreateAliasLike(label: 'favorite').save(failOnError: true)
+        new CreateAliasTeam(name: 'with favorite', favorite: favorite).save(failOnError: true)
+        new CreateAliasTeam(name: 'without favorite').save(flush: true, failOnError: true)
+
+        when:
+        def rows = CreateAliasTeam.withCriteria {
+            createAlias('favorite', 'a', leftFirst ? 1 : 0)
+            createAlias('favorite', 'b', leftFirst ? 0 : 1)
+            if (projectNames) {
+                projections { property('name') }
+            }
+        }
+
+        then:
+        (projectNames ? rows : rows*.name) == ['with favorite']
+        // Hibernate may omit the unused to-one LEFT join, but the INNER join must reach SQL.
+        sqlCapture.statements.last() =~ /(?i)(?<!left )\bjoin create_alias_like\b/
+
+        where:
+        leftFirst | projectNames
+        true      | false
+        true      | true
+        false     | false
+        false     | true
+    }
+
+    void 'unreferenced mixed aliases survive counts and pagination'() {
+        given:
+        def favorite = new CreateAliasLike(label: 'favorite').save(failOnError: true)
+        new CreateAliasTeam(name: 'with favorite', favorite: favorite).save(failOnError: true)
+        new CreateAliasTeam(name: 'without favorite').save(flush: true, failOnError: true)
+
+        when:
+        def count = CreateAliasTeam.createCriteria().count {
+            createAlias('favorite', 'a', 1)
+            createAlias('favorite', 'b', 0)
+        }
+
+        then:
+        count == 1
+        sqlCapture.statements.last() =~ /(?i)(?<!left )\bjoin create_alias_like\b/
+
+        when:
+        def rows = CreateAliasTeam.createCriteria().list(max: 1) {
+            createAlias('favorite', 'a', 1)
+            createAlias('favorite', 'b', 0)
+            order('name', 'asc')
+        }
+
+        then:
+        rows*.name == ['with favorite']
+        rows.totalCount == 1
+        sqlCapture.statements.last() =~ /(?i)(?<!left )\bjoin create_alias_like\b/
+    }
+
     void 'an inner entity alias does not inherit the later left alias join type'() {
         given:
         def like = new CreateAliasLike(label: 'first').save(failOnError: true)
@@ -165,8 +222,8 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
 
         then:
         names == []
-        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 1
-        !(sqlCapture.statements.last() =~ /(?i)\bleft join create_alias_team_create_alias_like\b/)
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_team_create_alias_like\b/).size() == 2
+        sqlCapture.statements.last().findAll(/(?i)\bleft join create_alias_team_create_alias_like\b/).size() == 1
     }
 
     void 'entity aliases retain mixed join types with left first #leftFirst and projected aliases #projectAliases'() {
@@ -640,6 +697,31 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         names == ['x', 'y', 'z']
     }
 
+    void 'subquery association blocks join their own root when the outer query uses the same association path'() {
+        given:
+        def x = new CreateAliasLike(label: 'x').save(failOnError: true)
+        def y = new CreateAliasLike(label: 'y').save(failOnError: true)
+        new CreateAliasTeam(name: 'x', favorite: y).save(failOnError: true)
+        new CreateAliasTeam(name: 'y', favorite: y).save(failOnError: true)
+        new CreateAliasTeam(name: 'z', favorite: x).save(flush: true, failOnError: true)
+        def namesWithFavoriteY = new DetachedCriteria(CreateAliasTeam).build {
+            favorite {
+                eq('label', 'y')
+            }
+            projections { property('name') }
+        }
+
+        when:
+        def names = CreateAliasTeam.withCriteria {
+            inList('favorite.label', namesWithFavoriteY)
+            projections { property('name') }
+            order('name', 'asc')
+        }
+
+        then:
+        names == ['x', 'y', 'z']
+    }
+
     void 'exists subquery alias #innerAlias joins its own root for the same association path'() {
         given:
         def first = new CreateAliasLike(label: 'first').save(failOnError: true)
@@ -739,6 +821,45 @@ class CreateAliasJoinSpec extends HibernateGormDatastoreSpec {
         false           | true           | false
         true            | false          | false
         true            | true           | false
+    }
+
+    void 'a subquery without the association correlates through the outer path with explicit alias #explicitAlias and reversed operands #reverseOperands'() {
+        given:
+        def first = new CreateAliasLike(label: 'first').save(failOnError: true)
+        def second = new CreateAliasLike(label: 'second').save(failOnError: true)
+        new CreateAliasTeam(name: 'A', favorite: first).save(failOnError: true)
+        new CreateAliasTeam(name: 'B', favorite: second).save(flush: true, failOnError: true)
+        def matchingFavorite = new DetachedCriteria(CreateAliasLike).build {
+            eq('label', 'second')
+            if (reverseOperands) {
+                eqProperty('label', 'favorite.label')
+            } else {
+                eqProperty('favorite.label', 'label')
+            }
+        }.id()
+
+        when:
+        def names = CreateAliasTeam.withCriteria {
+            if (explicitAlias) {
+                createAlias('favorite', 'f')
+                isNotNull('f.label')
+            } else {
+                isNotNull('favorite.label')
+            }
+            exists(matchingFavorite)
+            projections { property('name') }
+        }
+
+        then:
+        names == ['B']
+        sqlCapture.statements.last().findAll(/(?i)\bjoin create_alias_like\b/).size() == 1
+
+        where:
+        explicitAlias | reverseOperands
+        false         | false
+        false         | true
+        true          | false
+        true          | true
     }
 
     void 'exists subqueries can deliberately reference an outer association alias with reversed operands #reverseOperands'() {

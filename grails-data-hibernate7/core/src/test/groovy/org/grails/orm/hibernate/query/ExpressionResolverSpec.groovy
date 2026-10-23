@@ -139,16 +139,19 @@ class ExpressionResolverSpec extends Specification {
         joinTracker.getJoin('likes') == likesJoin
     }
 
-    def "test resolve with parent context (correlated subquery)"() {
+    def "test resolve with parent context using explicit alias #explicitAlias and realized expression #realized"() {
         given:
         // Parent context
         def parentRoot = Mock(From)
         def faceJoin = Mock(Join)
         def parentAliasRegistry = new AliasRegistry()
-        parentAliasRegistry.define("f", new HibernateAlias("face", "f", JoinType.INNER))
-        parentAliasRegistry.realize("f", faceJoin)
+        def alias = explicitAlias ? 'f' : 'face'
+        parentAliasRegistry.define(alias, new HibernateAlias('face', alias, JoinType.INNER, explicitAlias))
+        if (realized) {
+            parentAliasRegistry.realize(alias, faceJoin)
+        }
         def parentJoinTracker = new JoinTracker(parentRoot)
-        parentJoinTracker.addJoin("f", faceJoin)
+        parentJoinTracker.addJoin('face', faceJoin)
 
         // Subquery context
         def subRoot = Mock(From)
@@ -159,11 +162,17 @@ class ExpressionResolverSpec extends Specification {
         def namePath = Mock(Path)
 
         when:
-        def result = resolver.resolve("f.name")
+        def result = resolver.resolve("${alias}.name")
 
         then:
         0 * subRoot.join(_, _) // Should NOT join on subquery root
         1 * faceJoin.get("name") >> namePath
         result == namePath
+
+        where:
+        explicitAlias | realized
+        true          | true
+        false         | true
+        false         | false
     }
 }

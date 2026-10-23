@@ -109,7 +109,10 @@ public class ExpressionResolver {
             return null;
         }
         if (!def.explicit()) {
-            aliased = resolveAssociation(def.path(), def.joinType());
+            // A path absent from this root can refer to an enclosing query's association join.
+            From<?, ?> enclosing = getPath(joinTracker.getRoot(), def.path()) == null ?
+                    joinTracker.getJoin(def.path()) : null;
+            aliased = enclosing != null ? enclosing : resolveAssociation(def.path(), def.joinType());
         } else {
             Path<?> path = getPath(joinTracker.getRoot(), def.path());
             boolean elementCollection = path != null && path.getModel() instanceof PluralAttribute<?, ?, ?> attribute &&

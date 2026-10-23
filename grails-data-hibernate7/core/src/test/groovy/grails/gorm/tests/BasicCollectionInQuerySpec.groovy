@@ -124,7 +124,7 @@ class BasicCollectionInQuerySpec extends Specification {
         results.unique().sort() == ['dave@test.com', 'eve@test.com', 'frank@test.com']
     }
 
-    def "in query on basic collection with pre-existing alias should reuse it"() {
+    def "in query on #restrictedPath preserves an explicitly requested basic collection join"() {
         given:
         def s1 = new BcStudent(name: "Grace", email: "grace@test.com")
         s1.addToSchools("Yale")
@@ -139,17 +139,22 @@ class BasicCollectionInQuerySpec extends Specification {
         s3.addToSchools("Columbia")
         s3.save(flush: true)
 
-        when: "an alias is explicitly created before using in() with the raw property name"
+        when: "an alias is explicitly created before restricting the collection or the alias"
         def results = BcStudent.createCriteria().list {
             createAlias("schools", "sch")
-            'in'('schools', ['Princeton'])
+            'in'(restrictedPath, ['Princeton'])
             projections {
                 property 'email'
             }
         }
 
-        then: "the existing alias is reused instead of creating a duplicate"
-        results.sort() == ['grace@test.com', 'hank@test.com']
+        then: "collection membership leaves the alias independent, while an alias restriction filters its elements"
+        results.sort() == expectedEmails
+
+        where:
+        restrictedPath | expectedEmails
+        'schools'      | ['grace@test.com', 'grace@test.com', 'hank@test.com']
+        'sch'          | ['grace@test.com', 'hank@test.com']
     }
 }
 

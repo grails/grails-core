@@ -98,6 +98,9 @@ def books = Book.createCriteria().list {
 
 The alias uses the requested join type. A left join alone does not guarantee that unmatched rows remain in the result: the restrictions must also allow the missing association, as the `or` block does above.
 
+In Hibernate 7, every explicitly requested alias creates a join even when no restriction, projection, or order references it. Declaring a left alias and an inner alias for the same association therefore excludes rows with no associated entity, even if the inner alias is otherwise unused.
+
+In a Hibernate 7 detached subquery, a plain association path uses the subquery's own root when its entity has that association. Otherwise, it can reference an existing enclosing query join for correlation. An explicitly named outer alias can also be used to correlate the queries.
 
 For Hibernate 7-specific rules on alias/path precedence, collection aliases, counts, and subquery scoping, see link:{hibernate7GuideFromRef}index.html#criteriaAssociationAliases[Association Aliases] in the GORM for Hibernate 7 guide.
 
