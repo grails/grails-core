@@ -348,14 +348,14 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
-    void 'a column alias in backquotes or brackets is removed from the projected SQL'() {
+    void 'a column alias in double quotes or backquotes is removed from the projected SQL'() {
         given:
         saveBoxes()
 
         expect:
         SqlProjectionBox.createCriteria().list {
             projections {
-                sqlGroupProjection 'width as [boxWidth], sum(height) as `total`', 'width', ['boxWidth', 'total'],
+                sqlGroupProjection 'width as "boxWidth", sum(height) as `total`', 'width', ['boxWidth', 'total'],
                         [INTEGER, INTEGER]
             }
             order('total', 'desc')
@@ -370,7 +370,7 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
         when:
         List rows = SqlProjectionBox.createCriteria().list {
             projections {
-                sqlGroupProjection 'width * 10 as "scaled width", sum(height) as [total height], max(height) as "tallest ""box"""',
+                sqlGroupProjection 'width * 10 as "scaled width", sum(height) as `total height`, max(height) as "tallest ""box"""',
                         '"scaled width"', ['scaled width', 'total height', 'tallest "box"'], [INTEGER, INTEGER, INTEGER]
             }
             order('total height')
@@ -381,7 +381,7 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
         rows*.toList() == [[40, 9, 9], [20, 24, 9]]
         sql =~ /(?i)group by width \* 10\b/
         !sql.contains('"')
-        !sql.contains('[')
+        !sql.contains('`')
     }
 
     @Rollback
@@ -435,7 +435,7 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
         where:
         quotes            | sql                                         | groupBy
         'backquotes'      | 'width as `boxWidth`, sum(height) as total' | '`BOXWIDTH`'
-        'square brackets' | 'width as [boxWidth], sum(height) as total' | '[BOXWIDTH]'
+        'no quotes'       | 'width as boxWidth, sum(height) as total'   | 'BOXWIDTH'
     }
 
     @Rollback

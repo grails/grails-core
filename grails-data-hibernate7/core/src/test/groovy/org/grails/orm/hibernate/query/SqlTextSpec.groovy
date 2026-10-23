@@ -21,16 +21,22 @@ package org.grails.orm.hibernate.query
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static org.grails.orm.hibernate.query.SqlSyntax.HQL
+import static org.grails.orm.hibernate.query.SqlSyntax.SQL
+import static org.grails.orm.hibernate.query.SqlSyntax.TRANSACT_SQL
+
 /**
  * The one table of awkward inputs every scanner of the package is measured against: what a string literal, a quoted
- * or bracket identifier, a dollar-quoted string and a comment hide, and what parentheses nest.
+ * or bracket identifier, a dollar-quoted string and a comment hide, what parentheses and array brackets nest, and
+ * how the same text reads in each syntax.
  */
 class SqlTextSpec extends Specification {
 
     @Unroll
-    void "the SQL #sql splits at the top-level commas into #parts"() {
+    void "the SQL #sql splits at the top-level commas into #parts in every SQL syntax"() {
         expect:
-        SqlText.sql(sql).splitTopLevel(',' as char) == parts
+        SqlText.of(sql, SQL).splitTopLevel(',' as char) == parts
+        SqlText.of(sql, TRANSACT_SQL).splitTopLevel(',' as char) == parts
 
         where:
         sql                                       | parts
@@ -40,27 +46,51 @@ class SqlTextSpec extends Specification {
         "'it''s, not', c"                         | ["'it''s, not'", 'c']
         '"odd,name", other'                       | ['"odd,name"', 'other']
         '`odd,name`, other'                       | ['`odd,name`', 'other']
+        'a /* b, c */, d'                         | ['a /* b, c */', 'd']
+        'a -- b, c\n, d'                          | ['a -- b, c', 'd']
+        'concat(a, concat(b, c)), d'              | ['concat(a, concat(b, c))', 'd']
+        'a$b, $1'                                 | ['a$b', '$1']
+    }
+
+    @Unroll
+    void "the SQL #sql splits into #parts where brackets hold arrays"() {
+        expect:
+        SqlText.of(sql, SQL).splitTopLevel(',' as char) == parts
+
+        where:
+        sql                                       | parts
+        'arr[f(a, b)], ARRAY[ARRAY[1, 2]], c'     | ['arr[f(a, b)]', 'ARRAY[ARRAY[1, 2]]', 'c']
+        "ARRAY['['], height"                      | ["ARRAY['[']", 'height']
+        "ARRAY[']', ','], [a,b]"                  | ["ARRAY[']', ',']", '[a,b]']
+        'ARRAY [a, b], c'                         | ['ARRAY [a, b]', 'c']
+        '"items"[1], c'                           | ['"items"[1]', 'c']
+        "[a'b], c"                                | ["[a'b], c"]
+        '$$a,b$$, c'                              | ['$$a,b$$', 'c']
+        '$tag$a,$$,b$tag$, c'                     | ['$tag$a,$$,b$tag$', 'c']
+    }
+
+    @Unroll
+    void "the Transact-SQL #sql splits into #parts where brackets quote an identifier"() {
+        expect:
+        SqlText.of(sql, TRANSACT_SQL).splitTopLevel(',' as char) == parts
+
+        where:
+        sql                                       | parts
         "width as [box's width], height as total" | ["width as [box's width]", 'height as total']
         'width as [a"b], c'                       | ['width as [a"b]', 'c']
         'sum(height) as [total (cm)], c'          | ['sum(height) as [total (cm)]', 'c']
         'sum(height) as [a]]b], c'                | ['sum(height) as [a]]b]', 'c']
-        'arr[f(a, b)], ARRAY[ARRAY[1, 2]], c'     | ['arr[f(a, b)]', 'ARRAY[ARRAY[1, 2]]', 'c']
-        "ARRAY['['], height"                      | ["ARRAY['[']", 'height']
-        "ARRAY[']', ','], [a,b]"                  | ["ARRAY[']', ',']", '[a,b]']
-        'a /* b, c */, d'                         | ['a /* b, c */', 'd']
-        'a -- b, c\n, d'                          | ['a -- b, c', 'd']
-        '$$a,b$$, c'                              | ['$$a,b$$', 'c']
-        '$tag$a,$$,b$tag$, c'                     | ['$tag$a,$$,b$tag$', 'c']
-        'a$b, $1'                                 | ['a$b', '$1']
-        'concat(a, concat(b, c)), d'              | ['concat(a, concat(b, c))', 'd']
+        '[a[b], c'                                | ['[a[b]', 'c']
+        '[a,b], c'                                | ['[a,b]', 'c']
+        '$$a,b$$, c'                              | ['$$a', 'b$$', 'c']
     }
 
     void "HQL has no bracket identifiers or dollar quotes: brackets group an index expression, the rest is plain"() {
         expect:
         SqlText.hql('a[f(1, 2)], b').splitTopLevel(',' as char) == ['a[f(1, 2)]', 'b']
         SqlText.hql("[a'b], c").splitTopLevel(',' as char) == ["[a'b], c"]
-        SqlText.sql("[a'b], c").splitTopLevel(',' as char) == ["[a'b]", 'c']
         SqlText.hql('$$a,b$$, c').splitTopLevel(',' as char) == ['$$a', 'b$$', 'c']
+        SqlText.of("[a'b], c", HQL).splitTopLevel(',' as char) == SqlText.hql("[a'b], c").splitTopLevel(',' as char)
     }
 
     @Unroll
@@ -111,9 +141,10 @@ class SqlTextSpec extends Specification {
     }
 
     @Unroll
-    void "the '?' placeholders of '#sql' are at #indexes"() {
+    void "the '?' placeholders of '#sql' are at #indexes in every SQL syntax"() {
         expect:
-        SqlText.sql(sql).plainIndexes('?' as char) == indexes
+        SqlText.of(sql, SQL).plainIndexes('?' as char) == indexes
+        SqlText.of(sql, TRANSACT_SQL).plainIndexes('?' as char) == indexes
 
         where:
         sql                                   | indexes
@@ -121,17 +152,45 @@ class SqlTextSpec extends Specification {
         "a = ? and b = '?' and c = ?"         | [4, 26]
         'a = ? /* ? */ and b = ?'             | [4, 22]
         'a = ? -- ?\nand b = ?'               | [4, 19]
-        'a = [?] and b = ?'                   | [16]
-        'id = ANY(ARRAY[?, ?])'               | [15, 18]
-        "a = ARRAY['?', ?][1]"                | [15]
-        'a = $$?$$ and b = ?'                 | [18]
         'a = (?)'                             | [5]
+        'a = "?" and b = ?'                   | [16]
+    }
+
+    @Unroll
+    void "the '?' placeholders of '#sql' are at #indexes where brackets hold arrays"() {
+        expect:
+        SqlText.of(sql, SQL).plainIndexes('?' as char) == indexes
+
+        where:
+        sql                                   | indexes
+        'id = ANY(ARRAY[?, ?])'               | [15, 18]
+        'id = ANY(ARRAY [CAST(? AS INTEGER)])'| [21]
+        '"items"[?] = ?'                      | [8, 13]
+        "a = ARRAY['?', ?][1]"                | [15]
+        'a = ARRAY[1, 2][?]'                  | [16]
+        'a = [?] and b = ?'                   | [5, 16]
+        'a = $$?$$ and b = ?'                 | [18]
+    }
+
+    @Unroll
+    void "the '?' placeholders of the Transact-SQL '#sql' are at #indexes, brackets quoting an identifier"() {
+        expect:
+        SqlText.of(sql, TRANSACT_SQL).plainIndexes('?' as char) == indexes
+
+        where:
+        sql                                   | indexes
+        'a = [?] and b = ?'                   | [16]
+        '[a[b] = ?'                           | [8]
+        '[a?b] = ?'                           | [8]
+        '[a]]?] = ?'                          | [9]
+        '[a?'                                 | []
+        'a = $$?$$ and b = ?'                 | [6, 18]
     }
 
     @Unroll
     void "'#sql' #description"() {
         expect:
-        SqlText.sql(sql).endsInLineComment() == ends
+        SqlText.of(sql, SQL).endsInLineComment() == ends
 
         where:
         sql                      | ends  | description
@@ -145,7 +204,7 @@ class SqlTextSpec extends Specification {
     @Unroll
     void "'#sql' without its trailing comments is '#expected'"() {
         expect:
-        SqlText.sql(sql).withoutTrailingComments() == expected
+        SqlText.of(sql, SQL).withoutTrailingComments() == expected
 
         where:
         sql                                   | expected
@@ -156,4 +215,68 @@ class SqlTextSpec extends Specification {
         'width as w   '                       | 'width as w'
     }
 
+    @Unroll
+    void "'#column' without the alias '#alias' is '#expected' in every SQL syntax"() {
+        expect:
+        SqlText.of(column, SQL).withoutTrailingAlias(alias) == expected
+        SqlText.of(column, TRANSACT_SQL).withoutTrailingAlias(alias) == expected
+
+        where:
+        column                          | alias          | expected
+        'sum(height) as total'          | 'total'        | 'sum(height)'
+        'sum(height) AS Total'          | 'total'        | 'sum(height)'
+        'sum(height)  as  total  '      | 'total'        | 'sum(height)'
+        'sum(height) as "total"'        | 'total'        | 'sum(height)'
+        'sum(height) as `total`'        | 'total'        | 'sum(height)'
+        'sum(height) as "total height"' | 'total height' | 'sum(height)'
+        'sum(height) as "say ""hi"""'   | 'say "hi"'     | 'sum(height)'
+        'sum(height) as total /* c */'  | 'total'        | 'sum(height)'
+        'sum(height) as total -- c'     | 'total'        | 'sum(height)'
+        'cast(width as integer) as w'   | 'w'            | 'cast(width as integer)'
+        'cast(width as integer)'        | 'integer'      | 'cast(width as integer)'
+        'sum(height) as total'          | 'other'        | 'sum(height) as total'
+        'sum(height) as "total height"' | 'total'        | 'sum(height) as "total height"'
+        'sum(height) as "total]'        | 'total'        | 'sum(height) as "total]'
+        "sum(height) as 'total'"        | 'total'        | "sum(height) as 'total'"
+        'sum(height) has total'         | 'total'        | 'sum(height) has total'
+        'as total'                      | 'total'        | 'as total'
+        'width'                         | 'width'        | 'width'
+        ''                              | 'width'        | ''
+    }
+
+    void "a bracket alias is removed only where brackets quote an identifier"() {
+        expect:
+        SqlText.of('sum(height) as [total height]', TRANSACT_SQL).withoutTrailingAlias('total height') == 'sum(height)'
+        SqlText.of('sum(height) as [a]]b]', TRANSACT_SQL).withoutTrailingAlias('a]b') == 'sum(height)'
+        SqlText.of('sum(height) as [total height]', SQL).withoutTrailingAlias('total height') == 'sum(height) as [total height]'
+        SqlText.of('sum(height) as [total]', SQL).withoutTrailingAlias('total') == 'sum(height) as [total]'
+    }
+
+    @Unroll
+    void "'#identifier' unquoted is '#expected' in every SQL syntax"() {
+        expect:
+        SqlText.of(identifier, SQL).unquoted() == expected
+        SqlText.of(identifier, TRANSACT_SQL).unquoted() == expected
+
+        where:
+        identifier        | expected
+        '"total"'         | 'total'
+        '`total`'         | 'total'
+        '"say ""hi"""'    | 'say "hi"'
+        'total'           | 'total'
+        "'total'"         | "'total'"
+        '"total'          | '"total'
+        '"a" "b"'         | '"a" "b"'
+        '""'              | ''
+        '"'               | '"'
+        ''                | ''
+    }
+
+    void "a bracket identifier is unquoted only where brackets quote an identifier"() {
+        expect:
+        SqlText.of('[total]', TRANSACT_SQL).unquoted() == 'total'
+        SqlText.of('[a]]b]', TRANSACT_SQL).unquoted() == 'a]b'
+        SqlText.of('[total', TRANSACT_SQL).unquoted() == '[total'
+        SqlText.of('[total]', SQL).unquoted() == '[total]'
+    }
 }

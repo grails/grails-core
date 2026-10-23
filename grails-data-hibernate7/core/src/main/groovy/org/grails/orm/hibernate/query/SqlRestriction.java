@@ -28,7 +28,8 @@ import org.grails.datastore.mapping.query.Query;
  * Criterion that restricts the results with a native SQL condition, created by {@code sqlRestriction} in a
  * criteria query. In the SQL, {@code {alias}} stands for the table alias of the queried entity, and each
  * {@code ?} outside a string literal, a quoted identifier and a comment for one of the values, which are bound
- * as parameters.
+ * as parameters. The SQL is read in the {@link SqlSyntax} of the database: {@link #of} checks the placeholders
+ * against the values when the restriction is created, and the query that renders it checks them again.
  *
  * @param sql the SQL condition
  * @param values the values of the {@code ?} placeholders, in order
@@ -50,27 +51,27 @@ public record SqlRestriction(String sql, List<?> values) implements Query.Criter
             }
             copy.add(value instanceof CharSequence ? value.toString() : value);
         }
-        int placeholders = placeholderIndexes(sql).size();
-        if (placeholders != copy.size()) {
-            throw new IllegalArgumentException("The SQL of a sqlRestriction has " + placeholders +
-                    " ? placeholders but " + copy.size() + " values: " + sql);
-        }
         values = Collections.unmodifiableList(copy);
     }
 
     /**
-     * Returns the indexes of the {@code ?} placeholders in the SQL. A {@code ?} in a string literal, a quoted
-     * identifier, a line comment or a block comment is not a placeholder.
+     * Creates the restriction, checking that the SQL, read in the syntax of the database, has one {@code ?}
+     * placeholder per value. A {@code ?} in a string literal, a quoted identifier, a line comment or a block comment
+     * is not a placeholder; nor is one in a bracket identifier where the syntax has them.
+     *
+     * @param sql the SQL condition
+     * @param values the values of the {@code ?} placeholders, in order, none of them {@code null}
+     * @param syntax the syntax of the database's native SQL
+     * @throws IllegalArgumentException if the SQL is {@code null}, a value is {@code null}, or the number of
+     *     placeholders differs from the number of values
      */
-    static List<Integer> placeholderIndexes(String sql) {
-        return SqlText.sql(sql).plainIndexes('?');
-    }
-
-    /**
-     * Returns whether the SQL ends in a line comment, which would comment out anything appended to it on the same
-     * line.
-     */
-    static boolean endsInLineComment(String sql) {
-        return SqlText.sql(sql).endsInLineComment();
+    public static SqlRestriction of(String sql, List<?> values, SqlSyntax syntax) {
+        SqlRestriction restriction = new SqlRestriction(sql, values);
+        int placeholders = SqlText.of(sql, syntax).plainIndexes('?').size();
+        if (placeholders != restriction.values().size()) {
+            throw new IllegalArgumentException("The SQL of a sqlRestriction has " + placeholders +
+                    " ? placeholders but " + restriction.values().size() + " values: " + sql);
+        }
+        return restriction;
     }
 }

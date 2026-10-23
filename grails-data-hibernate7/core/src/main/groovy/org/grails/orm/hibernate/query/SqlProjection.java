@@ -20,8 +20,6 @@ package org.grails.orm.hibernate.query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.hibernate.type.BasicTypeReference;
 import org.hibernate.type.Type;
@@ -40,11 +38,6 @@ import org.grails.datastore.mapping.query.Query;
  * @since 8.0.1
  */
 public class SqlProjection extends Query.Projection {
-
-    private static final String QUOTED_IDENTIFIER = "\"(?:[^\"]|\"\")+\"|`(?:[^`]|``)+`|\\[(?:[^\\]]|]])+]";
-    private static final Pattern QUOTED = Pattern.compile("(?s)" + QUOTED_IDENTIFIER);
-    private static final Pattern TRAILING_ALIAS = Pattern.compile(
-            "(?is)^(.*?)\\s+as\\s+(" + QUOTED_IDENTIFIER + "|[\\w$]+)\\s*$");
 
     private final String sql;
     private final String columnAlias;
@@ -99,23 +92,27 @@ public class SqlProjection extends Query.Projection {
     }
 
     /**
-     * Splits the SQL of a {@code sqlProjection} or {@code sqlGroupProjection} into one projection per column.
+     * Splits the SQL of a {@code sqlProjection} or {@code sqlGroupProjection} into one projection per column: at
+     * the commas outside parentheses, string literals, quoted identifiers and comments, read in the syntax of the
+     * database. A column alias that follows a column after {@code as} is removed from its SQL, which the selection
+     * carries instead; it may be quoted the way the syntax quotes an identifier, and then hold any character.
      *
      * @param sql the SQL selecting the columns, separated by commas
      * @param columnAliases the alias of each column, in order
      * @param types the type of each column, in order: an {@code org.hibernate.type.StandardBasicTypes} constant, an
      *     {@code org.hibernate.type.Type} or a Java class
+     * @param syntax the syntax of the database's native SQL
      * @return the projection of each column
      * @throws IllegalArgumentException if the number of columns, aliases and types differ
      */
-    public static List<SqlProjection> of(String sql, List<String> columnAliases, List<?> types) {
+    public static List<SqlProjection> of(String sql, List<String> columnAliases, List<?> types, SqlSyntax syntax) {
         if (sql == null || sql.isBlank()) {
             throw new IllegalArgumentException("The SQL of a sqlProjection must not be empty");
         }
         if (columnAliases == null || types == null || columnAliases.size() != types.size()) {
             throw new IllegalArgumentException("A sqlProjection needs as many types as column aliases: " + sql);
         }
-        List<String> columns = splitColumns(sql);
+        List<String> columns = SqlText.of(sql, syntax).splitTopLevel(',');
         if (columns.size() != columnAliases.size()) {
             throw new IllegalArgumentException("The SQL of a sqlProjection selects " + columns.size() +
                     " columns but " + columnAliases.size() + " column aliases were given: " + sql);
@@ -123,7 +120,8 @@ public class SqlProjection extends Query.Projection {
         List<SqlProjection> projections = new ArrayList<>(columns.size());
         for (int i = 0; i < columns.size(); i++) {
             String alias = columnAliases.get(i);
-            projections.add(new SqlProjection(withoutAlias(columns.get(i), alias), alias, types.get(i)));
+            String column = alias == null ? columns.get(i) : SqlText.of(columns.get(i), syntax).withoutTrailingAlias(alias);
+            projections.add(new SqlProjection(column, alias, types.get(i)));
         }
         return projections;
     }
@@ -147,50 +145,5 @@ public class SqlProjection extends Query.Projection {
         }
         throw new IllegalArgumentException("The type of a sqlProjection must be a StandardBasicTypes constant, " +
                 "an org.hibernate.type.Type or a class, not " + type.getClass().getName());
-    }
-
-    /**
-     * Splits SQL at the commas that separate its columns: those outside parentheses, bracket identifiers, string
-     * literals, dollar-quoted strings, quoted identifiers and comments. Inside brackets, which quote an identifier or
-     * hold an array subscript, only brackets count, so {@code [box's width]}, {@code [total (cm)]} and {@code [a]]b]}
-     * are each one identifier.
-     */
-    static List<String> splitColumns(String sql) {
-        return SqlText.sql(sql).splitTopLevel(',');
-    }
-
-    /**
-     * Returns the SQL without the comments and whitespace it ends with.
-     */
-    private static String withoutTrailingComments(String sql) {
-        return SqlText.sql(sql).withoutTrailingComments();
-    }
-
-    /**
-     * Removes a trailing {@code as alias} naming the given column alias, which the selection carries instead, so the
-     * expression can also be grouped and ordered by. The alias may be quoted with double quotes, backquotes or
-     * square brackets, and then hold any character. Comments after the alias are removed with it.
-     */
-    static String withoutAlias(String column, String alias) {
-        if (alias == null) {
-            return column;
-        }
-        Matcher matcher = TRAILING_ALIAS.matcher(withoutTrailingComments(column));
-        if (matcher.matches() && alias.equalsIgnoreCase(unquote(matcher.group(2)))) {
-            return matcher.group(1).trim();
-        }
-        return column;
-    }
-
-    /**
-     * Returns an identifier quoted with double quotes, backquotes or square brackets without its quotes, reading a
-     * doubled closing quote inside it as a single one, or any other SQL as it is.
-     */
-    static String unquote(String identifier) {
-        if (!QUOTED.matcher(identifier).matches()) {
-            return identifier;
-        }
-        String closingQuote = identifier.substring(identifier.length() - 1);
-        return identifier.substring(1, identifier.length() - 1).replace(closingQuote + closingQuote, closingQuote);
     }
 }

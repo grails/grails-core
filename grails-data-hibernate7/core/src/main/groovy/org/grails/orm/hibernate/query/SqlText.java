@@ -26,24 +26,17 @@ import java.util.regex.Pattern;
 
 /**
  * Lexical reading of SQL or HQL text, so that every scanner of this package skips the same things the same way:
- * string literals and quoted identifiers, where a doubled quote stands for the quote itself; in native SQL also
- * {@code [bracket identifiers]}, where {@code ]]} stands for a bracket, and {@code $tag$...$tag$} strings; line and
- * block comments; and parentheses, when a top-level position is asked for. The text is read once, when the instance
- * is created: each character is classified as plain text, quoted text or comment, and each plain character carries
- * its parenthesis depth, so every question asked afterwards walks those two arrays and never rescans the text. The
- * text is scanned, never parsed: this answers where something is, not what it means.
+ * string literals and quoted identifiers, where a doubled quote stands for the quote itself; comments; and, as the
+ * {@link SqlSyntax} of the text has them, {@code [bracket identifiers]}, where {@code ]]} stands for a bracket, and
+ * {@code $tag$...$tag$} strings. Parentheses, and the square brackets of a syntax without bracket identifiers,
+ * nest. The text is read once, when the instance is created: each character is classified as plain text, quoted
+ * text or comment, and each plain character carries its nesting depth, so every question asked afterwards walks
+ * those two arrays and never rescans the text. The text is scanned, never parsed: this answers where something is,
+ * not what it means.
  *
  * @since 8.0.1
  */
 final class SqlText {
-
-    /** What a text may hold besides string literals, quoted identifiers and comments. */
-    enum Dialect {
-        /** HQL, which has neither bracket identifiers nor dollar-quoted strings. */
-        HQL,
-        /** Native SQL, with {@code [bracket identifiers]} and {@code $tag$...$tag$} strings. */
-        SQL
-    }
 
     private static final byte PLAIN = 0;
     private static final byte QUOTED = 1;
@@ -53,18 +46,19 @@ final class SqlText {
     private static final Pattern DOLLAR_QUOTE_TAG = Pattern.compile("\\$(?:[A-Za-z_][A-Za-z0-9_]*)?\\$");
 
     private final String text;
-    private final Dialect dialect;
+    private final SqlSyntax syntax;
     /** The kind of each character: plain text, inside a literal or quoted identifier, or inside a comment. */
     private final byte[] kind;
     /**
-     * The parenthesis depth of each plain character: the depth a {@code (} opens and a {@code )} closes, so the two
-     * parentheses of a pair carry the same depth, and the depth enclosing any other character.
+     * The nesting depth of each plain character: the depth a {@code (} opens and a {@code )} closes, so the two
+     * parentheses of a pair carry the same depth, and the depth enclosing any other character. Square brackets
+     * nest the same way where they do not quote an identifier.
      */
     private final int[] depth;
 
-    private SqlText(String text, Dialect dialect) {
+    private SqlText(String text, SqlSyntax syntax) {
         this.text = text;
-        this.dialect = dialect;
+        this.syntax = syntax;
         int length = text.length();
         this.kind = new byte[length];
         this.depth = new int[length];
@@ -96,12 +90,14 @@ final class SqlText {
         }
     }
 
-    static SqlText hql(String text) {
-        return new SqlText(text, Dialect.HQL);
+    /** Reads the text in the given syntax. */
+    static SqlText of(String text, SqlSyntax syntax) {
+        return new SqlText(text, syntax);
     }
 
-    static SqlText sql(String text) {
-        return new SqlText(text, Dialect.SQL);
+    /** Reads the text as HQL. */
+    static SqlText hql(String text) {
+        return new SqlText(text, SqlSyntax.HQL);
     }
 
     String text() {
@@ -218,16 +214,102 @@ final class SqlText {
 
     /** Returns the text without the comments and whitespace it ends with. */
     String withoutTrailingComments() {
-        int end = text.length();
-        while (end > 0 && (kind[end - 1] >= BLOCK_COMMENT || (kind[end - 1] == PLAIN && Character.isWhitespace(text.charAt(end - 1))))) {
-            end--;
-        }
-        return text.substring(0, end);
+        return text.substring(0, endOfContent());
     }
 
     /** Returns whether the text ends in a line comment, which would comment out anything appended on the same line. */
     boolean endsInLineComment() {
         return text.length() > 0 && kind[text.length() - 1] == LINE_COMMENT;
+    }
+
+    /**
+     * Returns the text without a trailing {@code as alias} that names the given alias, and without the comments
+     * and whitespace after it; or the text as it is when it does not end in that alias. The alias may be quoted the
+     * way the syntax quotes an identifier, and then hold any character, and it is compared without its quotes, in
+     * any case.
+     */
+    String withoutTrailingAlias(String alias) {
+        int end = endOfContent();
+        int aliasStart = startOfTrailingIdentifier(end);
+        if (aliasStart < 0 || !alias.equalsIgnoreCase(unquoted(aliasStart, end))) {
+            return text;
+        }
+        int asEnd = startOfWhitespace(aliasStart);
+        if (asEnd == aliasStart || asEnd < 2 || kind[asEnd - 2] != PLAIN || kind[asEnd - 1] != PLAIN ||
+                !text.regionMatches(true, asEnd - 2, "as", 0, 2)) {
+            return text;
+        }
+        int expressionEnd = startOfWhitespace(asEnd - 2);
+        if (expressionEnd == asEnd - 2 || expressionEnd == 0) {
+            return text;
+        }
+        return text.substring(0, expressionEnd);
+    }
+
+    /**
+     * Returns the text without the quotes that make all of it one identifier, in which a doubled closing quote
+     * stands for the quote; or the text as it is when it is not one quoted identifier, a string literal included.
+     */
+    String unquoted() {
+        return unquoted(0, text.length());
+    }
+
+    /** Returns the text between {@code start} and {@code end} without the quotes that make all of it one identifier. */
+    private String unquoted(int start, int end) {
+        if (end - start < 2 || kind[start] != QUOTED || unitEnd(start) != end) {
+            return text.substring(start, end);
+        }
+        char opening = text.charAt(start);
+        char closing = opening == '[' ? ']' : opening;
+        boolean identifier = opening == '"' || opening == '`' || (opening == '[' && syntax.bracketsQuoteIdentifiers());
+        if (!identifier || text.charAt(end - 1) != closing) {
+            return text.substring(start, end);
+        }
+        String doubled = String.valueOf(closing) + closing;
+        return text.substring(start + 1, end - 1).replace(doubled, String.valueOf(closing));
+    }
+
+    /** Returns the index after the last character that is neither whitespace nor part of a comment. */
+    private int endOfContent() {
+        int end = text.length();
+        while (end > 0 && (kind[end - 1] >= BLOCK_COMMENT || (kind[end - 1] == PLAIN && Character.isWhitespace(text.charAt(end - 1))))) {
+            end--;
+        }
+        return end;
+    }
+
+    /**
+     * Returns the index at which the identifier ending at {@code end} starts: a quoted identifier, or a plain word
+     * of identifier characters; or -1 when no identifier ends there.
+     */
+    private int startOfTrailingIdentifier(int end) {
+        if (end == 0) {
+            return -1;
+        }
+        int start = end;
+        if (kind[end - 1] == QUOTED) {
+            while (start > 0 && kind[start - 1] == QUOTED) {
+                start--;
+            }
+            return start;
+        }
+        while (start > 0 && kind[start - 1] == PLAIN && isIdentifierPart(text.charAt(start - 1))) {
+            start--;
+        }
+        return start == end ? -1 : start;
+    }
+
+    /** Returns the index at which the plain whitespace ending at {@code end} starts, or {@code end} without any. */
+    private int startOfWhitespace(int end) {
+        int start = end;
+        while (start > 0 && kind[start - 1] == PLAIN && Character.isWhitespace(text.charAt(start - 1))) {
+            start--;
+        }
+        return start;
+    }
+
+    private static boolean isIdentifierPart(char c) {
+        return Character.isLetterOrDigit(c) || c == '_' || c == '$';
     }
 
     private boolean isTopLevel(int index, char c) {
@@ -258,13 +340,11 @@ final class SqlText {
             int end = text.indexOf("*/", index + 2);
             return end == -1 ? text.length() : end + 2;
         }
-        if (dialect == Dialect.SQL) {
-            if (c == '[' && startsBracketIdentifier(index)) {
-                return skipBracketIdentifier(index);
-            }
-            if (c == '$') {
-                return skipDollarQuoted(index);
-            }
+        if (c == '[' && syntax.bracketsQuoteIdentifiers()) {
+            return skipBracketIdentifier(index);
+        }
+        if (c == '$' && syntax.hasDollarQuotedStrings()) {
+            return skipDollarQuoted(index);
         }
         return index;
     }
@@ -296,40 +376,19 @@ final class SqlText {
     }
 
     /**
-     * Returns whether the {@code [} at {@code index} opens a bracket identifier such as {@code [box's width]}, which
-     * it does where nothing to subscript precedes it. After an identifier, a closing parenthesis or a closing
-     * bracket it is structure: the subscript of {@code arr[1]} or the literal of {@code ARRAY['[']}, whose string
-     * literals and placeholders stay visible.
-     */
-    private boolean startsBracketIdentifier(int index) {
-        if (index == 0) {
-            return true;
-        }
-        char previous = text.charAt(index - 1);
-        return !Character.isJavaIdentifierPart(previous) && previous != ')' && previous != ']';
-    }
-
-    /**
-     * Returns the index after the bracket identifier starting at {@code start}. Inside it only brackets count: a
-     * nested {@code [} opens one more level, as in an array subscript, and {@code ]]} at the outermost level stands
-     * for a bracket, so {@code [box's width]}, {@code [total (cm)]} and {@code [a]]b]} are each one identifier.
+     * Returns the index after the bracket identifier starting at {@code start}, which the first {@code ]} not
+     * written {@code ]]} closes: {@code [box's width]}, {@code [total (cm)]}, {@code [a]]b]} and {@code [a[b]} are
+     * each one identifier, as Transact-SQL reads them.
      */
     private int skipBracketIdentifier(int start) {
-        int brackets = 1;
         int i = start + 1;
         while (i < text.length()) {
-            char c = text.charAt(i);
-            if (c == '[') {
-                brackets++;
-            } else if (c == ']') {
-                if (brackets == 1 && text.startsWith("]]", i)) {
+            if (text.charAt(i) == ']') {
+                if (text.startsWith("]]", i)) {
                     i += 2;
                     continue;
                 }
-                brackets--;
-                if (brackets == 0) {
-                    return i + 1;
-                }
+                return i + 1;
             }
             i++;
         }

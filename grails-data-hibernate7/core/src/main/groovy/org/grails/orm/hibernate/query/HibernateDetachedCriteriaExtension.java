@@ -61,7 +61,7 @@ public final class HibernateDetachedCriteriaExtension {
      *     or a value is {@code null}
      */
     public static Criteria sqlRestriction(AbstractDetachedCriteria<?> self, String sqlRestriction, List<?> values) {
-        self.add(new SqlRestriction(sqlRestriction, values));
+        self.add(SqlRestriction.of(sqlRestriction, values, SqlSyntax.forEntity(self.getPersistentEntity().getJavaClass())));
         return self;
     }
 }

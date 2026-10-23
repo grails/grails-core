@@ -183,6 +183,14 @@ class HibernateCriteriaBuilderSqlRestrictionSpec extends Specification {
         SqlRestrictionBook.createCriteria().list {
             sqlRestriction('{alias}.pages = ANY(ARRAY[CAST(? AS INTEGER), CAST(? AS INTEGER)])', [1, 2])
         }.isEmpty()
+
+        and: 'a space before the bracket, or a subscript, does not hide a placeholder: H2 has arrays, not bracket identifiers'
+        SqlRestrictionBook.createCriteria().list {
+            sqlRestriction('{alias}.pages = ANY(ARRAY [CAST(? AS INTEGER), CAST(? AS INTEGER)])', [412, 120])
+        }*.title.sort() == ['Dune', 'Ulysses']
+        SqlRestrictionBook.createCriteria().list {
+            sqlRestriction('{alias}.pages = ARRAY[CAST(? AS INTEGER), CAST(? AS INTEGER)][CAST(? AS INTEGER)]', [412, 120, 2])
+        }*.title == ['Ulysses']
     }
 
     @Rollback

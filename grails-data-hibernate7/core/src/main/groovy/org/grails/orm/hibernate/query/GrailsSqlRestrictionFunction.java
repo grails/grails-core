@@ -47,13 +47,20 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
 
     static final String ALIAS_PLACEHOLDER = "{alias}";
 
-    public GrailsSqlRestrictionFunction(TypeConfiguration typeConfiguration) {
+    private final SqlSyntax syntax;
+
+    /**
+     * @param typeConfiguration the type configuration of the session factory
+     * @param syntax the syntax of the native SQL of the database the session factory connects to
+     */
+    public GrailsSqlRestrictionFunction(TypeConfiguration typeConfiguration, SqlSyntax syntax) {
         super(
                 NAME,
                 StandardArgumentsValidators.min(1),
                 StandardFunctionReturnTypeResolvers.invariant(
                         typeConfiguration.getBasicTypeRegistry().resolve(StandardBasicTypes.BOOLEAN)),
                 null);
+        this.syntax = syntax;
     }
 
     @Override
@@ -75,7 +82,8 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
             sql = sql.replace(ALIAS_PLACEHOLDER, tableAlias(arguments.get(1)));
             firstValue = 2;
         }
-        List<Integer> placeholders = SqlRestriction.placeholderIndexes(sql);
+        SqlText reading = SqlText.of(sql, syntax);
+        List<Integer> placeholders = reading.plainIndexes('?');
         if (placeholders.size() != arguments.size() - firstValue) {
             throw new IllegalArgumentException("The SQL restriction has " + placeholders.size() +
                     " ? placeholders but " + (arguments.size() - firstValue) + " values: " + sql);
@@ -89,7 +97,7 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
             index = placeholder + 1;
         }
         sqlAppender.append(sql, index, sql.length());
-        if (SqlRestriction.endsInLineComment(sql)) {
+        if (reading.endsInLineComment()) {
             sqlAppender.append('\n');
         }
         sqlAppender.append(')');

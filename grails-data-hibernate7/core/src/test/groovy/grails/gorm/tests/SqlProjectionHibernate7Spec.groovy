@@ -109,7 +109,7 @@ class SqlProjectionHibernate7Spec extends HibernateGormDatastoreSpec {
         and: 'grouped by a quoted column alias'
         SqlProjectionDbBox.createCriteria().list {
             projections {
-                sqlGroupProjection 'width as "box width", sum(height) as [total height]', '"box width"',
+                sqlGroupProjection 'width as "box width", sum(height) as "total height"', '"box width"',
                         ['box width', 'total height'], [INTEGER, INTEGER]
             }
             order('total height')
