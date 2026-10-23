@@ -119,7 +119,6 @@ class GrailsDomainBinder implements AdditionalMappingContributor, TypeContributo
     }
 
     @Override
-    @SuppressWarnings('PMD.DataflowAnomalyAnalysis')
     void contribute(
             AdditionalMappingContributions contributions,
             InFlightMetadataCollector metadataCollector,

@@ -42,21 +42,21 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         }
     }
 
-    void "an element added to one of two unidirectional hasMany associations is written to its join table"() {
-        given: "a persisted item with two unidirectional hasMany associations to different classes"
+    void 'an element added to one of two unidirectional hasMany associations is written to its join table'() {
+        given: 'a persisted item with two unidirectional hasMany associations to different classes'
         def item = new MuhItem(name: 'Example item').save(flush: true)
 
-        when: "a role is added to the managed item and the item is flushed"
+        when: 'a role is added to the managed item and the item is flushed'
         item.addToRoles(new MuhRole(authority: 'ROLE_EXAMPLE'))
         item.save(flush: true)
         MuhItem.withSession { it.clear() }
 
-        then: "the role is found through the reloaded item"
+        then: 'the role is found through the reloaded item'
         MuhItem.get(item.id).roles*.authority == ['ROLE_EXAMPLE']
         MuhItem.get(item.id).tags.isEmpty()
     }
 
-    void "elements added to both unidirectional hasMany associations are written to their own join tables"() {
+    void 'elements added to both unidirectional hasMany associations are written to their own join tables'() {
         given:
         def item = new MuhItem(name: 'Example item').save(flush: true)
 
@@ -71,31 +71,31 @@ class MultipleUnidirectionalHasManySpec extends HibernateGormDatastoreSpec {
         MuhItem.get(item.id).tags*.name == ['tag-a']
     }
 
-    void "two unidirectional hasMany associations to the same class with their own join tables are each written"() {
-        given: "a persisted account whose allow and deny roles map their own join tables"
+    void 'two unidirectional hasMany associations to the same class with their own join tables are each written'() {
+        given: 'a persisted account whose allow and deny roles map their own join tables'
         def account = new MuhAccount(name: 'Example account').save(flush: true)
 
-        when: "a role is added to each association and the account is flushed"
+        when: 'a role is added to each association and the account is flushed'
         account.addToRoles(new MuhRole(authority: 'ROLE_ALLOW'))
         account.addToDenyRoles(new MuhRole(authority: 'ROLE_DENY'))
         account.save(flush: true)
         MuhAccount.withSession { it.clear() }
 
-        then: "each role is found through its own association of the reloaded account"
+        then: 'each role is found through its own association of the reloaded account'
         MuhAccount.get(account.id).roles*.authority == ['ROLE_ALLOW']
         MuhAccount.get(account.id).denyRoles*.authority == ['ROLE_DENY']
     }
 
-    void "a unidirectional hasMany next to a serializable to-many is written to its join table"() {
-        given: "a persisted note whose tags are a serializable column, not a collection"
+    void 'a unidirectional hasMany next to a serializable to-many is written to its join table'() {
+        given: 'a persisted note whose tags are a serializable column, not a collection'
         def note = new MuhNote(name: 'Example note', tags: ['tag-a', 'tag-b'] as Set).save(flush: true)
 
-        when: "a role is added to the managed note and the note is flushed"
+        when: 'a role is added to the managed note and the note is flushed'
         note.addToRoles(new MuhRole(authority: 'ROLE_NOTE'))
         note.save(flush: true)
         MuhNote.withSession { it.clear() }
 
-        then: "the role is found through the reloaded note and the serializable tags are intact"
+        then: 'the role is found through the reloaded note and the serializable tags are intact'
         MuhNote.get(note.id).roles*.authority == ['ROLE_NOTE']
         MuhNote.get(note.id).tags == ['tag-a', 'tag-b'] as Set
     }

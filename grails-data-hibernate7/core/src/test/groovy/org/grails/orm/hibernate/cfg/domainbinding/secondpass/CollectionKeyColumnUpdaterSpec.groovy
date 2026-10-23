@@ -60,14 +60,14 @@ class CollectionKeyColumnUpdaterSpec extends HibernateGormDatastoreSpec {
         updater = new CollectionKeyColumnUpdater(collectionKeyBinder)
     }
 
-    private HibernateToManyProperty propertyFor(Class ownerClass, String name = "items") {
+    private HibernateToManyProperty propertyFor(Class ownerClass, String name = 'items') {
         (getPersistentEntity(ownerClass) as GrailsHibernatePersistentEntity).getPropertyByName(name) as HibernateToManyProperty
     }
 
-    def "bind delegates to collectionKeyBinder and forces nullability and updateability"() {
+    def 'bind delegates to collectionKeyBinder and forces nullability and updateability'() {
         given:
         def property = propertyFor(CKCUOwnerOne)
-        def column = new Column("test_col")
+        def column = new Column('test_col')
         column.setNullable(false)
         def key = new DependantValue(getGrailsDomainBinder().getMetadataBuildingContext(), null, null)
         key.addColumn(column)
@@ -82,10 +82,10 @@ class CollectionKeyColumnUpdaterSpec extends HibernateGormDatastoreSpec {
         key.isUpdateable()
     }
 
-    def "bind keeps the key of a basic collection updateable although the owner has several unidirectional collections"() {
+    def 'bind keeps the key of a basic collection updateable although the owner has several unidirectional collections'() {
         given:
-        def property = propertyFor(CKCUBasicOwner, "tags")
-        def column = new Column("test_col")
+        def property = propertyFor(CKCUBasicOwner, 'tags')
+        def column = new Column('test_col')
         def key = new DependantValue(getGrailsDomainBinder().getMetadataBuildingContext(), null, null)
         key.addColumn(column)
         key.setUpdateable(false)
@@ -99,10 +99,10 @@ class CollectionKeyColumnUpdaterSpec extends HibernateGormDatastoreSpec {
         column.isNullable()
     }
 
-    def "bind keeps the key updateable when unidirectional collections have join tables of their own"() {
+    def 'bind keeps the key updateable when unidirectional collections have join tables of their own'() {
         given:
-        def property = propertyFor(CKCUOwnerMany, "items1")
-        def column = new Column("test_col")
+        def property = propertyFor(CKCUOwnerMany, 'items1')
+        def column = new Column('test_col')
         def key = new DependantValue(getGrailsDomainBinder().getMetadataBuildingContext(), null, null)
         key.addColumn(column)
         key.setUpdateable(false)
@@ -116,10 +116,10 @@ class CollectionKeyColumnUpdaterSpec extends HibernateGormDatastoreSpec {
         column.isNullable()
     }
 
-    def "bind sets updateable false when unidirectional collections share a join table"() {
+    def 'bind sets updateable false when unidirectional collections share a join table'() {
         given:
-        def property = propertyFor(CKCUSharedTableOwner, "createUsers")
-        def column = new Column("test_col")
+        def property = propertyFor(CKCUSharedTableOwner, 'createUsers')
+        def column = new Column('test_col')
         def key = new DependantValue(getGrailsDomainBinder().getMetadataBuildingContext(), null, null)
         key.addColumn(column)
         key.setUpdateable(true)
@@ -134,8 +134,8 @@ class CollectionKeyColumnUpdaterSpec extends HibernateGormDatastoreSpec {
     }
 
     @Unroll
-    void "a to-many mapped as #label is bound as a column: getCollection throws rather than returning null"() {
-        given: "the owner was bound by the first pass, which gave the property a column and no Hibernate collection"
+    void 'a to-many mapped as #label is bound as a column: getCollection throws rather than returning null'() {
+        given: 'the owner was bound by the first pass, which gave the property a column and no Hibernate collection'
         def property = propertyFor(CKCUColumnBoundOwner, name)
 
         expect:
@@ -156,10 +156,10 @@ class CollectionKeyColumnUpdaterSpec extends HibernateGormDatastoreSpec {
         'a user type'    | 'labels'
     }
 
-    void "bind keeps the key updateable and does not ask a column-bound sibling for its collection"() {
-        given: "an entity collection whose owner also has a serializable and a user-type to-many"
-        def property = propertyFor(CKCUColumnBoundOwner, "items")
-        def column = new Column("test_col")
+    void 'bind keeps the key updateable and does not ask a column-bound sibling for its collection'() {
+        given: 'an entity collection whose owner also has a serializable and a user-type to-many'
+        def property = propertyFor(CKCUColumnBoundOwner, 'items')
+        def column = new Column('test_col')
         def key = new DependantValue(getGrailsDomainBinder().getMetadataBuildingContext(), null, null)
         key.addColumn(column)
         key.setUpdateable(false)

@@ -35,7 +35,6 @@ import org.grails.datastore.gorm.finders.DynamicFinder
  * @since 8.0
  */
 @CompileStatic
-@SuppressWarnings('PMD.AvoidFieldNameMatchingMethodName')
 enum HibernateQueryArgument {
 
     // ── pagination & execution ────────────────────────────────────────────────

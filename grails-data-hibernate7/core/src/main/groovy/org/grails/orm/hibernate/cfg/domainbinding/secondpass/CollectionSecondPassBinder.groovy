@@ -39,7 +39,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyPrope
 // major release can introduce a shared binding context or factory that all binders receive at construction
 // time, eliminating the need for post-construction wiring.
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class CollectionSecondPassBinder {
 
     private final HibernateToManyEntityOrderByBinder hibernateToManyEntityOrderByBinder

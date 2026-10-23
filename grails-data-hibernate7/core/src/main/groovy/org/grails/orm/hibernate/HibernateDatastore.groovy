@@ -122,16 +122,9 @@ import org.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor
 /**
  * Datastore implementation that uses a Hibernate SessionFactory underneath.
  *
- * @author Graeme Rocher
  * @since 2.0
  */
 @CompileStatic
-@SuppressWarnings([
-    'PMD.CloseResource',
-    'PMD.DataflowAnomalyAnalysis',
-    'PMD.ConstructorCallsOverridableMethod',
-    'PMD.AvoidFieldNameMatchingMethodName'
-])
 class HibernateDatastore extends AbstractDatastore
         implements ApplicationContextAware,
                 Settings,
@@ -437,7 +430,6 @@ class HibernateDatastore extends AbstractDatastore
         this(new ClasspathEntityScanner().scan(packageToScan))
     }
 
-    @SuppressWarnings('PMD.NullAssignment')
     protected HibernateDatastore(
             MappingContext mappingContext,
             SessionFactory sessionFactory,

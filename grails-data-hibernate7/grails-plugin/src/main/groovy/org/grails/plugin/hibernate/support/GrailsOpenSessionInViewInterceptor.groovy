@@ -45,7 +45,6 @@ import org.grails.orm.hibernate.support.hibernate7.support.OpenSessionInViewInte
  * subclass, which opens and closes sessions for each one alongside the
  * default session.
  *
- * @author Graeme Rocher
  * @since 0.5
  */
 @CompileStatic

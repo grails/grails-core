@@ -67,7 +67,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.TableForManyCalculator
  * @since 8.0
  */
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class CollectionBinder {
 
     private static final Logger LOG = LoggerFactory.getLogger(CollectionBinder)

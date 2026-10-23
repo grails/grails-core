@@ -42,7 +42,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher
  * @since 8.0
  */
 @CompileStatic
-@SuppressWarnings(['PMD.NullAssignment', 'PMD.DataflowAnomalyAnalysis'])
 class ColumnBinder {
 
     private static final Logger LOG = LoggerFactory.getLogger(ColumnBinder)

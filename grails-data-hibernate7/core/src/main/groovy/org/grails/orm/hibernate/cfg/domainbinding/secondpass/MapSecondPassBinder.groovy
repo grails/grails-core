@@ -37,7 +37,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.SimpleValueColumnFetcher
 
 /** Refactored from CollectionBinder to handle map second pass binding. */
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class MapSecondPassBinder {
 
     private final MetadataBuildingContext metadataBuildingContext

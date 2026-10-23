@@ -78,6 +78,7 @@ export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4G"
 > - Fixing style/analysis violations → Read `.agents/skills/violation-fixer/SKILL.md`
 > - Fixing broken test → Read `.agents/skills/test-fixer/SKILL.md`
 > - Integrating a standalone repository -> Read `.agents/skills/mono-repo-integration/SKILL.md`
+> - Converting a project from Java to Groovy -> Read `.agents/skills/java-to-groovy-conversion/SKILL.md`
 >
 > Use your file reading capability to load the skill content before proceeding with any code changes.
 
@@ -93,6 +94,7 @@ export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4G"
 | **violation-fixer** | `.agents/skills/violation-fixer/SKILL.md` | Fix style/analysis violations (CodeNarc, Checkstyle, PMD, SpotBugs) |
 | **test-fixer** | `.agents/skills/test-fixer/SKILL.md` | Aggregate and fix test failures |
 | **mono-repo-integration** | `.agents/skills/mono-repo-integration/SKILL.md` | Merge a standalone Grails plugin repository into this monorepo |
+| **java-to-groovy-conversion** | `.agents/skills/java-to-groovy-conversion/SKILL.md` | Convert a project from Java to Groovy in two commits, with the review checklist |
 
 ## Repository Conventions
 

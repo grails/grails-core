@@ -41,7 +41,7 @@ import spock.lang.Specification
  */
 class CompositeUserTypeMappingSpec extends Specification {
 
-    void "a composite user type binds one column per embeddable attribute in alphabetical order"() {
+    void 'a composite user type binds one column per embeddable attribute in alphabetical order'() {
         given: 'a datastore with an entity that maps two properties with the composite user type'
         HibernateDatastore datastore = createDatastore('compositeUserTypeExplicit', {}, CompositeUserTypePayment)
 
@@ -73,7 +73,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "a composite user type value is written to and read from its columns"() {
+    void 'a composite user type value is written to and read from its columns'() {
         given:
         HibernateDatastore datastore = createDatastore('compositeUserTypeRoundTrip', {}, CompositeUserTypePayment)
 
@@ -115,7 +115,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "a composite user type property is queried by value and by attribute"() {
+    void 'a composite user type property is queried by value and by attribute'() {
         given:
         HibernateDatastore datastore = createDatastore('compositeUserTypeQuery', {}, CompositeUserTypePayment)
         CompositeMoney twenty = new CompositeMoney(amount: 2000, currency: 'EUR')
@@ -147,7 +147,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "a composite user type without a column mapping names its columns after the property and the attribute"() {
+    void 'a composite user type without a column mapping names its columns after the property and the attribute'() {
         given:
         HibernateDatastore datastore = createDatastore('compositeUserTypeDefaultColumns', {}, CompositeUserTypeDefaultColumns)
 
@@ -169,7 +169,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "a composite user type registered as a user-type for its class applies without a per-property type"() {
+    void 'a composite user type registered as a user-type for its class applies without a per-property type'() {
         given: 'a datastore whose default mapping registers the composite user type for the value class'
         HibernateDatastore datastore = createDatastore('compositeUserTypeRegistered', {
             'user-type'(type: CompositeMoneyType, 'class': CompositeMoney)
@@ -195,7 +195,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "a composite user type takes its attributes from its embeddable class when that differs from the value class"() {
+    void 'a composite user type takes its attributes from its embeddable class when that differs from the value class'() {
         given: 'a composite user type whose embeddable class is a record describing the value class'
         HibernateDatastore datastore = createDatastore('compositeUserTypeTemplate', {}, CompositeUserTypeTemplated)
 
@@ -221,7 +221,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "a composite user type takes its attributes from the fields and the readable properties of its embeddable class"() {
+    void 'a composite user type takes its attributes from the fields and the readable properties of its embeddable class'() {
         given: 'an immutable value class with getters only, and an embeddable class with private fields only'
         HibernateDatastore datastore = createDatastore('compositeUserTypeImmutable', {},
                 CompositeUserTypeImmutable, CompositeUserTypeFieldsTemplated)
@@ -260,7 +260,7 @@ class CompositeUserTypeMappingSpec extends Specification {
         datastore?.close()
     }
 
-    void "more columns than the embeddable class has attributes is a mapping error"() {
+    void 'more columns than the embeddable class has attributes is a mapping error'() {
         when:
         createDatastore('compositeUserTypeTooManyColumns', {}, CompositeUserTypeTooManyColumns)
 

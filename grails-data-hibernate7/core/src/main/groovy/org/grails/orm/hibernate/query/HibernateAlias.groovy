@@ -27,13 +27,11 @@ import org.grails.datastore.mapping.query.Query
 
 /**
  * A internal criterion used to represent an alias for a basic collection join.
- *
- * @author walterduquedeestrada
  */
 @CompileStatic
 @SuppressWarnings(['ClassStartsWithBlankLine', 'Indentation'])
 @RecordOptions(getAt = false, toList = false, toMap = false, size = false)
-@TupleConstructor(defaults = false)
+@TupleConstructor(defaults = false, namedVariant = false)
 record HibernateAlias(String path, String alias, JoinType joinType)
         implements Query.Criterion, Query.QueryElement {
 

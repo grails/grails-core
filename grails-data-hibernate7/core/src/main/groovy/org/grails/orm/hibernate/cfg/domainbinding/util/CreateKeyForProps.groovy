@@ -29,7 +29,6 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentP
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty
 
 @CompileStatic
-@SuppressWarnings('PMD.DataflowAnomalyAnalysis')
 class CreateKeyForProps {
 
     private final ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher

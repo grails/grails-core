@@ -112,11 +112,9 @@ import org.grails.orm.hibernate.support.hibernate7.SessionHolder
  * To customise which methods are handled, either extend {@link CriteriaMethodInvoker} and inject it
  * via {@link #setCriteriaMethodInvoker(CriteriaMethodInvoker)}, or subclass this class directly.
  *
- * @author Graeme Rocher
  * @see HibernateQuery
  * @see grails.gorm.DetachedCriteria
  */
-@SuppressWarnings('PMD.AvoidDuplicateLiterals')
 @CompileStatic
 class HibernateCriteriaBuilder extends GroovyObjectSupport implements BuildableCriteria, ProjectionList {
 
@@ -128,20 +126,17 @@ class HibernateCriteriaBuilder extends GroovyObjectSupport implements BuildableC
     private CriteriaQuery<?> criteriaQuery
     private boolean uniqueResult = false
 
-    @SuppressWarnings('PMD.AvoidFieldNameMatchingMethodName')
     private boolean scroll
 
-    @SuppressWarnings('PMD.AvoidFieldNameMatchingMethodName')
     private boolean count
 
     private boolean paginationEnabledList = false
     private int defaultFlushMode
 
-    @SuppressWarnings('PMD.AvoidFieldNameMatchingMethodName')
     private boolean distinct = false
     private CriteriaMethodInvoker criteriaMethodInvoker
 
-    @SuppressWarnings(['rawtypes', 'PMD.CloseResource'])
+    @SuppressWarnings('rawtypes')
     HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory, HibernateDatastore datastore) {
         this.targetClass = targetClass
         setDatastore(datastore)
@@ -1226,25 +1221,25 @@ class HibernateCriteriaBuilder extends GroovyObjectSupport implements BuildableC
      * Restricts the results with a native SQL condition. {@code {alias}} in the SQL stands for the table alias of
      * the queried entity.
      *
-     * @param sql the SQL condition
+     * @param sqlRestriction the SQL condition
      * @return this criteria
      */
-    org.grails.datastore.mapping.query.api.Criteria sqlRestriction(String sql) {
-        return sqlRestriction(sql, Collections.emptyList())
+    org.grails.datastore.mapping.query.api.Criteria sqlRestriction(String sqlRestriction) {
+        return this.sqlRestriction(sqlRestriction, Collections.emptyList())
     }
 
     /**
      * Restricts the results with a native SQL condition whose {@code ?} placeholders are bound to the given values.
      * {@code {alias}} in the SQL stands for the table alias of the queried entity.
      *
-     * @param sql the SQL condition
+     * @param sqlRestriction the SQL condition
      * @param values the values of the {@code ?} placeholders, in order, none of them {@code null}
      * @return this criteria
      * @throws IllegalArgumentException if the number of {@code ?} placeholders differs from the number of values,
      *     or a value is {@code null}
      */
-    org.grails.datastore.mapping.query.api.Criteria sqlRestriction(String sql, List<?> values) {
-        hibernateQuery.add(new SqlRestriction(sql, values))
+    org.grails.datastore.mapping.query.api.Criteria sqlRestriction(String sqlRestriction, List<?> values) {
+        hibernateQuery.add(new SqlRestriction(sqlRestriction, values))
         return this
     }
 
@@ -1449,7 +1444,6 @@ class HibernateCriteriaBuilder extends GroovyObjectSupport implements BuildableC
         throw t
     }
 
-    @SuppressWarnings('PMD.NullAssignment')
     private void closeSessionFollowingException() {
         closeSession()
         criteriaQuery = null
