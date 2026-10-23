@@ -126,6 +126,23 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
+    void 'a count over a SQL projection keeps a column alias with a space, since the derived table uses generated aliases'() {
+        given:
+        saveBoxes()
+
+        when: "the count selects over the projection, so the projection becomes a derived table"
+        Number boxes = SqlProjectionBox.createCriteria().count {
+            projections {
+                sqlProjection 'width * 10 as "box width"', 'box width', INTEGER
+            }
+        }
+
+        then: "the derived table names its column with a generated alias, not the caller's, which holds a space"
+        boxes == SqlProjectionBox.count()
+        sqlCapture.statements.any { it.contains('derived1_0(col_0)') }
+    }
+
+    @Rollback
     void 'the results are ordered by the alias of a SQL projection'() {
         given:
         saveBoxes()
@@ -210,6 +227,20 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
             }
             order('height')
         }*.toList() == [['a,b', 7], ['a,b', 8], ['a,b', 9], ['a,b', 9]]
+    }
+
+    @Rollback
+    void 'a bracket inside an array literal does not hide the string literal or the next column'() {
+        given:
+        saveBoxes()
+
+        expect:
+        SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection "cardinality(ARRAY['[']) as n, height as height", ['n', 'height'], [INTEGER, INTEGER]
+            }
+            order('height')
+        }*.toList() == [[1, 7], [1, 8], [1, 9], [1, 9]]
     }
 
     @Rollback
@@ -317,14 +348,14 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
-    void 'a column alias in backquotes or brackets is removed from the projected SQL'() {
+    void 'a column alias in double quotes or backquotes is removed from the projected SQL'() {
         given:
         saveBoxes()
 
         expect:
         SqlProjectionBox.createCriteria().list {
             projections {
-                sqlGroupProjection 'width as [boxWidth], sum(height) as `total`', 'width', ['boxWidth', 'total'],
+                sqlGroupProjection 'width as "boxWidth", sum(height) as `total`', 'width', ['boxWidth', 'total'],
                         [INTEGER, INTEGER]
             }
             order('total', 'desc')
@@ -339,7 +370,7 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
         when:
         List rows = SqlProjectionBox.createCriteria().list {
             projections {
-                sqlGroupProjection 'width * 10 as "scaled width", sum(height) as [total height], max(height) as "tallest ""box"""',
+                sqlGroupProjection 'width * 10 as "scaled width", sum(height) as `total height`, max(height) as "tallest ""box"""',
                         '"scaled width"', ['scaled width', 'total height', 'tallest "box"'], [INTEGER, INTEGER, INTEGER]
             }
             order('total height')
@@ -350,7 +381,7 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
         rows*.toList() == [[40, 9, 9], [20, 24, 9]]
         sql =~ /(?i)group by width \* 10\b/
         !sql.contains('"')
-        !sql.contains('[')
+        !sql.contains('`')
     }
 
     @Rollback
@@ -404,7 +435,7 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
         where:
         quotes            | sql                                         | groupBy
         'backquotes'      | 'width as `boxWidth`, sum(height) as total' | '`BOXWIDTH`'
-        'square brackets' | 'width as [boxWidth], sum(height) as total' | '[BOXWIDTH]'
+        'no quotes'       | 'width as boxWidth, sum(height) as total'   | 'BOXWIDTH'
     }
 
     @Rollback
