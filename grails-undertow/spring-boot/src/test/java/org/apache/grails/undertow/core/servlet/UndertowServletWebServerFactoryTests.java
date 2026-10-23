@@ -30,6 +30,7 @@ import javax.net.ssl.SSLContext;
 import io.undertow.Undertow.Builder;
 import io.undertow.servlet.api.Deployment;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.http.HttpServlet;
@@ -193,6 +194,31 @@ class UndertowServletWebServerFactoryTests {
         assertThat(contextDestroyed).isTrue();
         assertThat(tempDir).doesNotExist();
         assertThat(documentRoot).doesNotExist();
+    }
+
+    @Test
+    void theApplicationsListenersStillFindTheTemporaryDirectoryWhenTheContextIsDestroyed() {
+        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory(0);
+        AtomicBoolean tempDirExisted = new AtomicBoolean();
+        ServletContextInitializer listenerRegistration = (servletContext) -> servletContext
+            .addListener(new ServletContextListener() {
+
+                @Override
+                public void contextDestroyed(ServletContextEvent event) {
+                    File tempDir = (File) event.getServletContext().getAttribute(ServletContext.TEMPDIR);
+                    tempDirExisted.set(tempDir.isDirectory());
+                }
+
+            });
+        UndertowServletWebServer webServer = (UndertowServletWebServer) factory
+            .getWebServer(helloWorldServletRegistration(), listenerRegistration);
+        this.webServer = webServer;
+        webServer.start();
+        Path tempDir = webServer.getDeploymentManager().getDeployment().getDeploymentInfo().getTempDir().toPath();
+        webServer.stop();
+        assertThat(tempDirExisted).as("the temporary directory while the application's listener is destroyed")
+            .isTrue();
+        assertThat(tempDir).doesNotExist();
     }
 
     @Test

@@ -228,7 +228,11 @@ public class UndertowServletWebServerFactory extends UndertowWebServerFactory
 
     private DeploymentManager createManager(TempDirs tempDirs, ServletContextInitializer... initializers) {
         DeploymentInfo deployment = Servlets.deployment();
-        deployment.addDeploymentCompleteListener(new CleanTempDirsListener(tempDirs));
+        // First, so it is destroyed last: the servlet context destroys its listeners in reverse order,
+        // and the application's are added after this one, so they still find the directories, as they do
+        // on Tomcat and Jetty, which delete them once the context is destroyed.
+        deployment.addListener(new ListenerInfo(CleanTempDirsListener.class,
+            new ImmediateInstanceFactory<>(new CleanTempDirsListener(tempDirs))));
         registerServletContainerInitializerToDriveServletContextInitializers(deployment, initializers);
         deployment.setClassLoader(getServletClassLoader());
         deployment.setContextPath(getSettings().getContextPath().toString());
@@ -599,7 +603,7 @@ public class UndertowServletWebServerFactory extends UndertowWebServerFactory
 
     /**
      * {@link ServletContextListener} that deletes the temporary directories of a
-     * deployment when it is undeployed.
+     * deployment when its servlet context is destroyed.
      */
     private static final class CleanTempDirsListener implements ServletContextListener {
 
