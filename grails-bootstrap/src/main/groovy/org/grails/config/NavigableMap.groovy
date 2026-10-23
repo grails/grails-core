@@ -236,6 +236,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         setProperty(String.valueOf(key), value)
     }
 
+    /**
+     * Groovy compiles {@code map[key] = value} to {@code putAt}, so without this the subscript form wrote
+     * the raw entry only; it writes the flat key and the nested entry, as {@link #setProperty} does.
+     */
+    void putAt(String key, Object value) {
+        setProperty(key, value)
+    }
+
     Object getProperty(String name) {
         if (!containsKey(name)) {
             return new NullSafeNavigator(this, [name].asImmutable())

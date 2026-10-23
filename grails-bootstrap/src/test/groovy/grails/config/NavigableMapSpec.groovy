@@ -204,6 +204,19 @@ class NavigableMapSpec extends Specification {
         output['server.url.port'] == 'y'
     }
 
+    def "subscript assignment on a nested map writes both representations"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [b: 'merged']], true)
+
+        when:
+        output.a['b'] = 'assigned'
+
+        then:
+        output['a.b'] == 'assigned'
+        output.navigate('a', 'b') == 'assigned'
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()

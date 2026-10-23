@@ -159,6 +159,14 @@ class PropertySourcesConfigSpec extends Specification {
         config.getProperty('a.b') == 'flat'
         config.a.b == 'nested'
 
+        when: "the nested entry is assigned by subscript, which writes both"
+        config.a['b'] = 'subscript'
+
+        then: "every read agrees"
+        config.getProperty('a.b') == 'subscript'
+        config['a.b'] == 'subscript'
+        config.a.b == 'subscript'
+
         when: "the value is assigned through dot notation, which writes both"
         config.a.b = 'assigned'
 

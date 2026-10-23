@@ -1159,7 +1159,7 @@ See xref:theWebLayer#commandObjects[Command Objects] for a trait-based alternati
 Grails 9 also reads the flat key that `merge` writes for every nested value before it walks the nested maps. Every documented way of writing configuration, that is the configuration files, `merge` and dot-notation assignment such as `config.a.b = value`, writes both the flat key and the nested entry, so nothing changes for them. What changes is which value `getProperty` answers with once the two have been made to disagree:
 
 - A dotted key written directly, with `config.put('a.b', value)` or `config['a.b'] = value`, is now read by `getProperty('a.b')`, as it always was by `config['a.b']`.
-- A value written directly into a nested map, with `config.a.put('b', value)` or `config.a['b'] = value`, is no longer read by `getProperty('a.b')`; dot navigation, `config.a.b`, still reads it.
+- A value written directly into a nested map with `config.a.put('b', value)` is no longer read by `getProperty('a.b')`; dot navigation, `config.a.b`, still reads it. Subscript assignment, `config.a['b'] = value`, writes both representations, as `config.a.b = value` does.
 
 A dotted key inside a nested block, such as `org.springframework` under `logging.level`, used to be written a second time as a key at the root, where it could overwrite a real `org.springframework` property; it is now written only under its parent, as `logging.level.org.springframework`.
 
