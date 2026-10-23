@@ -1449,6 +1449,12 @@ class SportsCar extends Car {
 }
 ----
 
+===== 26.11 Several Unidirectional hasMany Associations on One Owner
+
+Under Hibernate 7, an owner with two or more unidirectional `hasMany` associations wrote no rows to their join tables: an element added to any of them was lost at flush (issue https://github.com/apache/grails-core/issues/16665[#16665]). This is fixed when each association has a join table of its own, which is the default (`item_roles` and `item_tags` for `static hasMany = [roles: Role, tags: Tag]`) and also the case when two associations to the same class map different tables with `joinTable`. Each such join table is written, as under Hibernate 5.
+
+Two unidirectional associations mapped onto one shared join table, with a key column each, are read but their new elements are still not written. That is issue https://github.com/apache/grails-core/issues/10811[#10811] and is not fixed by this change; map a table per association until it is.
+
 ==== 27. GORM Properties Are Nullable by Default
 
 Grails 8 changes the validation default so that an *unconstrained persistent (domain) property is nullable by default* rather than required.
