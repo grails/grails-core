@@ -38,6 +38,7 @@ import grails.gsp.TagLib
 import grails.plugins.GrailsPluginManager
 import grails.util.GrailsStringUtils
 import grails.util.Metadata
+import grails.web.http.ContentSecurityPolicyNonce
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -52,12 +53,6 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware, TagLibrary {
 
     static returnObjectForTags = ['createLink', 'resource', 'createLinkTo', 'cookie', 'header', 'cspNonce', 'img', 'join', 'meta', 'set', 'applyCodec']
-
-    /**
-     * The request attribute that carries the nonce of a nonce-based Content-Security-Policy, which the Grails
-     * security headers filter and Spring Security's nonce filter both set.
-     */
-    private static final String CSP_NONCE_ATTRIBUTE = '_csp'
 
     ApplicationContext applicationContext
     GrailsPluginManager pluginManager
@@ -136,13 +131,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @emptyTag
      */
     def cspNonce(Map attrs) {
-        Object holder = request.getAttribute(CSP_NONCE_ATTRIBUTE)
-        try {
-            holder?.nonce
-        } catch (MissingPropertyException ignored) {
-            // something other than a nonce under that name leaves the page without one rather than failing it
-            null
-        }
+        ContentSecurityPolicyNonce.nonceOf(request)
     }
 
     /**
