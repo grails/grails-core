@@ -417,6 +417,23 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
+    void 'a string in single quotes in the group by clause stays in the SQL as a literal'() {
+        given:
+        saveBoxes()
+
+        when:
+        List rows = SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlGroupProjection 'sum(height) as total', "'total'", ['total'], [INTEGER]
+            }
+        }
+
+        then:
+        rows == [33]
+        sqlCapture.statements.last() =~ /(?i)group by 'total'/
+    }
+
+    @Rollback
     void 'a column alias in #quotes in the group by clause is matched regardless of case'() {
         given:
         saveBoxes()
