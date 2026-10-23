@@ -193,5 +193,8 @@ A script or stylesheet loaded from the application's own origin, such as an asse
 Spring Security's header is written first, and the Grails policy is not sent.
 * When the Spring Security filter chain is ordered ahead of `GrailsFilters.FIRST`, Grails keeps the nonce Spring Security put on the request and writes the Grails policy with it.
 
+The `cspNonce` and `javascript` tags read the nonce from `_csp`.
+If Spring Security's header configuration names another attribute with `nonceAttributeName`, render the nonce from that attribute instead.
+
 If the `_csp` attribute holds something that has no nonce, the policy is not sent, since a policy without the nonce would block every inline script the view gave one.
 Grails logs a warning the first time that happens.
