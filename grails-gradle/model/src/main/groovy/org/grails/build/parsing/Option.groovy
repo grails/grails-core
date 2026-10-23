@@ -16,7 +16,9 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.build.parsing;
+package org.grails.build.parsing
+
+import groovy.transform.CompileStatic
 
 /**
  * Represents a command line option.
@@ -24,25 +26,27 @@ package org.grails.build.parsing;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class Option {
+@CompileStatic
+class Option {
 
-    private String name;
-    private String description;
+    private String name
+    private String description
 
-    public Option(String name, String description) {
-        if (name == null || name.length() == 0) {
-            throw new IllegalArgumentException("illegal option specified");
+    Option(String name, String description) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException('illegal option specified')
         }
 
-        this.name = name;
-        this.description = description == null ? "" : description;
+        this.name = name
+        this.description = description == null ? '' : description
     }
 
-    public String getName() {
-        return name;
+    String getName() {
+        return name
     }
 
-    public String getDescription() {
-        return description;
+    String getDescription() {
+        return description
     }
+
 }

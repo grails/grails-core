@@ -16,7 +16,9 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.build.parsing;
+package org.grails.build.parsing
+
+import groovy.transform.CompileStatic
 
 /**
  * Exception that is thrown in command line parsing fails.
@@ -24,15 +26,17 @@ package org.grails.build.parsing;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class ParseException extends RuntimeException {
+@CompileStatic
+class ParseException extends RuntimeException {
 
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1
 
-    public ParseException(String message) {
-        super(message);
+    ParseException(String message) {
+        super(message)
     }
 
-    public ParseException(Throwable cause) {
-        super(cause);
+    ParseException(Throwable cause) {
+        super(cause)
     }
+
 }

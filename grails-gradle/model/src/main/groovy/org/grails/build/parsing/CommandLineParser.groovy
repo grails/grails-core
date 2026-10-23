@@ -16,14 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.build.parsing;
+package org.grails.build.parsing
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import groovy.transform.CompileStatic
 
-import grails.util.Environment;
+import grails.util.Environment
 
 /**
  * Command line parser that parses arguments to the command line. Written as a
@@ -35,27 +32,28 @@ import grails.util.Environment;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class CommandLineParser {
+@CompileStatic
+class CommandLineParser {
 
-    static Map<String, String> ENV_ARGS = new HashMap<>();
-    static Map<String, String> DEFAULT_ENVS = new HashMap<>();
-    private static CommandLine CURRENT = null;
-    private static final String DEFAULT_PADDING = "        ";
+    static Map<String, String> ENV_ARGS = new HashMap<>()
+    static Map<String, String> DEFAULT_ENVS = new HashMap<>()
+    private static CommandLine CURRENT = null
+    private static final String DEFAULT_PADDING = '        '
 
     static {
-        ENV_ARGS.put("dev", Environment.DEVELOPMENT.getName());
-        ENV_ARGS.put("prod", Environment.PRODUCTION.getName());
-        ENV_ARGS.put("test", Environment.TEST.getName());
-        DEFAULT_ENVS.put("war", Environment.PRODUCTION.getName());
-        DEFAULT_ENVS.put("test-app", Environment.TEST.getName());
+        ENV_ARGS.put('dev', Environment.DEVELOPMENT.getName())
+        ENV_ARGS.put('prod', Environment.PRODUCTION.getName())
+        ENV_ARGS.put('test', Environment.TEST.getName())
+        DEFAULT_ENVS.put('war', Environment.PRODUCTION.getName())
+        DEFAULT_ENVS.put('test-app', Environment.TEST.getName())
     }
 
-    private Map<String, Option> declaredOptions = new HashMap<>();
-    private int longestOptionNameLength = 0;
-    private String usageMessage;
+    private Map<String, Option> declaredOptions = new HashMap<>()
+    private int longestOptionNameLength = 0
+    private String usageMessage
 
-    public static CommandLine getCurrentCommandLine() {
-        return CURRENT;
+    static CommandLine getCurrentCommandLine() {
+        return CURRENT
     }
 
     /**
@@ -64,12 +62,12 @@ public class CommandLineParser {
      * @param name The name of the option
      * @param description The description
      */
-    public void addOption(String name, String description) {
-        int length = name.length();
+    void addOption(String name, String description) {
+        int length = name.length()
         if (length > longestOptionNameLength) {
-            longestOptionNameLength = length;
+            longestOptionNameLength = length
         }
-        declaredOptions.put(name, new Option(name, description));
+        declaredOptions.put(name, new Option(name, description))
     }
 
     /**
@@ -78,10 +76,10 @@ public class CommandLineParser {
      * @param string The string
      * @return The command line
      */
-    public CommandLine parseString(String string) {
+    CommandLine parseString(String string) {
         // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
         // Doesn't handle escape sequences with \
-        return parse(translateCommandline(string));
+        return parse(translateCommandline(string))
     }
 
     /**
@@ -90,65 +88,65 @@ public class CommandLineParser {
      * @return the command line broken into strings.
      * An empty or null toProcess parameter results in a zero sized array.
      */
-    public static String[] translateCommandline(String toProcess) {
-        if (toProcess == null || toProcess.length() == 0) {
+    static String[] translateCommandline(String toProcess) {
+        if (toProcess == null || toProcess.isEmpty()) {
             //no command? no string
-            return new String[0];
+            return new String[0]
         }
         // parse with a simple finite state machine
 
-        final int normal = 0;
-        final int inQuote = 1;
-        final int inDoubleQuote = 2;
-        int state = normal;
-        final StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
-        final ArrayList<String> result = new ArrayList<>();
-        final StringBuilder current = new StringBuilder();
-        boolean lastTokenHasBeenQuoted = false;
+        final int normal = 0
+        final int inQuote = 1
+        final int inDoubleQuote = 2
+        int state = normal
+        final StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true)
+        final ArrayList<String> result = new ArrayList<>()
+        final StringBuilder current = new StringBuilder()
+        boolean lastTokenHasBeenQuoted = false
 
         while (tok.hasMoreTokens()) {
-            String nextTok = tok.nextToken();
+            String nextTok = tok.nextToken()
             switch (state) {
                 case inQuote:
-                    if ("\'".equals(nextTok)) {
-                        lastTokenHasBeenQuoted = true;
-                        state = normal;
+                    if (nextTok == "\'") {
+                        lastTokenHasBeenQuoted = true
+                        state = normal
                     } else {
-                        current.append(nextTok);
+                        current << nextTok
                     }
-                    break;
+                    break
                 case inDoubleQuote:
-                    if ("\"".equals(nextTok)) {
-                        lastTokenHasBeenQuoted = true;
-                        state = normal;
+                    if (nextTok == '"') {
+                        lastTokenHasBeenQuoted = true
+                        state = normal
                     } else {
-                        current.append(nextTok);
+                        current << nextTok
                     }
-                    break;
+                    break
                 default:
-                    if ("\'".equals(nextTok)) {
-                        state = inQuote;
-                    } else if ("\"".equals(nextTok)) {
-                        state = inDoubleQuote;
-                    } else if (" ".equals(nextTok)) {
-                        if (lastTokenHasBeenQuoted || current.length() != 0) {
-                            result.add(current.toString());
-                            current.setLength(0);
+                    if (nextTok == "\'") {
+                        state = inQuote
+                    } else if (nextTok == '"') {
+                        state = inDoubleQuote
+                    } else if (nextTok == ' ') {
+                        if (lastTokenHasBeenQuoted || !current.isEmpty()) {
+                            result.add(current.toString())
+                            current.setLength(0)
                         }
                     } else {
-                        current.append(nextTok);
+                        current << nextTok
                     }
-                    lastTokenHasBeenQuoted = false;
-                    break;
+                    lastTokenHasBeenQuoted = false
+                    break
             }
         }
-        if (lastTokenHasBeenQuoted || current.length() != 0) {
-            result.add(current.toString());
+        if (lastTokenHasBeenQuoted || !current.isEmpty()) {
+            result.add(current.toString())
         }
         if (state == inQuote || state == inDoubleQuote) {
-            throw new ParseException("unbalanced quotes in " + toProcess);
+            throw new ParseException('unbalanced quotes in ' + toProcess)
         }
-        return result.toArray(new String[result.size()]);
+        return result.toArray(new String[result.size()])
     }
 
     /**
@@ -158,14 +156,14 @@ public class CommandLineParser {
      * @param args The string
      * @return The command line
      */
-    public CommandLine parseString(String commandName, String args) {
+    CommandLine parseString(String commandName, String args) {
         // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
         // Doesn't handle escape sequences with \
-        String[] argArray = translateCommandline(args);
-        DefaultCommandLine cl = createCommandLine();
-        cl.setCommandName(commandName);
-        parseInternal(cl, argArray, false);
-        return cl;
+        String[] argArray = translateCommandline(args)
+        DefaultCommandLine cl = createCommandLine()
+        cl.setCommandName(commandName)
+        parseInternal(cl, argArray, false)
+        return cl
     }
 
     /**
@@ -176,45 +174,45 @@ public class CommandLineParser {
      * @param args The arguments
      * @return The command line state
      */
-    public CommandLine parse(String... args) {
-        DefaultCommandLine cl = createCommandLine();
-        return parse(cl, args);
+    CommandLine parse(String... args) {
+        DefaultCommandLine cl = createCommandLine()
+        return parse(cl, args)
     }
 
-    public CommandLine parse(DefaultCommandLine cl, String[] args) {
-        parseInternal(cl, args, true);
-        return cl;
+    CommandLine parse(DefaultCommandLine cl, String[] args) {
+        parseInternal(cl, args, true)
+        return cl
     }
 
     private void parseInternal(DefaultCommandLine cl, String[] args, boolean firstArgumentIsCommand) {
-        cl.setRawArguments(args);
-        String lastWasOption = null;
-        for (String arg : args) {
-            if (arg == null) continue;
-            String trimmed = arg.trim();
-            if (trimmed != null && trimmed.length() > 0) {
+        cl.setRawArguments(args)
+        String lastWasOption = null
+        for (String arg in args) {
+            if (arg == null) continue
+            String trimmed = arg.trim()
+            if (trimmed != null && !trimmed.isEmpty()) {
                 if (trimmed.charAt(0) == '"' && trimmed.charAt(trimmed.length() - 1) == '"') {
-                    trimmed = trimmed.substring(1, trimmed.length() - 1);
+                    trimmed = trimmed.substring(1, trimmed.length() - 1)
                 }
                 if (trimmed.charAt(0) == '-') {
-                    lastWasOption = processOption(cl, trimmed);
+                    lastWasOption = processOption(cl, trimmed)
                 }
                 else {
                     if (lastWasOption != null) {
-                        cl.addUndeclaredOption(lastWasOption, trimmed);
-                        lastWasOption = null;
-                        continue;
+                        cl.addUndeclaredOption(lastWasOption, trimmed)
+                        lastWasOption = null
+                        continue
                     }
                     if (firstArgumentIsCommand && ENV_ARGS.containsKey(trimmed)) {
-                        cl.setEnvironment(ENV_ARGS.get(trimmed));
+                        cl.setEnvironment(ENV_ARGS[trimmed])
                     }
                     else {
                         if (firstArgumentIsCommand) {
-                            cl.setCommandName(trimmed);
-                            firstArgumentIsCommand = false;
+                            cl.setCommandName(trimmed)
+                            firstArgumentIsCommand = false
                         }
                         else {
-                            cl.addRemainingArg(trimmed);
+                            cl.addRemainingArg(trimmed)
                         }
                     }
                 }
@@ -222,74 +220,75 @@ public class CommandLineParser {
         }
     }
 
-    public String getOptionsHelpMessage() {
-        String ls = System.getProperty("line.separator");
-        usageMessage = "Available options:";
-        StringBuilder sb = new StringBuilder(usageMessage);
-        sb.append(ls);
-        for (Option option : declaredOptions.values()) {
-            String name = option.getName();
-            int extraPadding = longestOptionNameLength - name.length();
-            sb.append(" -").append(name);
+    String getOptionsHelpMessage() {
+        String ls = System.getProperty('line.separator')
+        usageMessage = 'Available options:'
+        StringBuilder sb = new StringBuilder(usageMessage)
+        sb << ls
+        for (Option option in declaredOptions.values()) {
+            String name = option.name
+            int extraPadding = longestOptionNameLength - name.length()
+            sb << ' -' << name
             for (int i = 0; i < extraPadding; i++) {
-                sb.append(' ');
+                sb << ' '
             }
-            sb.append(DEFAULT_PADDING).append(option.getDescription()).append(ls);
+            sb << DEFAULT_PADDING << option.description << ls
         }
 
-        return sb.toString();
+        return sb.toString()
     }
 
     protected DefaultCommandLine createCommandLine() {
-        DefaultCommandLine defaultCommandLine = new DefaultCommandLine();
-        CURRENT = defaultCommandLine;
-        return defaultCommandLine;
+        DefaultCommandLine defaultCommandLine = new DefaultCommandLine()
+        CURRENT = defaultCommandLine
+        return defaultCommandLine
     }
 
     protected String processOption(DefaultCommandLine cl, String arg) {
         if (arg.length() < 2) {
-            return null;
+            return null
         }
 
-        if (arg.charAt(1) == 'D' && arg.contains("=")) {
-            processSystemArg(cl, arg);
-            return null;
+        if (arg.charAt(1) == 'D' && arg.contains('=')) {
+            processSystemArg(cl, arg)
+            return null
         }
 
-        arg = (arg.charAt(1) == '-' ? arg.substring(2, arg.length()) : arg.substring(1, arg.length())).trim();
+        arg = (arg.charAt(1) == '-' ? arg.substring(2, arg.length()) : arg.substring(1, arg.length())).trim()
 
-        if (arg.contains("=")) {
-            String[] split = arg.split("=");
-            String name = split[0].trim();
-            validateOptionName(name);
-            String value = split[1].trim();
+        if (arg.contains('=')) {
+            String[] split = arg.split('=')
+            String name = split[0].trim()
+            validateOptionName(name)
+            String value = split[1].trim()
             if (declaredOptions.containsKey(name)) {
-                cl.addDeclaredOption(name, declaredOptions.get(name), value);
+                cl.addDeclaredOption(name, declaredOptions[name], value)
             }
             else {
-                cl.addUndeclaredOption(name, value);
+                cl.addUndeclaredOption(name, value)
             }
-            return null;
+            return null
         }
 
-        validateOptionName(arg);
+        validateOptionName(arg)
         if (declaredOptions.containsKey(arg)) {
-            cl.addDeclaredOption(arg, declaredOptions.get(arg));
+            cl.addDeclaredOption(arg, declaredOptions[arg])
         }
         else {
-            cl.addUndeclaredOption(arg);
+            cl.addUndeclaredOption(arg)
         }
-        return arg;
+        return arg
     }
 
     private void validateOptionName(String name) {
-        if (name.contains(" ")) throw new ParseException("Invalid argument: " + name);
+        if (name.contains(' ')) throw new ParseException('Invalid argument: ' + name)
     }
 
     protected void processSystemArg(DefaultCommandLine cl, String arg) {
-        int i = arg.indexOf("=");
-        String name = arg.substring(2, i);
-        String value = arg.substring(i + 1, arg.length());
-        cl.addSystemProperty(name, value);
+        int i = arg.indexOf('=')
+        String name = arg.substring(2, i)
+        String value = arg.substring(i + 1, arg.length())
+        cl.addSystemProperty(name, value)
     }
+
 }
