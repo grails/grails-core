@@ -100,10 +100,6 @@ ext {
             // values before SiftingAppender uses them as discriminating keys (CVE-2026-19880), and
             // 1.6.5 completes that fix (CVE-2026-104721). The 1.6.x line keeps SLF4J 2.0.x and JDK 11.
             'logback.version'               : '1.6.5',
-            // Overrides the 5.11.1 Spring Boot 4.2 manages. Pinned first as a security override of
-            // Spring Boot 4.1's 5.8.1 (CVE-2026-18710, fixed in 5.9.2); kept so that moving to Spring
-            // Boot 4.2 does not downgrade the driver. Drop once Spring Boot manages 5.12.0 or later.
-            'mongodb.version'               : '5.12.0',
             'nimbus-jose-jwt.version'       : '10.10',
             // Includes the follow-up logout redirect and direct-client CSRF fixes on the 6.5.x line.
             'pac4j.version'                 : '6.5.9',
@@ -210,14 +206,6 @@ ext {
             // Security override of the 1.6.3 Spring Boot 4.2 manages - see logback.version
             'logback-classic'          : "ch.qos.logback:logback-classic:${bomDependencyVersions['logback.version']}",
             'logback-core'             : "ch.qos.logback:logback-core:${bomDependencyVersions['logback.version']}",
-            // Override of the 5.11.1 spring-boot-dependencies imports through
-            // org.mongodb:mongodb-driver-bom - see mongodb.version. The whole driver family is
-            // pinned so a classpath cannot end up mixing driver versions.
-            'mongodb-bson'             : "org.mongodb:bson:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-bson-record-codec': "org.mongodb:bson-record-codec:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-driver-core'      : "org.mongodb:mongodb-driver-core:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-driver-reactivestreams': "org.mongodb:mongodb-driver-reactivestreams:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-driver-sync'      : "org.mongodb:mongodb-driver-sync:${bomDependencyVersions['mongodb.version']}",
             // Security override of the transitive 3.5.1 - see plexus-utils.version
             'plexus-utils'                : "org.codehaus.plexus:plexus-utils:${bomDependencyVersions['plexus-utils.version']}",
             // Required alongside plexus-utils 4.x - see plexus-xml.version
