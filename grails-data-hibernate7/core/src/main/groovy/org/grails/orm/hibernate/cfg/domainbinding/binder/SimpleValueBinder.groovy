@@ -16,10 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
+import jakarta.annotation.Nonnull;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.mapping.BasicValue;
@@ -37,8 +38,10 @@ import org.grails.orm.hibernate.cfg.PropertyConfig;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
 import org.grails.orm.hibernate.cfg.domainbinding.util.BasicValueCreator;
 
-@SuppressWarnings("PMD.NullAssignment")
-public class SimpleValueBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.NullAssignment', 'UnnecessarySemicolon'])
+@CompileStatic
+class SimpleValueBinder {
 
     private final MetadataBuildingContext metadataBuildingContext;
     private final ColumnConfigToColumnBinder columnConfigToColumnBinder;
@@ -57,7 +60,7 @@ public class SimpleValueBinder {
         this.basicValueCreator = basicValueCreator;
     }
 
-    public SimpleValueBinder(
+    SimpleValueBinder(
             MetadataBuildingContext metadataBuildingContext,
             PersistentEntityNamingStrategy namingStrategy,
             JdbcEnvironment jdbcEnvironment) {
@@ -68,7 +71,7 @@ public class SimpleValueBinder {
                 new BasicValueCreator(metadataBuildingContext, jdbcEnvironment, namingStrategy));
     }
 
-    public BasicValue bindBasicValue(
+    BasicValue bindBasicValue(
             @NonNull HibernatePersistentProperty property,
             HibernatePersistentProperty parentProperty,
             String path) {
@@ -77,8 +80,8 @@ public class SimpleValueBinder {
         return basicValue;
     }
 
-    public SimpleValue bindSimpleValue(
-            @jakarta.annotation.Nonnull HibernatePersistentProperty property,
+    SimpleValue bindSimpleValue(
+            @Nonnull HibernatePersistentProperty property,
             HibernatePersistentProperty parentProperty,
             SimpleValue simpleValue,
             String path) {
@@ -95,21 +98,22 @@ public class SimpleValueBinder {
         } else {
             Table table = simpleValue.getTable();
 
-            Optional.ofNullable(propertyConfig.getColumns())
-                    .filter(list -> !list.isEmpty())
-                    .orElse(java.util.Arrays.asList(new ColumnConfig[] {null}))
-                    .forEach(cc -> {
-                        Column column = new Column();
-                        columnConfigToColumnBinder.bindColumnConfigToColumn(column, cc, propertyConfig);
-                        columnBinder.bindColumn(property, parentProperty, column, cc, path, table, typeName);
-                        if (simpleValue instanceof DependantValue) {
-                            column.setNullable(true);
-                        }
-                        if (table != null) {
-                            table.addColumn(column);
-                        }
-                        simpleValue.addColumn(column);
-                    });
+            List<ColumnConfig> columnConfigs = propertyConfig.getColumns();
+            if (columnConfigs == null || columnConfigs.isEmpty()) {
+                columnConfigs = [null];
+            }
+            for (ColumnConfig cc : columnConfigs) {
+                Column column = new Column();
+                columnConfigToColumnBinder.bindColumnConfigToColumn(column, cc, propertyConfig);
+                columnBinder.bindColumn(property, parentProperty, column, cc, path, table, typeName);
+                if (simpleValue instanceof DependantValue) {
+                    column.setNullable(true);
+                }
+                if (table != null) {
+                    table.addColumn(column);
+                }
+                simpleValue.addColumn(column);
+            }
         }
         return simpleValue;
     }

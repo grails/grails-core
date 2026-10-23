@@ -16,12 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.multitenancy;
 
-import java.io.Serializable;
-
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nullable;
-
 import org.springframework.context.ApplicationEvent;
 
 import grails.gorm.multitenancy.Tenants;
@@ -47,48 +46,49 @@ import org.grails.orm.hibernate.HibernateDatastore;
  * @author Graeme Rocher
  * @since 6.0
  */
-public class MultiTenantEventListener implements PersistenceEventListener {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class MultiTenantEventListener implements PersistenceEventListener {
 
     @Override
-    public boolean supportsEventType(@Nullable Class<? extends ApplicationEvent> eventType) {
+    boolean supportsEventType(@Nullable Class<? extends ApplicationEvent> eventType) {
         return org.grails.datastore.gorm.multitenancy.MultiTenantEventListener.SUPPORTED_EVENTS.contains(eventType);
     }
 
     @Override
-    public boolean supportsSourceType(Class<?> sourceType) {
-        return HibernateDatastore.class.isAssignableFrom(sourceType);
+    boolean supportsSourceType(Class<?> sourceType) {
+        return HibernateDatastore.isAssignableFrom(sourceType);
     }
 
-    @SuppressWarnings("PMD.DataflowAnomalyAnalysis")
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
+    void onApplicationEvent(ApplicationEvent event) {
         if (supportsEventType(event.getClass())) {
             Datastore datastore = (Datastore) event.getSource();
-            if (event instanceof PreQueryEvent preQueryEvent) {
-                Query query = preQueryEvent.getQuery();
+            if (event instanceof PreQueryEvent) {
+                Query query = ((PreQueryEvent) event).getQuery();
 
                 PersistentEntity entity = query.getEntity();
                 Datastore ds = (datastore != null) ? datastore : GormEnhancer.findDatastore(entity.getJavaClass());
-                if (ds instanceof HibernateDatastore hibernateDatastore) {
-                    hibernateDatastore.enableMultiTenancyFilter(entity);
+                if (ds instanceof HibernateDatastore) {
+                    ((HibernateDatastore) ds).enableMultiTenancyFilter(entity);
                 }
-            } else if (event instanceof AbstractPersistenceEvent persistenceEvent &&
-                    (persistenceEvent instanceof ValidationEvent ||
-                            persistenceEvent instanceof PreInsertEvent ||
-                            persistenceEvent instanceof PreUpdateEvent)) {
+            } else if (event instanceof AbstractPersistenceEvent &&
+                    (event instanceof ValidationEvent ||
+                            event instanceof PreInsertEvent ||
+                            event instanceof PreUpdateEvent)) {
+                AbstractPersistenceEvent persistenceEvent = (AbstractPersistenceEvent) event;
                 PersistentEntity entity = persistenceEvent.getEntity();
                 if (entity.isMultiTenant()) {
                     TenantId<?> tenantId = entity.getTenantId();
                     Datastore ds = (datastore != null) ? datastore : GormEnhancer.findDatastore(entity.getJavaClass());
-                    if (ds instanceof HibernateDatastore hibernateDatastore) {
-                        Serializable currentId;
-
-                        currentId = Tenants.currentId(hibernateDatastore);
+                    if (ds instanceof HibernateDatastore) {
+                        HibernateDatastore hibernateDatastore = (HibernateDatastore) ds;
+                        Serializable currentId = Tenants.currentId(hibernateDatastore);
                         if (currentId != null) {
                             try {
                                 if (Tenants.isWithoutId(hibernateDatastore)) {
-                                    currentId = (Serializable)
-                                            persistenceEvent.getEntityAccess().getProperty(tenantId.getName());
+                                    currentId = (Serializable) persistenceEvent.getEntityAccess().getProperty(tenantId.getName());
                                 }
                                 persistenceEvent.getEntityAccess().setProperty(tenantId.getName(), currentId);
                             } catch (Exception e) {
@@ -108,7 +108,8 @@ public class MultiTenantEventListener implements PersistenceEventListener {
     }
 
     @Override
-    public int getOrder() {
+    int getOrder() {
         return DEFAULT_ORDER;
     }
+
 }

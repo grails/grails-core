@@ -16,56 +16,58 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.binder;
+package org.grails.orm.hibernate.cfg.domainbinding.binder
 
-import org.hibernate.dialect.Dialect;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import groovy.transform.CompileStatic
+import org.hibernate.dialect.Dialect
+import org.hibernate.mapping.Column
+import org.hibernate.mapping.Table
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import org.grails.orm.hibernate.cfg.ColumnConfig;
-import org.grails.orm.hibernate.cfg.Mapping;
-import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy;
-import org.grails.orm.hibernate.cfg.PropertyConfig;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
-import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover;
-import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher;
-import org.grails.orm.hibernate.cfg.domainbinding.util.CreateKeyForProps;
-import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher;
+import org.grails.orm.hibernate.cfg.ColumnConfig
+import org.grails.orm.hibernate.cfg.Mapping
+import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy
+import org.grails.orm.hibernate.cfg.PropertyConfig
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
+import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover
+import org.grails.orm.hibernate.cfg.domainbinding.util.ColumnNameForPropertyAndPathFetcher
+import org.grails.orm.hibernate.cfg.domainbinding.util.CreateKeyForProps
+import org.grails.orm.hibernate.cfg.domainbinding.util.DefaultColumnNameFetcher
 
 /**
  * Binds a {@link org.hibernate.mapping.Column} to the Hibernate meta-model from Grails property and column config.
  *
  * @since 8.0
  */
-@SuppressWarnings({"PMD.NullAssignment", "PMD.DataflowAnomalyAnalysis"})
-public class ColumnBinder {
+@CompileStatic
+@SuppressWarnings(['PMD.NullAssignment', 'PMD.DataflowAnomalyAnalysis'])
+class ColumnBinder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ColumnBinder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ColumnBinder)
 
-    private final ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher;
-    private final StringColumnConstraintsBinder stringColumnConstraintsBinder;
-    private final NumericColumnConstraintsBinder numericColumnConstraintsBinder;
-    private final CreateKeyForProps createKeyForProps;
-    private final IndexBinder indexBinder;
+    private final ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher
+    private final StringColumnConstraintsBinder stringColumnConstraintsBinder
+    private final NumericColumnConstraintsBinder numericColumnConstraintsBinder
+    private final CreateKeyForProps createKeyForProps
+    private final IndexBinder indexBinder
 
     /** Public constructor that accepts all collaborators. */
-    public ColumnBinder(
+    ColumnBinder(
             ColumnNameForPropertyAndPathFetcher columnNameForPropertyAndPathFetcher,
             StringColumnConstraintsBinder stringColumnConstraintsBinder,
             NumericColumnConstraintsBinder numericColumnConstraintsBinder,
             CreateKeyForProps createKeyForProps,
             IndexBinder indexBinder) {
-        this.columnNameForPropertyAndPathFetcher = columnNameForPropertyAndPathFetcher;
-        this.stringColumnConstraintsBinder = stringColumnConstraintsBinder;
-        this.numericColumnConstraintsBinder = numericColumnConstraintsBinder;
-        this.createKeyForProps = createKeyForProps;
-        this.indexBinder = indexBinder;
+        this.columnNameForPropertyAndPathFetcher = columnNameForPropertyAndPathFetcher
+        this.stringColumnConstraintsBinder = stringColumnConstraintsBinder
+        this.numericColumnConstraintsBinder = numericColumnConstraintsBinder
+        this.createKeyForProps = createKeyForProps
+        this.indexBinder = indexBinder
     }
 
-    public ColumnBinder(PersistentEntityNamingStrategy namingStrategy, Dialect dialect) {
+    ColumnBinder(PersistentEntityNamingStrategy namingStrategy, Dialect dialect) {
         this(
                 new ColumnNameForPropertyAndPathFetcher(
                         namingStrategy, new DefaultColumnNameFetcher(namingStrategy), new BackticksRemover()),
@@ -73,7 +75,7 @@ public class ColumnBinder {
                 new NumericColumnConstraintsBinder(dialect),
                 new CreateKeyForProps(new ColumnNameForPropertyAndPathFetcher(
                         namingStrategy, new DefaultColumnNameFetcher(namingStrategy), new BackticksRemover())),
-                new IndexBinder());
+                new IndexBinder())
     }
 
     /**
@@ -86,7 +88,7 @@ public class ColumnBinder {
      * @param table The table name
      * @param typeName the property's resolved Hibernate type name
      */
-    public void bindColumn(
+    void bindColumn(
             HibernatePersistentProperty property,
             HibernatePersistentProperty parentProperty,
             Column column,
@@ -96,57 +98,59 @@ public class ColumnBinder {
             String typeName) {
 
         if (cc != null) {
-            column.setComment(cc.getComment());
-            column.setDefaultValue(cc.getDefaultValue());
-            column.setCustomRead(cc.getRead());
-            column.setCustomWrite(cc.getWrite());
+            column.comment = cc.comment
+            column.defaultValue = cc.defaultValue
+            column.customRead = cc.read
+            column.customWrite = cc.write
         }
 
-        Class<?> userType = property.getUserType();
-        String columnName = columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(property, path, cc);
-        if ((property instanceof HibernateAssociation assoc) && userType == null) {
+        Class<?> userType = property.userType
+        String columnName = columnNameForPropertyAndPathFetcher.getColumnNameForPropertyAndPath(property, path, cc)
+        if ((property instanceof HibernateAssociation) && userType == null) {
+            HibernateAssociation assoc = (HibernateAssociation) property
             // Only use conventional naming when the column has not been explicitly mapped.
-            if (column.getName() == null) {
-                column.setName(columnName);
+            if (column.name == null) {
+                column.name = columnName
             }
-            column.setNullable(assoc.isAssociationColumnNullable());
+            column.nullable = assoc.isAssociationColumnNullable()
         } else {
-            column.setName(columnName);
-            column.setNullable(property.isNullable() || (parentProperty != null && parentProperty.isNullable()));
+            column.name = columnName
+            column.nullable = property.isNullable() || (parentProperty != null && parentProperty.isNullable())
             // Use the constraints for this property to more accurately define
             // the column's length, precision, and scale
-            Class<?> type = property.getType();
-            if (type != null && (String.class.isAssignableFrom(type) || byte[].class.isAssignableFrom(type))) {
-                PropertyConfig mappedForm = property.getHibernateMappedForm();
-                stringColumnConstraintsBinder.bindStringColumnConstraints(column, mappedForm, typeName);
-            } else if (type != null && Number.class.isAssignableFrom(type)) {
-                PropertyConfig mappedForm = property.getHibernateMappedForm();
-                numericColumnConstraintsBinder.bindNumericColumnConstraints(column, cc, mappedForm, type);
+            Class<?> type = property.type
+            if (type != null && (String.isAssignableFrom(type) || byte[].class.isAssignableFrom(type))) {
+                PropertyConfig mappedForm = property.hibernateMappedForm
+                stringColumnConstraintsBinder.bindStringColumnConstraints(column, mappedForm, typeName)
+            } else if (type != null && Number.isAssignableFrom(type)) {
+                PropertyConfig mappedForm = property.hibernateMappedForm
+                numericColumnConstraintsBinder.bindNumericColumnConstraints(column, cc, mappedForm, type)
             }
         }
 
-        createKeyForProps.createKeyForProps(property, path, table, columnName);
-        indexBinder.bindIndex(columnName, column, cc, table);
+        createKeyForProps.createKeyForProps(property, path, table, columnName)
+        indexBinder.bindIndex(columnName, column, cc, table)
 
-        var owner = property.getHibernateOwner();
+        def owner = property.hibernateOwner
         if (!owner.isRoot()) {
-            Mapping mapping = owner.getHibernateMappedForm();
+            Mapping mapping = owner.hibernateMappedForm
             if (mapping != null && mapping.getTablePerHierarchy()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Sub class property [{}] for column name [{}] set to nullable", property.getName(), column.getName());
+                    LOG.debug('Sub class property [{}] for column name [{}] set to nullable', property.name, column.name)
                 }
-                column.setNullable(true);
+                column.nullable = true
             } else {
-                column.setNullable(property.isNullable());
+                column.nullable = property.isNullable()
             }
         }
 
         // Apply uniqueness last to ensure it isn't overridden by downstream binders
-        PropertyConfig mappedFormFinal = property.getHibernateMappedForm();
-        column.setUnique(mappedFormFinal.isUnique() && !mappedFormFinal.isUniqueWithinGroup());
+        PropertyConfig mappedFormFinal = property.hibernateMappedForm
+        column.unique = mappedFormFinal.isUnique() && !mappedFormFinal.isUniqueWithinGroup()
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Bound property [{}] to column name [{}] in table [{}]", property.getName(), column.getName(), table.getName());
+            LOG.debug('Bound property [{}] to column name [{}] in table [{}]', property.name, column.name, table.name)
         }
     }
+
 }

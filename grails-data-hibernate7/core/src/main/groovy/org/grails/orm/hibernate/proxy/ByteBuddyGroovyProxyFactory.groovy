@@ -16,13 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.proxy;
 
-import java.io.Serial;
+import groovy.transform.CompileStatic;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Set;
-
 import org.hibernate.HibernateException;
 import org.hibernate.bytecode.internal.bytebuddy.ByteBuddyState;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
@@ -42,9 +41,11 @@ import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_CLASS_AR
  *
  * @since 8.0
  */
-public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
 
-    @Serial
     private static final long serialVersionUID = 1L;
 
     private final transient GroovyProxyClassBuilder proxyClassBuilder;
@@ -59,11 +60,11 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
     private transient Constructor<?> proxyConstructor;
     private final boolean lazyToString;
 
-    public ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper) {
+    ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper) {
         this(byteBuddyProxyHelper, false);
     }
 
-    public ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, boolean lazyToString) {
+    ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, boolean lazyToString) {
         this(byteBuddyProxyHelper, new ByteBuddyState(), lazyToString);
     }
 
@@ -71,14 +72,14 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
      * @param byteBuddyState the state the proxy classes are loaded through, so the Groovy wrapper is cached and
      * tracked with the proxy class {@code byteBuddyProxyHelper} builds
      */
-    public ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, ByteBuddyState byteBuddyState, boolean lazyToString) {
+    ByteBuddyGroovyProxyFactory(ByteBuddyProxyHelper byteBuddyProxyHelper, ByteBuddyState byteBuddyState, boolean lazyToString) {
         super(byteBuddyProxyHelper);
         this.proxyClassBuilder = new GroovyProxyClassBuilder(byteBuddyProxyHelper, byteBuddyState);
         this.lazyToString = lazyToString;
     }
 
     @Override
-    public void postInstantiate(
+    void postInstantiate(
             String entityName,
             Class<?> persistentClass,
             Set<Class<?>> interfaces,
@@ -107,13 +108,13 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
             return proxyClass.getDeclaredConstructor();
         }
         catch (NoSuchMethodException e) {
-            throw new HibernateException("Unable to generate proxy for " + entityName +
-                    ": the entity needs a default constructor", e);
+            throw new HibernateException('Unable to generate proxy for ' + entityName +
+                    ': the entity needs a default constructor', e);
         }
     }
 
     @Override
-    public HibernateProxy getProxy(Object id, SharedSessionContractImplementor session) throws HibernateException {
+    HibernateProxy getProxy(Object id, SharedSessionContractImplementor session) throws HibernateException {
         try {
             final ByteBuddyGroovyInterceptor interceptor = new ByteBuddyGroovyInterceptor(
                     entityName,
@@ -130,8 +131,10 @@ public class ByteBuddyGroovyProxyFactory extends ByteBuddyProxyFactory {
             final HibernateProxy hibernateProxy = (HibernateProxy) proxyConstructor.newInstance();
             ((ProxyConfiguration) hibernateProxy).$$_hibernate_set_interceptor(interceptor);
             return hibernateProxy;
-        } catch (Exception e) {
-            throw new HibernateException("Unable to generate proxy for " + entityName, e);
+        }
+        catch (Exception e) {
+            throw new HibernateException("Unable to generate proxy for ${entityName}", e);
         }
     }
+
 }

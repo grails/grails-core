@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.support.hibernate7.support;
 
 import java.util.concurrent.Callable;
 
+import groovy.transform.CompileStatic;
+import groovy.transform.PackageScope;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.jspecify.annotations.Nullable;
-
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.async.CallableProcessingInterceptor;
@@ -43,9 +44,13 @@ import org.grails.orm.hibernate.support.hibernate7.SessionHolder;
  * @author Rossen Stoyanchev
  * @since 4.2
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+@PackageScope
 class AsyncRequestInterceptor implements CallableProcessingInterceptor, DeferredResultProcessingInterceptor {
 
-    private static final Log logger = LogFactory.getLog(AsyncRequestInterceptor.class);
+    private static final Log LOG = LogFactory.getLog(AsyncRequestInterceptor);
 
     private final SessionFactory sessionFactory;
 
@@ -55,68 +60,67 @@ class AsyncRequestInterceptor implements CallableProcessingInterceptor, Deferred
 
     private volatile boolean errorInProgress;
 
-    public AsyncRequestInterceptor(SessionFactory sessionFactory, SessionHolder sessionHolder) {
+    AsyncRequestInterceptor(SessionFactory sessionFactory, SessionHolder sessionHolder) {
         this.sessionFactory = sessionFactory;
         this.sessionHolder = sessionHolder;
     }
 
     @Override
-    public <T> void preProcess(NativeWebRequest request, Callable<T> task) {
+    def <T> void preProcess(NativeWebRequest request, Callable<T> task) {
         bindSession();
     }
 
-    public void bindSession() {
+    void bindSession() {
         this.timeoutInProgress = false;
         this.errorInProgress = false;
         TransactionSynchronizationManager.bindResource(this.sessionFactory, this.sessionHolder);
     }
 
     @Override
-    public <T> void postProcess(NativeWebRequest request, Callable<T> task, @Nullable Object concurrentResult) {
+    def <T> void postProcess(NativeWebRequest request, Callable<T> task, @Nullable Object concurrentResult) {
         TransactionSynchronizationManager.unbindResource(this.sessionFactory);
     }
 
     @Override
-    public <T> Object handleTimeout(NativeWebRequest request, Callable<T> task) {
+    def <T> Object handleTimeout(NativeWebRequest request, Callable<T> task) {
         this.timeoutInProgress = true;
         return RESULT_NONE;  // give other interceptors a chance to handle the timeout
     }
 
     @Override
-    public <T> Object handleError(NativeWebRequest request, Callable<T> task, Throwable t) {
+    def <T> Object handleError(NativeWebRequest request, Callable<T> task, Throwable t) {
         this.errorInProgress = true;
         return RESULT_NONE;  // give other interceptors a chance to handle the error
     }
 
     @Override
-    public <T> void afterCompletion(NativeWebRequest request, Callable<T> task) throws Exception {
+    def <T> void afterCompletion(NativeWebRequest request, Callable<T> task) throws Exception {
         closeSession();
     }
 
     private void closeSession() {
         if (this.timeoutInProgress || this.errorInProgress) {
-            logger.debug("Closing Hibernate Session after async request timeout/error");
+            LOG.debug('Closing Hibernate Session after async request timeout/error');
             SessionFactoryUtils.closeSession(this.sessionHolder.getSession());
         }
     }
 
-
     // Implementation of DeferredResultProcessingInterceptor methods
 
     @Override
-    public <T> boolean handleTimeout(NativeWebRequest request, DeferredResult<T> deferredResult) {
+    def <T> boolean handleTimeout(NativeWebRequest request, DeferredResult<T> deferredResult) {
         this.timeoutInProgress = true;
         return true;  // give other interceptors a chance to handle the timeout
     }
 
     @Override
-    public <T> boolean handleError(NativeWebRequest request, DeferredResult<T> deferredResult, Throwable t) {
+    def <T> boolean handleError(NativeWebRequest request, DeferredResult<T> deferredResult, Throwable t) {
         this.errorInProgress = true;
         return true;  // give other interceptors a chance to handle the error
     }
 
     @Override
-    public <T> void afterCompletion(NativeWebRequest request, DeferredResult<T> deferredResult) {
+    def <T> void afterCompletion(NativeWebRequest request, DeferredResult<T> deferredResult) {
         closeSession();
     }
 

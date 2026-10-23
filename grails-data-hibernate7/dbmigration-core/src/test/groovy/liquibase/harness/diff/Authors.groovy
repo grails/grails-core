@@ -1,9 +1,13 @@
 package liquibase.harness.diff;
 
-import java.sql.Timestamp;
 import java.sql.Date;
+import java.sql.Timestamp;
 
-public class Authors {
+import groovy.transform.CompileStatic;
+
+@CompileStatic
+class Authors {
+
     int id;
     String firstName;
     String lastName;
@@ -70,4 +74,5 @@ public class Authors {
     public void setAdded(Timestamp added) {
         this.added = added;
     }
+
 }

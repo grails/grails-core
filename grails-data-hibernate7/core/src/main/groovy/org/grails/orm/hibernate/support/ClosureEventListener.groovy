@@ -16,18 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.support;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-
+import groovy.transform.CompileStatic;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -78,8 +70,12 @@ import org.grails.datastore.mapping.validation.ValidationException;
 import org.grails.orm.hibernate.HibernateGormValidationApi;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity;
 
-@SuppressWarnings({"rawtypes", "unchecked", "PMD.CloseResource"})
-public class ClosureEventListener
+import java.util.concurrent.Callable;
+
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['rawtypes', 'unchecked', 'PMD.CloseResource', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class ClosureEventListener
         implements PreLoadEventListener,
                 PostLoadEventListener,
                 PreInsertEventListener, // Added to fix "does not exist in superclass" error
@@ -93,9 +89,8 @@ public class ClosureEventListener
                 CallbackRegistryConsumer,
                 Serializable {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(ClosureEventListener.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ClosureEventListener);
 
-    @Serial
     private static final long serialVersionUID = 1;
 
     private final transient EventTriggerCaller beforeInsertCaller;
@@ -112,7 +107,7 @@ public class ClosureEventListener
     private final boolean failOnErrorEnabled;
     private final Map validateParams;
 
-    public ClosureEventListener(
+    ClosureEventListener(
             GrailsHibernatePersistentEntity persistentEntity, boolean failOnError, List failOnErrorPackages) {
         this.persistentEntity = persistentEntity;
         Class domainClazz = persistentEntity.getJavaClass();
@@ -141,29 +136,29 @@ public class ClosureEventListener
     }
 
     @Override
-    public void onPreLoad(PreLoadEvent event) {
+    void onPreLoad(PreLoadEvent event) {
         if (preLoadEventCaller != null) {
-            doPreLoadWithManualSession(event, () -> preLoadEventCaller.call(event.getEntity()));
+            doPreLoadWithManualSession(event, { -> preLoadEventCaller.call(event.getEntity()) } as Runnable);
         }
     }
 
     @Override
-    public void onPostLoad(PostLoadEvent event) {
+    void onPostLoad(PostLoadEvent event) {
         if (postLoadEventListener != null) {
-            doPostLoadWithManualSession(event, () -> postLoadEventListener.call(event.getEntity()));
+            doPostLoadWithManualSession(event, { -> postLoadEventListener.call(event.getEntity()) } as Runnable);
         }
     }
 
     @Override
-    public boolean onPreInsert(PreInsertEvent event) {
-        return doBooleanWithManualSession(event, () -> {
+    boolean onPreInsert(PreInsertEvent event) {
+        return doBooleanWithManualSession(event, { ->
             Object entity = event.getEntity();
             if (beforeInsertCaller != null) {
                 if (beforeInsertCaller.call(entity)) return true;
                 synchronizePersisterState(event, event.getState());
             }
             return doValidate(entity);
-        });
+        } as Callable<Boolean>)
     }
 
     // --- Specific manual session versions for PreLoad and PostLoad ---
@@ -173,15 +168,18 @@ public class ClosureEventListener
     }
 
     private void flushOrRun(EventSource event, Runnable action) {
-        if ((SharedSessionContractImplementor) event instanceof Session session) {
+        if (event instanceof Session) {
+            Session session = (Session) event;
             FlushMode current = session.getHibernateFlushMode();
             try {
                 session.setHibernateFlushMode(FlushMode.MANUAL);
                 action.run();
-            } finally {
+            }
+            finally {
                 session.setHibernateFlushMode(current);
             }
-        } else {
+        }
+        else {
             action.run();
         }
     }
@@ -193,35 +191,36 @@ public class ClosureEventListener
     // --- Standard Overrides ---
 
     @Override
-    public void onPostInsert(PostInsertEvent event) {
+    void onPostInsert(PostInsertEvent event) {
         if (postInsertEventListener != null) {
-            doVoidWithManualSession(event, () -> postInsertEventListener.call(event.getEntity()));
+            doVoidWithManualSession(event, { -> postInsertEventListener.call(event.getEntity()) } as Runnable);
         }
     }
 
     @Override
-    public void onPostUpdate(PostUpdateEvent event) {
+    void onPostUpdate(PostUpdateEvent event) {
         if (postUpdateEventListener != null) {
-            doVoidWithManualSession(event, () -> postUpdateEventListener.call(event.getEntity()));
+            doVoidWithManualSession(event, { -> postUpdateEventListener.call(event.getEntity()) } as Runnable);
         }
     }
 
     @Override
-    public void onPostDelete(PostDeleteEvent event) {
+    void onPostDelete(PostDeleteEvent event) {
         if (postDeleteEventListener != null) {
-            doVoidWithManualSession(event, () -> postDeleteEventListener.call(event.getEntity()));
+            doVoidWithManualSession(event, { -> postDeleteEventListener.call(event.getEntity()) } as Runnable);
         }
     }
 
     @Override
-    public boolean onPreDelete(PreDeleteEvent event) {
+    boolean onPreDelete(PreDeleteEvent event) {
         if (preDeleteEventListener == null) return false;
-        return doBooleanWithManualSession(event, () -> preDeleteEventListener.call(event.getEntity()));
+        return doBooleanWithManualSession(event,
+                { -> preDeleteEventListener.call(event.getEntity()) } as Callable<Boolean>);
     }
 
     @Override
-    public boolean onPreUpdate(PreUpdateEvent event) {
-        return doBooleanWithManualSession(event, () -> {
+    boolean onPreUpdate(PreUpdateEvent event) {
+        return doBooleanWithManualSession(event, { ->
             Object entity = event.getEntity();
             boolean evict = false;
             if (preUpdateEventListener != null) {
@@ -231,10 +230,10 @@ public class ClosureEventListener
                 }
             }
             return evict || doValidate(entity);
-        });
+        } as Callable<Boolean>)
     }
 
-    public void onValidate(ValidationEvent event) {
+    void onValidate(ValidationEvent event) {
         beforeValidateEventListener.call(event.getEntityObject(), event.getValidatedFields());
     }
 
@@ -243,8 +242,7 @@ public class ClosureEventListener
         if (!validateable.shouldSkipValidation() && !validateable.validate(validateParams)) {
             if (failOnErrorEnabled) {
                 throw ValidationException.newInstance(
-                        "Validation error whilst flushing entity [" +
-                                entity.getClass().getName() + "]",
+                        "Validation error whilst flushing entity [${entity.getClass().getName()}]",
                         validateable.getErrors());
             }
             return true;
@@ -278,51 +276,59 @@ public class ClosureEventListener
 
     private void doVoidWithManualSession(AbstractEvent event, Runnable action) {
         SharedSessionContractImplementor sessionImpl = event.getSession();
-        if (sessionImpl instanceof Session session) {
+        if (sessionImpl instanceof Session) {
+            Session session = (Session) sessionImpl;
             FlushMode current = session.getHibernateFlushMode();
             try {
                 session.setHibernateFlushMode(FlushMode.MANUAL);
                 action.run();
-            } finally {
+            }
+            finally {
                 session.setHibernateFlushMode(current);
             }
-        } else {
+        }
+        else {
             action.run();
         }
     }
 
     private boolean doBooleanWithManualSession(AbstractEvent event, Callable<Boolean> callable) {
         SharedSessionContractImplementor sessionImpl = event.getSession();
-        if (sessionImpl instanceof Session session) {
+        if (sessionImpl instanceof Session) {
+            Session session = (Session) sessionImpl;
             FlushMode current = session.getHibernateFlushMode();
             try {
                 session.setHibernateFlushMode(FlushMode.MANUAL);
                 return callable.call();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new HibernateException(e);
-            } finally {
+            }
+            finally {
                 session.setHibernateFlushMode(current);
             }
         }
         try {
             return callable.call();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new HibernateException(e);
         }
     }
 
     @Override
-    public void onMerge(MergeEvent event) {}
+    void onMerge(MergeEvent event) {}
 
     @Override
-    public void onMerge(MergeEvent event, MergeContext copiedAlready) {}
+    void onMerge(MergeEvent event, MergeContext copiedAlready) {}
 
     @Override
-    public void onPersist(PersistEvent event) {}
+    void onPersist(PersistEvent event) {}
 
     @Override
-    public void onPersist(PersistEvent event, PersistContext createdAlready) {}
+    void onPersist(PersistEvent event, PersistContext createdAlready) {}
 
     @Override
-    public void injectCallbackRegistry(CallbackRegistry callbackRegistry) {}
+    void injectCallbackRegistry(CallbackRegistry callbackRegistry) {}
+
 }

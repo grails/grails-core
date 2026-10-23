@@ -16,17 +16,17 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
 
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.boot.spi.InFlightMetadataCollector;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.mapping.Backref;
 import org.hibernate.mapping.BasicValue;
 import org.hibernate.mapping.DependantValue;
 import org.hibernate.mapping.IndexBackref;
-import org.hibernate.mapping.List;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 
@@ -40,8 +40,10 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.BackticksRemover;
 import static org.grails.orm.hibernate.cfg.domainbinding.binder.GrailsDomainBinder.UNDERSCORE;
 
 /** Refactored from CollectionBinder to handle list second pass binding. */
-@SuppressWarnings("PMD.DataflowAnomalyAnalysis")
-public class ListSecondPassBinder {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.DataflowAnomalyAnalysis', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class ListSecondPassBinder {
 
     private static final String DEFAULT_INDEX_TYPE = "integer";
 
@@ -52,7 +54,7 @@ public class ListSecondPassBinder {
     private final InFlightMetadataCollector mappings;
     private final BackticksRemover backticksRemover = new BackticksRemover();
 
-    public ListSecondPassBinder(
+    ListSecondPassBinder(
             MetadataBuildingContext metadataBuildingContext,
             PersistentEntityNamingStrategy namingStrategy,
             CollectionSecondPassBinder collectionSecondPassBinder,
@@ -65,10 +67,10 @@ public class ListSecondPassBinder {
         this.mappings = mappings;
     }
 
-    public void bindListSecondPass(@Nonnull HibernateToManyProperty property) {
+    void bindListSecondPass(@Nonnull HibernateToManyProperty property) {
         property.validateOwningSide();
         collectionSecondPassBinder.bindCollectionSecondPass(property);
-        List list = (List) property.getCollection();
+        org.hibernate.mapping.List list = (org.hibernate.mapping.List) property.getCollection();
         bindIndexColumn(property);
         list.setBaseIndex(0);
         list.setInverse(false);
@@ -77,7 +79,7 @@ public class ListSecondPassBinder {
     }
 
     private void bindIndexColumn(HibernateToManyProperty property) {
-        List list = (List) property.getCollection();
+        org.hibernate.mapping.List list = (org.hibernate.mapping.List) property.getCollection();
         Table collectionTable = list.getCollectionTable();
         String columnName = property.getIndexColumnName(namingStrategy);
         String type = property.getIndexColumnType(DEFAULT_INDEX_TYPE);
@@ -87,7 +89,7 @@ public class ListSecondPassBinder {
         list.setIndex(indexValue);
     }
 
-    private void bindBackReferences(HibernateToManyProperty property, List list) {
+    private void bindBackReferences(HibernateToManyProperty property, org.hibernate.mapping.List list) {
         if (!property.isBidirectional()) {
             return;
         }
@@ -109,14 +111,14 @@ public class ListSecondPassBinder {
         }
     }
 
-    private void addBackref(HibernateToManyProperty property, List list, PersistentClass referenced) {
+    private void addBackref(HibernateToManyProperty property, org.hibernate.mapping.List list, PersistentClass referenced) {
         Backref prop = new Backref();
         final PersistentEntity owner = property.getOwner();
         prop.setEntityName(owner.getName());
 
-        String name = UNDERSCORE +
+        String name = UNDERSCORE.toString() +
                 backticksRemover.apply(owner.getJavaClass().getSimpleName()) +
-                UNDERSCORE +
+                UNDERSCORE.toString() +
                 backticksRemover.apply(property.getName()) +
                 "Backref";
 
@@ -137,13 +139,13 @@ public class ListSecondPassBinder {
         referenced.addProperty(prop);
     }
 
-    private boolean shouldAddIndexBackref(List list, boolean compositeIdProperty) {
+    private boolean shouldAddIndexBackref(org.hibernate.mapping.List list, boolean compositeIdProperty) {
         return (!list.getKey().isNullable() && !list.isInverse()) || compositeIdProperty;
     }
 
-    private void addIndexBackref(HibernateToManyProperty property, List list, PersistentClass referenced) {
+    private void addIndexBackref(HibernateToManyProperty property, org.hibernate.mapping.List list, PersistentClass referenced) {
         IndexBackref ib = new IndexBackref();
-        ib.setName(UNDERSCORE + property.getName() + "IndexBackref");
+        ib.setName(UNDERSCORE.toString() + property.getName() + "IndexBackref");
         ib.setUpdatable(false);
         ib.setSelectable(false);
         ib.setInsertable(false);

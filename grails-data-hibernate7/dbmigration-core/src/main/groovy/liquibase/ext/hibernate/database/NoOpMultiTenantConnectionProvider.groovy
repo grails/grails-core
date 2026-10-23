@@ -1,14 +1,20 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.database;
 
-import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import groovy.transform.CompileStatic;
+import groovy.transform.PackageScope;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 
 /**
  * Used by hibernate to ensure no database access is performed.
  */
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+@PackageScope
 class NoOpMultiTenantConnectionProvider implements MultiTenantConnectionProvider {
 
     // Fix: Classes implementing Serializable should set a serialVersionUID (PMD #13)
@@ -16,47 +22,48 @@ class NoOpMultiTenantConnectionProvider implements MultiTenantConnectionProvider
     private static final long serialVersionUID = 1L;
 
     @Override
-    public boolean isUnwrappableAs(Class<?> unwrapType) {
+    boolean isUnwrappableAs(Class<?> unwrapType) {
         return false;
     }
 
     @Override
-    public <T> T unwrap(Class<T> unwrapType) {
+    def <T> T unwrap(Class<T> unwrapType) {
         return null;
     }
 
     @Override
-    public Connection getAnyConnection() {
+    Connection getAnyConnection() {
         return null;
     }
 
     @Override
-    public void releaseAnyConnection(Connection connection) {
+    void releaseAnyConnection(Connection connection) {
         // No-op
     }
 
-    public Connection getConnection(String tenantIdentifier) throws SQLException {
+    Connection getConnection(String tenantIdentifier) throws SQLException {
         return null;
     }
 
-    public void releaseConnection(String tenantIdentifier, Connection connection) {
+    void releaseConnection(String tenantIdentifier, Connection connection) {
         // No-op
     }
 
     @Override
-    public Connection getConnection(Object tenantIdentifier) throws SQLException {
+    Connection getConnection(Object tenantIdentifier) throws SQLException {
         // Fix: Added missing @Override annotation (PMD #14)
         return null;
     }
 
     @Override
-    public void releaseConnection(Object tenantIdentifier, Connection connection) {
+    void releaseConnection(Object tenantIdentifier, Connection connection) {
         // Fix: Added missing @Override annotation (PMD #15)
         // No-op
     }
 
     @Override
-    public boolean supportsAggressiveRelease() {
+    boolean supportsAggressiveRelease() {
         return false;
     }
+
 }

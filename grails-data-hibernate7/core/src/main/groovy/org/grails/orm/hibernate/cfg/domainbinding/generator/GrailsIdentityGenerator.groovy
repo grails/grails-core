@@ -16,25 +16,25 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.generator;
 
-import java.io.Serial;
-import java.util.Optional;
-import java.util.Properties;
-
+import groovy.transform.CompileStatic;
 import org.hibernate.generator.GeneratorCreationContext;
 import org.hibernate.id.IdentityGenerator;
 
 import org.grails.orm.hibernate.cfg.HibernateSimpleIdentity;
 
-public class GrailsIdentityGenerator extends IdentityGenerator {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class GrailsIdentityGenerator extends IdentityGenerator {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public GrailsIdentityGenerator(GeneratorCreationContext context, HibernateSimpleIdentity mappedId) {
-        var generatorProps =
-                Optional.ofNullable(mappedId).map(HibernateSimpleIdentity::getProperties).orElse(new Properties());
+    GrailsIdentityGenerator(GeneratorCreationContext context, HibernateSimpleIdentity mappedId) {
+        Properties generatorProps = mappedId?.properties ?: new Properties();
         super.configure(context, generatorProps);
         context.getProperty().getValue().getColumns().get(0).setIdentity(true);
     }

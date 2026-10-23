@@ -16,9 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.query;
 
-import java.util.List;
+import groovy.transform.CompileStatic;
 
 import org.grails.datastore.mapping.query.Query;
 import org.grails.orm.hibernate.GrailsHibernateTemplate;
@@ -26,29 +27,32 @@ import org.grails.orm.hibernate.HibernateSession;
 import org.grails.orm.hibernate.IHibernateTemplate;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersistentEntity;
 
-
 /**
  * A query implementation for HQL mutation queries (UPDATE/DELETE).
  *
  * @since 8.0
  */
-@SuppressWarnings("rawtypes")
-public class MutationHqlQuery extends Query implements HqlQueryMethods {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@CompileStatic
+@SuppressWarnings(['rawtypes', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+class MutationHqlQuery extends Query implements HqlQueryMethods {
 
     private final HqlQueryContext queryContext;
-    private final HqlQueryDelegate delegate;
+    // Named queryDelegate, not delegate: a bare `delegate` reference inside a closure resolves to
+    // Closure.getDelegate() (which defaults to the closure's owner, i.e. this instance), not this field.
+    private final HqlQueryDelegate queryDelegate;
 
-    protected MutationHqlQuery(HibernateSession session, GrailsHibernatePersistentEntity entity, HqlQueryContext queryContext, HqlQueryDelegate delegate) {
+    protected MutationHqlQuery(HibernateSession session, GrailsHibernatePersistentEntity entity, HqlQueryContext queryContext, HqlQueryDelegate queryDelegate) {
         super(session, entity);
         this.queryContext = queryContext;
-        this.delegate = delegate;
+        this.queryDelegate = queryDelegate;
     }
 
-    public int executeUpdate() {
-        GrailsHibernateTemplate template = (GrailsHibernateTemplate) getHibernateTemplate();
-        return template.execute(__ -> {
-            applyQuerySettings(delegate);
-            return delegate.executeUpdate();
+    int executeUpdate() {
+        GrailsHibernateTemplate template = (GrailsHibernateTemplate) hibernateTemplate;
+        return template.execute({ Object __ ->
+            applyQuerySettings(queryDelegate);
+            return queryDelegate.executeUpdate();
         });
     }
 
@@ -59,18 +63,18 @@ public class MutationHqlQuery extends Query implements HqlQueryMethods {
     }
 
     @Override
-    public List list() {
+    List list() {
         throw new UnsupportedOperationException("Mutation query (UPDATE/DELETE) cannot be used for list(); use executeUpdate() instead");
     }
 
     @Override
-    public Object singleResult() {
+    Object singleResult() {
         throw new UnsupportedOperationException("Mutation query (UPDATE/DELETE) cannot be used for singleResult(); use executeUpdate() instead");
     }
 
     private IHibernateTemplate getHibernateTemplate() {
-        HibernateSession hibernateSession = (HibernateSession) getSession();
-        return (IHibernateTemplate) hibernateSession.getNativeInterface();
+        HibernateSession hibernateSession = (HibernateSession) session;
+        return (IHibernateTemplate) hibernateSession.nativeInterface;
     }
 
     @Override
@@ -78,7 +82,8 @@ public class MutationHqlQuery extends Query implements HqlQueryMethods {
         throw new UnsupportedOperationException("Mutation query (UPDATE/DELETE) cannot be used for executeQuery(); use executeUpdate() instead");
     }
 
-    public org.hibernate.query.Query selectQuery() {
+    org.hibernate.query.Query selectQuery() {
         return null;
     }
+
 }

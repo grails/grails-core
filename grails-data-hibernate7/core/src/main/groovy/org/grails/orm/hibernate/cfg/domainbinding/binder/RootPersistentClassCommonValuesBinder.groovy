@@ -16,13 +16,15 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.boot.spi.InFlightMetadataCollector;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.mapping.RootClass;
+import org.hibernate.mapping.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +33,12 @@ import org.grails.orm.hibernate.cfg.Mapping;
 import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentEntity;
 
-public class RootPersistentClassCommonValuesBinder {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class RootPersistentClassCommonValuesBinder {
 
-    public static final Logger LOG = LoggerFactory.getLogger(RootPersistentClassCommonValuesBinder.class);
+    public static final Logger LOG = LoggerFactory.getLogger(RootPersistentClassCommonValuesBinder);
 
     private final MetadataBuildingContext metadataBuildingContext;
     private final PersistentEntityNamingStrategy namingStrategy;
@@ -43,7 +48,7 @@ public class RootPersistentClassCommonValuesBinder {
     private final ClassPropertiesBinder classPropertiesBinder;
     private final InFlightMetadataCollector mappings;
 
-    public RootPersistentClassCommonValuesBinder(
+    RootPersistentClassCommonValuesBinder(
             MetadataBuildingContext metadataBuildingContext,
             PersistentEntityNamingStrategy namingStrategy,
             IdentityBinder identityBinder,
@@ -60,7 +65,7 @@ public class RootPersistentClassCommonValuesBinder {
         this.mappings = mappings;
     }
 
-    public RootClass bindRoot(@Nonnull HibernatePersistentEntity hibernatePersistentEntity) {
+    RootClass bindRoot(@Nonnull HibernatePersistentEntity hibernatePersistentEntity) {
 
         RootClass root = new RootClass(this.metadataBuildingContext);
         classBinder.bindClass(hibernatePersistentEntity, root);
@@ -80,12 +85,12 @@ public class RootPersistentClassCommonValuesBinder {
                     !"non-lazy".equalsIgnoreCase(cc.getInclude().toString()));
         }
 
-        var schema = hibernatePersistentEntity.getSchema(mappings);
+        String schema = hibernatePersistentEntity.getSchema(mappings);
 
-        var catalog = hibernatePersistentEntity.getCatalog(mappings);
+        String catalog = hibernatePersistentEntity.getCatalog(mappings);
 
         // create the table
-        var table = mappings.addTable(
+        Table table = mappings.addTable(
                 schema,
                 catalog,
                 hibernatePersistentEntity.getTableName(namingStrategy),

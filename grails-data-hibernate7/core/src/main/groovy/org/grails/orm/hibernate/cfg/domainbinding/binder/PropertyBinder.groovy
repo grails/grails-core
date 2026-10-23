@@ -16,12 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
 import org.codehaus.groovy.transform.trait.Traits;
-
 import org.hibernate.boot.spi.AccessType;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Value;
@@ -34,15 +33,18 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateAssociation
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
 import org.grails.orm.hibernate.cfg.domainbinding.util.CascadeBehaviorFetcher;
 
-public class PropertyBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class PropertyBinder {
 
     private final CascadeBehaviorFetcher cascadeBehaviorFetcher;
 
-    public PropertyBinder(CascadeBehaviorFetcher cascadeBehaviorFetcher) {
+    PropertyBinder(CascadeBehaviorFetcher cascadeBehaviorFetcher) {
         this.cascadeBehaviorFetcher = cascadeBehaviorFetcher;
     }
 
-    public PropertyBinder() {
+    PropertyBinder() {
         this(new CascadeBehaviorFetcher());
     }
 
@@ -54,8 +56,8 @@ public class PropertyBinder {
      * @param value The Hibernate value
      * @return The Hibernate property
      */
-    public Property bindProperty(HibernatePersistentProperty persistentProperty, Value value) {
-        var prop = new Property();
+    Property bindProperty(HibernatePersistentProperty persistentProperty, Value value) {
+        Property prop = new Property();
         prop.setValue(value);
         // set the property name
         prop.setName(persistentProperty.getName());
@@ -68,19 +70,19 @@ public class PropertyBinder {
         // many-to-one side of a bidirectional list mapping is left to its columns, as it always was.
         boolean insertable = true;
         boolean updatable = true;
-        if (!(persistentProperty instanceof HibernateAssociation assoc &&
-                assoc.isBidirectionalManyToOneWithListMapping(prop))) {
+        if (!(persistentProperty instanceof HibernateAssociation &&
+                ((HibernateAssociation) persistentProperty).isBidirectionalManyToOneWithListMapping(prop))) {
             insertable = config.getInsertable();
             updatable = config.getUpdatable();
         }
 
-        var accessType = AccessType.getAccessStrategy(config.getAccessType());
+        AccessType accessType = AccessType.getAccessStrategy(config.getAccessType());
 
-        var accessorName = accessType == AccessType.FIELD ?
+        String accessorName = accessType == AccessType.FIELD ?
                 Optional.ofNullable(persistentProperty.getReader())
-                        .map(EntityReflector.PropertyReader::getter)
-                        .map(getter -> getter.getAnnotation(Traits.Implemented.class))
-                        .map(annotation -> TraitPropertyAccessStrategy.class.getName())
+                        .map { EntityReflector.PropertyReader reader -> reader.getter() }
+                        .map { getter -> getter.getAnnotation(Traits.Implemented) }
+                        .map { annotation -> TraitPropertyAccessStrategy.name }
                         .orElse(accessType.getType()) :
                 accessType.getType();
         prop.setPropertyAccessorName(accessorName);
@@ -90,8 +92,8 @@ public class PropertyBinder {
         // Association, so instanceof Association<?> already excludes it. A hasMany-of-enum collection IS
         // an Association (Basic), and CascadeBehaviorFetcher already dispatches Basic -> ALL correctly,
         // so it must go through the same path as every other collection type.
-        if (persistentProperty instanceof Association<?> association) {
-            prop.setCascade(cascadeBehaviorFetcher.getCascadeBehaviour(association));
+        if (persistentProperty instanceof Association) {
+            prop.setCascade(cascadeBehaviorFetcher.getCascadeBehaviour((Association) persistentProperty));
         }
 
         // Use centralized laziness determination

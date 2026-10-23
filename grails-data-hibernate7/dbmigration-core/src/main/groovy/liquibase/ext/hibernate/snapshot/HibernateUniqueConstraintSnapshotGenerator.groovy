@@ -1,25 +1,29 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Locale;
-import java.util.Random;
 
+import groovy.transform.CompileStatic;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.SnapshotGenerator;
+import liquibase.snapshot.jvm.UniqueConstraintSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.Index;
 import liquibase.structure.core.Table;
 import liquibase.structure.core.UniqueConstraint;
 import org.hibernate.HibernateException;
+import org.hibernate.mapping.UniqueKey;
 
-public class HibernateUniqueConstraintSnapshotGenerator extends HibernateSnapshotGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateUniqueConstraintSnapshotGenerator extends HibernateSnapshotGenerator {
 
     private static final int MAX_NAME_LENGTH = 64;
     private static final int SHORTENED_NAME_LENGTH = 63;
@@ -28,8 +32,8 @@ public class HibernateUniqueConstraintSnapshotGenerator extends HibernateSnapsho
     private static final String SEARCH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final Random RANDOM = new Random();
 
-    public HibernateUniqueConstraintSnapshotGenerator() {
-        super(UniqueConstraint.class, Table.class);
+    HibernateUniqueConstraintSnapshotGenerator() {
+        super(UniqueConstraint, Table);
     }
 
     @Override
@@ -41,23 +45,24 @@ public class HibernateUniqueConstraintSnapshotGenerator extends HibernateSnapsho
     @Override
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        if (!snapshot.getSnapshotControl().shouldInclude(UniqueConstraint.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(UniqueConstraint)) {
             return;
         }
 
-        if (foundObject instanceof Table table) {
-            var hibernateTable = findHibernateTable(table, snapshot);
+        if (foundObject instanceof Table) {
+            Table table = (Table) foundObject;
+            org.hibernate.mapping.Table hibernateTable = findHibernateTable(table, snapshot);
             if (hibernateTable == null) {
                 return;
             }
-            for (var hibernateUnique : hibernateTable.getUniqueKeys().values()) {
-                var uniqueConstraint = new UniqueConstraint();
+            for (UniqueKey hibernateUnique : hibernateTable.getUniqueKeys().values()) {
+                UniqueConstraint uniqueConstraint = new UniqueConstraint();
                 uniqueConstraint.setName(hibernateUnique.getName());
                 uniqueConstraint.setRelation(table);
                 uniqueConstraint.setClustered(Boolean.FALSE); // No way to set true via Hibernate
 
                 int i = 0;
-                for (var hibernateColumn : hibernateUnique.getColumns()) {
+                for (org.hibernate.mapping.Column hibernateColumn : hibernateUnique.getColumns()) {
                     uniqueConstraint.addColumn(i++, new Column(hibernateColumn.getName()).setRelation(table));
                 }
 
@@ -67,7 +72,7 @@ public class HibernateUniqueConstraintSnapshotGenerator extends HibernateSnapsho
                 Scope.getCurrentScope().getLog(getClass()).info("Found unique constraint " + uniqueConstraint);
                 table.getUniqueConstraints().add(uniqueConstraint);
             }
-            for (var column : hibernateTable.getColumns()) {
+            for (org.hibernate.mapping.Column column : hibernateTable.getColumns()) {
                 if (column.isUnique()) {
                     UniqueConstraint uniqueConstraint = new UniqueConstraint();
                     uniqueConstraint.setRelation(table);
@@ -133,8 +138,8 @@ public class HibernateUniqueConstraintSnapshotGenerator extends HibernateSnapsho
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends SnapshotGenerator>[] replaces() {
-        return new Class[] {liquibase.snapshot.jvm.UniqueConstraintSnapshotGenerator.class};
+    Class<? extends SnapshotGenerator>[] replaces() {
+        return [UniqueConstraintSnapshotGenerator] as Class<? extends SnapshotGenerator>[];
     }
+
 }

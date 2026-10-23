@@ -1,12 +1,13 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.diff;
 
-import java.util.List;
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
 import liquibase.change.Change;
 import liquibase.database.Database;
+import liquibase.diff.Difference;
 import liquibase.diff.ObjectDifferences;
 import liquibase.diff.output.DiffOutputControl;
+import liquibase.diff.output.changelog.core.ChangedColumnChangeGenerator;
 import liquibase.ext.hibernate.database.HibernateDatabase;
 import liquibase.statement.DatabaseFunction;
 import liquibase.structure.DatabaseObject;
@@ -17,13 +18,16 @@ import liquibase.structure.core.DataType;
  * Hibernate and database types tend to look different even though they are not.
  * The only change that we are handling it size change, and even for this one there are exceptions.
  */
-public class HibernateChangedColumnChangeGenerator extends liquibase.diff.output.changelog.core.ChangedColumnChangeGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateChangedColumnChangeGenerator extends ChangedColumnChangeGenerator {
 
     private static final List<String> TYPES_TO_IGNORE_SIZE = List.of("TIMESTAMP", "TIME");
 
     @Override
-    public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
-        return Column.class.isAssignableFrom(objectType) ? PRIORITY_ADDITIONAL : PRIORITY_NONE;
+    int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
+        return Column.isAssignableFrom(objectType) ? PRIORITY_ADDITIONAL : PRIORITY_NONE;
     }
 
     @Override
@@ -36,22 +40,26 @@ public class HibernateChangedColumnChangeGenerator extends liquibase.diff.output
     }
 
     private void handleHibernateTypeDifferences(Column column, ObjectDifferences differences, DiffOutputControl control, List<Change> changes, Database refDb, Database compDb) {
-        if (shouldIgnoreSize(column)) return;
+        if (shouldIgnoreSize(column)) {
+            return;
+        }
 
-        Optional.ofNullable(differences.getDifference("type")).ifPresent(typeDifference -> {
+        Difference typeDifference = differences.getDifference('type');
+        if (typeDifference != null) {
             // Only the "type" difference is dropped when the size is unchanged; unrelated differences for the same
             // column (e.g. remarks) must survive.
-            if (typeDifference.getReferenceValue() instanceof DataType referenceType) {
+            if (typeDifference.getReferenceValue() instanceof DataType) {
+                DataType referenceType = (DataType) typeDifference.getReferenceValue();
                 Integer comparedSize = null;
-                if (typeDifference.getComparedValue() instanceof DataType comparedType) {
-                    comparedSize = comparedType.getColumnSize();
+                if (typeDifference.getComparedValue() instanceof DataType) {
+                    comparedSize = ((DataType) typeDifference.getComparedValue()).getColumnSize();
                 }
                 if (isSizeEqualOrNull(referenceType.getColumnSize(), comparedSize)) {
                     differences.removeDifference("type");
                 }
             }
             super.handleTypeDifferences(column, differences, control, changes, refDb, compDb);
-        });
+        }
     }
 
     @Override
@@ -61,14 +69,23 @@ public class HibernateChangedColumnChangeGenerator extends liquibase.diff.output
             return;
         }
 
-        if (isFunctionDefaultAddingToNull(differences)) return;
+        if (isFunctionDefaultAddingToNull(differences)) {
+            return;
+        }
 
-        Optional.ofNullable(differences.getDifference("defaultValue"))
-                .ifPresent(d -> super.handleDefaultValueDifferences(column, differences, control, changes, referenceDatabase, comparisonDatabase));
+        if (differences.getDifference('defaultValue') != null) {
+            super.handleDefaultValueDifferences(column, differences, control, changes, referenceDatabase, comparisonDatabase);
+        }
     }
 
     private boolean shouldIgnoreSize(Column column) {
-        return TYPES_TO_IGNORE_SIZE.stream().anyMatch(type -> type.equalsIgnoreCase(column.getType().getTypeName()));
+        String typeName = column.getType().getTypeName();
+        for (String type : TYPES_TO_IGNORE_SIZE) {
+            if (type.equalsIgnoreCase(typeName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isSizeEqualOrNull(Integer s1, Integer s2) {
@@ -76,12 +93,14 @@ public class HibernateChangedColumnChangeGenerator extends liquibase.diff.output
     }
 
     private boolean isFunctionDefaultAddingToNull(ObjectDifferences differences) {
-        return Optional.ofNullable(differences.getDifference("defaultValue"))
-                .filter(d -> d.getReferenceValue() == null && d.getComparedValue() instanceof DatabaseFunction)
-                .isPresent();
+        Difference difference = differences.getDifference('defaultValue');
+        return difference != null &&
+                difference.getReferenceValue() == null &&
+                difference.getComparedValue() instanceof DatabaseFunction;
     }
 
     private boolean isHibernateRelated(Database d1, Database d2) {
         return d1 instanceof HibernateDatabase || d2 instanceof HibernateDatabase;
     }
+
 }

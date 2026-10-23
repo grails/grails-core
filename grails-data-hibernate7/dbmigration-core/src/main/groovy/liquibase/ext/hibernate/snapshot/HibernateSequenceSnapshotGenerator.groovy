@@ -1,20 +1,23 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
-import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.Set;
-
+import groovy.transform.CompileStatic;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.ext.hibernate.database.HibernateDatabase;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.SnapshotGenerator;
+import liquibase.snapshot.jvm.SequenceSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Schema;
 import liquibase.structure.core.Sequence;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.spi.MetadataImplementor;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.generator.Generator;
 import org.hibernate.id.NativeGenerator;
+import org.hibernate.id.enhanced.DatabaseStructure;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.RootClass;
@@ -25,10 +28,13 @@ import org.hibernate.mapping.SimpleValue;
  * {@code SequenceStyleGenerator} identifiers that are not registered in the relational namespace. This class also
  * prevents the default SequenceSnapshotGenerator from running.
  */
-public class HibernateSequenceSnapshotGenerator extends HibernateSnapshotGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateSequenceSnapshotGenerator extends HibernateSnapshotGenerator {
 
-    public HibernateSequenceSnapshotGenerator() {
-        super(Sequence.class, Schema.class);
+    HibernateSequenceSnapshotGenerator() {
+        super(Sequence, Schema);
     }
 
     @Override
@@ -38,19 +44,18 @@ public class HibernateSequenceSnapshotGenerator extends HibernateSnapshotGenerat
     }
 
     @Override
-    @SuppressWarnings("PMD.CloseResource")
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        if (!snapshot.getSnapshotControl().shouldInclude(Sequence.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(Sequence)) {
             return;
         }
 
-        if (foundObject instanceof Schema schema) {
+        if (foundObject instanceof Schema) {
+            Schema schema = (Schema) foundObject;
             HibernateDatabase database = (HibernateDatabase) snapshot.getDatabase();
             Set<IdentifierGeneratorSupport.SequenceKey> addedSequences = new HashSet<>();
 
-            for (org.hibernate.boot.model.relational.Namespace namespace :
-                    database.getMetadata().getDatabase().getNamespaces()) {
+            for (Namespace namespace : database.getMetadata().getDatabase().getNamespaces()) {
                 for (org.hibernate.boot.model.relational.Sequence sequence : namespace.getSequences()) {
                     if (!addedSequences.add(IdentifierGeneratorSupport.sequenceKey(sequence.getName()))) {
                         continue;
@@ -67,17 +72,19 @@ public class HibernateSequenceSnapshotGenerator extends HibernateSnapshotGenerat
     private void addGeneratorSequences(HibernateDatabase database, Schema schema,
             Set<IdentifierGeneratorSupport.SequenceKey> addedSequences) {
         MetadataImplementor metadata = (MetadataImplementor) database.getMetadata();
-        var dialect = database.getDialect();
+        Dialect dialect = database.getDialect();
 
         for (PersistentClass entityBinding : metadata.getEntityBindings()) {
-            if (!(entityBinding instanceof RootClass rootClass) ||
-                    !(rootClass.getIdentifier() instanceof SimpleValue simpleValue) ||
-                    !IdentifierGeneratorSupport.hasGenerationIntent(simpleValue)) {
+            if (!(entityBinding instanceof RootClass) ||
+                    !(((RootClass) entityBinding).getIdentifier() instanceof SimpleValue) ||
+                    !IdentifierGeneratorSupport.hasGenerationIntent((SimpleValue) ((RootClass) entityBinding).getIdentifier())) {
                 continue;
             }
+            RootClass rootClass = (RootClass) entityBinding;
+            SimpleValue simpleValue = (SimpleValue) rootClass.getIdentifier();
 
             try {
-                var generator = simpleValue.createGenerator(
+                Generator generator = simpleValue.createGenerator(
                         dialect,
                         rootClass,
                         rootClass.getIdentifierProperty(),
@@ -85,18 +92,19 @@ public class HibernateSequenceSnapshotGenerator extends HibernateSnapshotGenerat
 
                 SequenceStyleGenerator seqGen = null;
                 // NativeGenerator may wrap a SequenceStyleGenerator delegate depending on the dialect.
-                if (generator instanceof NativeGenerator nativeGen) {
-                    if (IdentifierGeneratorSupport.nativeDelegate(nativeGen) instanceof SequenceStyleGenerator s) {
-                        seqGen = s;
+                if (generator instanceof NativeGenerator) {
+                    Generator delegate = IdentifierGeneratorSupport.nativeDelegate((NativeGenerator) generator);
+                    if (delegate instanceof SequenceStyleGenerator) {
+                        seqGen = (SequenceStyleGenerator) delegate;
                     }
-                } else if (generator instanceof SequenceStyleGenerator s) {
-                    seqGen = s;
+                } else if (generator instanceof SequenceStyleGenerator) {
+                    seqGen = (SequenceStyleGenerator) generator;
                 }
 
                 if (seqGen != null) {
-                    var structure = seqGen.getDatabaseStructure();
+                    DatabaseStructure structure = seqGen.getDatabaseStructure();
                     if (structure != null && structure.isPhysicalSequence() && structure.getPhysicalName() != null) {
-                        var physicalName = structure.getPhysicalName();
+                        def physicalName = structure.getPhysicalName();
                         if (addedSequences.add(IdentifierGeneratorSupport.sequenceKey(physicalName))) {
                             addSequence(schema, physicalName.getObjectName().getText(),
                                     structure.getInitialValue(), structure.getIncrementSize());
@@ -111,16 +119,17 @@ public class HibernateSequenceSnapshotGenerator extends HibernateSnapshotGenerat
     }
 
     private void addSequence(Schema snapshotSchema, String bareName, int initialValue, int incrementSize) {
-        snapshotSchema.addDatabaseObject(new Sequence()
-                .setName(bareName)
-                .setSchema(snapshotSchema)
-                .setStartValue(BigInteger.valueOf(initialValue))
-                .setIncrementBy(BigInteger.valueOf(incrementSize)));
+        Sequence liquibaseSequence = new Sequence();
+        liquibaseSequence.setName(bareName);
+        liquibaseSequence.setSchema(snapshotSchema);
+        liquibaseSequence.setStartValue(BigInteger.valueOf(initialValue));
+        liquibaseSequence.setIncrementBy(BigInteger.valueOf(incrementSize));
+        snapshotSchema.addDatabaseObject(liquibaseSequence);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends SnapshotGenerator>[] replaces() {
-        return new Class[] {liquibase.snapshot.jvm.SequenceSnapshotGenerator.class};
+    Class<? extends SnapshotGenerator>[] replaces() {
+        return [SequenceSnapshotGenerator] as Class<? extends SnapshotGenerator>[];
     }
+
 }

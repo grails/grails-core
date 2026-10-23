@@ -1,5 +1,6 @@
 package liquibase.ext.hibernate.database;
 
+import groovy.transform.CompileStatic;
 import liquibase.CatalogAndSchema;
 import liquibase.database.Database;
 import liquibase.integration.commandline.CommandLineUtils;
@@ -16,10 +17,11 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.*;
 
-public class HibernateEjb3DatabaseTest {
+@CompileStatic
+class HibernateEjb3DatabaseTest {
 
     @Test
-    public void simpleEjb3Url() throws Exception {
+    void simpleEjb3Url() throws Exception {
         String url = "hibernate:ejb3:auction";
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
@@ -31,7 +33,7 @@ public class HibernateEjb3DatabaseTest {
     }
 
     @Test
-    public void nationalizedCharactersEjb3Url() throws Exception {
+    void nationalizedCharactersEjb3Url() throws Exception {
         String url = "hibernate:ejb3:auction?hibernate.use_nationalized_character_data=true";
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
@@ -44,8 +46,8 @@ public class HibernateEjb3DatabaseTest {
         assertEquals("nvarchar", userTable.getColumn("userName").getType().getTypeName());
     }
 
-    public static void assertEjb3HibernateMapped(DatabaseSnapshot snapshot) {
-        assertThat(snapshot.get(Table.class), containsInAnyOrder(
+    static void assertEjb3HibernateMapped(DatabaseSnapshot snapshot) {
+        assertThat(snapshot.get(Table), containsInAnyOrder(
                 hasProperty("name", is("Bid")),
                 hasProperty("name", is("Watcher")),
                 hasProperty("name", is("User")),
@@ -58,7 +60,6 @@ public class HibernateEjb3DatabaseTest {
                 hasProperty("name", is("WatcherSeqTable")),
                 hasProperty("name", is("FirstTable")),
                 hasProperty("name", is("second_table"))));
-
 
         Table bidTable = (Table) snapshot.get(new Table().setName("bid").setSchema(new Schema()));
         Table auctionInfoTable = (Table) snapshot.get(new Table().setName("auctioninfo").setSchema(new Schema()));
@@ -101,4 +102,5 @@ public class HibernateEjb3DatabaseTest {
         ));
         assertThat(secondTable.getPrimaryKey().getColumnNames(), is("first_table_id"));
     }
+
 }

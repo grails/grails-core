@@ -7,21 +7,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 
-import lombok.Getter;
-import lombok.Setter;
+import groovy.transform.CompileStatic;
 import org.hibernate.envers.Audited;
 
 @Audited
 @Entity
-@Getter
-@Setter
-public class AuditedItem {
+@CompileStatic
+class AuditedItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AUDITED_ITEM_SEQ")
     @SequenceGenerator(name = "AUDITED_ITEM_SEQ", sequenceName = "AUDITED_ITEM_SEQ")
-    private long id;
+    long id;
     @Column(unique = true)
-    private String name;
+    String name;
 
 }

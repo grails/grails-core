@@ -1,3 +1,4 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.database.connection;
 
 import java.sql.Connection;
@@ -5,13 +6,17 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.Version;
 
 /**
  * Implements the standard java.sql.DatabaseMetaData interface to allow the Hibernate integration to better fit into
  * what Liquibase expects.
  */
-public class HibernateConnectionMetadata implements DatabaseMetaData {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings + public modifiers kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString', 'UnnecessaryPublicModifier'])
+@CompileStatic
+class HibernateConnectionMetadata implements DatabaseMetaData {
 
     private final String url;
 
@@ -889,7 +894,7 @@ public class HibernateConnectionMetadata implements DatabaseMetaData {
     }
 
     @Override
-    public <T> T unwrap(Class<T> iface) {
+    def <T> T unwrap(Class<T> iface) {
         return null;
     }
 
@@ -907,4 +912,5 @@ public class HibernateConnectionMetadata implements DatabaseMetaData {
     public ResultSet getPseudoColumns(String arg0, String arg1, String arg2, String arg3) {
         return null;
     }
+
 }

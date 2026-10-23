@@ -16,35 +16,40 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
 
-import java.beans.PropertyDescriptor;
-
+import groovy.transform.CompileStatic;
 import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.PersistentEntity;
 
+import java.beans.PropertyDescriptor;
+
 /** Hibernate persistent property representing a composite (multi-field) identity */
-public class HibernateCompositeIdentityProperty extends HibernateIdentityProperty {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class HibernateCompositeIdentityProperty extends HibernateIdentityProperty {
 
     private final HibernatePersistentProperty[] parts;
 
-    public HibernateCompositeIdentityProperty(PersistentEntity entity, MappingContext context, PropertyDescriptor property) {
+    HibernateCompositeIdentityProperty(PersistentEntity entity, MappingContext context, PropertyDescriptor property) {
         super(entity, context, property);
         this.parts = new HibernatePersistentProperty[0];
     }
 
-    public HibernateCompositeIdentityProperty(PersistentEntity entity, MappingContext context, String name, Class<?> type) {
+    HibernateCompositeIdentityProperty(PersistentEntity entity, MappingContext context, String name, Class<?> type) {
         super(entity, context, name, type);
         this.parts = new HibernatePersistentProperty[0];
     }
 
-    public HibernateCompositeIdentityProperty(PersistentEntity entity, MappingContext context, String name, Class<?> type,
+    HibernateCompositeIdentityProperty(PersistentEntity entity, MappingContext context, String name, Class<?> type,
             HibernatePersistentProperty[] parts) {
         super(entity, context, name, type);
         this.parts = parts != null ? parts : new HibernatePersistentProperty[0];
     }
 
-    public HibernatePersistentProperty[] getParts() {
+    HibernatePersistentProperty[] getParts() {
         return parts;
     }
 }

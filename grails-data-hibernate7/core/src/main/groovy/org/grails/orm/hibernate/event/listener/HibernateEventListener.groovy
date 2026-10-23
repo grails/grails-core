@@ -16,15 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.event.listener;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.Hibernate;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
@@ -38,7 +37,6 @@ import org.hibernate.event.spi.PreDeleteEvent;
 import org.hibernate.event.spi.PreInsertEvent;
 import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.event.spi.PreUpdateEvent;
-
 import org.springframework.context.ApplicationEvent;
 
 import grails.gorm.MultiTenant;
@@ -46,6 +44,7 @@ import org.grails.datastore.gorm.timestamp.DefaultTimestampProvider;
 import org.grails.datastore.gorm.timestamp.TimestampProvider;
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent;
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEventListener;
+import org.grails.datastore.mapping.engine.event.EventType;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.grails.orm.hibernate.HibernateDatastore;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentEntity;
@@ -61,8 +60,10 @@ import org.grails.orm.hibernate.support.SoftKey;
  * @author Burt Beckwith
  * @since 2.0
  */
-@SuppressWarnings({"PMD.CloseResource", "PMD.DataflowAnomalyAnalysis"})
-public class HibernateEventListener extends AbstractPersistenceEventListener {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateEventListener extends AbstractPersistenceEventListener {
 
     /** The cached should trigger. */
     protected final transient ConcurrentMap<SoftKey<Class<?>>, Boolean> cachedShouldTrigger = new ConcurrentHashMap<>();
@@ -73,13 +74,11 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
     /** The fail on error packages. */
     protected final List<?> failOnErrorPackages;
 
-    protected transient ConcurrentMap<SoftKey<Class<?>>, ClosureEventListener> eventListeners =
-            new ConcurrentHashMap<>();
+    protected transient ConcurrentMap<SoftKey<Class<?>>, ClosureEventListener> eventListeners = new ConcurrentHashMap<>();
 
-    public HibernateEventListener(HibernateDatastore datastore) {
+    HibernateEventListener(HibernateDatastore datastore) {
         super(datastore);
-        HibernateConnectionSourceSettings settings =
-                datastore.getConnectionSources().getDefaultConnectionSource().getSettings();
+        HibernateConnectionSourceSettings settings = datastore.getConnectionSources().getDefaultConnectionSource().getSettings();
         this.failOnError = settings.isFailOnError();
         this.failOnErrorPackages = settings.getFailOnErrorPackages();
     }
@@ -88,49 +87,49 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
      * @return The hibernate datastore
      */
     protected HibernateDatastore getDatastore() {
-        return (HibernateDatastore) this.datastore;
+        return (HibernateDatastore) this.@datastore;
     }
 
     @Override
     protected void onPersistenceEvent(final AbstractPersistenceEvent event) {
         switch (event.getEventType()) {
-            case PreInsert:
+            case EventType.PreInsert:
                 if (onPreInsert((PreInsertEvent) event.getNativeEvent())) {
                     event.cancel();
                 }
                 break;
-            case PostInsert:
+            case EventType.PostInsert:
                 onPostInsert((PostInsertEvent) event.getNativeEvent());
                 break;
-            case PreUpdate:
+            case EventType.PreUpdate:
                 if (onPreUpdate((PreUpdateEvent) event.getNativeEvent())) {
                     event.cancel();
                 }
                 break;
-            case PostUpdate:
+            case EventType.PostUpdate:
                 onPostUpdate((PostUpdateEvent) event.getNativeEvent());
                 break;
-            case PreDelete:
+            case EventType.PreDelete:
                 if (onPreDelete((PreDeleteEvent) event.getNativeEvent())) {
                     event.cancel();
                 }
                 break;
-            case PostDelete:
+            case EventType.PostDelete:
                 onPostDelete((PostDeleteEvent) event.getNativeEvent());
                 break;
-            case PreLoad:
+            case EventType.PreLoad:
                 onPreLoad((PreLoadEvent) event.getNativeEvent());
                 break;
-            case PostLoad:
+            case EventType.PostLoad:
                 onPostLoad((PostLoadEvent) event.getNativeEvent());
                 break;
-            case Merge:
+            case EventType.Merge:
                 onMergeEvent((MergeEvent) event.getNativeEvent());
                 break;
-            case Persist:
+            case EventType.Persist:
                 onPersistEvent((PersistEvent) event.getNativeEvent());
                 break;
-            case Validation:
+            case EventType.Validation:
                 onValidate((ValidationEvent) event);
                 break;
             default:
@@ -141,9 +140,8 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
     protected void onPersistEvent(PersistEvent event) {
         Object entity = event.getObject();
         if (entity != null) {
-            ClosureEventListener eventListener;
             EventSource session = event.getSession();
-            eventListener = findEventListener(entity, session.getSessionFactory());
+            ClosureEventListener eventListener = findEventListener(entity, session.getSessionFactory());
             if (eventListener != null) {
                 eventListener.onPersist(event);
             }
@@ -151,77 +149,68 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
     }
 
     protected void onMergeEvent(MergeEvent event) {
-        Object entity = Optional.ofNullable(event.getOriginal()).orElse(event.getEntity());
+        Object entity = event.getOriginal() != null ? event.getOriginal() : event.getEntity();
         if (entity != null) {
-            ClosureEventListener eventListener;
             EventSource session = event.getSession();
-            eventListener = findEventListener(entity, session.getSessionFactory());
+            ClosureEventListener eventListener = findEventListener(entity, session.getSessionFactory());
             if (eventListener != null) {
                 eventListener.onMerge(event);
             }
         }
     }
 
-    public void onPreLoad(PreLoadEvent event) {
+    void onPreLoad(PreLoadEvent event) {
         Object entity = event.getEntity();
-        ClosureEventListener eventListener =
-                findEventListener(entity, event.getPersister().getFactory());
+        ClosureEventListener eventListener = findEventListener(entity, event.getPersister().getFactory());
         if (eventListener != null) {
             eventListener.onPreLoad(event);
         }
     }
 
-    public void onPostLoad(PostLoadEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    void onPostLoad(PostLoadEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         if (eventListener != null) {
             eventListener.onPostLoad(event);
         }
     }
 
-    public void onPostInsert(PostInsertEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    void onPostInsert(PostInsertEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         if (eventListener != null) {
             eventListener.onPostInsert(event);
         }
     }
 
-    public boolean onPreInsert(PreInsertEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    boolean onPreInsert(PreInsertEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         return eventListener != null && eventListener.onPreInsert(event);
     }
 
-    public boolean onPreUpdate(PreUpdateEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    boolean onPreUpdate(PreUpdateEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         return eventListener != null && eventListener.onPreUpdate(event);
     }
 
-    public void onPostUpdate(PostUpdateEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    void onPostUpdate(PostUpdateEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         if (eventListener != null) {
             eventListener.onPostUpdate(event);
         }
     }
 
-    public boolean onPreDelete(PreDeleteEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    boolean onPreDelete(PreDeleteEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         return eventListener != null && eventListener.onPreDelete(event);
     }
 
-    public void onPostDelete(PostDeleteEvent event) {
-        ClosureEventListener eventListener =
-                findEventListener(event.getEntity(), event.getPersister().getFactory());
+    void onPostDelete(PostDeleteEvent event) {
+        ClosureEventListener eventListener = findEventListener(event.getEntity(), event.getPersister().getFactory());
         if (eventListener != null) {
             eventListener.onPostDelete(event);
         }
     }
 
-    public void onValidate(ValidationEvent event) {
+    void onValidate(ValidationEvent event) {
         ClosureEventListener eventListener = findEventListener(event.getEntityObject(), null);
         if (eventListener != null) {
             eventListener.onValidate(event);
@@ -229,10 +218,12 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
     }
 
     protected ClosureEventListener findEventListener(Object entity, SessionFactoryImplementor factory) {
-        if (entity == null) return null;
+        if (entity == null) {
+            return null;
+        }
         Class<?> clazz = Hibernate.getClass(entity);
 
-        SoftKey<Class<?>> key = new SoftKey<>(clazz);
+        SoftKey<Class<?>> key = new SoftKey<Class<?>>(clazz);
         ClosureEventListener eventListener = eventListeners.get(key);
         if (eventListener != null) {
             return eventListener;
@@ -243,12 +234,11 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
             synchronized (cachedShouldTrigger) {
                 eventListener = eventListeners.get(key);
                 if (eventListener == null) {
-                    HibernateDatastore datastore = getDatastore();
-                    boolean isValidSessionFactory = MultiTenant.class.isAssignableFrom(clazz) ||
+                    HibernateDatastore hibernateDatastore = getDatastore();
+                    boolean isValidSessionFactory = MultiTenant.isAssignableFrom(clazz) ||
                             factory == null ||
-                            datastore.getSessionFactory().equals(factory);
-                    HibernatePersistentEntity persistentEntity = (HibernatePersistentEntity)
-                            datastore.getMappingContext().getPersistentEntity(clazz.getName());
+                            hibernateDatastore.getSessionFactory().equals(factory);
+                    HibernatePersistentEntity persistentEntity = (HibernatePersistentEntity) hibernateDatastore.getMappingContext().getPersistentEntity(clazz.getName());
                     shouldTrigger = (persistentEntity != null && isValidSessionFactory);
                     if (shouldTrigger) {
                         eventListener = new ClosureEventListener(persistentEntity, failOnError, failOnErrorPackages);
@@ -271,15 +261,15 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
      *     org.springframework.context.event.SmartApplicationListener#supportsEventType(java.lang.Class)
      */
     @Override
-    public boolean supportsEventType(@Nonnull Class<? extends ApplicationEvent> eventType) {
-        return AbstractPersistenceEvent.class.isAssignableFrom(eventType);
+    boolean supportsEventType(@Nonnull Class<? extends ApplicationEvent> eventType) {
+        return AbstractPersistenceEvent.isAssignableFrom(eventType);
     }
 
     /**
      * @deprecated Replaced by {@link org.grails.datastore.gorm.events.AutoTimestampEventListener}
      */
     @Deprecated
-    public TimestampProvider getTimestampProvider() {
+    TimestampProvider getTimestampProvider() {
         return new DefaultTimestampProvider();
     }
 
@@ -287,7 +277,8 @@ public class HibernateEventListener extends AbstractPersistenceEventListener {
      * @deprecated Replaced by {@link org.grails.datastore.gorm.events.AutoTimestampEventListener}
      */
     @Deprecated
-    public void setTimestampProvider(TimestampProvider timestampProvider) {
+    void setTimestampProvider(TimestampProvider timestampProvider) {
         // no-op
     }
+
 }

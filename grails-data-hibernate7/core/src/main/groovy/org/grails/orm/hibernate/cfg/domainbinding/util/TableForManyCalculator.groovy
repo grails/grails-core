@@ -16,10 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.util;
 
-import java.util.Map;
-
+import groovy.transform.CompileStatic;
 import org.hibernate.MappingException;
 import org.hibernate.boot.spi.InFlightMetadataCollector;
 
@@ -35,14 +35,16 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyPrope
 
 import static org.grails.orm.hibernate.cfg.domainbinding.binder.GrailsDomainBinder.UNDERSCORE;
 
-@SuppressWarnings("PMD.DataflowAnomalyAnalysis")
-public class TableForManyCalculator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.DataflowAnomalyAnalysis', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class TableForManyCalculator {
 
     private final PersistentEntityNamingStrategy namingStrategy;
     private final InFlightMetadataCollector mappings;
     private final BackticksRemover backticksRemover;
 
-    public TableForManyCalculator(PersistentEntityNamingStrategy namingStrategy, InFlightMetadataCollector mappings) {
+    TableForManyCalculator(PersistentEntityNamingStrategy namingStrategy, InFlightMetadataCollector mappings) {
         this.namingStrategy = namingStrategy;
         this.mappings = mappings;
         this.backticksRemover = new BackticksRemover();
@@ -54,7 +56,7 @@ public class TableForManyCalculator {
         this.backticksRemover = backticksRemover;
     }
 
-    public String getTableName(HibernateToManyProperty property) {
+    String getTableName(HibernateToManyProperty property) {
         PropertyConfig config = property.getHibernateMappedForm();
         JoinTable joinTable = config.getJoinTable();
 
@@ -63,7 +65,7 @@ public class TableForManyCalculator {
                 joinTable.getName() : namingStrategy.resolveTableName(logicalName);
     }
 
-    public String getJoinTableSchema(HibernateToManyProperty property) {
+    String getJoinTableSchema(HibernateToManyProperty property) {
         PropertyConfig config = property.getHibernateMappedForm();
         JoinTable joinTable = config.getJoinTable();
 
@@ -76,7 +78,7 @@ public class TableForManyCalculator {
         return (schemaName == null) ? property.getPersistentClass().getTable().getSchema() : schemaName;
     }
 
-    public String getJoinTableCatalog(HibernateToManyProperty property) {
+    String getJoinTableCatalog(HibernateToManyProperty property) {
         PropertyConfig config = property.getHibernateMappedForm();
         JoinTable joinTable = config.getJoinTable();
 
@@ -91,7 +93,7 @@ public class TableForManyCalculator {
      * relationship so that there is not a situation where you have two mapping tables for left_right
      * and right_left
      */
-    public String calculateTableForMany(HibernatePersistentProperty property) {
+    String calculateTableForMany(HibernatePersistentProperty property) {
         String propertyColumnName = namingStrategy.resolveColumnName(property.getName());
         PropertyConfig config = property.getMappedForm();
         JoinTable jt = config.getJoinTable();
@@ -99,24 +101,25 @@ public class TableForManyCalculator {
         GrailsHibernatePersistentEntity domainClass1 = property.getHibernateOwner();
         String left = domainClass1.getTableName(namingStrategy);
 
-        if (Map.class.isAssignableFrom(property.getType())) {
+        if (Map.isAssignableFrom(property.getType())) {
             if (hasJoinTableMapping) {
                 return jt.getName();
             }
-            return backticksRemover.apply(left) + UNDERSCORE + backticksRemover.apply(propertyColumnName);
+            return backticksRemover.apply(left) + UNDERSCORE.toString() + backticksRemover.apply(propertyColumnName);
         } else if (property instanceof Basic) {
             if (hasJoinTableMapping) {
                 return jt.getName();
             }
-            return backticksRemover.apply(left) + UNDERSCORE + backticksRemover.apply(propertyColumnName);
+            return backticksRemover.apply(left) + UNDERSCORE.toString() + backticksRemover.apply(propertyColumnName);
         }
 
         // Only proceed with association logic if it's an actual Association and has an associated
         // entity
-        if (!(property instanceof Association<?> association)) {
+        if (!(property instanceof Association<?>)) {
             throw new MappingException("Property [" + property.getName() +
                     "] is not an association and is not a basic type for table calculation.");
         }
+        Association<?> association = (Association<?>) property;
 
         GrailsHibernatePersistentEntity domainClass =
                 (GrailsHibernatePersistentEntity) association.getAssociatedEntity();
@@ -126,28 +129,29 @@ public class TableForManyCalculator {
         }
         String right = domainClass.getTableName(namingStrategy);
 
-        if (property instanceof HibernateManyToManyProperty property1) {
+        if (property instanceof HibernateManyToManyProperty) {
+            HibernateManyToManyProperty property1 = (HibernateManyToManyProperty) property;
             if (hasJoinTableMapping) {
                 return jt.getName();
             }
             if (association.isOwningSide()) {
-                return backticksRemover.apply(left) + UNDERSCORE + backticksRemover.apply(propertyColumnName);
+                return backticksRemover.apply(left) + UNDERSCORE.toString() + backticksRemover.apply(propertyColumnName);
             }
             String s2 = namingStrategy.resolveColumnName(property1.getInversePropertyName());
-            return backticksRemover.apply(right) + UNDERSCORE + backticksRemover.apply(s2);
+            return backticksRemover.apply(right) + UNDERSCORE.toString() + backticksRemover.apply(s2);
         }
 
         if (property.supportsJoinColumnMapping()) {
             if (hasJoinTableMapping) {
                 return jt.getName();
             }
-            return backticksRemover.apply(left) + UNDERSCORE + backticksRemover.apply(right);
+            return backticksRemover.apply(left) + UNDERSCORE.toString() + backticksRemover.apply(right);
         }
 
         if (association.isOwningSide()) {
-            return backticksRemover.apply(left) + UNDERSCORE + backticksRemover.apply(right);
+            return backticksRemover.apply(left) + UNDERSCORE.toString() + backticksRemover.apply(right);
         }
-        return backticksRemover.apply(right) + UNDERSCORE + backticksRemover.apply(left);
+        return backticksRemover.apply(right) + UNDERSCORE.toString() + backticksRemover.apply(left);
     }
 
 }

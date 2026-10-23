@@ -7,17 +7,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.TableGenerator;
 
+import groovy.transform.CompileStatic;
+
 @Entity
-public class Watcher {
+@CompileStatic
+class Watcher {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE, generator = "WATCHER_SEQ")
     @TableGenerator(name = "WATCHER_SEQ", table = "WatcherSeqTable")
-    private Integer id;
+    Integer id;
 
     @SuppressWarnings("unused")
-    private String name;
+    String name;
 
     @ManyToOne
-    private AuctionItem auctionItem;
+    AuctionItem auctionItem;
+
 }

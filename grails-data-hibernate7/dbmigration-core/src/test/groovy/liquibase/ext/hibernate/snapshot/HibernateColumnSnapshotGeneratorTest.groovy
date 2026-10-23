@@ -1,18 +1,20 @@
 package liquibase.ext.hibernate.snapshot;
 
+import java.sql.Types;
+
+import groovy.transform.CompileStatic;
 import liquibase.exception.DatabaseException;
 import liquibase.structure.core.DataType;
 import org.hibernate.type.SqlTypes;
 import org.junit.Test;
 
-import java.sql.Types;
-
 import static org.junit.Assert.*;
 
-public class HibernateColumnSnapshotGeneratorTest {
+@CompileStatic
+class HibernateColumnSnapshotGeneratorTest {
 
     @Test
-    public void toDataType() throws DatabaseException {
+    void toDataType() throws DatabaseException {
         HibernateColumnSnapshotGenerator columnSnapshotGenerator = new HibernateColumnSnapshotGenerator();
         DataType varchar = columnSnapshotGenerator.toDataType("varchar(255)", Types.VARCHAR);
         assertEquals("varchar", varchar.getTypeName());
@@ -27,7 +29,6 @@ public class HibernateColumnSnapshotGeneratorTest {
         assertEquals("varchar2", varcharChar.getTypeName());
         assertEquals(30, varcharChar.getColumnSize().intValue());
         assertEquals(DataType.ColumnSizeUnit.CHAR, varcharChar.getColumnSizeUnit());
-
 
         DataType enumType = columnSnapshotGenerator.toDataType("enum ('a', 'b', 'c')", SqlTypes.ENUM);
         assertEquals("enum ('a', 'b', 'c')", enumType.getTypeName());
@@ -91,4 +92,5 @@ public class HibernateColumnSnapshotGeneratorTest {
         assertEquals("datetime", datetime6.getTypeName().toLowerCase());
         assertEquals(6, datetime6.getColumnSize().intValue());
     }
+
 }

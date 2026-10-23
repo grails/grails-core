@@ -16,19 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.example.ejb3.qualifiedsequence;
+package com.example.ejb3.qualifiedsequence
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.SequenceGenerator
 
 @Entity
-public class QualifiedSequenceEntity {
+class QualifiedSequenceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "qs_gen")
-    @SequenceGenerator(name = "qs_gen", sequenceName = "qs_seq", schema = "app")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'qs_gen')
+    @SequenceGenerator(name = 'qs_gen', sequenceName = 'qs_seq', schema = 'app')
+    Long id
+
 }

@@ -16,15 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
+package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 
-import org.hibernate.mapping.Collection;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.DependantValue;
-import org.hibernate.mapping.PersistentClass;
+import groovy.transform.CompileStatic
+import org.hibernate.mapping.Collection
+import org.hibernate.mapping.Column
+import org.hibernate.mapping.DependantValue
+import org.hibernate.mapping.PersistentClass
 
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
-import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsPropertyResolver;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
+import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsPropertyResolver
 
 /**
  * Links bidirectional one-to-many associations by copying columns. The foreign key of the
@@ -35,38 +36,37 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.GrailsPropertyResolver;
  * keys were the same key already; for a composite identifier they differ, share the implicit name,
  * and only the first one registered reached the schema.
  */
-public class BidirectionalOneToManyLinker {
+@CompileStatic
+class BidirectionalOneToManyLinker {
 
-    private final GrailsPropertyResolver grailsPropertyResolver;
+    private final GrailsPropertyResolver grailsPropertyResolver
 
     /** Creates a new {@link BidirectionalOneToManyLinker} instance. */
-    public BidirectionalOneToManyLinker(GrailsPropertyResolver grailsPropertyResolver) {
-        this.grailsPropertyResolver = grailsPropertyResolver;
+    BidirectionalOneToManyLinker(GrailsPropertyResolver grailsPropertyResolver) {
+        this.grailsPropertyResolver = grailsPropertyResolver
     }
 
     /** Link. */
-    public void link(
+    void link(
             Collection collection,
             PersistentClass associatedClass,
             DependantValue key,
             HibernatePersistentProperty otherSide) {
-        collection.setInverse(true);
-        key.disableForeignKey();
+        collection.inverse = true
+        key.disableForeignKey()
 
-        for (Column column : grailsPropertyResolver
-                .getProperty(associatedClass, otherSide.getName())
-                .getValue()
-                .getColumns()) {
-            Column mappingColumn = new Column();
-            mappingColumn.setName(column.getName());
-            mappingColumn.setLength(column.getLength());
-            mappingColumn.setNullable(otherSide.isNullable());
-            mappingColumn.setSqlType(column.getSqlType());
+        for (Column column : grailsPropertyResolver.getProperty(associatedClass, otherSide.name).value.columns) {
+            Column mappingColumn = new Column()
+            mappingColumn.name = column.name
+            mappingColumn.length = column.length
+            mappingColumn.nullable = otherSide.isNullable()
+            mappingColumn.sqlType = column.sqlType
 
-            mappingColumn.setValue(key);
-            key.addColumn(mappingColumn);
-            key.getTable().addColumn(mappingColumn);
+            mappingColumn.value = key
+            key.addColumn(mappingColumn)
+            key.table.addColumn(mappingColumn)
         }
-        key.sortProperties();
+        key.sortProperties()
     }
+
 }

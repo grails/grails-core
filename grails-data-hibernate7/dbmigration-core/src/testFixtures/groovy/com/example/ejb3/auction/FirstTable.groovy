@@ -7,21 +7,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.SecondaryTable;
 
-import lombok.Getter;
-import lombok.Setter;
+import groovy.transform.CompileStatic;
 
-@Setter
-@Getter
 @Entity
 @SecondaryTable(name = "second_table", pkJoinColumns = @PrimaryKeyJoinColumn(name = "first_table_id"))
-public class FirstTable {
+@CompileStatic
+class FirstTable {
+
     @Id
-    private Long id;
+    Long id;
 
     @Column(name = "name")
-    private String name;
+    String name;
 
     @Embedded
-    private SecondTable secondTable;
+    SecondTable secondTable;
 
 }

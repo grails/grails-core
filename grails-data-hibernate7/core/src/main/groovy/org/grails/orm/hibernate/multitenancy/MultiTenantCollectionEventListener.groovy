@@ -16,8 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.multitenancy;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.event.spi.InitializeCollectionEvent;
 import org.hibernate.event.spi.InitializeCollectionEventListener;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -35,16 +37,19 @@ import org.grails.orm.hibernate.HibernateDatastore;
  *
  * @since 8.0.1
  */
-public class MultiTenantCollectionEventListener implements InitializeCollectionEventListener {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings('UnnecessarySemicolon')
+@CompileStatic
+class MultiTenantCollectionEventListener implements InitializeCollectionEventListener {
 
     private final HibernateDatastore datastore;
 
-    public MultiTenantCollectionEventListener(HibernateDatastore datastore) {
+    MultiTenantCollectionEventListener(HibernateDatastore datastore) {
         this.datastore = datastore;
     }
 
     @Override
-    public void onInitializeCollection(InitializeCollectionEvent event) {
+    void onInitializeCollection(InitializeCollectionEvent event) {
         CollectionPersister persister = event.getCollectionPersister();
         if (persister == null) {
             return;
@@ -58,4 +63,5 @@ public class MultiTenantCollectionEventListener implements InitializeCollectionE
             }
         }
     }
+
 }

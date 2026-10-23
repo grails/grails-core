@@ -1,10 +1,13 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.diff;
 
+import groovy.transform.CompileStatic;
 import liquibase.change.Change;
 import liquibase.database.Database;
 import liquibase.diff.ObjectDifferences;
 import liquibase.diff.output.DiffOutputControl;
 import liquibase.diff.output.changelog.ChangeGeneratorChain;
+import liquibase.diff.output.changelog.core.ChangedForeignKeyChangeGenerator;
 import liquibase.ext.hibernate.database.HibernateDatabase;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.ForeignKey;
@@ -13,19 +16,21 @@ import liquibase.structure.core.ForeignKey;
  * Hibernate doesn't know about all the variations that occur with foreign keys but just whether the FK exists or not.
  * To prevent changing customized foreign keys, we suppress all foreign key changes from hibernate.
  */
-public class HibernateChangedForeignKeyChangeGenerator
-        extends liquibase.diff.output.changelog.core.ChangedForeignKeyChangeGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateChangedForeignKeyChangeGenerator extends ChangedForeignKeyChangeGenerator {
 
     @Override
-    public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
-        if (ForeignKey.class.isAssignableFrom(objectType)) {
+    int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
+        if (ForeignKey.isAssignableFrom(objectType)) {
             return PRIORITY_ADDITIONAL;
         }
         return PRIORITY_NONE;
     }
 
     @Override
-    public Change[] fixChanged(
+    Change[] fixChanged(
             DatabaseObject changedObject,
             ObjectDifferences differences,
             DiffOutputControl control,
@@ -43,4 +48,5 @@ public class HibernateChangedForeignKeyChangeGenerator
 
         return super.fixChanged(changedObject, differences, control, referenceDatabase, comparisonDatabase, chain);
     }
+
 }

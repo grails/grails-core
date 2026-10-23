@@ -1,8 +1,6 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.database.connection;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
@@ -19,18 +17,20 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import groovy.transform.CompileStatic;
 import liquibase.resource.ResourceAccessor;
 
 /**
  * Implements java.sql.Connection in order to pretend a hibernate configuration is a database in order to fit into the Liquibase framework.
  * Beyond standard Connection methods, this class exposes {@link #getPrefix()}, {@link #getPath()} and {@link #getProperties()} to access the setting passed in the JDBC URL.
  */
-public class HibernateConnection implements Connection {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateConnection implements Connection {
+
     private final String prefix;
     private final String url;
 
@@ -38,10 +38,10 @@ public class HibernateConnection implements Connection {
     private final ResourceAccessor resourceAccessor;
     private final Properties properties;
 
-    public HibernateConnection(String url, ResourceAccessor resourceAccessor) {
+    HibernateConnection(String url, ResourceAccessor resourceAccessor) {
         this.url = url;
 
-        this.prefix = url.replaceFirst(":[^:]+$", "");
+        this.prefix = url.replaceFirst(':[^:]+$', '');
 
         // Trim the prefix off the URL for the path
         path = url.substring(prefix.length() + 1);
@@ -83,21 +83,21 @@ public class HibernateConnection implements Connection {
     /**
      * Returns the entire connection URL
      */
-    public String getUrl() {
+    String getUrl() {
         return url;
     }
 
     /**
      * Returns the 'protocol' of the URL. For example, "hibernate:classic" or "hibernate:ejb3"
      */
-    public String getPrefix() {
+    String getPrefix() {
         return prefix;
     }
 
     /**
      * The portion of the url between the path and the query string. Normally a filename or a class name.
      */
-    public String getPath() {
+    String getPath() {
         return path;
     }
 
@@ -108,7 +108,7 @@ public class HibernateConnection implements Connection {
      * <p/>
      * This will have a property called 'foo' with a value of 'bar'.
      */
-    public Properties getProperties() {
+    Properties getProperties() {
         return properties;
     }
 
@@ -117,244 +117,245 @@ public class HibernateConnection implements Connection {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    public Statement createStatement() throws SQLException {
+    Statement createStatement() throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
+    PreparedStatement prepareStatement(String sql) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
     @Override
-    public CallableStatement prepareCall(String sql) throws SQLException {
+    CallableStatement prepareCall(String sql) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
     @Override
-    public String nativeSQL(String sql) throws SQLException {
+    String nativeSQL(String sql) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
     @Override
-    public void setAutoCommit(boolean autoCommit) {}
+    void setAutoCommit(boolean autoCommit) {}
 
     @Override
-    public boolean getAutoCommit() {
+    boolean getAutoCommit() {
         return false;
     }
 
     @Override
-    public void commit() {}
+    void commit() {}
 
     @Override
-    public void rollback() {}
+    void rollback() {}
 
     @Override
-    public void close() {}
+    void close() {}
 
     @Override
-    public boolean isClosed() {
+    boolean isClosed() {
         return false;
     }
 
     @Override
-    public DatabaseMetaData getMetaData() {
+    DatabaseMetaData getMetaData() {
         return new HibernateConnectionMetadata(url);
     }
 
     @Override
-    public void setReadOnly(boolean readOnly) {}
+    void setReadOnly(boolean readOnly) {}
 
     @Override
-    public boolean isReadOnly() {
+    boolean isReadOnly() {
         return true;
     }
 
     @Override
-    public void setCatalog(String catalog) {}
+    void setCatalog(String catalog) {}
 
     @Override
-    public String getCatalog() {
+    String getCatalog() {
         return "HIBERNATE";
     }
 
     @Override
-    public void setTransactionIsolation(int level) {}
+    void setTransactionIsolation(int level) {}
 
     @Override
-    public int getTransactionIsolation() {
+    int getTransactionIsolation() {
         return Connection.TRANSACTION_NONE;
     }
 
     @Override
-    public SQLWarning getWarnings() {
+    SQLWarning getWarnings() {
         return null;
     }
 
     @Override
-    public void clearWarnings() {}
+    void clearWarnings() {}
 
     @Override
-    public Statement createStatement(int resultSetType, int resultSetConcurrency) {
+    Statement createStatement(int resultSetType, int resultSetConcurrency) {
         return null;
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) {
+    PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) {
         return null;
     }
 
     @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) {
+    CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) {
         return null;
     }
 
     @Override
-    public Map<String, Class<?>> getTypeMap() {
-        return Collections.emptyMap();
+    Map<String, Class<?>> getTypeMap() {
+        return (Map<String, Class<?>>) Collections.emptyMap();
     }
 
     @Override
-    public void setTypeMap(Map<String, Class<?>> map) {}
+    void setTypeMap(Map<String, Class<?>> map) {}
 
     @Override
-    public void setHoldability(int holdability) {}
+    void setHoldability(int holdability) {}
 
     @Override
-    public int getHoldability() {
+    int getHoldability() {
         return 0;
     }
 
     @Override
-    public Savepoint setSavepoint() {
+    Savepoint setSavepoint() {
         return null;
     }
 
     @Override
-    public Savepoint setSavepoint(String name) {
+    Savepoint setSavepoint(String name) {
         return null;
     }
 
     @Override
-    public void rollback(Savepoint savepoint) {}
+    void rollback(Savepoint savepoint) {}
 
     @Override
-    public void releaseSavepoint(Savepoint savepoint) {}
+    void releaseSavepoint(Savepoint savepoint) {}
 
     @Override
-    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
+    Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
         return null;
     }
 
     @Override
-    public PreparedStatement prepareStatement(
+    PreparedStatement prepareStatement(
             String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
         return null;
     }
 
     @Override
-    public CallableStatement prepareCall(
+    CallableStatement prepareCall(
             String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
         return null;
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) {
+    PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) {
         return null;
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) {
+    PreparedStatement prepareStatement(String sql, int[] columnIndexes) {
         return null;
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) {
+    PreparedStatement prepareStatement(String sql, String[] columnNames) {
         return null;
     }
 
     @Override
-    public Clob createClob() {
+    Clob createClob() {
         return null;
     }
 
     @Override
-    public Blob createBlob() {
+    Blob createBlob() {
         return null;
     }
 
     @Override
-    public NClob createNClob() {
+    NClob createNClob() {
         return null;
     }
 
     @Override
-    public SQLXML createSQLXML() {
+    SQLXML createSQLXML() {
         return null;
     }
 
     @Override
-    public boolean isValid(int timeout) {
+    boolean isValid(int timeout) {
         return false;
     }
 
     @Override
-    public void setClientInfo(String name, String value) {}
+    void setClientInfo(String name, String value) {}
 
     @Override
-    public void setClientInfo(Properties properties) {}
+    void setClientInfo(Properties properties) {}
 
     @Override
-    public String getClientInfo(String name) {
+    String getClientInfo(String name) {
         return null;
     }
 
     @Override
-    public Properties getClientInfo() {
+    Properties getClientInfo() {
         return new Properties();
     }
 
     @Override
-    public Array createArrayOf(String typeName, Object[] elements) {
+    Array createArrayOf(String typeName, Object[] elements) {
         return null;
     }
 
     @Override
-    public Struct createStruct(String typeName, Object[] attributes) {
+    Struct createStruct(String typeName, Object[] attributes) {
         return null;
     }
 
     @Override
-    public <T> T unwrap(Class<T> iface) {
+    def <T> T unwrap(Class<T> iface) {
         return null;
     }
 
     @Override
-    public boolean isWrapperFor(Class<?> iface) {
+    boolean isWrapperFor(Class<?> iface) {
         return false;
     }
 
     @Override
-    public void abort(Executor arg0) {}
+    void abort(Executor arg0) {}
 
     @Override
-    public int getNetworkTimeout() {
+    int getNetworkTimeout() {
         return 0;
     }
 
     @Override
-    public String getSchema() {
+    String getSchema() {
         return "HIBERNATE";
     }
 
     @Override
-    public void setNetworkTimeout(Executor arg0, int arg1) {}
+    void setNetworkTimeout(Executor arg0, int arg1) {}
 
     @Override
-    public void setSchema(String arg0) {}
+    void setSchema(String arg0) {}
 
-    public ResourceAccessor getResourceAccessor() {
+    ResourceAccessor getResourceAccessor() {
         return resourceAccessor;
     }
+
 }

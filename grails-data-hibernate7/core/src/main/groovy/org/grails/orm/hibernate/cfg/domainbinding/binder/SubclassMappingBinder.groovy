@@ -16,10 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.jspecify.annotations.NonNull;
@@ -28,14 +28,17 @@ import org.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.grails.orm.hibernate.cfg.Mapping;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentEntity;
 
-public class SubclassMappingBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class SubclassMappingBinder {
 
     private final JoinedSubClassBinder joinedSubClassBinder;
     private final UnionSubclassBinder unionSubclassBinder;
     private final SingleTableSubclassBinder singleTableSubclassBinder;
     private final ClassPropertiesBinder classPropertiesBinder;
 
-    public SubclassMappingBinder(
+    SubclassMappingBinder(
             JoinedSubClassBinder joinedSubClassBinder,
             UnionSubclassBinder unionSubclassBinder,
             SingleTableSubclassBinder singleTableSubclassBinder,
@@ -46,7 +49,7 @@ public class SubclassMappingBinder {
         this.classPropertiesBinder = classPropertiesBinder;
     }
 
-    public @NonNull Subclass createSubclassMapping(HibernatePersistentEntity subEntity, PersistentClass parent) {
+    @NonNull Subclass createSubclassMapping(HibernatePersistentEntity subEntity, PersistentClass parent) {
         Subclass subClass;
         subEntity.configureDerivedProperties();
         Mapping m = subEntity.getHibernateMappedForm();

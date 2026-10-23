@@ -1,10 +1,13 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
+import groovy.transform.CompileStatic;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.SnapshotGenerator;
+import liquibase.snapshot.jvm.PrimaryKeySnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.Index;
@@ -12,14 +15,17 @@ import liquibase.structure.core.PrimaryKey;
 import liquibase.structure.core.Table;
 import org.hibernate.sql.Alias;
 
-public class HibernatePrimaryKeySnapshotGenerator extends HibernateSnapshotGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernatePrimaryKeySnapshotGenerator extends HibernateSnapshotGenerator {
 
     private static final int PK_NAME_LENGTH = 63;
     private static final String PK_NAME_SUFFIX = "PK";
     private static final Alias PK_NAME_ALIAS = new Alias(PK_NAME_LENGTH, PK_NAME_SUFFIX);
 
-    public HibernatePrimaryKeySnapshotGenerator() {
-        super(PrimaryKey.class, new Class[] {Table.class});
+    HibernatePrimaryKeySnapshotGenerator() {
+        super(PrimaryKey, Table);
     }
 
     @Override
@@ -31,17 +37,18 @@ public class HibernatePrimaryKeySnapshotGenerator extends HibernateSnapshotGener
     @Override
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        if (!snapshot.getSnapshotControl().shouldInclude(PrimaryKey.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(PrimaryKey)) {
             return;
         }
-        if (foundObject instanceof Table table) {
-            var hibernateTable = findHibernateTable(table, snapshot);
+        if (foundObject instanceof Table) {
+            Table table = (Table) foundObject;
+            org.hibernate.mapping.Table hibernateTable = findHibernateTable(table, snapshot);
             if (hibernateTable == null) {
                 return;
             }
-            var hibernatePrimaryKey = hibernateTable.getPrimaryKey();
+            org.hibernate.mapping.PrimaryKey hibernatePrimaryKey = hibernateTable.getPrimaryKey();
             if (hibernatePrimaryKey != null) {
-                var pk = new PrimaryKey();
+                PrimaryKey pk = new PrimaryKey();
                 String hbnTableName = hibernateTable.getName();
 
                 String pkName = PK_NAME_ALIAS.toAliasString(hbnTableName);
@@ -71,7 +78,8 @@ public class HibernatePrimaryKeySnapshotGenerator extends HibernateSnapshotGener
     }
 
     @Override
-    public Class<? extends SnapshotGenerator>[] replaces() {
-        return new Class[] {liquibase.snapshot.jvm.PrimaryKeySnapshotGenerator.class};
+    Class<? extends SnapshotGenerator>[] replaces() {
+        return [PrimaryKeySnapshotGenerator] as Class<? extends SnapshotGenerator>[];
     }
+
 }

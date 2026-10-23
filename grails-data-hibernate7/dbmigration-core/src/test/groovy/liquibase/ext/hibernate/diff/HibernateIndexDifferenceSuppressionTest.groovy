@@ -42,13 +42,13 @@ import static org.junit.Assert.assertTrue;
 /**
  * Unknown Hibernate index attributes must not cause changes, but concrete uniqueness mismatches must.
  */
-public class HibernateIndexDifferenceSuppressionTest {
+class HibernateIndexDifferenceSuppressionTest {
 
     private final Database hibernateDatabase = new HibernateSpringPackageDatabase();
     private final Database postgres = new PostgresDatabase();
 
     @Test
-    public void indexDifferencesInUniqueAndUsingAreSuppressed() {
+    void indexDifferencesInUniqueAndUsingAreSuppressed() {
         Index index = index();
         ObjectDifferences differences = differences("unique", "using");
 
@@ -58,7 +58,7 @@ public class HibernateIndexDifferenceSuppressionTest {
     }
 
     @Test
-    public void concreteBooleanUniqueDifferenceIsPreserved() {
+    void concreteBooleanUniqueDifferenceIsPreserved() {
         ObjectDifferences differences = differences("using");
         differences.addDifference("unique", Boolean.FALSE, Boolean.TRUE);
 
@@ -69,7 +69,7 @@ public class HibernateIndexDifferenceSuppressionTest {
     }
 
     @Test
-    public void unknownUniqueAndUsingDifferencesAreSuppressed() {
+    void unknownUniqueAndUsingDifferencesAreSuppressed() {
         ObjectDifferences differences = differences("using");
         differences.addDifference("unique", null, Boolean.TRUE);
 
@@ -77,7 +77,7 @@ public class HibernateIndexDifferenceSuppressionTest {
     }
 
     @Test
-    public void primaryKeyDifferencesInUsingAreSuppressed() {
+    void primaryKeyDifferencesInUsingAreSuppressed() {
         PrimaryKey primaryKey = new PrimaryKey().setName("item_pkey").setTable(new Table().setName("item"));
         ObjectDifferences differences = differences("using");
 
@@ -87,7 +87,7 @@ public class HibernateIndexDifferenceSuppressionTest {
     }
 
     @Test
-    public void uniqueConstraintDifferencesInUsingAreSuppressed() {
+    void uniqueConstraintDifferencesInUsingAreSuppressed() {
         UniqueConstraint uniqueConstraint = new UniqueConstraint().setName("uc_item_name")
                 .setRelation(new Table().setName("item"));
         ObjectDifferences differences = differences("using");
@@ -98,7 +98,7 @@ public class HibernateIndexDifferenceSuppressionTest {
     }
 
     @Test
-    public void suppressionOnlyAppliesWhenHibernateIsInvolved() {
+    void suppressionOnlyAppliesWhenHibernateIsInvolved() {
         Index index = index();
         ObjectDifferences differences = differences("unique", "using");
 
@@ -127,4 +127,5 @@ public class HibernateIndexDifferenceSuppressionTest {
         }
         return differences;
     }
+
 }

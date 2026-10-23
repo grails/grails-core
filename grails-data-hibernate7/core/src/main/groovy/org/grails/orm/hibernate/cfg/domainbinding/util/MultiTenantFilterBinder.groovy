@@ -16,14 +16,12 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.util;
 
-import java.util.Collections;
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
 import org.hibernate.boot.spi.InFlightMetadataCollector;
 import org.hibernate.engine.spi.FilterDefinition;
 import org.hibernate.mapping.BasicValue;
@@ -32,7 +30,9 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.RootClass;
 import org.hibernate.mapping.SingleTableSubclass;
+import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UnionSubclass;
+import org.hibernate.mapping.Value;
 
 import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentEntity;
@@ -43,14 +43,17 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentP
  *
  * @since 8.0
  */
-public class MultiTenantFilterBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class MultiTenantFilterBinder {
 
     private final GrailsPropertyResolver grailsPropertyResolver;
     private final MultiTenantFilterDefinitionBinder filterDefinitionBinder;
     private final InFlightMetadataCollector mappings;
     private final DefaultColumnNameFetcher fetcher;
 
-    public MultiTenantFilterBinder(
+    MultiTenantFilterBinder(
             @Nonnull GrailsPropertyResolver grailsPropertyResolver,
             @Nonnull MultiTenantFilterDefinitionBinder filterDefinitionBinder,
             @Nonnull InFlightMetadataCollector mappings,
@@ -69,7 +72,7 @@ public class MultiTenantFilterBinder {
      * @return The filter definition applied, or null if none
      */
     @Nullable
-    public FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull RootClass rootClass) {
+    FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull RootClass rootClass) {
         return doBind(entity, rootClass);
     }
 
@@ -81,7 +84,7 @@ public class MultiTenantFilterBinder {
      * @return null as it's redundant for single table subclasses
      */
     @Nullable
-    public FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull SingleTableSubclass subclass) {
+    FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull SingleTableSubclass subclass) {
         return null; // Redundant for SingleTableSubclass
     }
 
@@ -93,7 +96,7 @@ public class MultiTenantFilterBinder {
      * @return The filter definition applied, or null if none
      */
     @Nullable
-    public FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull JoinedSubclass subclass) {
+    FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull JoinedSubclass subclass) {
         return doBind(entity, subclass);
     }
 
@@ -105,7 +108,7 @@ public class MultiTenantFilterBinder {
      * @return The filter definition applied, or null if none
      */
     @Nullable
-    public FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull UnionSubclass subclass) {
+    FilterDefinition bind(@Nonnull HibernatePersistentEntity entity, @Nonnull UnionSubclass subclass) {
         return doBind(entity, subclass);
     }
 
@@ -123,31 +126,31 @@ public class MultiTenantFilterBinder {
         }
 
         String name = tenantId.getName();
-        return Optional.ofNullable(grailsPropertyResolver.getProperty(persistentClass, name))
-                .filter(property -> shouldApplyFilter(entity, persistentClass, property))
-                .map(property -> {
-                    var filterName = GormProperties.TENANT_IDENTITY;
-                    FilterDefinition filterDefinition = mappings.getFilterDefinition(filterName);
-                    if (filterDefinition == null) {
-                        filterDefinition = filterDefinitionBinder
-                                .create(filterName, property)
-                                .orElse(null);
-                        if (filterDefinition != null) {
-                            mappings.addFilterDefinition(filterDefinition);
-                        }
-                    }
+        Property property = grailsPropertyResolver.getProperty(persistentClass, name);
+        if (property == null || !shouldApplyFilter(entity, persistentClass, property)) {
+            return null;
+        }
 
-                    if (filterDefinition != null) {
-                        persistentClass.addFilter(
-                                filterName,
-                                entity.getMultiTenantFilterCondition(fetcher),
-                                true, // autoAliasInjection
-                                Collections.emptyMap(),
-                                Collections.emptyMap());
-                    }
-                    return filterDefinition;
-                })
-                .orElse(null);
+        String filterName = GormProperties.TENANT_IDENTITY;
+        FilterDefinition filterDefinition = mappings.getFilterDefinition(filterName);
+        if (filterDefinition == null) {
+            filterDefinition = filterDefinitionBinder
+                    .create(filterName, property)
+                    .orElse(null);
+            if (filterDefinition != null) {
+                mappings.addFilterDefinition(filterDefinition);
+            }
+        }
+
+        if (filterDefinition != null) {
+            persistentClass.addFilter(
+                    filterName,
+                    entity.getMultiTenantFilterCondition(fetcher),
+                    true, // autoAliasInjection
+                    Collections.emptyMap(),
+                    Collections.emptyMap());
+        }
+        return filterDefinition;
     }
 
     private boolean shouldApplyFilter(
@@ -158,9 +161,9 @@ public class MultiTenantFilterBinder {
 
         boolean isRoot = persistentClass instanceof RootClass;
 
-        var table = persistentClass.getTable();
-        var propertyValue = property.getValue();
-        var propertyTable = propertyValue != null ? propertyValue.getTable() : null;
+        Table table = persistentClass.getTable();
+        Value propertyValue = property.getValue();
+        Table propertyTable = propertyValue != null ? propertyValue.getTable() : null;
 
         boolean isInherited = table != null && propertyTable != null && !table.equals(propertyTable);
 

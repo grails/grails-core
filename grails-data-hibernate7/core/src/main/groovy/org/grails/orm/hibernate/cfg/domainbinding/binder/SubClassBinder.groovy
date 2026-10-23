@@ -16,13 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.mapping.JoinedSubclass;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.SingleTableSubclass;
@@ -33,13 +31,16 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentE
 import org.grails.orm.hibernate.cfg.domainbinding.util.MultiTenantFilterBinder;
 
 /** Binder for subclasses. */
-public class SubClassBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class SubClassBinder {
 
     private final SubclassMappingBinder subclassMappingBinder;
     private final MultiTenantFilterBinder multiTenantFilterBinder;
     private final String dataSourceName;
 
-    public SubClassBinder(
+    SubClassBinder(
             SubclassMappingBinder subclassMappingBinder,
             MultiTenantFilterBinder multiTenantFilterBinder,
             String dataSourceName) {
@@ -55,23 +56,25 @@ public class SubClassBinder {
      * @param parent The parent persistent class instance
      * @return The list of subclasses created
      */
-    public List<Subclass> bindSubClass(@Nonnull HibernatePersistentEntity sub, PersistentClass parent) {
+    List<Subclass> bindSubClass(@Nonnull HibernatePersistentEntity sub, PersistentClass parent) {
         Subclass subClass = subclassMappingBinder.createSubclassMapping(sub, parent);
         sub.setPersistentClass(subClass);
         bindMultiTenantFilter(sub, subClass);
         List<Subclass> subclasses = new ArrayList<>();
         subclasses.add(subClass);
-        sub.getChildEntities(dataSourceName).forEach(sub1 -> subclasses.addAll(bindSubClass(sub1, subClass)));
+        for (HibernatePersistentEntity sub1 : sub.getChildEntities(dataSourceName)) {
+            subclasses.addAll(bindSubClass(sub1, subClass));
+        }
         return subclasses;
     }
 
     private void bindMultiTenantFilter(HibernatePersistentEntity sub, Subclass subClass) {
-        if (subClass instanceof SingleTableSubclass singleTableSubclass) {
-            multiTenantFilterBinder.bind(sub, singleTableSubclass);
-        } else if (subClass instanceof JoinedSubclass joinedSubclass) {
-            multiTenantFilterBinder.bind(sub, joinedSubclass);
-        } else if (subClass instanceof UnionSubclass unionSubclass) {
-            multiTenantFilterBinder.bind(sub, unionSubclass);
+        if (subClass instanceof SingleTableSubclass) {
+            multiTenantFilterBinder.bind(sub, (SingleTableSubclass) subClass);
+        } else if (subClass instanceof JoinedSubclass) {
+            multiTenantFilterBinder.bind(sub, (JoinedSubclass) subClass);
+        } else if (subClass instanceof UnionSubclass) {
+            multiTenantFilterBinder.bind(sub, (UnionSubclass) subClass);
         }
     }
 }

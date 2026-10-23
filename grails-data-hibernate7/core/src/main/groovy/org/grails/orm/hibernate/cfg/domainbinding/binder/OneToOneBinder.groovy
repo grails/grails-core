@@ -16,8 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.mapping.OneToOne;
 import org.hibernate.mapping.PersistentClass;
@@ -25,17 +27,20 @@ import org.hibernate.mapping.Table;
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToOneProperty;
 
-public class OneToOneBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class OneToOneBinder {
 
     private final MetadataBuildingContext metadataBuildingContext;
     private final SimpleValueBinder simpleValueBinder;
 
-    public OneToOneBinder(MetadataBuildingContext metadataBuildingContext, SimpleValueBinder simpleValueBinder) {
+    OneToOneBinder(MetadataBuildingContext metadataBuildingContext, SimpleValueBinder simpleValueBinder) {
         this.metadataBuildingContext = metadataBuildingContext;
         this.simpleValueBinder = simpleValueBinder;
     }
 
-    public OneToOne bindOneToOne(final HibernateOneToOneProperty property, String path) {
+    OneToOne bindOneToOne(final HibernateOneToOneProperty property, String path) {
         Table table = property.getTable();
         PersistentClass owner = property.getHibernateOwner().getPersistentClass();
         OneToOne oneToOne = new OneToOne(metadataBuildingContext, table, owner);

@@ -3,15 +3,19 @@ package com.example.ejb3.auction;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 
+import groovy.transform.CompileStatic;
+
 @Entity
-public class BuyNow extends Bid {
+@CompileStatic
+class BuyNow extends Bid {
 
     @Transient
-    public boolean isBuyNow() {
+    boolean isBuyNow() {
         return true;
     }
 
-    public String toString() {
+    String toString() {
         return super.toString() + " (buy now)";
     }
+
 }

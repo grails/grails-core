@@ -16,13 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
 
-import java.util.Arrays;
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
 import jakarta.persistence.Entity;
-
 import org.hibernate.MappingException;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.RootClass;
@@ -42,109 +40,110 @@ import org.grails.orm.hibernate.cfg.Mapping;
  * @author Graeme Rocher
  * @since 5.0
  */
-public class HibernatePersistentEntity extends AbstractPersistentEntity<Mapping>
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernatePersistentEntity extends AbstractPersistentEntity<Mapping>
         implements GrailsHibernatePersistentEntity {
 
     private final AbstractClassMapping<Mapping> classMapping;
     private String dataSourceName;
     private PersistentClass persistentClass;
 
-    public HibernatePersistentEntity(Class<?> javaClass, final MappingContext context) {
+    HibernatePersistentEntity(Class<?> javaClass, final MappingContext context) {
         super(javaClass, context);
 
         this.classMapping = new HibernateClassMapping(this, context);
     }
 
     @Override
-    public String getDataSourceName() {
+    String getDataSourceName() {
         return dataSourceName;
     }
 
     @Override
-    public void setDataSourceName(String dataSourceName) {
+    void setDataSourceName(String dataSourceName) {
         this.dataSourceName = dataSourceName;
     }
 
     @Override
-    public ClassMapping<Mapping> getMapping() {
+    ClassMapping<Mapping> getMapping() {
         return this.classMapping;
     }
 
     @Override
-    public Mapping getMappedForm() {
-        return Optional.ofNullable(getMapping())
-                .map(ClassMapping::getMappedForm)
-                .orElse(null);
+    Mapping getMappedForm() {
+        return getMapping()?.getMappedForm();
     }
 
     @Override
-    public HibernatePersistentProperty getIdentity() {
-        return identity instanceof HibernatePersistentProperty ghpp ? ghpp : null;
+    HibernatePersistentProperty getIdentity() {
+        PersistentProperty<?> id = super.getIdentity();
+        return id instanceof HibernatePersistentProperty ? (HibernatePersistentProperty) id : null;
     }
 
     @Override
-    @SuppressWarnings({"PMD.DataflowAnomalyAnalysis", "PMD.NullAssignment"})
-    public HibernatePersistentProperty[] getCompositeIdentity() {
+    @SuppressWarnings(["PMD.DataflowAnomalyAnalysis", "PMD.NullAssignment"])
+    HibernatePersistentProperty[] getCompositeIdentity() {
         PersistentProperty<?>[] compositeIdentity = super.getCompositeIdentity();
         if (compositeIdentity == null) {
             return new HibernatePersistentProperty[0];
         }
-        return Arrays.stream(compositeIdentity)
-                .map(p -> (HibernatePersistentProperty) p)
-                .toArray(HibernatePersistentProperty[]::new);
+        return compositeIdentity.collect { PersistentProperty<?> p -> (HibernatePersistentProperty) p } as HibernatePersistentProperty[];
     }
 
-    public HibernateIdentityProperty getIdentityProperty() {
+    HibernateIdentityProperty getIdentityProperty() {
         HibernatePersistentProperty[] compositeId = getCompositeIdentity();
         if (compositeId != null && compositeId.length > 1) {
-            return new HibernateCompositeIdentityProperty(this, getMappingContext(), getName(), Object.class, compositeId);
+            return new HibernateCompositeIdentityProperty(this, getMappingContext(), getName(), Object, compositeId);
         }
         HibernatePersistentProperty id = getIdentity();
-        if (id instanceof HibernateSimpleIdentityProperty simpleId) {
-            return simpleId;
+        if (id instanceof HibernateSimpleIdentityProperty) {
+            return (HibernateSimpleIdentityProperty) id;
         }
         throw new MappingException("Entity [" + getName() + "] has no identity property. " +
                 "Only embedded entities are allowed to have no identity.");
     }
 
     private boolean isAnnotatedEntity() {
-        return getJavaClass().isAnnotationPresent(Entity.class);
+        return getJavaClass().isAnnotationPresent(Entity);
     }
 
     @Override
-    public boolean usesConnectionSource(String dataSourceName) {
+    boolean usesConnectionSource(String dataSourceName) {
         return ConnectionSourcesSupport.usesConnectionSource(this, dataSourceName);
     }
 
     @Override
-    public boolean forGrailsDomainMapping(String dataSourceName) {
+    boolean forGrailsDomainMapping(String dataSourceName) {
         return !isAnnotatedEntity() && usesConnectionSource(dataSourceName) && isRoot();
     }
 
     @Override
-    public HibernatePersistentProperty getVersion() {
-        return (HibernatePersistentProperty) version;
+    HibernatePersistentProperty getVersion() {
+        return (HibernatePersistentProperty) super.getVersion();
     }
 
     @Override
-    public PersistentClass getPersistentClass() {
+    PersistentClass getPersistentClass() {
         return persistentClass;
     }
 
-    public RootClass getRootClass() {
+    RootClass getRootClass() {
         return persistentClass.getRootClass();
     }
 
     @Override
-    public void setPersistentClass(PersistentClass persistentClass) {
+    void setPersistentClass(PersistentClass persistentClass) {
         this.persistentClass = persistentClass;
     }
 
-    public String getIdentityGeneratorName() {
-        if (getHibernateIdentity() instanceof HibernateSimpleIdentity _identity) {
+    String getIdentityGeneratorName() {
+        if (getHibernateIdentity() instanceof HibernateSimpleIdentity) {
+            HibernateSimpleIdentity simpleIdentity = (HibernateSimpleIdentity) getHibernateIdentity();
             Mapping result = getHibernateMappedForm();
             boolean useSequence = result != null && result.isTablePerConcreteClass();
-            return _identity.determineGeneratorName(useSequence);
+            return simpleIdentity.determineGeneratorName(useSequence);
         }
         throw new MappingException("Simple Identity expected");
     }

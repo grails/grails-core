@@ -16,39 +16,42 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.util;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.validation.constraints.NotNull;
-
+import groovy.transform.CompileStatic;
 import io.micrometer.common.util.StringUtils;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.MappingException;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.UniqueKey;
 
-public class UniqueNameGenerator {
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class UniqueNameGenerator {
 
     private static final int MAX_LENGTH = 30;
 
-    public void setGeneratedUniqueName(@NotNull UniqueKey uk) {
+    void setGeneratedUniqueName(@NotNull UniqueKey uk) {
         if (uk.getTable() == null) {
             throw new MappingException(
                     String.format("Unique Key %s does not have a table associated with it", uk.getName()));
         }
 
         try {
-            var fields = new ArrayList<>(List.of(uk.getTable().getName()));
-            uk.getColumns().stream()
-                    .map(Column::getName)
-                    .filter(StringUtils::isNotBlank)
-                    .forEach(fields::add);
-            var ukString = String.join("_", fields);
+            List<String> fields = [uk.getTable().getName()];
+            for (Column column : uk.getColumns()) {
+                String columnName = column.getName();
+                if (StringUtils.isNotBlank(columnName)) {
+                    fields.add(columnName);
+                }
+            }
+            String ukString = String.join("_", fields);
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(ukString.getBytes(StandardCharsets.UTF_8));
             String name = "UK" + new BigInteger(1, md.digest()).toString(16);

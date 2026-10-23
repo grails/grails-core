@@ -1,5 +1,7 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot.extension;
 
+import groovy.transform.CompileStatic;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.DataType;
 import liquibase.structure.core.PrimaryKey;
@@ -7,15 +9,19 @@ import liquibase.structure.core.Table;
 import org.hibernate.generator.Generator;
 import org.hibernate.id.enhanced.TableGenerator;
 
-public class TableGeneratorSnapshotGenerator implements ExtendedSnapshotGenerator<Generator, Table> {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class TableGeneratorSnapshotGenerator implements ExtendedSnapshotGenerator<Generator, Table> {
 
     private static final String PK_DATA_TYPE = "varchar";
     private static final String VALUE_DATA_TYPE = "bigint";
 
     @Override
-    public Table snapshot(Generator ig) {
+    Table snapshot(Generator ig) {
         TableGenerator tableGenerator = (TableGenerator) ig;
-        Table table = new Table().setName(tableGenerator.getTableName());
+        Table table = new Table();
+        table.setName(tableGenerator.getTableName());
 
         Column pkColumn = new Column();
         pkColumn.setName(tableGenerator.getSegmentColumnName());
@@ -44,7 +50,8 @@ public class TableGeneratorSnapshotGenerator implements ExtendedSnapshotGenerato
     }
 
     @Override
-    public boolean supports(Generator ig) {
+    boolean supports(Generator ig) {
         return ig instanceof TableGenerator;
     }
+
 }

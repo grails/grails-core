@@ -1,10 +1,13 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
+import groovy.transform.CompileStatic;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.SnapshotGenerator;
+import liquibase.snapshot.jvm.IndexSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.ForeignKey;
@@ -12,14 +15,18 @@ import liquibase.structure.core.Index;
 import liquibase.structure.core.Relation;
 import liquibase.structure.core.Table;
 import liquibase.structure.core.UniqueConstraint;
+import org.hibernate.mapping.Selectable;
 
-public class HibernateIndexSnapshotGenerator extends HibernateSnapshotGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateIndexSnapshotGenerator extends HibernateSnapshotGenerator {
 
     private static final String HIBERNATE_ORDER_ASC = "asc";
     private static final String HIBERNATE_ORDER_DESC = "desc";
 
-    public HibernateIndexSnapshotGenerator() {
-        super(Index.class, Table.class, ForeignKey.class, UniqueConstraint.class);
+    HibernateIndexSnapshotGenerator() {
+        super(Index, Table, ForeignKey, UniqueConstraint);
     }
 
     @Override
@@ -29,11 +36,11 @@ public class HibernateIndexSnapshotGenerator extends HibernateSnapshotGenerator 
             return example;
         }
         Relation table = ((Index) example).getRelation();
-        var hibernateTable = findHibernateTable(table, snapshot);
+        org.hibernate.mapping.Table hibernateTable = findHibernateTable(table, snapshot);
         if (hibernateTable == null) {
             return example;
         }
-        for (var hibernateIndex : hibernateTable.getIndexes().values()) {
+        for (org.hibernate.mapping.Index hibernateIndex : hibernateTable.getIndexes().values()) {
             Index index = handleHibernateIndex(table, hibernateIndex);
             if (index.getColumnNames().equalsIgnoreCase(((Index) example).getColumnNames())) {
                 Scope.getCurrentScope().getLog(getClass()).info("Found index " + index.getName());
@@ -47,16 +54,17 @@ public class HibernateIndexSnapshotGenerator extends HibernateSnapshotGenerator 
     @Override
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        if (!snapshot.getSnapshotControl().shouldInclude(Index.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(Index)) {
             return;
         }
-        if (foundObject instanceof Table table) {
-            var hibernateTable = findHibernateTable(table, snapshot);
+        if (foundObject instanceof Table) {
+            Table table = (Table) foundObject;
+            org.hibernate.mapping.Table hibernateTable = findHibernateTable(table, snapshot);
             if (hibernateTable == null) {
                 return;
             }
-            for (var hibernateIndex : hibernateTable.getIndexes().values()) {
-                var index = handleHibernateIndex(table, hibernateIndex);
+            for (org.hibernate.mapping.Index hibernateIndex : hibernateTable.getIndexes().values()) {
+                Index index = handleHibernateIndex(table, hibernateIndex);
                 Scope.getCurrentScope().getLog(getClass()).info("Found index " + index.getName());
                 table.getIndexes().add(index);
             }
@@ -68,7 +76,7 @@ public class HibernateIndexSnapshotGenerator extends HibernateSnapshotGenerator 
         index.setRelation(table);
         index.setName(hibernateIndex.getName());
         index.setUnique(isUniqueIndex(hibernateIndex));
-        for (var selectable : hibernateIndex.getSelectables()) {
+        for (Selectable selectable : hibernateIndex.getSelectables()) {
             org.hibernate.mapping.Column hibernateColumn = (org.hibernate.mapping.Column) selectable;
             String hibernateOrder = hibernateIndex.getSelectableOrderMap().get(hibernateColumn);
             Boolean descending = HIBERNATE_ORDER_ASC.equals(hibernateOrder) ?
@@ -87,8 +95,8 @@ public class HibernateIndexSnapshotGenerator extends HibernateSnapshotGenerator 
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends SnapshotGenerator>[] replaces() {
-        return new Class[] {liquibase.snapshot.jvm.IndexSnapshotGenerator.class};
+    Class<? extends SnapshotGenerator>[] replaces() {
+        return [IndexSnapshotGenerator] as Class<? extends SnapshotGenerator>[];
     }
+
 }

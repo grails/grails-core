@@ -16,12 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.proxy;
 
-import java.io.Serializable;
-
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
+import groovy.transform.CompileStatic;
 import org.codehaus.groovy.runtime.HandleMetaClass;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
@@ -32,7 +30,10 @@ import org.grails.datastore.gorm.proxy.ProxyInstanceMetaClass;
  *
  * @since 8.0
  */
-public class GroovyProxyInterceptorLogic {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class GroovyProxyInterceptorLogic {
 
     public static final Object INVOKE_IMPLEMENTATION = new Object();
 
@@ -54,53 +55,53 @@ public class GroovyProxyInterceptorLogic {
     private static final String HAS_CHANGED = "hasChanged";
     private static final String TO_STRING = "toString";
 
-    public static Object handleUninitialized(InterceptorState state, String methodName, Object... args) {
-        if ((GET_META_CLASS.equals(methodName) || methodName.endsWith("getStaticMetaClass")) &&
+    static Object handleUninitialized(InterceptorState state, String methodName, Object... args) {
+        if ((GET_META_CLASS == methodName || methodName.endsWith('getStaticMetaClass')) &&
                 (args == null || args.length == 0)) {
             return InvokerHelper.getMetaClass(state.persistentClass());
         }
-        if (GET_PROPERTY.equals(methodName) && args.length == 1) {
-            if (ID_PROPERTY.equals(args[0])) {
+        if (GET_PROPERTY == methodName && args.length == 1) {
+            if (ID_PROPERTY == args[0]) {
                 return state.identifier();
             }
-            if (META_CLASS_PROPERTY.equals(args[0])) {
+            if (META_CLASS_PROPERTY == args[0]) {
                 return InvokerHelper.getMetaClass(state.persistentClass());
             }
         }
-        if (IDENT_METHOD.equals(methodName) && (args == null || args.length == 0)) {
+        if (IDENT_METHOD == methodName && (args == null || args.length == 0)) {
             return state.identifier();
         }
-        if ((IS_DIRTY.equals(methodName) || HAS_CHANGED.equals(methodName)) && (args == null || args.length == 0)) {
+        if ((IS_DIRTY == methodName || HAS_CHANGED == methodName) && (args == null || args.length == 0)) {
             return false;
         }
-        if (state.lazyToString() && TO_STRING.equals(methodName) && (args == null || args.length == 0)) {
+        if (state.lazyToString() && TO_STRING == methodName && (args == null || args.length == 0)) {
             return state.entityName() + ":" + state.identifier();
         }
         return INVOKE_IMPLEMENTATION;
     }
 
-    public static boolean isGroovyMethod(String methodName) {
-        return "getMetaClass".equals(methodName) ||
-                "setMetaClass".equals(methodName) ||
-                "getProperty".equals(methodName) ||
-                "setProperty".equals(methodName) ||
-                "invokeMethod".equals(methodName);
+    static boolean isGroovyMethod(String methodName) {
+        return 'getMetaClass' == methodName ||
+                'setMetaClass' == methodName ||
+                'getProperty' == methodName ||
+                'setProperty' == methodName ||
+                'invokeMethod' == methodName;
     }
 
-    public static ProxyInstanceMetaClass getProxyInstanceMetaClass(Object o) {
-        if (o instanceof GroovyObject go) {
-            MetaClass mc = go.getMetaClass();
-            if (mc instanceof HandleMetaClass hmc) {
-                mc = hmc.getAdaptee();
+    static ProxyInstanceMetaClass getProxyInstanceMetaClass(Object o) {
+        if (o instanceof GroovyObject) {
+            MetaClass mc = o.getMetaClass();
+            if (mc instanceof HandleMetaClass) {
+                mc = ((HandleMetaClass) mc).getAdaptee();
             }
-            if (mc instanceof ProxyInstanceMetaClass pmc) {
-                return pmc;
+            if (mc instanceof ProxyInstanceMetaClass) {
+                return (ProxyInstanceMetaClass) mc;
             }
         }
         return null;
     }
 
-    public static Object unwrap(Object object) {
+    static Object unwrap(Object object) {
         ProxyInstanceMetaClass proxyMc = getProxyInstanceMetaClass(object);
         if (proxyMc != null) {
             return proxyMc.getProxyTarget();
@@ -108,7 +109,7 @@ public class GroovyProxyInterceptorLogic {
         return null;
     }
 
-    public static Serializable getIdentifier(Object o) {
+    static Serializable getIdentifier(Object o) {
         ProxyInstanceMetaClass proxyMc = getProxyInstanceMetaClass(o);
         if (proxyMc != null) {
             return proxyMc.getKey();
@@ -120,7 +121,7 @@ public class GroovyProxyInterceptorLogic {
      * Check if a Groovy proxy is initialized.
      * @return {@code true} if initialized, {@code false} if not initialized, or {@code null} if the object is not a Groovy proxy
      */
-    public static Boolean isInitialized(Object o) {
+    static Boolean isInitialized(Object o) {
         ProxyInstanceMetaClass proxyMc = getProxyInstanceMetaClass(o);
         if (proxyMc != null) {
             return proxyMc.isProxyInitiated();
@@ -128,10 +129,11 @@ public class GroovyProxyInterceptorLogic {
         return null;
     }
 
-    public record InterceptorState(String entityName, Class<?> persistentClass, Object identifier, boolean lazyToString) {
+    record InterceptorState(String entityName, Class<?> persistentClass, Object identifier, boolean lazyToString) {
 
-        public InterceptorState(String entityName, Class<?> persistentClass, Object identifier) {
+        InterceptorState(String entityName, Class<?> persistentClass, Object identifier) {
             this(entityName, persistentClass, identifier, false);
         }
     }
+
 }

@@ -1,21 +1,18 @@
 package com.example.pojo.auction;
 
-import java.util.List;
+import groovy.transform.CompileStatic;
 
-import lombok.Getter;
-import lombok.Setter;
+@CompileStatic
+class User extends Persistent {
 
-@Getter
-@Setter
-public class User extends Persistent {
-    private String userName;
-    private String password;
-    private String email;
-    private Name name;
-    private List bids;
-    private List auctions;
+    String userName;
+    String password;
+    String email;
+    Name name;
+    List bids;
+    List auctions;
 
-    public String toString() {
+    String toString() {
         return userName;
     }
 

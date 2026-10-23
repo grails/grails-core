@@ -16,12 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.mapping.Collection;
@@ -41,8 +39,10 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateOneToOnePro
 
 import static org.grails.orm.hibernate.cfg.domainbinding.binder.GrailsDomainBinder.FOREIGN_KEY_SUFFIX;
 
-@SuppressWarnings("PMD.DataflowAnomalyAnalysis")
-public class ManyToOneBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.DataflowAnomalyAnalysis', 'UnnecessarySemicolon'])
+@CompileStatic
+class ManyToOneBinder {
 
     private final MetadataBuildingContext metadataBuildingContext;
     private final PersistentEntityNamingStrategy namingStrategy;
@@ -50,7 +50,7 @@ public class ManyToOneBinder {
     private final ManyToOneValuesBinder manyToOneValuesBinder;
     private final CompositeIdentifierToManyToOneBinder compositeIdentifierToManyToOneBinder;
 
-    public ManyToOneBinder(
+    ManyToOneBinder(
             MetadataBuildingContext metadataBuildingContext,
             PersistentEntityNamingStrategy namingStrategy,
             SimpleValueBinder simpleValueBinder,
@@ -63,7 +63,7 @@ public class ManyToOneBinder {
         this.compositeIdentifierToManyToOneBinder = compositeIdentifierToManyToOneBinder;
     }
 
-    public ManyToOneBinder(
+    ManyToOneBinder(
             MetadataBuildingContext metadataBuildingContext,
             PersistentEntityNamingStrategy namingStrategy,
             JdbcEnvironment jdbcEnvironment) {
@@ -76,12 +76,12 @@ public class ManyToOneBinder {
     }
 
     /** Binds a many-to-one association. */
-    public ManyToOne bindManyToOne(HibernateManyToOneProperty property, Table table, String path) {
+    ManyToOne bindManyToOne(HibernateManyToOneProperty property, Table table, String path) {
         return doBind(property, property.getHibernateAssociatedEntity(), table, path);
     }
 
     /** Binds the inverse side of a many-to-many association as a collection element. */
-    public ManyToOne bindManyToOne(HibernateManyToManyProperty property, String path) {
+    ManyToOne bindManyToOne(HibernateManyToManyProperty property, String path) {
         Collection collection = property.getCollection();
         HibernateManyToManyProperty otherSide = (HibernateManyToManyProperty) property.getHibernateInverseSide();
         Table collectionTable = collection.getCollectionTable();
@@ -95,14 +95,14 @@ public class ManyToOneBinder {
         return manyToOne;
     }
 
-    public ManyToOne bindManyToOne(HibernateOneToOneProperty property, String path) {
+    ManyToOne bindManyToOne(HibernateOneToOneProperty property, String path) {
         return doBind(property, property.getHibernateAssociatedEntity(), property.getTable(), path);
     }
 
     private ManyToOne doBind(
             HibernateAssociation property,
             GrailsHibernatePersistentEntity refDomainClass,
-            org.hibernate.mapping.Table table,
+            Table table,
             String path) {
         ManyToOne manyToOne = new ManyToOne(metadataBuildingContext, table);
         manyToOneValuesBinder.bindManyToOneValues(property, manyToOne);
@@ -124,7 +124,7 @@ public class ManyToOneBinder {
         if (!property.getHibernateMappedForm().hasJoinKeyMapping()) {
             JoinTable jt = new JoinTable();
             Optional<HibernateCompositeIdentity> compositeId = property.getHibernateOwner().getHibernateCompositeIdentity();
-            List<ColumnConfig> keyColumns = new ArrayList<>();
+            List<ColumnConfig> keyColumns = [];
             if (compositeId.isPresent() && compositeId.get().getPropertyNames() != null && compositeId.get().getPropertyNames().length > 0) {
                 List<ColumnConfig> joinKeys = property.getHibernateMappedForm().getJoinTable() != null ? property.getHibernateMappedForm().getJoinTable().getKeys() : null;
                 String[] propNames = compositeId.get().getPropertyNames();
@@ -135,7 +135,7 @@ public class ManyToOneBinder {
                         keyColumns.add(cc);
                     }
                 } else {
-                    for (String propName : propNames) {
+                    for (String propName in propNames) {
                         ColumnConfig cc = new ColumnConfig();
                         cc.setName(namingStrategy.resolveColumnName(propName) + FOREIGN_KEY_SUFFIX);
                         keyColumns.add(cc);

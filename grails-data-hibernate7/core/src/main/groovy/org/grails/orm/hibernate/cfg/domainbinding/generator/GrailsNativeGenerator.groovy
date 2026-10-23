@@ -16,13 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.generator;
 
-import java.io.Serial;
-import java.util.Properties;
-
+import groovy.transform.CompileStatic;
 import jakarta.persistence.GenerationType;
-
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.boot.model.relational.internal.SqlStringGenerationContextImpl;
@@ -43,19 +41,22 @@ import org.hibernate.id.NativeGenerator;
  *
  * @since 8.0
  */
-public class GrailsNativeGenerator extends NativeGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class GrailsNativeGenerator extends NativeGenerator {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     /** Carries the default {@code @NativeGenerator} the way Hibernate reads it from an unannotated identifier. */
     @org.hibernate.annotations.NativeGenerator
-    private static final class DefaultNativeGenerator {}
+    private static final class DefaultNativeGenerator { }
 
     private static final org.hibernate.annotations.NativeGenerator DEFAULT_ANNOTATION =
-            DefaultNativeGenerator.class.getAnnotation(org.hibernate.annotations.NativeGenerator.class);
+            DefaultNativeGenerator.getAnnotation(org.hibernate.annotations.NativeGenerator);
 
-    public GrailsNativeGenerator(GeneratorCreationContext context, JdbcEnvironment jdbcEnvironment) {
+    GrailsNativeGenerator(GeneratorCreationContext context, JdbcEnvironment jdbcEnvironment) {
         // Picks the delegate for the dialect; for IDENTITY it also calls setIdentity(true) on the column.
         this.initialize(DEFAULT_ANNOTATION, null, context);
         this.configure(context, new Properties());
@@ -63,7 +64,7 @@ public class GrailsNativeGenerator extends NativeGenerator {
         Database database = context.getDatabase();
         this.registerExportables(database);
 
-        var physicalName = database.getDefaultNamespace().getPhysicalName();
+        org.hibernate.boot.model.relational.Namespace.Name physicalName = database.getDefaultNamespace().getPhysicalName();
         String catalog = (physicalName.catalog() != null) ? physicalName.catalog().getCanonicalName() : null;
         String schema = (physicalName.schema() != null) ? physicalName.schema().getCanonicalName() : null;
         SqlStringGenerationContext sqlContext =
@@ -72,7 +73,8 @@ public class GrailsNativeGenerator extends NativeGenerator {
     }
 
     @Override
-    public Object generate(
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
+    Object generate(
             SharedSessionContractImplementor session, Object entity, Object currentValue, EventType eventType) {
         // 1. Support Grails assigned identifiers
         if (currentValue != null) {

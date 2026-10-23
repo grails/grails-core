@@ -16,11 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.query;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.util.List;
+import groovy.transform.CompileStatic;
 
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.query.Query;
@@ -32,34 +31,37 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.GrailsHibernatePersi
  *
  * @since 8.0
  */
-public class HibernatePagedResultList extends grails.gorm.PagedResultList {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class HibernatePagedResultList extends grails.gorm.PagedResultList {
 
     private final GrailsHibernatePersistentEntity entity;
     private final int max;
     private final int offset;
 
-    public HibernatePagedResultList(HibernateQuery query) {
+    HibernatePagedResultList(HibernateQuery query) {
         super(query);
-        this.entity = query.getEntity();
+        this.entity = query.entity;
         this.max = resolveMax(query);
         this.offset = resolveOffset(query);
     }
 
-    public HibernatePagedResultList(Query query) {
+    HibernatePagedResultList(Query query) {
         super(query);
-        this.entity = (GrailsHibernatePersistentEntity) query.getEntity();
+        this.entity = (GrailsHibernatePersistentEntity) query.entity;
         this.max = resolveMax(query);
         this.offset = resolveOffset(query);
     }
 
-    public HibernatePagedResultList(GrailsHibernateTemplate template, GrailsHibernatePersistentEntity entity, Query query) {
+    HibernatePagedResultList(GrailsHibernateTemplate template, GrailsHibernatePersistentEntity entity, Query query) {
         super(query);
         this.entity = entity;
         this.max = resolveMax(query);
         this.offset = resolveOffset(query);
     }
 
-    public HibernatePagedResultList(GrailsHibernateTemplate template, PersistentEntity entity, Query query) {
+    HibernatePagedResultList(GrailsHibernateTemplate template, PersistentEntity entity, Query query) {
         this(template, (GrailsHibernatePersistentEntity) entity, query);
     }
 
@@ -68,34 +70,34 @@ public class HibernatePagedResultList extends grails.gorm.PagedResultList {
         this.entity = entity;
         this.max = max;
         this.offset = offset;
-        this.totalCount = totalCount;
-        this.resultList = resultList;
+        this.@totalCount = totalCount;
+        this.@resultList = resultList;
     }
 
-    public GrailsHibernatePersistentEntity getEntity() {
+    GrailsHibernatePersistentEntity getEntity() {
         return entity;
     }
 
     @Override
-    public int getMax() {
+    int getMax() {
         return max;
     }
 
     @Override
-    public int getOffset() {
+    int getOffset() {
         return offset;
     }
 
     @Override
-    public int getTotalCount() {
-        if (totalCount == Integer.MIN_VALUE) {
+    int getTotalCount() {
+        if (this.@totalCount == Integer.MIN_VALUE) {
             Query query = getQuery();
             if (query == null) {
-                totalCount = 0;
+                this.@totalCount = 0;
             } else {
                 Object clonedQuery = query.clone();
                 if (!(clonedQuery instanceof Query)) {
-                    totalCount = 0;
+                    this.@totalCount = 0;
                 } else {
                     Query newQuery = (Query) clonedQuery;
                     newQuery.offset(0);
@@ -103,24 +105,24 @@ public class HibernatePagedResultList extends grails.gorm.PagedResultList {
                     newQuery.clearOrders();
                     newQuery.projections().count();
                     Number result = (Number) newQuery.singleResult();
-                    totalCount = result == null ? 0 : result.intValue();
+                    this.@totalCount = result == null ? 0 : result.intValue();
                 }
             }
         }
-        return totalCount;
+        return this.@totalCount;
     }
 
     private Object writeReplace() throws ObjectStreamException {
-        return new SerializationProxy(max, offset, getTotalCount(), resultList);
+        return new SerializationProxy(max, offset, getTotalCount(), this.@resultList);
     }
 
     private static int resolveMax(Query query) {
-        Integer queryMax = query == null ? null : query.getMax();
+        Integer queryMax = query == null ? null : query.max;
         return queryMax != null ? queryMax : -1;
     }
 
     private static int resolveOffset(Query query) {
-        Integer queryOffset = query == null ? null : query.getOffset();
+        Integer queryOffset = query == null ? null : query.offset;
         return queryOffset != null ? queryOffset : 0;
     }
 
@@ -143,5 +145,7 @@ public class HibernatePagedResultList extends grails.gorm.PagedResultList {
         private Object readResolve() {
             return new HibernatePagedResultList(null, max, offset, totalCount, resultList);
         }
+
     }
+
 }

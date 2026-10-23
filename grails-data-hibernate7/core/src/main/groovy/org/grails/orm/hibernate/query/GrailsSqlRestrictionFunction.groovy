@@ -16,12 +16,14 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.query;
 
-import java.util.List;
-
+import groovy.transform.CompileStatic;
+import groovy.transform.PackageScope;
 import org.hibernate.metamodel.model.domain.ReturnableType;
 import org.hibernate.query.sqm.function.AbstractSqmSelfRenderingFunctionDescriptor;
+import org.hibernate.query.sqm.produce.function.FunctionArgumentTypeResolver;
 import org.hibernate.query.sqm.produce.function.StandardArgumentsValidators;
 import org.hibernate.query.sqm.produce.function.StandardFunctionReturnTypeResolvers;
 import org.hibernate.sql.ast.SqlAstTranslator;
@@ -41,35 +43,41 @@ import org.hibernate.type.spi.TypeConfiguration;
  *
  * @since 8.0.0
  */
-public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFunctionDescriptor {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFunctionDescriptor {
 
     public static final String NAME = "grails_sql_restriction";
 
+    @PackageScope
     static final String ALIAS_PLACEHOLDER = "{alias}";
 
-    public GrailsSqlRestrictionFunction(TypeConfiguration typeConfiguration) {
+    GrailsSqlRestrictionFunction(TypeConfiguration typeConfiguration) {
         super(
                 NAME,
                 StandardArgumentsValidators.min(1),
                 StandardFunctionReturnTypeResolvers.invariant(
-                        typeConfiguration.getBasicTypeRegistry().resolve(StandardBasicTypes.BOOLEAN)),
-                null);
+                        typeConfiguration.basicTypeRegistry.resolve(StandardBasicTypes.BOOLEAN)),
+                (FunctionArgumentTypeResolver) null);
     }
 
     @Override
-    public boolean isPredicate() {
+    boolean isPredicate() {
         return true;
     }
 
     @Override
-    public void render(
+    void render(
             SqlAppender sqlAppender,
             List<? extends SqlAstNode> arguments,
             ReturnableType<?> returnType,
             SqlAstTranslator<?> walker) {
-        if (!(arguments.get(0) instanceof Literal literal) || !(literal.getLiteralValue() instanceof String sql)) {
-            throw new IllegalArgumentException("The first argument of " + NAME + " must be the SQL as a literal");
+        SqlAstNode first = arguments.get(0);
+        if (!(first instanceof Literal) || !(((Literal) first).literalValue instanceof String)) {
+            throw new IllegalArgumentException("The first argument of ${NAME} must be the SQL as a literal".toString());
         }
+        String sql = (String) ((Literal) first).literalValue;
         int firstValue = 1;
         if (sql.contains(ALIAS_PLACEHOLDER)) {
             sql = sql.replace(ALIAS_PLACEHOLDER, tableAlias(arguments.get(1)));
@@ -77,8 +85,8 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
         }
         List<Integer> placeholders = SqlRestriction.placeholderIndexes(sql);
         if (placeholders.size() != arguments.size() - firstValue) {
-            throw new IllegalArgumentException("The SQL restriction has " + placeholders.size() +
-                    " ? placeholders but " + (arguments.size() - firstValue) + " values: " + sql);
+            throw new IllegalArgumentException(
+                    "The SQL restriction has ${placeholders.size()} ? placeholders but ${arguments.size() - firstValue} values: ${sql}".toString());
         }
         sqlAppender.append('(');
         int index = 0;
@@ -95,12 +103,14 @@ public class GrailsSqlRestrictionFunction extends AbstractSqmSelfRenderingFuncti
         sqlAppender.append(')');
     }
 
+    @PackageScope
     static String tableAlias(SqlAstNode column) {
-        SqlAstNode node = column instanceof SqlTuple tuple ? tuple.getExpressions().get(0) : column;
-        ColumnReference columnReference = node instanceof Expression expression ? expression.getColumnReference() : null;
-        if (columnReference != null && columnReference.getQualifier() != null) {
-            return columnReference.getQualifier();
+        SqlAstNode node = column instanceof SqlTuple ? ((SqlTuple) column).expressions.get(0) : column;
+        ColumnReference columnReference = node instanceof Expression ? ((Expression) node).columnReference : null;
+        if (columnReference != null && columnReference.qualifier != null) {
+            return columnReference.qualifier;
         }
-        throw new IllegalStateException("Cannot resolve the table alias for {alias} from " + column);
+        throw new IllegalStateException("Cannot resolve the table alias for {alias} from ${column}".toString());
     }
+
 }

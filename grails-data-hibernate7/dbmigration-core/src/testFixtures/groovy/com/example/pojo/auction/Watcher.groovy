@@ -4,15 +4,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
+import groovy.transform.CompileStatic;
+
 @Entity
-public class Watcher {
+@CompileStatic
+class Watcher {
 
     @Id
-    private Integer id;
+    Integer id;
 
     @SuppressWarnings("unused")
-    private String name;
+    String name;
 
     @ManyToOne
-    private AuctionItem auctionItem;
+    AuctionItem auctionItem;
+
 }

@@ -1,5 +1,10 @@
 package liquibase.ext.hibernate.database;
 
+import com.example.ejb3.auction.Bid;
+import com.example.ejb3.auction.BuyNow;
+import com.example.pojo.auction.AuctionItem;
+import com.example.pojo.auction.Watcher;
+import groovy.transform.CompileStatic;
 import liquibase.CatalogAndSchema;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
@@ -17,67 +22,63 @@ import org.hibernate.dialect.H2Dialect;
 import org.junit.After;
 import org.junit.Test;
 
-import com.example.ejb3.auction.Bid;
-import com.example.ejb3.auction.BuyNow;
-import com.example.pojo.auction.AuctionItem;
-import com.example.pojo.auction.Watcher;
-
 import static org.junit.Assert.*;
 
-public class HibernateSpringDatabaseTest {
+@CompileStatic
+class HibernateSpringDatabaseTest {
 
     private DatabaseConnection conn;
     private HibernateDatabase db;
 
     @After
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         if (db != null) {
             db.close();
         }
     }
 
     @Test
-    public void testIsCorrectDatabaseImplementation() {
+    void testIsCorrectDatabaseImplementation() {
         HibernateSpringBeanDatabase database = new HibernateSpringBeanDatabase();
         assertTrue(database.isCorrectDatabaseImplementation(new JdbcConnection(new HibernateConnection("hibernate:spring:spring.ctx.xml?bean=sessionFactory", new ClassLoaderResourceAccessor()))));
         assertFalse(database.isCorrectDatabaseImplementation(new JdbcConnection(new HibernateConnection("hibernate:classic:hibernate.cfg.xml", new ClassLoaderResourceAccessor()))));
     }
 
     @Test
-    public void testSpringUrlSimple() throws DatabaseException {
+    void testSpringUrlSimple() throws DatabaseException {
         conn = new JdbcConnection(new HibernateConnection("hibernate:spring:spring.ctx.xml?bean=sessionFactory&hibernate.dialect=org.hibernate.dialect.H2Dialect", new ClassLoaderResourceAccessor()));
         db = new HibernateSpringBeanDatabase();
         db.setConnection(conn);
-        assertNotNull(db.getMetadata().getEntityBinding(AuctionItem.class.getName()));
-        assertNotNull(db.getMetadata().getEntityBinding(Watcher.class.getName()));
+        assertNotNull(db.getMetadata().getEntityBinding(AuctionItem.getName()));
+        assertNotNull(db.getMetadata().getEntityBinding(Watcher.getName()));
         assertEquals("org.hibernate.dialect.H2Dialect", db.getProperty("hibernate.dialect"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSpringUrlNoBean() throws DatabaseException {
+    @Test(expected = IllegalStateException)
+    void testSpringUrlNoBean() throws DatabaseException {
         conn = new JdbcConnection(new HibernateConnection("hibernate:spring:spring.ctx.xml", new ClassLoaderResourceAccessor()));
         db = new HibernateSpringBeanDatabase();
         db.setConnection(conn);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSpringUrlMissingBean() throws DatabaseException {
+    @Test(expected = IllegalStateException)
+    void testSpringUrlMissingBean() throws DatabaseException {
         conn = new JdbcConnection(new HibernateConnection("hibernate:spring:spring.ctx.xml?bean=missingBean", new ClassLoaderResourceAccessor()));
         db = new HibernateSpringBeanDatabase();
         db.setConnection(conn);
     }
 
     @Test
-    public void testSpringPackageScanningMustHaveItemClassMapping() throws DatabaseException {
-        conn = new JdbcConnection(new HibernateConnection("hibernate:spring:com.example.ejb3.auction?dialect=" + H2Dialect.class.getName(), new ClassLoaderResourceAccessor()));
+    void testSpringPackageScanningMustHaveItemClassMapping() throws DatabaseException {
+        conn = new JdbcConnection(new HibernateConnection("hibernate:spring:com.example.ejb3.auction?dialect=" + H2Dialect.getName(), new ClassLoaderResourceAccessor()));
         db = new HibernateSpringPackageDatabase();
         db.setConnection(conn);
-        assertNotNull(db.getMetadata().getEntityBinding(Bid.class.getName()));
-        assertNotNull(db.getMetadata().getEntityBinding(BuyNow.class.getName()));
+        assertNotNull(db.getMetadata().getEntityBinding(Bid.getName()));
+        assertNotNull(db.getMetadata().getEntityBinding(BuyNow.getName()));
     }
 
     @Test
-    public void simpleSpringUrl() throws Exception {
+    void simpleSpringUrl() throws Exception {
         String url = "hibernate:spring:spring.ctx.xml?bean=sessionFactory";
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
@@ -89,7 +90,7 @@ public class HibernateSpringDatabaseTest {
     }
 
     @Test
-    public void nationalizedCharactersSpringBeanUrl() throws Exception {
+    void nationalizedCharactersSpringBeanUrl() throws Exception {
         String url = "hibernate:spring:spring.ctx.xml?hibernate.use_nationalized_character_data=true&bean=sessionFactory";
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
@@ -103,8 +104,8 @@ public class HibernateSpringDatabaseTest {
     }
 
     @Test
-    public void simpleSpringScanningUrl() throws Exception {
-        String url = "hibernate:spring:com.example.ejb3.auction?dialect=" + H2Dialect.class.getName();
+    void simpleSpringScanningUrl() throws Exception {
+        String url = "hibernate:spring:com.example.ejb3.auction?dialect=" + H2Dialect.getName();
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
         assertNotNull(database);
@@ -115,8 +116,8 @@ public class HibernateSpringDatabaseTest {
     }
 
     @Test
-    public void nationalizedCharactersSpringScanningUrl() throws Exception {
-        String url = "hibernate:spring:com.example.ejb3.auction?hibernate.use_nationalized_character_data=true&dialect=" + H2Dialect.class.getName();
+    void nationalizedCharactersSpringScanningUrl() throws Exception {
+        String url = "hibernate:spring:com.example.ejb3.auction?hibernate.use_nationalized_character_data=true&dialect=" + H2Dialect.getName();
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
         assertNotNull(database);

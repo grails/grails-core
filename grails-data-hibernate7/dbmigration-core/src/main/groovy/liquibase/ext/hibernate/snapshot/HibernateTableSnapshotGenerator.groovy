@@ -1,11 +1,14 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
+import groovy.transform.CompileStatic;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.ext.hibernate.database.HibernateDatabase;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.SnapshotGenerator;
+import liquibase.snapshot.jvm.TableSnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Schema;
 import liquibase.structure.core.Table;
@@ -13,10 +16,13 @@ import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.mapping.ForeignKey;
 
-public class HibernateTableSnapshotGenerator extends HibernateSnapshotGenerator {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernateTableSnapshotGenerator extends HibernateSnapshotGenerator {
 
-    public HibernateTableSnapshotGenerator() {
-        super(Table.class, Schema.class);
+    HibernateTableSnapshotGenerator() {
+        super(Table, Schema);
     }
 
     @Override
@@ -30,7 +36,8 @@ public class HibernateTableSnapshotGenerator extends HibernateSnapshotGenerator 
             return example;
         }
 
-        Table table = new Table().setName(hibernateTable.getName());
+        Table table = new Table();
+        table.setName(hibernateTable.getName());
         Scope.getCurrentScope().getLog(getClass()).info("Found table " + table.getName());
         table.setSchema(example.getSchema());
         if (hibernateTable.getComment() != null && !hibernateTable.getComment().isEmpty()) {
@@ -41,17 +48,17 @@ public class HibernateTableSnapshotGenerator extends HibernateSnapshotGenerator 
     }
 
     @Override
-    @SuppressWarnings("PMD.CloseResource")
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        if (!snapshot.getSnapshotControl().shouldInclude(Table.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(Table)) {
             return;
         }
 
-        if (foundObject instanceof Schema schema) {
+        if (foundObject instanceof Schema) {
+            Schema schema = (Schema) foundObject;
 
-            var database = (HibernateDatabase) snapshot.getDatabase();
-            var metadata = (MetadataImplementor) database.getMetadata();
+            HibernateDatabase database = (HibernateDatabase) snapshot.getDatabase();
+            MetadataImplementor metadata = (MetadataImplementor) database.getMetadata();
 
             // Hibernate 7: GenerationType.TABLE tables are not visible via getEntityBindings(),
             // so we retrieve tables from namespaces instead.
@@ -77,15 +84,16 @@ public class HibernateTableSnapshotGenerator extends HibernateSnapshotGenerator 
 
     private void addDatabaseObjectToSchema(org.hibernate.mapping.Table join, Schema schema, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        Table joinTable = new Table().setName(join.getName());
+        Table joinTable = new Table();
+        joinTable.setName(join.getName());
         joinTable.setSchema(schema);
         Scope.getCurrentScope().getLog(getClass()).info("Found table " + joinTable.getName());
         schema.addDatabaseObject(snapshotObject(joinTable, snapshot));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends SnapshotGenerator>[] replaces() {
-        return new Class[] {liquibase.snapshot.jvm.TableSnapshotGenerator.class};
+    Class<? extends SnapshotGenerator>[] replaces() {
+        return [TableSnapshotGenerator] as Class<? extends SnapshotGenerator>[];
     }
+
 }

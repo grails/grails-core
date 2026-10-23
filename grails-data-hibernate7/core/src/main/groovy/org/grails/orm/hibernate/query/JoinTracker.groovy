@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.query;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import groovy.transform.CompileStatic;
 import jakarta.persistence.criteria.From;
 
 /**
@@ -25,26 +24,30 @@ import jakarta.persistence.criteria.From;
  *
  * @since 8.0
  */
-public class JoinTracker {
-    private final Map<String, From<?, ?>> joinsByPath = new HashMap<>();
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class JoinTracker {
+
+    private final Map<String, From<?, ?>> joinsByPath = [:];
     private From<?, ?> root;
     private final JoinTracker parent;
 
-    public JoinTracker(From<?, ?> root) {
+    JoinTracker(From<?, ?> root) {
         this.root = root;
         this.parent = null;
     }
 
-    public JoinTracker(JoinTracker parent, From<?, ?> root) {
+    JoinTracker(JoinTracker parent, From<?, ?> root) {
         this.root = root;
         this.parent = parent;
     }
 
-    public void addJoin(String path, From<?, ?> from) {
+    void addJoin(String path, From<?, ?> from) {
         joinsByPath.put(path, from);
     }
 
-    public From<?, ?> getJoin(String path) {
+    From<?, ?> getJoin(String path) {
         From<?, ?> join = joinsByPath.get(path);
         if (join == null && parent != null) {
             return parent.getJoin(path);
@@ -52,11 +55,12 @@ public class JoinTracker {
         return join;
     }
 
-    public From<?, ?> getRoot() {
+    From<?, ?> getRoot() {
         return root;
     }
 
-    public void setRoot(From<?, ?> root) {
+    void setRoot(From<?, ?> root) {
         this.root = root;
     }
+
 }

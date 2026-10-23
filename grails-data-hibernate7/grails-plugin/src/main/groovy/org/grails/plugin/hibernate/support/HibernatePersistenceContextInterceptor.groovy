@@ -17,14 +17,13 @@
  *  under the License.
  */
 
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.plugin.hibernate.support;
 
 import java.sql.Connection;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -46,20 +45,23 @@ import org.grails.orm.hibernate.support.hibernate7.SessionHolder;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class HibernatePersistenceContextInterceptor
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class HibernatePersistenceContextInterceptor
         implements PersistenceContextInterceptor, SessionFactoryAwarePersistenceContextInterceptor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HibernatePersistenceContextInterceptor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HibernatePersistenceContextInterceptor);
     private HibernateDatastore hibernateDatastore;
 
-    private static ThreadLocal<Map<String, Boolean>> participate = ThreadLocal.withInitial(HashMap::new);
+    private static ThreadLocal<Map<String, Boolean>> participate = ThreadLocal.withInitial({ -> (Map<String, Boolean>) new HashMap<String, Boolean>() });
 
-    private static ThreadLocal<Map<String, Integer>> nestingCount = ThreadLocal.withInitial(HashMap::new);
+    private static ThreadLocal<Map<String, Integer>> nestingCount = ThreadLocal.withInitial({ -> (Map<String, Integer>) new HashMap<String, Integer>() });
 
     private String dataSourceName;
 
     static {
-        ShutdownOperations.addOperation(() -> {
+        ShutdownOperations.addOperation({ ->
             participate.remove();
             nestingCount.remove();
         });
@@ -68,14 +70,14 @@ public class HibernatePersistenceContextInterceptor
     private Deque<Connection> disconnected = new ConcurrentLinkedDeque<>();
     private final boolean transactionRequired;
 
-    public HibernatePersistenceContextInterceptor() {
+    HibernatePersistenceContextInterceptor() {
         this(ConnectionSource.DEFAULT);
     }
 
     /**
      * @param dataSourceName a name of dataSource
      */
-    public HibernatePersistenceContextInterceptor(String dataSourceName) {
+    HibernatePersistenceContextInterceptor(String dataSourceName) {
         this.dataSourceName = dataSourceName;
         this.transactionRequired = true;
     }
@@ -83,7 +85,7 @@ public class HibernatePersistenceContextInterceptor
     /* (non-Javadoc)
      * @see org.apache.groovy.grails.support.PersistenceContextInterceptor#destroy()
      */
-    public void destroy() {
+    void destroy() {
         DeferredBindingActions.clear();
         if (!disconnected.isEmpty()) {
             disconnected.pop();
@@ -97,22 +99,24 @@ public class HibernatePersistenceContextInterceptor
         LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
         try {
             disconnected.clear();
-            SessionFactoryUtils.closeSession(holder.getSession());
+            SessionFactoryUtils.closeSession(holder.session);
         } catch (RuntimeException ex) {
             LOG.error("Unexpected exception on closing Hibernate Session", ex);
         }
     }
 
-    public void disconnect() {
+    void disconnect() {
         throw new UnsupportedOperationException("disconnect is not supported by Hibernate 7");
     }
 
-    public void reconnect() {
+    void reconnect() {
         throw new UnsupportedOperationException("reconnect is not supported by Hibernate 7");
     }
 
-    public void flush() {
-        if (getSessionFactory() == null) return;
+    void flush() {
+        if (getSessionFactory() == null) {
+            return;
+        }
         if (!getParticipate()) {
             Session session = getSession();
             if (!transactionRequired) {
@@ -124,7 +128,7 @@ public class HibernatePersistenceContextInterceptor
                 // opened the session itself - for example around a non-transactional BootStrap.
                 // Flush and commit the owned session's pending changes in a short transaction so
                 // they are persisted rather than discarded when the session is closed in destroy().
-                org.hibernate.Transaction transaction = session.getTransaction();
+                org.hibernate.Transaction transaction = session.transaction;
                 boolean ownTransaction = transaction == null || !transaction.isActive();
                 if (ownTransaction) {
                     transaction = session.beginTransaction();
@@ -144,23 +148,31 @@ public class HibernatePersistenceContextInterceptor
         }
     }
 
-    public void clear() {
-        if (getSessionFactory() == null) return;
+    void clear() {
+        if (getSessionFactory() == null) {
+            return;
+        }
         getSession().clear();
     }
 
-    public void setReadOnly() {
-        if (getSessionFactory() == null) return;
+    void setReadOnly() {
+        if (getSessionFactory() == null) {
+            return;
+        }
         getSession().setHibernateFlushMode(FlushMode.MANUAL);
     }
 
-    public void setReadWrite() {
-        if (getSessionFactory() == null) return;
+    void setReadWrite() {
+        if (getSessionFactory() == null) {
+            return;
+        }
         getSession().setHibernateFlushMode(FlushMode.AUTO);
     }
 
-    public boolean isOpen() {
-        if (getSessionFactory() == null) return false;
+    boolean isOpen() {
+        if (getSessionFactory() == null) {
+            return false;
+        }
         try {
             return getSession(false).isOpen();
         } catch (Exception e) {
@@ -171,7 +183,7 @@ public class HibernatePersistenceContextInterceptor
     /* (non-Javadoc)
      * @see org.apache.groovy.grails.support.PersistenceContextInterceptor#init()
      */
-    public void init() {
+    void init() {
         if (incNestingCount() > 1) {
             return;
         }
@@ -204,7 +216,7 @@ public class HibernatePersistenceContextInterceptor
 
         if (value instanceof SessionHolder) {
             SessionHolder sessionHolder = (SessionHolder) value;
-            return sessionHolder.getSession();
+            return sessionHolder.session;
         }
 
         if (allowCreate && hibernateDatastore != null) {
@@ -218,16 +230,16 @@ public class HibernatePersistenceContextInterceptor
     /**
      * @return the sessionFactory
      */
-    public SessionFactory getSessionFactory() {
-        return hibernateDatastore.getSessionFactory();
+    SessionFactory getSessionFactory() {
+        return hibernateDatastore.sessionFactory;
     }
 
-    public void setHibernateDatastore(HibernateDatastore hibernateDatastore) {
+    void setHibernateDatastore(HibernateDatastore hibernateDatastore) {
         this.hibernateDatastore = hibernateDatastore;
     }
 
     @Override
-    public void setSessionFactory(SessionFactory sessionFactory) {
+    void setSessionFactory(SessionFactory sessionFactory) {
         // ignore
     }
 
@@ -260,4 +272,5 @@ public class HibernatePersistenceContextInterceptor
         Boolean ret = map.get(dataSourceName);
         return (ret != null) ? ret : false;
     }
+
 }

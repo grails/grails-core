@@ -1,28 +1,25 @@
 package com.example.ejb3.auction;
 
-import java.util.List;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 
-import lombok.Getter;
-import lombok.Setter;
+import groovy.transform.CompileStatic;
 
-@Getter
-@Setter
 @Entity
-public class User extends Persistent {
-    private String userName;
-    private String password;
-    private String email;
-    private Name name;
-    @OneToMany(mappedBy = "bidder", cascade = CascadeType.ALL)
-    private List<Bid> bids;
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
-    private List<AuctionItem> auctions;
+@CompileStatic
+class User extends Persistent {
 
-    public String toString() {
+    String userName;
+    String password;
+    String email;
+    Name name;
+    @OneToMany(mappedBy = "bidder", cascade = CascadeType.ALL)
+    List<Bid> bids;
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
+    List<AuctionItem> auctions;
+
+    String toString() {
         return userName;
     }
 

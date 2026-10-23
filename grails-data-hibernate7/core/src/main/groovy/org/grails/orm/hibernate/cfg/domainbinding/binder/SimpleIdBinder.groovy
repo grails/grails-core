@@ -16,10 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.MappingException;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.mapping.BasicValue;
@@ -33,15 +34,17 @@ import org.grails.orm.hibernate.cfg.domainbinding.util.BasicValueCreator;
 import static org.grails.orm.hibernate.cfg.domainbinding.binder.GrailsDomainBinder.EMPTY_PATH;
 
 /** The simple id binder class. */
-@SuppressWarnings("PMD.DataflowAnomalyAnalysis")
-public class SimpleIdBinder {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.DataflowAnomalyAnalysis', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class SimpleIdBinder {
 
     private final MetadataBuildingContext metadataBuildingContext;
     private final BasicValueCreator basicValueCreator;
     private final SimpleValueBinder simpleValueBinder;
     private final PropertyBinder propertyBinder;
 
-    public SimpleIdBinder(
+    SimpleIdBinder(
             MetadataBuildingContext metadataBuildingContext,
             BasicValueCreator basicValueCreator,
             SimpleValueBinder simpleValueBinder,
@@ -52,12 +55,14 @@ public class SimpleIdBinder {
         this.propertyBinder = propertyBinder;
     }
 
-    public MetadataBuildingContext getMetadataBuildingContext() {
+    MetadataBuildingContext getMetadataBuildingContext() {
         return metadataBuildingContext;
     }
 
-    public void bindSimpleId(@Nonnull HibernatePersistentEntity persistentEntity) {
-        if (persistentEntity.getIdentityProperty() instanceof HibernateSimpleIdentityProperty simpleIdentityProperty) {
+    void bindSimpleId(@Nonnull HibernatePersistentEntity persistentEntity) {
+        if (persistentEntity.getIdentityProperty() instanceof HibernateSimpleIdentityProperty) {
+            HibernateSimpleIdentityProperty simpleIdentityProperty =
+                    (HibernateSimpleIdentityProperty) persistentEntity.getIdentityProperty();
             RootClass rootClass = persistentEntity.getRootClass();
             BasicValue id = basicValueCreator.bindBasicValue(simpleIdentityProperty);
             Property idProperty = new Property();

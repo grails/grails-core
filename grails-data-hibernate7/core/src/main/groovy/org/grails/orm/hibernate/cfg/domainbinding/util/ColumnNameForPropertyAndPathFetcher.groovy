@@ -16,41 +16,45 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.grails.orm.hibernate.cfg.domainbinding.util;
+package org.grails.orm.hibernate.cfg.domainbinding.util
 
-import java.util.Optional;
+import groovy.transform.CompileStatic
 
-import org.grails.orm.hibernate.cfg.ColumnConfig;
-import org.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy;
-import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
+import org.grails.orm.hibernate.cfg.ColumnConfig
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import org.grails.orm.hibernate.cfg.PersistentEntityNamingStrategy
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty
 
-public class ColumnNameForPropertyAndPathFetcher {
+@CompileStatic
+class ColumnNameForPropertyAndPathFetcher {
 
-    private static final String UNDERSCORE = "_";
-    private final PersistentEntityNamingStrategy namingStrategy;
-    private final DefaultColumnNameFetcher defaultColumnNameFetcher;
-    private final BackticksRemover backticksRemover;
+    private static final String UNDERSCORE = '_'
+    private final PersistentEntityNamingStrategy namingStrategy
+    private final DefaultColumnNameFetcher defaultColumnNameFetcher
+    private final BackticksRemover backticksRemover
 
-    public ColumnNameForPropertyAndPathFetcher(
+    ColumnNameForPropertyAndPathFetcher(
             PersistentEntityNamingStrategy namingStrategy,
             DefaultColumnNameFetcher defaultColumnNameFetcher,
             BackticksRemover backticksRemover) {
-        this.namingStrategy = namingStrategy;
-        this.defaultColumnNameFetcher = defaultColumnNameFetcher;
-        this.backticksRemover = backticksRemover;
+        this.namingStrategy = namingStrategy
+        this.defaultColumnNameFetcher = defaultColumnNameFetcher
+        this.backticksRemover = backticksRemover
     }
 
-    public String getColumnNameForPropertyAndPath(
+    String getColumnNameForPropertyAndPath(
             HibernatePersistentProperty grailsProp, String path, ColumnConfig cc) {
-        return Optional.ofNullable(grailsProp.getColumnName(cc)).orElseGet(() -> {
-            String suffix = defaultColumnNameFetcher.getDefaultColumnName(grailsProp);
-            return Optional.ofNullable(path)
-                    .filter(GrailsHibernateUtil::isNotEmpty)
-                    .map(p -> backticksRemover.apply(namingStrategy.resolveColumnName(p)) +
-                            UNDERSCORE +
-                            backticksRemover.apply(suffix))
-                    .orElse(suffix);
-        });
+        String columnName = grailsProp.getColumnName(cc)
+        if (columnName != null) {
+            return columnName
+        }
+        String suffix = defaultColumnNameFetcher.getDefaultColumnName(grailsProp)
+        if (path != null && GrailsHibernateUtil.isNotEmpty(path)) {
+            return backticksRemover.apply(namingStrategy.resolveColumnName(path)) +
+                    UNDERSCORE +
+                    backticksRemover.apply(suffix)
+        }
+        return suffix
     }
+
 }

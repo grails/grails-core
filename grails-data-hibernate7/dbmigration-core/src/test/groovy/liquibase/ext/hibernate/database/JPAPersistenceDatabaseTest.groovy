@@ -1,5 +1,6 @@
 package liquibase.ext.hibernate.database;
 
+import groovy.transform.CompileStatic;
 import liquibase.CatalogAndSchema;
 import liquibase.database.Database;
 import liquibase.integration.commandline.CommandLineUtils;
@@ -14,9 +15,11 @@ import static org.junit.Assert.*;
 /**
  * @author Mårten Svantesson
  */
-public class JPAPersistenceDatabaseTest {
+@CompileStatic
+class JPAPersistenceDatabaseTest {
+
     @Test
-    public void persistenceXML() throws Exception {
+    void persistenceXML() throws Exception {
         String url = "jpa:persistence:META-INF/persistence.xml";
         Database database = CommandLineUtils.createDatabaseObject(new ClassLoaderResourceAccessor(this.getClass().getClassLoader()), url, null, null, null, null, null, false, false, null, null, null, null, null, null, null);
 
@@ -26,4 +29,5 @@ public class JPAPersistenceDatabaseTest {
 
         HibernateEjb3DatabaseTest.assertEjb3HibernateMapped(snapshot);
     }
+
 }

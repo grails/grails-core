@@ -1,17 +1,16 @@
 package com.example.pojo.auction;
 
-import java.util.Date;
+import groovy.transform.CompileStatic;
 
-import lombok.Getter;
+@CompileStatic
+class AuctionInfo {
 
-@Getter
-public class AuctionInfo {
-    private long id;
-    private String description;
-    private Date ends;
-    private Float maxAmount;
+    long id;
+    String description;
+    Date ends;
+    Float maxAmount;
 
-    public AuctionInfo(long id, String description, Date ends, Float maxAmount) {
+    AuctionInfo(long id, String description, Date ends, Float maxAmount) {
         this.id = id;
         this.description = description;
         this.ends = ends;

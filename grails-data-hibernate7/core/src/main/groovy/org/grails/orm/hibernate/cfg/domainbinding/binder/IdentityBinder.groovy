@@ -16,34 +16,39 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.MappingException;
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateCompositeIdentityProperty;
+import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateIdentityProperty;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentEntity;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateSimpleIdentityProperty;
 
-public class IdentityBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class IdentityBinder {
 
     private final SimpleIdBinder simpleIdBinder;
     private final CompositeIdBinder compositeIdBinder;
 
-    public IdentityBinder(SimpleIdBinder simpleIdBinder, CompositeIdBinder compositeIdBinder) {
+    IdentityBinder(SimpleIdBinder simpleIdBinder, CompositeIdBinder compositeIdBinder) {
         this.simpleIdBinder = simpleIdBinder;
         this.compositeIdBinder = compositeIdBinder;
     }
 
-    public void bindIdentity(@Nonnull HibernatePersistentEntity domainClass) {
-        var identityProperty = domainClass.getIdentityProperty();
+    void bindIdentity(@Nonnull HibernatePersistentEntity domainClass) {
+        HibernateIdentityProperty identityProperty = domainClass.getIdentityProperty();
         if (identityProperty instanceof HibernateCompositeIdentityProperty) {
             compositeIdBinder.bindCompositeId(domainClass);
         } else if (identityProperty instanceof HibernateSimpleIdentityProperty) {
             simpleIdBinder.bindSimpleId(domainClass);
         } else {
-            throw new MappingException("No identity found for " + domainClass.getName());
+            throw new MappingException('No identity found for ' + domainClass.getName());
         }
     }
 }

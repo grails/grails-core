@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package liquibase.ext.hibernate.snapshot;
 
 import liquibase.CatalogAndSchema;
@@ -15,25 +33,25 @@ import liquibase.structure.core.Table;
 import org.hibernate.dialect.HSQLDialect;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Verifies that @IdGeneratorType-based custom generators (e.g. @SnowflakeId)
  * are NOT detected as database-native auto-increment or sequences when they
  * are application-assigned (the default when @GeneratedValue is absent).
  */
-public class CustomIdGeneratorTest {
+class CustomIdGeneratorTest {
 
     @Test
-    public void customIdGeneratorIsNotAutoIncrementWhenGeneratedValueIsAbsent() throws Exception {
+    void customIdGeneratorIsNotAutoIncrementWhenGeneratedValueIsAbsent() throws Exception {
         String packages = "com.example.ejb3.customid";
         Database database = new HibernateSpringPackageDatabase();
         database.setDefaultSchemaName("PUBLIC");
         database.setDefaultCatalogName("TESTDB");
         database.setConnection(new JdbcConnection(new HibernateConnection(
-                "hibernate:spring:" + packages + "?dialect=" + HSQLDialect.class.getName(),
+                'hibernate:spring:' + packages + '?dialect=' + HSQLDialect.name,
                 new ClassLoaderResourceAccessor())));
-
         DatabaseSnapshot snapshot = SnapshotGeneratorFactory.getInstance()
                 .createSnapshot(CatalogAndSchema.DEFAULT, database, new SnapshotControl(database));
 
@@ -46,4 +64,5 @@ public class CustomIdGeneratorTest {
         assertFalse("@SnowflakeId (without @GeneratedValue) should NOT be auto-increment",
                 idColumn.isAutoIncrement());
     }
+
 }

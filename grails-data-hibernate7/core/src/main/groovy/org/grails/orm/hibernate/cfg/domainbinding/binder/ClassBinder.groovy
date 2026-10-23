@@ -16,8 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.boot.spi.InFlightMetadataCollector;
 import org.hibernate.mapping.PersistentClass;
 import org.jspecify.annotations.NonNull;
@@ -32,11 +34,14 @@ import static org.grails.orm.hibernate.cfg.GrailsHibernateUtil.unqualify;
  *
  * @since 8.0
  */
-public class ClassBinder {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class ClassBinder {
 
     private final InFlightMetadataCollector collector;
 
-    public ClassBinder(@NonNull InFlightMetadataCollector collector) {
+    ClassBinder(@NonNull InFlightMetadataCollector collector) {
         this.collector = collector;
     }
 
@@ -47,9 +52,9 @@ public class ClassBinder {
      * @param persistentEntity The Grails domain class
      * @param persistentClass The persistent class
      */
-    public void bindClass(@NonNull GrailsHibernatePersistentEntity persistentEntity, PersistentClass persistentClass) {
+    void bindClass(@NonNull GrailsHibernatePersistentEntity persistentEntity, PersistentClass persistentClass) {
         persistentClass.setLazy(true);
-        var entityName = persistentEntity.getName();
+        String entityName = persistentEntity.getName();
         persistentClass.setEntityName(entityName);
         persistentClass.setJpaEntityName(entityName);
         persistentClass.setProxyInterfaceName(entityName);

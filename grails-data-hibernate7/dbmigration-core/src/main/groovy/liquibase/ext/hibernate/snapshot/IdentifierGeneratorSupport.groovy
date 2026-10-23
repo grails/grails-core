@@ -1,5 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
+import groovy.transform.CompileStatic;
+import groovy.transform.PackageScope;
 import liquibase.Scope;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.relational.QualifiedName;
@@ -13,6 +34,10 @@ import org.hibernate.mapping.SimpleValue;
 /**
  * Shared helpers for the snapshot generators that inspect identifier generators.
  */
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+@PackageScope
 final class IdentifierGeneratorSupport {
 
     private IdentifierGeneratorSupport() {
@@ -22,14 +47,14 @@ final class IdentifierGeneratorSupport {
      * Uses the configured creator when available, otherwise checks explicit annotation or mapping intent.
      */
     static boolean hasGenerationIntent(SimpleValue simpleValue) {
-        var creator = simpleValue.getCustomIdGeneratorCreator();
+        def creator = simpleValue.getCustomIdGeneratorCreator();
         if (creator != null) {
             return !creator.isAssigned();
         }
-        var memberDetails = simpleValue.getMemberDetails();
+        def memberDetails = simpleValue.getMemberDetails();
         return memberDetails == null ||
-                memberDetails.hasDirectAnnotationUsage(jakarta.persistence.GeneratedValue.class) ||
-                memberDetails.hasDirectAnnotationUsage(org.hibernate.annotations.NativeGenerator.class);
+                memberDetails.hasDirectAnnotationUsage(jakarta.persistence.GeneratedValue) ||
+                memberDetails.hasDirectAnnotationUsage(org.hibernate.annotations.NativeGenerator);
     }
 
     static SequenceKey sequenceKey(QualifiedName name) {
@@ -51,35 +76,36 @@ final class IdentifierGeneratorSupport {
      */
     static Generator nativeDelegate(NativeGenerator nativeGen) {
         try {
-            var field = NativeGenerator.class.getDeclaredField("dialectNativeGenerator");
+            def field = NativeGenerator.getDeclaredField('dialectNativeGenerator');
             field.setAccessible(true);
             return (Generator) field.get(nativeGen);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            Scope.getCurrentScope().getLog(IdentifierGeneratorSupport.class)
+            Scope.getCurrentScope().getLog(IdentifierGeneratorSupport)
                     .fine("Could not access NativeGenerator delegate", e);
             return null;
         }
     }
 
     static GeneratorSettings createGeneratorSettings(SimpleValue simpleValue) {
-        var buildingContext = simpleValue.getBuildingContext();
+        def buildingContext = simpleValue.getBuildingContext();
         return new GeneratorSettings() {
             @Override
-            public String getDefaultCatalog() {
+            String getDefaultCatalog() {
                 return null;
             }
 
             @Override
-            public String getDefaultSchema() {
+            String getDefaultSchema() {
                 return null;
             }
 
             @Override
-            public SqlStringGenerationContext getSqlStringGenerationContext() {
-                var db = buildingContext.getMetadataCollector().getDatabase();
+            SqlStringGenerationContext getSqlStringGenerationContext() {
+                def db = buildingContext.getMetadataCollector().getDatabase();
                 return SqlStringGenerationContextImpl.fromExplicit(
                         db.getJdbcEnvironment(), db, getDefaultCatalog(), getDefaultSchema());
             }
         };
     }
+
 }

@@ -18,9 +18,6 @@
  */
 package liquibase.ext.hibernate.snapshot;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import liquibase.CatalogAndSchema;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
@@ -46,44 +43,43 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class IdentifierGeneratorSnapshotTest {
+class IdentifierGeneratorSnapshotTest {
 
     @Test
-    public void oracleNativeSequenceIsNotAutoIncrement() throws Exception {
-        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.customid", OracleDialect.class);
+    void oracleNativeSequenceIsNotAutoIncrement() throws Exception {
+        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.customid", OracleDialect);
 
         Column column = idColumn(snapshot, "native_gen_entity");
-
         assertFalse("Oracle native sequences are not identity columns", column.isAutoIncrement());
         assertNull("Oracle native sequences do not use PostgreSQL nextval defaults", column.getDefaultValue());
         assertTrue(sequenceNames(snapshot).contains("native_gen_seq"));
     }
 
     @Test
-    public void mysqlTableBackedGeneratorsAreNotSequences() throws Exception {
-        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.auction", MySQLDialect.class);
+    void mysqlTableBackedGeneratorsAreNotSequences() throws Exception {
+        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.auction", MySQLDialect);
 
-        assertTrue("MySQL sequence emulation must not produce Liquibase sequences", snapshot.get(Sequence.class).isEmpty());
+        assertTrue("MySQL sequence emulation must not produce Liquibase sequences", snapshot.get(Sequence).isEmpty());
     }
 
     @Test
-    public void qualifiedSequenceIsAddedOnceWithBareName() throws Exception {
-        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.qualifiedsequence", PostgreSQLDialect.class);
+    void qualifiedSequenceIsAddedOnceWithBareName() throws Exception {
+        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.qualifiedsequence", PostgreSQLDialect);
 
-        assertEquals(Set.of("qs_seq"), sequenceNames(snapshot));
-        assertEquals("Namespace and generator passes must not duplicate a sequence", 1, snapshot.get(Sequence.class).size());
+        assertEquals(['qs_seq'] as Set, sequenceNames(snapshot));
+        assertEquals("Namespace and generator passes must not duplicate a sequence", 1, snapshot.get(Sequence).size());
         assertEquals("Qualified sequences stay in the synthetic schema so the default diff still emits them",
-                "HIBERNATE", snapshot.get(Sequence.class).iterator().next().getSchema().getName());
+                "HIBERNATE", snapshot.get(Sequence).iterator().next().getSchema().getName());
         Column column = idColumn(snapshot, "QualifiedSequenceEntity");
         assertFalse(column.isAutoIncrement());
         assertTrue(column.getDefaultValue().toString().contains("nextval('app.qs_seq'::regclass)"));
     }
 
     @Test
-    public void forcedTableGeneratorHasNoSequenceOrNextvalDefault() throws Exception {
-        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.forcedtable", PostgreSQLDialect.class);
+    void forcedTableGeneratorHasNoSequenceOrNextvalDefault() throws Exception {
+        DatabaseSnapshot snapshot = snapshot("com.example.ejb3.forcedtable", PostgreSQLDialect);
 
-        assertTrue(snapshot.get(Sequence.class).isEmpty());
+        assertTrue(snapshot.get(Sequence).isEmpty());
         Column column = idColumn(snapshot, "ForcedTableEntity");
         assertFalse(column.isAutoIncrement());
         assertNull(column.getDefaultValue());
@@ -94,7 +90,7 @@ public class IdentifierGeneratorSnapshotTest {
         database.setDefaultSchemaName("PUBLIC");
         database.setDefaultCatalogName("TESTDB");
         database.setConnection(new JdbcConnection(new HibernateConnection(
-                "hibernate:spring:" + packages + "?dialect=" + dialect.getName(),
+                'hibernate:spring:' + packages + '?dialect=' + dialect.name,
                 new ClassLoaderResourceAccessor())));
         return SnapshotGeneratorFactory.getInstance()
                 .createSnapshot(CatalogAndSchema.DEFAULT, database, new SnapshotControl(database));
@@ -109,6 +105,7 @@ public class IdentifierGeneratorSnapshotTest {
     }
 
     private Set<String> sequenceNames(DatabaseSnapshot snapshot) {
-        return snapshot.get(Sequence.class).stream().map(Sequence::getName).collect(Collectors.toSet());
+        return snapshot.get(Sequence).collect { Sequence sequence -> sequence.getName() } as Set<String>;
     }
+
 }

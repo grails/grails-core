@@ -16,8 +16,10 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.hibernate;
 
+import groovy.transform.CompileStatic;
 import org.hibernate.mapping.PersistentClass;
 
 import org.grails.datastore.mapping.core.connections.ConnectionSourcesSupport;
@@ -26,75 +28,80 @@ import org.grails.datastore.mapping.model.EmbeddedPersistentEntity;
 import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.orm.hibernate.cfg.Mapping;
 
-public class HibernateEmbeddedPersistentEntity extends EmbeddedPersistentEntity<Mapping>
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class HibernateEmbeddedPersistentEntity extends EmbeddedPersistentEntity<Mapping>
         implements GrailsHibernatePersistentEntity {
 
     private final ClassMapping<Mapping> classMapping;
     private String dataSourceName;
     private PersistentClass persistentClass;
 
-    public HibernateEmbeddedPersistentEntity(Class<?> type, MappingContext ctx) {
+    HibernateEmbeddedPersistentEntity(Class<?> type, MappingContext ctx) {
         super(type, ctx);
         this.classMapping = new HibernateEmbeddedClassMapping(this, ctx);
     }
 
     @Override
-    public Mapping getMappedForm() {
+    Mapping getMappedForm() {
         return classMapping.getMappedForm();
     }
 
     @Override
-    public String getDataSourceName() {
+    String getDataSourceName() {
         return dataSourceName;
     }
 
     @Override
-    public void setDataSourceName(String dataSourceName) {
+    void setDataSourceName(String dataSourceName) {
         this.dataSourceName = dataSourceName;
     }
 
     @Override
-    public HibernatePersistentProperty getIdentity() {
-        return super.getIdentity() instanceof HibernatePersistentProperty ghpp ? ghpp : null;
+    HibernatePersistentProperty getIdentity() {
+        def identity = super.getIdentity();
+        return identity instanceof HibernatePersistentProperty ? (HibernatePersistentProperty) identity : null;
     }
 
     @Override
-    public HibernatePersistentProperty[] getCompositeIdentity() {
+    HibernatePersistentProperty[] getCompositeIdentity() {
         return new HibernatePersistentProperty[0];
     }
 
     @Override
-    public HibernatePersistentProperty getVersion() {
-        return super.getVersion() instanceof HibernatePersistentProperty ghpp ? ghpp : null;
+    HibernatePersistentProperty getVersion() {
+        def version = super.getVersion();
+        return version instanceof HibernatePersistentProperty ? (HibernatePersistentProperty) version : null;
     }
 
     @Override
-    public boolean forGrailsDomainMapping(String dataSourceName) {
+    boolean forGrailsDomainMapping(String dataSourceName) {
         return false;
     }
 
     @Override
-    public boolean usesConnectionSource(String dataSourceName) {
+    boolean usesConnectionSource(String dataSourceName) {
         return ConnectionSourcesSupport.usesConnectionSource(this, dataSourceName);
     }
 
     @Override
-    public boolean isAbstract() {
+    boolean isAbstract() {
         return false;
     }
 
     @Override
-    public ClassMapping<Mapping> getMapping() {
+    ClassMapping<Mapping> getMapping() {
         return classMapping;
     }
 
     @Override
-    public PersistentClass getPersistentClass() {
+    PersistentClass getPersistentClass() {
         return persistentClass;
     }
 
     @Override
-    public void setPersistentClass(PersistentClass persistentClass) {
+    void setPersistentClass(PersistentClass persistentClass) {
         this.persistentClass = persistentClass;
     }
 }

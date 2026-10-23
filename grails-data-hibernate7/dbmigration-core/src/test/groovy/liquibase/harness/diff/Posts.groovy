@@ -2,7 +2,11 @@ package liquibase.harness.diff;
 
 import java.sql.Date;
 
-public class Posts {
+import groovy.transform.CompileStatic;
+
+@CompileStatic
+class Posts {
+
     int id;
     int authorId;
     String title;
@@ -69,4 +73,5 @@ public class Posts {
     public void setInsertedDate(Date insertedDate) {
         this.insertedDate = insertedDate;
     }
+
 }

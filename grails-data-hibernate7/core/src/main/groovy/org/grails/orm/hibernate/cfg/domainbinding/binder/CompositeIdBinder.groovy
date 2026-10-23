@@ -16,14 +16,16 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
+@SuppressWarnings('UnnecessarySemicolon')
 package org.grails.orm.hibernate.cfg.domainbinding.binder;
 
+import groovy.transform.CompileStatic;
 import jakarta.annotation.Nonnull;
-
 import org.hibernate.MappingException;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.mapping.Component;
 import org.hibernate.mapping.RootClass;
+import org.hibernate.mapping.Value;
 import org.jspecify.annotations.NonNull;
 
 import org.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -31,14 +33,16 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateCompositeId
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentEntity;
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernatePersistentProperty;
 
-@SuppressWarnings("PMD.DataflowAnomalyAnalysis")
-public class CompositeIdBinder {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['PMD.DataflowAnomalyAnalysis', 'UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+class CompositeIdBinder {
 
     private final MetadataBuildingContext metadataBuildingContext;
     private final ComponentUpdater componentUpdater;
     private final GrailsPropertyBinder grailsPropertyBinder;
 
-    public CompositeIdBinder(
+    CompositeIdBinder(
             MetadataBuildingContext metadataBuildingContext,
             ComponentUpdater componentUpdater,
             GrailsPropertyBinder grailsPropertyBinder) {
@@ -47,12 +51,14 @@ public class CompositeIdBinder {
         this.grailsPropertyBinder = grailsPropertyBinder;
     }
 
-    public void bindCompositeId(@Nonnull HibernatePersistentEntity domainClass) {
-        if (domainClass.getIdentityProperty() instanceof HibernateCompositeIdentityProperty compositeIdentityProperty) {
+    void bindCompositeId(@Nonnull HibernatePersistentEntity domainClass) {
+        if (domainClass.getIdentityProperty() instanceof HibernateCompositeIdentityProperty) {
+            HibernateCompositeIdentityProperty compositeIdentityProperty =
+                    (HibernateCompositeIdentityProperty) domainClass.getIdentityProperty();
             Component id = getComponent(domainClass);
 
-            for (HibernatePersistentProperty property : compositeIdentityProperty.getParts()) {
-                var value = grailsPropertyBinder.bindProperty(property, null, "");
+            for (HibernatePersistentProperty property in compositeIdentityProperty.getParts()) {
+                Value value = grailsPropertyBinder.bindProperty(property, null, "");
                 componentUpdater.updateComponent(id, null, property, value);
             }
             return;
@@ -60,7 +66,8 @@ public class CompositeIdBinder {
         throw new MappingException("Invalid composite id binding for entity [" + domainClass.getName() + "]");
     }
 
-    private @NonNull Component getComponent(@NonNull HibernatePersistentEntity domainClass) {
+    @NonNull
+    private Component getComponent(@NonNull HibernatePersistentEntity domainClass) {
         RootClass rootClass = domainClass.getRootClass();
         Component id = new Component(metadataBuildingContext, rootClass);
         id.setNullValue("undefined");

@@ -1,18 +1,24 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.snapshot;
 
+import groovy.transform.CompileStatic;
 import liquibase.exception.DatabaseException;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.InvalidExampleException;
 import liquibase.snapshot.SnapshotGenerator;
+import liquibase.snapshot.jvm.ForeignKeySnapshotGenerator;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.ForeignKey;
 import liquibase.structure.core.Table;
 import org.hibernate.mapping.Column;
 
-public class HibernateForeignKeySnapshotGenerator extends HibernateSnapshotGenerator {
+// TODO(groovyism-cleanup): semicolons kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon'])
+@CompileStatic
+class HibernateForeignKeySnapshotGenerator extends HibernateSnapshotGenerator {
 
-    public HibernateForeignKeySnapshotGenerator() {
-        super(ForeignKey.class, new Class[] {Table.class});
+    HibernateForeignKeySnapshotGenerator() {
+        super(ForeignKey, Table);
     }
 
     @Override
@@ -24,10 +30,11 @@ public class HibernateForeignKeySnapshotGenerator extends HibernateSnapshotGener
     @Override
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot)
             throws DatabaseException, InvalidExampleException {
-        if (!snapshot.getSnapshotControl().shouldInclude(ForeignKey.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(ForeignKey)) {
             return;
         }
-        if (foundObject instanceof Table table) {
+        if (foundObject instanceof Table) {
+            Table table = (Table) foundObject;
             org.hibernate.mapping.Table hibernateTable = findHibernateTable(table, snapshot);
             if (hibernateTable == null) {
                 return;
@@ -37,7 +44,8 @@ public class HibernateForeignKeySnapshotGenerator extends HibernateSnapshotGener
                 if (hibernateForeignKey.isCreationEnabled()) {
                     org.hibernate.mapping.Table hibernateReferencedTable = hibernateForeignKey.getReferencedTable();
 
-                    Table referencedTable = new Table().setName(hibernateReferencedTable.getName());
+                    Table referencedTable = new Table();
+                    referencedTable.setName(hibernateReferencedTable.getName());
                     referencedTable.setSchema(
                             hibernateReferencedTable.getCatalog(), hibernateReferencedTable.getSchema());
 
@@ -54,8 +62,7 @@ public class HibernateForeignKeySnapshotGenerator extends HibernateSnapshotGener
                     if (fk.getPrimaryKeyColumns() == null ||
                             fk.getPrimaryKeyColumns().isEmpty()) {
                         if (hibernateReferencedTable.getPrimaryKey() != null) {
-                            for (Column column :
-                                    hibernateReferencedTable.getPrimaryKey().getColumns()) {
+                            for (Column column : hibernateReferencedTable.getPrimaryKey().getColumns()) {
                                 fk.addPrimaryKeyColumn(new liquibase.structure.core.Column(column.getName()));
                             }
                         }
@@ -74,7 +81,8 @@ public class HibernateForeignKeySnapshotGenerator extends HibernateSnapshotGener
     }
 
     @Override
-    public Class<? extends SnapshotGenerator>[] replaces() {
-        return new Class[] {liquibase.snapshot.jvm.ForeignKeySnapshotGenerator.class};
+    Class<? extends SnapshotGenerator>[] replaces() {
+        return [ForeignKeySnapshotGenerator] as Class<? extends SnapshotGenerator>[];
     }
+
 }

@@ -1,7 +1,8 @@
+@SuppressWarnings('UnnecessarySemicolon')
 package liquibase.ext.hibernate.database;
 
-import java.util.Optional;
-
+import groovy.transform.CompileStatic;
+import groovy.transform.stc.POJO;
 import liquibase.database.DatabaseConnection;
 import liquibase.exception.DatabaseException;
 import org.hibernate.boot.Metadata;
@@ -16,31 +17,38 @@ import org.hibernate.service.ServiceRegistry;
 /**
  * Database implementation for "classic" hibernate configurations.
  */
-public class HibernateClassicDatabase extends HibernateDatabase {
+// TODO(groovyism-cleanup): semicolons + double-quoted strings kept to preserve rename-similarity against the original .java (see matrei's review on #16576). Removed by the stacked groovyism-cleanup PR.
+@SuppressWarnings(['UnnecessarySemicolon', 'UnnecessaryGString'])
+@CompileStatic
+@POJO // see HibernateDatabase
+class HibernateClassicDatabase extends HibernateDatabase {
 
     protected Configuration configuration;
     // Track the registry so we can close it later
     private ServiceRegistry serviceRegistry;
 
     @Override
-    public boolean isCorrectDatabaseImplementation(DatabaseConnection conn) {
-        return Optional.ofNullable(conn.getURL())
-                .map(url -> url.startsWith("hibernate:classic:"))
-                .orElse(false);
+    boolean isCorrectDatabaseImplementation(DatabaseConnection conn) {
+        String url = conn.getURL();
+        return url != null && url.startsWith('hibernate:classic:');
     }
 
     @Override
     protected String findDialectName() {
-        return Optional.ofNullable(super.findDialectName())
-                .or(() -> Optional.ofNullable(configuration).map(c -> c.getProperty(AvailableSettings.DIALECT)))
-                .orElse(null);
+        String dialectName = super.findDialectName();
+        if (dialectName != null) {
+            return dialectName;
+        }
+        return configuration != null ? configuration.getProperty(AvailableSettings.DIALECT) : null;
     }
 
     @Override
     protected Metadata buildMetadataFromPath() throws DatabaseException {
         this.configuration = new Configuration();
-        String path = Optional.ofNullable(getHibernateConnection().getPath())
-                .orElseThrow(() -> new IllegalStateException("Hibernate connection path is null"));
+        String path = getHibernateConnection().getPath();
+        if (path == null) {
+            throw new IllegalStateException('Hibernate connection path is null');
+        }
         this.configuration.configure(path);
 
         return super.buildMetadataFromPath();
@@ -49,8 +57,10 @@ public class HibernateClassicDatabase extends HibernateDatabase {
     @Override
     protected void configureSources(MetadataSources sources) {
         Configuration config = new Configuration(sources);
-        String path = Optional.ofNullable(getHibernateConnection().getPath())
-                .orElseThrow(() -> new IllegalStateException("Hibernate connection path is null"));
+        String path = getHibernateConnection().getPath();
+        if (path == null) {
+            throw new IllegalStateException('Hibernate connection path is null');
+        }
         config.configure(path);
 
         config.setProperty(HibernateDatabase.HIBERNATE_TEMP_USE_JDBC_METADATA_DEFAULTS, Boolean.FALSE.toString());
@@ -60,8 +70,8 @@ public class HibernateClassicDatabase extends HibernateDatabase {
         this.serviceRegistry = configuration
                 .getStandardServiceRegistryBuilder()
                 .applySettings(config.getProperties())
-                .addService(ConnectionProvider.class, new NoOpConnectionProvider())
-                .addService(MultiTenantConnectionProvider.class, new NoOpMultiTenantConnectionProvider())
+                .addService(ConnectionProvider, new NoOpConnectionProvider())
+                .addService(MultiTenantConnectionProvider, new NoOpMultiTenantConnectionProvider())
                 .build();
 
         // We build the factory to finalize the configuration, but we don't
@@ -70,7 +80,7 @@ public class HibernateClassicDatabase extends HibernateDatabase {
     }
 
     @Override
-    public void close() throws DatabaseException {
+    void close() throws DatabaseException {
         try {
             if (serviceRegistry != null) {
                 StandardServiceRegistryBuilder.destroy(serviceRegistry);
@@ -81,7 +91,7 @@ public class HibernateClassicDatabase extends HibernateDatabase {
     }
 
     @Override
-    public String getShortName() {
+    String getShortName() {
         return "hibernateClassic";
     }
 
@@ -89,4 +99,5 @@ public class HibernateClassicDatabase extends HibernateDatabase {
     protected String getDefaultDatabaseProductName() {
         return "Hibernate Classic";
     }
+
 }

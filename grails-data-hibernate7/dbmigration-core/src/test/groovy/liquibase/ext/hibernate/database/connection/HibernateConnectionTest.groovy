@@ -1,5 +1,6 @@
 package liquibase.ext.hibernate.database.connection;
 
+import groovy.transform.CompileStatic;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.After;
 import org.junit.Assert;
@@ -8,22 +9,23 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class HibernateConnectionTest {
+@CompileStatic
+class HibernateConnectionTest {
 
     private final String FILE_PATH = "/path/to/file.ext";
 
     @Before
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
 
     }
 
     @After
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
 
     }
 
     @Test
-    public void testHibernateUrlSimple() {
+    void testHibernateUrlSimple() {
         HibernateConnection conn = new HibernateConnection("hibernate:classic:" + FILE_PATH, new ClassLoaderResourceAccessor());
         Assert.assertEquals("hibernate:classic", conn.getPrefix());
         assertEquals(FILE_PATH, conn.getPath());
@@ -31,7 +33,7 @@ public class HibernateConnectionTest {
     }
 
     @Test
-    public void testHibernateUrlWithProperties() {
+    void testHibernateUrlWithProperties() {
         HibernateConnection conn = new HibernateConnection("hibernate:classic:" + FILE_PATH + "?foo=bar&name=John+Doe", new ClassLoaderResourceAccessor());
         assertEquals("hibernate:classic", conn.getPrefix());
         assertEquals(FILE_PATH, conn.getPath());
@@ -41,7 +43,7 @@ public class HibernateConnectionTest {
     }
 
     @Test
-    public void testEjb3UrlSimple() {
+    void testEjb3UrlSimple() {
         HibernateConnection conn = new HibernateConnection("hibernate:ejb3:" + FILE_PATH, new ClassLoaderResourceAccessor());
         assertEquals("hibernate:ejb3", conn.getPrefix());
         assertEquals(FILE_PATH, conn.getPath());
@@ -49,7 +51,7 @@ public class HibernateConnectionTest {
     }
 
     @Test
-    public void testEjb3UrlWithProperties() {
+    void testEjb3UrlWithProperties() {
         HibernateConnection conn = new HibernateConnection("hibernate:ejb3:" + FILE_PATH + "?foo=bar&name=John+Doe", new ClassLoaderResourceAccessor());
         assertEquals("hibernate:ejb3", conn.getPrefix());
         assertEquals(FILE_PATH, conn.getPath());
@@ -57,4 +59,5 @@ public class HibernateConnectionTest {
         assertEquals("bar", conn.getProperties().getProperty("foo", null));
         assertEquals("John Doe", conn.getProperties().getProperty("name", null));
     }
+
 }

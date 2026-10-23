@@ -2,16 +2,15 @@ package com.example.ejb3.auction;
 
 import jakarta.persistence.Embeddable;
 
-import lombok.Getter;
-import lombok.Setter;
+import groovy.transform.CompileStatic;
 
-@Setter
-@Getter
 @Embeddable
-public class Name {
-    private String firstName;
-    private String lastName;
-    private Character initial;
+@CompileStatic
+class Name {
+
+    String firstName;
+    String lastName;
+    Character initial;
 
     public Name(String first, Character middle, String last) {
         firstName = first;
