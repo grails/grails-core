@@ -89,6 +89,13 @@ The Spring TestContext Framework used to ignore such a class unless its class hi
 Grails 8 already logs a warning for each one it ignores, so a test run on Grails 8 shows the affected tests.
 Remove the `@Configuration` annotation, or move the class to a top-level class, if the test should not load it.
 
+[TIP]
+====
+The Spring Boot properties migrator, described in the link:upgrading.html#upgrading80x[Grails 8 upgrade guide], finds the configuration properties Spring Boot 4.2 renames, such as `server.tomcat.use-relative-redirects`.
+Spring Boot 4.2 can also make the application fail to start while such a property is left: set `spring.properties.migrator.fail` to `on-warning` to fail on renamed and removed properties, or to `on-error` to fail on removed ones only.
+The default, `never`, only logs them.
+====
+
 ==== 2. graphql-java 26 for GraphQL Applications
 
 Spring Boot 4.2 manages graphql-java 26, so applications using the GraphQL plugin (`grails-data-graphql`) move from graphql-java 25 to graphql-java 26.1.
