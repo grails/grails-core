@@ -118,7 +118,7 @@ class SpringJsonRespondSpec extends Specification implements HttpClientSupport {
         response.assertStatus(409)
         response.contentType == 'application/problem+json'
         response.json().detail == 'The title is taken'
-        response.json().instance == '/book/conflict'
+        !response.json().containsKey('instance')
         response.json().advisedBy == 'ProblemAdvice'
     }
 
