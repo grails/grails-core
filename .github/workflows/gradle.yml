@@ -758,16 +758,25 @@ jobs:
     name: "Mongodb Functional Tests (Java ${{ matrix.java }}, MongoDB ${{ matrix.mongodb-version }}, indy=${{ matrix.indy }})"
     timeout-minutes: 150 # slowest run: 70 min
     # ubuntu-22.04 while https://github.com/actions/runner-images/issues/15005 is open: the ubuntu-24.04 image 20261018.339
-    # ships kernel 7.0.0-1017-azure, which MongoDB 8.0 reads as 7.0.0 and refuses to start on (it exits on 6.19.0 through
-    # 7.0.13), so every mongo:8.0 container of the MongoDB 8.0 lane dies before "waiting for connections". The ubuntu-22.04
-    # image runs kernel 6.8. Move back to ubuntu-24.04 once the issue is resolved or mongo:8.0 is 8.0.35 or newer.
+    # and the ubuntu-26.04 image ship kernel 7.0.0-1017-azure, which MongoDB 8.0 reads as 7.0.0 and refuses to start on (it
+    # exits on 6.19.0 through 7.0.13), so every mongo:8.0 container of the MongoDB 8.0 lane dies before "waiting for
+    # connections". The ubuntu-22.04 image runs kernel 6.8. The embedded server the 8.0 and 9.0 lanes start for their
+    # replica-set specifications, flapdoodle's V8_0 and V8_3 (8.0.23 and 8.3.2), predates even the exemption for 7.0.14
+    # and newer (SERVER-125742: 8.0.30 and 8.3.9) and exits on any kernel from 6.19.0 up, so moving back needs both a
+    # mongo:8.0 image with the fix (SERVER-131779: 8.0.35 was never released, so 8.0.36 or newer) and a flapdoodle
+    # release whose lines have it.
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         java: [ 21, 25 ]
-        mongodb-version: [ '7.0', '8.0' ] # test with supported versions https://www.mongodb.com/legal/support-policy/lifecycles
+        mongodb-version: [ '7.0', '8.0', '9.0' ] # test with supported versions https://www.mongodb.com/legal/support-policy/lifecycles
         indy: [ false ]
+        exclude:
+          # 7.0 is the oldest supported line and the one closest to its end of life: one JDK is enough for it, and
+          # 8.0 and 9.0 cover Java 25.
+          - java: 25
+            mongodb-version: '7.0'
         include:
           - java: 21
             mongodb-version: '7.0'
