@@ -328,6 +328,22 @@ a:
         config.getProperty('a.rows[0].port', Integer) == 1
     }
 
+    void 'a list merged as a value is read by the indexed keys of its elements and replaces those of the list before it'() {
+        given: "a list of maps written by index, as a configuration file writes it"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.rows[0].name': 'old', 'a.rows[1].name': 'second'])
+
+        when: "a list is merged over it as a value"
+        config.merge([a: [rows: [[name: 'new']]]])
+
+        then: "every lookup answers from the new list"
+        config.getProperty('a.rows', List) == [[name: 'new']]
+        config.navigate('a', 'rows') == [[name: 'new']]
+        config.getProperty('a.rows[0]', Map) == [name: 'new']
+        config.getProperty('a.rows[0].name') == 'new'
+        !config.containsProperty('a.rows[1].name')
+    }
+
     void 'a nested dotted merge over a scalar is read as the block'() {
         given: "a scalar merged first and a block merged over it second through a dotted key inside a nested map"
         def config = new PropertySourcesConfig()

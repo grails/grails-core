@@ -289,6 +289,47 @@ class NavigableMapSpec extends Specification {
         output.navigate('a', 'rows').keySet() == ['name'] as Set
     }
 
+    def "a list merged as a value writes the flat keys of its elements"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: [rows: [[name: 'row', port: 1], 'plain', ['x', 'y']]]], true)
+
+        then: 'each element, and each entry of an element that is a map, is read by its indexed key'
+        output['a.rows[0]'].is(output.navigate('a', 'rows')[0])
+        output['a.rows[0].name'] == 'row'
+        output['a.rows[0].port'] == 1
+        output['a.rows[1]'] == 'plain'
+        output['a.rows[2]'].is(output.navigate('a', 'rows')[2])
+        output['a.rows[2][1]'] == 'y'
+    }
+
+    @Unroll
+    def "a list written #description replaces the element keys of the list it replaces"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.rows[0].name': 'old', 'a.rows[1].name': 'second'], true)
+
+        when:
+        write(output)
+
+        then: 'the element keys name the elements of the new list'
+        output['a.rows'] == [[name: 'new']]
+        output.navigate('a', 'rows') == [[name: 'new']]
+        output['a.rows[0]'] == [name: 'new']
+        output['a.rows[0].name'] == 'new'
+
+        and: 'those of the elements the new list does not hold are gone'
+        !output.containsKey('a.rows[1]')
+        !output.containsKey('a.rows[1].name')
+
+        where:
+        description             | write
+        'by merge as a value'   | { NavigableMap map -> map.merge([a: [rows: [[name: 'new']]]], true) }
+        'by dot notation'       | { NavigableMap map -> map.a.rows = [[name: 'new']] }
+    }
+
     def "a nested dotted merge over a scalar moves the flat alias to the new block"() {
         given:
         NavigableMap output = new NavigableMap()

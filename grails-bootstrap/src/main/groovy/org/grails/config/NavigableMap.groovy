@@ -260,10 +260,45 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 }
                 targetMap.remove(sourceKey)
             } else {
+                String flatKey = path ? "${path}.${sourceKey}".toString() : sourceKey
                 if (path) {
-                    mergeMapEntry(rootMap, "${path}.${sourceKey}".toString(), newValue)
+                    mergeMapEntry(rootMap, flatKey, newValue)
                 }
                 mergeMapEntry(targetMap, sourceKey, newValue)
+                if (newValue instanceof List) {
+                    writeElementKeys(rootMap, flatKey, (List) newValue)
+                }
+            }
+        }
+    }
+
+    /**
+     * Writes the flat keys of the elements of a list merged as a value, {@code a.rows[0]} and, for an element
+     * that is a map, {@code a.rows[0].name}, as the indexed keys of a configuration file write them, so that a
+     * list is read alike however it was written. The element keys of the list the value replaces go first: they
+     * name elements the new list does not hold.
+     */
+    private void writeElementKeys(NavigableMap rootMap, String flatKey, List list) {
+        List<String> staleKeys = rootMap.keySet().findAll { String key -> key.startsWith(flatKey + '[') } as List<String>
+        for (String key in staleKeys) {
+            rootMap.remove(key)
+        }
+        writeElements(rootMap, flatKey, list)
+    }
+
+    private void writeElements(NavigableMap rootMap, String flatKey, Object value) {
+        if (value instanceof List) {
+            int index = 0
+            for (Object element in (List) value) {
+                String elementKey = "${flatKey}[${index++}]".toString()
+                mergeMapEntry(rootMap, elementKey, element)
+                writeElements(rootMap, elementKey, element)
+            }
+        } else if (value instanceof Map && !(value instanceof NavigableMap)) {
+            for (Entry entry in ((Map) value).entrySet()) {
+                String entryKey = "${flatKey}.${entry.key}".toString()
+                mergeMapEntry(rootMap, entryKey, entry.value)
+                writeElements(rootMap, entryKey, entry.value)
             }
         }
     }
