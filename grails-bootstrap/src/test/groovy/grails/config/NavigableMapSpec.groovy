@@ -330,6 +330,68 @@ class NavigableMapSpec extends Specification {
         'by dot notation'       | { NavigableMap map -> map.a.rows = [[name: 'new']] }
     }
 
+    @Unroll
+    def "an indexed element replaced #description drops the element keys of the element it replaces"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [rows: [[name: 'old', port: 1]]]])
+
+        when:
+        output.merge(source, parseFlatKeys)
+
+        then: 'the list holds the new element in both representations'
+        output['a.rows'] == [element]
+        output.navigate('a', 'rows') == [element]
+        output['a.rows[0]'] == element
+
+        and: 'the element keys name the new element and its entries, and no entry of the old one'
+        output.findAll { String key, Object value -> key.startsWith('a.rows[') } == elementKeys
+
+        where:
+        description                      | source                          | parseFlatKeys | element       | elementKeys
+        'by a map at the root'           | ['a.rows[0]': [name: 'new']]    | false         | [name: 'new'] | ['a.rows[0]': [name: 'new'], 'a.rows[0].name': 'new']
+        'by a map inside the parent map' | [a: ['rows[0]': [name: 'new']]] | true          | [name: 'new'] | ['a.rows[0]': [name: 'new'], 'a.rows[0].name': 'new']
+        'by a scalar'                    | ['a.rows[0]': 'plain']          | true          | 'plain'       | ['a.rows[0]': 'plain']
+        'by a list'                      | ['a.rows[0]': ['x', 'y']]       | true          | ['x', 'y']    | ['a.rows[0]': ['x', 'y'], 'a.rows[0][0]': 'x', 'a.rows[0][1]': 'y']
+    }
+
+    def "a map written as an entry of an indexed element drops the keys of the map it replaces"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [rows: [[meta: [old: 1]]]]], true)
+
+        when:
+        output.merge(['a.rows[0].meta': [fresh: 2]], true)
+
+        then:
+        output.navigate('a', 'rows') == [[meta: [fresh: 2]]]
+        output['a.rows[0].meta'] == [fresh: 2]
+        output['a.rows[0].meta.fresh'] == 2
+        !output.containsKey('a.rows[0].meta.old')
+    }
+
+    @Unroll
+    def "#description written over a container drops the element keys of the container"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(first, true)
+
+        when:
+        second(output)
+
+        then: 'the element keys name the new value only, and both representations hold it'
+        output.findAll { String key, Object value -> key.startsWith('a.rows[') } == elementKeys
+        output['a.rows'].is(output.navigate('a', 'rows'))
+
+        where:
+        description       | first                     | second                                                               | elementKeys
+        'a scalar merged' | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.merge(['a.rows': 'plain'], true) }          | [:]
+        'a scalar set'    | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.a.rows = 'plain' }                          | [:]
+        'a block merged'  | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.merge([a: [rows: [name: 'block']]], true) } | [:]
+        'a map subscript' | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.merge(['a.rows[k].name': 'new'], true) }    | ['a.rows[k]': [name: 'new'], 'a.rows[k].name': 'new']
+        'an index'        | ['a.rows[k].name': 'old'] | { NavigableMap map -> map.merge(['a.rows[0].name': 'new'], true) }    | ['a.rows[0]': [name: 'new'], 'a.rows[0].name': 'new']
+    }
+
     def "a map holding immutable containers is merged again without writing into them"() {
         given: 'immutable containers, as application.groovy may supply them, with their element keys written'
         NavigableMap source = new NavigableMap()

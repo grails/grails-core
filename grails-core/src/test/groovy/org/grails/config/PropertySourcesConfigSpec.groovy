@@ -344,6 +344,36 @@ a:
         !config.containsProperty('a.rows[1].name')
     }
 
+    void 'an indexed element replaced whole is read by the entries of the new element only'() {
+        given: "a list of maps merged as a value"
+        def config = new PropertySourcesConfig()
+        config.merge([a: [rows: [[name: 'old', port: 1]]]])
+
+        when: "an element of it is replaced by its indexed key"
+        config.merge(['a.rows[0]': [name: 'new']])
+
+        then: "every lookup answers from the new element"
+        config.getProperty('a.rows', List) == [[name: 'new']]
+        config.getProperty('a.rows[0]', Map) == [name: 'new']
+        config.getProperty('a.rows[0].name') == 'new'
+        !config.containsProperty('a.rows[0].port')
+    }
+
+    void 'a value written over a list leaves none of its elements readable'() {
+        given: "a list written by indexed keys, as a configuration file writes it"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.rows[0].name': 'old'])
+
+        when: "a scalar is written under the key of the list"
+        config.merge(['a.rows': 'plain'])
+
+        then: "the key holds the scalar and no element key is read"
+        config.getProperty('a.rows') == 'plain'
+        !config.containsProperty('a.rows[0]')
+        !config.containsProperty('a.rows[0].name')
+        config.getProperty('a.rows[0].name') == null
+    }
+
     void 'a property source holding immutable containers is merged without writing into them'() {
         given: "a property source whose map holds immutable containers, as application.groovy may supply them"
         def source = new NavigableMap()

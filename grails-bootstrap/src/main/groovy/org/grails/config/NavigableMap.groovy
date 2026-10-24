@@ -252,12 +252,8 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 // the flat key of the removed property, those below it and its indexed aliases go with it;
                 // the flat keys of its siblings stay
                 String removedKey = path ? "${path}.${sourceKey}".toString() : sourceKey
-                List<String> keysToRemove = rootMap.keySet().findAll { String key ->
-                    key == removedKey || key.startsWith(removedKey + '.') || key.startsWith(removedKey + '[')
-                } as List<String>
-                for (String key in keysToRemove) {
-                    rootMap.remove(key)
-                }
+                removeKeysBelow(rootMap, removedKey, ['.', '['])
+                rootMap.remove(removedKey)
                 targetMap.remove(sourceKey)
             } else {
                 String flatKey = path ? "${path}.${sourceKey}".toString() : sourceKey
@@ -265,27 +261,22 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                     mergeMapEntry(rootMap, flatKey, newValue)
                 }
                 mergeMapEntry(targetMap, sourceKey, newValue)
-                if (newValue instanceof List) {
-                    writeElementKeys(rootMap, flatKey, (List) newValue)
+                if (replacedBy(currentValue, newValue)) {
+                    // the element keys of the container the value replaces go with it; the flat keys of the
+                    // entries of a block stay, as they always have
+                    removeKeysBelow(rootMap, flatKey, ['['])
                 }
+                writeElements(rootMap, flatKey, newValue)
             }
         }
     }
 
     /**
-     * Writes the flat keys of the elements of a list merged as a value, {@code a.rows[0]} and, for an element
-     * that is a map, {@code a.rows[0].name}, as the indexed keys of a configuration file write them, so that a
-     * list is read alike however it was written. The element keys of the list the value replaces go first: they
-     * name elements the new list does not hold.
+     * Writes the element keys of a list, {@code a.rows[0]} and, for an element that is a map, {@code a.rows[0].name},
+     * as the indexed keys of a configuration file write them, so that a list is read alike however it was written.
+     * A map that is not a block of this configuration, an element of a list or a value an indexed key wrote, has
+     * its entries written the same way; a block writes its own flat keys as it is merged.
      */
-    private void writeElementKeys(NavigableMap rootMap, String flatKey, List list) {
-        List<String> staleKeys = rootMap.keySet().findAll { String key -> key.startsWith(flatKey + '[') } as List<String>
-        for (String key in staleKeys) {
-            rootMap.remove(key)
-        }
-        writeElements(rootMap, flatKey, list)
-    }
-
     private void writeElements(NavigableMap rootMap, String flatKey, Object value) {
         if (value instanceof List) {
             int index = 0
@@ -303,6 +294,26 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
     }
 
+    /** Whether a write put another object where a map or a list was. */
+    private static boolean replacedBy(Object previous, Object value) {
+        (previous instanceof Map || previous instanceof List) && !previous.is(value)
+    }
+
+    /** Whether a write put a list where a map was, or a map where a list was. */
+    private static boolean kindChanged(Object previous, Object container) {
+        (previous instanceof Map && container instanceof List) || (previous instanceof List && container instanceof Map)
+    }
+
+    private void removeKeysBelow(NavigableMap rootMap, String flatKey, List<String> separators) {
+        List<String> prefixes = separators.collect { String separator -> flatKey + separator }
+        List<String> keysBelow = rootMap.keySet().findAll { String key ->
+            prefixes.any { String prefix -> key.startsWith(prefix) }
+        } as List<String>
+        for (String key in keysBelow) {
+            rootMap.remove(key)
+        }
+    }
+
     /** The index of the first subscript of a key such as {@code rows[0].name}, or -1 when the key has none. */
     private static int subscriptStart(String key) {
         int start = key.indexOf('[')
@@ -314,8 +325,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
      * The container named before the first subscript, a list for a numeric index and a map otherwise, is held by
      * the nested map that owns it and, under its flat key, by the root, as one object in both places. The root
      * also holds a flat key for each element the subscripts step through and for the value itself, so that
-     * {@code a.rows}, {@code a.rows[0]} and {@code a.rows[0].name} are each read without a walk. The dots of the
-     * container's name are a path only when the merge parses flat keys, as for any other key.
+     * {@code a.rows}, {@code a.rows[0]} and {@code a.rows[0].name} are each read without a walk. The element keys
+     * follow what they describe: those of a container of the other kind, a map where the index names a list, go
+     * when it is replaced, and those below the value go when the value replaces a map or a list, so that the
+     * value is read by its own keys and by none of the old one's. The dots of the container's name are a path
+     * only when the merge parses flat keys, as for any other key.
      */
     private void mergeIndexedEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String containerName,
                                    String subscripts, Object sourceValue, boolean parseFlatKeys) {
@@ -328,27 +342,55 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
         String containerPath = path ? "${path}.${containerName}".toString() : containerName
         int subscriptEnd = subscripts.indexOf(']')
+        Object previousContainer = containerParent.get(containerKey)
         Object value = mergedValue(sourceValue)
-        Object container = setSubscriptValue(containerParent.get(containerKey), subscripts.substring(1, subscriptEnd),
+        Object container = setSubscriptValue(previousContainer, subscripts.substring(1, subscriptEnd),
                 subscripts.substring(subscriptEnd + 1), value)
         mergeMapEntry(containerParent, containerKey, container)
         if (!containerParent.is(rootMap)) {
             mergeMapEntry(rootMap, containerPath, container)
         }
+        writeKeysAlong(rootMap, containerPath, subscripts, container, previousContainer, value)
+    }
+
+    /**
+     * Writes the flat key of each element the subscripts of an indexed key step through and of the value, and
+     * the element keys below the value. The element keys of what the write replaced go: those below a container
+     * or element the write made anew as one of the other kind, a list where a map was or a map where a list
+     * was, and those below a value the write replaced. A copy of a container that refused the write holds what
+     * the container held, so its element keys stay. Below the container the dotted keys are the flat keys of a
+     * block's entries, and stay as they always have.
+     */
+    private void writeKeysAlong(NavigableMap rootMap, String containerPath, String subscripts, Object container,
+                                Object previousContainer, Object value) {
         Object element = container
+        Object previous = previousContainer
         String elementPath = containerPath
         String remaining = subscripts
-        while (remaining.startsWith('[') && remaining.indexOf(']') > 0) {
-            int end = remaining.indexOf(']')
-            String index = remaining.substring(1, end)
-            element = index.isNumber() ? ((List) element).get(index.toInteger()) : ((Map) element).get(index)
-            elementPath += remaining.substring(0, end + 1)
-            remaining = remaining.substring(end + 1)
+        List<String> separators = ['[']
+        while (remaining) {
+            if (kindChanged(previous, element)) {
+                removeKeysBelow(rootMap, elementPath, separators)
+            }
+            if (remaining.startsWith('[') && remaining.indexOf(']') > 0) {
+                int end = remaining.indexOf(']')
+                String index = remaining.substring(1, end)
+                element = index.isNumber() ? ((List) element).get(index.toInteger()) : ((Map) element).get(index)
+                elementPath += remaining.substring(0, end + 1)
+                remaining = remaining.substring(end + 1)
+            } else {
+                element = value
+                elementPath += remaining
+                remaining = ''
+            }
+            previous = rootMap.get(elementPath)
             mergeMapEntry(rootMap, elementPath, element)
+            separators = ['.', '[']
         }
-        if (remaining) {
-            mergeMapEntry(rootMap, elementPath + remaining, value)
+        if (replacedBy(previous, element)) {
+            removeKeysBelow(rootMap, elementPath, separators)
         }
+        writeElements(rootMap, elementPath, element)
     }
 
     /**
@@ -510,9 +552,13 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 
                 // the flat alias of a new block lives at the configuration root under the block's full path,
                 // whichever map the walk started on; what an earlier merge left there, a scalar or the block
-                // a scalar has since replaced, is stale and is replaced, as a block merged as a map value is
+                // a scalar has since replaced, is stale and is replaced, as a block merged as a map value is,
+                // and the element keys of a list the block replaces go with the list
                 if (!currentMap.is(root)) {
                     mergeMapEntry(root, newMap.dottedPath, newMap)
+                }
+                if (currentItem instanceof List || currentItem instanceof Map) {
+                    removeKeysBelow(root, newMap.dottedPath, ['['])
                 }
                 currentMap = newMap
             } else {
