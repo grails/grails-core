@@ -1458,9 +1458,9 @@ A type that spans several columns no longer implements `UserType` with several `
 
 ===== 26.12 Several Unidirectional hasMany Associations on One Owner
 
-Under Hibernate 7, an owner with two or more unidirectional `hasMany` associations wrote no rows to their join tables: an element added to any of them was lost at flush (issue https://github.com/apache/grails-core/issues/16665[#16665]). This is fixed when each association has a join table of its own, which is the default (`item_roles` and `item_tags` for `static hasMany = [roles: Role, tags: Tag]`) and also the case when two associations to the same class map different tables with `joinTable`. Each such join table is written, as under Hibernate 5.
+Under Hibernate 7, an owner with two or more unidirectional `hasMany` associations wrote no rows to their join tables: an element added to any of them was lost at flush (issue https://github.com/apache/grails-core/issues/16665[#16665]). This is fixed when each association has a join table of its own, which is the default for associations to different classes (`item_roles` and `item_tags` for `static hasMany = [roles: Role, tags: Tag]`) and also the case when two associations to the same class map different tables with `joinTable`. Each such join table is written, as under Hibernate 5.
 
-Two unidirectional associations mapped onto one shared join table, with a key column each, are read but their new elements are still not written. That is issue https://github.com/apache/grails-core/issues/10811[#10811] and is not fixed by this change; map a table per association until it is.
+Two unidirectional associations to the same class share one join table by default, named after the owner and the element class, with a key column per association (`item_role` with `item_roles_id` and `item_deny_roles_id` for `static hasMany = [roles: Role, denyRoles: Role]`). Such a table is read, but new elements are not written, and neither are those of associations that `joinTable` maps onto one table. That is issue https://github.com/apache/grails-core/issues/10811[#10811] and is not fixed by this change; name a `joinTable` per association to give each its own table.
 
 ==== 27. GORM Properties Are Nullable by Default
 
