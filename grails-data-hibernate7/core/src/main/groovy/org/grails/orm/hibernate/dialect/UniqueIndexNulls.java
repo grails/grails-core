@@ -29,8 +29,10 @@ import org.hibernate.dialect.OracleDialect;
  * <li>{@link #COMPARED}: Oracle indexes a row that has a null in some of the key columns and compares its other
  * columns, so {@code ('en', null)} twice is a violation, and only a key that is null in every column is left out.</li>
  * <li>{@link #DISTINCT}: H2, PostgreSQL, MySQL and MariaDB treat nulls as distinct, so a row with a null in its key never
- * conflicts. SQL Server and DB2 compare them, but Hibernate creates the index over nullable columns as a filtered
- * unique index that leaves the rows with a null out, which comes to the same.</li>
+ * conflicts. SQL Server compares them, but Hibernate creates the index over nullable columns as a filtered unique
+ * index that leaves the rows with a null out, which comes to the same. DB2 is listed here without having been run:
+ * Hibernate creates its index with {@code exclude null keys}, which may leave out only a key that is null in every
+ * column, in which case DB2 belongs with {@link #COMPARED} (apache/grails-core#16746).</li>
  * </ul>
  *
  * @since 8.0.1

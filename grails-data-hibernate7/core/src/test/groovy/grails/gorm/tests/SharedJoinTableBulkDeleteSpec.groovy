@@ -19,6 +19,7 @@
 package grails.gorm.tests
 
 import grails.gorm.annotation.Entity
+import spock.lang.PendingFeature
 
 /**
  * Two unidirectional hasMany associations that map to one join table with the same key column and a column of their
@@ -29,7 +30,7 @@ import grails.gorm.annotation.Entity
 class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(SjtbdAccount, SjtbdRole)
+        manager.registerDomainClasses(SjtbdAccount, SjtbdRole, SjtbdGroup, SjtbdSolo)
     }
 
     void "clearing one association of a shared join table leaves the rows of the other"() {
@@ -77,6 +78,112 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
                 account.denyRoles.isEmpty() && account.roles*.name == ['admin']
             }
         }
+    }
+
+    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16745')
+    void "removing one element of a shared join table's set keeps the other elements, with a key column each"() {
+        given: 'a group with two roles in each association'
+        Long id = SjtbdGroup.withNewTransaction {
+            SjtbdRole one = new SjtbdRole(name: 'one').save(flush: true)
+            SjtbdRole two = new SjtbdRole(name: 'two').save(flush: true)
+            SjtbdGroup group = new SjtbdGroup(name: 'group')
+            [one, two].each { group.addToAllow(it); group.addToDeny(it) }
+            group.save(flush: true).id
+        }
+
+        when: 'one role is removed from one association'
+        SjtbdGroup.withNewSession {
+            SjtbdGroup.withNewTransaction {
+                SjtbdGroup group = SjtbdGroup.get(id)
+                group.removeFromAllow(group.allow.find { it.name == 'one' })
+                group.save(flush: true)
+            }
+        }
+
+        then: 'the other role of that association and both of the other association remain'
+        SjtbdGroup.withNewSession {
+            SjtbdGroup.withNewTransaction {
+                SjtbdGroup group = SjtbdGroup.get(id)
+                group.allow*.name == ['two'] && group.deny*.name.sort() == ['one', 'two']
+            }
+        }
+    }
+
+    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16745')
+    void "removing one element of a shared join table's set keeps the other elements, with one key column"() {
+        given:
+        Long id = SjtbdAccount.withNewTransaction {
+            SjtbdRole one = new SjtbdRole(name: 'one').save(flush: true)
+            SjtbdRole two = new SjtbdRole(name: 'two').save(flush: true)
+            SjtbdAccount account = new SjtbdAccount(name: 'account')
+            [one, two].each { account.addToRoles(it); account.addToDenyRoles(it) }
+            account.save(flush: true).id
+        }
+
+        when:
+        SjtbdAccount.withNewSession {
+            SjtbdAccount.withNewTransaction {
+                SjtbdAccount account = SjtbdAccount.get(id)
+                account.removeFromRoles(account.roles.find { it.name == 'one' })
+                account.save(flush: true)
+            }
+        }
+
+        then:
+        SjtbdAccount.withNewSession {
+            SjtbdAccount.withNewTransaction {
+                SjtbdAccount account = SjtbdAccount.get(id)
+                account.roles*.name == ['two'] && account.denyRoles*.name.sort() == ['one', 'two']
+            }
+        }
+    }
+
+    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16745')
+    void "removing one element of a set on a join table of its own keeps the other elements"() {
+        given:
+        Long id = SjtbdSolo.withNewTransaction {
+            SjtbdRole one = new SjtbdRole(name: 'one').save(flush: true)
+            SjtbdRole two = new SjtbdRole(name: 'two').save(flush: true)
+            SjtbdSolo solo = new SjtbdSolo(name: 'solo')
+            [one, two].each { solo.addToRoles(it) }
+            solo.save(flush: true).id
+        }
+
+        when:
+        SjtbdSolo.withNewSession {
+            SjtbdSolo.withNewTransaction {
+                SjtbdSolo solo = SjtbdSolo.get(id)
+                solo.removeFromRoles(solo.roles.find { it.name == 'one' })
+                solo.save(flush: true)
+            }
+        }
+
+        then:
+        SjtbdSolo.withNewSession {
+            SjtbdSolo.withNewTransaction {
+                SjtbdSolo.get(id).roles*.name == ['two']
+            }
+        }
+    }
+}
+
+@Entity
+class SjtbdGroup {
+    Long id
+    String name
+    static hasMany = [allow: SjtbdRole, deny: SjtbdRole]
+    static mapping = {
+        version false
+    }
+}
+
+@Entity
+class SjtbdSolo {
+    Long id
+    String name
+    static hasMany = [roles: SjtbdRole]
+    static mapping = {
+        version false
     }
 }
 
