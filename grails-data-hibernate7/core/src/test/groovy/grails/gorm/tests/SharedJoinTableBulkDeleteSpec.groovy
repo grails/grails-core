@@ -100,7 +100,7 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
         }
     }
 
-    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16745')
+    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16691')
     void "removing one element of a shared join table's set keeps the other elements, with a key column each"() {
         given: 'a group with two roles in each association'
         Long id = SjtbdGroup.withNewTransaction {
@@ -129,7 +129,7 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
         }
     }
 
-    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16745')
+    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16691')
     void "removing one element of a shared join table's set keeps the other elements, with one key column"() {
         given:
         Long id = SjtbdAccount.withNewTransaction {
@@ -158,7 +158,7 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
         }
     }
 
-    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16745')
+    @PendingFeature(reason = 'removing one element of a set deletes every row of the association, apache/grails-core#16691')
     void "removing one element of a set on a join table of its own keeps the other elements"() {
         given:
         Long id = SjtbdSolo.withNewTransaction {
