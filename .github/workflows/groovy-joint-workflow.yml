@@ -155,7 +155,11 @@ jobs:
 
   build_grails:
     needs: [build_groovy]
-    runs-on: ubuntu-latest
+    # ubuntu-22.04 while https://github.com/actions/runner-images/issues/15005 is open: ubuntu-latest is now the ubuntu-26.04
+    # image, whose kernel 7.0.0-1017-azure MongoDB 7 and 8 refuse to start on ("Linux kernel versions 6.19 and newer has a known
+    # incompatibility with this version of MongoDB"), so the mongo:8 service below died at "Initialize containers" before a
+    # single step ran. The ubuntu-22.04 image runs kernel 6.8. Same pin as the MongoDB functional lane in gradle.yml.
+    runs-on: ubuntu-22.04
     services:
       mongodb:
         image: mongo:8
