@@ -138,6 +138,16 @@ xref:theWebLayer#springResponses[Returning Spring MVC Responses].
 
 See xref:upgrading#upgrading90x[Upgrading from Grails 8 to Grails 9], sections 4 to 11 and 13 to 16.
 
+==== Hibernate 7 Criteria Queries Can Be Extended
+
+A plugin or an application can add its own criteria and orders to the Hibernate 7 criteria builder. A criterion
+handler now receives the query context, through which it resolves a property path, whether through an alias created
+with `createAlias` or an association, to the join GORM created for it, so a custom criterion and a built-in one on
+the same association restrict the same row. A new order handler turns a `Query.Order` subclass into a JPA order by
+any expression, such as `random()` or a SQL formula, in its place among the query's orders. Both kinds of handler
+are registered in code, or by a plugin through `META-INF/services` providers that are loaded when the first query
+runs. See the section on extending the criteria builder in the GORM for Hibernate 7 guide.
+
 ==== Hibernate 7 Application Generation
 
 Grails Forge can now generate applications configured for Grails Data with Hibernate 7.
