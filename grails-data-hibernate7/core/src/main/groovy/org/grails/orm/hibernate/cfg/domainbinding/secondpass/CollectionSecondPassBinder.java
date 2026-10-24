@@ -53,7 +53,8 @@ public class CollectionSecondPassBinder {
 
     /**
      * The constructor of 8.0.0, which has no binder for the join tables that collections share, so a table they share
-     * is left as Hibernate binds it.
+     * is left as Hibernate binds it: its collections get no uniqueness of their own, and clearing one of them removes
+     * the rows of the others that use the same key column.
      *
      * @deprecated since 8.0.1: pass a {@link SharedJoinTableUniqueKeyBinder}. Kept for one release.
      */

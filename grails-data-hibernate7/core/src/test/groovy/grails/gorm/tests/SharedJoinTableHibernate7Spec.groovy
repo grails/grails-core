@@ -115,6 +115,26 @@ class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
         then: 'the second row is rejected by the constraint of that association'
         thrown(DataIntegrityViolationException)
 
+        when: 'two sessions each add the same new member to the second association of the same group'
+        Long denyId = SjtGroup.withNewTransaction { new SjtMember(name: 'denied member').save(flush: true).id }
+        SjtGroup.withNewSession {
+            SjtGroup.withNewTransaction {
+                SjtGroup outer = SjtGroup.get(ids.first)
+                outer.addToDenyRoles(SjtMember.get(denyId))
+                SjtGroup.withNewSession {
+                    SjtGroup.withNewTransaction {
+                        SjtGroup inner = SjtGroup.get(ids.first)
+                        inner.addToDenyRoles(SjtMember.get(denyId))
+                        inner.save(flush: true)
+                    }
+                }
+                outer.save(flush: true)
+            }
+        }
+
+        then: 'the second row is rejected by the constraint of that association too'
+        thrown(DataIntegrityViolationException)
+
         when: 'a list, a map and a bag each repeat an element'
         Long ownerId = SjtListOwner.withNewTransaction {
             SjtMember member = new SjtMember(name: 'repeated member').save(flush: true)

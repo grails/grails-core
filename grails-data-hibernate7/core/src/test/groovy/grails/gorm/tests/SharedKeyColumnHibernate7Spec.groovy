@@ -21,6 +21,7 @@ package grails.gorm.tests
 import java.time.Duration
 
 import grails.gorm.annotation.Entity
+import org.springframework.dao.DataIntegrityViolationException
 import org.testcontainers.mariadb.MariaDBContainer
 import org.testcontainers.mysql.MySQLContainer
 import org.testcontainers.oracle.OracleContainer
@@ -47,6 +48,24 @@ class SharedKeyColumnHibernate7Spec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
         manager.registerDomainClasses(SjtkAccount, SjtkRole)
+    }
+
+    private static void addInTwoSessions(Long accountId, Long roleId, String association) {
+        String add = association == 'roles' ? 'addToRoles' : 'addToDenyRoles'
+        SjtkAccount.withNewSession {
+            SjtkAccount.withNewTransaction {
+                SjtkAccount outer = SjtkAccount.get(accountId)
+                outer."$add"(SjtkRole.get(roleId))
+                SjtkAccount.withNewSession {
+                    SjtkAccount.withNewTransaction {
+                        SjtkAccount inner = SjtkAccount.get(accountId)
+                        inner."$add"(SjtkRole.get(roleId))
+                        inner.save(flush: true)
+                    }
+                }
+                outer.save(flush: true)
+            }
+        }
     }
 
     void "on #db several rows in each association of a join table with a shared key column are accepted"() {
@@ -88,6 +107,19 @@ class SharedKeyColumnHibernate7Spec extends HibernateGormDatastoreSpec {
                 account.roles*.name.sort() == ['first', 'second'] && account.denyRoles*.name.sort() == ['first', 'second']
             }
         }
+
+        when: 'two sessions each add the same new role to the roles of the account'
+        Long extraId = SjtkAccount.withNewTransaction { new SjtkRole(name: 'extra').save(flush: true).id }
+        addInTwoSessions(ids.owner, extraId, 'roles')
+
+        then: 'the second row is rejected by the constraint of the roles'
+        thrown(DataIntegrityViolationException)
+
+        when: 'two sessions each add the same new role to the denied roles of the account'
+        addInTwoSessions(ids.owner, extraId, 'denyRoles')
+
+        then: 'the second row is rejected by the constraint of the denied roles'
+        thrown(DataIntegrityViolationException)
 
         where:
         db         | container

@@ -19,7 +19,9 @@
 package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.MappingException;
 import org.hibernate.boot.Metadata;
@@ -31,8 +33,11 @@ import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Column;
+import org.hibernate.mapping.IdentifierCollection;
+import org.hibernate.mapping.IndexedCollection;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.Value;
 
 /**
  * Gives every collection with a join table a uniqueness constraint of its own over its key column and the element,
@@ -84,7 +89,7 @@ public class SharedJoinTableUniqueKeyBinder {
         if (table == null || collection.isInverse() || collection.isOneToMany() || collection.getKey() == null) {
             return;
         }
-        restrictRowsToOwnCollection(table);
+        restrictRowsToOwnCollection(collection, table);
         if (!collection.isSet()) {
             return;
         }
@@ -103,7 +108,10 @@ public class SharedJoinTableUniqueKeyBinder {
      * columns. The collections that share the table are found among the bindings of the metadata; one whose element is
      * not bound yet is restricted when its own pass runs, which finds the others bound.
      */
-    private void restrictRowsToOwnCollection(Table table) {
+    private void restrictRowsToOwnCollection(Collection collection, Table table) {
+        if (!hasColumnsOfOthers(collection, table)) {
+            return;
+        }
         List<Collection> sharing = new ArrayList<>();
         for (Collection other : metadataBuildingContext.getMetadataCollector().getCollectionBindings()) {
             if (other.getCollectionTable() == table && !other.isInverse() && !other.isOneToMany() && other.getKey() != null) {
@@ -128,6 +136,38 @@ public class SharedJoinTableUniqueKeyBinder {
                 member.setWhere(restriction);
             } else if (!where.contains(restriction)) {
                 member.setWhere("(" + where + ") and " + restriction);
+            }
+        }
+    }
+
+    /**
+     * Whether the table holds a column that the collection does not use: its key, element, index and identifier
+     * columns are its own, and a column besides those belongs to another collection that shares the table. A table
+     * only this collection uses is not searched for the others, which keeps the binding of an application with many
+     * collections linear. The collection of a shared table that is bound first finds none, and the one bound after
+     * it restricts both.
+     */
+    private static boolean hasColumnsOfOthers(Collection collection, Table table) {
+        Set<Column> own = new HashSet<>(collection.getKey().getColumns());
+        own.addAll(columnsOf(collection));
+        if (collection instanceof IndexedCollection indexed && indexed.getIndex() != null) {
+            addColumns(own, indexed.getIndex());
+        }
+        if (collection instanceof IdentifierCollection idbag && idbag.getIdentifier() != null) {
+            addColumns(own, idbag.getIdentifier());
+        }
+        for (Column column : table.getColumns()) {
+            if (!own.contains(column)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void addColumns(Set<Column> columns, Value value) {
+        for (Selectable selectable : value.getSelectables()) {
+            if (selectable instanceof Column column) {
+                columns.add(column);
             }
         }
     }
