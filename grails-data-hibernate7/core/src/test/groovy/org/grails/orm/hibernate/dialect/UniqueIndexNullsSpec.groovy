@@ -20,6 +20,8 @@ package org.grails.orm.hibernate.dialect
 
 import org.hibernate.dialect.CockroachDialect
 import org.hibernate.dialect.DB2Dialect
+import org.hibernate.dialect.DB2zDialect
+import org.hibernate.dialect.DB2iDialect
 import org.hibernate.dialect.H2Dialect
 import org.hibernate.dialect.MariaDBDialect
 import org.hibernate.dialect.MySQLDialect
@@ -45,6 +47,8 @@ class UniqueIndexNullsSpec extends Specification {
         new MySQLDialect()       | UniqueIndexNulls.DISTINCT
         new MariaDBDialect()     | UniqueIndexNulls.DISTINCT
         new SQLServerDialect()   | UniqueIndexNulls.DISTINCT
-        new DB2Dialect()         | UniqueIndexNulls.DISTINCT
+        new DB2Dialect()         | UniqueIndexNulls.COMPARED
+        new DB2iDialect()        | UniqueIndexNulls.DISTINCT
+        new DB2zDialect()        | UniqueIndexNulls.DISTINCT
     }
 }

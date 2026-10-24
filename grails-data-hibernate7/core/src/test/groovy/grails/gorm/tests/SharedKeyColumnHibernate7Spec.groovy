@@ -22,11 +22,13 @@ import java.time.Duration
 
 import grails.gorm.annotation.Entity
 import org.springframework.dao.DataIntegrityViolationException
+import org.testcontainers.db2.Db2Container
 import org.testcontainers.mariadb.MariaDBContainer
 import org.testcontainers.mysql.MySQLContainer
 import org.testcontainers.oracle.OracleContainer
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.spock.Testcontainers
+import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Shared
 
@@ -45,6 +47,11 @@ class SharedKeyColumnHibernate7Spec extends HibernateGormDatastoreSpec {
     @Shared mariadb = new MariaDBContainer('mariadb:10.11')
     @Shared oracle = new OracleContainer('gvenzl/oracle-free:slim-faststart')
             .withStartupTimeout(Duration.ofMinutes(3))
+    // Db2 for Linux, UNIX and Windows: IBM publishes the image for amd64 only, so the Db2 rows run on the amd64 CI
+    // runners and are skipped on arm64 machines. It starts in one to three minutes.
+    @Shared db2 = new Db2Container('icr.io/db2_community/db2:11.5.9.0')
+            .acceptLicense()
+            .withStartupTimeout(Duration.ofMinutes(10))
 
     void setupSpec() {
         manager.registerDomainClasses(SjtkAccount, SjtkRole)
@@ -68,6 +75,7 @@ class SharedKeyColumnHibernate7Spec extends HibernateGormDatastoreSpec {
         }
     }
 
+    @IgnoreIf({ data.db == 'DB2' && System.getProperty('os.arch') in ['aarch64', 'arm64'] })
     void "on #db several rows in each association of a join table with a shared key column are accepted"() {
         given: 'the datastore on this database, with the schema created for it'
         if (container != null && !container.isRunning()) {
@@ -128,7 +136,7 @@ class SharedKeyColumnHibernate7Spec extends HibernateGormDatastoreSpec {
         'MySQL'    | mysql
         'MariaDB'  | mariadb
         'Oracle'   | oracle
-        // 'DB2'  | db2   the unique key null handling for DB2 is unverified: apache/grails-core#16746
+        'DB2'      | db2
     }
 }
 
