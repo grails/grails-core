@@ -19,37 +19,22 @@
 package grails.gorm.tests
 
 import grails.gorm.annotation.Entity
-import org.testcontainers.db2.Db2Container
-import org.testcontainers.mariadb.MariaDBContainer
-import org.testcontainers.mysql.MySQLContainer
-import org.testcontainers.postgresql.PostgreSQLContainer
-import org.testcontainers.oracle.OracleContainer
 import org.testcontainers.spock.Testcontainers
 import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Unroll
 
-import java.time.Duration
 
 @Testcontainers
 @Requires({ isDockerAvailable() })
 class RLikeHibernate7Spec extends HibernateGormDatastoreSpec {
 
-    @Shared postgres = new PostgreSQLContainer("postgres:16")
-    @Shared mysql = new MySQLContainer("mysql:8.0")
-    @Shared mariadb = new MariaDBContainer("mariadb:10.11")
-    // slim-faststart ships native ARM64 + x86_64 images and typically reports ready in ~15s,
-    // but the default 60s Testcontainers timeout has been too tight on loaded/emulated CI
-    // runners (testcontainers/testcontainers-java#9057) - a generous explicit timeout avoids
-    // that without slowing down the common case.
-    @Shared oracle = new OracleContainer("gvenzl/oracle-free:slim-faststart")
-            .withStartupTimeout(Duration.ofMinutes(3))
-    // Db2 for Linux, UNIX and Windows: IBM publishes the image for amd64 only, so the Db2 rows run on the amd64 CI
-    // runners and are skipped on arm64 machines. It starts in one to three minutes.
-    @Shared db2 = new Db2Container("icr.io/db2_community/db2:11.5.9.0")
-            .acceptLicense()
-            .withStartupTimeout(Duration.ofMinutes(10))
+    @Shared postgres = DatabaseContainers.POSTGRES
+    @Shared mysql = DatabaseContainers.MYSQL
+    @Shared mariadb = DatabaseContainers.MARIADB
+    @Shared oracle = DatabaseContainers.ORACLE
+    @Shared db2 = DatabaseContainers.DB2
 
     void setupSpec() {
         manager.registerDomainClasses(RlikeFoo)

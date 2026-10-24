@@ -18,15 +18,9 @@
  */
 package grails.gorm.tests
 
-import java.time.Duration
 
 import grails.gorm.annotation.Entity
 import org.springframework.dao.DataIntegrityViolationException
-import org.testcontainers.db2.Db2Container
-import org.testcontainers.mariadb.MariaDBContainer
-import org.testcontainers.mysql.MySQLContainer
-import org.testcontainers.oracle.OracleContainer
-import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.spock.Testcontainers
 import spock.lang.IgnoreIf
 import spock.lang.Requires
@@ -42,16 +36,11 @@ import spock.lang.Shared
 @Requires({ isDockerAvailable() })
 class SharedKeyColumnHibernate7Spec extends HibernateGormDatastoreSpec {
 
-    @Shared postgres = new PostgreSQLContainer('postgres:16')
-    @Shared mysql = new MySQLContainer('mysql:8.0')
-    @Shared mariadb = new MariaDBContainer('mariadb:10.11')
-    @Shared oracle = new OracleContainer('gvenzl/oracle-free:slim-faststart')
-            .withStartupTimeout(Duration.ofMinutes(3))
-    // Db2 for Linux, UNIX and Windows: IBM publishes the image for amd64 only, so the Db2 rows run on the amd64 CI
-    // runners and are skipped on arm64 machines. It starts in one to three minutes.
-    @Shared db2 = new Db2Container('icr.io/db2_community/db2:11.5.9.0')
-            .acceptLicense()
-            .withStartupTimeout(Duration.ofMinutes(10))
+    @Shared postgres = DatabaseContainers.POSTGRES
+    @Shared mysql = DatabaseContainers.MYSQL
+    @Shared mariadb = DatabaseContainers.MARIADB
+    @Shared oracle = DatabaseContainers.ORACLE
+    @Shared db2 = DatabaseContainers.DB2
 
     void setupSpec() {
         manager.registerDomainClasses(SjtkAccount, SjtkRole)
