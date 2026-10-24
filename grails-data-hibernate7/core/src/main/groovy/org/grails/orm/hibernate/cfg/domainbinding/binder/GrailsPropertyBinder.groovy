@@ -20,6 +20,7 @@ package org.grails.orm.hibernate.cfg.domainbinding.binder
 
 import groovy.transform.CompileStatic
 import jakarta.annotation.Nonnull
+import org.hibernate.MappingException
 import org.hibernate.mapping.Table
 import org.hibernate.mapping.Value
 import org.slf4j.Logger
@@ -44,6 +45,7 @@ class GrailsPropertyBinder {
     private final ComponentBinder componentBinder
     private final CollectionBinder collectionBinder
     private final SimpleValueBinder simpleValueBinder
+    private final CompositeUserTypeBinder compositeUserTypeBinder
     private final OneToOneBinder oneToOneBinder
     private final ManyToOneBinder manyToOneBinder
     private final ForeignKeyOneToOneBinder foreignKeyOneToOneBinder
@@ -53,6 +55,7 @@ class GrailsPropertyBinder {
             ComponentBinder componentBinder,
             CollectionBinder collectionBinder,
             SimpleValueBinder simpleValueBinder,
+            CompositeUserTypeBinder compositeUserTypeBinder,
             OneToOneBinder oneToOneBinder,
             ManyToOneBinder manyToOneBinder,
             ForeignKeyOneToOneBinder foreignKeyOneToOneBinder) {
@@ -60,9 +63,37 @@ class GrailsPropertyBinder {
         this.componentBinder = componentBinder
         this.collectionBinder = collectionBinder
         this.simpleValueBinder = simpleValueBinder
+        this.compositeUserTypeBinder = compositeUserTypeBinder
         this.oneToOneBinder = oneToOneBinder
         this.manyToOneBinder = manyToOneBinder
         this.foreignKeyOneToOneBinder = foreignKeyOneToOneBinder
+    }
+
+    /**
+     * Creates a property binder without a {@link CompositeUserTypeBinder}. It binds every property the other
+     * constructor binds, except one mapped with a Hibernate {@link org.hibernate.usertype.CompositeUserType}, for
+     * which {@link #bindProperty} throws a {@link MappingException}.
+     *
+     * @deprecated use the constructor that takes a {@link CompositeUserTypeBinder}
+     */
+    @Deprecated(since = '8.0.1')
+    GrailsPropertyBinder(
+            EnumTypeBinder enumTypeBinder,
+            ComponentBinder componentBinder,
+            CollectionBinder collectionBinder,
+            SimpleValueBinder simpleValueBinder,
+            OneToOneBinder oneToOneBinder,
+            ManyToOneBinder manyToOneBinder,
+            ForeignKeyOneToOneBinder foreignKeyOneToOneBinder) {
+        this(
+                enumTypeBinder,
+                componentBinder,
+                collectionBinder,
+                simpleValueBinder,
+                null,
+                oneToOneBinder,
+                manyToOneBinder,
+                foreignKeyOneToOneBinder)
     }
 
     Value bindProperty(
@@ -76,7 +107,13 @@ class GrailsPropertyBinder {
 
         Value value
 
-        if (currentGrailsProp instanceof HibernateEnumProperty &&
+        if (currentGrailsProp.compositeUserType != null) {
+            // A composite user type spans one column per attribute of its embeddable class, so it is a
+            // component of that type rather than a basic value: Hibernate resolves the type of a basic value
+            // as a BasicType or a UserType only. This comes before the enum branch, since an enum property
+            // mapped with a composite user type is such a component too, not an enum column.
+            value = bindCompositeUserType(currentGrailsProp, parentProperty, path)
+        } else if (currentGrailsProp instanceof HibernateEnumProperty &&
                 !((HibernateEnumProperty) currentGrailsProp).isCollectionElement()) {
             // A hasMany-of-enum property is also a HibernateEnumProperty, but it must still go
             // through collectionBinder.bindCollection() below so its join table gets created;
@@ -112,4 +149,14 @@ class GrailsPropertyBinder {
         return value
     }
 
+    private Value bindCompositeUserType(
+            HibernatePersistentProperty property, HibernatePersistentProperty parentProperty, String path) {
+        if (compositeUserTypeBinder == null) {
+            throw new MappingException(("Property [${property.name}] of class [${property.owner.name}] is mapped " +
+                    "with the composite user type [${property.compositeUserType.name}], which a " +
+                    "${GrailsPropertyBinder.simpleName} created without a ${CompositeUserTypeBinder.simpleName} " +
+                    'cannot bind').toString())
+        }
+        return compositeUserTypeBinder.bindCompositeUserType(property, parentProperty, path)
+    }
 }

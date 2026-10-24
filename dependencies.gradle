@@ -39,7 +39,7 @@ ext {
             'jna.version'                   : '5.19.1',
             'maven-model.version'           : '3.9.16',
             'objenesis.version'             : '3.6',
-            'spring-boot.version'           : '4.2.0-M2',
+            'spring-boot.version'           : '4.2.0-RC1',
     ]
 
     // Note: the name of the dependency must be the prefix of the property name so properties in the pom are resolved correctly
@@ -86,25 +86,17 @@ ext {
             'groovy.version'                : '6.0.0',
             // Security: 33.7.2 addresses CVE-2026-102554 (uncontrolled resource consumption).
             'guava.version'                 : '33.7.2-jre',
-            // Groovy YAML 6.0.0 depends on Jackson 2.22.2, which wins over the 2.21.6 Spring Boot 4.2
-            // manages, so the BOM must manage at least that. 2.22.3 also fixes CVE-2026-89425,
-            // CVE-2026-89407, CVE-2026-91777 and CVE-2026-91776, which 2.21.6 does not carry. Jackson 2
-            // only releases jackson-annotations on the minor, hence the separate 2.22 below.
+            // Groovy YAML 6.0.0 depends on Jackson 2.22.2, which wins over the 2.21.7 Spring Boot 4.2
+            // manages, so the BOM must manage at least that. Jackson 2 only releases
+            // jackson-annotations on the minor, hence the separate 2.22 below.
             'jackson-2-bom.version'         : '2.22.3',
             'jackson2-annotations.version'  : '2.22',
-            // Security: overrides Jackson 3.1.6 from Spring Boot 4.2. The 3.2.3 BOM aligns the family
-            // and fixes CVE-2026-89425, CVE-2026-89407, CVE-2026-91777 and CVE-2026-91776.
+            // Overrides the 3.1.7 Spring Boot 4.2 manages. Pinned first as a security override of
+            // 3.1.6 (CVE-2026-89425, CVE-2026-89407, CVE-2026-91777 and CVE-2026-91776), which 3.1.7
+            // also fixes; kept so that moving to Spring Boot 4.2 does not take Jackson 3 from the 3.2
+            // line Grails 8 and 9.0 manage back to 3.1.
             'jackson-bom.version'           : '3.2.3',
             'jquery.version'                : '4.0.0',
-            // Security: overrides the 1.6.3 Spring Boot 4.2 manages. 1.6.3 strips slashes from MDC
-            // values before SiftingAppender uses them as discriminating keys (CVE-2026-19880), and
-            // 1.6.5 completes that fix (CVE-2026-104721). The 1.6.x line keeps SLF4J 2.0.x and JDK 11.
-            // Spring Boot 4.2 manages SLF4J 2.0.19, which Logback 1.6.5 requires, so SLF4J is not pinned.
-            'logback.version'               : '1.6.5',
-            // Overrides the 5.11.1 Spring Boot 4.2 manages. Pinned first as a security override of
-            // Spring Boot 4.1's 5.8.1 (CVE-2026-18710, fixed in 5.9.2); kept so that moving to Spring
-            // Boot 4.2 does not downgrade the driver. Drop once Spring Boot manages 5.12.0 or later.
-            'mongodb.version'               : '5.12.0',
             'nimbus-jose-jwt.version'       : '10.10',
             // Includes the follow-up logout redirect and direct-client CSRF fixes on the 6.5.x line.
             'pac4j.version'                 : '6.5.9',
@@ -195,7 +187,7 @@ ext {
             'groovy-xml'               : "org.apache.groovy:groovy-xml:${bomDependencyVersions['groovy.version']}",
             'groovy-yaml'              : "org.apache.groovy:groovy-yaml:${bomDependencyVersions['groovy.version']}",
             'guava'                       : "com.google.guava:guava:${bomDependencyVersions['guava.version']}",
-            // Overrides the 2.21.6 spring-boot-dependencies imports through
+            // Overrides the 2.21.7 spring-boot-dependencies imports through
             // com.fasterxml.jackson:jackson-bom - see jackson-2-bom.version. groovy-yaml 6.0.0
             // also pulls jackson-dataformat-yaml, so the BOM must manage it at >= the resolved version.
             'jackson2-annotations'     : "com.fasterxml.jackson.core:jackson-annotations:${bomDependencyVersions['jackson2-annotations.version']}",
@@ -203,22 +195,11 @@ ext {
             'jackson-2-bom-databind'   : "com.fasterxml.jackson.core:jackson-databind:${bomDependencyVersions['jackson-2-bom.version']}",
             'jackson-2-bom-dataformat-yaml': "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${bomDependencyVersions['jackson-2-bom.version']}",
             'jackson-2-bom-datatype-jsr310': "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${bomDependencyVersions['jackson-2-bom.version']}",
-            // Security override of the 3.1.6 spring-boot-dependencies imports through
+            // Override of the 3.1.7 spring-boot-dependencies imports through
             // tools.jackson:jackson-bom - see jackson-bom.version
             'jackson-bom-core'         : "tools.jackson.core:jackson-core:${bomDependencyVersions['jackson-bom.version']}",
             'jackson-bom-databind'     : "tools.jackson.core:jackson-databind:${bomDependencyVersions['jackson-bom.version']}",
             'jquery'                   : "org.webjars.npm:jquery:${bomDependencyVersions['jquery.version']}",
-            // Security override of the 1.6.3 Spring Boot 4.2 manages - see logback.version
-            'logback-classic'          : "ch.qos.logback:logback-classic:${bomDependencyVersions['logback.version']}",
-            'logback-core'             : "ch.qos.logback:logback-core:${bomDependencyVersions['logback.version']}",
-            // Override of the 5.11.1 spring-boot-dependencies imports through
-            // org.mongodb:mongodb-driver-bom - see mongodb.version. The whole driver family is
-            // pinned so a classpath cannot end up mixing driver versions.
-            'mongodb-bson'             : "org.mongodb:bson:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-bson-record-codec': "org.mongodb:bson-record-codec:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-driver-core'      : "org.mongodb:mongodb-driver-core:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-driver-reactivestreams': "org.mongodb:mongodb-driver-reactivestreams:${bomDependencyVersions['mongodb.version']}",
-            'mongodb-driver-sync'      : "org.mongodb:mongodb-driver-sync:${bomDependencyVersions['mongodb.version']}",
             // Security override of the transitive 3.5.1 - see plexus-utils.version
             'plexus-utils'                : "org.codehaus.plexus:plexus-utils:${bomDependencyVersions['plexus-utils.version']}",
             // Required alongside plexus-utils 4.x - see plexus-xml.version
