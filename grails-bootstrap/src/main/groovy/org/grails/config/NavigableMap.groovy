@@ -57,22 +57,23 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     /**
-     * A copy whose nested maps are copies as well. The copy of a root is the root of its own configuration,
-     * so a write through the copy, by merge, dot notation or subscript, never reaches the original; the copy
-     * of a nested map stays under the root of the original. A map the original holds twice, as the nested
-     * entry and the flat alias of a block, is copied once, so the copy keeps both representations on one map.
+     * A copy whose nested maps and lists are copies as well. The copy of a root is the root of its own
+     * configuration, so a write through the copy, by merge, dot notation or subscript, never reaches the
+     * original; the copy of a nested map stays under the root of the original. A map or list the original
+     * holds twice, as the nested entry and the flat alias, is copied once, so the copy keeps both
+     * representations on one object.
      */
     @Override
     NavigableMap clone() {
-        Map<NavigableMap, NavigableMap> copies = new IdentityHashMap<>()
+        Map<Object, Object> copies = new IdentityHashMap<>()
         NavigableMap copy = getRootConfig().is(this) ? new NavigableMap() : new NavigableMap(getRootConfig(), getPath())
         copies.put(this, copy)
         copyEntries(copy, copies)
         copy
     }
 
-    private NavigableMap cloneUnder(NavigableMap root, Map<NavigableMap, NavigableMap> copies) {
-        NavigableMap copy = copies.get(this)
+    private NavigableMap cloneUnder(NavigableMap root, Map<Object, Object> copies) {
+        NavigableMap copy = (NavigableMap) copies.get(this)
         if (copy == null) {
             copy = new NavigableMap(root, getPath())
             copies.put(this, copy)
@@ -81,12 +82,39 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         copy
     }
 
-    private void copyEntries(NavigableMap copy, Map<NavigableMap, NavigableMap> copies) {
+    private void copyEntries(NavigableMap copy, Map<Object, Object> copies) {
         NavigableMap root = copy.getRootConfig()
         for (Map.Entry<String, Object> entry in getDelegateMap().entrySet()) {
-            Object value = entry.value
-            copy.getDelegateMap().put(entry.key, value instanceof NavigableMap ? ((NavigableMap) value).cloneUnder(root, copies) : value)
+            copy.getDelegateMap().put(entry.key, copyValue(entry.value, root, copies))
         }
+    }
+
+    private static Object copyValue(Object value, NavigableMap root, Map<Object, Object> copies) {
+        if (value instanceof NavigableMap) {
+            return ((NavigableMap) value).cloneUnder(root, copies)
+        }
+        if (!(value instanceof List) && !(value instanceof Map)) {
+            return value
+        }
+        Object copy = copies.get(value)
+        if (copy == null) {
+            if (value instanceof List) {
+                List<Object> listCopy = []
+                copies.put(value, listCopy)
+                for (Object element in (List) value) {
+                    listCopy.add(copyValue(element, root, copies))
+                }
+                copy = listCopy
+            } else {
+                Map<Object, Object> mapCopy = [:]
+                copies.put(value, mapCopy)
+                for (Map.Entry element in ((Map) value).entrySet()) {
+                    mapCopy.put(element.key, copyValue(element.value, root, copies))
+                }
+                copy = mapCopy
+            }
+        }
+        copy
     }
 
     @Override

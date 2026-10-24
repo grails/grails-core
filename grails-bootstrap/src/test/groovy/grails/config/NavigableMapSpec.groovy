@@ -374,6 +374,27 @@ class NavigableMapSpec extends Specification {
         original.navigate('a', 'e') == null
     }
 
+    def "a clone copies the lists and the list elements of indexed keys"() {
+        given:
+        NavigableMap original = new NavigableMap()
+        original.merge(['a.items[0]': 'first', 'a.rows[0].name': 'row'], true)
+
+        when:
+        NavigableMap copy = original.clone()
+        copy.merge(['a.items[0]': 'changed', 'a.items[1]': 'added', 'a.rows[0].name': 'renamed'], true)
+
+        then: 'the copy reads the writes through both representations, on one list'
+        copy['a.items'] == ['changed', 'added']
+        copy['a.items'].is(copy.navigate('a', 'items'))
+        copy['a.rows'] == [[name: 'renamed']]
+
+        and: 'the original keeps its lists'
+        original['a.items'] == ['first']
+        original.navigate('a', 'items') == ['first']
+        original['a.items[0]'] == 'first'
+        original['a.rows'] == [[name: 'row']]
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()
