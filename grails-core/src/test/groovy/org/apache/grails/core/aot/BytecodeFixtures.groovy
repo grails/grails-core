@@ -99,6 +99,25 @@ class StaticCoercionFixture {
     }
 }
 
+/**
+ * A value coerced with {@code as} to a sealed interface it already implements, which needs no proxy: the JDK
+ * refuses to proxy a sealed interface at all.
+ */
+class SealedCoercionFixture {
+
+    static Object permitted() {
+        new PermittedCoercion() as SealedCoercion
+    }
+}
+
+/** A sealed interface, and below it the one class it permits. */
+sealed interface SealedCoercion permits PermittedCoercion {
+}
+
+/** See {@link SealedCoercion}. */
+final class PermittedCoercion implements SealedCoercion {
+}
+
 /** What a coercion fixture turns a value into: one interface per form, so finding one proves that form was read. */
 interface ClosureLiteralCoercion {
     int apply(int value)

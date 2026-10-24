@@ -110,6 +110,18 @@ class BytecodeRuntimeHintsSpec extends Specification {
             'a map literal in statically compiled code'     | { StaticCoercionFixture.mapLiteral() }      | StaticMapLiteralCoercion
     }
 
+    void 'a sealed interface named with as is not registered for a proxy'() {
+        given: 'one the JVM sees as sealed'
+            assert SealedCoercion.isSealed()
+
+        when: 'a value that already implements it is coerced to it'
+            def coerced = SealedCoercionFixture.permitted()
+
+        then: 'it needs no proxy, and the JDK refuses to make one for a sealed interface, so a hint is of no use'
+            coerced instanceof PermittedCoercion
+            !RuntimeHintsPredicates.proxies().forInterfaces(SealedCoercion).test(hints)
+    }
+
     void 'the configuration can list its property names as properties'() {
         when: 'the names are asked for, which turns a map of closures into an enumeration'
             def names = new ConfigProperties(new PropertySourcesConfig('grails.fixture': 'value')).propertyNames()

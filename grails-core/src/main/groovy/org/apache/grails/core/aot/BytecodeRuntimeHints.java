@@ -192,7 +192,7 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
 
     /**
      * The type, or none if it cannot be loaded here: registering a type that does not load fails the image
-     * build, and a closure cast to an abstract class is not proxied by the JDK, so only an interface is.
+     * build.
      */
     @Nullable
     private static Class<?> load(String type, ClassLoader loader) {
@@ -240,6 +240,15 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
         }
     }
 
+    /**
+     * Whether the JDK can make a proxy of the type: an interface, and not a sealed one. A value coerced to an
+     * abstract class is not proxied by the JDK, and one coerced to a sealed interface it implements needs no
+     * proxy, since the JDK refuses to make one.
+     */
+    private static boolean isProxiable(Class<?> type) {
+        return type.isInterface() && !type.isSealed();
+    }
+
     /** A method by its name and the names of its parameter types. */
     private record MethodSignature(String name, List<TypeReference> parameterTypes) {
     }
@@ -273,7 +282,7 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
             }
             for (String type : coercedTo) {
                 Class<?> coerced = load(type, loader);
-                if (coerced != null && coerced.isInterface()) {
+                if (coerced != null && isProxiable(coerced)) {
                     hints.proxies().registerJdkProxy(TypeReference.of(type));
                 }
             }
