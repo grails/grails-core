@@ -21,6 +21,8 @@ package org.grails.orm.hibernate.proxy
 import grails.gorm.annotation.Entity
 import groovy.transform.CompileStatic
 
+import org.grails.datastore.gorm.GormEnhancer
+import org.grails.datastore.mapping.reflect.NameUtils
 import org.grails.orm.hibernate.HibernateDatastore
 import org.hibernate.Hibernate
 import org.hibernate.HibernateException
@@ -38,6 +40,29 @@ class ByteBuddyGroovyProxyFactorySpec extends Specification {
     @Shared @AutoCleanup HibernateDatastore datastore = new HibernateDatastore(GroovyProxyFactoryEntity)
 
     ByteBuddyProxyHelper helper = new GrailsBytecodeProvider().getByteBuddyProxyHelper()
+
+    void "a wrapped Hibernate proxy resolves the entity name and validation API without initialization"() {
+        given:
+        Session session = datastore.sessionFactory.openSession()
+        Class entityAlias = GroovyProxyFactoryEntity
+
+        when:
+        def proxy = session.getReference(entityAlias, 1L)
+        Class proxyClass = proxy.getClass()
+
+        then:
+        proxyClass.superclass.superclass == entityAlias
+        NameUtils.getClassName(entityAlias) == entityAlias.name
+        NameUtils.getClassName(proxyClass.superclass) == entityAlias.name
+        NameUtils.getClassName(proxyClass) == entityAlias.name
+        GormEnhancer.findValidationApi(proxyClass) != null
+        GormEnhancer.findValidationApi(proxyClass).is(GormEnhancer.findValidationApi(entityAlias))
+        GormEnhancer.findDatastore(proxyClass).is(datastore)
+        !Hibernate.isInitialized(proxy)
+
+        cleanup:
+        session?.close()
+    }
 
     void "factory can be instantiated"() {
         expect:

@@ -104,9 +104,8 @@ public class NameUtils {
      * @return The class name
      */
     public static String getClassName(Class clazz) {
-        final String sn = clazz.getSimpleName();
-        if (sn.contains(DOLLAR_SEPARATOR)) {
-            return clazz.getSuperclass().getName();
+        while (clazz.getSimpleName().contains(DOLLAR_SEPARATOR) && clazz.getSuperclass() != null) {
+            clazz = clazz.getSuperclass();
         }
         return clazz.getName();
     }
