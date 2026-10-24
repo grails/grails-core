@@ -62,9 +62,11 @@ class NavigableMapPropertySource extends MapPropertySource {
         this.indexedLists = lists
         this.elementProperties = elements
 
+        // a map is presented through its entries and a list through its elements, so neither is a name; nor is the
+        // flat key the source holds for an element of a list, which the elements supply under the same name
         Set<String> names = new LinkedHashSet<>()
         for (String key : source.keySet()) {
-            if (!(source.get(key) instanceof NavigableMap) && !lists.contains(key)) {
+            if (!(unwrap(source.get(key)) instanceof Map) && !lists.contains(key) && !isElementKey(lists, key)) {
                 names << key
             }
         }
@@ -88,16 +90,22 @@ class NavigableMapPropertySource extends MapPropertySource {
         if (indexedLists.contains(name)) {
             return null
         }
-        def value = super.getProperty(name)
-        if (value == null) {
+        if (elementProperties.containsKey(name)) {
             return elementProperties.get(name)
         }
+        def value = super.getProperty(name)
         if (value instanceof OriginTrackedValue) {
             return ((OriginTrackedValue) value).value
-        } else if (value instanceof NavigableMap || value instanceof NavigableMap.NullSafeNavigator) {
+        } else if (value instanceof Map || value instanceof NavigableMap.NullSafeNavigator) {
             return null
         }
         return value
+    }
+
+    /** Whether the key names an element of one of the lists, such as {@code app.rows[0].name} for {@code app.rows}. */
+    private static boolean isElementKey(Set<String> lists, String key) {
+        int subscript = key.indexOf('[')
+        subscript > 0 && lists.contains(key.substring(0, subscript))
     }
 
     Object getNavigableProperty(String name) {

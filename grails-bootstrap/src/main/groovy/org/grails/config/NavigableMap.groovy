@@ -18,7 +18,6 @@
  */
 package org.grails.config
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
@@ -52,21 +51,70 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         delegateMap = new LinkedHashMap<>()
     }
 
-    private NavigableMap(NavigableMap rootConfig, List<String> path, Map<String, Object> delegateMap) {
-        this.rootConfig = rootConfig
-        this.path = path
-        dottedPath = path.join('.')
-        this.delegateMap = delegateMap
-    }
-
     @Override
     String toString() {
         delegateMap.toString()
     }
 
+    /**
+     * A copy whose nested maps and lists are copies as well. The copy of a root is the root of its own
+     * configuration, so a write through the copy, by merge, dot notation or subscript, never reaches the
+     * original; the copy of a nested map stays under the root of the original. A map or list the original
+     * holds twice, as the nested entry and the flat alias, is copied once, so the copy keeps both
+     * representations on one object.
+     */
     @Override
     NavigableMap clone() {
-        new NavigableMap(getRootConfig(), getPath(), new LinkedHashMap<>(getDelegateMap()))
+        Map<Object, Object> copies = new IdentityHashMap<>()
+        NavigableMap copy = getRootConfig().is(this) ? new NavigableMap() : new NavigableMap(getRootConfig(), getPath())
+        copies.put(this, copy)
+        copyEntries(copy, copies)
+        copy
+    }
+
+    private NavigableMap cloneUnder(NavigableMap root, Map<Object, Object> copies) {
+        NavigableMap copy = (NavigableMap) copies.get(this)
+        if (copy == null) {
+            copy = new NavigableMap(root, getPath())
+            copies.put(this, copy)
+            copyEntries(copy, copies)
+        }
+        copy
+    }
+
+    private void copyEntries(NavigableMap copy, Map<Object, Object> copies) {
+        NavigableMap root = copy.getRootConfig()
+        for (Map.Entry<String, Object> entry in getDelegateMap().entrySet()) {
+            copy.getDelegateMap().put(entry.key, copyValue(entry.value, root, copies))
+        }
+    }
+
+    private static Object copyValue(Object value, NavigableMap root, Map<Object, Object> copies) {
+        if (value instanceof NavigableMap) {
+            return ((NavigableMap) value).cloneUnder(root, copies)
+        }
+        if (!(value instanceof List) && !(value instanceof Map)) {
+            return value
+        }
+        Object copy = copies.get(value)
+        if (copy == null) {
+            if (value instanceof List) {
+                List<Object> listCopy = []
+                copies.put(value, listCopy)
+                for (Object element in (List) value) {
+                    listCopy.add(copyValue(element, root, copies))
+                }
+                copy = listCopy
+            } else {
+                Map<Object, Object> mapCopy = [:]
+                copies.put(value, mapCopy)
+                for (Map.Entry element in ((Map) value).entrySet()) {
+                    mapCopy.put(element.key, copyValue(element.value, root, copies))
+                }
+                copy = mapCopy
+            }
+        }
+        copy
     }
 
     @Override
@@ -89,7 +137,6 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         delegateMap.containsValue(value)
     }
 
-    @CompileDynamic
     @Override
     Object get(Object key) {
         Object result = delegateMap.get(key)
@@ -148,14 +195,22 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             Object sourceKeyObject = entry.key
             Object sourceValue = entry.value
             String sourceKey = String.valueOf(sourceKeyObject)
-            if (parseFlatKeys) {
+            if (parseFlatKeys && subscriptStart(sourceKey) < 0) {
+                // an indexed key such as a.rows[0].name is merged whole: the dots after the subscript name an
+                // entry of the element, and those before it are the path of the container
                 String[] keyParts = sourceKey.split(/\./)
                 if (keyParts.length > 1) {
-                    mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    if (!path) {
+                        // at the root the dotted key is the flat key itself; below the root it would be a copy
+                        // inside the sub-map that nothing keeps current, and the nested write below writes the
+                        // flat key under its full path
+                        mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    }
                     def pathParts = keyParts[0..-2]
                     Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
                     sourceKey = keyParts[-1]
-                    mergeMapEntry(rootMap, pathParts.join('.'), actualTarget, sourceKey, sourceValue, parseFlatKeys)
+                    String nestedPath = path ? "${path}.${pathParts.join('.')}" : pathParts.join('.')
+                    mergeMapEntry(rootMap, nestedPath, actualTarget, sourceKey, sourceValue, parseFlatKeys)
                 } else {
                     mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
                 }
@@ -166,18 +221,10 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
-        int subscriptStart = sourceKey.indexOf('[')
-        int subscriptEnd = sourceKey.indexOf(']')
-        if (subscriptEnd > subscriptStart) {
-            if (subscriptStart > -1) {
-                String k = sourceKey[0..<subscriptStart]
-                String index = sourceKey[subscriptStart + 1..<subscriptEnd]
-                String rest = sourceKey.substring(subscriptEnd + 1)
-                targetMap.put(k, setSubscriptValue(targetMap.get(k), index, rest, sourceValue))
-                if (isSubscriptChain(rest)) {
-                    targetMap.put(sourceKey, sourceValue)
-                }
-            }
+        int subscriptStart = subscriptStart(sourceKey)
+        if (subscriptStart > -1) {
+            mergeIndexedEntry(rootMap, path, targetMap, sourceKey.substring(0, subscriptStart), sourceKey.substring(subscriptStart),
+                    sourceValue, parseFlatKeys)
         } else {
             Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
             Object newValue
@@ -199,30 +246,160 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 mergeMaps(rootMap, newPath , subMap, (Map) sourceValue, parseFlatKeys)
                 newValue = subMap
             } else {
-                newValue = sourceValue
+                newValue = mergedValue(sourceValue)
             }
             if (isNestedSet && newValue == null) {
-                if (path) {
-
-                    def subMap = rootMap.get(path)
-                    if (subMap instanceof Map) {
-                        subMap.remove(sourceKey)
-                    }
-                    def keysToRemove = rootMap.keySet().findAll() { String key ->
-                        key.startsWith("${path}.")
-                    }
-                    for (key in keysToRemove) {
-                        rootMap.remove(key)
-                    }
-                }
+                // the flat key of the removed property, those below it and its indexed aliases go with it;
+                // the flat keys of its siblings stay
+                String removedKey = path ? "${path}.${sourceKey}".toString() : sourceKey
+                removeKeysBelow(rootMap, removedKey, ['.', '['])
+                rootMap.remove(removedKey)
                 targetMap.remove(sourceKey)
             } else {
+                String flatKey = path ? "${path}.${sourceKey}".toString() : sourceKey
                 if (path) {
-                    rootMap.put("${path}.${sourceKey}".toString(), newValue)
+                    mergeMapEntry(rootMap, flatKey, newValue)
                 }
                 mergeMapEntry(targetMap, sourceKey, newValue)
+                if (replacedBy(currentValue, newValue)) {
+                    // the element keys of the container the value replaces go with it; the flat keys of the
+                    // entries of a block stay, as they always have
+                    removeKeysBelow(rootMap, flatKey, ['['])
+                }
+                writeElements(rootMap, flatKey, newValue)
             }
         }
+    }
+
+    /**
+     * Writes the element keys of a list, {@code a.rows[0]} and, for an element that is a map, {@code a.rows[0].name},
+     * as the indexed keys of a configuration file write them, so that a list is read alike however it was written.
+     * A map that is not a block of this configuration, an element of a list or a value an indexed key wrote, has
+     * its entries written the same way; a block writes its own flat keys as it is merged.
+     */
+    private void writeElements(NavigableMap rootMap, String flatKey, Object value) {
+        if (value instanceof List) {
+            int index = 0
+            for (Object element in (List) value) {
+                String elementKey = "${flatKey}[${index++}]".toString()
+                mergeMapEntry(rootMap, elementKey, element)
+                writeElements(rootMap, elementKey, element)
+            }
+        } else if (value instanceof Map && !(value instanceof NavigableMap)) {
+            for (Entry entry in ((Map) value).entrySet()) {
+                String entryKey = "${flatKey}.${entry.key}".toString()
+                mergeMapEntry(rootMap, entryKey, entry.value)
+                writeElements(rootMap, entryKey, entry.value)
+            }
+        }
+    }
+
+    /** Whether a write put another object where a map or a list was. */
+    private static boolean replacedBy(Object previous, Object value) {
+        (previous instanceof Map || previous instanceof List) && !previous.is(value)
+    }
+
+    /** Whether a write put a list where a map was, or a map where a list was. */
+    private static boolean kindChanged(Object previous, Object container) {
+        (previous instanceof Map && container instanceof List) || (previous instanceof List && container instanceof Map)
+    }
+
+    private void removeKeysBelow(NavigableMap rootMap, String flatKey, List<String> separators) {
+        List<String> prefixes = separators.collect { String separator -> flatKey + separator }
+        List<String> keysBelow = rootMap.keySet().findAll { String key ->
+            prefixes.any { String prefix -> key.startsWith(prefix) }
+        } as List<String>
+        for (String key in keysBelow) {
+            rootMap.remove(key)
+        }
+    }
+
+    /** The index of the first subscript of a key such as {@code rows[0].name}, or -1 when the key has none. */
+    private static int subscriptStart(String key) {
+        int start = key.indexOf('[')
+        start > -1 && key.indexOf(']', start) > start ? start : -1
+    }
+
+    /**
+     * Merges a key with a subscript, such as {@code rows[0].name}, {@code groups[0][1]} or {@code mappings[/api/**]}.
+     * The container named before the first subscript, a list for a numeric index and a map otherwise, is held by
+     * the nested map that owns it and, under its flat key, by the root, as one object in both places. The root
+     * also holds a flat key for each element the subscripts step through and for the value itself, so that
+     * {@code a.rows}, {@code a.rows[0]} and {@code a.rows[0].name} are each read without a walk. The element keys
+     * follow what they describe: those of a container of the other kind, a map where the index names a list, go
+     * when it is replaced, and those below the value go when the value replaces a map or a list, so that the
+     * value is read by its own keys and by none of the old one's. The dots of the container's name are a path
+     * only when the merge parses flat keys, as for any other key.
+     */
+    private void mergeIndexedEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String containerName,
+                                   String subscripts, Object sourceValue, boolean parseFlatKeys) {
+        NavigableMap containerParent = targetMap
+        String containerKey = containerName
+        if (parseFlatKeys && containerName.contains('.')) {
+            List<String> nameParts = containerName.split(/\./) as List<String>
+            containerParent = targetMap.navigateSubMap(nameParts[0..-2], true)
+            containerKey = nameParts[-1]
+        }
+        String containerPath = path ? "${path}.${containerName}".toString() : containerName
+        int subscriptEnd = subscripts.indexOf(']')
+        Object previousContainer = containerParent.get(containerKey)
+        Object value = mergedValue(sourceValue)
+        Object container = setSubscriptValue(previousContainer, subscripts.substring(1, subscriptEnd),
+                subscripts.substring(subscriptEnd + 1), value)
+        mergeMapEntry(containerParent, containerKey, container)
+        if (!containerParent.is(rootMap)) {
+            mergeMapEntry(rootMap, containerPath, container)
+        }
+        writeKeysAlong(rootMap, containerPath, subscripts, container, previousContainer, value)
+    }
+
+    /**
+     * Writes the flat key of each element the subscripts of an indexed key step through and of the value, and
+     * the element keys below the value. The element keys of what the write replaced go: those below a container
+     * or element the write made anew as one of the other kind, a list where a map was or a map where a list
+     * was, and those below a value the write replaced. A copy of a container that refused the write holds what
+     * the container held, so its element keys stay. Below the container the dotted keys are the flat keys of a
+     * block's entries, and stay as they always have.
+     */
+    private void writeKeysAlong(NavigableMap rootMap, String containerPath, String subscripts, Object container,
+                                Object previousContainer, Object value) {
+        Object element = container
+        Object previous = previousContainer
+        String elementPath = containerPath
+        String remaining = subscripts
+        List<String> separators = ['[']
+        while (remaining) {
+            if (kindChanged(previous, element)) {
+                removeKeysBelow(rootMap, elementPath, separators)
+            }
+            if (remaining.startsWith('[') && remaining.indexOf(']') > 0) {
+                int end = remaining.indexOf(']')
+                String index = remaining.substring(1, end)
+                element = index.isNumber() ? ((List) element).get(index.toInteger()) : ((Map) element).get(index)
+                elementPath += remaining.substring(0, end + 1)
+                remaining = remaining.substring(end + 1)
+            } else {
+                element = value
+                elementPath += remaining
+                remaining = ''
+            }
+            previous = rootMap.get(elementPath)
+            mergeMapEntry(rootMap, elementPath, element)
+            separators = ['.', '[']
+        }
+        if (replacedBy(previous, element)) {
+            removeKeysBelow(rootMap, elementPath, separators)
+        }
+        writeElements(rootMap, elementPath, element)
+    }
+
+    /**
+     * The value a merge stores for an entry that is not a map, in the nested entry and in the flat key
+     * alike. A config resolves placeholders here, so that a value such as {@code ${random.uuid}} is
+     * resolved once and both representations hold the same result.
+     */
+    protected Object mergedValue(Object value) {
+        value
     }
 
     protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, newValue) {
@@ -235,6 +412,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 
     void setAt(Object key, Object value) {
         setProperty(String.valueOf(key), value)
+    }
+
+    /**
+     * Groovy compiles {@code map[key] = value} to {@code putAt}, so without this the subscript form wrote
+     * the raw entry only; it writes the flat key and the nested entry, as {@link #setProperty} does.
+     */
+    void putAt(String key, Object value) {
+        setProperty(key, value)
     }
 
     Object getProperty(String name) {
@@ -264,7 +449,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             if (submap instanceof Map) {
                 return navigateMap((Map<String, Object>) submap, path.tail())
             }
-            return submap
+            return null
         }
     }
 
@@ -272,19 +457,25 @@ class NavigableMap implements Map<String, Object>, Cloneable {
      * Sets a value in a list (numeric index) or map (other index) at the given subscript, creating
      * the container when the current value is not one. The text following the subscript is either
      * empty, further subscripts such as {@code [1]} for a list nested in a list, or a {@code .name}
-     * remainder stored as a key of a map element.
+     * remainder stored as a key of a map element. A container that already holds the object is left
+     * as it is: the element keys of a list replay what it holds when the map is merged again, as a
+     * config merges the map of a property source. A container that refuses the write, such as a list
+     * {@code application.groovy} built with {@code asImmutable()}, is replaced by a copy that holds it.
      */
     private Object setSubscriptValue(Object currentValue, String index, String rest, Object sourceValue) {
         if (index.isNumber()) {
             List list = currentValue instanceof List ? (List) currentValue : []
             int i = index.toInteger()
-            fill(list, i, null)
-            list.set(i, subscriptElementValue(list.get(i), rest, sourceValue))
-            return list
+            boolean held = i < list.size()
+            Object element = held ? list.get(i) : null
+            Object newElement = subscriptElementValue(element, rest, sourceValue)
+            if (held && element.is(newElement)) {
+                return list
+            }
+            return writeElement(list, i, newElement)
         }
-        Map nestedMap = currentValue instanceof Map ? (Map) currentValue : [:]
-        nestedMap.put(index, subscriptElementValue(nestedMap.get(index), rest, sourceValue))
-        return nestedMap
+        Map map = currentValue instanceof Map ? (Map) currentValue : [:]
+        return writeEntry(map, index, subscriptElementValue(map.get(index), rest, sourceValue))
     }
 
     private Object subscriptElementValue(Object currentValue, String rest, Object sourceValue) {
@@ -298,15 +489,45 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             }
         }
         Map element = currentValue instanceof Map ? (Map) currentValue : [:]
-        element.put(rest.substring(1), sourceValue)
-        return element
+        return writeEntry(element, rest.substring(1), sourceValue)
     }
 
-    private static boolean isSubscriptChain(String rest) {
-        rest ==~ /(\[[^\]]*\])*/
+    /**
+     * Writes an element into a list and returns the list that holds it: the one given, or a copy when
+     * the list refuses the write, as one built with {@code asImmutable()} or {@code List.of} does.
+     */
+    private static List writeElement(List list, int index, Object element) {
+        try {
+            fill(list, index, null)
+            list.set(index, element)
+            return list
+        } catch (UnsupportedOperationException ignored) {
+            List copy = new ArrayList(list)
+            fill(copy, index, null)
+            copy.set(index, element)
+            return copy
+        }
     }
 
-    private void fill(List list, Integer toIndex, Object value) {
+    /**
+     * Writes an entry into a map and returns the map that holds it: the one given, left as it is when it
+     * already holds that object, or a copy when the map refuses the write, as an immutable map does.
+     */
+    private static Map writeEntry(Map map, String key, Object value) {
+        if (map.containsKey(key) && map.get(key).is(value)) {
+            return map
+        }
+        try {
+            map.put(key, value)
+            return map
+        } catch (UnsupportedOperationException ignored) {
+            Map copy = new LinkedHashMap(map)
+            copy.put(key, value)
+            return copy
+        }
+    }
+
+    private static void fill(List list, Integer toIndex, Object value) {
         if (toIndex >= list.size()) {
             for (int i = list.size(); i <= toIndex; i++) {
                 list.add(i, value)
@@ -315,19 +536,8 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     NavigableMap navigateSubMap(List<String> path, boolean createMissing) {
-        NavigableMap rootMap = this
         NavigableMap currentMap = this
-        StringBuilder accumulatedPath = new StringBuilder()
-        boolean isFirst = true
         for (String pathElement : path) {
-            if (!isFirst) {
-                accumulatedPath.append('.').append(pathElement)
-            }
-            else {
-                isFirst = false
-                accumulatedPath.append(pathElement)
-            }
-
             Object currentItem = currentMap.get(pathElement)
             if (currentItem instanceof NavigableMap) {
                 currentMap = (NavigableMap) currentItem
@@ -336,12 +546,19 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 newPathList.addAll(currentMap.getPath())
                 newPathList.add(pathElement)
 
-                Map<String, Object> newMap = new NavigableMap(currentMap.getRootConfig(), newPathList.asImmutable())
+                NavigableMap root = currentMap.getRootConfig()
+                NavigableMap newMap = new NavigableMap(root, newPathList.asImmutable())
                 currentMap.put(pathElement, newMap)
 
-                def fullPath = accumulatedPath.toString()
-                if (!rootMap.containsKey(fullPath)) {
-                    rootMap.put(fullPath, newMap)
+                // the flat alias of a new block lives at the configuration root under the block's full path,
+                // whichever map the walk started on; what an earlier merge left there, a scalar or the block
+                // a scalar has since replaced, is stale and is replaced, as a block merged as a map value is,
+                // and the element keys of a list the block replaces go with the list
+                if (!currentMap.is(root)) {
+                    mergeMapEntry(root, newMap.dottedPath, newMap)
+                }
+                if (currentItem instanceof List || currentItem instanceof Map) {
+                    removeKeysBelow(root, newMap.dottedPath, ['['])
                 }
                 currentMap = newMap
             } else {

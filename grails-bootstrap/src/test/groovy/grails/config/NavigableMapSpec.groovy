@@ -18,6 +18,7 @@
  */
 package grails.config
 
+import org.grails.config.CodeGenConfig
 import org.grails.config.NavigableMap
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -80,7 +81,7 @@ class NavigableMapSpec extends Specification {
         output.merge(input)
 
         then:
-        output.keySet() as List<String> == ['rabbitmq.connections']
+        output.keySet().findAll { !it.contains('[') } == ['rabbitmq.connections'] as Set
         output['rabbitmq.connections'] instanceof List
         output['rabbitmq.connections'].size() == 1
         output['rabbitmq.connections'][0].name == 'main'
@@ -88,6 +89,11 @@ class NavigableMapSpec extends Specification {
         output['rabbitmq.connections'][0].host2 == '635494740'
         output['rabbitmq.connections'][0].username == 'guest'
         output['rabbitmq.connections'][0].password == 'guest'
+
+        and: "the element and each of its entries stay readable under their indexed keys"
+        output['rabbitmq.connections[0]'].is(output['rabbitmq.connections'][0])
+        output['rabbitmq.connections[0].name'] == 'main'
+        output['rabbitmq.connections[0].password'] == 'guest'
     }
 
     def "multiple subscript entries are collapse to a map of maps"() {
@@ -105,7 +111,7 @@ class NavigableMapSpec extends Specification {
         output.merge(input)
 
         then:
-        output.keySet() as List<String> == ['rabbitmq.connections']
+        output.keySet().findAll { !it.contains('[') } == ['rabbitmq.connections'] as Set
         output['rabbitmq.connections'] instanceof Map
         output['rabbitmq.connections'].size() == 1
         output['rabbitmq.connections']['foo'].name == 'main'
@@ -113,6 +119,11 @@ class NavigableMapSpec extends Specification {
         output['rabbitmq.connections']['foo'].host2 == '635494740'
         output['rabbitmq.connections']['foo'].username == 'guest'
         output['rabbitmq.connections']['foo'].password == 'guest'
+
+        and: "the element and each of its entries stay readable under their indexed keys"
+        output['rabbitmq.connections[foo]'].is(output['rabbitmq.connections']['foo'])
+        output['rabbitmq.connections[foo].name'] == 'main'
+        output['rabbitmq.connections[foo].password'] == 'guest'
     }
 
     def "consecutive subscripts are collapsed to nested lists"() {
@@ -171,5 +182,461 @@ class NavigableMapSpec extends Specification {
         output['app.groups'] == [['a', 'b'], ['c']]
         output['app.groups[1][0]'] == 'c'
         output.navigate('app', 'groups') == [['a', 'b'], ['c']]
+    }
+
+    def "a dotted key inside a nested map is flattened under its parent"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: [b: 'root'], x: ['a.b': 'nested']], true)
+
+        then: 'the dotted key is written under its parent in both representations'
+        output['x.a.b'] == 'nested'
+        output.navigate('x', 'a', 'b') == 'nested'
+
+        and: 'the root key it resembles keeps its value in both representations'
+        output['a.b'] == 'root'
+        output.navigate('a', 'b') == 'root'
+    }
+
+    def "a block merged over a scalar replaces it in both representations"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['server.url': 'x'], true)
+
+        when:
+        output.merge(['server.url.port': 'y'], true)
+
+        then: 'the flat key holds the block, as the nested entry does'
+        output['server.url'] == [port: 'y']
+        output.navigate('server', 'url') == [port: 'y']
+        output['server.url.port'] == 'y'
+    }
+
+    def "subscript assignment on a nested map writes both representations"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [b: 'merged']], true)
+
+        when:
+        output.a['b'] = 'assigned'
+
+        then:
+        output['a.b'] == 'assigned'
+        output.navigate('a', 'b') == 'assigned'
+    }
+
+    def "a nested subscript merge keeps the flat alias of the list on the same list"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['app.items[0]': 'old'], true)
+
+        when:
+        output.merge([app: ['items[0]': 'new']], true)
+
+        then:
+        output['app.items'] == ['new']
+        output.navigate('app', 'items') == ['new']
+        output['app.items[0]'] == 'new'
+    }
+
+    @Unroll
+    def "an indexed key with #description builds the container in both representations"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge(source, true)
+
+        then: 'the container is one object, held by the nested map and under its flat key'
+        output['a.rows'] == container
+        output.navigate('a', 'rows') == container
+        output['a.rows'].is(output.navigate('a', 'rows'))
+
+        and: 'the element the subscripts step through is read by its flat key, as the one the container holds'
+        output[elementKey] == element
+        output[elementKey].is(nestedElement(output.navigate('a', 'rows')))
+        output[valueKey] == 'v'
+
+        and: 'the nested map holds the container and nothing else'
+        output.navigate('a').keySet() == ['rows'] as Set
+
+        where:
+        description                                        | source                        | container             | elementKey     | element     | valueKey           | nestedElement
+        'a property after the index at the root'           | ['a.rows[0].name': 'v']       | [[name: 'v']]         | 'a.rows[0]'    | [name: 'v'] | 'a.rows[0].name'   | { List rows -> rows[0] }
+        'a property after the index inside the parent map' | [a: ['rows[0].name': 'v']]    | [[name: 'v']]         | 'a.rows[0]'    | [name: 'v'] | 'a.rows[0].name'   | { List rows -> rows[0] }
+        'two indexes and a property inside the parent map' | [a: ['rows[0][1].name': 'v']] | [[null, [name: 'v']]] | 'a.rows[0][1]' | [name: 'v'] | 'a.rows[0][1].name' | { List rows -> rows[0][1] }
+        'a map subscript and a property inside the parent' | [a: ['rows[k].name': 'v']]    | [k: [name: 'v']]      | 'a.rows[k]'    | [name: 'v'] | 'a.rows[k].name'   | { Map rows -> rows['k'] }
+        'an index alone inside the parent map'             | [a: ['rows[0]': 'v']]         | ['v']                 | 'a.rows[0]'    | 'v'         | 'a.rows[0]'        | { List rows -> rows[0] }
+    }
+
+    def "an indexed key whose container name is dotted is merged under that path inside the parent map"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: ['rows.name[0]': 'v']], true)
+
+        then: 'the list is held under the path in both representations'
+        output['a.rows.name'] == ['v']
+        output.navigate('a', 'rows', 'name') == ['v']
+        output['a.rows.name'].is(output.navigate('a', 'rows', 'name'))
+        output['a.rows.name[0]'] == 'v'
+
+        and: 'the nested maps hold no copy of the key relative to themselves'
+        output.navigate('a').keySet() == ['rows'] as Set
+        output.navigate('a', 'rows').keySet() == ['name'] as Set
+    }
+
+    def "a list merged as a value writes the flat keys of its elements"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: [rows: [[name: 'row', port: 1], 'plain', ['x', 'y']]]], true)
+
+        then: 'each element, and each entry of an element that is a map, is read by its indexed key'
+        output['a.rows[0]'].is(output.navigate('a', 'rows')[0])
+        output['a.rows[0].name'] == 'row'
+        output['a.rows[0].port'] == 1
+        output['a.rows[1]'] == 'plain'
+        output['a.rows[2]'].is(output.navigate('a', 'rows')[2])
+        output['a.rows[2][1]'] == 'y'
+    }
+
+    @Unroll
+    def "a list written #description replaces the element keys of the list it replaces"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.rows[0].name': 'old', 'a.rows[1].name': 'second'], true)
+
+        when:
+        write(output)
+
+        then: 'the element keys name the elements of the new list'
+        output['a.rows'] == [[name: 'new']]
+        output.navigate('a', 'rows') == [[name: 'new']]
+        output['a.rows[0]'] == [name: 'new']
+        output['a.rows[0].name'] == 'new'
+
+        and: 'those of the elements the new list does not hold are gone'
+        !output.containsKey('a.rows[1]')
+        !output.containsKey('a.rows[1].name')
+
+        where:
+        description             | write
+        'by merge as a value'   | { NavigableMap map -> map.merge([a: [rows: [[name: 'new']]]], true) }
+        'by dot notation'       | { NavigableMap map -> map.a.rows = [[name: 'new']] }
+    }
+
+    @Unroll
+    def "an indexed element replaced #description drops the element keys of the element it replaces"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [rows: [[name: 'old', port: 1]]]])
+
+        when:
+        output.merge(source, parseFlatKeys)
+
+        then: 'the list holds the new element in both representations'
+        output['a.rows'] == [element]
+        output.navigate('a', 'rows') == [element]
+        output['a.rows[0]'] == element
+
+        and: 'the element keys name the new element and its entries, and no entry of the old one'
+        output.findAll { String key, Object value -> key.startsWith('a.rows[') } == elementKeys
+
+        where:
+        description                      | source                          | parseFlatKeys | element       | elementKeys
+        'by a map at the root'           | ['a.rows[0]': [name: 'new']]    | false         | [name: 'new'] | ['a.rows[0]': [name: 'new'], 'a.rows[0].name': 'new']
+        'by a map inside the parent map' | [a: ['rows[0]': [name: 'new']]] | true          | [name: 'new'] | ['a.rows[0]': [name: 'new'], 'a.rows[0].name': 'new']
+        'by a scalar'                    | ['a.rows[0]': 'plain']          | true          | 'plain'       | ['a.rows[0]': 'plain']
+        'by a list'                      | ['a.rows[0]': ['x', 'y']]       | true          | ['x', 'y']    | ['a.rows[0]': ['x', 'y'], 'a.rows[0][0]': 'x', 'a.rows[0][1]': 'y']
+    }
+
+    def "a map written as an entry of an indexed element drops the keys of the map it replaces"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [rows: [[meta: [old: 1]]]]], true)
+
+        when:
+        output.merge(['a.rows[0].meta': [fresh: 2]], true)
+
+        then:
+        output.navigate('a', 'rows') == [[meta: [fresh: 2]]]
+        output['a.rows[0].meta'] == [fresh: 2]
+        output['a.rows[0].meta.fresh'] == 2
+        !output.containsKey('a.rows[0].meta.old')
+    }
+
+    @Unroll
+    def "#description written over a container drops the element keys of the container"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(first, true)
+
+        when:
+        second(output)
+
+        then: 'the element keys name the new value only, and both representations hold it'
+        output.findAll { String key, Object value -> key.startsWith('a.rows[') } == elementKeys
+        output['a.rows'].is(output.navigate('a', 'rows'))
+
+        where:
+        description       | first                     | second                                                               | elementKeys
+        'a scalar merged' | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.merge(['a.rows': 'plain'], true) }          | [:]
+        'a scalar set'    | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.a.rows = 'plain' }                          | [:]
+        'a block merged'  | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.merge([a: [rows: [name: 'block']]], true) } | [:]
+        'a map subscript' | ['a.rows[0].name': 'old'] | { NavigableMap map -> map.merge(['a.rows[k].name': 'new'], true) }    | ['a.rows[k]': [name: 'new'], 'a.rows[k].name': 'new']
+        'an index'        | ['a.rows[k].name': 'old'] | { NavigableMap map -> map.merge(['a.rows[0].name': 'new'], true) }    | ['a.rows[0]': [name: 'new'], 'a.rows[0].name': 'new']
+    }
+
+    def "a map holding immutable containers is merged again without writing into them"() {
+        given: 'immutable containers, as application.groovy may supply them, with their element keys written'
+        NavigableMap source = new NavigableMap()
+        source.merge([a: [names: ['one'].asImmutable(), rows: [[name: 'row'].asImmutable()].asImmutable()]])
+
+        when: 'the map is merged into another, as a config merges the map of a property source'
+        NavigableMap output = new NavigableMap()
+        output.merge(source)
+
+        then: 'the element keys replay what the containers hold, and the containers are those the source holds'
+        output['a.names'].is(source['a.names'])
+        output['a.names[0]'] == 'one'
+        output.navigate('a', 'rows').is(source.navigate('a', 'rows'))
+        output['a.rows[0]'].is(source['a.rows[0]'])
+        output['a.rows[0].name'] == 'row'
+    }
+
+    @Unroll
+    def "an indexed key written over #description replaces it with a copy that holds the element"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [names: original]], true)
+
+        when:
+        output.merge(['a.names[0]': 'first', 'a.names[1]': 'second'], true)
+
+        then: 'both representations hold the copy'
+        output['a.names'] == ['first', 'second']
+        output.navigate('a', 'names') == ['first', 'second']
+        output['a.names'].is(output.navigate('a', 'names'))
+        output['a.names[0]'] == 'first'
+        output['a.names[1]'] == 'second'
+
+        where:
+        description            | original
+        'an immutable list'    | ['one'].asImmutable()
+        'an unmodifiable list' | List.of('one')
+        'a list of fixed size' | Arrays.asList('one')
+    }
+
+    def "a property written into an immutable element map replaces the element with a copy"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [rows: [[name: 'old', port: 1].asImmutable()]]], true)
+
+        when:
+        output.merge(['a.rows[0].name': 'new'], true)
+
+        then:
+        output.navigate('a', 'rows') == [[name: 'new', port: 1]]
+        output['a.rows[0]'].is(output.navigate('a', 'rows')[0])
+        output['a.rows[0].name'] == 'new'
+        output['a.rows[0].port'] == 1
+    }
+
+    def "a nested dotted merge over a scalar moves the flat alias to the new block"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['x.a': 'old'], true)
+
+        when:
+        output.merge([x: ['a.b': 'new']], true)
+
+        then: 'the root alias holds the block, as the nested entry does'
+        output['x.a'] == [b: 'new']
+        output.navigate('x', 'a') == [b: 'new']
+        output['x.a.b'] == 'new'
+    }
+
+    def "a nested dotted merge writes the flat alias of every block it creates at the root"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([x: [y: 1]], true)
+
+        when:
+        output.merge([x: ['a.b.c': 'new']], true)
+
+        then:
+        output['x.a'] == [b: [c: 'new']]
+        output['x.a.b'] == [c: 'new']
+        output['x.a.b.c'] == 'new'
+        output.navigate('x', 'a', 'b') == [c: 'new']
+    }
+
+    def "a block recreated after a scalar replaced it moves the flat alias to the new block"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.b.c': 1], true)
+        output.merge([a: 'scalar'], true)
+
+        when:
+        output.merge(['a.b.d': 2], true)
+
+        then: 'the root alias holds the recreated block, as the nested entry does'
+        output['a.b'] == [d: 2]
+        output.navigate('a', 'b') == [d: 2]
+        output['a.b.d'] == 2
+    }
+
+    def "a property write below an existing block writes the flat alias of the new block at the root"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([x: [y: 1]], true)
+
+        when:
+        output.x.a.b = 'new'
+
+        then:
+        output['x.a'] == [b: 'new']
+        output['x.a.b'] == 'new'
+        output.navigate('x', 'a') == [b: 'new']
+    }
+
+    def "setting a nested property to null removes its flat keys and no others"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.b.c': 1, 'a.e.f': 3, 'a.e.g[0]': 4], true)
+
+        when:
+        output.a.e = null
+
+        then: 'the flat keys of the removed property are gone'
+        !output.containsKey('a.e')
+        !output.containsKey('a.e.f')
+        !output.containsKey('a.e.g')
+        !output.containsKey('a.e.g[0]')
+        output.navigate('a', 'e') == null
+
+        and: 'those of its siblings stay'
+        output['a.b'] == [c: 1]
+        output['a.b.c'] == 1
+        output.navigate('a', 'b', 'c') == 1
+    }
+
+    def "setting a root property to null removes the flat keys below it"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge(['a.b.c': 1, 'a.e': 2, 'x.y': 3], true)
+
+        when:
+        output.a = null
+
+        then:
+        !output.containsKey('a')
+        !output.containsKey('a.b')
+        !output.containsKey('a.b.c')
+        !output.containsKey('a.e')
+        output['x.y'] == 3
+        output.navigate('x', 'y') == 3
+    }
+
+    def "a merge into a clone of an empty map leaves the original empty"() {
+        given:
+        NavigableMap original = new NavigableMap()
+        NavigableMap copy = original.clone()
+
+        when:
+        copy.merge(['new.block.value': 1], true)
+
+        then:
+        original.isEmpty()
+        copy['new.block'] == [value: 1]
+        copy.navigate('new', 'block') == [value: 1]
+    }
+
+    def "a clone is a configuration of its own"() {
+        given:
+        NavigableMap original = new NavigableMap()
+        original.merge([a: [b: [c: 1]]], true)
+
+        when:
+        NavigableMap copy = original.clone()
+
+        then: 'the copy holds the same entries'
+        copy == original
+        !copy.is(original)
+
+        when: 'the copy is written through every path'
+        copy.a.b.d = 2
+        copy.merge(['a.e.f': 3], true)
+        copy.put('g', 4)
+
+        then: 'the copy sees the writes in both representations, on one map'
+        copy['a.b'] == [c: 1, d: 2]
+        copy['a.b'].is(copy.navigate('a', 'b'))
+        copy['a.e'] == [f: 3]
+        copy.navigate('a', 'e') == [f: 3]
+        copy['g'] == 4
+
+        and: 'the original sees none of them'
+        original['a.b'] == [c: 1]
+        original.navigate('a', 'b') == [c: 1]
+        !original.containsKey('a.b.d')
+        !original.containsKey('a.e')
+        !original.containsKey('g')
+        original.navigate('a', 'e') == null
+    }
+
+    def "a clone copies the lists and the list elements of indexed keys"() {
+        given:
+        NavigableMap original = new NavigableMap()
+        original.merge(['a.items[0]': 'first', 'a.rows[0].name': 'row'], true)
+
+        when:
+        NavigableMap copy = original.clone()
+        copy.merge(['a.items[0]': 'changed', 'a.items[1]': 'added', 'a.rows[0].name': 'renamed'], true)
+
+        then: 'the copy reads the writes through both representations, on one list'
+        copy['a.items'] == ['changed', 'added']
+        copy['a.items'].is(copy.navigate('a', 'items'))
+        copy['a.rows'] == [[name: 'renamed']]
+
+        and: 'the original keeps its lists'
+        original['a.items'] == ['first']
+        original.navigate('a', 'items') == ['first']
+        original['a.items[0]'] == 'first'
+        original['a.rows'] == [[name: 'row']]
+    }
+
+    def "a dotted key inside a nested map writes the root flat key and the nested entry only"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: ['b.c': 'nested']], true)
+        output.merge(['a.b.c': 'flat'], true)
+
+        then: 'the sub-map holds the nested entry and no copy of the dotted key'
+        output.navigate('a') == [b: [c: 'flat']]
+        output['a.b.c'] == 'flat'
+        output['a.b'] == [c: 'flat']
+    }
+
+    def "navigate stops at a value that is not a map"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([app: [name: 'demo', ports: [8080, 8443]]], true)
+
+        expect: 'a path that ends on the value answers with it'
+        output.navigate('app', 'name') == 'demo'
+        output.navigate('app', 'ports') == [8080, 8443]
+
+        and: 'a path that continues past it is absent rather than the value'
+        output.navigate('app', 'name', 'deeper') == null
+        output.navigate('app', 'ports', '0') == null
+        new CodeGenConfig(output).navigate(String, 'app', 'name', 'deeper') == null
     }
 }

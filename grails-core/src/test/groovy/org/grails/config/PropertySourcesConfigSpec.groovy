@@ -18,8 +18,11 @@
  */
 package org.grails.config
 
+import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+import org.springframework.core.env.PropertySource
+import org.springframework.core.io.ByteArrayResource
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -101,6 +104,24 @@ class PropertySourcesConfigSpec extends Specification {
       test pass.
 
      */
+    private static class ChangingPropertySource extends PropertySource<Object> {
+
+        int reads
+
+        ChangingPropertySource() {
+            super('changing', new Object())
+        }
+
+        @Override
+        Object getProperty(String name) {
+            name == 'counter' ? "value-${++reads}".toString() : null
+        }
+
+        int readCount() {
+            reads
+        }
+    }
+
     @Ignore("Cannot set property 'bar' on null object")
     @Issue('apache/grails-core#10188')
     void 'test replacing nested property values'() {
@@ -115,5 +136,357 @@ class PropertySourcesConfigSpec extends Specification {
 
         then: 'the second value is not merged with the first value'
         cfg.foo.bar == ['two': '2']
+    }
+
+    void 'a dotted key walks plain nested maps and skips empty segments'() {
+        given: "a plain map value that was put without flattened keys"
+        def config = new PropertySourcesConfig()
+        config.put('plain', [nested: [value: 'found']])
+
+        expect: "each segment of the key is resolved against the map it reaches"
+        config.getProperty('plain.nested.value') == 'found'
+        config.getProperty('plain.nested', Map) == [value: 'found']
+        config.getProperty('plain.missing.value') == null
+
+        and: "empty segments are ignored as they always were"
+        config.getProperty('plain..nested.value') == 'found'
+        config.getProperty('.plain.nested.value.') == 'found'
+        config.getProperty('...') == null
+    }
+
+    void 'the flat key is read before the nested maps are walked'() {
+        given: "a merged value, which exists as a flat key and as a nested entry"
+        def config = new PropertySourcesConfig()
+        config.merge([a: [b: 'merged']])
+
+        expect: "every read agrees"
+        config.getProperty('a.b') == 'merged'
+        config['a.b'] == 'merged'
+        config.a.b == 'merged'
+
+        when: "the flat key is written directly"
+        config.put('a.b', 'flat')
+
+        then: "getProperty answers with it, as config['a.b'] does"
+        config.getProperty('a.b') == 'flat'
+        config['a.b'] == 'flat'
+
+        when: "the nested entry is written directly"
+        config.a.put('b', 'nested')
+
+        then: "getProperty keeps the flat key, while dot navigation reads the nested entry"
+        config.getProperty('a.b') == 'flat'
+        config.a.b == 'nested'
+
+        when: "the nested entry is assigned by subscript, which writes both"
+        config.a['b'] = 'subscript'
+
+        then: "every read agrees"
+        config.getProperty('a.b') == 'subscript'
+        config['a.b'] == 'subscript'
+        config.a.b == 'subscript'
+
+        when: "the value is assigned through dot notation, which writes both"
+        config.a.b = 'assigned'
+
+        then: "every read agrees again"
+        config.getProperty('a.b') == 'assigned'
+        config['a.b'] == 'assigned'
+        config.a.b == 'assigned'
+    }
+
+    void 'a block merged over a scalar is read as the block'() {
+        given: "a scalar merged first and a block under it merged second, as a higher-precedence source does"
+        def config = new PropertySourcesConfig()
+        config.merge(['server.url': 'x'])
+        config.merge(['server.url.port': 'y'])
+
+        expect: "every read sees the block"
+        config.getProperty('server.url', Map) == [port: 'y']
+        config.navigate('server', 'url') == [port: 'y']
+        config.getProperty('server.url.port') == 'y'
+
+        and: "a String read of the block is the default, as it always was"
+        config.getProperty('server.url') == null
+        config.getProperty('server.url', String, 'none') == 'none'
+    }
+
+    void 'a dotted key inside a nested map does not overwrite the root key it resembles'() {
+        given: "a root key and a nested map whose dotted key spells the same path"
+        def config = new PropertySourcesConfig()
+        config.merge([a: [b: 'root'], x: ['a.b': 'nested']])
+
+        expect: "each key answers with its own value"
+        config.getProperty('a.b') == 'root'
+        config.navigate('a', 'b') == 'root'
+        config.getProperty('x.a.b') == 'nested'
+        config.navigate('x', 'a', 'b') == 'nested'
+    }
+
+    void 'a flat key that a merge left behind is read rather than the scalar that replaced its parent'() {
+        given: "a nested block merged first and a scalar merged over its parent, as a higher-precedence source does"
+        def config = new PropertySourcesConfig()
+        config.merge(['server.url.port': 'y', 'server.url': 'x'])
+
+        expect: "the parent is the scalar"
+        config.getProperty('server.url') == 'x'
+
+        and: "the child answers with the flat key the first merge wrote"
+        config.getProperty('server.url.port') == 'y'
+    }
+
+    void 'a dotted key written directly is read even when its parent is a scalar'() {
+        given: "a scalar and a dotted key below it, both written directly"
+        def config = new PropertySourcesConfig()
+        config.put('a', 'scalar')
+        config.put('a.b', 1)
+
+        expect: "each answers with what was written"
+        config.getProperty('a') == 'scalar'
+        config.getProperty('a.b', Integer) == 1
+    }
+
+    void 'a placeholder in a nested value is resolved in the flat key as well as in the nested entry'() {
+        given: "a yaml value that refers to another"
+        def yaml = '''
+name: Hello
+hello:
+    evaluatedName: '${name}, world'
+'''
+        def yamlSource = new YamlPropertySourceLoader().load('application.yml', new ByteArrayResource(yaml.bytes, 'test.yml'), null)
+        def config = new PropertySourcesConfig(yamlSource.first())
+
+        expect: "every read sees the resolved value"
+        config.getProperty('hello.evaluatedName') == 'Hello, world'
+        config['hello.evaluatedName'] == 'Hello, world'
+        config.hello.evaluatedName == 'Hello, world'
+    }
+
+    void 'a placeholder in a merged value is resolved once for both representations'() {
+        given: "a property source whose value changes on every read, as random.uuid does"
+        def changing = new ChangingPropertySource()
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(changing)
+        def config = new PropertySourcesConfig(propertySources)
+
+        when: "a value with a placeholder is merged"
+        config.merge([auth: [secret: '${counter}']])
+
+        then: "the flat key and the nested entry hold the same resolved value"
+        config.getProperty('auth.secret') == 'value-1'
+        config.getProperty('auth', Map).secret == 'value-1'
+        config['auth.secret'] == 'value-1'
+
+        and: "the placeholder was resolved once"
+        changing.readCount() == 1
+    }
+
+    void 'an indexed list merged under its parent is read as the updated list'() {
+        given: "a list written by index, then an element of it merged under the parent"
+        def config = new PropertySourcesConfig()
+        config.merge(['app.items[0]': 'old'])
+        config.merge([app: ['items[0]': 'new']])
+
+        expect: "the flat key and the nested list agree"
+        config.getProperty('app.items', List) == ['new']
+        config.navigate('app', 'items') == ['new']
+    }
+
+    void 'an indexed property with a property after the index is read as a list of maps, #description'() {
+        given: "a list element written by index, as a sequence of maps in a configuration file is"
+        def config = new PropertySourcesConfig()
+        config.merge(source)
+
+        expect: "the list is read by its flat key and by navigation, and the element by its keys"
+        config.getProperty('a.rows', List) == [[name: 'row']]
+        config.navigate('a', 'rows') == [[name: 'row']]
+        config.getProperty('a.rows[0]', Map) == [name: 'row']
+        config.getProperty('a.rows[0].name') == 'row'
+
+        where:
+        description             | source
+        'at the root'           | ['a.rows[0].name': 'row']
+        'inside the parent map' | [a: ['rows[0].name': 'row']]
+    }
+
+    void 'a sequence of maps in a configuration file is read as a list through both representations'() {
+        given: "a YAML sequence of maps, which is flattened to indexed keys before it is merged"
+        def yaml = '''
+a:
+    rows:
+        - name: row
+          port: 1
+'''
+        def yamlSource = new YamlPropertySourceLoader().load('application.yml', new ByteArrayResource(yaml.bytes, 'test.yml'), null)
+        def config = new PropertySourcesConfig(yamlSource.first())
+
+        expect: "the list is read by its flat key, by navigation and by the element keys"
+        config.getProperty('a.rows', List) == [[name: 'row', port: 1]]
+        config.navigate('a', 'rows') == [[name: 'row', port: 1]]
+        config.getProperty('a.rows[0]', Map) == [name: 'row', port: 1]
+        config.getProperty('a.rows[0].name') == 'row'
+        config.getProperty('a.rows[0].port', Integer) == 1
+    }
+
+    void 'a list merged as a value is read by the indexed keys of its elements and replaces those of the list before it'() {
+        given: "a list of maps written by index, as a configuration file writes it"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.rows[0].name': 'old', 'a.rows[1].name': 'second'])
+
+        when: "a list is merged over it as a value"
+        config.merge([a: [rows: [[name: 'new']]]])
+
+        then: "every lookup answers from the new list"
+        config.getProperty('a.rows', List) == [[name: 'new']]
+        config.navigate('a', 'rows') == [[name: 'new']]
+        config.getProperty('a.rows[0]', Map) == [name: 'new']
+        config.getProperty('a.rows[0].name') == 'new'
+        !config.containsProperty('a.rows[1].name')
+    }
+
+    void 'an indexed element replaced whole is read by the entries of the new element only'() {
+        given: "a list of maps merged as a value"
+        def config = new PropertySourcesConfig()
+        config.merge([a: [rows: [[name: 'old', port: 1]]]])
+
+        when: "an element of it is replaced by its indexed key"
+        config.merge(['a.rows[0]': [name: 'new']])
+
+        then: "every lookup answers from the new element"
+        config.getProperty('a.rows', List) == [[name: 'new']]
+        config.getProperty('a.rows[0]', Map) == [name: 'new']
+        config.getProperty('a.rows[0].name') == 'new'
+        !config.containsProperty('a.rows[0].port')
+    }
+
+    void 'a value written over a list leaves none of its elements readable'() {
+        given: "a list written by indexed keys, as a configuration file writes it"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.rows[0].name': 'old'])
+
+        when: "a scalar is written under the key of the list"
+        config.merge(['a.rows': 'plain'])
+
+        then: "the key holds the scalar and no element key is read"
+        config.getProperty('a.rows') == 'plain'
+        !config.containsProperty('a.rows[0]')
+        !config.containsProperty('a.rows[0].name')
+        config.getProperty('a.rows[0].name') == null
+    }
+
+    void 'a property source holding immutable containers is merged without writing into them'() {
+        given: "a property source whose map holds immutable containers, as application.groovy may supply them"
+        def source = new NavigableMap()
+        source.merge([a: [names: ['one'].asImmutable(), rows: [[name: 'row'].asImmutable()].asImmutable()]])
+
+        when:
+        def config = new PropertySourcesConfig(new NavigableMapPropertySource('groovy', source))
+
+        then: "the containers and their elements are read"
+        config.getProperty('a.names', List) == ['one']
+        config.getProperty('a.names[0]') == 'one'
+        config.getProperty('a.rows', List) == [[name: 'row']]
+        config.getProperty('a.rows[0].name') == 'row'
+    }
+
+    void 'an indexed key in a property source above an immutable list is read as the element it writes'() {
+        given: "an immutable list in a low property source and an element of it in a higher one"
+        def source = new NavigableMap()
+        source.merge([a: [names: ['one'].asImmutable()]])
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(new NavigableMapPropertySource('groovy', source))
+        propertySources.addFirst(new MapPropertySource('override', ['a.names[0]': 'two']))
+
+        when:
+        def config = new PropertySourcesConfig(propertySources)
+
+        then: "the list is read with the element written, by its flat key and by navigation"
+        config.getProperty('a.names', List) == ['two']
+        config.getProperty('a.names[0]') == 'two'
+        config.navigate('a', 'names') == ['two']
+    }
+
+    void 'a nested dotted merge over a scalar is read as the block'() {
+        given: "a scalar merged first and a block merged over it second through a dotted key inside a nested map"
+        def config = new PropertySourcesConfig()
+        config.merge(['x.a': 'old'])
+        config.merge([x: ['a.b': 'new']])
+
+        expect: "every read sees the block"
+        config.getProperty('x.a', Map) == [b: 'new']
+        config.navigate('x', 'a') == [b: 'new']
+        config.getProperty('x.a.b') == 'new'
+
+        and: "a String read of the block is the default"
+        config.getProperty('x.a') == null
+    }
+
+    void 'a block recreated after a scalar replaced it is read as the new block'() {
+        given: "a block, a scalar merged over it, and a block merged under the scalar again"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.b.c': 1])
+        config.merge([a: 'scalar'])
+        config.merge(['a.b.d': 2])
+
+        expect: "every read sees the recreated block"
+        config.getProperty('a.b', Map) == [d: 2]
+        config.navigate('a', 'b') == [d: 2]
+        config.getProperty('a.b.d', Integer) == 2
+    }
+
+    void 'setting a nested property to null leaves its siblings readable'() {
+        given: "two blocks under one parent"
+        def config = new PropertySourcesConfig()
+        config.merge(['a.b.c': 1, 'a.e.f': 3])
+
+        when: "one of them is set to null"
+        config.a.e = null
+
+        then: "it is gone through every read"
+        config.getProperty('a.e', Map) == null
+        !config.containsProperty('a.e.f')
+        config.getProperty('a', Map) == [b: [c: 1]]
+
+        and: "its sibling is still there through every read"
+        config['a.b.c'] == 1
+        config.getProperty('a.b.c', Integer) == 1
+        config.getProperty('a.b', Map) == [c: 1]
+    }
+
+    void 'a dotted key inside a nested map leaves no copy of itself in the parent'() {
+        given: "a dotted key inside a nested map, then the same key merged flat"
+        def config = new PropertySourcesConfig()
+        config.merge([a: ['b.c': 'nested']])
+        config.merge(['a.b.c': 'flat'])
+
+        expect: "the parent holds the nested entry only, and every read agrees"
+        config.getProperty('a', Map) == [b: [c: 'flat']]
+        config.getProperty('a.b.c') == 'flat'
+        config.navigate('a', 'b', 'c') == 'flat'
+    }
+
+    void 'a dotted key that runs past a value that is not a map is absent'() {
+        given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
+        def constraints = { nullable true }
+        def config = new PropertySourcesConfig([
+                server: [url: 'http://localhost', ports: [8080, 8443]],
+                grails: [gorm: ['default': [constraints: constraints]]]
+        ])
+
+        expect: "each value resolves itself"
+        config.getProperty('server.url') == 'http://localhost'
+        config.getProperty('server.ports', List) == [8080, 8443]
+        config.getProperty('grails.gorm.default.constraints', Closure).is(constraints)
+
+        and: "a key that names a child of any of them is absent rather than the value"
+        config.getProperty('server.url.port') == null
+        config.getProperty('server.url.port', String, 'none') == 'none'
+        config.getProperty('server.ports.0') == null
+        config.getProperty('grails.gorm.default.constraints.nullable') == null
+
+        and: "containsProperty agrees"
+        !config.containsProperty('server.url.port')
+        !config.containsProperty('server.ports.0')
+        !config.containsProperty('grails.gorm.default.constraints.nullable')
     }
 }

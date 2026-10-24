@@ -113,6 +113,27 @@ environments {
         'runtime.groovy'     | 'spring.config.activate.on-profile' | "spring.config.activate.'on-profile' = 'prod'"
     }
 
+    void "immutable lists in application.groovy are loaded into the configuration"() {
+        given:
+        File applicationFile = new File(configDirectory, 'application.groovy')
+        applicationFile.text = '''
+            app {
+                names = ['one'].asImmutable()
+                items = [[name: 'row'].asImmutable()].asImmutable()
+            }
+        '''.stripIndent()
+
+        when:
+        def sources = new GroovyConfigPropertySourceLoader().load('application.groovy', new FileSystemResource(applicationFile))
+        def config = new PropertySourcesConfig(sources.first())
+
+        then:
+        config.getProperty('app.names', List) == ['one']
+        config.getProperty('app.names[0]') == 'one'
+        config.getProperty('app.items', List) == [[name: 'row']]
+        config.getProperty('app.items[0].name') == 'row'
+    }
+
     void "test loading multiple configuration files"() {
         setup:
         Resource inputStreamWithDsl = new FileSystemResource(getClass().getClassLoader().getResource("test-application.groovy").getFile())
