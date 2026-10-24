@@ -344,6 +344,38 @@ a:
         !config.containsProperty('a.rows[1].name')
     }
 
+    void 'a property source holding immutable containers is merged without writing into them'() {
+        given: "a property source whose map holds immutable containers, as application.groovy may supply them"
+        def source = new NavigableMap()
+        source.merge([a: [names: ['one'].asImmutable(), rows: [[name: 'row'].asImmutable()].asImmutable()]])
+
+        when:
+        def config = new PropertySourcesConfig(new NavigableMapPropertySource('groovy', source))
+
+        then: "the containers and their elements are read"
+        config.getProperty('a.names', List) == ['one']
+        config.getProperty('a.names[0]') == 'one'
+        config.getProperty('a.rows', List) == [[name: 'row']]
+        config.getProperty('a.rows[0].name') == 'row'
+    }
+
+    void 'an indexed key in a property source above an immutable list is read as the element it writes'() {
+        given: "an immutable list in a low property source and an element of it in a higher one"
+        def source = new NavigableMap()
+        source.merge([a: [names: ['one'].asImmutable()]])
+        def propertySources = new MutablePropertySources()
+        propertySources.addLast(new NavigableMapPropertySource('groovy', source))
+        propertySources.addFirst(new MapPropertySource('override', ['a.names[0]': 'two']))
+
+        when:
+        def config = new PropertySourcesConfig(propertySources)
+
+        then: "the list is read with the element written, by its flat key and by navigation"
+        config.getProperty('a.names', List) == ['two']
+        config.getProperty('a.names[0]') == 'two'
+        config.navigate('a', 'names') == ['two']
+    }
+
     void 'a nested dotted merge over a scalar is read as the block'() {
         given: "a scalar merged first and a block merged over it second through a dotted key inside a nested map"
         def config = new PropertySourcesConfig()

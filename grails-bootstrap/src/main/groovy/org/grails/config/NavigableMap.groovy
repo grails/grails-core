@@ -415,19 +415,25 @@ class NavigableMap implements Map<String, Object>, Cloneable {
      * Sets a value in a list (numeric index) or map (other index) at the given subscript, creating
      * the container when the current value is not one. The text following the subscript is either
      * empty, further subscripts such as {@code [1]} for a list nested in a list, or a {@code .name}
-     * remainder stored as a key of a map element.
+     * remainder stored as a key of a map element. A container that already holds the object is left
+     * as it is: the element keys of a list replay what it holds when the map is merged again, as a
+     * config merges the map of a property source. A container that refuses the write, such as a list
+     * {@code application.groovy} built with {@code asImmutable()}, is replaced by a copy that holds it.
      */
     private Object setSubscriptValue(Object currentValue, String index, String rest, Object sourceValue) {
         if (index.isNumber()) {
             List list = currentValue instanceof List ? (List) currentValue : []
             int i = index.toInteger()
-            fill(list, i, null)
-            list.set(i, subscriptElementValue(list.get(i), rest, sourceValue))
-            return list
+            boolean held = i < list.size()
+            Object element = held ? list.get(i) : null
+            Object newElement = subscriptElementValue(element, rest, sourceValue)
+            if (held && element.is(newElement)) {
+                return list
+            }
+            return writeElement(list, i, newElement)
         }
-        Map nestedMap = currentValue instanceof Map ? (Map) currentValue : [:]
-        nestedMap.put(index, subscriptElementValue(nestedMap.get(index), rest, sourceValue))
-        return nestedMap
+        Map map = currentValue instanceof Map ? (Map) currentValue : [:]
+        return writeEntry(map, index, subscriptElementValue(map.get(index), rest, sourceValue))
     }
 
     private Object subscriptElementValue(Object currentValue, String rest, Object sourceValue) {
@@ -441,11 +447,45 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             }
         }
         Map element = currentValue instanceof Map ? (Map) currentValue : [:]
-        element.put(rest.substring(1), sourceValue)
-        return element
+        return writeEntry(element, rest.substring(1), sourceValue)
     }
 
-    private void fill(List list, Integer toIndex, Object value) {
+    /**
+     * Writes an element into a list and returns the list that holds it: the one given, or a copy when
+     * the list refuses the write, as one built with {@code asImmutable()} or {@code List.of} does.
+     */
+    private static List writeElement(List list, int index, Object element) {
+        try {
+            fill(list, index, null)
+            list.set(index, element)
+            return list
+        } catch (UnsupportedOperationException ignored) {
+            List copy = new ArrayList(list)
+            fill(copy, index, null)
+            copy.set(index, element)
+            return copy
+        }
+    }
+
+    /**
+     * Writes an entry into a map and returns the map that holds it: the one given, left as it is when it
+     * already holds that object, or a copy when the map refuses the write, as an immutable map does.
+     */
+    private static Map writeEntry(Map map, String key, Object value) {
+        if (map.containsKey(key) && map.get(key).is(value)) {
+            return map
+        }
+        try {
+            map.put(key, value)
+            return map
+        } catch (UnsupportedOperationException ignored) {
+            Map copy = new LinkedHashMap(map)
+            copy.put(key, value)
+            return copy
+        }
+    }
+
+    private static void fill(List list, Integer toIndex, Object value) {
         if (toIndex >= list.size()) {
             for (int i = list.size(); i <= toIndex; i++) {
                 list.add(i, value)

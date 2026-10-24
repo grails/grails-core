@@ -330,6 +330,61 @@ class NavigableMapSpec extends Specification {
         'by dot notation'       | { NavigableMap map -> map.a.rows = [[name: 'new']] }
     }
 
+    def "a map holding immutable containers is merged again without writing into them"() {
+        given: 'immutable containers, as application.groovy may supply them, with their element keys written'
+        NavigableMap source = new NavigableMap()
+        source.merge([a: [names: ['one'].asImmutable(), rows: [[name: 'row'].asImmutable()].asImmutable()]])
+
+        when: 'the map is merged into another, as a config merges the map of a property source'
+        NavigableMap output = new NavigableMap()
+        output.merge(source)
+
+        then: 'the element keys replay what the containers hold, and the containers are those the source holds'
+        output['a.names'].is(source['a.names'])
+        output['a.names[0]'] == 'one'
+        output.navigate('a', 'rows').is(source.navigate('a', 'rows'))
+        output['a.rows[0]'].is(source['a.rows[0]'])
+        output['a.rows[0].name'] == 'row'
+    }
+
+    @Unroll
+    def "an indexed key written over #description replaces it with a copy that holds the element"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [names: original]], true)
+
+        when:
+        output.merge(['a.names[0]': 'first', 'a.names[1]': 'second'], true)
+
+        then: 'both representations hold the copy'
+        output['a.names'] == ['first', 'second']
+        output.navigate('a', 'names') == ['first', 'second']
+        output['a.names'].is(output.navigate('a', 'names'))
+        output['a.names[0]'] == 'first'
+        output['a.names[1]'] == 'second'
+
+        where:
+        description            | original
+        'an immutable list'    | ['one'].asImmutable()
+        'an unmodifiable list' | List.of('one')
+        'a list of fixed size' | Arrays.asList('one')
+    }
+
+    def "a property written into an immutable element map replaces the element with a copy"() {
+        given:
+        NavigableMap output = new NavigableMap()
+        output.merge([a: [rows: [[name: 'old', port: 1].asImmutable()]]], true)
+
+        when:
+        output.merge(['a.rows[0].name': 'new'], true)
+
+        then:
+        output.navigate('a', 'rows') == [[name: 'new', port: 1]]
+        output['a.rows[0]'].is(output.navigate('a', 'rows')[0])
+        output['a.rows[0].name'] == 'new'
+        output['a.rows[0].port'] == 1
+    }
+
     def "a nested dotted merge over a scalar moves the flat alias to the new block"() {
         given:
         NavigableMap output = new NavigableMap()
