@@ -21,6 +21,8 @@ package org.grails.orm.hibernate.cfg.domainbinding.secondpass;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.MappingException;
+import org.hibernate.boot.Metadata;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.ImplicitIndexNameSource;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
@@ -42,7 +44,10 @@ import org.hibernate.mapping.Table;
  * none for the others, as the table has a unique key already ({@code Set.createPrimaryKey}). This binder runs after
  * the keys of each collection are created and completes what is missing, in the shape the database needs
  * ({@link SharedJoinTableUniqueness}). A collection whose table is its own already has its constraint and is left as
- * Hibernate bound it, and so is a collection without a join table or whose key the other side owns.</p>
+ * Hibernate bound it, and so is a collection without a join table, whose key the other side owns, or whose element is
+ * a large object, which cannot be indexed and which Hibernate leaves without a key too. It also restricts
+ * each collection of a shared table to its own rows, which Hibernate's removal of all the rows of a collection by its
+ * key would otherwise not.</p>
  *
  * @since 8.0.1
  */
@@ -73,16 +78,73 @@ public class SharedJoinTableUniqueKeyBinder {
      */
     public void bind(Collection collection) {
         Table table = collection.getCollectionTable();
-        if (!collection.isSet() || table == null || collection.isInverse() ||
-                collection.isOneToMany() || collection.getKey() == null) {
+        if (table == null || collection.isInverse() || collection.isOneToMany() || collection.getKey() == null) {
+            return;
+        }
+        restrictRowsToOwnCollection(table);
+        if (!collection.isSet()) {
             return;
         }
         List<Column> keyColumns = collection.getKey().getColumns();
         List<Column> elementColumns = columnsOf(collection);
-        if (keyColumns.isEmpty() || elementColumns.isEmpty()) {
+        if (keyColumns.isEmpty() || elementColumns.isEmpty() || hasLobColumn(collection.getMetadata(), elementColumns)) {
             return;
         }
         uniqueness.apply(table, keyColumns, elementColumns, new ImplicitNaming(table));
+    }
+
+    /**
+     * Hibernate removes all the rows of a collection with one statement on its key, and loads them with one. On a join
+     * table several collections share, a key column two of them use would take the rows of the other collection
+     * along, so each collection of such a table is restricted to the rows that have a value in its own element
+     * columns. The collections that share the table are found among the bindings of the metadata; one whose element is
+     * not bound yet is restricted when its own pass runs, which finds the others bound.
+     */
+    private void restrictRowsToOwnCollection(Table table) {
+        List<Collection> sharing = new ArrayList<>();
+        for (Collection other : metadataBuildingContext.getMetadataCollector().getCollectionBindings()) {
+            if (other.getCollectionTable() == table && !other.isInverse() && !other.isOneToMany() && other.getKey() != null) {
+                sharing.add(other);
+            }
+        }
+        if (sharing.size() < 2) {
+            return;
+        }
+        Dialect dialect = metadataBuildingContext.getMetadataCollector().getDatabase().getDialect();
+        for (Collection member : sharing) {
+            List<String> present = new ArrayList<>();
+            for (Column column : columnsOf(member)) {
+                present.add(column.getQuotedName(dialect) + " is not null");
+            }
+            if (present.isEmpty()) {
+                continue;
+            }
+            String restriction = String.join(" and ", present);
+            String where = member.getWhere();
+            if (where == null || where.isBlank()) {
+                member.setWhere(restriction);
+            } else if (!where.contains(restriction)) {
+                member.setWhere("(" + where + ") and " + restriction);
+            }
+        }
+    }
+
+    /**
+     * Whether an element column is a large object, which a database cannot index. Hibernate leaves the set of such an
+     * element without a key ({@code Set.createPrimaryKey}), and so does this binder.
+     */
+    static boolean hasLobColumn(Metadata metadata, List<Column> elementColumns) {
+        for (Column column : elementColumns) {
+            try {
+                if (column.isSqlTypeLob(metadata)) {
+                    return true;
+                }
+            }
+            catch (MappingException ignored) {
+                // the type of the column cannot be resolved, as Hibernate decides when it makes the same check
+            }
+        }
+        return false;
     }
 
     private static List<Column> columnsOf(Collection collection) {

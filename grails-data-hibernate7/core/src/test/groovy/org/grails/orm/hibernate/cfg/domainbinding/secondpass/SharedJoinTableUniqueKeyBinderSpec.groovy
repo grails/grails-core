@@ -21,6 +21,7 @@ package org.grails.orm.hibernate.cfg.domainbinding.secondpass
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.HibernateGormDatastoreSpec
 import org.hibernate.boot.model.relational.internal.SqlStringGenerationContextImpl
+import org.hibernate.boot.spi.InFlightMetadataCollector
 import org.hibernate.boot.spi.MetadataBuildingContext
 import org.hibernate.dialect.DB2Dialect
 import org.hibernate.dialect.Dialect
@@ -48,11 +49,22 @@ import spock.lang.Unroll
 class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
 
     void setupSpec() {
-        manager.registerDomainClasses(SjtOwner, SjtSeparateOwner, SjtParent, SjtChild, SjtRole, SjtListOwner)
+        manager.registerDomainClasses(SjtOwner, SjtSeparateOwner, SjtParent, SjtChild, SjtRole, SjtListOwner, SjtNote)
     }
 
     private Collection collectionOf(Class owner, String property) {
         datastore.metadata.getCollectionBinding("${owner.name}.${property}".toString())
+    }
+
+    /** A building context that sees the collections of the metadata the datastore built, as the binder looks for the ones that share a table. */
+    private MetadataBuildingContext buildingContext() {
+        InFlightMetadataCollector collector = Stub(InFlightMetadataCollector) {
+            getCollectionBindings() >> datastore.metadata.collectionBindings
+            getDatabase() >> datastore.metadata.database
+        }
+        Stub(MetadataBuildingContext) {
+            getMetadataCollector() >> collector
+        }
     }
 
     private static List<List<String>> uniqueKeyColumns(Table table) {
@@ -80,6 +92,68 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
         denyRoles.key.updateable
     }
 
+    void "each association of a shared join table is restricted to the rows that have its element, so a bulk delete leaves the others"() {
+        given:
+        Collection roles = collectionOf(SjtOwner, 'roles')
+        Collection denyRoles = collectionOf(SjtOwner, 'denyRoles')
+
+        expect: 'Hibernate removes all the rows of a collection by its key and loads them by it, so the where limits both'
+        roles.where == 'sjt_role_id is not null'
+        denyRoles.where == 'sjt_role_id is not null'
+    }
+
+    void "a join table of one association is not restricted"() {
+        expect:
+        collectionOf(SjtSeparateOwner, 'roles').where == null
+        collectionOf(SjtSeparateOwner, 'denyRoles').where == null
+        collectionOf(SjtParent, 'children').where == null
+    }
+
+    void "binding again does not repeat the restriction"() {
+        given:
+        Collection roles = collectionOf(SjtOwner, 'roles')
+        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(buildingContext(), new H2Dialect())
+
+        when:
+        binder.bind(roles)
+        binder.bind(roles)
+
+        then:
+        roles.where == 'sjt_role_id is not null'
+    }
+
+    void "a restriction the mapping already has is kept and extended"() {
+        given:
+        Collection roles = collectionOf(SjtOwner, 'roles')
+        String before = roles.where
+        roles.where = 'archived = 0'
+        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(buildingContext(), new H2Dialect())
+
+        when:
+        binder.bind(roles)
+
+        then:
+        roles.where == '(archived = 0) and sjt_role_id is not null'
+
+        cleanup:
+        roles.where = before
+    }
+
+    private Column columnOf(Class entity, String property) {
+        datastore.metadata.getEntityBinding(entity.name).getProperty(property).columns.first() as Column
+    }
+
+    void "a set whose element is a large object gets no key, as in Hibernate, and a text gets one"() {
+        expect: 'a large object cannot be indexed, and Hibernate leaves the set of such an element without a key too'
+        SharedJoinTableUniqueKeyBinder.hasLobColumn(datastore.metadata, [columnOf(SjtNote, 'body')])
+        SharedJoinTableUniqueKeyBinder.hasLobColumn(datastore.metadata, [columnOf(SjtNote, 'title'), columnOf(SjtNote, 'body')])
+
+        and:
+        !SharedJoinTableUniqueKeyBinder.hasLobColumn(datastore.metadata, [columnOf(SjtNote, 'title')])
+        !SharedJoinTableUniqueKeyBinder.hasLobColumn(datastore.metadata, [columnOf(SjtNote, 'pages')])
+        !SharedJoinTableUniqueKeyBinder.hasLobColumn(datastore.metadata, [])
+    }
+
     void "an association with a join table of its own keeps the unique key Hibernate creates for it"() {
         given:
         Collection roles = collectionOf(SjtSeparateOwner, 'roles')
@@ -105,7 +179,7 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
     void "bind leaves the #property of a list, a map or a bag alone on #dialect.class.simpleName, whose elements repeat by design"() {
         given: 'the join table of a list is keyed by (owner, index), the one of a map by (owner, key), and a bag has no key'
         Collection collection = collectionOf(SjtListOwner, property)
-        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(Stub(MetadataBuildingContext), dialect)
+        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(buildingContext(), dialect)
 
         expect: 'the table has no unique key of its own: the primary key, where there is one, is what makes its rows unique'
         collection.collectionTable.hasPrimaryKey() == hasPrimaryKey
@@ -137,7 +211,7 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
     void "bind leaves a collection whose key the other side owns alone"() {
         given: 'the bidirectional collection, whose key column lives in the child table'
         Collection children = collectionOf(SjtParent, 'children')
-        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(Stub(MetadataBuildingContext), new H2Dialect())
+        SharedJoinTableUniqueKeyBinder binder = new SharedJoinTableUniqueKeyBinder(buildingContext(), new H2Dialect())
 
         when:
         binder.bind(children)
@@ -309,5 +383,16 @@ class SjtListOwner {
         roleList joinTable: 'sjt_list_owner_role_list'
         roleMap joinTable: 'sjt_list_owner_role_map'
         bagRoles joinTable: 'sjt_list_owner_bag_roles'
+    }
+}
+
+@Entity
+class SjtNote {
+    Long id
+    String title
+    String body
+    Integer pages
+    static mapping = {
+        body type: 'text'
     }
 }
