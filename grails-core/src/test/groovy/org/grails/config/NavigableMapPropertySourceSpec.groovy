@@ -113,6 +113,26 @@ class NavigableMapPropertySourceSpec extends Specification {
         ps.getNavigableProperty('app.grid') == [[1, 2], [3]]
     }
 
+    def "Ensure a list of maps written by indexed keys is presented by its entries only"() {
+        given: "A navigable map holding a list of maps written by indexed keys, as a YAML sequence of maps is"
+        def map = new NavigableMap()
+        map.merge(['app.rows[0].name': 'r', 'app.rows[0].tags[0]': 't'], true)
+
+        when:
+        def ps = new NavigableMapPropertySource('test', map)
+
+        then: "Each entry is presented under its indexed name"
+        ps.getProperty('app.rows[0].name') == 'r'
+        ps.getProperty('app.rows[0].tags[0]') == 't'
+        ps.containsProperty('app.rows[0].name')
+
+        and: "Neither the list nor the element map is, although the map holds a flat key for each"
+        ps.getPropertyNames().toList().findAll { it.startsWith('app.') } as Set == ['app.rows[0].name', 'app.rows[0].tags[0]'] as Set
+        ps.getProperty('app.rows') == null
+        ps.getProperty('app.rows[0]') == null
+        ps.getNavigableProperty('app.rows') == [[name: 'r', 'tags[0]': 't']]
+    }
+
     def "Ensure scalar lists preserve value types and empty elements in indexed properties"() {
         given:
         def map = new NavigableMap()

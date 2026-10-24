@@ -195,7 +195,9 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             Object sourceKeyObject = entry.key
             Object sourceValue = entry.value
             String sourceKey = String.valueOf(sourceKeyObject)
-            if (parseFlatKeys) {
+            if (parseFlatKeys && subscriptStart(sourceKey) < 0) {
+                // an indexed key such as a.rows[0].name is merged whole: the dots after the subscript name an
+                // entry of the element, and those before it are the path of the container
                 String[] keyParts = sourceKey.split(/\./)
                 if (keyParts.length > 1) {
                     if (!path) {
@@ -219,25 +221,10 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
-        int subscriptStart = sourceKey.indexOf('[')
-        int subscriptEnd = sourceKey.indexOf(']')
-        if (subscriptEnd > subscriptStart) {
-            if (subscriptStart > -1) {
-                String k = sourceKey[0..<subscriptStart]
-                String index = sourceKey[subscriptStart + 1..<subscriptEnd]
-                String rest = sourceKey.substring(subscriptEnd + 1)
-                Object container = setSubscriptValue(targetMap.get(k), index, rest, sourceValue)
-                targetMap.put(k, container)
-                if (path) {
-                    mergeMapEntry(rootMap, "${path}.${k}".toString(), container)
-                }
-                if (isSubscriptChain(rest)) {
-                    targetMap.put(sourceKey, sourceValue)
-                    if (path) {
-                        mergeMapEntry(rootMap, "${path}.${sourceKey}".toString(), sourceValue)
-                    }
-                }
-            }
+        int subscriptStart = subscriptStart(sourceKey)
+        if (subscriptStart > -1) {
+            mergeIndexedEntry(rootMap, path, targetMap, sourceKey.substring(0, subscriptStart), sourceKey.substring(subscriptStart),
+                    sourceValue, parseFlatKeys)
         } else {
             Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
             Object newValue
@@ -278,6 +265,54 @@ class NavigableMap implements Map<String, Object>, Cloneable {
                 }
                 mergeMapEntry(targetMap, sourceKey, newValue)
             }
+        }
+    }
+
+    /** The index of the first subscript of a key such as {@code rows[0].name}, or -1 when the key has none. */
+    private static int subscriptStart(String key) {
+        int start = key.indexOf('[')
+        start > -1 && key.indexOf(']', start) > start ? start : -1
+    }
+
+    /**
+     * Merges a key with a subscript, such as {@code rows[0].name}, {@code groups[0][1]} or {@code mappings[/api/**]}.
+     * The container named before the first subscript, a list for a numeric index and a map otherwise, is held by
+     * the nested map that owns it and, under its flat key, by the root, as one object in both places. The root
+     * also holds a flat key for each element the subscripts step through and for the value itself, so that
+     * {@code a.rows}, {@code a.rows[0]} and {@code a.rows[0].name} are each read without a walk. The dots of the
+     * container's name are a path only when the merge parses flat keys, as for any other key.
+     */
+    private void mergeIndexedEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String containerName,
+                                   String subscripts, Object sourceValue, boolean parseFlatKeys) {
+        NavigableMap containerParent = targetMap
+        String containerKey = containerName
+        if (parseFlatKeys && containerName.contains('.')) {
+            List<String> nameParts = containerName.split(/\./) as List<String>
+            containerParent = targetMap.navigateSubMap(nameParts[0..-2], true)
+            containerKey = nameParts[-1]
+        }
+        String containerPath = path ? "${path}.${containerName}".toString() : containerName
+        int subscriptEnd = subscripts.indexOf(']')
+        Object value = mergedValue(sourceValue)
+        Object container = setSubscriptValue(containerParent.get(containerKey), subscripts.substring(1, subscriptEnd),
+                subscripts.substring(subscriptEnd + 1), value)
+        mergeMapEntry(containerParent, containerKey, container)
+        if (!containerParent.is(rootMap)) {
+            mergeMapEntry(rootMap, containerPath, container)
+        }
+        Object element = container
+        String elementPath = containerPath
+        String remaining = subscripts
+        while (remaining.startsWith('[') && remaining.indexOf(']') > 0) {
+            int end = remaining.indexOf(']')
+            String index = remaining.substring(1, end)
+            element = index.isNumber() ? ((List) element).get(index.toInteger()) : ((Map) element).get(index)
+            elementPath += remaining.substring(0, end + 1)
+            remaining = remaining.substring(end + 1)
+            mergeMapEntry(rootMap, elementPath, element)
+        }
+        if (remaining) {
+            mergeMapEntry(rootMap, elementPath + remaining, value)
         }
     }
 
@@ -373,10 +408,6 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         Map element = currentValue instanceof Map ? (Map) currentValue : [:]
         element.put(rest.substring(1), sourceValue)
         return element
-    }
-
-    private static boolean isSubscriptChain(String rest) {
-        rest ==~ /(\[[^\]]*\])*/
     }
 
     private void fill(List list, Integer toIndex, Object value) {

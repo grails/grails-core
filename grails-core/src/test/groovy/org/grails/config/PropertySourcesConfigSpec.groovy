@@ -292,6 +292,42 @@ hello:
         config.navigate('app', 'items') == ['new']
     }
 
+    void 'an indexed property with a property after the index is read as a list of maps, #description'() {
+        given: "a list element written by index, as a sequence of maps in a configuration file is"
+        def config = new PropertySourcesConfig()
+        config.merge(source)
+
+        expect: "the list is read by its flat key and by navigation, and the element by its keys"
+        config.getProperty('a.rows', List) == [[name: 'row']]
+        config.navigate('a', 'rows') == [[name: 'row']]
+        config.getProperty('a.rows[0]', Map) == [name: 'row']
+        config.getProperty('a.rows[0].name') == 'row'
+
+        where:
+        description             | source
+        'at the root'           | ['a.rows[0].name': 'row']
+        'inside the parent map' | [a: ['rows[0].name': 'row']]
+    }
+
+    void 'a sequence of maps in a configuration file is read as a list through both representations'() {
+        given: "a YAML sequence of maps, which is flattened to indexed keys before it is merged"
+        def yaml = '''
+a:
+    rows:
+        - name: row
+          port: 1
+'''
+        def yamlSource = new YamlPropertySourceLoader().load('application.yml', new ByteArrayResource(yaml.bytes, 'test.yml'), null)
+        def config = new PropertySourcesConfig(yamlSource.first())
+
+        expect: "the list is read by its flat key, by navigation and by the element keys"
+        config.getProperty('a.rows', List) == [[name: 'row', port: 1]]
+        config.navigate('a', 'rows') == [[name: 'row', port: 1]]
+        config.getProperty('a.rows[0]', Map) == [name: 'row', port: 1]
+        config.getProperty('a.rows[0].name') == 'row'
+        config.getProperty('a.rows[0].port', Integer) == 1
+    }
+
     void 'a nested dotted merge over a scalar is read as the block'() {
         given: "a scalar merged first and a block merged over it second through a dotted key inside a nested map"
         def config = new PropertySourcesConfig()

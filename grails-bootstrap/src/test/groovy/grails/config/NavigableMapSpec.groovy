@@ -81,7 +81,7 @@ class NavigableMapSpec extends Specification {
         output.merge(input)
 
         then:
-        output.keySet() as List<String> == ['rabbitmq.connections']
+        output.keySet().findAll { !it.contains('[') } == ['rabbitmq.connections'] as Set
         output['rabbitmq.connections'] instanceof List
         output['rabbitmq.connections'].size() == 1
         output['rabbitmq.connections'][0].name == 'main'
@@ -89,6 +89,11 @@ class NavigableMapSpec extends Specification {
         output['rabbitmq.connections'][0].host2 == '635494740'
         output['rabbitmq.connections'][0].username == 'guest'
         output['rabbitmq.connections'][0].password == 'guest'
+
+        and: "the element and each of its entries stay readable under their indexed keys"
+        output['rabbitmq.connections[0]'].is(output['rabbitmq.connections'][0])
+        output['rabbitmq.connections[0].name'] == 'main'
+        output['rabbitmq.connections[0].password'] == 'guest'
     }
 
     def "multiple subscript entries are collapse to a map of maps"() {
@@ -106,7 +111,7 @@ class NavigableMapSpec extends Specification {
         output.merge(input)
 
         then:
-        output.keySet() as List<String> == ['rabbitmq.connections']
+        output.keySet().findAll { !it.contains('[') } == ['rabbitmq.connections'] as Set
         output['rabbitmq.connections'] instanceof Map
         output['rabbitmq.connections'].size() == 1
         output['rabbitmq.connections']['foo'].name == 'main'
@@ -114,6 +119,11 @@ class NavigableMapSpec extends Specification {
         output['rabbitmq.connections']['foo'].host2 == '635494740'
         output['rabbitmq.connections']['foo'].username == 'guest'
         output['rabbitmq.connections']['foo'].password == 'guest'
+
+        and: "the element and each of its entries stay readable under their indexed keys"
+        output['rabbitmq.connections[foo]'].is(output['rabbitmq.connections']['foo'])
+        output['rabbitmq.connections[foo].name'] == 'main'
+        output['rabbitmq.connections[foo].password'] == 'guest'
     }
 
     def "consecutive subscripts are collapsed to nested lists"() {
@@ -229,6 +239,54 @@ class NavigableMapSpec extends Specification {
         output['app.items'] == ['new']
         output.navigate('app', 'items') == ['new']
         output['app.items[0]'] == 'new'
+    }
+
+    @Unroll
+    def "an indexed key with #description builds the container in both representations"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge(source, true)
+
+        then: 'the container is one object, held by the nested map and under its flat key'
+        output['a.rows'] == container
+        output.navigate('a', 'rows') == container
+        output['a.rows'].is(output.navigate('a', 'rows'))
+
+        and: 'the element the subscripts step through is read by its flat key, as the one the container holds'
+        output[elementKey] == element
+        output[elementKey].is(nestedElement(output.navigate('a', 'rows')))
+        output[valueKey] == 'v'
+
+        and: 'the nested map holds the container and nothing else'
+        output.navigate('a').keySet() == ['rows'] as Set
+
+        where:
+        description                                        | source                        | container             | elementKey     | element     | valueKey           | nestedElement
+        'a property after the index at the root'           | ['a.rows[0].name': 'v']       | [[name: 'v']]         | 'a.rows[0]'    | [name: 'v'] | 'a.rows[0].name'   | { List rows -> rows[0] }
+        'a property after the index inside the parent map' | [a: ['rows[0].name': 'v']]    | [[name: 'v']]         | 'a.rows[0]'    | [name: 'v'] | 'a.rows[0].name'   | { List rows -> rows[0] }
+        'two indexes and a property inside the parent map' | [a: ['rows[0][1].name': 'v']] | [[null, [name: 'v']]] | 'a.rows[0][1]' | [name: 'v'] | 'a.rows[0][1].name' | { List rows -> rows[0][1] }
+        'a map subscript and a property inside the parent' | [a: ['rows[k].name': 'v']]    | [k: [name: 'v']]      | 'a.rows[k]'    | [name: 'v'] | 'a.rows[k].name'   | { Map rows -> rows['k'] }
+        'an index alone inside the parent map'             | [a: ['rows[0]': 'v']]         | ['v']                 | 'a.rows[0]'    | 'v'         | 'a.rows[0]'        | { List rows -> rows[0] }
+    }
+
+    def "an indexed key whose container name is dotted is merged under that path inside the parent map"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: ['rows.name[0]': 'v']], true)
+
+        then: 'the list is held under the path in both representations'
+        output['a.rows.name'] == ['v']
+        output.navigate('a', 'rows', 'name') == ['v']
+        output['a.rows.name'].is(output.navigate('a', 'rows', 'name'))
+        output['a.rows.name[0]'] == 'v'
+
+        and: 'the nested maps hold no copy of the key relative to themselves'
+        output.navigate('a').keySet() == ['rows'] as Set
+        output.navigate('a', 'rows').keySet() == ['name'] as Set
     }
 
     def "a nested dotted merge over a scalar moves the flat alias to the new block"() {
