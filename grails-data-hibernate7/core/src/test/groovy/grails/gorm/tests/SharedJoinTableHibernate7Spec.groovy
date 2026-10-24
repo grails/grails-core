@@ -139,6 +139,7 @@ class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
         'MySQL'    | mysql
         'MariaDB'  | mariadb
         'Oracle'   | oracle
+        // 'DB2'  | db2   the unique key null handling for DB2 is unverified: apache/grails-core#16746
     }
 }
 

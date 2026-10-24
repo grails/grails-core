@@ -49,6 +49,9 @@ import org.hibernate.mapping.Table;
  * each collection of a shared table to its own rows, which Hibernate's removal of all the rows of a collection by its
  * key would otherwise not.</p>
  *
+ * <p>A set cannot share a join table with a list or a map: the index column of a list or a map is not null, and the
+ * rows of the set leave it null, so saving the set fails on the first insert.</p>
+ *
  * @since 8.0.1
  */
 public class SharedJoinTableUniqueKeyBinder {

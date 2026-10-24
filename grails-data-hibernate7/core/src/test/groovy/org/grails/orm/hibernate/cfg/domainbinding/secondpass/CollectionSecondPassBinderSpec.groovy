@@ -49,6 +49,7 @@ class CollectionSecondPassBinderSpec extends HibernateGormDatastoreSpec {
     SharedJoinTableUniqueKeyBinder sharedJoinTableUniqueKeyBinder = Mock()
 
     CollectionSecondPassBinder binder
+    CollectionSecondPassBinder legacyBinder
     BidirectionalMapElementBinder mockBidirectionalMapElementBinder = Mock(BidirectionalMapElementBinder)
 
     void setup() {
@@ -80,12 +81,40 @@ class CollectionSecondPassBinderSpec extends HibernateGormDatastoreSpec {
                 new ToManyEntityMultiTenantFilterBinder(dcnf),
                 sharedJoinTableUniqueKeyBinder
         )
+        legacyBinder = new CollectionSecondPassBinder(
+                cku,
+                uotmb,
+                cwjtb,
+                mockBidirectionalMapElementBinder,
+                new ManyToOneElementBinder(mtob, cfpcb),
+                new HibernateToManyEntityOrderByBinder(),
+                new ToManyEntityMultiTenantFilterBinder(dcnf)
+        )
     }
 
     protected HibernatePersistentProperty createTestHibernateToManyProperty(Class<?> domainClass, String propertyName) {
         PersistentEntity entity = createPersistentEntity(domainClass)
         HibernatePersistentProperty property = (HibernatePersistentProperty) entity.getPropertyByName(propertyName)
         return property
+    }
+
+    def "the constructor of 8.0.0 creates the keys and leaves a shared join table as Hibernate binds it"() {
+        given: 'a set bound by its first and second pass'
+        def property = createTestHibernateToManyProperty(CSPBUniOwner, "items") as HibernateToManyProperty
+        hibernateFirstPass()
+        legacyBinder.bindCollectionSecondPass(property)
+
+        when: 'a binder built without a shared join table binder, as in 8.0.0, creates the keys'
+        legacyBinder.createCollectionKeys(property)
+
+        then:
+        noExceptionThrown()
+
+        when: 'the binder with one asks it to complete the table'
+        binder.createCollectionKeys(property)
+
+        then:
+        1 * sharedJoinTableUniqueKeyBinder.bind(property.collection)
     }
 
     def "bindCollectionSecondPass succeeds for Basic String collection"() {

@@ -51,6 +51,26 @@ public class CollectionSecondPassBinder {
     private final SharedJoinTableUniqueKeyBinder sharedJoinTableUniqueKeyBinder;
     private ComponentBinder componentBinder;
 
+    /**
+     * The constructor of 8.0.0, which has no binder for the join tables that collections share, so a table they share
+     * is left as Hibernate binds it.
+     *
+     * @deprecated since 8.0.1: pass a {@link SharedJoinTableUniqueKeyBinder}. Kept for one release.
+     */
+    @Deprecated
+    public CollectionSecondPassBinder(
+            CollectionKeyColumnUpdater collectionKeyColumnUpdater,
+            UnidirectionalOneToManyBinder unidirectionalOneToManyBinder,
+            CollectionWithJoinTableBinder collectionWithJoinTableBinder,
+            BidirectionalMapElementBinder bidirectionalMapElementBinder,
+            ManyToOneElementBinder manyToManyElementBinder,
+            HibernateToManyEntityOrderByBinder hibernateToManyEntityOrderByBinder,
+            ToManyEntityMultiTenantFilterBinder hibernateToManyEntityMultiTenantFilterBinder) {
+        this(collectionKeyColumnUpdater, unidirectionalOneToManyBinder, collectionWithJoinTableBinder,
+                bidirectionalMapElementBinder, manyToManyElementBinder, hibernateToManyEntityOrderByBinder,
+                hibernateToManyEntityMultiTenantFilterBinder, null);
+    }
+
     public CollectionSecondPassBinder(
             CollectionKeyColumnUpdater collectionKeyColumnUpdater,
             UnidirectionalOneToManyBinder unidirectionalOneToManyBinder,
@@ -115,6 +135,8 @@ public class CollectionSecondPassBinder {
     public void createCollectionKeys(@Nonnull HibernateToManyProperty property) {
         Collection collection = property.getCollection();
         collection.createAllKeys();
-        sharedJoinTableUniqueKeyBinder.bind(collection);
+        if (sharedJoinTableUniqueKeyBinder != null) {
+            sharedJoinTableUniqueKeyBinder.bind(collection);
+        }
     }
 }

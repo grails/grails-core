@@ -23,9 +23,11 @@ import org.hibernate.mapping.Collection;
 /**
  * Mixin of the second passes that created the keys of their collection.
  *
- * @deprecated since 8.0.1: the second passes no longer implement it. The keys of a collection are created by
+ * @deprecated since 8.0.1: the second passes still implement it, so that code which casts to it keeps compiling, but
+ *     they no longer call it. The keys of a collection are created by
  *     {@code CollectionSecondPassBinder#createCollectionKeys}, which also gives a set that shares its join table the
- *     uniqueness of its association. Kept for one release for code that implements or calls it.
+ *     uniqueness of its association; the default method here creates the keys and nothing else. Kept for one release
+ *     for code that implements or calls it.
  */
 @Deprecated
 public interface GrailsSecondPass {
