@@ -115,12 +115,13 @@ class PredicateGenerator {
 
     /**
      * A {@link CriterionHandler} that is given the context of the query, through which it resolves property paths
-     * with {@link QueryPathContext#getFullyQualifiedPath(String)}. A closure with five parameters is coerced to it:
+     * with {@link QueryPathContext#getFullyQualifiedPath(String)}. A closure with five parameters registered with
+     * {@link #registerCriterionHandler(Class, Closure)} becomes one, with no {@code as}:
      * <pre>
-     *     PredicateGenerator.registerCriterionHandler(MyCriterion, { query, root, cb, criterion, context -&gt;
+     *     PredicateGenerator.registerCriterionHandler(MyCriterion) { query, root, cb, criterion, context -&gt;
      *         def c = criterion as MyCriterion
      *         cb.like(context.getFullyQualifiedPath(c.property) as Expression&lt;String&gt;, c.value as String)
-     *     } as PredicateGenerator.ContextualCriterionHandler)
+     *     }
      * </pre>
      *
      * @since 10.0
@@ -233,7 +234,7 @@ class PredicateGenerator {
     public static final Map<Class<? extends Query.Criterion>, CriterionHandler> CUSTOM_HANDLERS =
         new ConcurrentHashMap<>()
 
-    public static final Map<Class<? extends Query.Order>, OrderHandler> CUSTOM_ORDER_HANDLERS =
+    private static final Map<Class<? extends Query.Order>, OrderHandler> CUSTOM_ORDER_HANDLERS =
         new ConcurrentHashMap<>()
 
     private static final Object SERVICE_LOADER_LOCK = new Object()
@@ -242,8 +243,9 @@ class PredicateGenerator {
 
     /**
      * Loads the handler providers once. A caller that arrives while another thread is loading them waits until the
-     * loading is complete, so no query decides on a handler before the discovered ones are registered. A discovered
-     * handler never replaces one registered in code: the maps keep the first registration.
+     * loading is complete, so no query decides on a handler before the discovered ones are registered. Discovery uses
+     * {@code putIfAbsent}, so a discovered handler does not replace one that is already registered; registering in
+     * code uses {@code put}, so a handler registered in code replaces a discovered one.
      */
     private static void loadServiceProviders() {
         if (serviceLoadersInitialized) {
@@ -310,6 +312,31 @@ class PredicateGenerator {
      */
     static void registerCriterionHandler(Class<? extends Query.Criterion> type, CriterionHandler handler) {
         CUSTOM_HANDLERS.put(type, handler)
+    }
+
+    /**
+     * Registers a closure as the {@link CriterionHandler} for the given criterion type. A closure with five
+     * parameters, {@code query, root, criteriaBuilder, criterion, context}, becomes a
+     * {@link ContextualCriterionHandler}; any other closure becomes a {@link CriterionHandler} and is called with
+     * four arguments. This is what makes the two shapes work without {@code as}, as {@link #registerOrderHandler} does
+     * for an order handler.
+     *
+     * @param type    the exact criterion class to handle
+     * @param handler the closure that converts the criterion to a JPA {@link Predicate}
+     * @since 10.0
+     */
+    static void registerCriterionHandler(Class<? extends Query.Criterion> type, Closure<?> handler) {
+        if (handler.maximumNumberOfParameters == 5) {
+            ContextualCriterionHandler contextual = { query, root, criteriaBuilder, criterion, context ->
+                (Predicate) handler.call(query, root, criteriaBuilder, criterion, context)
+            }
+            registerCriterionHandler(type, contextual)
+        } else {
+            CriterionHandler plain = { query, root, criteriaBuilder, criterion ->
+                (Predicate) handler.call(query, root, criteriaBuilder, criterion)
+            }
+            registerCriterionHandler(type, plain)
+        }
     }
 
     /**

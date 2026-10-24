@@ -424,25 +424,29 @@ The handlers convert them. A criterion handler is given the query, its root, the
 criterion and the query's `QueryPathContext`. Through the context, `getFullyQualifiedPath` resolves a property path
 the way the built-in criteria do: `alias.property`, for an alias created with `createAlias`, or `association.property`
 becomes a path on the join GORM created for that association, so a custom criterion and a built-in one on the
-same association restrict the same row rather than each joining the association again, and `getSelectionAlias`
-returns the expression a `sqlProjection` records under its column alias, so an order can sort by a projected value. An order handler is given
+same association restrict the same row rather than each joining the association again. `getSelectionAlias` returns
+the expression a `sqlProjection` or `sqlGroupProjection` records under its column alias. An order handler that sorts
+by a column alias asks `getSelectionAlias` first and `getFullyQualifiedExpression` second, which orders by the
+projection when an alias and a property have the same name, as `order(alias)` does; a criterion handler asks
+`getFullyQualifiedExpression` alone, so a restriction on a property restricts the property, as in SQL, where a select
+alias is visible to the `order by` and not to the `where`. An order handler is given
 the query, its root, the criteria builder, the order and the context, and returns the JPA order, or `null` to leave
 the order out. A query whose result is a count leaves every order out by itself, so no handler runs for it:
 
 [source,groovy]
 ----
-PredicateGenerator.registerCriterionHandler(NumberLikeCriterion, { query, root, cb, criterion, context ->
+PredicateGenerator.registerCriterionHandler(NumberLikeCriterion) { query, root, cb, criterion, context ->
     def c = criterion as NumberLikeCriterion
     cb.like(cb.cast(context.getFullyQualifiedPath(c.property) as JpaExpression, String), c.value as String)
-} as PredicateGenerator.ContextualCriterionHandler)
+}
 
 PredicateGenerator.registerOrderHandler(ByRandom) { query, root, cb, order, context ->
     cb.asc(cb.function('random', Double))
 }
 ----
 
-A criterion handler that does not need the context takes four parameters and is coerced to
-`PredicateGenerator.CriterionHandler`. Handlers are registered for the exact class of the criterion or order, and
+A closure with five parameters is registered as a handler that receives the context; a closure with four parameters
+is registered as a handler that does not, so both shapes work without `as`. Handlers are registered for the exact class of the criterion or order, and
 a registered handler wins over the built-in handling, so a handler for `Query.Like` replaces how `like` is built.
 
 A plugin registers its handlers without any code in the application by implementing

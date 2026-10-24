@@ -1,17 +1,20 @@
 /*
- * Copyright 2024-2025 the original author or authors.
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *    https://www.apache.org/licenses/LICENSE-2.0
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
  */
 package org.grails.orm.hibernate.query
 
@@ -42,13 +45,25 @@ interface QueryPathContext {
     Path<?> getFullyQualifiedPath(String path)
 
     /**
-     * @param path a property path, or the alias of a projection
-     * @return the expression for it: a path, or the expression an alias or projection stands for
+     * Resolves a path the way the built-in criteria resolve the property of a restriction, so a restriction on
+     * {@code height} restricts the property whatever a projection is called.
+     *
+     * @param path a property path, or an alias that the translator registers for an association or a projection of
+     *     the query's own, such as a function
+     * @return the expression for it: a path, or the expression such an alias stands for; {@code null} when nothing
+     *     resolves. The column alias of a {@code sqlProjection} or {@code sqlGroupProjection} is not resolved here,
+     *     as SQL scopes a select alias to the order by and never to the where: ask {@link #getSelectionAlias(String)}
+     *     for it
      */
     Expression<?> getFullyQualifiedExpression(String path)
 
     /**
-     * @param alias the column alias of a {@code sqlProjection} of the query
+     * Returns the projection a column alias stands for, which is what the built-in {@code order(alias)} sorts by: an
+     * order handler that sorts by a column alias checks this first and {@link #getFullyQualifiedExpression(String)}
+     * second, and so orders by the projection when an alias and a property have the same name, as {@code order(alias)}
+     * does.
+     *
+     * @param alias the column alias of a {@code sqlProjection} or {@code sqlGroupProjection} of the query
      * @return the projected expression recorded under that alias, so that a handler can order by it, or {@code null}
      *     when no projection of the query carries the alias
      */

@@ -153,6 +153,61 @@ class HibernateCriteriaBuilderSqlProjectionSpec extends Specification {
     }
 
     @Rollback
+    void 'an order handler asks the selection alias first and the path second, and a criterion handler asks the path alone'() {
+        given: "an order handler that orders as the built-in order does, and a criterion handler that restricts as eq does"
+        saveBoxes()
+        List<Object> resolvedAsPath = []
+        PredicateGenerator.registerOrderHandler(SqlProjectionAliasOrder) { query, root, cb, order, context ->
+            resolvedAsPath << context.getFullyQualifiedExpression(order.property)
+            cb.desc(context.getSelectionAlias(order.property) ?: context.getFullyQualifiedExpression(order.property))
+        }
+
+        when: "the alias names no property"
+        List rows = SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as scaled', 'scaled', INTEGER
+            }
+            order(new SqlProjectionAliasOrder('scaled'))
+        }
+
+        then: "the path does not resolve it, the selection alias does, and the rows come in descending order of the projection"
+        resolvedAsPath == [null]
+        rows == rows.sort(false).reverse()
+        sqlCapture.statements.any { it.contains('select width * 10 from') && it.contains('order by 1 desc') }
+
+        when: "the alias is the name of a property"
+        resolvedAsPath.clear()
+        sqlCapture.statements.clear()
+        SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as height', 'height', INTEGER
+            }
+            order(new SqlProjectionAliasOrder('height'))
+        }
+
+        then: "the path resolves the property, and the handler still orders by the projection, as order(alias) does"
+        resolvedAsPath.size() == 1
+        resolvedAsPath[0] != null
+        sqlCapture.statements.any { it.contains('order by 1 desc') }
+
+        when: "a restriction on that name goes through the path"
+        sqlCapture.statements.clear()
+        List restricted = SqlProjectionBox.createCriteria().list {
+            projections {
+                sqlProjection 'width * 10 as height', 'height', INTEGER
+            }
+            eq('height', 9)
+        }
+
+        then: "it restricts the property, not the projection, as in SQL"
+        restricted.size() == 2
+        sqlCapture.statements.any { it.contains('.height=?') }
+
+        cleanup:
+        PredicateGenerator.clearCustomOrderHandlers()
+    }
+
+    @Rollback
     void 'the results are ordered by the alias of a SQL projection'() {
         given:
         saveBoxes()
