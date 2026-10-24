@@ -198,7 +198,12 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             if (parseFlatKeys) {
                 String[] keyParts = sourceKey.split(/\./)
                 if (keyParts.length > 1) {
-                    mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    if (!path) {
+                        // at the root the dotted key is the flat key itself; below the root it would be a copy
+                        // inside the sub-map that nothing keeps current, and the nested write below writes the
+                        // flat key under its full path
+                        mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    }
                     def pathParts = keyParts[0..-2]
                     Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
                     sourceKey = keyParts[-1]

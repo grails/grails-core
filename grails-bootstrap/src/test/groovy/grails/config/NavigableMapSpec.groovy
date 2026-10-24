@@ -395,6 +395,20 @@ class NavigableMapSpec extends Specification {
         original['a.rows'] == [[name: 'row']]
     }
 
+    def "a dotted key inside a nested map writes the root flat key and the nested entry only"() {
+        given:
+        NavigableMap output = new NavigableMap()
+
+        when:
+        output.merge([a: ['b.c': 'nested']], true)
+        output.merge(['a.b.c': 'flat'], true)
+
+        then: 'the sub-map holds the nested entry and no copy of the dotted key'
+        output.navigate('a') == [b: [c: 'flat']]
+        output['a.b.c'] == 'flat'
+        output['a.b'] == [c: 'flat']
+    }
+
     def "navigate stops at a value that is not a map"() {
         given:
         NavigableMap output = new NavigableMap()

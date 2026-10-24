@@ -339,6 +339,18 @@ hello:
         config.getProperty('a.b', Map) == [c: 1]
     }
 
+    void 'a dotted key inside a nested map leaves no copy of itself in the parent'() {
+        given: "a dotted key inside a nested map, then the same key merged flat"
+        def config = new PropertySourcesConfig()
+        config.merge([a: ['b.c': 'nested']])
+        config.merge(['a.b.c': 'flat'])
+
+        expect: "the parent holds the nested entry only, and every read agrees"
+        config.getProperty('a', Map) == [b: [c: 'flat']]
+        config.getProperty('a.b.c') == 'flat'
+        config.navigate('a', 'b', 'c') == 'flat'
+    }
+
     void 'a dotted key that runs past a value that is not a map is absent'() {
         given: "a scalar, a list and a closure, the value shapes application.yml and application.groovy produce"
         def constraints = { nullable true }
