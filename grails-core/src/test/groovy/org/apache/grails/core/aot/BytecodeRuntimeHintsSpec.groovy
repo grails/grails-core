@@ -20,7 +20,6 @@ package org.apache.grails.core.aot
 
 import java.lang.reflect.Proxy
 import java.util.function.IntBinaryOperator
-import java.util.function.IntUnaryOperator
 
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
@@ -29,7 +28,9 @@ import org.springframework.aot.hint.predicate.RuntimeHintsPredicates
 import spock.lang.Shared
 import spock.lang.Specification
 
+import grails.config.ConfigProperties
 import grails.util.Environment
+import org.grails.config.PropertySourcesConfig
 
 /**
  * Covers what Groovy does reflectively on behalf of the framework's classes being possible in an
@@ -87,9 +88,35 @@ class BytecodeRuntimeHintsSpec extends Specification {
             RuntimeHintsPredicates.proxies().forInterfaces(IntBinaryOperator).test(hints)
     }
 
-    void 'an interface a dynamically compiled class coerces a closure to with as can be proxied'() {
-        expect: 'dynamic code makes the coercion a call to asType right after naming the interface, not a cast'
-            RuntimeHintsPredicates.proxies().forInterfaces(IntUnaryOperator).test(hints)
+    void 'the interface #coercion is coerced to can be proxied'() {
+        when: 'the fixture runs the coercion, which is the code the hint is for'
+            def coerced = fixture.call()
+
+        then: 'Groovy makes a JDK proxy for it as the coercion runs'
+            Proxy.isProxyClass(coerced.getClass())
+            coerced.apply(21) == 42
+
+        and: 'the image is told to allow one, whatever the code declared the value as'
+            RuntimeHintsPredicates.proxies().forInterfaces(target).test(hints)
+
+        where:
+            coercion                                        | fixture                                     | target
+            'a closure literal in dynamic code'             | { DynamicCoercionFixture.closureLiteral() } | ClosureLiteralCoercion
+            'a Closure variable in dynamic code'            | { DynamicCoercionFixture.typedClosure() }   | TypedClosureCoercion
+            'a def variable holding a closure'              | { DynamicCoercionFixture.untypedClosure() } | UntypedClosureCoercion
+            'a method result that is a closure'             | { DynamicCoercionFixture.closureResult() }  | ClosureResultCoercion
+            'a map literal in dynamic code'                 | { DynamicCoercionFixture.mapLiteral() }     | MapLiteralCoercion
+            'a closure literal in statically compiled code' | { StaticCoercionFixture.closureLiteral() }  | StaticClosureLiteralCoercion
+            'a map literal in statically compiled code'     | { StaticCoercionFixture.mapLiteral() }      | StaticMapLiteralCoercion
+    }
+
+    void 'the configuration can list its property names as properties'() {
+        when: 'the names are asked for, which turns a map of closures into an enumeration'
+            def names = new ConfigProperties(new PropertySourcesConfig('grails.fixture': 'value')).propertyNames()
+
+        then: 'Groovy makes a JDK proxy for it, which the image is told to allow'
+            Proxy.isProxyClass(names.getClass())
+            RuntimeHintsPredicates.proxies().forInterfaces(Enumeration).test(hints)
     }
 
     void 'a trait can be initialized by the classes implementing it'() {
@@ -166,15 +193,6 @@ class BytecodeRuntimeHintsSpec extends Specification {
     void 'the coercion still works'() {
         expect: 'the fixture is the code the hint is for, so it has to do what it says'
             ClosureCoercionFixture.sum(4) == 6
-    }
-
-    void 'the dynamic coercion still makes a JDK proxy'() {
-        when:
-            def doubling = DynamicCoercionFixture.doubling()
-
-        then: 'the fixture is the code the hint is for, so it has to do what it says'
-            Proxy.isProxyClass(doubling.getClass())
-            doubling.applyAsInt(21) == 42
     }
 
     void 'the trait still initializes'() {

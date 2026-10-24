@@ -18,7 +18,6 @@
  */
 package org.apache.grails.core.aot
 
-import java.util.function.IntUnaryOperator
 import java.util.stream.IntStream
 
 import groovy.transform.CompileStatic
@@ -52,16 +51,87 @@ class ClosureCoercionFixture {
 }
 
 /**
- * A closure turned into an interface with {@code as} in a dynamically compiled class, as a plugin's
- * {@code beanRegistrar()} often is. Groovy compiles it to a call to {@code asType}, not to a cast.
- * {@code IntUnaryOperator} because nothing in the framework coerces a closure to it, so finding it proves
- * this class was read.
+ * Values turned into interfaces with {@code as} in a dynamically compiled class, as a plugin's
+ * {@code beanRegistrar()} often is, in each form Groovy compiles differently. Each is a call to
+ * {@code asType}, not a cast, and it declares the value as a {@code Closure} only when the compiler knows it
+ * is one: as an {@code Object} for a {@code def} variable or a method's result, and as a {@code Map} for a
+ * map literal, which becomes the interface through a JDK proxy as a closure does.
  */
 class DynamicCoercionFixture {
 
-    static IntUnaryOperator doubling() {
-        { int operand -> operand * 2 } as IntUnaryOperator
+    static Closure doubling() {
+        { int value -> value * 2 }
     }
+
+    static Object closureLiteral() {
+        { int value -> value * 2 } as ClosureLiteralCoercion
+    }
+
+    static Object typedClosure() {
+        Closure doubled = { int value -> value * 2 }
+        doubled as TypedClosureCoercion
+    }
+
+    static Object untypedClosure() {
+        def doubled = { int value -> value * 2 }
+        doubled as UntypedClosureCoercion
+    }
+
+    static Object closureResult() {
+        doubling() as ClosureResultCoercion
+    }
+
+    static Object mapLiteral() {
+        [apply: { int value -> value * 2 }] as MapLiteralCoercion
+    }
+}
+
+/** The same in a statically compiled class, where {@code as} is a call to {@code asType} as well. */
+@CompileStatic
+class StaticCoercionFixture {
+
+    static Object closureLiteral() {
+        { int value -> value * 2 } as StaticClosureLiteralCoercion
+    }
+
+    static Object mapLiteral() {
+        [apply: { int value -> value * 2 }] as StaticMapLiteralCoercion
+    }
+}
+
+/** What a coercion fixture turns a value into: one interface per form, so finding one proves that form was read. */
+interface ClosureLiteralCoercion {
+    int apply(int value)
+}
+
+/** See {@link ClosureLiteralCoercion}. */
+interface TypedClosureCoercion {
+    int apply(int value)
+}
+
+/** See {@link ClosureLiteralCoercion}. */
+interface UntypedClosureCoercion {
+    int apply(int value)
+}
+
+/** See {@link ClosureLiteralCoercion}. */
+interface ClosureResultCoercion {
+    int apply(int value)
+}
+
+/** See {@link ClosureLiteralCoercion}. */
+interface MapLiteralCoercion {
+    int apply(int value)
+}
+
+/** See {@link ClosureLiteralCoercion}. */
+interface StaticClosureLiteralCoercion {
+    int apply(int value)
+}
+
+/** See {@link ClosureLiteralCoercion}. */
+interface StaticMapLiteralCoercion {
+    int apply(int value)
 }
 
 /**

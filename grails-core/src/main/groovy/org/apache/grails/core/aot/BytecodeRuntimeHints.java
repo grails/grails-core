@@ -68,12 +68,14 @@ import org.apache.grails.common.aot.RegistrableTypes;
  * find matching constructor".</li>
  * <li>A closure turned into an interface -- passed where a method takes one, such as {@code removeIf},
  * {@code forEach} or {@code computeIfAbsent}, or coerced with {@code as}, as a plugin's
- * {@code BeanRegistrar} often is -- becomes it through a JDK proxy created as the call is made. An image
- * creates a proxy only for an interface it was told about, and refuses the rest with
- * {@code MissingReflectionRegistrationError}. Only a coercion that names the interface is found: any in
- * statically compiled code, and an {@code as} with a class literal in dynamically compiled code. A closure
- * that dynamically compiled code passes to a method is an ordinary call with a {@code Closure} argument,
- * which does not say what it will become, so it is not found.</li>
+ * {@code BeanRegistrar} often is -- becomes it through a JDK proxy created as the call is made, and so does
+ * a map coerced with {@code as}. An image creates a proxy only for an interface it was told about, and
+ * refuses the rest with {@code MissingReflectionRegistrationError}. Only a coercion that names the interface
+ * is found: a closure statically compiled code passes or assigns to an interface, and any {@code as} with a
+ * class literal, whatever the code knows about the value. That includes an {@code as} that converts without
+ * a proxy, such as {@code as List}, whose interface is then registered for a proxy the image never makes. A
+ * closure that dynamically compiled code passes to a method is an ordinary call with a {@code Closure}
+ * argument, which does not say what it will become, so it is not found.</li>
  * <li>A class implementing a trait initializes it from its constructor by calling the trait's helper class
  * through {@code ScriptBytecodeAdapter.invokeMethodN}, a dynamic call. The framework's traits are on the
  * application class, the controllers, the tag libraries and the domain classes, so without this none of
@@ -95,7 +97,7 @@ import org.apache.grails.common.aot.RegistrableTypes;
  * <p>All of it is found by reading the bytecode while the hints are written, which happens during the build
  * on an ordinary JVM with the full classpath: an enum is a class extending {@code Enum} that implements
  * {@code GroovyObject}, a coercion is an invokedynamic {@code cast} from {@code Closure} to an interface or
- * a dynamic call to {@code asType} taking a {@code Closure} right after a class literal naming one, a
+ * a call to {@code asType} right after a class literal naming one, a
  * trait's helpers are the classes Groovy names {@code $Trait$Helper}, {@code $Trait$FieldHelper} and
  * {@code $Trait$StaticFieldHelper}, an injected member carries its annotation, and a Groovy class is one
  * that implements {@code GroovyObject}, directly or through a superclass. The framework compiles
@@ -398,9 +400,12 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
         }
 
         /**
-         * Finds the two ways a closure is turned into an interface that name the interface: a cast, which
-         * statically compiled code and a typed assignment make, and {@code as} with a class literal, which
-         * dynamically compiled code makes as a call to {@code asType} right after the literal.
+         * Finds the two ways of turning a value into an interface that name the interface: a cast from
+         * {@code Closure}, which statically compiled code makes for a closure it passes or assigns to an
+         * interface, and {@code as} with a class literal, which any code makes as a call to {@code asType}
+         * right after the literal. The value's declared type is not asked: the call declares a {@code Closure}
+         * only when the compiler knows the value is one, an {@code Object} for a {@code def} variable or a
+         * method's result, and a {@code Map} for a map literal, which is proxied as a closure is.
          */
         @Override
         public void visitInvokeDynamicInsn(String methodName, String methodDescriptor, Handle bootstrap,
@@ -411,12 +416,10 @@ public class BytecodeRuntimeHints implements RuntimeHintsRegistrar {
                 return;
             }
             Type[] arguments = Type.getArgumentTypes(methodDescriptor);
-            if (arguments.length == 0 || !CLOSURE.equals(arguments[0].getDescriptor())) {
-                return;
-            }
-            if (CAST.equals(methodName) && arguments.length == 1) {
+            if (CAST.equals(methodName)) {
                 Type target = Type.getReturnType(methodDescriptor);
-                if (target.getSort() == Type.OBJECT) {
+                if (arguments.length == 1 && CLOSURE.equals(arguments[0].getDescriptor()) &&
+                        target.getSort() == Type.OBJECT) {
                     findings.coercedTo.add(target.getClassName());
                 }
             }
