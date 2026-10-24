@@ -87,7 +87,7 @@ A property of the key can be `null`: a `country` that is optional in `language u
 
 With the rows `('en', 'US')`, `('en', null)`, `(null, 'US')` and `(null, null)`, a new `('en', null)` is a duplicate under `value` and `wildcard` and is valid under `skip`; a new `(null, 'US')` is a duplicate only under `value`, where it matches the stored `(null, 'US')`.
 
-The unique index Hibernate creates for the group treats `null` values as follows, which is what `database` reads. The two Hibernate versions render the index differently for SQL Server, so the table says which version each row describes:
+The unique index Hibernate creates for the group treats `null` values as follows, which is what `database` reads. The two Hibernate versions render the index differently for SQL Server and Db2, so the table says which version each row describes:
 
 [cols="2,1,1,3"]
 |===
@@ -103,15 +103,25 @@ The unique index Hibernate creates for the group treats `null` values as follows
 |`skip`
 |Hibernate 7 creates the index over nullable columns as a filtered unique index that leaves the rows with a `null` out.
 
-|DB2
-|5 and 7
+|Db2 for IBM i, Db2 for z/OS
+|7
 |`skip`
-|The index is created with `exclude null keys` (`DB2UniqueDelegate` in Hibernate 5, a filtered index in Hibernate 7), which leaves the rows with a `null` out.
+|Hibernate 7 creates the index as `create unique where not null index`, under which `null` values are not equal to each other.
 
 |SQL Server, Sybase
 |5
 |`value`
 |Hibernate 5 has no filtered-index delegate, so these dialects get a plain unique constraint, which compares `null` values: `('en', null)` twice is a violation.
+
+|Db2 (all platforms)
+|5
+|`value`
+|Hibernate 5 creates a plain unique index over nullable columns (`DB2UniqueDelegate`), which compares `null` values.
+
+|Db2 for Linux, UNIX and Windows
+|7
+|`value`
+|Hibernate 7 creates the index with `exclude null keys`, which leaves out only a key that is `null` in every column; a key with a `null` in some columns is indexed and compared.
 
 |Oracle
 |5 and 7

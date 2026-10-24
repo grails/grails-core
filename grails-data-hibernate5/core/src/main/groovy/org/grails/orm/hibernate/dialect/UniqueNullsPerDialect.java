@@ -21,6 +21,7 @@ package org.grails.orm.hibernate.dialect;
 
 import java.util.Arrays;
 
+import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.Oracle9Dialect;
@@ -41,9 +42,11 @@ import org.grails.datastore.mapping.config.UniqueNulls;
  * the plain {@code alter table ... add constraint ... unique (...)} of {@code DefaultUniqueDelegate}, and a plain
  * unique constraint compares {@code null}s on SQL Server and, for Sybase, treats them as equal as well, so
  * {@code ('en', null)} twice is a violation: {@link UniqueNulls#VALUE}.</li>
+ * <li>{@link #DB2}: the {@code DB2UniqueDelegate} of every Db2 dialect of Hibernate 5 renders the constraint over a
+ * nullable key as a plain {@code create unique index}, which treats a {@code null} as any other value on Db2 for
+ * Linux, UNIX and Windows, IBM i and z/OS alike: {@link UniqueNulls#VALUE}.</li>
  * <li>{@link #DEFAULT}: H2, PostgreSQL, MySQL and MariaDB treat {@code null}s as distinct, so such a row never
- * conflicts. DB2 compares them, but its {@code DB2UniqueDelegate} renders the constraint as {@code exclude null keys},
- * which comes to the same. {@link UniqueNulls#SKIP}.</li>
+ * conflicts. {@link UniqueNulls#SKIP}.</li>
  * </ul>
  *
  * @since 9.0
@@ -55,6 +58,8 @@ public enum UniqueNullsPerDialect {
     SQL_SERVER(UniqueNulls.VALUE, SQLServerDialect.class),
 
     SYBASE(UniqueNulls.VALUE, SybaseDialect.class),
+    // every Db2 dialect of Hibernate 5 creates a plain unique index, which compares null values
+    DB2(UniqueNulls.VALUE, DB2Dialect.class),
 
     DEFAULT(UniqueNulls.SKIP, Dialect.class);
 

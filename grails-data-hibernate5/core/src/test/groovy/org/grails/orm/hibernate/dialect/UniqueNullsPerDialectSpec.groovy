@@ -18,6 +18,8 @@
  */
 package org.grails.orm.hibernate.dialect
 
+import org.hibernate.dialect.DB2390Dialect
+import org.hibernate.dialect.DB2400Dialect
 import org.hibernate.dialect.DB2Dialect
 import org.hibernate.dialect.H2Dialect
 import org.hibernate.dialect.MySQL57Dialect
@@ -44,7 +46,9 @@ class UniqueNullsPerDialectSpec extends Specification {
         new H2Dialect()               || UniqueNulls.SKIP
         new PostgreSQL95Dialect()     || UniqueNulls.SKIP
         new MySQL57Dialect()          || UniqueNulls.SKIP
-        new DB2Dialect()              || UniqueNulls.SKIP
+        new DB2Dialect()              || UniqueNulls.VALUE
+        new DB2400Dialect()           || UniqueNulls.VALUE
+        new DB2390Dialect()           || UniqueNulls.VALUE
         new Oracle10gDialect()        || UniqueNulls.VALUE
         new Oracle9Dialect()          || UniqueNulls.VALUE
         new OracleDialect()           || UniqueNulls.VALUE
