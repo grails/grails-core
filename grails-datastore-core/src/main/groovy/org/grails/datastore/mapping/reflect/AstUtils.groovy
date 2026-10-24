@@ -459,17 +459,6 @@ class AstUtils {
      * @return whether the node represents a domain class
      */
     static boolean isDomainClass(ClassNode classNode) {
-        return isDomainClassUncached(classNode)
-    }
-
-    /**
-     * Checks the current node without reusing answers for same-named classes from
-     * other compilations. ClassNode equality is based on the class name.
-     *
-     * @param classNode the class node to inspect
-     * @return whether the node represents a domain class
-     */
-    static boolean isDomainClassUncached(ClassNode classNode) {
         if (classNode == null) return false
         ClassNode node = classNode.redirect()
         Boolean verdict = node.getNodeMetaData(DOMAIN_CLASS_VERDICT) as Boolean
