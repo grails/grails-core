@@ -19,6 +19,8 @@
 
 package org.grails.datastore.mapping.reflect
 
+import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import spock.lang.Specification
@@ -27,6 +29,21 @@ import spock.lang.Specification
  * Created by graemerocher on 19/04/2017.
  */
 class AstUtilsSpec extends Specification {
+
+    void 'the domain class verdict belongs to the node, so same-named nodes of different compilations do not share it'() {
+        given: 'two classes of one name, as two tests that compile a fixture from a string produce, one a domain class'
+        ClassNode domain = new ClassNode('Book', Modifier.PUBLIC, ClassHelper.OBJECT_TYPE)
+        domain.addInterface(ClassHelper.make('org.grails.datastore.gorm.GormEntity'))
+        ClassNode plain = new ClassNode('Book', Modifier.PUBLIC, ClassHelper.OBJECT_TYPE)
+
+        expect:
+        domain == plain
+        AstUtils.isDomainClass(domain)
+        !AstUtils.isDomainClass(plain)
+        AstUtils.isDomainClass(domain)
+        !AstUtils.isDomainClass(plain)
+        !AstUtils.isDomainClass(null)
+    }
 
     void "test implements interface"() {
         given:
