@@ -22,10 +22,6 @@ dependencies {
     add('testRuntimeOnly', 'org.junit.platform:junit-platform-launcher')
 }
 
-tasks.named('compileTestGroovy', GroovyCompile) {
-    groovyOptions.forkOptions.jvmArgs = ['-Xmx768m']
-}
-
 tasks.withType(Test).configureEach {
     onlyIf {
         ![
