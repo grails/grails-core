@@ -51,6 +51,7 @@ import org.hibernate.cfg.BytecodeSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.JdbcSettings;
+import org.hibernate.cfg.QuerySettings;
 import org.hibernate.context.spi.CurrentSessionContext;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.service.ServiceRegistry;
@@ -81,6 +82,7 @@ import org.grails.orm.hibernate.MetadataIntegrator;
 import org.grails.orm.hibernate.cfg.domainbinding.binder.GrailsDomainBinder;
 import org.grails.orm.hibernate.cfg.domainbinding.util.NamingStrategyProvider;
 import org.grails.orm.hibernate.proxy.GrailsBytecodeProvider;
+import org.grails.orm.hibernate.query.RestrictedCollectionSqmTranslatorFactory;
 
 /**
  * A Configuration that uses a MappingContext to configure Hibernate
@@ -291,6 +293,11 @@ public class HibernateMappingContextConfiguration extends Configuration
         ClassLoader appClassLoader = resolveSessionFactoryClassLoader();
 
         ConfigurationHelper.resolvePlaceHolders(getProperties());
+
+        // Hibernate 7 tests the emptiness of a collection without its restriction; this translator tests it
+        // with a size subquery instead, which applies the restriction (apache/grails-core#16748)
+        getProperties().putIfAbsent(QuerySettings.SEMANTIC_QUERY_TRANSLATOR,
+                RestrictedCollectionSqmTranslatorFactory.class.getName());
 
         final GrailsDomainBinder domainBinder = new GrailsDomainBinder(
                 dataSourceName,
