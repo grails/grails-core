@@ -55,8 +55,10 @@ import org.hibernate.mapping.Value;
  * key would otherwise not.</p>
  *
  * <p>Hibernate applies the restriction to the statements that load, count, join and delete the rows of a collection,
- * but not to the test of emptiness ({@code is empty}, {@code is not empty}). For collections that share a key column
- * that test also sees the rows of the other collections (apache/grails-core#16748).</p>
+ * but loses it in the test of emptiness ({@code is empty}, {@code is not empty}); GORM translates that test as a size
+ * test for a restricted many-to-many collection instead, through
+ * {@link org.grails.orm.hibernate.query.RestrictedCollectionSqmTranslatorFactory} (apache/grails-core#16748), except in
+ * an update or delete of an entity whose hierarchy spans several tables.</p>
  *
  * <p>A set cannot share a join table with a list or a map: the index column of a list or a map is not null, and the
  * rows of the set leave it null, so saving the set fails on the first insert.</p>

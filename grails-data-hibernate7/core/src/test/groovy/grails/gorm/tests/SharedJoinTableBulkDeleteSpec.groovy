@@ -33,7 +33,14 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
         manager.registerDomainClasses(SjtbdAccount, SjtbdRole, SjtbdGroup, SjtbdSolo)
     }
 
-    @PendingFeature(reason = 'is empty ignores the restriction of the association, apache/grails-core#16748')
+    void cleanup() {
+        SjtbdAccount.withNewTransaction {
+            [SjtbdAccount, SjtbdGroup, SjtbdSolo, SjtbdRole].each { Class domain ->
+                domain.executeQuery("from ${domain.simpleName}".toString())*.delete(flush: true)
+            }
+        }
+    }
+
     void "is empty on an association that shares a join table and a key column ignores the rows of the other"() {
         given: 'an account with a role and no denied role, so its only row has no value in the denied role column'
         SjtbdAccount.withNewTransaction {
@@ -49,6 +56,98 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
                 SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where a.denyRoles is empty') == ['account'] &&
                         SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where a.roles is not empty') == ['account'] &&
                         SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where a.denyRoles is not empty').isEmpty()
+            }
+        }
+    }
+
+    void "criteria isEmpty and isNotEmpty on an association that shares a join table and a key column ignore the rows of the other"() {
+        given: 'an account with a role and no denied role'
+        SjtbdAccount.withNewTransaction {
+            SjtbdRole admin = new SjtbdRole(name: 'admin').save(flush: true)
+            SjtbdAccount account = new SjtbdAccount(name: 'account')
+            account.addToRoles(admin)
+            account.save(flush: true)
+        }
+
+        expect: 'the criteria see the account as having roles and no denied roles'
+        SjtbdAccount.withNewSession {
+            SjtbdAccount.withNewTransaction {
+                SjtbdAccount.withCriteria { isEmpty('denyRoles') }*.name == ['account'] &&
+                        SjtbdAccount.withCriteria { isNotEmpty('roles') }*.name == ['account'] &&
+                        SjtbdAccount.withCriteria { isNotEmpty('denyRoles') }.isEmpty() &&
+                        SjtbdAccount.withCriteria { isEmpty('roles') }.isEmpty()
+            }
+        }
+    }
+
+    void "an update restricted by is empty on an association that shares a join table and a key column ignores the rows of the other"() {
+        given: 'an account with a role and no denied role'
+        SjtbdAccount.withNewTransaction {
+            SjtbdRole admin = new SjtbdRole(name: 'admin').save(flush: true)
+            SjtbdAccount account = new SjtbdAccount(name: 'account')
+            account.addToRoles(admin)
+            account.save(flush: true)
+        }
+
+        when: 'the accounts without a denied role are renamed'
+        int updated = SjtbdAccount.withNewTransaction {
+            SjtbdAccount.executeUpdate("update SjtbdAccount a set a.name = 'renamed' where a.denyRoles is empty")
+        }
+
+        then:
+        updated == 1
+        SjtbdAccount.withNewTransaction { SjtbdAccount.list()*.name } == ['renamed']
+    }
+
+    void "a negated is empty on an association that shares a join table and a key column ignores the rows of the other"() {
+        given: 'an account with a role and no denied role'
+        SjtbdAccount.withNewTransaction {
+            SjtbdAccount account = new SjtbdAccount(name: 'account')
+            account.addToRoles(new SjtbdRole(name: 'admin').save(flush: true))
+            account.save(flush: true)
+        }
+
+        expect:
+        SjtbdAccount.withNewSession {
+            SjtbdAccount.withNewTransaction {
+                SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where not (a.denyRoles is empty)').isEmpty() &&
+                        SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where not (a.roles is empty)') == ['account']
+            }
+        }
+    }
+
+    void "is empty on associations that share a join table with a key column each"() {
+        given: 'a group with an allowed role and no denied role, both in the shared default join table'
+        SjtbdGroup.withNewTransaction {
+            SjtbdGroup group = new SjtbdGroup(name: 'group')
+            group.addToAllow(new SjtbdRole(name: 'admin').save(flush: true))
+            group.save(flush: true)
+        }
+
+        expect:
+        SjtbdGroup.withNewSession {
+            SjtbdGroup.withNewTransaction {
+                SjtbdGroup.executeQuery('select g.name from SjtbdGroup g where g.deny is empty') == ['group'] &&
+                        SjtbdGroup.executeQuery('select g.name from SjtbdGroup g where g.allow is not empty') == ['group'] &&
+                        SjtbdGroup.executeQuery('select g.name from SjtbdGroup g where g.deny is not empty').isEmpty()
+            }
+        }
+    }
+
+    void "is empty on an association with a join table of its own keeps working"() {
+        given: 'a solo owner without roles and one with a role'
+        SjtbdSolo.withNewTransaction {
+            new SjtbdSolo(name: 'empty').save(flush: true)
+            SjtbdSolo withRole = new SjtbdSolo(name: 'with role')
+            withRole.addToRoles(new SjtbdRole(name: 'admin').save(flush: true))
+            withRole.save(flush: true)
+        }
+
+        expect:
+        SjtbdSolo.withNewSession {
+            SjtbdSolo.withNewTransaction {
+                SjtbdSolo.executeQuery('select s.name from SjtbdSolo s where s.roles is empty') == ['empty'] &&
+                        SjtbdSolo.executeQuery('select s.name from SjtbdSolo s where s.roles is not empty') == ['with role']
             }
         }
     }
