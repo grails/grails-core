@@ -18,15 +18,11 @@
  */
 package grails.gorm.tests
 
-import java.time.Duration
 
 import grails.gorm.annotation.Entity
-import org.testcontainers.mariadb.MariaDBContainer
-import org.testcontainers.mysql.MySQLContainer
-import org.testcontainers.oracle.OracleContainer
-import org.testcontainers.postgresql.PostgreSQLContainer
 import org.springframework.dao.DataIntegrityViolationException
 import org.testcontainers.spock.Testcontainers
+import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Shared
 
@@ -41,16 +37,17 @@ import spock.lang.Shared
 @Requires({ isDockerAvailable() })
 class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
 
-    @Shared postgres = new PostgreSQLContainer('postgres:16')
-    @Shared mysql = new MySQLContainer('mysql:8.0')
-    @Shared mariadb = new MariaDBContainer('mariadb:10.11')
-    @Shared oracle = new OracleContainer('gvenzl/oracle-free:slim-faststart')
-            .withStartupTimeout(Duration.ofMinutes(3))
+    @Shared postgres = DatabaseContainers.POSTGRES
+    @Shared mysql = DatabaseContainers.MYSQL
+    @Shared mariadb = DatabaseContainers.MARIADB
+    @Shared oracle = DatabaseContainers.ORACLE
+    @Shared db2 = DatabaseContainers.DB2
 
     void setupSpec() {
         manager.registerDomainClasses(SjtGroup, SjtMember, SjtListOwner)
     }
 
+    @IgnoreIf({ data.db == 'DB2' && System.getProperty('os.arch') in ['aarch64', 'arm64'] })
     void "on #db a shared join table is unique per association"() {
         given: 'the datastore on this database, with the schema created for it'
         if (container != null && !container.isRunning()) {
@@ -159,7 +156,7 @@ class SharedJoinTableHibernate7Spec extends HibernateGormDatastoreSpec {
         'MySQL'    | mysql
         'MariaDB'  | mariadb
         'Oracle'   | oracle
-        // 'DB2'  | db2   the unique key null handling for DB2 is unverified: apache/grails-core#16746
+        'DB2'      | db2
     }
 }
 

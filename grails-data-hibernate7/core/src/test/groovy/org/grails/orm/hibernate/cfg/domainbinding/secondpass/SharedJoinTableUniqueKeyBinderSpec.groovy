@@ -24,6 +24,8 @@ import org.hibernate.boot.model.relational.internal.SqlStringGenerationContextIm
 import org.hibernate.boot.spi.InFlightMetadataCollector
 import org.hibernate.boot.spi.MetadataBuildingContext
 import org.hibernate.dialect.DB2Dialect
+import org.hibernate.dialect.DB2iDialect
+import org.hibernate.dialect.DB2zDialect
 import org.hibernate.dialect.Dialect
 import org.hibernate.dialect.H2Dialect
 import org.hibernate.dialect.MariaDBDialect
@@ -234,7 +236,9 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
         new MySQLDialect()        | SharedJoinTableUniqueness.KEY_PER_COLLECTION
         new MariaDBDialect()      | SharedJoinTableUniqueness.KEY_PER_COLLECTION
         new SQLServerDialect()    | SharedJoinTableUniqueness.KEY_PER_COLLECTION
-        new DB2Dialect()          | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new DB2Dialect()          | SharedJoinTableUniqueness.ONE_KEY_FOR_ALL_COLLECTIONS
+        new DB2iDialect()         | SharedJoinTableUniqueness.KEY_PER_COLLECTION
+        new DB2zDialect()         | SharedJoinTableUniqueness.KEY_PER_COLLECTION
         new OracleDialect()       | SharedJoinTableUniqueness.ONE_KEY_FOR_ALL_COLLECTIONS
     }
 
@@ -276,9 +280,14 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
         new SQLServerDialect()  | 'a filtered unique index per association'       | [
                 'create unique nonclustered index uk_roles_id_role_id on shared_roles (roles_id, role_id) where roles_id is not null and role_id is not null',
                 'create unique nonclustered index uk_deny_roles_id_role_id on shared_roles (deny_roles_id, role_id) where deny_roles_id is not null and role_id is not null']
-        new DB2Dialect()        | 'a unique index per association excluding nulls' | [
-                'create unique index uk_roles_id_role_id on shared_roles (roles_id, role_id) exclude null keys',
-                'create unique index uk_deny_roles_id_role_id on shared_roles (deny_roles_id, role_id) exclude null keys']
+        new DB2Dialect()        | 'one unique index over both key columns and the element, excluding null keys' | [
+                'create unique index uk_roles_id_role_id on shared_roles (roles_id, role_id, deny_roles_id) exclude null keys']
+        new DB2iDialect()       | 'a unique index per association where not null' | [
+                'create unique where not null index uk_roles_id_role_id on shared_roles (roles_id, role_id)',
+                'create unique where not null index uk_deny_roles_id_role_id on shared_roles (deny_roles_id, role_id)']
+        new DB2zDialect()       | 'a unique index per association where not null' | [
+                'create unique where not null index uk_roles_id_role_id on shared_roles (roles_id, role_id)',
+                'create unique where not null index uk_deny_roles_id_role_id on shared_roles (deny_roles_id, role_id)']
         new OracleDialect()     | 'one unique key over both key columns and the element' | [
                 ', unique (roles_id, role_id, deny_roles_id)']
     }
@@ -317,6 +326,14 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
                 ', unique (owner_id, role_id), unique (owner_id, deny_role_id)']
         new OracleDialect()     | 'one unique key over the key column and both element columns' | [
                 ', unique (owner_id, role_id, deny_role_id)']
+        new DB2Dialect()        | 'one unique index over the key column and both element columns, excluding null keys' | [
+                'create unique index uk_owner_id_role_id on shared_roles (owner_id, role_id, deny_role_id) exclude null keys']
+        new DB2iDialect()       | 'a unique index per association where not null'              | [
+                'create unique where not null index uk_owner_id_role_id on shared_roles (owner_id, role_id)',
+                'create unique where not null index uk_owner_id_deny_role_id on shared_roles (owner_id, deny_role_id)']
+        new DB2zDialect()       | 'a unique index per association where not null'              | [
+                'create unique where not null index uk_owner_id_role_id on shared_roles (owner_id, role_id)',
+                'create unique where not null index uk_owner_id_deny_role_id on shared_roles (owner_id, deny_role_id)']
     }
 
     @Unroll
