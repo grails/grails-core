@@ -33,6 +33,26 @@ class SharedJoinTableBulkDeleteSpec extends HibernateGormDatastoreSpec {
         manager.registerDomainClasses(SjtbdAccount, SjtbdRole, SjtbdGroup, SjtbdSolo)
     }
 
+    @PendingFeature(reason = 'is empty ignores the restriction of the association, apache/grails-core#16748')
+    void "is empty on an association that shares a join table and a key column ignores the rows of the other"() {
+        given: 'an account with a role and no denied role, so its only row has no value in the denied role column'
+        SjtbdAccount.withNewTransaction {
+            SjtbdRole admin = new SjtbdRole(name: 'admin').save(flush: true)
+            SjtbdAccount account = new SjtbdAccount(name: 'account')
+            account.addToRoles(admin)
+            account.save(flush: true)
+        }
+
+        expect: 'the account has no denied roles, and has roles'
+        SjtbdAccount.withNewSession {
+            SjtbdAccount.withNewTransaction {
+                SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where a.denyRoles is empty') == ['account'] &&
+                        SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where a.roles is not empty') == ['account'] &&
+                        SjtbdAccount.executeQuery('select a.name from SjtbdAccount a where a.denyRoles is not empty').isEmpty()
+            }
+        }
+    }
+
     void "clearing one association of a shared join table leaves the rows of the other"() {
         given: 'an account with a role in each association'
         Map<String, Long> ids = SjtbdAccount.withNewTransaction {

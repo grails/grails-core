@@ -54,6 +54,10 @@ import org.hibernate.mapping.Value;
  * each collection of a shared table to its own rows, which Hibernate's removal of all the rows of a collection by its
  * key would otherwise not.</p>
  *
+ * <p>Hibernate applies the restriction to the statements that load, count, join and delete the rows of a collection,
+ * but not to the test of emptiness ({@code is empty}, {@code is not empty}). For collections that share a key column
+ * that test also sees the rows of the other collections (apache/grails-core#16748).</p>
+ *
  * <p>A set cannot share a join table with a list or a map: the index column of a list or a map is not null, and the
  * rows of the set leave it null, so saving the set fails on the first insert.</p>
  *
