@@ -35,8 +35,8 @@ import org.grails.orm.hibernate.dialect.UniqueIndexNulls;
  * How a join table that several collections of one owner share keeps the rows of each collection unique, by
  * database.
  *
- * <p>Such a table has a key column per collection and one element column, and every row leaves the key columns of
- * the other collections null. A row is unique by the key column of its own collection and the element, so each
+ * <p>Such a table has a key column per collection and one element column, or one key column and an element column per
+ * collection, and every row leaves the columns of the other collections null. A row is unique by the key column of its own collection and the element, so each
  * collection needs a constraint of its own over those two; one constraint over all key columns would hold a null in
  * every row and reject nothing on a database that treats nulls as distinct. What that per-collection constraint has
  * to look like depends on how the unique index of the database treats a null in its key
@@ -45,12 +45,13 @@ import org.grails.orm.hibernate.dialect.UniqueIndexNulls;
  * <li>{@link #KEY_PER_COLLECTION}, for {@link UniqueIndexNulls#DISTINCT}: a unique key over the key column and the
  * element. The rows of the other collections, null in this key column, never collide.</li>
  * <li>{@link #ONE_KEY_FOR_ALL_COLLECTIONS}, for {@link UniqueIndexNulls#COMPARED}: Oracle compares the non-null columns of a partially null row, so a unique key per
- * collection would reject the rows of the other collections, null in that key column and equal in the element.
- * One unique key over the key columns of every collection and the element is right there: a row collides only
- * with a row that is non-null in the same key column, that is a row of its own collection, for the same element.
- * Hibernate renders that key as a plain constraint on Oracle, where it is what is wanted; on a database that treats
- * nulls as distinct the same key would hold a null in every row and reject nothing, which is why it is for
- * {@code COMPARED} alone.</li>
+ * collection would reject the rows of the other collections, null in that collection's columns and equal in the ones
+ * they have in common. One unique key over the key columns of every collection and the element columns is right
+ * there: a row collides only with a row that is non-null in the same columns, that is a row of its own collection,
+ * for the same element. That holds for collections that share the element column and have a key column each, and
+ * for collections that share the key column and have an element column each. Hibernate renders that key as a plain
+ * constraint on Oracle, where it is what is wanted; on a database that treats nulls as distinct the same key would
+ * hold a null in every row and reject nothing, which is why it is for {@code COMPARED} alone.</li>
  * </ul>
  *
  * @since 8.0.1
@@ -65,15 +66,16 @@ public enum SharedJoinTableUniqueness {
             if (coveredByPrimaryKey(table, own)) {
                 return;
             }
-            // the unique key Hibernate created for the first collection sharing this table takes the key columns of
-            // every later one: Oracle compares the non-null columns of a row, so a row collides only with a row of
-            // its own collection for the same element, and a plain key per collection would reject the rows of the
-            // other collections, null in that key column and equal in the element
+            // the unique key Hibernate created for the first collection sharing this table takes the columns of every
+            // later one that shares a column with it, the element column or the key column: Oracle compares the
+            // non-null columns of a row, so a row collides only with a row of its own collection for the same element,
+            // and a plain key per collection would reject the rows of the other collections, null in that collection's
+            // columns and equal in the ones they have in common
             for (UniqueKey uniqueKey : table.getUniqueKeys().values()) {
-                if (uniqueKey.isExplicit() || !elementColumns.stream().allMatch(uniqueKey::containsColumn)) {
+                if (uniqueKey.isExplicit() || own.stream().noneMatch(uniqueKey::containsColumn)) {
                     continue;
                 }
-                for (Column column : keyColumns) {
+                for (Column column : own) {
                     if (!uniqueKey.containsColumn(column)) {
                         uniqueKey.addColumn(column);
                     }

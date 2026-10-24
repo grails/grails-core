@@ -31,8 +31,8 @@ import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyPrope
  *
  * @author Graeme
  */
-@SuppressWarnings("PMD.NonSerializableClass")
-public class SetSecondPass implements org.hibernate.boot.spi.SecondPass, java.io.Serializable {
+@SuppressWarnings({"PMD.NonSerializableClass", "deprecation"})
+public class SetSecondPass implements org.hibernate.boot.spi.SecondPass, GrailsSecondPass, java.io.Serializable {
 
     @Serial
     private static final long serialVersionUID = -5540526942092611348L;

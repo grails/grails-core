@@ -25,8 +25,8 @@ import org.hibernate.MappingException;
 
 import org.grails.orm.hibernate.cfg.domainbinding.hibernate.HibernateToManyProperty;
 
-@SuppressWarnings("PMD.NonSerializableClass")
-public class MapSecondPass implements org.hibernate.boot.spi.SecondPass, java.io.Serializable {
+@SuppressWarnings({"PMD.NonSerializableClass", "deprecation"})
+public class MapSecondPass implements org.hibernate.boot.spi.SecondPass, GrailsSecondPass, java.io.Serializable {
 
     @Serial
     private static final long serialVersionUID = -3244991685626409031L;

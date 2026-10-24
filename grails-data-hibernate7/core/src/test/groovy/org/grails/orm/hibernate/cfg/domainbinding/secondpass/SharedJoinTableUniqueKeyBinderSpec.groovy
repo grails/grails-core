@@ -282,6 +282,42 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
                 ', unique (roles_id, role_id, deny_roles_id)']
     }
 
+    @Unroll
+    void "on #dialect.class.simpleName a shared join table with one key column and an element column each is given #what"() {
+        given: 'the first association has its unique key over the shared key column and its element, the second nothing'
+        Table table = new Table('orm', 'shared_roles')
+        Column owner = nullable('owner_id')
+        Column role = nullable('role_id')
+        Column denyRole = nullable('deny_role_id')
+        [owner, role, denyRole].each { table.addColumn(it) }
+        UniqueKey first = new UniqueKey(table)
+        first.name = 'uk_owner_id_role_id'
+        first.addColumn(owner)
+        first.addColumn(role)
+        table.addUniqueKey(first)
+        SharedJoinTableUniqueness.Naming naming = [
+                uniqueKeyName: { List<Column> columns -> 'uk_' + columns*.name.join('_') },
+                indexName    : { List<Column> columns -> 'ix_' + columns*.name.join('_') }
+        ] as SharedJoinTableUniqueness.Naming
+
+        when:
+        SharedJoinTableUniqueness uniqueness = SharedJoinTableUniqueness.forDialect(dialect)
+        uniqueness.apply(table, [owner], [role], naming)
+        uniqueness.apply(table, [owner], [denyRole], naming)
+
+        then:
+        ddl(dialect, table) == statements
+
+        where:
+        dialect                 | what                                                          | statements
+        new H2Dialect()         | 'a unique key per association'                                | [
+                ', unique (owner_id, role_id), unique (owner_id, deny_role_id)']
+        new PostgreSQLDialect() | 'a unique key per association'                                | [
+                ', unique (owner_id, role_id), unique (owner_id, deny_role_id)']
+        new OracleDialect()     | 'one unique key over the key column and both element columns' | [
+                ', unique (owner_id, role_id, deny_role_id)']
+    }
+
     void "on Oracle a table one association has to itself keeps the unique key Hibernate creates"() {
         given:
         Table table = new Table('orm', 'own_roles')
