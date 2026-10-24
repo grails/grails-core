@@ -434,6 +434,7 @@ A datastore implementation of RxGORM compiled for Grails 8 or earlier, such as t
 - A dotted key written directly, with `config.put('a.b', value)` or `config['a.b'] = value`, is now read by `getProperty('a.b')`, as it always was by `config['a.b']`.
 - A value written directly into a nested map with `config.a.put('b', value)` is no longer read by `getProperty('a.b')`. Assign through dot notation, `config.a.b = value`, or by subscript, `config.a['b'] = value`, which write both representations.
 - A dotted key inside a nested map passed to `merge`, such as `config.merge([logging: [level: ['org.springframework': 'DEBUG']]])`, no longer writes a second key at the root. The configuration files are flattened before they are merged and never did.
+- An indexed key with a property after the index passed to `merge`, such as `config.merge([a: ['rows[0].name': 'row']])`, builds the list in the nested map as well as under its flat key, so `navigate('a', 'rows')` sees it. A list merged as a value, with `config.merge([a: [rows: [[name: 'row']]]])` or `config.a.rows = [[name: 'row']]`, writes the element keys `a.rows[0]` and `a.rows[0].name` and replaces those of the list it replaces.
 
 ## Verification Checklist
 

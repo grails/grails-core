@@ -1241,6 +1241,8 @@ Grails 9 also reads the flat key that `merge` writes for every nested value befo
 
 A dotted key inside a nested map passed to `merge`, such as `config.merge([logging: [level: ['org.springframework': 'DEBUG']]])`, used to be written a second time as a key at the root, where it could overwrite a real `org.springframework` property; it is now written only under its parent, as `logging.level.org.springframework`. The configuration files are not affected: they are flattened before they are merged, so they never took that path.
 
+An indexed key with a property after the index passed to `merge`, such as `config.merge([a: ['rows[0].name': 'row']])` or `config.merge(['a.rows[0].name': 'row'])`, used to build the list `a.rows` under its flat key only; the nested map held a `rows[0]` entry in its place, so `navigate('a', 'rows')` did not see the list. The list is now held by the nested map as well, as one object with the flat key, and the element keys `a.rows[0]` and `a.rows[0].name` are read as before. A list merged as a value, with `config.merge([a: [rows: [[name: 'row']]]])` or `config.a.rows = [[name: 'row']]`, now writes those element keys too and replaces those of the list it replaces, so `getProperty('a.rows[0].name')` answers from the current list; it used to answer only for a list written by indexed keys, and with the element the file had.
+
 ===== Required Actions
 
 Code that reads a child of a string, a list or a closure and relied on being answered with the parent reads the parent instead. Code that writes directly into a nested map and reads the value back through `getProperty` assigns through dot notation instead, which writes both representations.
