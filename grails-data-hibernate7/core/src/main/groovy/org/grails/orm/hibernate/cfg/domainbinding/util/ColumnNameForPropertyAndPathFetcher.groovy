@@ -99,7 +99,6 @@ class ColumnNameForPropertyAndPathFetcher {
         return suffix
     }
 
-
     /**
      * The names of all the columns of the property: the one name {@link #getColumnNameForPropertyAndPath} resolves
      * without a column configuration for a property that has one column, or one name per attribute of the
