@@ -34,6 +34,7 @@ import org.hibernate.dialect.SQLServerDialect
 import org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentImpl
 import org.hibernate.mapping.Collection
 import org.hibernate.mapping.Column
+import org.hibernate.mapping.PrimaryKey
 import org.hibernate.mapping.Table
 import org.hibernate.mapping.UniqueKey
 import spock.lang.Unroll
@@ -316,6 +317,54 @@ class SharedJoinTableUniqueKeyBinderSpec extends HibernateGormDatastoreSpec {
                 ', unique (owner_id, role_id), unique (owner_id, deny_role_id)']
         new OracleDialect()     | 'one unique key over the key column and both element columns' | [
                 ', unique (owner_id, role_id, deny_role_id)']
+    }
+
+    @Unroll
+    void "on #dialect.class.simpleName a set whose primary key covers its key and element is given nothing more"() {
+        given: 'a table whose primary key is the key column and the element, as Hibernate makes it for non-null columns'
+        Table table = new Table('orm', 'own_roles')
+        Column owner = nullable('owner_id')
+        Column role = nullable('role_id')
+        [owner, role].each { table.addColumn(it) }
+        PrimaryKey primaryKey = new PrimaryKey(table)
+        primaryKey.addColumn(owner)
+        primaryKey.addColumn(role)
+        table.primaryKey = primaryKey
+        SharedJoinTableUniqueness.Naming naming = [
+                uniqueKeyName: { List<Column> columns -> 'uk_' + columns*.name.join('_') },
+                indexName    : { List<Column> columns -> 'ix_' + columns*.name.join('_') }
+        ] as SharedJoinTableUniqueness.Naming
+
+        when:
+        SharedJoinTableUniqueness.forDialect(dialect).apply(table, [owner], [role], naming)
+
+        then:
+        table.uniqueKeys.isEmpty()
+        table.indexes.isEmpty()
+
+        where:
+        dialect << [new H2Dialect(), new OracleDialect()]
+    }
+
+    void "on Oracle a unique key the mapping declares is not widened with the columns of another association"() {
+        given: 'a shared table whose only unique key was declared by the mapping, not created by Hibernate'
+        Table table = new Table('orm', 'shared_roles')
+        Column roles = nullable('roles_id')
+        Column denyRoles = nullable('deny_roles_id')
+        Column role = nullable('role_id')
+        [roles, denyRoles, role].each { table.addColumn(it) }
+        UniqueKey declared = new UniqueKey(table)
+        declared.name = 'uk_declared'
+        declared.addColumn(roles)
+        declared.addColumn(role)
+        declared.explicit = true
+        table.addUniqueKey(declared)
+
+        when:
+        SharedJoinTableUniqueness.ONE_KEY_FOR_ALL_COLLECTIONS.apply(table, [denyRoles], [role], Stub(SharedJoinTableUniqueness.Naming))
+
+        then: 'the declared key keeps its columns'
+        table.uniqueKeys['uk_declared'].columns*.name == ['roles_id', 'role_id']
     }
 
     void "on Oracle a table one association has to itself keeps the unique key Hibernate creates"() {
