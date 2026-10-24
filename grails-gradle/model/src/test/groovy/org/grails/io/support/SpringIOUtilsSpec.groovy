@@ -432,27 +432,31 @@ class SpringIOUtilsSpec extends Specification {
         writer.toString() == 'chars'
     }
 
-    void 'copy methods refuse missing arguments'() {
+    void 'copy methods refuse a missing argument with a NullPointerException naming it: #message'() {
         when:
         action()
 
         then:
-        thrown(AssertionError)
+        NullPointerException e = thrown()
+        e.message == message
 
         where:
-        action << [
-            { SpringIOUtils.copy((File) null, new File('x')) },
-            { SpringIOUtils.copy(new File('x'), (File) null) },
-            { SpringIOUtils.copy((Resource) null, new File('x')) },
-            { SpringIOUtils.copy(new FileSystemResource('x'), (File) null) },
-            { SpringIOUtils.copy((byte[]) null, new File('x')) },
-            { SpringIOUtils.copy('x'.bytes, (File) null) },
-            { SpringIOUtils.copy((InputStream) null, new ByteArrayOutputStream()) },
-            { SpringIOUtils.copy(new ByteArrayInputStream(new byte[0]), (OutputStream) null) },
-            { SpringIOUtils.copy((byte[]) null, (OutputStream) new ByteArrayOutputStream()) },
-            { SpringIOUtils.copy('x'.bytes, (OutputStream) null) },
-            { SpringIOUtils.copyToByteArray((File) null) }
-        ]
+        message                          | action
+        'No input File specified'        | { SpringIOUtils.copy((File) null, new File('x')) }
+        'No output File specified'       | { SpringIOUtils.copy(new File('x'), (File) null) }
+        'No input File specified'        | { SpringIOUtils.copy((Resource) null, new File('x')) }
+        'No output File specified'       | { SpringIOUtils.copy(new FileSystemResource('x'), (File) null) }
+        'No input byte array specified'  | { SpringIOUtils.copy((byte[]) null, new File('x')) }
+        'No output File specified'       | { SpringIOUtils.copy('x'.bytes, (File) null) }
+        'No input File specified'        | { SpringIOUtils.copyToByteArray((File) null) }
+        'No input stream specified'      | { SpringIOUtils.copy((InputStream) null, new ByteArrayOutputStream()) }
+        'No output stream specified'     | { SpringIOUtils.copy(new ByteArrayInputStream(new byte[0]), (OutputStream) null) }
+        'No input byte array specified'  | { SpringIOUtils.copy((byte[]) null, (OutputStream) new ByteArrayOutputStream()) }
+        'No output stream specified'     | { SpringIOUtils.copy('x'.bytes, (OutputStream) null) }
+        'No input Reader specified'      | { SpringIOUtils.copy((Reader) null, new StringWriter()) }
+        'No output Writer specified'     | { SpringIOUtils.copy(new StringReader('x'), (Writer) null) }
+        'No input String specified'      | { SpringIOUtils.copy((String) null, new StringWriter()) }
+        'No output Writer specified'     | { SpringIOUtils.copy('x', (Writer) null) }
     }
 
 }

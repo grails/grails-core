@@ -19,6 +19,7 @@
 package org.grails.build.parsing
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 import grails.util.Environment
 
@@ -35,7 +36,10 @@ import grails.util.Environment
 @CompileStatic
 class CommandLineParser {
 
+    @PackageScope
     static Map<String, String> ENV_ARGS = new HashMap<>()
+
+    @PackageScope
     static Map<String, String> DEFAULT_ENVS = new HashMap<>()
     private static CommandLine CURRENT = null
     private static final String DEFAULT_PADDING = '        '

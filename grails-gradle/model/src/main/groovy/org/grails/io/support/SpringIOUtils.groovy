@@ -183,8 +183,8 @@ class SpringIOUtils {
      * @throws java.io.IOException in case of I/O errors
      */
     static int copy(File in, File out) throws IOException {
-        assert in != null : 'No input File specified'
-        assert out != null : 'No output File specified'
+        Objects.requireNonNull(in, 'No input File specified')
+        Objects.requireNonNull(out, 'No output File specified')
         return copy(new BufferedInputStream(new FileInputStream(in)),
                 new BufferedOutputStream(new FileOutputStream(out)))
     }
@@ -197,8 +197,8 @@ class SpringIOUtils {
      * @throws java.io.IOException in case of I/O errors
      */
     static int copy(Resource in, File out) throws IOException {
-        assert in != null : 'No input File specified'
-        assert out != null : 'No output File specified'
+        Objects.requireNonNull(in, 'No input File specified')
+        Objects.requireNonNull(out, 'No output File specified')
         return copy(new BufferedInputStream(in.inputStream),
                 new BufferedOutputStream(new FileOutputStream(out)))
     }
@@ -210,8 +210,8 @@ class SpringIOUtils {
      * @throws IOException in case of I/O errors
      */
     static void copy(byte[] in, File out) throws IOException {
-        assert in != null : 'No input byte array specified'
-        assert out != null : 'No output File specified'
+        Objects.requireNonNull(in, 'No input byte array specified')
+        Objects.requireNonNull(out, 'No output File specified')
         ByteArrayInputStream inStream = new ByteArrayInputStream(in)
         OutputStream outStream = new BufferedOutputStream(new FileOutputStream(out))
         copy(inStream, outStream)
@@ -224,7 +224,7 @@ class SpringIOUtils {
      * @throws IOException in case of I/O errors
      */
     static byte[] copyToByteArray(File in) throws IOException {
-        assert in != null : 'No input File specified'
+        Objects.requireNonNull(in, 'No input File specified')
 
         return copyToByteArray(new BufferedInputStream(new FileInputStream(in)))
     }
@@ -242,8 +242,8 @@ class SpringIOUtils {
      * @throws IOException in case of I/O errors
      */
     static int copy(InputStream in, OutputStream out) throws IOException {
-        assert in != null : 'No input stream specified'
-        assert out != null : 'No output stream specified'
+        Objects.requireNonNull(in, 'No input stream specified')
+        Objects.requireNonNull(out, 'No output stream specified')
         try {
             int byteCount = 0
             byte[] buffer = new byte[BUFFER_SIZE]
@@ -277,8 +277,8 @@ class SpringIOUtils {
      * @throws IOException in case of I/O errors
      */
     static void copy(byte[] in, OutputStream out) throws IOException {
-        assert in != null : 'No input byte array specified'
-        assert out != null : 'No output stream specified'
+        Objects.requireNonNull(in, 'No input byte array specified')
+        Objects.requireNonNull(out, 'No output stream specified')
         try {
             out.write(in)
         }
@@ -317,8 +317,8 @@ class SpringIOUtils {
      * @throws IOException in case of I/O errors
      */
     static int copy(Reader in, Writer out) throws IOException {
-        assert in != null : 'No input Reader specified'
-        assert out != null : 'No output Writer specified'
+        Objects.requireNonNull(in, 'No input Reader specified')
+        Objects.requireNonNull(out, 'No output Writer specified')
 
         try {
             int byteCount = 0
@@ -353,8 +353,8 @@ class SpringIOUtils {
      * @throws IOException in case of I/O errors
      */
     static void copy(String in, Writer out) throws IOException {
-        assert in != null : 'No input String specified'
-        assert out != null : 'No output Writer specified'
+        Objects.requireNonNull(in, 'No input String specified')
+        Objects.requireNonNull(out, 'No output Writer specified')
 
         try {
             out.write(in)

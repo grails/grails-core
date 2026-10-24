@@ -19,6 +19,7 @@
 package grails.util
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 /**
  * Utility methods for converting between different name types,
@@ -598,6 +599,7 @@ class GrailsNameUtils {
      * @param suffix The suffix to inspect
      * @return The property name or null
      */
+    @PackageScope
     static String convertValidPropertyMethodSuffix(String suffix) {
         if (suffix.isEmpty()) return null
 

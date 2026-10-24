@@ -105,16 +105,16 @@ class GrailsResourceUtils {
      Domain path is always matched against the normalized File representation of an URL and
      can therefore work with slashes as separators.
      */
-    static Pattern DOMAIN_PATH_PATTERN = Pattern.compile('.+' + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + 'domain' + REGEX_FILE_SEPARATOR + '(.+)\\.(groovy|java)')
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile('.+' + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + 'domain' + REGEX_FILE_SEPARATOR + '(.+)\\.(groovy|java)')
 
     /*
      This pattern will match any resource within a given directory inside grails-app
      */
-    static Pattern RESOURCE_PATH_PATTERN = Pattern.compile('.+?' + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + '(.+?)' + REGEX_FILE_SEPARATOR + '(.+?\\.(groovy|java))')
+    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile('.+?' + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + '(.+?)' + REGEX_FILE_SEPARATOR + '(.+?\\.(groovy|java))')
 
-    static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile('.+?' + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + 'conf' + REGEX_FILE_SEPARATOR + 'spring' + REGEX_FILE_SEPARATOR + '(.+?\\.groovy)')
+    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile('.+?' + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + 'conf' + REGEX_FILE_SEPARATOR + 'spring' + REGEX_FILE_SEPARATOR + '(.+?\\.groovy)')
 
-    static Pattern[] COMPILER_ROOT_PATTERNS = [
+    public static Pattern[] COMPILER_ROOT_PATTERNS = [
         SPRING_SCRIPTS_PATH_PATTERN,
         RESOURCE_PATH_PATTERN
     ] as Pattern[]
